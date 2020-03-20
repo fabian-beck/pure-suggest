@@ -1,4 +1,6 @@
-# pure
+# PURE suggest
+
+Suggest scientific publications by reference 
 
 ## Project setup
 ```
