@@ -32,9 +32,9 @@
     <div class="media-right">
       <b-button
         v-if="suggestion"
-        class="button is-link is-small media-right"
+        class="button is-primary is-small media-right"
         v-on:click="$emit('add', publication.doi)"
-      >+</b-button>
+      ><strong>+</strong></b-button>
     </div>
   </li>
 </template>

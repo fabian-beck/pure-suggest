@@ -6,7 +6,7 @@
         <nav class="level">
           <label>Add:</label>
           <input class="input" type="text" placeholder="Paste DOI(s) here" v-model="addDois" />
-          <button class="button is-link" type="submit" v-on:click="add">+</button>
+          <button class="button" type="submit" v-on:click="add"><strong>+</strong></button>
         </nav>
       </form>
       <ul class="publication-list has-background-white">
@@ -49,10 +49,10 @@ export default {
 .box {
   height: 100%;
   display: grid;
-  grid-template-rows: 40px 60px auto;
+  grid-template-rows: max-content max-content auto;
 }
 .level > * {
-  margin: 0.2rem;
+  margin: 0.5rem 0.2rem;
 }
 .publication-list {
   max-height: 100%;

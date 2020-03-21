@@ -47,14 +47,17 @@ export default {
 </script>
 
 <style scoped>
-.title {
-  margin: 0;
-}
 .box {
   height: 100%;
   display: grid;
-  grid-template-rows: 50px auto;
+  grid-template-rows: max-content auto;
   position: relative;
+}
+.title {
+  margin: 0;
+}
+.level {
+  margin-bottom: 0.5rem !important;
 }
 .publication-list {
   max-height: 100%;
