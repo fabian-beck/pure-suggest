@@ -4,13 +4,11 @@
       <div class="level">
         <div class="level-left">
           <div class="is-size-4">Suggested publications</div>
-          <b-tooltip
-            label="The suggested publications are sorted by the number of selected publications they reference."
-            position="is-right"
-            multilined
-          >
-            <b-icon icon="info-circle" size="is-small"></b-icon>
-          </b-tooltip>
+          <b-icon
+            icon="info-circle"
+            size="is-small"
+            v-tooltip="'The suggested publications are sorted by the number of selected publications they reference.'"
+          ></b-icon>
         </div>
       </div>
       <ul class="publication-list has-background-white">
@@ -22,7 +20,7 @@
           v-on:add="addPublication"
         ></PublicationComponent>
       </ul>
-        <b-loading :is-full-page="false" :active.sync="loadingSuggestions" :can-cancel="false"></b-loading>
+      <b-loading :is-full-page="false" :active.sync="loadingSuggestions" :can-cancel="false"></b-loading>
     </div>
   </div>
 </template>

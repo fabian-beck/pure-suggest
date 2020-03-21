@@ -10,6 +10,10 @@ library.add(fas)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 Vue.use(Buefy, { defaultIconPack: 'fas' })
 
+import VTooltip from 'v-tooltip'
+
+Vue.use(VTooltip)
+
 Vue.config.productionTip = false
 
 new Vue({

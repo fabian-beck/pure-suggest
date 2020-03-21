@@ -10,13 +10,11 @@
             <b>pu</b>blications by
             <b>re</b>ference
           </span>
-          <b-tooltip
-            label="For a set of selected publications, the tool looks up all citations and lists those papers often citing the selected ones as suggestions."
-            position="is-right"
-            multilined
-          >
-            <b-icon icon="info-circle" size="is-small"></b-icon>
-          </b-tooltip>
+          <b-icon
+            icon="info-circle"
+            size="is-small"
+            v-tooltip.right-end="'For a set of selected publications, the tool looks up all citations <br/>and lists those papers often citing the selected ones as suggestions.'"
+          ></b-icon>
         </div>
       </div>
     </div>
@@ -191,6 +189,8 @@ async function cachedFetch(url, processData) {
 
 @import "~bulma";
 @import "~buefy/src/scss/buefy";
+
+@import "v-tooltip.scss";
 
 #app {
   display: grid;
