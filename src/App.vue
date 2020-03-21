@@ -21,11 +21,13 @@
     <SelectedPublicationsComponent
       :publications="selectedPublications"
       v-on:add="addPublicationToSelection"
+      v-on:activate="activatePublication"
     />
     <SuggestedPublicationsComponent
       :publications="suggestedPublications"
       :loadingSuggestions="loadingSuggestions"
       v-on:add="addPublicationToSelection"
+      v-on:activate="activatePublication"
     />
   </div>
 </template>
@@ -63,6 +65,28 @@ export default {
         this.selectedPublications = Object.values(publications).reverse();
       });
       this.updateSuggestions();
+    },
+    activatePublication: function(doi) {
+      this.selectedPublications.concat(this.suggestedPublications).forEach(publication => {
+        publication.isReferencedByActive = false;
+      });
+      this.selectedPublications.forEach(selectedPublication => {
+        selectedPublication.isActive = selectedPublication.doi === doi;
+        if (selectedPublication.isActive) {
+          this.suggestedPublications.forEach(suggestedPublication => {
+            suggestedPublication.isReferencedByActive =
+              selectedPublication.citationDois.indexOf(
+                suggestedPublication.doi
+              ) >= 0 ||
+              selectedPublication.referenceDois.indexOf(
+                suggestedPublication.doi
+              ) >= 0;
+          });
+        }
+      });
+      this.suggestedPublications.forEach(suggestedPublication => {
+        suggestedPublication.isActive = suggestedPublication.doi === doi;
+      });
     }
   },
   beforeMount() {
@@ -78,8 +102,11 @@ class Publication {
     this.citationCount = 0;
     this.referenceCount = 0;
     this.title = "";
+    this.cointainer = "";
     this.year = undefined;
-    this.author = undefined;
+    this.authorShort = undefined;
+    this.isActive = false;
+    this.isReferencedByActive = false;
   }
 
   async fetchCitations() {
@@ -112,12 +139,16 @@ class Publication {
       metadata => {
         this.title = metadata.message.title[0];
         this.year = metadata.message.issued["date-parts"][0][0];
-        this.author = metadata.message.author[0].family;
+        this.authorShort = metadata.message.author[0].family;
         if (metadata.message.author.length > 2) {
-          this.author += " et al.";
+          this.authorShort += " et al.";
         } else if (metadata.message.author.length === 2) {
-          this.author += " and " + metadata.message.author[1].family;
+          this.authorShort += " and " + metadata.message.author[1].family;
         }
+        this.author = metadata.message.author
+          .map(author => author.given + " " + author.family)
+          .join(", ");
+        this.container = metadata.message["container-title"][0];
       }
     );
   }

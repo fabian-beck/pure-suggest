@@ -18,6 +18,7 @@
           :publication="publication"
           :suggestion="true"
           v-on:add="addPublication"
+          v-on:activate="activatePublication"
         ></PublicationComponent>
       </ul>
       <b-loading :is-full-page="false" :active.sync="loadingSuggestions" :can-cancel="false"></b-loading>
@@ -41,6 +42,9 @@ export default {
   methods: {
     addPublication: function(doi) {
       this.$emit("add", doi);
+    },
+    activatePublication: function(doi) {
+      this.$emit("activate", doi);
     }
   }
 };
