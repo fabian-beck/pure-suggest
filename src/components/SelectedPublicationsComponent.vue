@@ -1,7 +1,7 @@
 <template>
   <div class="selected-publications column">
     <div class="box has-background-primary">
-      <div class="title is-size-4">Selected publications</div>
+      <div class="is-size-4">Selected publications</div>
       <form v-on:submit.prevent>
         <nav class="level">
           <label>Add:</label>

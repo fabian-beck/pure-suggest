@@ -2,9 +2,12 @@
   <li class="publication-component media">
     <div class="media-content">
       <div class="level">
-        <span>
+        <span v-if="publication.title">
           <strong>{{publication.title}}</strong>
           ({{publication.author}}, {{publication.year}})
+        </span>
+        <span v-if="!publication.title">
+          <strong>...</strong>
         </span>
       </div>
       <div class="level">

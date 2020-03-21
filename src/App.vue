@@ -26,6 +26,7 @@
     />
     <SuggestedPublicationsComponent
       :publications="suggestedPublications"
+      :loadingSuggestions="loadingSuggestions"
       v-on:add="addPublicationToSelection"
     />
   </div>
@@ -46,12 +47,15 @@ export default {
   data() {
     return {
       selectedPublications: [],
-      suggestedPublications: []
+      suggestedPublications: [],
+      loadingSuggestions: false
     };
   },
   methods: {
     updateSuggestions: async function() {
+      this.loadingSuggestions = true;
       this.suggestedPublications = Object.values(await computeSuggestions());
+      this.loadingSuggestions = false;
     },
     addPublicationToSelection: function(dois) {
       dois.split(/ |"|\{|\}/).forEach(doi => {
@@ -114,7 +118,7 @@ async function computeSuggestions() {
   await Promise.all(
     Object.values(publications).map(async publication => {
       await publication.fetchCitations();
-      await publication.fetchMetadata();
+      publication.fetchMetadata();
     })
   );
   Object.values(publications).forEach(publication => {
@@ -131,7 +135,7 @@ async function computeSuggestions() {
   });
   const filteredSuggestions = Object.values(suggestedPublications);
   filteredSuggestions.sort((a, b) => b.citationCount - a.citationCount);
-  return filteredSuggestions.slice(0, 10);
+  return filteredSuggestions.slice(0, 20);
 }
 
 const cache = {};

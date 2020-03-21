@@ -1,15 +1,17 @@
 <template>
   <div class="suggested-publications column">
     <div class="box has-background-info">
-      <div class="title is-size-4">
-        Suggested publications
-        <b-tooltip
-          label="The suggested publications are sorted by the number of selected publications they reference."
-          position="is-right"
-          multilined
-        >
-          <b-icon icon="info-circle" size="is-small"></b-icon>
-        </b-tooltip>
+      <div class="level">
+        <div class="level-left">
+          <div class="is-size-4">Suggested publications</div>
+          <b-tooltip
+            label="The suggested publications are sorted by the number of selected publications they reference."
+            position="is-right"
+            multilined
+          >
+            <b-icon icon="info-circle" size="is-small"></b-icon>
+          </b-tooltip>
+        </div>
       </div>
       <ul class="publication-list has-background-white">
         <PublicationComponent
@@ -20,6 +22,7 @@
           v-on:add="addPublication"
         ></PublicationComponent>
       </ul>
+        <b-loading :is-full-page="false" :active.sync="loadingSuggestions" :can-cancel="false"></b-loading>
     </div>
   </div>
 </template>
@@ -34,21 +37,26 @@ export default {
   },
   props: {
     title: String,
-    publications: Array
+    publications: Array,
+    loadingSuggestions: Boolean
   },
   methods: {
     addPublication: function(doi) {
-      this.$emit('add', doi);
+      this.$emit("add", doi);
     }
   }
 };
 </script>
 
 <style scoped>
+.title {
+  margin: 0;
+}
 .box {
   height: 100%;
   display: grid;
-  grid-template-rows: 40px auto;
+  grid-template-rows: 50px auto;
+  position: relative;
 }
 .publication-list {
   max-height: 100%;
