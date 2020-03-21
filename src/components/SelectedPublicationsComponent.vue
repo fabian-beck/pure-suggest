@@ -6,7 +6,7 @@
         <nav class="level">
           <label>Add:</label>
           <input class="input" type="text" placeholder="Paste DOI(s) here" v-model="addDois" />
-          <button class="button is-link" type="submit" v-on:click="$emit('add', addDois)">+</button>
+          <button class="button is-link" type="submit" v-on:click="add">+</button>
         </nav>
       </form>
       <ul class="publication-list has-background-white">
@@ -21,10 +21,10 @@
 </template>
 
 <script>
-import PublicationComponent from "./PublicationComponent.vue";
+import PublicationComponent from './PublicationComponent.vue';
 
 export default {
-  name: "SelectedPublicationsComponent",
+  name: 'SelectedPublicationsComponent',
   components: {
     PublicationComponent
   },
@@ -33,8 +33,14 @@ export default {
   },
   data() {
     return {
-      addDois: ""
+      addDois: ''
     };
+  },
+  methods: {
+    add: function() {
+      this.$emit('add', this.addDois);
+      this.addDois = ''
+    }
   }
 };
 </script>
