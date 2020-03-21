@@ -18,7 +18,8 @@
           <div v-if="suggestion" class="level-item">
             <span>
               Referencing
-              <strong>{{publication.citationCount}}</strong> selected publications
+              <strong>{{publication.citationCount}}</strong> and referenced by
+              <strong>{{publication.referenceCount}}</strong> selected publications
             </span>
           </div>
         </div>

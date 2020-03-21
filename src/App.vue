@@ -75,8 +75,10 @@ export default {
 class Publication {
   constructor(doi) {
     this.doi = doi;
-    this.citationDOIs = [];
+    this.citationDois = [];
+    this.referenceDois = [];
     this.citationCount = 0;
+    this.referenceCount = 0;
     this.title = "";
     this.year = undefined;
     this.author = undefined;
@@ -86,9 +88,21 @@ class Publication {
     await cachedFetch(
       `https://opencitations.net/index/coci/api/v1/citations/${this.doi}`,
       citations => {
-        this.citationDOIs = [];
+        this.citationDois = [];
         citations.forEach(citation => {
-          this.citationDOIs.push(citation.citing);
+          this.citationDois.push(citation.citing);
+        });
+      }
+    );
+  }
+
+  async fetchReferences() {
+    await cachedFetch(
+      `https://opencitations.net/index/coci/api/v1/references/${this.doi}`,
+      references => {
+        this.referenceDois = [];
+        references.forEach(reference => {
+          this.referenceDois.push(reference.cited);
         });
       }
     );
@@ -114,28 +128,41 @@ class Publication {
 const publications = {};
 
 async function computeSuggestions() {
+  function incrementSuggestedPublicationCounter(doi, counter) {
+    if (!publications[doi]) {
+      if (!suggestedPublications[doi]) {
+        const citingPublication = new Publication(doi);
+        suggestedPublications[doi] = citingPublication;
+      }
+      suggestedPublications[doi][counter]++;
+    }
+  }
   const suggestedPublications = {};
   await Promise.all(
     Object.values(publications).map(async publication => {
       await publication.fetchCitations();
+      await publication.fetchReferences();
       publication.fetchMetadata();
     })
   );
   Object.values(publications).forEach(publication => {
-    publication.citationDOIs.forEach(citationDOI => {
-      if (!publications[citationDOI]) {
-        if (!suggestedPublications[citationDOI]) {
-          const citingPublication = new Publication(citationDOI);
-          citingPublication.fetchMetadata();
-          suggestedPublications[citationDOI] = citingPublication;
-        }
-        suggestedPublications[citationDOI].citationCount++;
-      }
+    publication.citationDois.forEach(citationDoi => {
+      incrementSuggestedPublicationCounter(citationDoi, "citationCount");
+    });
+    publication.referenceDois.forEach(referenceDoi => {
+      incrementSuggestedPublicationCounter(referenceDoi, "referenceCount");
     });
   });
-  const filteredSuggestions = Object.values(suggestedPublications);
-  filteredSuggestions.sort((a, b) => b.citationCount - a.citationCount);
-  return filteredSuggestions.slice(0, 20);
+  let filteredSuggestions = Object.values(suggestedPublications);
+  filteredSuggestions.sort(
+    (a, b) =>
+      b.citationCount + b.referenceCount - (a.citationCount + a.referenceCount)
+  );
+  filteredSuggestions = filteredSuggestions.slice(0, 20);
+  filteredSuggestions.forEach(suggestedPublication => {
+    suggestedPublication.fetchMetadata();
+  });
+  return filteredSuggestions;
 }
 
 const cache = {};
