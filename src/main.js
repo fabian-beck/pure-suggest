@@ -11,8 +11,8 @@ Vue.component('font-awesome-icon', FontAwesomeIcon)
 Vue.use(Buefy, { defaultIconPack: 'fas' })
 
 import VTooltip from 'v-tooltip'
-
 Vue.use(VTooltip)
+VTooltip.options.popover.defaultTrigger = 'hover';
 
 Vue.config.productionTip = false
 

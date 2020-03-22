@@ -5,8 +5,9 @@
     .tooltip-inner {
       background: black;
       color: white;
-      border-radius: 16px;
-      padding: 5px 10px 4px;
+      border-radius: $radius-large;
+      padding: $box-padding;
+      max-width: 30vw;
     }
   
     .tooltip-arrow {
@@ -79,7 +80,7 @@
       }
     }
   
-    &.popover {
+    /*&.popover {
       $color: #f9f9f9;
   
       .popover-inner {
@@ -93,7 +94,7 @@
       .popover-arrow {
         border-color: $color;
       }
-    }
+    }*/
   
     &[aria-hidden='true'] {
       visibility: hidden;

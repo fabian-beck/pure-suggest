@@ -50,7 +50,8 @@ export default {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import "~bulma/sass/utilities/_all";
 .box {
   height: 100%;
   display: grid;
@@ -66,5 +67,6 @@ export default {
 .publication-list {
   max-height: 100%;
   overflow-y: scroll;
+  border: 1px solid $border;
 }
 </style>

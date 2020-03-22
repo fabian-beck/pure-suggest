@@ -62,6 +62,7 @@ export default {
     },
 
     addPublicationToSelection: function(dois) {
+      this.clearActive();
       dois.split(/ |"|\{|\}/).forEach(doi => {
         if (doi.indexOf("10.") === 0 && !publications[doi]) {
           publications[doi] = new Publication(doi);
@@ -72,16 +73,12 @@ export default {
     },
 
     activatePublication: function(doi) {
-      this.selectedPublications
-        .concat(this.suggestedPublications)
-        .forEach(publication => {
-          publication.isReferencedByActive = false;
-        });
+      this.clearActive();
       this.selectedPublications.forEach(selectedPublication => {
         selectedPublication.isActive = selectedPublication.doi === doi;
         if (selectedPublication.isActive) {
           this.suggestedPublications.forEach(suggestedPublication => {
-            suggestedPublication.isReferencedByActive =
+            suggestedPublication.isLinkedToActive =
               selectedPublication.citationDois.indexOf(
                 suggestedPublication.doi
               ) >= 0 ||
@@ -93,6 +90,17 @@ export default {
       });
       this.suggestedPublications.forEach(suggestedPublication => {
         suggestedPublication.isActive = suggestedPublication.doi === doi;
+        if (suggestedPublication.isActive) {
+          this.selectedPublications.forEach(selectedPublication => {
+            selectedPublication.isLinkedToActive =
+              suggestedPublication.citationDois.indexOf(
+                selectedPublication.doi
+              ) >= 0 ||
+              suggestedPublication.referenceDois.indexOf(
+                selectedPublication.doi
+              ) >= 0;
+          });
+        }
       });
     },
 
@@ -100,8 +108,16 @@ export default {
       publications = {};
       this.selectedPublications = [];
       this.updateSuggestions();
-    }
+    },
 
+    clearActive: function() {
+      this.selectedPublications
+        .concat(this.suggestedPublications)
+        .forEach(publication => {
+          publication.isActive = false;
+          publication.isLinkedToActive = false;
+        });
+    }
   },
   beforeMount() {
     this.updateSuggestions();
@@ -120,7 +136,7 @@ class Publication {
     this.year = undefined;
     this.authorShort = undefined;
     this.isActive = false;
-    this.isReferencedByActive = false;
+    this.isLinkedToActive = false;
   }
 
   async fetchCitations() {
@@ -171,12 +187,18 @@ class Publication {
 let publications = {};
 
 async function computeSuggestions() {
-  function incrementSuggestedPublicationCounter(doi, counter) {
+  function incrementSuggestedPublicationCounter(
+    doi,
+    counter,
+    doiList,
+    sourceDoi
+  ) {
     if (!publications[doi]) {
       if (!suggestedPublications[doi]) {
         const citingPublication = new Publication(doi);
         suggestedPublications[doi] = citingPublication;
       }
+      suggestedPublications[doi][doiList].push(sourceDoi);
       suggestedPublications[doi][counter]++;
     }
   }
@@ -191,10 +213,20 @@ async function computeSuggestions() {
   );
   Object.values(publications).forEach(publication => {
     publication.citationDois.forEach(citationDoi => {
-      incrementSuggestedPublicationCounter(citationDoi, "citationCount");
+      incrementSuggestedPublicationCounter(
+        citationDoi,
+        "citationCount",
+        "referenceDois",
+        publication.doi
+      );
     });
     publication.referenceDois.forEach(referenceDoi => {
-      incrementSuggestedPublicationCounter(referenceDoi, "referenceCount");
+      incrementSuggestedPublicationCounter(
+        referenceDoi,
+        "referenceCount",
+        "citationDois",
+        publication.doi
+      );
     });
   });
   let filteredSuggestions = Object.values(suggestedPublications);
@@ -202,7 +234,7 @@ async function computeSuggestions() {
     (a, b) =>
       b.citationCount + b.referenceCount - (a.citationCount + a.referenceCount)
   );
-  filteredSuggestions = filteredSuggestions.slice(0, 20);
+  filteredSuggestions = filteredSuggestions.slice(0, 30);
   filteredSuggestions.forEach(async suggestedPublication => {
     suggestedPublication.fetchMetadata();
   });
@@ -263,7 +295,7 @@ $block-spacing: 0.5rem;
   grid-area: right;
   overflow-y: hidden;
 }
-.pure-icon{
+.pure-icon {
   margin-top: 0.3rem;
 }
 .icon.is-small {

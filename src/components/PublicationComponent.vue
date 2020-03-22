@@ -7,11 +7,61 @@
     <div
       v-if="suggestion"
       class="media-left has-text-centered"
-      v-tooltip="`Referenced by ${publication.referenceCount} and referencing ${publication.citationCount} selected publications.`"
-      v-bind:class="{ 'has-background-primary': publication.isReferencedByActive }"
+      v-bind:class="{ 
+        'has-background-primary': publication.isLinkedToActive,
+        'has-background-info': publication.isActive 
+       }"
     >
-      <div class="is-size-2">{{publication.referenceCount + publication.citationCount}}</div>
-      <div class="is-size-7">{{publication.referenceCount}} + {{publication.citationCount}}</div>
+      <v-popover offset="4">
+        <div
+          class="is-size-2 tooltip-target"
+        >{{publication.referenceCount + publication.citationCount}}</div>
+        <div class="is-size-7">{{publication.referenceCount}} + {{publication.citationCount}}</div>
+        <template slot="popover">
+          <div>
+            Suggestion score of
+            <b>{{publication.referenceCount + publication.citationCount}}</b>:
+            Referenced by
+            <b>{{publication.referenceCount}}</b>
+            and referencing
+            <b>{{publication.citationCount}}</b> selected publications.
+          </div>
+          <div
+            v-if="publication.isLinkedToActive"
+          >Marked as refered by or referencing highlighted selected publication.</div>
+          <div
+            v-if="publication.isActive"
+          >Currently highlighted with marked selected publications indicating reference links.</div>
+        </template>
+      </v-popover>
+    </div>
+    <div
+      v-if="!suggestion"
+      class="media-left has-text-centered stats-selected"
+      v-bind:class="{ 
+        'has-background-primary': publication.isActive,
+        'has-background-info': publication.isLinkedToActive 
+        }"
+    >
+      <v-popover offset="16">
+        <div
+          class="is-size-7 tooltip-target"
+        >{{publication.referenceDois.length}} + {{publication.citationDois.length}}</div>
+        <template slot="popover">
+          <div>
+            Referencing
+            <b>{{publication.referenceDois.length}}</b>
+            and referenced by
+            <b>{{publication.citationDois.length}}</b> other publications.
+          </div>
+          <div
+            v-if="publication.isLinkedToActive"
+          >Marked as refered by or referencing highlighted suggested publication.</div>
+          <div
+            v-if="publication.isActive"
+          >Currently highlighted with marked suggested publications indicating reference links.</div>
+        </template>
+      </v-popover>
     </div>
     <div class="media-content">
       <div class="level is-size-7">
@@ -20,7 +70,7 @@
           <a :href="'https://doi.org/'+publication.doi" target="_blank">{{ publication.doi }}</a>
         </div>
         <div class="level-right">
-          <div v-if="publication.title" class="level-item">
+          <div v-if="publication.title && publication.isActive" class="level-item">
             <a
               :href="'https://scholar.google.de/scholar?hl=en&q='+publication.title"
               target="_blank"
@@ -37,7 +87,7 @@
           <strong>...</strong>
         </span>
       </div>
-      <div v-if="publication.isActive" class="is-size-7">
+      <div v-if="publication.isActive && publication.title" class="is-size-7">
         {{publication.author}};
         <em>{{publication.container}}</em>.
       </div>
@@ -46,7 +96,7 @@
       <b-button
         v-if="suggestion"
         class="button is-primary is-small"
-        v-on:click="$emit('add', publication.doi)"
+        v-on:click.stop="$emit('add', publication.doi)"
       >
         <strong>+</strong>
       </b-button>
@@ -76,12 +126,16 @@ li.publication-component:hover {
   background: $white-ter;
 }
 .media-left {
-  width: 50px;
+  width: 60px;
   margin-left: 1rem;
-  margin-bottom: 0.5rem;
+  padding-bottom: 0.6rem;
 }
 .media-left div:first-child {
-  margin-bottom: -0.5rem;
+  margin-top: -0.3rem;
+  margin-bottom: -0.7rem;
+}
+.stats-selected {
+  padding-top: 0.5rem;
 }
 .media-content {
   padding: 0.5rem;
