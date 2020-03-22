@@ -1,20 +1,22 @@
 <template>
   <div id="app">
     <div class="section has-background-dark media" id="header">
-      <b-icon icon="tint" size="is-large" class="media-left has-text-grey-lighter"></b-icon>
-      <div class="media-content">
-        <div class="title has-text-grey-lighter">PURE suggest</div>
-        <div class="subtitle has-text-grey-lighter">
-          <span>
-            Suggest scientific
-            <b>pu</b>blications by
-            <b>re</b>ference
-          </span>
-          <b-icon
-            icon="info-circle"
-            size="is-small"
-            v-tooltip.right-end="'For a set of selected publications, the tool looks up all citations <br/>and lists those papers often citing the selected ones as suggestions.'"
-          ></b-icon>
+      <b-icon icon="tint" size="is-medium" class="media-left has-text-grey-lighter pure-icon"></b-icon>
+      <div class="media-content level">
+        <div class="level-left">
+          <div class="title has-text-grey-lighter level-item">PURE suggest</div>
+          <div class="subtitle has-text-grey-lighter level-item">
+            <span>
+              Suggest scientific
+              <b>pu</b>blications by
+              <b>re</b>ference
+            </span>
+            <b-icon
+              icon="info-circle"
+              size="is-small"
+              v-tooltip.right-end="'For a set of selected publications, the tool looks up all citations <br/>and lists those papers often citing the selected ones as suggestions.'"
+            ></b-icon>
+          </div>
         </div>
       </div>
     </div>
@@ -22,6 +24,7 @@
       :publications="selectedPublications"
       v-on:add="addPublicationToSelection"
       v-on:activate="activatePublication"
+      v-on:clear="clearSelection"
     />
     <SuggestedPublicationsComponent
       :publications="suggestedPublications"
@@ -91,7 +94,14 @@ export default {
       this.suggestedPublications.forEach(suggestedPublication => {
         suggestedPublication.isActive = suggestedPublication.doi === doi;
       });
+    },
+
+    clearSelection: function() {
+      publications = {};
+      this.selectedPublications = [];
+      this.updateSuggestions();
     }
+
   },
   beforeMount() {
     this.updateSuggestions();
@@ -158,7 +168,7 @@ class Publication {
   }
 }
 
-const publications = {};
+let publications = {};
 
 async function computeSuggestions() {
   function incrementSuggestedPublicationCounter(doi, counter) {
@@ -201,14 +211,12 @@ async function computeSuggestions() {
 
 async function cachedFetch(url, processData) {
   if (localStorage[url]) {
-    console.log(JSON.parse(localStorage[url]));
     processData(JSON.parse(localStorage[url]));
   } else {
     await fetch(url)
       .then(response => response.json())
       .then(data => {
         localStorage[url] = JSON.stringify(data);
-        console.log(localStorage[url]);
         processData(data);
       })
       .catch(function(error) {
@@ -223,6 +231,8 @@ async function cachedFetch(url, processData) {
 <style lang="scss">
 @import "~bulma/sass/utilities/_all";
 
+$block-spacing: 0.5rem;
+
 @import "~bulma";
 @import "~buefy/src/scss/buefy";
 
@@ -234,12 +244,16 @@ async function cachedFetch(url, processData) {
     "header header"
     "left right";
   height: 100vh;
-  grid-template-rows: 90px auto;
+  grid-template-rows: max-content auto;
   grid-template-columns: 50fr 50fr;
 }
 #header {
   padding: 0.5rem 1rem;
   grid-area: header;
+}
+#header .subtitle {
+  margin-top: 0.25rem;
+  margin-left: 1rem;
 }
 .selected-publications {
   grid-area: left;
@@ -249,8 +263,8 @@ async function cachedFetch(url, processData) {
   grid-area: right;
   overflow-y: hidden;
 }
-.icon.is-large {
-  margin-top: 0.5rem;
+.pure-icon{
+  margin-top: 0.3rem;
 }
 .icon.is-small {
   margin-left: 0.5rem;

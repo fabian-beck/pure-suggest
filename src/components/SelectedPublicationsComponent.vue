@@ -1,15 +1,24 @@
 <template>
   <div class="selected-publications column">
     <div class="box has-background-primary">
-      <div class="is-size-4">Selected publications</div>
-      <form v-on:submit.prevent>
-        <nav class="level">
-          <label>Add:</label>
-          <input class="input" type="text" placeholder="Paste DOI(s) here" v-model="addDois" />
-          <button class="button" type="submit" v-on:click="add">
-            <strong>+</strong>
-          </button>
-        </nav>
+      <div class="level">
+        <div class="level-left">
+          <div class="is-size-4">Selected publications</div>
+        </div>
+        <div class="level-right">
+          <button class="button is-small" v-on:click="clear">clear</button>
+        </div>
+      </div>
+      <form v-on:submit.prevent class="level">
+        <div class="level-left">
+          <div class="level-item">
+            <label>Add:</label>
+          </div>
+        </div>
+        <input class="input" type="text" placeholder="Paste DOI(s) here" v-model="addDois" />
+        <button class="button level-right" type="submit" v-on:click="add">
+          <strong>+</strong>
+        </button>
       </form>
       <ul class="publication-list has-background-white">
         <PublicationComponent
@@ -46,6 +55,9 @@ export default {
     },
     activatePublication: function(doi) {
       this.$emit("activate", doi);
+    },
+    clear: function() {
+      this.$emit("clear");
     }
   }
 };
@@ -57,11 +69,11 @@ export default {
   display: grid;
   grid-template-rows: max-content max-content auto;
 }
-.level > * {
-  margin: 0.5rem 0.2rem;
-}
 .publication-list {
   max-height: 100%;
   overflow-y: scroll;
+}
+form label {
+  margin-right: 0.2rem;
 }
 </style>

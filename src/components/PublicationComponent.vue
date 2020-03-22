@@ -45,7 +45,7 @@
     <div class="media-right">
       <b-button
         v-if="suggestion"
-        class="button is-primary is-small media-right"
+        class="button is-primary is-small"
         v-on:click="$emit('add', publication.doi)"
       >
         <strong>+</strong>
