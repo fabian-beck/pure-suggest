@@ -57,6 +57,7 @@ export default {
       this.suggestedPublications = Object.values(await computeSuggestions());
       this.loadingSuggestions = false;
     },
+
     addPublicationToSelection: function(dois) {
       dois.split(/ |"|\{|\}/).forEach(doi => {
         if (doi.indexOf("10.") === 0 && !publications[doi]) {
@@ -66,10 +67,13 @@ export default {
       });
       this.updateSuggestions();
     },
+
     activatePublication: function(doi) {
-      this.selectedPublications.concat(this.suggestedPublications).forEach(publication => {
-        publication.isReferencedByActive = false;
-      });
+      this.selectedPublications
+        .concat(this.suggestedPublications)
+        .forEach(publication => {
+          publication.isReferencedByActive = false;
+        });
       this.selectedPublications.forEach(selectedPublication => {
         selectedPublication.isActive = selectedPublication.doi === doi;
         if (selectedPublication.isActive) {
@@ -166,6 +170,7 @@ async function computeSuggestions() {
       suggestedPublications[doi][counter]++;
     }
   }
+
   const suggestedPublications = {};
   await Promise.all(
     Object.values(publications).map(async publication => {
@@ -188,22 +193,22 @@ async function computeSuggestions() {
       b.citationCount + b.referenceCount - (a.citationCount + a.referenceCount)
   );
   filteredSuggestions = filteredSuggestions.slice(0, 20);
-  filteredSuggestions.forEach(suggestedPublication => {
+  filteredSuggestions.forEach(async suggestedPublication => {
     suggestedPublication.fetchMetadata();
   });
   return filteredSuggestions;
 }
 
-const cache = {};
-
 async function cachedFetch(url, processData) {
-  if (cache[url]) {
-    processData(cache[url]);
+  if (localStorage[url]) {
+    console.log(JSON.parse(localStorage[url]));
+    processData(JSON.parse(localStorage[url]));
   } else {
     await fetch(url)
       .then(response => response.json())
       .then(data => {
-        cache[url] = data;
+        localStorage[url] = JSON.stringify(data);
+        console.log(localStorage[url]);
         processData(data);
       })
       .catch(function(error) {
