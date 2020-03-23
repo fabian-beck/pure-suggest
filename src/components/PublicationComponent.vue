@@ -64,7 +64,7 @@
       </v-popover>
     </div>
     <div class="media-content">
-      <div class="level is-size-7">
+      <div v-if="publication.isActive" class="level is-size-7">
         <div class="doi level-left">
           <label>DOI:</label>
           <a :href="'https://doi.org/'+publication.doi" target="_blank">{{ publication.doi }}</a>

@@ -167,8 +167,13 @@ class Publication {
     await cachedFetch(
       `https://api.crossref.org/works/${this.doi}`,
       metadata => {
-        this.title = metadata.message.title[0];
+        this.title =
+          metadata.message.title[0] +
+          (metadata.message.subtitle[0] ? ': '+metadata.message.subtitle[0] : "");
         this.year = metadata.message.issued["date-parts"][0][0];
+        if (!this.year) {
+          this.year = '[unknown year]';
+        }
         this.authorShort = metadata.message.author[0].family;
         if (metadata.message.author.length > 2) {
           this.authorShort += " et al.";
