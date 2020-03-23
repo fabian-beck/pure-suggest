@@ -25,6 +25,7 @@
           v-for="publication in publications"
           v-bind:key="publication.doi"
           v-bind:publication="publication"
+          v-on:remove="removePublication"
           v-on:activate="activatePublication"
         ></PublicationComponent>
       </ul>
@@ -52,6 +53,9 @@ export default {
     add: function() {
       this.$emit("add", this.addDois);
       this.addDois = "";
+    },
+    removePublication: function(doi) {
+      this.$emit("remove", doi);
     },
     activatePublication: function(doi) {
       this.$emit("activate", doi);

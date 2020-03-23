@@ -23,6 +23,7 @@
     <SelectedPublicationsComponent
       :publications="selectedPublications"
       v-on:add="addPublicationToSelection"
+      v-on:remove="removePublication"
       v-on:activate="activatePublication"
       v-on:clear="clearSelection"
     />
@@ -30,6 +31,7 @@
       :publications="suggestedPublications"
       :loadingSuggestions="loadingSuggestions"
       v-on:add="addPublicationToSelection"
+      v-on:remove="removePublication"
       v-on:activate="activatePublication"
     />
   </div>
@@ -57,12 +59,12 @@ export default {
   methods: {
     updateSuggestions: async function() {
       this.loadingSuggestions = true;
+      this.clearActive();
       this.suggestedPublications = Object.values(await computeSuggestions());
       this.loadingSuggestions = false;
     },
 
     addPublicationToSelection: function(dois) {
-      this.clearActive();
       dois.split(/ |"|\{|\}/).forEach(doi => {
         if (doi.indexOf("10.") === 0 && !publications[doi]) {
           publications[doi] = new Publication(doi);
@@ -107,6 +109,7 @@ export default {
     clearSelection: function() {
       publications = {};
       this.selectedPublications = [];
+      removedPublicationDois = new Set();
       this.updateSuggestions();
     },
 
@@ -117,6 +120,13 @@ export default {
           publication.isActive = false;
           publication.isLinkedToActive = false;
         });
+    },
+
+    removePublication: function(doi) {
+      removedPublicationDois.add(doi);
+      delete publications[doi];
+      this.selectedPublications = Object.values(publications).reverse();
+      this.updateSuggestions();
     }
   },
   beforeMount() {
@@ -169,20 +179,24 @@ class Publication {
       metadata => {
         this.title =
           metadata.message.title[0] +
-          (metadata.message.subtitle[0] ? ': '+metadata.message.subtitle[0] : "");
+          (metadata.message.subtitle[0]
+            ? ": " + metadata.message.subtitle[0]
+            : "");
         this.year = metadata.message.issued["date-parts"][0][0];
         if (!this.year) {
-          this.year = '[unknown year]';
+          this.year = "[unknown year]";
         }
-        this.authorShort = metadata.message.author[0].family;
-        if (metadata.message.author.length > 2) {
-          this.authorShort += " et al.";
-        } else if (metadata.message.author.length === 2) {
-          this.authorShort += " and " + metadata.message.author[1].family;
+        if (metadata.message.author) {
+          this.authorShort = metadata.message.author[0].family;
+          if (metadata.message.author.length > 2) {
+            this.authorShort += " et al.";
+          } else if (metadata.message.author.length === 2) {
+            this.authorShort += " and " + metadata.message.author[1].family;
+          }
+          this.author = metadata.message.author
+            .map(author => author.given + " " + author.family)
+            .join(", ");
         }
-        this.author = metadata.message.author
-          .map(author => author.given + " " + author.family)
-          .join(", ");
         this.container = metadata.message["container-title"][0];
       }
     );
@@ -190,6 +204,7 @@ class Publication {
 }
 
 let publications = {};
+let removedPublicationDois = new Set();
 
 async function computeSuggestions() {
   function incrementSuggestedPublicationCounter(
@@ -198,7 +213,7 @@ async function computeSuggestions() {
     doiList,
     sourceDoi
   ) {
-    if (!publications[doi]) {
+    if (!publications[doi] && !removedPublicationDois.has(doi)) {
       if (!suggestedPublications[doi]) {
         const citingPublication = new Publication(doi);
         suggestedPublications[doi] = citingPublication;

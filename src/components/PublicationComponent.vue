@@ -64,6 +64,19 @@
       </v-popover>
     </div>
     <div class="media-content">
+      <div class="level">
+        <span v-if="publication.title">
+          <strong>{{publication.title}}</strong>
+          ({{publication.authorShort}}, {{publication.year}})
+        </span>
+        <span v-if="!publication.title">
+          <strong>...</strong>
+        </span>
+      </div>
+      <div v-if="publication.isActive && publication.title" class="is-size-7">
+        {{publication.author}};
+        <em>{{publication.container}}</em>.
+      </div>
       <div v-if="publication.isActive" class="level is-size-7">
         <div class="doi level-left">
           <label>DOI:</label>
@@ -78,28 +91,27 @@
           </div>
         </div>
       </div>
-      <div class="level">
-        <span v-if="publication.title">
-          <strong>{{publication.title}}</strong>
-          ({{publication.authorShort}}, {{publication.year}})
-        </span>
-        <span v-if="!publication.title">
-          <strong>...</strong>
-        </span>
-      </div>
-      <div v-if="publication.isActive && publication.title" class="is-size-7">
-        {{publication.author}};
-        <em>{{publication.container}}</em>.
-      </div>
     </div>
     <div class="media-right">
-      <b-button
-        v-if="suggestion"
-        class="button is-primary is-small"
-        v-on:click.stop="$emit('add', publication.doi)"
-      >
-        <strong>+</strong>
-      </b-button>
+      <div>
+        <button
+          v-if="suggestion"
+          class="button is-primary is-small"
+          v-tooltip="'Add publication to list of selected publications.'"
+          v-on:click.stop="$emit('add', publication.doi)"
+        >
+          <b-icon icon="plus"></b-icon>
+        </button>
+      </div>
+      <div>
+             <button
+          class="button is-small"
+          v-tooltip="'Remove publication from the list of publications.'"
+          v-on:click.stop="$emit('remove', publication.doi)"
+        >
+          <b-icon icon="minus"></b-icon>
+        </button>
+      </div>
     </div>
   </li>
 </template>
@@ -121,6 +133,7 @@ li.publication-component {
   padding: 0;
   margin: 0;
   cursor: pointer;
+  min-height: 6rem;
 }
 li.publication-component:hover {
   background: $white-ter;
@@ -148,5 +161,8 @@ li.publication-component:hover {
 }
 label {
   padding-right: 0.2rem;
+}
+.media-right {
+  margin-right: 0.5rem;
 }
 </style>

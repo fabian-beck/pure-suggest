@@ -18,6 +18,7 @@
           :publication="publication"
           :suggestion="true"
           v-on:add="addPublication"
+          v-on:remove="removePublication"
           v-on:activate="activatePublication"
         ></PublicationComponent>
       </ul>
@@ -42,6 +43,9 @@ export default {
   methods: {
     addPublication: function(doi) {
       this.$emit("add", doi);
+    },
+    removePublication: function(doi) {
+      this.$emit("remove", doi);
     },
     activatePublication: function(doi) {
       this.$emit("activate", doi);
