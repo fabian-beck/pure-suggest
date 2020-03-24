@@ -42,6 +42,7 @@
 <script>
 import SelectedPublicationsComponent from "./components/SelectedPublicationsComponent.vue";
 import SuggestedPublicationsComponent from "./components/SuggestedPublicationsComponent.vue";
+import _ from 'lodash'
 
 export default {
   name: "App",
@@ -65,7 +66,8 @@ export default {
     },
 
     addPublicationToSelection: function(dois) {
-      dois.split(/ |"|\{|\}/).forEach(doi => {
+      dois.split(/ |"|\{|\}|doi:|doi.org\//).forEach(doi => {
+        doi = _.trim(doi, '.');
         if (doi.indexOf("10.") === 0 && !publications[doi]) {
           publications[doi] = new Publication(doi);
         }
