@@ -34,9 +34,10 @@
       v-on:remove="removePublication"
       v-on:activate="activatePublication"
     />
-    <CitationNetworkComponent
-      :publications="selectedPublications"
-      :svgWidth="1000"
+    <NetworkVisComponent
+      :selectedPublications="selectedPublications"
+      :suggestedPublications="suggestedPublications"
+      :svgWidth="1500"
       :svgHeight="300"
     />
   </div>
@@ -47,14 +48,14 @@
 <script>
 import SelectedPublicationsComponent from "./components/SelectedPublicationsComponent.vue";
 import SuggestedPublicationsComponent from "./components/SuggestedPublicationsComponent.vue";
-import CitationNetworkComponent from "./components/CitationNetworkComponent.vue";
+import NetworkVisComponent from "./components/NetworkVisComponent.vue";
 
 export default {
   name: "App",
   components: {
     SelectedPublicationsComponent,
     SuggestedPublicationsComponent,
-    CitationNetworkComponent
+    NetworkVisComponent
   },
   data() {
     return {

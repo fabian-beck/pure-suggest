@@ -12,7 +12,8 @@ import * as d3 from "d3";
 
 export default {
   props: {
-    publications: Array,
+    selectedPublications: Array,
+    suggestedPublications: Array,
     svgWidth: Number,
     svgHeight: Number
   },
@@ -23,22 +24,33 @@ export default {
     };
   },
   watch: {
-    publications: function() {
-      this.plot();
+    selectedPublications: {
+      deep: true,
+      handler: function() {
+        this.plot();
+      }
     }
   },
   methods: {
     plot: function() {
+      console.log("plot");
       const doiToIndex = {};
-      this.graph.nodes = this.publications.map((publication, i) => {
-        doiToIndex[publication.doi] = i;
-        return { id: publication.doi, publication: publication };
+      this.graph.nodes = [];
+      let i = 0;
+      this.selectedPublications.forEach(publication => {
+        if (publication.year) {
+          doiToIndex[publication.doi] = i;
+          this.graph.nodes.push({
+            id: publication.doi,
+            publication: publication
+          });
+          i++;
+        }
       });
       this.graph.links = [];
-      this.publications.forEach(publication => {
+      this.selectedPublications.forEach(publication => {
         publication.citationDois.forEach(citationDoi => {
           if (citationDoi in doiToIndex) {
-            console.log(citationDoi);
             this.graph.links.push({
               source: doiToIndex[citationDoi],
               target: doiToIndex[publication.doi]
@@ -60,7 +72,13 @@ export default {
         .force(
           "x",
           d3.forceX().x(function(d) {
-            return (d.publication.citationDois.length)*10;
+            return (d.publication.year-2000) * 100;
+          })
+        )
+        .force(
+          "y",
+          d3.forceY().y(function(d) {
+            return -(d.publication.citationDois.length);
           })
         );
       let n = 100;
@@ -81,7 +99,7 @@ export default {
         .attr("y1", d => d.source.y)
         .attr("x2", d => d.target.x)
         .attr("y2", d => d.target.y)
-        .attr("stroke", "black");
+        .attr("stroke", "#00000033");
       d3.select("#network-svg")
         .append("g")
         .attr("class", "nodes")
@@ -91,7 +109,9 @@ export default {
         .append("circle")
         .attr("r", 10)
         .attr("cx", d => d.x)
-        .attr("cy", d => d.y);
+        .attr("cy", d => d.y)
+        .append("title")
+        .text(d => `${d.publication.title} (${d.publication.authorShort}, ${d.publication.year})`);
     }
   }
 };
@@ -101,5 +121,10 @@ export default {
 @import "~bulma/sass/utilities/_all";
 #network-svg circle {
   fill: $primary;
+  stroke: white;
+  stroke-width: 2;
+}
+#network-svg circle:hover {
+  stroke: $primary;
 }
 </style>
