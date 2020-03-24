@@ -34,6 +34,11 @@
       v-on:remove="removePublication"
       v-on:activate="activatePublication"
     />
+    <CitationNetworkComponent
+      :publications="selectedPublications"
+      :svgWidth="1000"
+      :svgHeight="300"
+    />
   </div>
 </template>
 
@@ -42,12 +47,14 @@
 <script>
 import SelectedPublicationsComponent from "./components/SelectedPublicationsComponent.vue";
 import SuggestedPublicationsComponent from "./components/SuggestedPublicationsComponent.vue";
+import CitationNetworkComponent from "./components/CitationNetworkComponent.vue";
 
 export default {
   name: "App",
   components: {
     SelectedPublicationsComponent,
-    SuggestedPublicationsComponent
+    SuggestedPublicationsComponent,
+    CitationNetworkComponent
   },
   data() {
     return {
@@ -294,9 +301,10 @@ $block-spacing: 0.5rem;
   display: grid;
   grid-template-areas:
     "header header"
-    "left right";
+    "left right"
+    "vis vis";
   height: 100vh;
-  grid-template-rows: max-content auto;
+  grid-template-rows: max-content auto max-content;
   grid-template-columns: 50fr 50fr;
 }
 #header {
@@ -320,5 +328,8 @@ $block-spacing: 0.5rem;
 }
 .icon.is-small {
   margin-left: 0.5rem;
+}
+.network-of-references {
+  grid-area: vis;
 }
 </style>
