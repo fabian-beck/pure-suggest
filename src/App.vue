@@ -155,6 +155,7 @@ class Publication {
     this.authorShort = undefined;
     this.isActive = false;
     this.isLinkedToActive = false;
+    this.isSelected = false;
   }
 
   async fetchCitations() {
@@ -191,9 +192,6 @@ class Publication {
             ? ": " + metadata.message.subtitle[0]
             : "");
         this.year = metadata.message.issued["date-parts"][0][0];
-        if (!this.year) {
-          this.year = "[unknown year]";
-        }
         if (metadata.message.author) {
           this.authorShort = metadata.message.author[0].family;
           if (metadata.message.author.length > 2) {
@@ -237,6 +235,7 @@ async function computeSuggestions() {
       await publication.fetchCitations();
       await publication.fetchReferences();
       publication.fetchMetadata();
+      publication.isSelected = true;
     })
   );
   Object.values(publications).forEach(publication => {
@@ -322,7 +321,7 @@ $block-spacing: 0.5rem;
     "left right"
     "vis vis";
   height: 100vh;
-  grid-template-rows: max-content auto max-content;
+  grid-template-rows: max-content 50fr 30fr;
   grid-template-columns: 50fr 50fr;
 }
 #header {
