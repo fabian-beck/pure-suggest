@@ -46,9 +46,9 @@
 <!---------------------------------------------------------------------------------->
 
 <script>
+import _ from 'lodash'
 import SelectedPublicationsComponent from "./components/SelectedPublicationsComponent.vue";
 import SuggestedPublicationsComponent from "./components/SuggestedPublicationsComponent.vue";
-import _ from 'lodash'
 import NetworkVisComponent from "./components/NetworkVisComponent.vue";
 
 export default {

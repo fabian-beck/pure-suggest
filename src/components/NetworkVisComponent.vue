@@ -5,7 +5,7 @@
         <div class="is-size-4">Network of references</div>
       </div>
       <div id="network-svg-container">
-        <svg id="network-svg"/>
+        <svg id="network-svg" />
       </div>
     </div>
   </div>
@@ -13,19 +13,24 @@
 
 <script>
 import * as d3 from "d3";
+//import _ from "lodash";
 
 export default {
   props: {
     selectedPublications: Array,
-    suggestedPublications: Array,
+    suggestedPublications: Array
   },
   data: function() {
     return {
-      graph: {},
+      graph: { nodes: [], links: [] },
       simulation: null,
       svg: null,
       svgHeight: Number,
-      svgWidth: Number
+      svgWidth: Number,
+      yearMin: Number,
+      yearMax: Number,
+      node: null,
+      link: null
     };
   },
   watch: {
@@ -34,143 +39,193 @@ export default {
       handler: function() {
         this.plot();
       }
+    },
+    suggestedPublications: {
+      deep: true,
+      handler: function() {
+        this.plot();
+      }
     }
   },
   mounted() {
+    const that = this;
+
     const container = document.getElementById("network-svg-container");
-    this.svg = d3.select("#network-svg");
     this.svgWidth = container.clientWidth;
     this.svgHeight = container.clientHeight;
-    this.svg.attr("width", container.clientWidth);
-    this.svg.attr("height", container.clientHeight);
+
+    this.svg = d3
+      .select("#network-svg")
+      .attr("width", container.clientWidth)
+      .attr("height", container.clientHeight)
+      .call(
+        d3.zoom().on("zoom", function() {
+          that.svg.attr("transform", d3.event.transform);
+        })
+      )
+      .append("g");
+
+    this.simulation = d3
+      .forceSimulation()
+      .force(
+        "link",
+        d3
+          .forceLink()
+          .id(d => d.id)
+          .distance(50)
+          .strength(0.02)
+      )
+      .force("charge", d3.forceManyBody().strength(-50))
+      .force("center", d3.forceCenter(this.svgWidth / 2, this.svgHeight / 2))
+      .force(
+        "x",
+        d3.forceX().x(function(d) {
+          return (
+            ((d.publication.year - that.yearMin) /
+              Math.sqrt(1 + that.yearMax - that.yearMin)) *
+            that.svgWidth *
+            0.2
+          );
+        })
+      )
+      .force(
+        "y",
+        d3.forceY().y(function(d) {
+          return (
+            -Math.log(d.publication.citationDois.length + 1) *
+            that.svgHeight *
+            0.08
+          );
+        })
+      )
+      .on("tick", this.tick);
+
+    this.link = this.svg
+      .append("g")
+      .attr("class", "links")
+      .selectAll("path");
+
+    this.node = this.svg
+      .append("g")
+      .attr("class", "nodes")
+      .selectAll("circle");
   },
   methods: {
     plot: function() {
-      const that = this;
-      console.log("plot");
       const doiToIndex = {};
-      let yearMin = 3000;
-      let yearMax = 0;
-      this.graph.nodes = [];
-      let i = 0;
+      this.yearMin = 3000;
+      this.yearMax = 0;
 
+      const nodes = [];
+      let i = 0;
       this.selectedPublications
         .concat(this.suggestedPublications)
         .forEach(publication => {
           if (publication.year) {
-            yearMin = Math.min(yearMin, publication.year);
-            yearMax = Math.max(yearMax, publication.year);
+            this.yearMin = Math.min(this.yearMin, publication.year);
+            this.yearMax = Math.max(this.yearMax, publication.year);
             doiToIndex[publication.doi] = i;
-            this.graph.nodes.push({
+            nodes.push({
               id: publication.doi,
               publication: publication
             });
             i++;
           }
         });
-      this.graph.links = [];
+
+      const links = [];
       this.selectedPublications.forEach(publication => {
         if (publication.doi in doiToIndex) {
           publication.citationDois.forEach(citationDoi => {
             if (citationDoi in doiToIndex) {
-              this.graph.links.push({
-                source: doiToIndex[citationDoi],
-                target: doiToIndex[publication.doi]
+              links.push({
+                source: citationDoi,
+                target: publication.doi
               });
             }
           });
           publication.referenceDois.forEach(referenceDoi => {
             if (referenceDoi in doiToIndex) {
-              this.graph.links.push({
-                source: doiToIndex[publication.doi],
-                target: doiToIndex[referenceDoi]
+              links.push({
+                source: publication.doi,
+                target: referenceDoi
               });
             }
           });
         }
       });
-      const simulation = d3
-        .forceSimulation(this.graph.nodes)
-        .force(
-          "link",
-          d3
-            .forceLink(this.graph.links)
-            .distance(50)
-            .strength(0.05)
-        )
-        .force("charge", d3.forceManyBody().strength(-40))
-        .force("center", d3.forceCenter(this.svgWidth / 2, this.svgHeight / 2))
-        .force(
-          "x",
-          d3.forceX().x(function(d) {
-            return (
-              ((d.publication.year - yearMin) /
-                Math.sqrt(1 + yearMax - yearMin)) *
-              that.svgWidth *
-              0.2
-            );
-          })
-        )
-        .force(
-          "y",
-          d3.forceY().y(function(d) {
-            return (
-              -Math.log(d.publication.citationDois.length + 1) *
-              that.svgHeight *
-              0.08
-            );
-          })
-        );
-      let n = 100;
-      while (n-- > 0) {
-        simulation.tick();
-      }
-      this.svg.selectAll("*").remove();
-      this.svg
-        .append("g")
-        .attr("class", "links")
-        .selectAll("line")
-        .data(this.graph.links)
-        .enter()
-        .append("path")
-        .attr("d", d => {
-          var dx = d.target.x - d.source.x,
-            dy = d.target.y - d.source.y,
-            dr = Math.sqrt(dx * dx + dy * dy);
-          return (
-            "M" +
-            d.source.x +
-            "," +
-            d.source.y +
-            "A" +
-            dr +
-            "," +
-            dr +
-            " 0 0,1 " +
-            d.target.x +
-            "," +
-            d.target.y
-          );
-        });
 
-      this.svg
-        .append("g")
-        .attr("class", "nodes")
-        .selectAll("circle")
-        .data(this.graph.nodes)
-        .enter()
-        .append("circle")
-        .attr("class", d =>
-          d.publication.isSelected ? "selected" : "suggested"
-        )
-        .attr("r", 10)
-        .attr("cx", d => d.x)
-        .attr("cy", d => d.y)
+      // https://observablehq.com/@d3/modifying-a-force-directed-graph
+      const old = new Map(this.node.data().map(d => [d.id, d]));
+      this.graph.nodes = nodes.map(d =>
+        Object.assign(old.get(d.id) || { x: this.svgWidth / 2, y: 0 }, d)
+      );
+      this.graph.links = links.map(d => Object.assign({}, d));
+
+      this.node = this.node
+        .data(this.graph.nodes, d => d.id)
+        .join(
+          enter =>
+            enter
+              .append("circle")
+              .attr("class", d =>
+                d.publication.isSelected ? "selected" : "suggested"
+              )
+              .attr("r", 10)
+              .attr("stroke-width", 5),
+          update =>
+            update
+              .attr(
+                "class",
+                d =>
+                  (d.publication.isSelected ? "selected" : "suggested") +
+                  (d.publication.isActive ? " active" : "") +
+                  (d.publication.isLinkedToActive ? " linkedToActive" : "")
+              )
+              .attr("r", d => (d.publication.isActive ? 15 : 10))
+              .attr("stroke-width", d => (d.publication.isActive ? 8 : 5))
+        );
+
+      this.node
         .append("title")
         .text(
           d =>
             `${d.publication.title} (${d.publication.authorShort}, ${d.publication.year})`
         );
+
+      this.link = this.link
+        .data(this.graph.links, d => [d.source, d.target])
+        .join("path");
+
+      this.simulation.nodes(this.graph.nodes);
+      this.simulation.force("link").links(this.graph.links);
+      if (old.size != this.graph.nodes.length) {
+        this.simulation.alpha(1.0);
+      }
+      this.simulation.restart();
+    },
+    tick: function() {
+      this.link.attr("d", d => {
+        var dx = d.target.x - d.source.x,
+          dy = d.target.y - d.source.y,
+          dr = Math.sqrt(dx * dx + dy * dy);
+        return (
+          "M" +
+          d.source.x +
+          "," +
+          d.source.y +
+          "A" +
+          dr +
+          "," +
+          dr +
+          " 0 0,1 " +
+          d.target.x +
+          "," +
+          d.target.y
+        );
+      });
+
+      this.node.attr("cx", d => d.x).attr("cy", d => d.y);
     }
   }
 };
@@ -189,21 +244,29 @@ export default {
   background: white;
 }
 #network-svg circle {
-  stroke: white;
-  stroke-width: 2;
+  fill: white;
 }
 #network-svg circle.selected {
-  fill: $primary;
+  stroke: $primary;
 }
-#network-svg circle.suggested {
+#network-svg circle.selected.linkedToActive {
   fill: $info;
 }
+#network-svg circle.suggested {
+  stroke: $info;
+}
+#network-svg circle.suggested.linkedToActive {
+  fill: $primary;
+}
 #network-svg circle:hover {
-  stroke: $grey;
+  fill: $white-ter;
+}
+#network-svg circle.active {
+  fill: $grey-lighter;
 }
 #network-svg path {
   fill: none;
   stroke-width: 2;
-  stroke: #00000022;
+  stroke: #00000010;
 }
 </style>
