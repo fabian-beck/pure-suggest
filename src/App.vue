@@ -275,11 +275,28 @@ async function cachedFetch(url, processData) {
     await fetch(url)
       .then(response => response.json())
       .then(data => {
-        localStorage[url] = JSON.stringify(data);
+        try {
+          localStorage[url] = JSON.stringify(data);
+        } catch (error) {
+          try {
+            // local storage cache full, delete random elements
+            for (let i = 0; i < 10; i++) {
+              const randomStoredUrl = Object.keys(localStorage)[
+                Math.floor(Math.random() * Object.keys(localStorage).length)
+              ];
+              localStorage.removeItem(randomStoredUrl);
+            }
+            localStorage[url] = JSON.stringify(data);
+          } catch (error2) {
+            console.error(
+              `Unable to cache information for request "${url}" in local storage: ${error2}`
+            );
+          }
+        }
         processData(data);
       })
       .catch(function(error) {
-        console.log(error);
+        console.error(`Failed to fetch and process "${url}": ${error}`);
       });
   }
 }
