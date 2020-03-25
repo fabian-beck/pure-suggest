@@ -92,7 +92,14 @@ export default {
         "y",
         d3.forceY().y(function(d) {
           return (
-            -Math.log(d.publication.citationDois.length + 1) *
+            -Math.log(
+              d.publication.isSelected
+                ? d.publication.citationDois.length +
+                    d.publication.referenceDois.length
+                : (d.publication.referenceCount + d.publication.citationCount) *
+                    10 +
+                    1
+            ) *
             that.svgHeight *
             0.08
           );
