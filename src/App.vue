@@ -39,6 +39,7 @@
       :suggestedPublications="suggestedPublications"
       :svgWidth="1500"
       :svgHeight="300"
+      v-on:activate="activatePublication"
     />
   </div>
 </template>
@@ -73,15 +74,22 @@ export default {
       this.loadingSuggestions = false;
     },
 
-    addPublicationToSelection: function(dois) {
+     addPublicationToSelection: async function(dois) {
+      let addedPublicationsCount = 0;
+      let addedDoi = '';
       dois.split(/ |"|\{|\}|doi:|doi.org\//).forEach(doi => {
         doi = _.trim(doi, '.');
         if (doi.indexOf("10.") === 0 && !publications[doi]) {
           publications[doi] = new Publication(doi);
         }
         this.selectedPublications = Object.values(publications).reverse();
+        addedDoi = doi;
+        addedPublicationsCount ++;
       });
-      this.updateSuggestions();
+      await this.updateSuggestions();
+      if (addedPublicationsCount == 1) {
+        this.activatePublication(addedDoi);
+      }
     },
 
     activatePublication: function(doi) {

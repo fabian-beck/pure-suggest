@@ -200,6 +200,8 @@ export default {
             `${d.publication.title} (${d.publication.authorShort}, ${d.publication.year})`
         );
 
+      this.node.on("click", this.activatePublication);
+
       this.link = this.link
         .data(this.graph.links, d => [d.source, d.target])
         .join("path");
@@ -233,6 +235,10 @@ export default {
       });
 
       this.node.attr("cx", d => d.x).attr("cy", d => d.y);
+    },
+
+    activatePublication: function(d) {
+      this.$emit('activate', d.publication.doi);
     }
   }
 };
@@ -252,6 +258,7 @@ export default {
 }
 #network-svg circle {
   fill: white;
+  cursor: pointer;
 }
 #network-svg circle.selected {
   stroke: $primary;
