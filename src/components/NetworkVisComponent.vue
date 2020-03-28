@@ -13,7 +13,8 @@
 
 <script>
 import * as d3 from "d3";
-//import _ from "lodash";
+import tippy from "tippy.js";
+import "tippy.js/dist/tippy.css";
 
 export default {
   props: {
@@ -171,36 +172,42 @@ export default {
 
       this.node = this.node
         .data(this.graph.nodes, d => d.id)
-        .join(
-          enter =>
-            enter
-              .append("circle")
-              .attr("class", d =>
-                d.publication.isSelected ? "selected" : "suggested"
-              )
-              .attr("r", 10)
-              .attr("stroke-width", 5),
-          update =>
-            update
-              .attr(
-                "class",
-                d =>
-                  (d.publication.isSelected ? "selected" : "suggested") +
-                  (d.publication.isActive ? " active" : "") +
-                  (d.publication.isLinkedToActive ? " linkedToActive" : "")
-              )
-              .attr("r", d => (d.publication.isActive ? 15 : 10))
-              .attr("stroke-width", d => (d.publication.isActive ? 8 : 5))
-        );
+        .join(enter => {
+          const g = enter.append("g").attr("class", "node-container");
+          const circle = g.append("circle")
+            .attr(
+              "data-tippy-content",
+              d =>
+                `${d.publication.title} (${d.publication.authorShort}, ${d.publication.year})`
+            )
+            .on("click", this.activatePublication);
+          tippy(circle.nodes());
+          /*.attr(
+              "v-tippy",
+              '{followCursor : "initial", animation:"fade", delay:100, arrow : true}'
+            );*/
+
+          /*g.append("text")
+            .text(
+              d =>
+                `${d.publication.title} (${d.publication.authorShort}, ${d.publication.year})`
+            )
+            .attr("x", 15)
+            .attr("y", d => (this.svgHeight / 2 - d.y) / 10 + 5);*/
+          return g;
+        });
 
       this.node
-        .append("title")
-        .text(
+        .select("circle")
+        .attr(
+          "class",
           d =>
-            `${d.publication.title} (${d.publication.authorShort}, ${d.publication.year})`
-        );
-
-      this.node.on("click", this.activatePublication);
+            (d.publication.isSelected ? "selected" : "suggested") +
+            (d.publication.isActive ? " active" : "") +
+            (d.publication.isLinkedToActive ? " linkedToActive" : "")
+        )
+        .attr("r", d => (d.publication.isActive ? 15 : 10))
+        .attr("stroke-width", d => (d.publication.isActive ? 8 : 5));
 
       this.link = this.link
         .data(this.graph.links, d => [d.source, d.target])
@@ -234,11 +241,11 @@ export default {
         );
       });
 
-      this.node.attr("cx", d => d.x).attr("cy", d => d.y);
+      this.node.attr("transform", d => `translate(${d.x}, ${d.y})`);
     },
 
     activatePublication: function(d) {
-      this.$emit('activate', d.publication.doi);
+      this.$emit("activate", d.publication.doi);
     }
   }
 };
@@ -255,6 +262,12 @@ export default {
 }
 #network-svg {
   background: white;
+}
+#network-svg g.node-container text {
+  visibility: hidden;
+}
+#network-svg g.node-container:hover text {
+  visibility: visible;
 }
 #network-svg circle {
   fill: white;
