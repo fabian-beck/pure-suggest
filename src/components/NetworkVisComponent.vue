@@ -76,18 +76,21 @@ export default {
           .distance(50)
           .strength(0.02)
       )
-      .force("charge", d3.forceManyBody().strength(-50))
+      .force("charge", d3.forceManyBody().strength(-70))
       .force("center", d3.forceCenter(this.svgWidth / 2, this.svgHeight / 2))
       .force(
         "x",
-        d3.forceX().x(function(d) {
-          return (
-            ((d.publication.year - that.yearMin) /
-              Math.sqrt(1 + that.yearMax - that.yearMin)) *
-            that.svgWidth *
-            0.2
-          );
-        })
+        d3
+          .forceX()
+          .x(function(d) {
+            return (
+              ((d.publication.year - that.yearMin - 2) /
+                Math.sqrt(1 + that.yearMax - that.yearMin)) *
+              that.svgWidth *
+              0.2
+            );
+          })
+          .strength(1.0)
       )
       .force(
         "y",
@@ -174,7 +177,8 @@ export default {
         .data(this.graph.nodes, d => d.id)
         .join(enter => {
           const g = enter.append("g").attr("class", "node-container");
-          const circle = g.append("circle")
+          const circle = g
+            .append("circle")
             .attr(
               "data-tippy-content",
               d =>
@@ -182,18 +186,6 @@ export default {
             )
             .on("click", this.activatePublication);
           tippy(circle.nodes());
-          /*.attr(
-              "v-tippy",
-              '{followCursor : "initial", animation:"fade", delay:100, arrow : true}'
-            );*/
-
-          /*g.append("text")
-            .text(
-              d =>
-                `${d.publication.title} (${d.publication.authorShort}, ${d.publication.year})`
-            )
-            .attr("x", 15)
-            .attr("y", d => (this.svgHeight / 2 - d.y) / 10 + 5);*/
           return g;
         });
 
@@ -221,25 +213,31 @@ export default {
       this.simulation.restart();
     },
     tick: function() {
-      this.link.attr("d", d => {
-        var dx = d.target.x - d.source.x,
-          dy = d.target.y - d.source.y,
-          dr = Math.sqrt(dx * dx + dy * dy);
-        return (
-          "M" +
-          d.source.x +
-          "," +
-          d.source.y +
-          "A" +
-          dr +
-          "," +
-          dr +
-          " 0 0,1 " +
-          d.target.x +
-          "," +
-          d.target.y
+      this.link
+        .attr("d", d => {
+          var dx = d.target.x - d.source.x,
+            dy = d.target.y - d.source.y,
+            dr = Math.sqrt(dx * dx + dy * dy);
+          return (
+            "M" +
+            d.source.x +
+            "," +
+            d.source.y +
+            "A" +
+            dr +
+            "," +
+            dr +
+            " 0 0,1 " +
+            d.target.x +
+            "," +
+            d.target.y
+          );
+        })
+        .attr("class", d =>
+          d.source.publication.isActive || d.target.publication.isActive
+            ? "active"
+            : ""
         );
-      });
 
       this.node.attr("transform", d => `translate(${d.x}, ${d.y})`);
     },
@@ -295,5 +293,8 @@ export default {
   fill: none;
   stroke-width: 2;
   stroke: #00000010;
+}
+#network-svg path.active {
+  stroke: #000000AA;
 }
 </style>
