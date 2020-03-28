@@ -7,7 +7,8 @@
           <b-icon
             icon="info-circle"
             size="is-small"
-            v-tooltip="'The suggested publications are sorted by the number of selected publications they reference.'"
+            data-tippy-content="The suggested publications are sorted by the number of selected publications they reference."
+            v-tippy
           ></b-icon>
         </div>
       </div>

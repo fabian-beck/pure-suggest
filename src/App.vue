@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <div class="section has-background-dark media" id="header">
+    <div class="section has-background-black media" id="header">
       <b-icon icon="tint" size="is-medium" class="media-left has-text-grey-lighter pure-icon"></b-icon>
       <div class="media-content level">
         <div class="level-left">
@@ -14,7 +14,8 @@
             <b-icon
               icon="info-circle"
               size="is-small"
-              v-tooltip.right-end="'For a set of selected publications, the tool looks up all citations <br/>and lists those papers often citing the selected ones as suggestions.'"
+              data-tippy-content="For a set of selected publications, the tool looks up all citations <br/>and lists those papers often citing the selected ones as suggestions."
+              v-tippy
             ></b-icon>
           </div>
         </div>
@@ -321,8 +322,6 @@ $block-spacing: 0.5rem;
 
 @import "~bulma";
 @import "~buefy/src/scss/buefy";
-
-@import "v-tooltip.scss";
 
 #app {
   display: grid;

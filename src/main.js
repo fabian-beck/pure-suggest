@@ -9,10 +9,6 @@ library.add(fas)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 Vue.use(Buefy, { defaultIconPack: 'fas' })
 
-/*import VTooltip from 'v-tooltip'
-Vue.use(VTooltip)
-VTooltip.options.popover.defaultTrigger = 'hover';*/
-
 import VueTippy, { TippyComponent } from "vue-tippy";
 Vue.use(VueTippy);
 Vue.component("tippy", TippyComponent);
