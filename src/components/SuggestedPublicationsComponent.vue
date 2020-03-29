@@ -7,7 +7,7 @@
           <b-icon
             icon="info-circle"
             size="is-small"
-            data-tippy-content="The suggested publications are sorted by the number of selected publications they reference."
+            data-tippy-content="The suggested publications are sorted by the number of selected publications they reference or are referenced by."
             v-tippy
           ></b-icon>
         </div>

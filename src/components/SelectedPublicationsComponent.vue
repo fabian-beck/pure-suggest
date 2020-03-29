@@ -4,9 +4,20 @@
       <div class="level">
         <div class="level-left">
           <div class="is-size-4">Selected publications</div>
+          <b-icon
+            icon="info-circle"
+            size="is-small"
+            data-tippy-content="The publications you selected as a basis for computing the suggestions, sorted by inversed sequence of addition."
+            v-tippy
+          ></b-icon>
         </div>
         <div class="level-right">
-          <button class="button is-small" v-on:click="clear">clear</button>
+          <button
+            class="button is-small"
+            v-on:click="clear"
+            data-tippy-content="Clear selected publications (clears also the list of removed publications)."
+            v-tippy
+          >clear</button>
         </div>
       </div>
       <form v-on:submit.prevent class="level">
@@ -16,7 +27,13 @@
           </div>
         </div>
         <input class="input" type="text" placeholder="Paste DOI(s) here" v-model="addDois" />
-        <button class="button level-right" type="submit" v-on:click="add">
+        <button
+          class="button level-right"
+          type="submit"
+          v-on:click="add"
+          data-tippy-content="Add listed DOIs to selected publications (the list might be separate by different characters or the DOI can also be included in a different format such as BibTeX)."
+          v-tippy
+        >
           <strong>+</strong>
         </button>
       </form>
