@@ -1,11 +1,16 @@
 <template>
   <div id="app">
-    <div class="section has-background-dark media" id="header">
-      <b-icon icon="tint" size="is-medium" class="media-left has-text-grey-lighter pure-icon"></b-icon>
+    <div class="section media box" id="header">
+      <b-icon icon="tint" size="is-medium" class="media-left has-text-grey pure-icon"></b-icon>
       <div class="media-content level">
         <div class="level-left">
-          <div class="title has-text-grey-lighter level-item">PURE suggest</div>
-          <div class="subtitle has-text-grey-lighter level-item">
+          <div class="title level-item">
+            <span>
+              <span class="has-text-primary">PURE&nbsp;</span>
+              <span class="has-text-info">suggest</span>
+            </span>
+          </div>
+          <div class="subtitle level-item has-text-grey">
             <span>
               Suggest scientific
               <b>pu</b>blications by
@@ -14,7 +19,8 @@
             <b-icon
               icon="info-circle"
               size="is-small"
-              v-tooltip.right-end="'For a set of selected publications, the tool looks up all citations <br/>and lists those papers often citing the selected ones as suggestions.'"
+              data-tippy-content="For a set of selected publications, the tool looks up all citations and references and lists those publications as suggestions often referencing or getting referenced by the selected ones."
+              v-tippy
             ></b-icon>
           </div>
         </div>
@@ -34,21 +40,30 @@
       v-on:remove="removePublication"
       v-on:activate="activatePublication"
     />
+    <NetworkVisComponent
+      :selectedPublications="selectedPublications"
+      :suggestedPublications="suggestedPublications"
+      :svgWidth="1500"
+      :svgHeight="300"
+      v-on:activate="activatePublication"
+    />
   </div>
 </template>
 
 <!---------------------------------------------------------------------------------->
 
 <script>
+import _ from "lodash";
 import SelectedPublicationsComponent from "./components/SelectedPublicationsComponent.vue";
 import SuggestedPublicationsComponent from "./components/SuggestedPublicationsComponent.vue";
-import _ from 'lodash'
+import NetworkVisComponent from "./components/NetworkVisComponent.vue";
 
 export default {
   name: "App",
   components: {
     SelectedPublicationsComponent,
-    SuggestedPublicationsComponent
+    SuggestedPublicationsComponent,
+    NetworkVisComponent
   },
   data() {
     return {
@@ -65,15 +80,22 @@ export default {
       this.loadingSuggestions = false;
     },
 
-    addPublicationToSelection: function(dois) {
+    addPublicationToSelection: async function(dois) {
+      let addedPublicationsCount = 0;
+      let addedDoi = "";
       dois.split(/ |"|\{|\}|doi:|doi.org\//).forEach(doi => {
-        doi = _.trim(doi, '.');
+        doi = _.trim(doi, ".");
         if (doi.indexOf("10.") === 0 && !publications[doi]) {
           publications[doi] = new Publication(doi);
         }
         this.selectedPublications = Object.values(publications).reverse();
+        addedDoi = doi;
+        addedPublicationsCount++;
       });
-      this.updateSuggestions();
+      await this.updateSuggestions();
+      if (addedPublicationsCount == 1) {
+        this.activatePublication(addedDoi);
+      }
     },
 
     activatePublication: function(doi) {
@@ -144,11 +166,12 @@ class Publication {
     this.citationCount = 0;
     this.referenceCount = 0;
     this.title = "";
-    this.cointainer = "";
+    this.container = "";
     this.year = undefined;
     this.authorShort = undefined;
     this.isActive = false;
     this.isLinkedToActive = false;
+    this.isSelected = false;
   }
 
   async fetchCitations() {
@@ -185,9 +208,6 @@ class Publication {
             ? ": " + metadata.message.subtitle[0]
             : "");
         this.year = metadata.message.issued["date-parts"][0][0];
-        if (!this.year) {
-          this.year = "[unknown year]";
-        }
         if (metadata.message.author) {
           this.authorShort = metadata.message.author[0].family;
           if (metadata.message.author.length > 2) {
@@ -231,6 +251,7 @@ async function computeSuggestions() {
       await publication.fetchCitations();
       await publication.fetchReferences();
       publication.fetchMetadata();
+      publication.isSelected = true;
     })
   );
   Object.values(publications).forEach(publication => {
@@ -307,15 +328,14 @@ $block-spacing: 0.5rem;
 @import "~bulma";
 @import "~buefy/src/scss/buefy";
 
-@import "v-tooltip.scss";
-
 #app {
   display: grid;
   grid-template-areas:
     "header header"
-    "left right";
+    "left right"
+    "vis vis";
   height: 100vh;
-  grid-template-rows: max-content auto;
+  grid-template-rows: max-content 50fr 30fr;
   grid-template-columns: 50fr 50fr;
 }
 #header {
@@ -324,7 +344,7 @@ $block-spacing: 0.5rem;
 }
 #header .subtitle {
   margin-top: 0.25rem;
-  margin-left: 1rem;
+  margin-left: 2rem;
 }
 .selected-publications {
   grid-area: left;
@@ -339,5 +359,8 @@ $block-spacing: 0.5rem;
 }
 .icon.is-small {
   margin-left: 0.5rem;
+}
+.network-of-references {
+  grid-area: vis;
 }
 </style>
