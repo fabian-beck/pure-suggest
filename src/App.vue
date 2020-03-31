@@ -337,7 +337,6 @@ $block-spacing: 0.5rem;
   height: 100vh;
   grid-template-rows: max-content 50fr 30fr;
   grid-template-columns: 50fr 50fr;
-  overflow: hidden;
 }
 #header {
   padding: 0.5rem 1rem;

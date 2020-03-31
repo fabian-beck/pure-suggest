@@ -271,9 +271,8 @@ export default {
 .network-of-references .box {
   background: $grey-lighter;
   height: 100%;
-}
-#network-svg-container {
-  height: 100%;
+  display: grid;
+  grid-template-rows: max-content auto;
 }
 #network-svg {
   background: white;
