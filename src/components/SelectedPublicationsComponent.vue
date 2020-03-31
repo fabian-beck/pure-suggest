@@ -37,26 +37,22 @@
           <strong>+</strong>
         </button>
       </form>
-      <ul class="publication-list has-background-white">
-        <PublicationComponent
-          v-for="publication in publications"
-          v-bind:key="publication.doi"
-          v-bind:publication="publication"
-          v-on:remove="removePublication"
-          v-on:activate="activatePublication"
-        ></PublicationComponent>
-      </ul>
+      <PublicationListComponent 
+       :publications="publications" 
+       v-on:activate="activatePublication"
+       v-on:remove="removePublication"
+       />
     </div>
   </div>
 </template>
 
 <script>
-import PublicationComponent from "./PublicationComponent.vue";
+import PublicationListComponent from "./PublicationListComponent.vue";
 
 export default {
   name: "SelectedPublicationsComponent",
   components: {
-    PublicationComponent
+    PublicationListComponent
   },
   props: {
     publications: Array

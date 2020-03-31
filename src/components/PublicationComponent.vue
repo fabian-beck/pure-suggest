@@ -1,7 +1,10 @@
 <template>
   <li
     class="publication-component media"
-    v-bind:class="{ 'has-background-grey-lighter': publication.isActive }"
+    v-bind:class="{
+      'has-background-grey-lighter': publication.isActive, 
+      'active': publication.isActive 
+      }"
     v-on:click="$emit('activate', publication.doi)"
   >
     <div

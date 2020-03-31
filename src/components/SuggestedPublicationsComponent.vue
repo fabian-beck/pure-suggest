@@ -12,29 +12,25 @@
           ></b-icon>
         </div>
       </div>
-      <ul class="publication-list has-background-white">
-        <PublicationComponent
-          v-for="publication in publications"
-          :key="publication.doi"
-          :publication="publication"
-          :suggestion="true"
-          v-on:add="addPublication"
-          v-on:remove="removePublication"
-          v-on:activate="activatePublication"
-        ></PublicationComponent>
-      </ul>
+      <PublicationListComponent
+        :publications="publications"
+        :suggestion="true"
+        v-on:activate="activatePublication"
+        v-on:add="addPublication"
+        v-on:remove="removePublication"
+      />
       <b-loading :is-full-page="false" :active.sync="loadingSuggestions" :can-cancel="false"></b-loading>
     </div>
   </div>
 </template>
 
 <script>
-import PublicationComponent from "./PublicationComponent.vue";
+import PublicationListComponent from "./PublicationListComponent.vue";
 
 export default {
   name: "SuggestedPublicationsComponent",
   components: {
-    PublicationComponent
+    PublicationListComponent
   },
   props: {
     title: String,
