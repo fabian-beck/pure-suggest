@@ -2,7 +2,15 @@
   <div class="column network-of-references">
     <div class="box">
       <div class="level">
-        <div class="is-size-4">Network of references</div>
+        <div class="level-left">
+          <div class="is-size-4">Network of references</div>
+          <b-icon
+            icon="info-circle"
+            size="is-small"
+            data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>green</b>: selected; <b class='has-text-info'>blue</b>: suggested) with references connecting them as links. The layout places publications from left to right based on publication year and from top to bottom by reference frequency (<b class='has-text-primary'>selected</b>: summed references and citations; <b class='has-text-info'>suggested</b>: suggestion score). You can highlight a publication on click, zoom using the mouse wheel, and pan on drag."
+            v-tippy
+          ></b-icon>
+        </div>
       </div>
       <div id="network-svg-container">
         <svg id="network-svg" />
@@ -109,7 +117,7 @@ export default {
                       1
               ) *
                 0.12 + // spread by
-                0.8) * // move down by 
+                0.8) * // move down by
               that.svgHeight
             );
           })
