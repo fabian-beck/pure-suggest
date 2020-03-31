@@ -166,7 +166,7 @@ class Publication {
     this.citationCount = 0;
     this.referenceCount = 0;
     this.title = "";
-    this.cointainer = "";
+    this.container = "";
     this.year = undefined;
     this.authorShort = undefined;
     this.isActive = false;

@@ -99,7 +99,7 @@ export default {
             -Math.log(
               d.publication.isSelected
                 ? d.publication.citationDois.length +
-                    d.publication.referenceDois.length
+                    d.publication.referenceDois.length + 1
                 : (d.publication.referenceCount + d.publication.citationCount) *
                     10 +
                     1
@@ -204,7 +204,6 @@ export default {
       this.link = this.link
         .data(this.graph.links, d => [d.source, d.target])
         .join("path");
-
       this.simulation.nodes(this.graph.nodes);
       this.simulation.force("link").links(this.graph.links);
       if (old.size != this.graph.nodes.length) {
@@ -295,6 +294,6 @@ export default {
   stroke: #00000010;
 }
 #network-svg path.active {
-  stroke: #000000AA;
+  stroke: #000000aa;
 }
 </style>
