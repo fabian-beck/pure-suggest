@@ -76,38 +76,44 @@ export default {
           .distance(50)
           .strength(0.02)
       )
-      .force("charge", d3.forceManyBody().strength(-70))
-      .force("center", d3.forceCenter(this.svgWidth / 2, this.svgHeight / 2))
+      .force("charge", d3.forceManyBody().strength(-120))
+      //.force("center", d3.forceCenter(this.svgWidth / 2, this.svgHeight / 2))
       .force(
         "x",
         d3
           .forceX()
           .x(function(d) {
             return (
-              ((d.publication.year - that.yearMin - 2) /
+              ((d.publication.year - that.yearMin) /
                 Math.sqrt(1 + that.yearMax - that.yearMin)) *
               that.svgWidth *
-              0.2
+              0.15
             );
           })
           .strength(1.0)
       )
       .force(
         "y",
-        d3.forceY().y(function(d) {
-          return (
-            -Math.log(
-              d.publication.isSelected
-                ? d.publication.citationDois.length +
-                    d.publication.referenceDois.length + 1
-                : (d.publication.referenceCount + d.publication.citationCount) *
-                    10 +
-                    1
-            ) *
-            that.svgHeight *
-            0.08
-          );
-        })
+        d3
+          .forceY()
+          .y(function(d) {
+            return (
+              (-Math.log(
+                d.publication.isSelected
+                  ? d.publication.citationDois.length +
+                      d.publication.referenceDois.length +
+                      1
+                  : (d.publication.referenceCount +
+                      d.publication.citationCount) *
+                      10 +
+                      1
+              ) *
+                0.12 + // spread by
+                0.8) * // move down by 
+              that.svgHeight
+            );
+          })
+          .strength(0.4)
       )
       .on("tick", this.tick);
 
@@ -176,16 +182,18 @@ export default {
       this.node = this.node
         .data(this.graph.nodes, d => d.id)
         .join(enter => {
-          const g = enter.append("g").attr("class", "node-container");
-          const circle = g
-            .append("circle")
+          const g = enter
+            .append("g")
+            .attr("class", "node-container")
             .attr(
               "data-tippy-content",
               d =>
                 `${d.publication.title} (${d.publication.authorShort}, ${d.publication.year})`
-            )
-            .on("click", this.activatePublication);
-          tippy(circle.nodes());
+            );
+          g.append("circle");
+          g.append("text");
+          g.on("click", this.activatePublication);
+          tippy(g.nodes());
           return g;
         });
 
@@ -200,6 +208,16 @@ export default {
         )
         .attr("r", d => (d.publication.isActive ? 15 : 10))
         .attr("stroke-width", d => (d.publication.isActive ? 8 : 5));
+
+      this.node
+        .select("text")
+        .attr("x", -4.5)
+        .attr("y", 5.5)
+        .text(d =>
+          d.publication.isSelected
+            ? ""
+            : d.publication.referenceCount + d.publication.citationCount
+        );
 
       this.link = this.link
         .data(this.graph.links, d => [d.source, d.target])
@@ -261,10 +279,7 @@ export default {
   background: white;
 }
 #network-svg g.node-container text {
-  visibility: hidden;
-}
-#network-svg g.node-container:hover text {
-  visibility: visible;
+  cursor: pointer;
 }
 #network-svg circle {
   fill: white;
