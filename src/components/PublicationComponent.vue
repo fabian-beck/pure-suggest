@@ -70,14 +70,14 @@
       <div class="level">
         <span v-if="publication.title">
           <strong>{{publication.title}}</strong>
-          ({{publication.shortReference}})
+          <span v-if="publication.shortReference">({{publication.shortReference}})</span>
         </span>
         <span v-if="!publication.title">
           <strong>...</strong>
         </span>
       </div>
       <div v-if="publication.isActive && publication.title && publication.author && publication.container" class="is-size-7">
-        {{publication.author}};
+        {{publication.author}}.
         <em>{{publication.container}}</em>.
       </div>
       <div v-if="publication.isActive" class="level is-size-7">

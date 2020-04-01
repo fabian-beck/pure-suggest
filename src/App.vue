@@ -54,9 +54,12 @@
 
 <script>
 import _ from "lodash";
+
 import SelectedPublicationsComponent from "./components/SelectedPublicationsComponent.vue";
 import SuggestedPublicationsComponent from "./components/SuggestedPublicationsComponent.vue";
 import NetworkVisComponent from "./components/NetworkVisComponent.vue";
+
+import Publication from "./Publication.js"
 
 export default {
   name: "App",
@@ -158,77 +161,6 @@ export default {
   }
 };
 
-class Publication {
-  constructor(doi) {
-    this.doi = doi;
-    this.citationDois = [];
-    this.referenceDois = [];
-    this.citationCount = 0;
-    this.referenceCount = 0;
-    this.title = "";
-    this.container = "";
-    this.year = undefined;
-    this.authorShort = undefined;
-    this.isActive = false;
-    this.isLinkedToActive = false;
-    this.isSelected = false;
-  }
-
-  async fetchCitations() {
-    await cachedFetch(
-      `https://opencitations.net/index/coci/api/v1/citations/${this.doi}`,
-      citations => {
-        this.citationDois = [];
-        citations.forEach(citation => {
-          this.citationDois.push(citation.citing);
-        });
-      }
-    );
-  }
-
-  async fetchReferences() {
-    await cachedFetch(
-      `https://opencitations.net/index/coci/api/v1/references/${this.doi}`,
-      references => {
-        this.referenceDois = [];
-        references.forEach(reference => {
-          this.referenceDois.push(reference.cited);
-        });
-      }
-    );
-  }
-
-  async fetchMetadata() {
-    await cachedFetch(
-      `https://api.crossref.org/works/${this.doi}`,
-      metadata => {
-        console.log(metadata);
-        this.title =
-          metadata.message.title[0] +
-          (metadata.message.subtitle[0]
-            ? ": " + metadata.message.subtitle[0]
-            : "");
-        this.year = metadata.message.issued["date-parts"][0][0];
-        if (metadata.message.author) {
-          this.authorShort = metadata.message.author[0].family;
-          if (metadata.message.author.length > 2) {
-            this.authorShort += " et al.";
-          } else if (metadata.message.author.length === 2) {
-            this.authorShort += " and " + metadata.message.author[1].family;
-          }
-          this.author = metadata.message.author
-            .map(author => author.given + " " + author.family)
-            .join(", ");
-        }
-        this.container = metadata.message["container-title"][0];
-        this.shortReference = `${
-          this.authorShort ? this.authorShort : "[unknown author]"
-        }, ${this.year ? this.year : "[unknown year]"}`;
-      }
-    );
-  }
-}
-
 let publications = {};
 let removedPublicationDois = new Set();
 
@@ -252,9 +184,7 @@ async function computeSuggestions() {
   const suggestedPublications = {};
   await Promise.all(
     Object.values(publications).map(async publication => {
-      await publication.fetchCitations();
-      await publication.fetchReferences();
-      publication.fetchMetadata();
+      await publication.fetchData();
       publication.isSelected = true;
     })
   );
@@ -283,43 +213,11 @@ async function computeSuggestions() {
   );
   filteredSuggestions = filteredSuggestions.slice(0, 30);
   filteredSuggestions.forEach(async suggestedPublication => {
-    suggestedPublication.fetchMetadata();
+    suggestedPublication.fetchData();
   });
   return filteredSuggestions;
 }
 
-async function cachedFetch(url, processData) {
-  if (localStorage[url]) {
-    processData(JSON.parse(localStorage[url]));
-  } else {
-    await fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        try {
-          localStorage[url] = JSON.stringify(data);
-        } catch (error) {
-          try {
-            // local storage cache full, delete random elements
-            for (let i = 0; i < 100; i++) {
-              const randomStoredUrl = Object.keys(localStorage)[
-                Math.floor(Math.random() * Object.keys(localStorage).length)
-              ];
-              localStorage.removeItem(randomStoredUrl);
-            }
-            localStorage[url] = JSON.stringify(data);
-          } catch (error2) {
-            console.error(
-              `Unable to cache information for request "${url}" in local storage: ${error2}`
-            );
-          }
-        }
-        processData(data);
-      })
-      .catch(function(error) {
-        console.error(`Failed to fetch and process "${url}": ${error}`);
-      });
-  }
-}
 </script>
 
 <!---------------------------------------------------------------------------------->
