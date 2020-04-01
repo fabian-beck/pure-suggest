@@ -196,7 +196,7 @@ export default {
             .attr(
               "data-tippy-content",
               d =>
-                `${d.publication.title} (${d.publication.authorShort}, ${d.publication.year})`
+                `${d.publication.title} (${d.publication.shortReference})`
             );
           g.append("circle");
           g.append("text");

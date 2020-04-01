@@ -202,6 +202,7 @@ class Publication {
     await cachedFetch(
       `https://api.crossref.org/works/${this.doi}`,
       metadata => {
+        console.log(metadata);
         this.title =
           metadata.message.title[0] +
           (metadata.message.subtitle[0]
@@ -220,6 +221,9 @@ class Publication {
             .join(", ");
         }
         this.container = metadata.message["container-title"][0];
+        this.shortReference = `${
+          this.authorShort ? this.authorShort : "[unknown author]"
+        }, ${this.year ? this.year : "[unknown year]"}`;
       }
     );
   }
@@ -296,7 +300,7 @@ async function cachedFetch(url, processData) {
         } catch (error) {
           try {
             // local storage cache full, delete random elements
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 100; i++) {
               const randomStoredUrl = Object.keys(localStorage)[
                 Math.floor(Math.random() * Object.keys(localStorage).length)
               ];
