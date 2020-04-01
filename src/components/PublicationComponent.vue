@@ -69,7 +69,7 @@
     <div class="media-content">
       <div class="level">
         <span v-if="publication.title">
-          <strong>{{publication.title}}</strong>
+          <strong>{{publication.title}}&nbsp;</strong>
           <span v-if="publication.shortReference">({{publication.shortReference}})</span>
         </span>
         <span v-if="!publication.title">

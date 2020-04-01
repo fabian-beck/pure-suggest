@@ -28,7 +28,7 @@
     </div>
     <SelectedPublicationsComponent
       :publications="selectedPublications"
-      v-on:add="addPublicationToSelection"
+      v-on:addByQuery="addPublicationsToSelectionByQuery"
       v-on:remove="removePublication"
       v-on:activate="activatePublication"
       v-on:clear="clearSelection"
@@ -36,7 +36,7 @@
     <SuggestedPublicationsComponent
       :publications="suggestedPublications"
       :loadingSuggestions="loadingSuggestions"
-      v-on:add="addPublicationToSelection"
+      v-on:add="addPublicationsToSelection"
       v-on:remove="removePublication"
       v-on:activate="activatePublication"
     />
@@ -59,7 +59,8 @@ import SelectedPublicationsComponent from "./components/SelectedPublicationsComp
 import SuggestedPublicationsComponent from "./components/SuggestedPublicationsComponent.vue";
 import NetworkVisComponent from "./components/NetworkVisComponent.vue";
 
-import Publication from "./Publication.js"
+import Publication from "./Publication.js";
+import cachedFetch from "./Cache";
 
 export default {
   name: "App",
@@ -83,12 +84,14 @@ export default {
       this.loadingSuggestions = false;
     },
 
-    addPublicationToSelection: async function(dois) {
+    addPublicationsToSelection: async function(dois) {
+      if (typeof dois === "string") {
+        dois = [dois];
+      }
       let addedPublicationsCount = 0;
       let addedDoi = "";
-      dois.split(/ |"|\{|\}|doi:|doi.org\//).forEach(doi => {
-        doi = _.trim(doi, ".");
-        if (doi.indexOf("10.") === 0 && !publications[doi]) {
+      dois.forEach(doi => {
+        if (!publications[doi]) {
           publications[doi] = new Publication(doi);
         }
         this.selectedPublications = Object.values(publications).reverse();
@@ -99,6 +102,50 @@ export default {
       if (addedPublicationsCount == 1) {
         this.activatePublication(addedDoi);
       }
+    },
+
+    addPublicationsToSelectionByQuery: async function(query) {
+
+      function computeTitleSimilarity(query, title) {
+        let equivalentWordCounter = 0;
+        const words = query.split("+");
+        words.forEach(word => {
+          if (title.indexOf(word) >= 0) {
+            equivalentWordCounter++;
+          }
+        });
+        return equivalentWordCounter / Math.max(words.length, title.split(/\W+/).length);
+      }
+
+      let dois = [];
+      query.split(/ |"|\{|\}|doi:|doi.org\//).forEach(doi => {
+        doi = _.trim(doi, ".");
+        if (doi.indexOf("10.") === 0) {
+          dois.push(doi);
+        }
+      });
+      if (dois.length === 0) {
+        query = query.replace(/\W+/g, "+").toLowerCase();
+        await cachedFetch(
+          "https://api.crossref.org/works?query.bibliographic=" + query,
+          data => {
+            let maxSimilarity = 0.5;
+            data.message.items.forEach(item => {
+              const title =
+                (item.title[0] + " " + (item.subtitle ? item.subtitle[0] : "")).toLowerCase();
+              const similarity = computeTitleSimilarity(query, title);
+              if (similarity > maxSimilarity) {
+                dois = [item.DOI];
+                maxSimilarity = similarity;
+              }
+            });
+          }
+        );
+        if (dois.length === 0) {
+          console.error('Could not find a publication with a sufficiently similar title.')
+        }
+      }
+      this.addPublicationsToSelection(dois);
     },
 
     activatePublication: function(doi) {
@@ -217,7 +264,6 @@ async function computeSuggestions() {
   });
   return filteredSuggestions;
 }
-
 </script>
 
 <!---------------------------------------------------------------------------------->

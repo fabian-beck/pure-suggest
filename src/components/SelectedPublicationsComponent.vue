@@ -26,7 +26,7 @@
             <label>Add:</label>
           </div>
         </div>
-        <input class="input" type="text" placeholder="Paste DOI(s) here" v-model="addDois" />
+        <input class="input" type="text" placeholder="Paste DOI(s) or publication title here" v-model="addQuery" />
         <button
           class="button level-right"
           type="submit"
@@ -59,13 +59,13 @@ export default {
   },
   data() {
     return {
-      addDois: ""
+      addQuery: ""
     };
   },
   methods: {
     add: function() {
-      this.$emit("add", this.addDois);
-      this.addDois = "";
+      this.$emit("addByQuery", this.addQuery);
+      this.addQuery = "";
     },
     removePublication: function(doi) {
       this.$emit("remove", doi);
