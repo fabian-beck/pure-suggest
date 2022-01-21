@@ -3,7 +3,7 @@
     <div class="box has-background-info">
       <div class="level">
         <div class="level-left">
-          <div class="is-size-4">Suggested publications</div>
+          <h2 class="is-size-4">Suggested publications</h2>
           <b-icon
             icon="info-circle"
             size="is-small"

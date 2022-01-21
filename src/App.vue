@@ -5,14 +5,14 @@
       <div class="media-content level">
         <div class="level-left">
           <div class="title level-item">
-            <span>
+            <h1>
               <span class="has-text-primary">PURE&nbsp;</span>
               <span class="has-text-info">suggest</span>
-            </span>
+            </h1>
           </div>
           <div class="subtitle level-item has-text-grey">
             <span>
-              Suggest scientific
+              literature search &ndash; suggest scientific
               <b>pu</b>blications by
               <b>re</b>ference
             </span>

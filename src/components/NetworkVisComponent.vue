@@ -3,7 +3,7 @@
     <div class="box">
       <div class="level">
         <div class="level-left">
-          <div class="is-size-4">Network of references</div>
+          <h2 class="is-size-4">Network of references</h2>
           <b-icon
             icon="info-circle"
             size="is-small"

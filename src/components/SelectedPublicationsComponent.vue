@@ -3,7 +3,7 @@
     <div class="box has-background-primary">
       <div class="level">
         <div class="level-left">
-          <div class="is-size-4">Selected publications</div>
+          <h2 class="is-size-4">Selected seed publications</h2>
           <b-icon
             icon="info-circle"
             size="is-small"
