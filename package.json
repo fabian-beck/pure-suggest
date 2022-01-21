@@ -9,28 +9,27 @@
   },
   "dependencies": {
     "@babel/compat-data": "^7.16.8",
-    "@fortawesome/fontawesome-svg-core": "^1.2.27",
-    "@fortawesome/free-solid-svg-icons": "^5.12.1",
-    "@fortawesome/vue-fontawesome": "^0.1.9",
-    "buefy": "^0.8.13",
-    "bulma": "^0.8.0",
-    "core-js": "^3.6.4",
-    "d3": "^5.15.0",
+    "@fortawesome/fontawesome-svg-core": "^1.2.36",
+    "@fortawesome/free-solid-svg-icons": "^5.15.4",
+    "@fortawesome/vue-fontawesome": "^2.0.6",
+    "buefy": "^0.9.14",
+    "bulma": "^0.9.3",
+    "core-js": "^3.20.3",
+    "d3": "^7.3.0",
     "lodash": "^4.17.21",
     "node-sass": "^4.13.1",
     "sass-loader": "^8.0.2",
-    "tippy.js": "^6.1.0",
-    "vue": "^2.6.11",
-    "vue-tippy": "^4.4.0"
+    "tippy.js": "^6.3.7",
+    "vue": "^2.6.14",
+    "vue-tippy": "^4.13.0"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "~4.2.0",
-    "@vue/cli-plugin-eslint": "^4.5.15",
-    "@vue/cli-service": "~4.2.0",
+    "@vue/cli-plugin-babel": "~4.5.15",
+    "@vue/cli-service": "~4.5.15",
     "babel-eslint": "^10.0.3",
-    "eslint": "^6.7.2",
-    "eslint-plugin-vue": "^6.1.2",
-    "vue-template-compiler": "^2.6.11"
+    "eslint": "^8.7.0",
+    "eslint-plugin-vue": "^8.3.0",
+    "vue-template-compiler": "^2.6.14"
   },
   "eslintConfig": {
     "root": true,
