@@ -1,6 +1,8 @@
 # PURE suggest
 
-Suggest scientific publications by reference 
+*PURE suggest* is a scientific literature search tool that, starting from some seed papers, suggests scientific publications through citations/references.
+
+The tool is available at: https://fabian-beck.github.io/pure-suggest/
 
 ## Project setup
 ```
