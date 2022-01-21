@@ -1,7 +1,11 @@
 <template>
   <div id="app">
     <div class="section media box" id="header">
-      <b-icon icon="tint" size="is-medium" class="media-left has-text-grey pure-icon"></b-icon>
+      <b-icon
+        icon="tint"
+        size="is-medium"
+        class="media-left has-text-grey pure-icon"
+      ></b-icon>
       <div class="media-content level">
         <div class="level-left">
           <div class="title level-item">
@@ -13,8 +17,7 @@
           <div class="subtitle level-item has-text-grey">
             <span>
               literature search &ndash; suggest scientific
-              <b>pu</b>blications by
-              <b>re</b>ference
+              <b>pu</b>blications by <b>re</b>ference
             </span>
             <b-icon
               icon="info-circle"
@@ -28,10 +31,12 @@
     </div>
     <SelectedPublicationsComponent
       :publications="selectedPublications"
+      :noPublicationWarning="noPublicationWarning"
       v-on:addByQuery="addPublicationsToSelectionByQuery"
       v-on:remove="removePublication"
       v-on:activate="activatePublication"
       v-on:clear="clearSelection"
+      v-on:closeNoPublicationWarning="closeNoPublicationWarning"
     />
     <SuggestedPublicationsComponent
       :publications="suggestedPublications"
@@ -67,30 +72,31 @@ export default {
   components: {
     SelectedPublicationsComponent,
     SuggestedPublicationsComponent,
-    NetworkVisComponent
+    NetworkVisComponent,
   },
   data() {
     return {
       selectedPublications: [],
       suggestedPublications: [],
-      loadingSuggestions: false
+      loadingSuggestions: false,
+      noPublicationWarning: false,
     };
   },
   methods: {
-    updateSuggestions: async function() {
+    updateSuggestions: async function () {
       this.loadingSuggestions = true;
       this.clearActive();
       this.suggestedPublications = Object.values(await computeSuggestions());
       this.loadingSuggestions = false;
     },
 
-    addPublicationsToSelection: async function(dois) {
+    addPublicationsToSelection: async function (dois) {
       if (typeof dois === "string") {
         dois = [dois];
       }
       let addedPublicationsCount = 0;
       let addedDoi = "";
-      dois.forEach(doi => {
+      dois.forEach((doi) => {
         if (!publications[doi]) {
           publications[doi] = new Publication(doi);
         }
@@ -104,21 +110,23 @@ export default {
       }
     },
 
-    addPublicationsToSelectionByQuery: async function(query) {
-
+    addPublicationsToSelectionByQuery: async function (query) {
       function computeTitleSimilarity(query, title) {
         let equivalentWordCounter = 0;
         const words = query.split("+");
-        words.forEach(word => {
+        words.forEach((word) => {
           if (title.indexOf(word) >= 0) {
             equivalentWordCounter++;
           }
         });
-        return equivalentWordCounter / Math.max(words.length, title.split(/\W+/).length);
+        return (
+          equivalentWordCounter /
+          Math.max(words.length, title.split(/\W+/).length)
+        );
       }
 
       let dois = [];
-      query.split(/ |"|\{|\}|doi:|doi.org\//).forEach(doi => {
+      query.split(/ |"|\{|\}|doi:|doi.org\//).forEach((doi) => {
         doi = _.trim(doi, ".");
         if (doi.indexOf("10.") === 0) {
           dois.push(doi);
@@ -128,11 +136,14 @@ export default {
         query = query.replace(/\W+/g, "+").toLowerCase();
         await cachedFetch(
           "https://api.crossref.org/works?query.bibliographic=" + query,
-          data => {
+          (data) => {
             let maxSimilarity = 0.5;
-            data.message.items.forEach(item => {
-              const title =
-                (item.title[0] + " " + (item.subtitle ? item.subtitle[0] : "")).toLowerCase();
+            data.message.items.forEach((item) => {
+              const title = (
+                item.title[0] +
+                " " +
+                (item.subtitle ? item.subtitle[0] : "")
+              ).toLowerCase();
               const similarity = computeTitleSimilarity(query, title);
               if (similarity > maxSimilarity) {
                 dois = [item.DOI];
@@ -142,18 +153,18 @@ export default {
           }
         );
         if (dois.length === 0) {
-          console.error('Could not find a publication with a sufficiently similar title.')
+          this.noPublicationWarning = true;
         }
       }
       this.addPublicationsToSelection(dois);
     },
 
-    activatePublication: function(doi) {
+    activatePublication: function (doi) {
       this.clearActive();
-      this.selectedPublications.forEach(selectedPublication => {
+      this.selectedPublications.forEach((selectedPublication) => {
         selectedPublication.isActive = selectedPublication.doi === doi;
         if (selectedPublication.isActive) {
-          this.suggestedPublications.forEach(suggestedPublication => {
+          this.suggestedPublications.forEach((suggestedPublication) => {
             suggestedPublication.isLinkedToActive =
               selectedPublication.citationDois.indexOf(
                 suggestedPublication.doi
@@ -164,10 +175,10 @@ export default {
           });
         }
       });
-      this.suggestedPublications.forEach(suggestedPublication => {
+      this.suggestedPublications.forEach((suggestedPublication) => {
         suggestedPublication.isActive = suggestedPublication.doi === doi;
         if (suggestedPublication.isActive) {
-          this.selectedPublications.forEach(selectedPublication => {
+          this.selectedPublications.forEach((selectedPublication) => {
             selectedPublication.isLinkedToActive =
               suggestedPublication.citationDois.indexOf(
                 selectedPublication.doi
@@ -180,32 +191,36 @@ export default {
       });
     },
 
-    clearSelection: function() {
+    clearSelection: function () {
       publications = {};
       this.selectedPublications = [];
       removedPublicationDois = new Set();
       this.updateSuggestions();
     },
 
-    clearActive: function() {
+    clearActive: function () {
       this.selectedPublications
         .concat(this.suggestedPublications)
-        .forEach(publication => {
+        .forEach((publication) => {
           publication.isActive = false;
           publication.isLinkedToActive = false;
         });
     },
 
-    removePublication: function(doi) {
+    removePublication: function (doi) {
       removedPublicationDois.add(doi);
       delete publications[doi];
       this.selectedPublications = Object.values(publications).reverse();
       this.updateSuggestions();
-    }
+    },
+
+    closeNoPublicationWarning: function () {
+      this.noPublicationWarning = false;
+    },
   },
   beforeMount() {
     this.updateSuggestions();
-  }
+  },
 };
 
 let publications = {};
@@ -230,13 +245,13 @@ async function computeSuggestions() {
 
   const suggestedPublications = {};
   await Promise.all(
-    Object.values(publications).map(async publication => {
+    Object.values(publications).map(async (publication) => {
       await publication.fetchData();
       publication.isSelected = true;
     })
   );
-  Object.values(publications).forEach(publication => {
-    publication.citationDois.forEach(citationDoi => {
+  Object.values(publications).forEach((publication) => {
+    publication.citationDois.forEach((citationDoi) => {
       incrementSuggestedPublicationCounter(
         citationDoi,
         "citationCount",
@@ -244,7 +259,7 @@ async function computeSuggestions() {
         publication.doi
       );
     });
-    publication.referenceDois.forEach(referenceDoi => {
+    publication.referenceDois.forEach((referenceDoi) => {
       incrementSuggestedPublicationCounter(
         referenceDoi,
         "referenceCount",
@@ -259,7 +274,7 @@ async function computeSuggestions() {
       b.citationCount + b.referenceCount - (a.citationCount + a.referenceCount)
   );
   filteredSuggestions = filteredSuggestions.slice(0, 30);
-  filteredSuggestions.forEach(async suggestedPublication => {
+  filteredSuggestions.forEach(async (suggestedPublication) => {
     suggestedPublication.fetchData();
   });
   return filteredSuggestions;

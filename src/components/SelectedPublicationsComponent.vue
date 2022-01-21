@@ -17,16 +17,18 @@
             v-on:click="clear"
             data-tippy-content="Clear selected publications (clears also the list of removed publications)."
             v-tippy
-          >clear</button>
+          >
+            clear
+          </button>
         </div>
       </div>
       <form v-on:submit.prevent class="level">
-        <div class="level-left">
-          <div class="level-item">
-            <label>Add:</label>
-          </div>
-        </div>
-        <input class="input" type="text" placeholder="Paste DOI(s) or publication title here" v-model="addQuery" />
+        <input
+          class="input"
+          type="text"
+          placeholder="To add paper(s), provide DOI(s) or publication title here"
+          v-model="addQuery"
+        />
         <button
           class="button level-right"
           type="submit"
@@ -37,11 +39,24 @@
           <strong>+</strong>
         </button>
       </form>
-      <PublicationListComponent 
-       :publications="publications" 
-       v-on:activate="activatePublication"
-       v-on:remove="removePublication"
-       />
+      <div>
+        <div
+          class="level has-background-warning p-2 mb-2"
+          v-show="noPublicationWarning"
+        >
+          <div class="level-left">
+            Cannot not find a publication with this or similar title.
+          </div>
+          <span class="icon level-right is-clickable" v-on:click="closeNoPublicationWarning">
+            <i class="fas fa-times"></i>
+          </span>
+        </div>
+      </div>
+      <PublicationListComponent
+        :publications="publications"
+        v-on:activate="activatePublication"
+        v-on:remove="removePublication"
+      />
     </div>
   </div>
 </template>
@@ -52,31 +67,43 @@ import PublicationListComponent from "./PublicationListComponent.vue";
 export default {
   name: "SelectedPublicationsComponent",
   components: {
-    PublicationListComponent
+    PublicationListComponent,
   },
   props: {
-    publications: Array
+    publications: Array,
+    noPublicationWarning: Boolean,
   },
   data() {
     return {
-      addQuery: ""
+      addQuery: "",
     };
   },
   methods: {
-    add: function() {
+    add: function () {
+      this.closeNoPublicationWarning();
       this.$emit("addByQuery", this.addQuery);
       this.addQuery = "";
     },
-    removePublication: function(doi) {
+    removePublication: function (doi) {
       this.$emit("remove", doi);
     },
-    activatePublication: function(doi) {
+    activatePublication: function (doi) {
       this.$emit("activate", doi);
     },
-    clear: function() {
+    clear: function () {
       this.$emit("clear");
-    }
-  }
+    },
+    closeNoPublicationWarning: function () {
+      this.$emit("closeNoPublicationWarning");
+    },
+  },
+  watch: {
+    addQuery: function () {
+      if (this.addQuery != "") {
+        this.closeNoPublicationWarning();
+      }
+    },
+  },
 };
 </script>
 
@@ -85,14 +112,11 @@ export default {
 .box {
   height: 100%;
   display: grid;
-  grid-template-rows: max-content max-content auto;
+  grid-template-rows: max-content max-content max-content auto;
 }
 .publication-list {
   max-height: 100%;
   overflow-y: scroll;
   border: 1px solid $border;
-}
-form label {
-  margin-right: 0.2rem;
 }
 </style>
