@@ -65,7 +65,7 @@ import SuggestedPublicationsComponent from "./components/SuggestedPublicationsCo
 import NetworkVisComponent from "./components/NetworkVisComponent.vue";
 
 import Publication from "./Publication.js";
-import cachedFetch from "./Cache";
+import PublicationQuery from "./PublicationQuery.js";
 
 export default {
   name: "App",
@@ -111,52 +111,14 @@ export default {
     },
 
     addPublicationsToSelectionByQuery: async function (query) {
-      function computeTitleSimilarity(query, title) {
-        let equivalentWordCounter = 0;
-        const words = query.split("+");
-        words.forEach((word) => {
-          if (title.indexOf(word) >= 0) {
-            equivalentWordCounter++;
-          }
-        });
-        return (
-          equivalentWordCounter /
-          Math.max(words.length, title.split(/\W+/).length)
-        );
-      }
-
-      let dois = [];
-      query.split(/ |"|\{|\}|doi:|doi.org\//).forEach((doi) => {
-        doi = _.trim(doi, ".");
-        if (doi.indexOf("10.") === 0) {
-          dois.push(doi);
-        }
-      });
+      const publicationQuery = new PublicationQuery(query);
+      publicationQuery.execute();
+      const dois = publicationQuery.dois;
       if (dois.length === 0) {
-        query = query.replace(/\W+/g, "+").toLowerCase();
-        await cachedFetch(
-          "https://api.crossref.org/works?query.bibliographic=" + query,
-          (data) => {
-            let maxSimilarity = 0.5;
-            data.message.items.forEach((item) => {
-              const title = (
-                item.title[0] +
-                " " +
-                (item.subtitle ? item.subtitle[0] : "")
-              ).toLowerCase();
-              const similarity = computeTitleSimilarity(query, title);
-              if (similarity > maxSimilarity) {
-                dois = [item.DOI];
-                maxSimilarity = similarity;
-              }
-            });
-          }
-        );
-        if (dois.length === 0) {
-          this.noPublicationWarning = true;
-        }
+        this.noPublicationWarning = true;
+      } else {
+        this.addPublicationsToSelection(dois);
       }
-      this.addPublicationsToSelection(dois);
     },
 
     activatePublication: function (doi) {
