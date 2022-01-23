@@ -47,7 +47,10 @@
           <div class="level-left">
             Cannot not find a publication with this or similar title.
           </div>
-          <span class="icon level-right is-clickable" v-on:click="closeNoPublicationWarning">
+          <span
+            class="icon level-right is-clickable"
+            v-on:click="noPublicationWarning = false"
+          >
             <i class="fas fa-times"></i>
           </span>
         </div>
@@ -63,6 +66,7 @@
 
 <script>
 import PublicationListComponent from "./PublicationListComponent.vue";
+import PublicationQuery from "./../PublicationQuery.js";
 
 export default {
   name: "SelectedPublicationsComponent",
@@ -71,18 +75,25 @@ export default {
   },
   props: {
     publications: Array,
-    noPublicationWarning: Boolean,
   },
   data() {
     return {
       addQuery: "",
+      noPublicationWarning: false,
     };
   },
   methods: {
     add: function () {
-      this.closeNoPublicationWarning();
-      this.$emit("addByQuery", this.addQuery);
-      this.addQuery = "";
+      this.noPublicationWarning = true;
+      const publicationQuery = new PublicationQuery(this.addQuery);
+      publicationQuery.execute();
+      const dois = publicationQuery.dois;
+      if (dois.length > 0) {
+        this.$emit("add", dois);
+        this.addQuery = "";
+      } else {
+        this.noPublicationWarning = true;
+      }
     },
     removePublication: function (doi) {
       this.$emit("remove", doi);
@@ -93,15 +104,10 @@ export default {
     clear: function () {
       this.$emit("clear");
     },
-    closeNoPublicationWarning: function () {
-      this.$emit("closeNoPublicationWarning");
-    },
   },
   watch: {
     addQuery: function () {
-      if (this.addQuery != "") {
-        this.closeNoPublicationWarning();
-      }
+      this.noPublicationWarning = false;
     },
   },
 };

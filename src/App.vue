@@ -31,12 +31,10 @@
     </div>
     <SelectedPublicationsComponent
       :publications="selectedPublications"
-      :noPublicationWarning="noPublicationWarning"
-      v-on:addByQuery="addPublicationsToSelectionByQuery"
+      v-on:add="addPublicationsToSelection"
       v-on:remove="removePublication"
       v-on:activate="activatePublication"
       v-on:clear="clearSelection"
-      v-on:closeNoPublicationWarning="closeNoPublicationWarning"
     />
     <SuggestedPublicationsComponent
       :publications="suggestedPublications"
@@ -65,7 +63,6 @@ import SuggestedPublicationsComponent from "./components/SuggestedPublicationsCo
 import NetworkVisComponent from "./components/NetworkVisComponent.vue";
 
 import Publication from "./Publication.js";
-import PublicationQuery from "./PublicationQuery.js";
 
 export default {
   name: "App",
@@ -79,7 +76,6 @@ export default {
       selectedPublications: [],
       suggestedPublications: [],
       loadingSuggestions: false,
-      noPublicationWarning: false,
     };
   },
   methods: {
@@ -107,17 +103,6 @@ export default {
       await this.updateSuggestions();
       if (addedPublicationsCount == 1) {
         this.activatePublication(addedDoi);
-      }
-    },
-
-    addPublicationsToSelectionByQuery: async function (query) {
-      const publicationQuery = new PublicationQuery(query);
-      publicationQuery.execute();
-      const dois = publicationQuery.dois;
-      if (dois.length === 0) {
-        this.noPublicationWarning = true;
-      } else {
-        this.addPublicationsToSelection(dois);
       }
     },
 
@@ -174,10 +159,6 @@ export default {
       delete publications[doi];
       this.selectedPublications = Object.values(publications).reverse();
       this.updateSuggestions();
-    },
-
-    closeNoPublicationWarning: function () {
-      this.noPublicationWarning = false;
     },
   },
   beforeMount() {
