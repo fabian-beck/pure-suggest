@@ -23,10 +23,9 @@ export default class PublicationQuery {
                     let maxSimilarity = 0.7;
                     let maxTitle = "";
                     data.message.items.filter(item => item.title).forEach((item) => {
-                        const title = (
+                        const title =
                             item.title[0] +
                             (item.subtitle && item.title[0] !== item.subtitle[0] ? " " + item.subtitle[0] : "")
-                        ).toLowerCase();
                         const similarity = this.computeTitleSimilarity(simplifiedQuery, title);
                         console.log(`  ... similarity to '${title}' is ${similarity}.`)
                         if (similarity > maxSimilarity) {
@@ -47,13 +46,14 @@ export default class PublicationQuery {
     }
 
     computeTitleSimilarity(query, title) {
+        const stopwords = ["the", "for", "with", "and"]; // for words with length > 2
         let equivalentWordCounter = 0;
         let wordCounter = 0;
-        let titleWithSpacing = " " + title + " "
+        let normalizedTitle = " " + title.replace(/\W+/g, " ").toLowerCase() + " "
         query.split("+").forEach((word) => {
-            if (word.length > 2) {
+            if (word.length > 2 && stopwords.indexOf(word) === -1) {
                 wordCounter++;
-                if (titleWithSpacing.indexOf(" " + word + " ") >= 0) {
+                if (normalizedTitle.indexOf(" " + word + " ") >= 0) {
                     equivalentWordCounter++;
                 }
             }
