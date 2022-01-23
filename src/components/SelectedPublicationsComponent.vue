@@ -83,11 +83,9 @@ export default {
     };
   },
   methods: {
-    add: function () {
-      this.noPublicationWarning = true;
+    add: async function () {
       const publicationQuery = new PublicationQuery(this.addQuery);
-      publicationQuery.execute();
-      const dois = publicationQuery.dois;
+      const dois = await publicationQuery.execute();
       if (dois.length > 0) {
         this.$emit("add", dois);
         this.addQuery = "";

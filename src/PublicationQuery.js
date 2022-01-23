@@ -4,17 +4,17 @@ export default class PublicationQuery {
 
     constructor(query) {
         this.query = query;
-        this.dois = [];
     }
 
     async execute() {
+        let dois = [];
         this.query.split(/ |"|\{|\}|doi:|doi.org\//).forEach((doi) => {
             doi = _.trim(doi, ".");
             if (doi.indexOf("10.") === 0) {
-                this.dois.push(doi);
+                dois.push(doi);
             }
         });
-        if (this.dois.length === 0) {
+        if (dois.length === 0) {
             const simplifiedQuery = this.query.replace(/\W+/g, "+").toLowerCase();
             console.log(`Searching for publications with title or similar to '${this.query}'.`)
             await cachedFetch(
@@ -29,20 +29,20 @@ export default class PublicationQuery {
                         const similarity = this.computeTitleSimilarity(simplifiedQuery, title);
                         console.log(`  ... similarity to '${title}' is ${similarity}.`)
                         if (similarity > maxSimilarity) {
-                            this.dois = [item.DOI];
+                            dois = [item.DOI];
                             maxTitle = title;
                             maxSimilarity = similarity;
                         }
                     });
                     if (maxTitle) {
-                        console.log(`  Identified as best fit: '${maxTitle}' (${this.dois[0]})`);
+                        console.log(`  Identified as best fit: '${maxTitle}' (${dois[0]})`);
                     } else {
                         console.log("  None of the publication titles is sufficiently similar.");
                     }
                 }
             );
-
         }
+        return dois;
     }
 
     computeTitleSimilarity(query, title) {
