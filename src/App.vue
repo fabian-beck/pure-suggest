@@ -1,30 +1,29 @@
 <template>
   <div id="app">
-    <div class="section media box" id="header">
-      <b-icon
-        icon="tint"
-        size="is-medium"
-        class="media-left has-text-grey pure-icon"
-      ></b-icon>
-      <div class="media-content level">
+    <div class="box px-2 py-1" id="header">
+      <div class="level">
         <div class="level-left">
-          <div class="title level-item">
-            <h1>
-              <span class="has-text-primary">PURE&nbsp;</span>
-              <span class="has-text-info">suggest</span>
-            </h1>
+          <b-icon
+            icon="tint"
+            size="is-large"
+            class="level-item has-text-grey mt-0"
+          ></b-icon>
+          <h1 class="level-item title mt">
+            <span class="has-text-primary">PURE&nbsp;</span>
+            <span class="has-text-info">suggest</span>
+          </h1>
+          <div class="subtitle level-item has-text-grey mt-2 ml-4">
+            literature search
           </div>
-          <div class="subtitle level-item has-text-grey">
-            <span>
-              literature search &ndash; suggest scientific
-              <b>pu</b>blications by <b>re</b>ference
+          <div>
+            <span class="icon level-item">
+              <i
+                class="fas fa-info-circle"
+                data-tippy-content="Suggest scientific
+              <b>pu</b>blications by <b>re</b>ference: For a set of selected publications, the tool looks up all citations and references and lists those publications as suggestions often referencing or getting referenced by the selected ones."
+                v-tippy
+              ></i>
             </span>
-            <b-icon
-              icon="info-circle"
-              size="is-small"
-              data-tippy-content="For a set of selected publications, the tool looks up all citations and references and lists those publications as suggestions often referencing or getting referenced by the selected ones."
-              v-tippy
-            ></b-icon>
           </div>
         </div>
       </div>
@@ -230,6 +229,7 @@ async function computeSuggestions() {
 @import "~bulma/sass/utilities/_all";
 
 $block-spacing: 0.5rem;
+$box-padding: 1rem;
 
 @import "~bulma";
 @import "~buefy/src/scss/buefy";
@@ -245,12 +245,7 @@ $block-spacing: 0.5rem;
   grid-template-columns: 50fr 50fr;
 }
 #header {
-  padding: 0.5rem 1rem;
   grid-area: header;
-}
-#header .subtitle {
-  margin-top: 0.25rem;
-  margin-left: 2rem;
 }
 .selected-publications {
   grid-area: left;
@@ -259,12 +254,6 @@ $block-spacing: 0.5rem;
 .suggested-publications {
   grid-area: right;
   overflow-y: hidden;
-}
-.pure-icon {
-  margin-top: 0.3rem;
-}
-.icon.is-small {
-  margin-left: 0.5rem;
 }
 .network-of-references {
   grid-area: vis;

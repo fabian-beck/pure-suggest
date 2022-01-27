@@ -1,15 +1,18 @@
 <template>
-  <div class="column network-of-references">
+  <div class="network-of-references m-2">
     <div class="box">
       <div class="level">
         <div class="level-left">
-          <h2 class="is-size-4">Network of references</h2>
-          <b-icon
-            icon="info-circle"
-            size="is-small"
-            data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>green</b>: selected; <b class='has-text-info'>blue</b>: suggested) with references connecting them as links. The layout places publications from left to right based on publication year and from top to bottom by reference frequency (<b class='has-text-primary'>selected</b>: summed references and citations; <b class='has-text-info'>suggested</b>: suggestion score). You can highlight a publication on click, zoom using the mouse wheel, and pan on drag."
-            v-tippy
-          ></b-icon>
+          <h2 class="is-size-5">
+            Network of references
+            <span class="icon">
+              <i
+                class="fas fa-info-circle"
+                data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>green</b>: selected; <b class='has-text-info'>blue</b>: suggested) with references connecting them as links. The layout places publications from left to right based on publication year and from top to bottom by reference frequency (<b class='has-text-primary'>selected</b>: summed references and citations; <b class='has-text-info'>suggested</b>: suggestion score). You can highlight a publication on click, zoom using the mouse wheel, and pan on drag."
+                v-tippy
+              ></i
+            ></span>
+          </h2>
         </div>
       </div>
       <div id="network-svg-container">
@@ -27,9 +30,9 @@ import "tippy.js/dist/tippy.css";
 export default {
   props: {
     selectedPublications: Array,
-    suggestedPublications: Array
+    suggestedPublications: Array,
   },
-  data: function() {
+  data: function () {
     return {
       graph: { nodes: [], links: [] },
       simulation: null,
@@ -39,22 +42,22 @@ export default {
       yearMin: Number,
       yearMax: Number,
       node: null,
-      link: null
+      link: null,
     };
   },
   watch: {
     selectedPublications: {
       deep: true,
-      handler: function() {
+      handler: function () {
         this.plot();
-      }
+      },
     },
     suggestedPublications: {
       deep: true,
-      handler: function() {
+      handler: function () {
         this.plot();
-      }
-    }
+      },
+    },
   },
   mounted() {
     const that = this;
@@ -68,7 +71,7 @@ export default {
       .attr("width", container.clientWidth)
       .attr("height", container.clientHeight)
       .call(
-        d3.zoom().on("zoom", function() {
+        d3.zoom().on("zoom", function () {
           that.svg.attr("transform", d3.event.transform);
         })
       )
@@ -80,7 +83,7 @@ export default {
         "link",
         d3
           .forceLink()
-          .id(d => d.id)
+          .id((d) => d.id)
           .distance(50)
           .strength(0.02)
       )
@@ -90,7 +93,7 @@ export default {
         "x",
         d3
           .forceX()
-          .x(function(d) {
+          .x(function (d) {
             return (
               ((d.publication.year - that.yearMin) /
                 Math.sqrt(1 + that.yearMax - that.yearMin)) *
@@ -104,7 +107,7 @@ export default {
         "y",
         d3
           .forceY()
-          .y(function(d) {
+          .y(function (d) {
             return (
               (-Math.log(
                 d.publication.isSelected
@@ -125,18 +128,12 @@ export default {
       )
       .on("tick", this.tick);
 
-    this.link = this.svg
-      .append("g")
-      .attr("class", "links")
-      .selectAll("path");
+    this.link = this.svg.append("g").attr("class", "links").selectAll("path");
 
-    this.node = this.svg
-      .append("g")
-      .attr("class", "nodes")
-      .selectAll("circle");
+    this.node = this.svg.append("g").attr("class", "nodes").selectAll("circle");
   },
   methods: {
-    plot: function() {
+    plot: function () {
       const doiToIndex = {};
       this.yearMin = 3000;
       this.yearMax = 0;
@@ -145,35 +142,35 @@ export default {
       let i = 0;
       this.selectedPublications
         .concat(this.suggestedPublications)
-        .forEach(publication => {
+        .forEach((publication) => {
           if (publication.year) {
             this.yearMin = Math.min(this.yearMin, publication.year);
             this.yearMax = Math.max(this.yearMax, publication.year);
             doiToIndex[publication.doi] = i;
             nodes.push({
               id: publication.doi,
-              publication: publication
+              publication: publication,
             });
             i++;
           }
         });
 
       const links = [];
-      this.selectedPublications.forEach(publication => {
+      this.selectedPublications.forEach((publication) => {
         if (publication.doi in doiToIndex) {
-          publication.citationDois.forEach(citationDoi => {
+          publication.citationDois.forEach((citationDoi) => {
             if (citationDoi in doiToIndex) {
               links.push({
                 source: citationDoi,
-                target: publication.doi
+                target: publication.doi,
               });
             }
           });
-          publication.referenceDois.forEach(referenceDoi => {
+          publication.referenceDois.forEach((referenceDoi) => {
             if (referenceDoi in doiToIndex) {
               links.push({
                 source: publication.doi,
-                target: referenceDoi
+                target: referenceDoi,
               });
             }
           });
@@ -181,22 +178,21 @@ export default {
       });
 
       // https://observablehq.com/@d3/modifying-a-force-directed-graph
-      const old = new Map(this.node.data().map(d => [d.id, d]));
-      this.graph.nodes = nodes.map(d =>
+      const old = new Map(this.node.data().map((d) => [d.id, d]));
+      this.graph.nodes = nodes.map((d) =>
         Object.assign(old.get(d.id) || { x: this.svgWidth / 2, y: 0 }, d)
       );
-      this.graph.links = links.map(d => Object.assign({}, d));
+      this.graph.links = links.map((d) => Object.assign({}, d));
 
       this.node = this.node
-        .data(this.graph.nodes, d => d.id)
-        .join(enter => {
+        .data(this.graph.nodes, (d) => d.id)
+        .join((enter) => {
           const g = enter
             .append("g")
             .attr("class", "node-container")
             .attr(
               "data-tippy-content",
-              d =>
-                `${d.publication.title} (${d.publication.shortReference})`
+              (d) => `${d.publication.title} (${d.publication.shortReference})`
             );
           g.append("circle");
           g.append("text");
@@ -209,26 +205,26 @@ export default {
         .select("circle")
         .attr(
           "class",
-          d =>
+          (d) =>
             (d.publication.isSelected ? "selected" : "suggested") +
             (d.publication.isActive ? " active" : "") +
             (d.publication.isLinkedToActive ? " linkedToActive" : "")
         )
-        .attr("r", d => (d.publication.isActive ? 15 : 10))
-        .attr("stroke-width", d => (d.publication.isActive ? 8 : 5));
+        .attr("r", (d) => (d.publication.isActive ? 15 : 10))
+        .attr("stroke-width", (d) => (d.publication.isActive ? 8 : 5));
 
       this.node
         .select("text")
         .attr("x", -4.5)
         .attr("y", 5.5)
-        .text(d =>
+        .text((d) =>
           d.publication.isSelected
             ? ""
             : d.publication.referenceCount + d.publication.citationCount
         );
 
       this.link = this.link
-        .data(this.graph.links, d => [d.source, d.target])
+        .data(this.graph.links, (d) => [d.source, d.target])
         .join("path");
       this.simulation.nodes(this.graph.nodes);
       this.simulation.force("link").links(this.graph.links);
@@ -237,9 +233,9 @@ export default {
       }
       this.simulation.restart();
     },
-    tick: function() {
+    tick: function () {
       this.link
-        .attr("d", d => {
+        .attr("d", (d) => {
           var dx = d.target.x - d.source.x,
             dy = d.target.y - d.source.y,
             dr = Math.sqrt(dx * dx + dy * dy);
@@ -258,19 +254,19 @@ export default {
             d.target.y
           );
         })
-        .attr("class", d =>
+        .attr("class", (d) =>
           d.source.publication.isActive || d.target.publication.isActive
             ? "active"
             : ""
         );
 
-      this.node.attr("transform", d => `translate(${d.x}, ${d.y})`);
+      this.node.attr("transform", (d) => `translate(${d.x}, ${d.y})`);
     },
 
-    activatePublication: function(d) {
+    activatePublication: function (d) {
       this.$emit("activate", d.publication.doi);
-    }
-  }
+    },
+  },
 };
 </script>
 

@@ -1,66 +1,64 @@
 <template>
-  <div class="selected-publications column">
-    <div class="box has-background-primary">
-      <div class="level">
-        <div class="level-left">
-          <h2 class="is-size-4">Selected seed publications</h2>
-          <b-icon
-            icon="info-circle"
-            size="is-small"
-            data-tippy-content="The publications you selected as a basis for computing the suggestions, sorted by inversed sequence of addition."
-            v-tippy
-          ></b-icon>
-        </div>
-        <div class="level-right">
-          <button
-            class="button is-small"
-            v-on:click="clear"
-            data-tippy-content="Clear selected publications (clears also the list of removed publications)."
-            v-tippy
-          >
-            clear
-          </button>
-        </div>
+  <div class="selected-publications box has-background-primary mx-2">
+    <div class="level">
+      <div class="level-left">
+        <h2 class="is-size-5">
+          Selected
+          <span class="icon">
+            <i
+              class="fas fa-info-circle"
+              data-tippy-content="The <b>publications selected as seeds</b> for computing the suggestions, sorted by inversed sequence of addition."
+              v-tippy
+            ></i>
+          </span>
+        </h2>
       </div>
-      <form v-on:submit.prevent class="level">
-        <input
-          class="input"
-          type="text"
-          placeholder="To add paper(s), provide DOI(s) or publication title here"
-          v-model="addQuery"
-        />
+      <div class="level-right">
         <button
-          class="button level-right"
-          type="submit"
-          v-on:click="add"
-          data-tippy-content="Add listed DOIs to selected publications (the list might be separate by different characters or the DOI can also be included in a different format such as BibTeX)."
+          class="button"
+          v-on:click="clear"
+          data-tippy-content="Clear selected publications (clears also the list of removed publications)."
           v-tippy
         >
-          <strong>+</strong>
+          <i class="fas fa-trash"></i>
         </button>
-      </form>
-      <div>
-        <div
-          class="level has-background-warning p-2 mb-2"
-          v-show="noPublicationWarning"
-        >
-          <div class="level-left">
-            Cannot not find a publication with this or similar title.
-          </div>
-          <span
-            class="icon level-right is-clickable"
-            v-on:click="noPublicationWarning = false"
-          >
-            <i class="fas fa-times"></i>
-          </span>
-        </div>
       </div>
-      <PublicationListComponent
-        :publications="publications"
-        v-on:activate="activatePublication"
-        v-on:remove="removePublication"
-      />
     </div>
+    <form v-on:submit.prevent class="level">
+      <input
+        class="input"
+        type="text"
+        placeholder="To add paper(s), provide DOI(s) or publication title here"
+        v-model="addQuery"
+        autofocus
+      />
+      <button
+        class="button level-right"
+        type="submit"
+        v-on:click="add"
+        data-tippy-content="Add listed DOIs to selected publications (the list might be separate by different characters or the DOI can also be included in a different format such as BibTeX)."
+        v-tippy
+      >
+        <i class="fas fa-plus"></i>
+      </button>
+    </form>
+    <div>
+      <div
+        class="notification has-background-warning mb-2 p-2"
+        v-show="noPublicationWarning"
+      >
+        <button
+          class="delete"
+          v-on:click="noPublicationWarning = false"
+        ></button>
+        Cannot find a publication with this or similar title.
+      </div>
+    </div>
+    <PublicationListComponent
+      :publications="publications"
+      v-on:activate="activatePublication"
+      v-on:remove="removePublication"
+    />
   </div>
 </template>
 
