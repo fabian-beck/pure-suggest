@@ -2,95 +2,118 @@
   <li
     class="publication-component media"
     v-bind:class="{
-      'has-background-grey-lighter': publication.isActive, 
-      'active': publication.isActive 
-      }"
+      'has-background-grey-lighter': publication.isActive,
+      active: publication.isActive,
+    }"
     v-on:click="$emit('activate', publication.doi)"
   >
     <div
       v-if="suggestion"
       class="media-left has-text-centered"
-      v-bind:class="{ 
+      v-bind:class="{
         'has-background-primary': publication.isLinkedToActive,
-        'has-background-info': publication.isActive 
-       }"
+        'has-background-info': publication.isActive,
+      }"
     >
       <tippy>
         <template v-slot:trigger>
-          <div
-            class="is-size-2 tooltip-target"
-          >{{publication.referenceCount + publication.citationCount}}</div>
-          <div class="is-size-7">{{publication.referenceCount}} + {{publication.citationCount}}</div>
+          <div class="is-size-2 tooltip-target">
+            {{ publication.referenceCount + publication.citationCount }}
+          </div>
+          <div class="is-size-7">
+            {{ publication.referenceCount }} + {{ publication.citationCount }}
+          </div>
         </template>
         <div>
           Suggestion score of
-          <b>{{publication.referenceCount + publication.citationCount}}</b>:
-          Referenced by
-          <b>{{publication.referenceCount}}</b>
+          <b>{{ publication.referenceCount + publication.citationCount }}</b
+          >: Referenced by
+          <b>{{ publication.referenceCount }}</b>
           and referencing
-          <b>{{publication.citationCount}}</b> selected publications.
+          <b>{{ publication.citationCount }}</b> selected publications.
         </div>
-        <div
-          v-if="publication.isLinkedToActive"
-        >Marked as refered by or referencing highlighted selected publication.</div>
-        <div
-          v-if="publication.isActive"
-        >Currently highlighted with marked selected publications indicating reference links.</div>
+        <div v-if="publication.isLinkedToActive">
+          Marked as refered by or referencing highlighted selected publication.
+        </div>
+        <div v-if="publication.isActive">
+          Currently highlighted with marked selected publications indicating
+          reference links.
+        </div>
       </tippy>
     </div>
     <div
       v-if="!suggestion"
       class="media-left has-text-centered stats-selected"
-      v-bind:class="{ 
+      v-bind:class="{
         'has-background-primary': publication.isActive,
-        'has-background-info': publication.isLinkedToActive 
-        }"
+        'has-background-info': publication.isLinkedToActive,
+      }"
     >
       <tippy>
         <template v-slot:trigger>
-          <div
-            class="is-size-7"
-          >{{publication.referenceDois.length}} + {{publication.citationDois.length}}</div>
+          <div class="is-size-7">
+            {{ publication.referenceDois.length }} +
+            {{ publication.citationDois.length }}
+          </div>
         </template>
         <div>
           Referencing
-          <b>{{publication.referenceDois.length}}</b>
+          <b>{{ publication.referenceDois.length }}</b>
           and referenced by
-          <b>{{publication.citationDois.length}}</b> other publications.
+          <b>{{ publication.citationDois.length }}</b> other publications.
         </div>
-        <div
-          v-if="publication.isLinkedToActive"
-        >Marked as refered by or referencing highlighted suggested publication.</div>
-        <div
-          v-if="publication.isActive"
-        >Currently highlighted with marked suggested publications indicating reference links.</div>
+        <div v-if="publication.isLinkedToActive">
+          Marked as refered by or referencing highlighted suggested publication.
+        </div>
+        <div v-if="publication.isActive">
+          Currently highlighted with marked suggested publications indicating
+          reference links.
+        </div>
       </tippy>
     </div>
     <div class="media-content">
       <div class="level">
         <span v-if="publication.title">
-          <strong>{{publication.title}}&nbsp;</strong>
-          <span v-if="publication.shortReference">({{publication.shortReference}})</span>
+          <strong>{{ publication.title }}&nbsp;</strong>
+          <span v-if="publication.shortReference"
+            >({{ publication.shortReference }})</span
+          >
         </span>
         <span v-if="!publication.title">
           <strong>...</strong>
         </span>
       </div>
-      <div v-if="publication.isActive && publication.title && publication.author && publication.container" class="is-size-7">
-        {{publication.author}}.
-        <em>{{publication.container}}</em>.
+      <div
+        v-if="
+          publication.isActive &&
+          publication.title &&
+          publication.author &&
+          publication.container
+        "
+        class="is-size-7"
+      >
+        {{ publication.author }}. <em>{{ publication.container }}</em
+        >.
       </div>
       <div v-if="publication.isActive" class="level is-size-7">
         <div class="doi level-left">
           <label>DOI:</label>
-          <a :href="'https://doi.org/'+publication.doi" target="_blank">{{ publication.doi }}</a>
+          <a :href="'https://doi.org/' + publication.doi" target="_blank">{{
+            publication.doi
+          }}</a>
         </div>
         <div class="level-right">
-          <div v-if="publication.title && publication.isActive" class="level-item">
+          <div
+            v-if="publication.title && publication.isActive"
+            class="level-item"
+          >
             <a
-              :href="'https://scholar.google.de/scholar?hl=en&q='+publication.title"
+              :href="
+                'https://scholar.google.de/scholar?hl=en&q=' + publication.title
+              "
               target="_blank"
-            >Google Scholar</a>
+              >Google Scholar</a
+            >
           </div>
         </div>
       </div>
@@ -104,7 +127,9 @@
           v-on:click.stop="$emit('add', publication.doi)"
           v-tippy
         >
-          <b-icon icon="plus"></b-icon>
+          <span class="icon">
+            <i class="fas fa-plus"></i>
+          </span>
         </button>
       </div>
       <div>
@@ -114,7 +139,9 @@
           v-on:click.stop="$emit('remove', publication.doi)"
           v-tippy
         >
-          <b-icon icon="minus"></b-icon>
+          <span class="icon">
+            <i class="fas fa-minus"></i>
+          </span>
         </button>
       </div>
     </div>
@@ -126,8 +153,8 @@ export default {
   name: "PublicationComponent",
   props: {
     publication: Object,
-    suggestion: Boolean
-  }
+    suggestion: Boolean,
+  },
 };
 </script>
 
@@ -138,7 +165,7 @@ li.publication-component {
   padding: 0;
   margin: 0;
   cursor: pointer;
-  min-height: 6rem;
+  min-height: 4rem;
 }
 li.publication-component:hover {
   background: $white-ter;
@@ -162,7 +189,7 @@ li.publication-component:hover {
   margin-bottom: 0.2rem !important;
 }
 .button {
-  margin: 0.5rem;
+  margin: 0.25rem;
 }
 label {
   padding-right: 0.2rem;
