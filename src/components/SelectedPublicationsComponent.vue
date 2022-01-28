@@ -11,18 +11,19 @@
           ></i>
         </span>
         <span class="level-item" v-show="publications.length">
-          ({{ publications.length === 1 ? "1 publication": publications.length + " publications"}})
+          ({{
+            publications.length === 1
+              ? "1 publication"
+              : publications.length + " publications"
+          }})
         </span>
-      </div>
-      <div class="level-right">
         <button
-          class="button"
+          class="delete"
           v-on:click="clear"
           data-tippy-content="Clear selected publications (clears also the list of removed publications)."
           v-tippy
-        >
-          <i class="fas fa-trash"></i>
-        </button>
+          v-show="publications.length"
+        ></button>
       </div>
     </div>
     <form v-on:submit.prevent class="level">

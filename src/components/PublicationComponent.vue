@@ -10,7 +10,6 @@
     }"
     v-on:click="$emit('activate', publication.doi)"
   >
-
     <div
       class="media-left has-text-centered"
       v-bind:class="{
@@ -38,7 +37,10 @@
             {{ publication.referenceCount + publication.citationCount }}
           </div>
           <div class="is-size-7">
-            {{ publication.referenceCount }} + {{ publication.citationCount }}
+            {{ publication.referenceCount }}
+            <i class="fas fa-arrow-left"></i>
+            + {{ publication.citationCount }}
+            <i class="fas fa-arrow-right"></i>
           </div>
         </template>
         <div>
@@ -158,7 +160,7 @@ li.publication-component:hover {
   background: $white-ter;
 }
 .media-left {
-  width: 60px;
+  width: 4rem;
   margin-left: 1rem;
   padding-bottom: 0.6rem;
 }
