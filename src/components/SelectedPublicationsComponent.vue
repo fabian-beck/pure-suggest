@@ -25,6 +25,29 @@
           v-show="publications.length"
         ></button>
       </div>
+      <div class="level-right">
+        <div class="level-item">
+          <div class="field has-addons">
+            <p class="control">
+              <input
+                class="input has-background-warning-light"
+                type="text"
+                v-model="boostKeywordString"
+                placeholder="keyword(s), comma-separated"
+                @keyup.enter="setBoostKeyword"
+              />
+            </p>
+            <p class="control">
+              <button class="button has-background-warning" type="submit" v-on:click="setBoostKeyword">
+                <span class="icon">
+                  <i class="fas fa-angle-double-up"></i>
+                </span>
+                <span>Boost</span>
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
     <form v-on:submit.prevent class="level">
       <input
@@ -46,7 +69,7 @@
     </form>
     <div>
       <div
-        class="notification has-background-warning mb-2 p-2"
+        class="notification has-background-danger-light has-text-danger-dark mb-2 p-2"
         v-show="noPublicationWarning"
       >
         <button
@@ -80,6 +103,7 @@ export default {
     return {
       addQuery: "",
       noPublicationWarning: false,
+      boostKeywordString: "",
     };
   },
   methods: {
@@ -101,6 +125,9 @@ export default {
     },
     clear: function () {
       this.$emit("clear");
+    },
+    setBoostKeyword: function () {
+      this.$emit("updateBoost", this.boostKeywordString);
     },
   },
   watch: {

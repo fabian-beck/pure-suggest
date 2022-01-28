@@ -34,6 +34,7 @@
       v-on:remove="removePublication"
       v-on:activate="activatePublication"
       v-on:clear="clearSelection"
+      v-on:updateBoost="updateBoost"
     />
     <SuggestedPublicationsComponent
       :publications="suggestedPublications"
@@ -75,6 +76,7 @@ export default {
       selectedPublications: [],
       suggestedPublications: [],
       loadingSuggestions: false,
+      boostKeywords: [],
     };
   },
   methods: {
@@ -82,7 +84,10 @@ export default {
       this.loadingSuggestions = true;
       this.clearActive();
       this.suggestedPublications = Object.values(await computeSuggestions());
-      this.selectedPublications;
+      this.suggestedPublications.forEach((publication) =>
+        publication.updateScore(this.boostKeywords)
+      );
+      Publication.sortPublications(this.suggestedPublications);
       this.loadingSuggestions = false;
     },
 
@@ -103,7 +108,7 @@ export default {
       if (addedPublicationsCount == 1) {
         this.activatePublication(addedDoi);
       }
-      this.setAndSortSelectedPublications();
+      this.rankSelectedPublications();
     },
 
     activatePublication: function (doi) {
@@ -154,18 +159,22 @@ export default {
     removePublication: function (doi) {
       removedPublicationDois.add(doi);
       delete publications[doi];
-      this.setAndSortSelectedPublications();
+      this.rankSelectedPublications();
       this.updateSuggestions();
     },
 
-    setAndSortSelectedPublications: function () {
+    rankSelectedPublications: function () {
       this.selectedPublications = Object.values(publications);
-      this.selectedPublications.sort(
-        (a, b) =>
-          b.citationCount +
-          b.referenceCount -
-          (a.citationCount + a.referenceCount)
+      this.selectedPublications.forEach((publication) =>
+        publication.updateScore(this.boostKeywords)
       );
+      Publication.sortPublications(this.selectedPublications);
+    },
+
+    updateBoost: function (boostKeywordString) {
+      this.boostKeywords = boostKeywordString.toLowerCase().split(/,\s*/);
+      this.rankSelectedPublications();
+      this.updateSuggestions();
     },
   },
   beforeMount() {
@@ -227,11 +236,12 @@ async function computeSuggestions() {
     });
   });
   let filteredSuggestions = Object.values(suggestedPublications);
+  // titles not yet fetched, that is why sorting can be only done on citations/references
   filteredSuggestions.sort(
     (a, b) =>
       b.citationCount + b.referenceCount - (a.citationCount + a.referenceCount)
   );
-  filteredSuggestions = filteredSuggestions.slice(0, 30);
+  filteredSuggestions = filteredSuggestions.slice(0, 50);
   filteredSuggestions.forEach(async (suggestedPublication) => {
     suggestedPublication.fetchData();
   });

@@ -16,25 +16,31 @@
         'has-background-primary': publication.isActive,
         'has-background-white-bis':
           !publication.isActive &&
-          publication.referenceCount + publication.citationCount === 1,
+          publication.score >= 2 &&
+          publication.score < 3,
         'has-background-white-ter':
           !publication.isActive &&
-          publication.referenceCount + publication.citationCount === 2,
+          publication.score >= 3 &&
+          publication.score < 5,
         'has-background-grey-lighter':
           !publication.isActive &&
-          publication.referenceCount + publication.citationCount === 3,
+          publication.score >= 5 &&
+          publication.score < 10,
         'has-background-grey-light':
           !publication.isActive &&
-          publication.referenceCount + publication.citationCount === 4,
-        'has-background-grey':
-          !publication.isActive &&
-          publication.referenceCount + publication.citationCount >= 5,
+          publication.score >= 10 &&
+          publication.score < 20,
+        'has-background-grey': !publication.isActive && publication.score >= 20,
       }"
     >
       <tippy>
         <template v-slot:trigger>
-          <div class="is-size-2 tooltip-target">
-            {{ publication.referenceCount + publication.citationCount }}
+          <div class="tooltip-target">
+            <span class="is-size-2">{{ publication.score }}</span>
+            <i
+              v-if="publication.boostFactor > 1"
+              class="fas fa-angle-double-up is-size-7"
+            ></i>
           </div>
           <div class="is-size-7">
             {{ publication.referenceCount }}
@@ -45,11 +51,19 @@
         </template>
         <div>
           Suggestion score of
-          <b>{{ publication.referenceCount + publication.citationCount }}</b
-          >: Referenced by
-          <b>{{ publication.referenceCount }}</b>
-          and referencing
-          <b>{{ publication.citationCount }}</b> selected publications.
+          <b>{{ publication.score }}</b
+          >:<br/> Referenced by <b>{{ publication.referenceCount }}</b> (<i
+            class="fas fa-arrow-left"
+          ></i
+          >) and referencing <b>{{ publication.citationCount }}</b> (<i
+            class="fas fa-arrow-right"
+          ></i
+          >) selected publications<span v-if="publication.boostFactor != 1"
+            >, multiplied by a boost factor of <b>{{ publication.boostFactor }}</b> (<i
+              class="fas fa-angle-double-up"
+            ></i
+            >)</span
+          >.
         </div>
         <div v-if="publication.isLinkedToActive">
           Marked as refered by or referencing highlighted selected publication.

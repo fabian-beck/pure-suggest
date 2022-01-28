@@ -7,6 +7,8 @@ export default class Publication {
         this.referenceDois = [];
         this.citationCount = 0;
         this.referenceCount = 0;
+        this.boostFactor = 1;
+        this.score = 0;
         this.title = "";
         this.container = "";
         this.year = undefined;
@@ -41,8 +43,7 @@ export default class Publication {
                         this.author = data.author;
                     }
                     this.container = data.source_title;
-                    this.shortReference = `${
-                        this.authorShort ? this.authorShort : "[unknown author]"
+                    this.shortReference = `${this.authorShort ? this.authorShort : "[unknown author]"
                         }, ${this.year ? this.year : "[unknown year]"}`;
                     data.reference.split("; ").forEach(referenceDoi => {
                         if (referenceDoi) {
@@ -57,6 +58,20 @@ export default class Publication {
                 }
             );
         }
+    }
+
+    updateScore(boostKeywords) {
+        this.boostFactor = 1;
+        boostKeywords.forEach(boostKeyword => {
+            if (boostKeyword && this.title.toLowerCase().indexOf(boostKeyword) >= 0) {
+                this.boostFactor = this.boostFactor * 2;
+            }
+        });
+        this.score = (this.citationCount + this.referenceCount) * this.boostFactor;
+    }
+
+    static sortPublications(publicationList) {
+        publicationList.sort((a, b) => b.score - a.score);
     }
 
 }
