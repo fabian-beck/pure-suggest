@@ -82,6 +82,7 @@ export default {
       this.loadingSuggestions = true;
       this.clearActive();
       this.suggestedPublications = Object.values(await computeSuggestions());
+      this.selectedPublications;
       this.loadingSuggestions = false;
     },
 
@@ -95,7 +96,6 @@ export default {
         if (!publications[doi]) {
           publications[doi] = new Publication(doi);
         }
-        this.selectedPublications = Object.values(publications).reverse();
         addedDoi = doi;
         addedPublicationsCount++;
       });
@@ -103,6 +103,13 @@ export default {
       if (addedPublicationsCount == 1) {
         this.activatePublication(addedDoi);
       }
+      this.selectedPublications = Object.values(publications);
+      this.selectedPublications.sort(
+        (a, b) =>
+          b.citationCount +
+          b.referenceCount -
+          (a.citationCount + a.referenceCount)
+      );
     },
 
     activatePublication: function (doi) {
@@ -110,13 +117,22 @@ export default {
       this.selectedPublications.forEach((selectedPublication) => {
         selectedPublication.isActive = selectedPublication.doi === doi;
         if (selectedPublication.isActive) {
-          this.suggestedPublications.forEach((suggestedPublication) => {
-            suggestedPublication.isLinkedToActive =
+          this.selectedPublications.forEach((publication) => {
+            publication.isLinkedToActive =
               selectedPublication.citationDois.indexOf(
-                suggestedPublication.doi
+                publication.doi
               ) >= 0 ||
               selectedPublication.referenceDois.indexOf(
-                suggestedPublication.doi
+                publication.doi
+              ) >= 0;
+          });
+          this.suggestedPublications.forEach((publication) => {
+            publication.isLinkedToActive =
+              selectedPublication.citationDois.indexOf(
+                publication.doi
+              ) >= 0 ||
+              selectedPublication.referenceDois.indexOf(
+                publication.doi
               ) >= 0;
           });
         }
@@ -124,13 +140,13 @@ export default {
       this.suggestedPublications.forEach((suggestedPublication) => {
         suggestedPublication.isActive = suggestedPublication.doi === doi;
         if (suggestedPublication.isActive) {
-          this.selectedPublications.forEach((selectedPublication) => {
-            selectedPublication.isLinkedToActive =
+          this.selectedPublications.forEach((publication) => {
+            publication.isLinkedToActive =
               suggestedPublication.citationDois.indexOf(
-                selectedPublication.doi
+                publication.doi
               ) >= 0 ||
               suggestedPublication.referenceDois.indexOf(
-                selectedPublication.doi
+                publication.doi
               ) >= 0;
           });
         }
@@ -175,13 +191,17 @@ async function computeSuggestions() {
     doiList,
     sourceDoi
   ) {
-    if (!publications[doi] && !removedPublicationDois.has(doi)) {
-      if (!suggestedPublications[doi]) {
-        const citingPublication = new Publication(doi);
-        suggestedPublications[doi] = citingPublication;
+    if (!removedPublicationDois.has(doi)) {
+      if (!publications[doi]) {
+        if (!suggestedPublications[doi]) {
+          const citingPublication = new Publication(doi);
+          suggestedPublications[doi] = citingPublication;
+        }
+        suggestedPublications[doi][doiList].push(sourceDoi);
+        suggestedPublications[doi][counter]++;
+      } else {
+        publications[doi][counter]++;
       }
-      suggestedPublications[doi][doiList].push(sourceDoi);
-      suggestedPublications[doi][counter]++;
     }
   }
 
@@ -192,6 +212,10 @@ async function computeSuggestions() {
       publication.isSelected = true;
     })
   );
+  Object.values(publications).forEach((publication) => {
+    publication.citationCount = 0;
+    publication.referenceCount = 0;
+  });
   Object.values(publications).forEach((publication) => {
     publication.citationDois.forEach((citationDoi) => {
       incrementSuggestedPublicationCounter(

@@ -3,16 +3,34 @@
     class="publication-component media"
     v-bind:class="{
       'has-background-grey-lighter': publication.isActive,
+      'has-background-primary-light':
+        !suggestion && publication.isLinkedToActive,
+      'has-background-info-light': suggestion && publication.isLinkedToActive,
       active: publication.isActive,
     }"
     v-on:click="$emit('activate', publication.doi)"
   >
+
     <div
-      v-if="suggestion"
       class="media-left has-text-centered"
       v-bind:class="{
-        'has-background-primary': publication.isLinkedToActive,
-        'has-background-info': publication.isActive,
+        'has-background-primary': !suggestion && publication.isActive,
+        'has-background-info': suggestion && publication.isActive,
+        'has-background-white-bis':
+          !publication.isActive &&
+          publication.referenceCount + publication.citationCount === 1,
+        'has-background-white-ter':
+          !publication.isActive &&
+          publication.referenceCount + publication.citationCount === 2,
+        'has-background-grey-lighter':
+          !publication.isActive &&
+          publication.referenceCount + publication.citationCount === 3,
+        'has-background-grey-light':
+          !publication.isActive &&
+          publication.referenceCount + publication.citationCount === 4,
+        'has-background-grey':
+          !publication.isActive &&
+          publication.referenceCount + publication.citationCount >= 5,
       }"
     >
       <tippy>
@@ -37,36 +55,6 @@
         </div>
         <div v-if="publication.isActive">
           Currently highlighted with marked selected publications indicating
-          reference links.
-        </div>
-      </tippy>
-    </div>
-    <div
-      v-if="!suggestion"
-      class="media-left has-text-centered stats-selected"
-      v-bind:class="{
-        'has-background-primary': publication.isActive,
-        'has-background-info': publication.isLinkedToActive,
-      }"
-    >
-      <tippy>
-        <template v-slot:trigger>
-          <div class="is-size-7">
-            {{ publication.referenceDois.length }} +
-            {{ publication.citationDois.length }}
-          </div>
-        </template>
-        <div>
-          Referencing
-          <b>{{ publication.referenceDois.length }}</b>
-          and referenced by
-          <b>{{ publication.citationDois.length }}</b> other publications.
-        </div>
-        <div v-if="publication.isLinkedToActive">
-          Marked as refered by or referencing highlighted suggested publication.
-        </div>
-        <div v-if="publication.isActive">
-          Currently highlighted with marked suggested publications indicating
           reference links.
         </div>
       </tippy>
@@ -165,7 +153,7 @@ li.publication-component {
   padding: 0;
   margin: 0;
   cursor: pointer;
-  min-height: 4rem;
+  min-height: 5rem;
 }
 li.publication-component:hover {
   background: $white-ter;
