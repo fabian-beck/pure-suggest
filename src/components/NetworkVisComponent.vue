@@ -3,16 +3,14 @@
     <div class="box">
       <div class="level">
         <div class="level-left">
-          <h2 class="is-size-5">
-            Network of references
-            <span class="icon">
-              <i
-                class="fas fa-info-circle"
-                data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>green</b>: selected; <b class='has-text-info'>blue</b>: suggested) with references connecting them as links. The layout places publications from left to right based on publication year and from top to bottom by reference frequency (<b class='has-text-primary'>selected</b>: summed references and citations; <b class='has-text-info'>suggested</b>: suggestion score). You can highlight a publication on click, zoom using the mouse wheel, and pan on drag."
-                v-tippy
-              ></i
-            ></span>
-          </h2>
+          <h2 class="level-item is-size-5">Network of references</h2>
+          <span class="level-item icon">
+            <i
+              class="fas fa-info-circle"
+              data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>green</b>: selected; <b class='has-text-info'>blue</b>: suggested) with references connecting them as links. The layout places publications from left to right based on publication year and from top to bottom by reference frequency (<b class='has-text-primary'>selected</b>: summed references and citations; <b class='has-text-info'>suggested</b>: suggestion score). You can highlight a publication on click, zoom using the mouse wheel, and pan on drag."
+              v-tippy
+            ></i
+          ></span>
         </div>
       </div>
       <div id="network-svg-container">

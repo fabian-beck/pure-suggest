@@ -2,16 +2,14 @@
   <div class="suggested-publications box has-background-info mx-2">
     <div class="level">
       <div class="level-left">
-        <h2 class="is-size-5">
-          Suggested
-          <span class="icon">
-            <i
-              class="fas fa-info-circle"
-              data-tippy-content="The <b>suggested publications</b> are sorted by the number of selected publications they reference or are referenced by."
-              v-tippy
-            ></i
-          ></span>
-        </h2>
+        <h2 class="level-item is-size-5">Suggested</h2>
+        <span class="level-item icon">
+          <i
+            class="fas fa-info-circle"
+            data-tippy-content="The <b>suggested publications</b> based on references to and from the selected publications, sorted by score."
+            v-tippy
+          ></i
+        ></span>
       </div>
     </div>
     <PublicationListComponent

@@ -2,16 +2,17 @@
   <div class="selected-publications box has-background-primary mx-2">
     <div class="level">
       <div class="level-left">
-        <h2 class="is-size-5">
-          Selected
-          <span class="icon">
-            <i
-              class="fas fa-info-circle"
-              data-tippy-content="The <b>publications selected as seeds</b> for computing the suggestions, sorted by inversed sequence of addition."
-              v-tippy
-            ></i>
-          </span>
-        </h2>
+        <h2 class="level-item is-size-5">Selected</h2>
+        <span class="level-item icon">
+          <i
+            class="fas fa-info-circle"
+            data-tippy-content="The <b>publications selected as seeds</b> for computing the suggestions, sorted by score."
+            v-tippy
+          ></i>
+        </span>
+        <span class="level-item" v-show="publications.length">
+          ({{ publications.length === 1 ? "1 publication": publications.length + " publications"}})
+        </span>
       </div>
       <div class="level-right">
         <button

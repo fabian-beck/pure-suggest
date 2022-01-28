@@ -14,8 +14,7 @@
     <div
       class="media-left has-text-centered"
       v-bind:class="{
-        'has-background-primary': !suggestion && publication.isActive,
-        'has-background-info': suggestion && publication.isActive,
+        'has-background-primary': publication.isActive,
         'has-background-white-bis':
           !publication.isActive &&
           publication.referenceCount + publication.citationCount === 1,
