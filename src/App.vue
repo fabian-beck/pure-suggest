@@ -103,13 +103,7 @@ export default {
       if (addedPublicationsCount == 1) {
         this.activatePublication(addedDoi);
       }
-      this.selectedPublications = Object.values(publications);
-      this.selectedPublications.sort(
-        (a, b) =>
-          b.citationCount +
-          b.referenceCount -
-          (a.citationCount + a.referenceCount)
-      );
+      this.setAndSortSelectedPublications();
     },
 
     activatePublication: function (doi) {
@@ -119,21 +113,13 @@ export default {
         if (selectedPublication.isActive) {
           this.selectedPublications.forEach((publication) => {
             publication.isLinkedToActive =
-              selectedPublication.citationDois.indexOf(
-                publication.doi
-              ) >= 0 ||
-              selectedPublication.referenceDois.indexOf(
-                publication.doi
-              ) >= 0;
+              selectedPublication.citationDois.indexOf(publication.doi) >= 0 ||
+              selectedPublication.referenceDois.indexOf(publication.doi) >= 0;
           });
           this.suggestedPublications.forEach((publication) => {
             publication.isLinkedToActive =
-              selectedPublication.citationDois.indexOf(
-                publication.doi
-              ) >= 0 ||
-              selectedPublication.referenceDois.indexOf(
-                publication.doi
-              ) >= 0;
+              selectedPublication.citationDois.indexOf(publication.doi) >= 0 ||
+              selectedPublication.referenceDois.indexOf(publication.doi) >= 0;
           });
         }
       });
@@ -142,12 +128,8 @@ export default {
         if (suggestedPublication.isActive) {
           this.selectedPublications.forEach((publication) => {
             publication.isLinkedToActive =
-              suggestedPublication.citationDois.indexOf(
-                publication.doi
-              ) >= 0 ||
-              suggestedPublication.referenceDois.indexOf(
-                publication.doi
-              ) >= 0;
+              suggestedPublication.citationDois.indexOf(publication.doi) >= 0 ||
+              suggestedPublication.referenceDois.indexOf(publication.doi) >= 0;
           });
         }
       });
@@ -172,8 +154,18 @@ export default {
     removePublication: function (doi) {
       removedPublicationDois.add(doi);
       delete publications[doi];
-      this.selectedPublications = Object.values(publications).reverse();
+      this.setAndSortSelectedPublications();
       this.updateSuggestions();
+    },
+
+    setAndSortSelectedPublications: function () {
+      this.selectedPublications = Object.values(publications);
+      this.selectedPublications.sort(
+        (a, b) =>
+          b.citationCount +
+          b.referenceCount -
+          (a.citationCount + a.referenceCount)
+      );
     },
   },
   beforeMount() {
