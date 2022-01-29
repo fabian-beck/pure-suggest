@@ -36,11 +36,13 @@
       <tippy>
         <template v-slot:trigger>
           <div class="tooltip-target">
-            <span class="is-size-2">{{ publication.score }}</span>
-            <i
+            <div class="is-size-2 is-inline-block">{{ publication.score }}</div>
+            <div
+              class="has-background-warning is-size-7 is-inline-block p-1 ml-1"
               v-if="publication.boostFactor > 1"
-              class="fas fa-angle-double-up is-size-7"
-            ></i>
+            >
+              <i class="fas fa-angle-double-up"></i
+            ></div>
           </div>
           <div class="is-size-7">
             {{ publication.referenceCount }}
@@ -52,14 +54,16 @@
         <div>
           Suggestion score of
           <b>{{ publication.score }}</b
-          >:<br/> Referenced by <b>{{ publication.referenceCount }}</b> (<i
+          >:<br />
+          Referenced by <b>{{ publication.referenceCount }}</b> (<i
             class="fas fa-arrow-left"
           ></i
           >) and referencing <b>{{ publication.citationCount }}</b> (<i
             class="fas fa-arrow-right"
           ></i
           >) selected publications<span v-if="publication.boostFactor != 1"
-            >, multiplied by a boost factor of <b>{{ publication.boostFactor }}</b> (<i
+            >, multiplied by a boost factor of
+            <b>{{ publication.boostFactor }}</b> (<i
               class="fas fa-angle-double-up"
             ></i
             >)</span
@@ -77,7 +81,16 @@
     <div class="media-content">
       <div class="level">
         <span v-if="publication.title">
-          <strong>{{ publication.title }}&nbsp;</strong>
+          <strong
+            ><span
+              v-html="
+                publication.titleHighlighted
+                  ? publication.titleHighlighted
+                  : publication.title
+              "
+            ></span
+            >&nbsp;</strong
+          >
           <span v-if="publication.shortReference"
             >({{ publication.shortReference }})</span
           >
@@ -174,13 +187,8 @@ li.publication-component:hover {
   background: $white-ter;
 }
 .media-left {
-  width: 4rem;
-  margin-left: 1rem;
+  width: 5rem;
   padding-bottom: 0.6rem;
-}
-.media-left div:first-child {
-  margin-top: -0.3rem;
-  margin-bottom: -0.7rem;
 }
 .stats-selected {
   padding-top: 0.5rem;

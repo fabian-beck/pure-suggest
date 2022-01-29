@@ -112,8 +112,7 @@ export default {
                   ? d.publication.citationDois.length +
                       d.publication.referenceDois.length +
                       1
-                  : (d.publication.referenceCount +
-                      d.publication.citationCount) *
+                  : d.publication.score *
                       10 +
                       1
               ) *
@@ -218,7 +217,7 @@ export default {
         .text((d) =>
           d.publication.isSelected
             ? ""
-            : d.publication.referenceCount + d.publication.citationCount
+            : d.publication.score
         );
 
       this.link = this.link

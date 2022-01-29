@@ -10,6 +10,7 @@ export default class Publication {
         this.boostFactor = 1;
         this.score = 0;
         this.title = "";
+        this.titleHighlighted = "";
         this.container = "";
         this.year = undefined;
         this.authorShort = undefined;
@@ -62,9 +63,12 @@ export default class Publication {
 
     updateScore(boostKeywords) {
         this.boostFactor = 1;
+        this.titleHighlighted = this.title;
         boostKeywords.forEach(boostKeyword => {
-            if (boostKeyword && this.title.toLowerCase().indexOf(boostKeyword) >= 0) {
+            const index = this.titleHighlighted.toLowerCase().indexOf(boostKeyword);
+            if (boostKeyword && index >= 0) {
                 this.boostFactor = this.boostFactor * 2;
+                this.titleHighlighted = this.titleHighlighted.substring(0, index) + "<u style='text-decoration-color: hsl(48, 100%, 67%); text-decoration-thickness: 0.25rem;'>" + this.titleHighlighted.substring(index, index + boostKeyword.length) + "</u>" + this.titleHighlighted.substring(index + boostKeyword.length);
             }
         });
         this.score = (this.citationCount + this.referenceCount) * this.boostFactor;

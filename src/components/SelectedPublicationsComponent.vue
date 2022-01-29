@@ -27,18 +27,29 @@
       </div>
       <div class="level-right">
         <div class="level-item">
-          <div class="field has-addons">
-            <p class="control">
+          <div
+            class="field has-addons"
+            data-tippy-content="Boost by factors of 2 the score of publications that contain the following keyword(s) in their title.<br><br>Use commas to separate multiple keywords."
+            v-tippy
+          >
+            <p class="control has-icons-right">
               <input
                 class="input has-background-warning-light"
                 type="text"
                 v-model="boostKeywordString"
-                placeholder="keyword(s), comma-separated"
+                placeholder="keyword(s)"
                 @keyup.enter="setBoostKeyword"
               />
+              <span class="icon is-small is-right is-clickable">
+                <i class="fas fa-times" v-on:click="clearBoostKeyword"></i>
+              </span>
             </p>
             <p class="control">
-              <button class="button has-background-warning" type="submit" v-on:click="setBoostKeyword">
+              <button
+                class="button has-background-warning"
+                type="submit"
+                v-on:click="setBoostKeyword"
+              >
                 <span class="icon">
                   <i class="fas fa-angle-double-up"></i>
                 </span>
@@ -69,7 +80,12 @@
     </form>
     <div>
       <div
-        class="notification has-background-danger-light has-text-danger-dark mb-2 p-2"
+        class="
+          notification
+          has-background-danger-light has-text-danger-dark
+          mb-2
+          p-2
+        "
         v-show="noPublicationWarning"
       >
         <button
@@ -127,6 +143,10 @@ export default {
       this.$emit("clear");
     },
     setBoostKeyword: function () {
+      this.$emit("updateBoost", this.boostKeywordString);
+    },
+    clearBoostKeyword: function () {
+      this.boostKeywordString = "";
       this.$emit("updateBoost", this.boostKeywordString);
     },
   },
