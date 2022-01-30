@@ -1,10 +1,15 @@
 <template>
-  <div class="network-of-references m-2">
+  <div class="network-of-references is-hidden-mobile" >
     <div class="box">
       <div class="level">
         <div class="level-left">
-          <h2 class="level-item is-size-5">Network of references</h2>
-          <span class="level-item icon">
+          <h2
+            class="level-item is-size-5 is-clickable"
+            v-on:click="this.toggleCollapse"
+          >
+            Network of references
+          </h2>
+          <span class="level-item icon is-hidden-mobile">
             <i
               class="fas fa-info-circle"
               data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>green</b>: selected; <b class='has-text-info'>blue</b>: suggested) with references connecting them as links. The layout places publications from left to right based on publication year and from top to bottom by reference frequency (<b class='has-text-primary'>selected</b>: summed references and citations; <b class='has-text-info'>suggested</b>: suggestion score). You can highlight a publication on click, zoom using the mouse wheel, and pan on drag."
@@ -13,7 +18,7 @@
           ></span>
         </div>
       </div>
-      <div id="network-svg-container">
+      <div id="network-svg-container" v-show="!collapsed">
         <svg id="network-svg" />
       </div>
     </div>
@@ -29,6 +34,7 @@ export default {
   props: {
     selectedPublications: Array,
     suggestedPublications: Array,
+    collapsed: Boolean,
   },
   data: function () {
     return {
@@ -112,9 +118,7 @@ export default {
                   ? d.publication.citationDois.length +
                       d.publication.referenceDois.length +
                       1
-                  : d.publication.score *
-                      10 +
-                      1
+                  : d.publication.score * 10 + 1
               ) *
                 0.12 + // spread by
                 0.8) * // move down by
@@ -214,11 +218,7 @@ export default {
         .select("text")
         .attr("x", -4.5)
         .attr("y", 5.5)
-        .text((d) =>
-          d.publication.isSelected
-            ? ""
-            : d.publication.score
-        );
+        .text((d) => (d.publication.isSelected ? "" : d.publication.score));
 
       this.link = this.link
         .data(this.graph.links, (d) => [d.source, d.target])
@@ -262,6 +262,10 @@ export default {
 
     activatePublication: function (d) {
       this.$emit("activate", d.publication.doi);
+    },
+
+    toggleCollapse: function () {
+      this.$emit("toggleCollapse", "network");
     },
   },
 };
@@ -310,5 +314,14 @@ export default {
 }
 #network-svg path.active {
   stroke: #000000aa;
+}
+
+@include mobile {
+  .network-of-references {
+    padding: 0 !important;
+  }
+  .network-of-references .box {
+    padding: 0.5rem;
+  }
 }
 </style>

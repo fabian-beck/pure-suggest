@@ -1,29 +1,36 @@
 <template>
-  <div class="selected-publications box has-background-primary mx-2">
+  <div class="selected-publications box has-background-primary">
     <div class="level">
       <div class="level-left">
-        <h2 class="level-item is-size-5">Selected</h2>
-        <span class="level-item icon">
+        <h2
+          class="level-item is-size-5 is-clickable"
+          v-on:click="this.toggleCollapse"
+        >
+          Selected
+        </h2>
+        <span class="level-item icon is-hidden-mobile">
           <i
             class="fas fa-info-circle"
             data-tippy-content="The <b>publications selected as seeds</b> for computing the suggestions, sorted by score."
             v-tippy
           ></i>
         </span>
-        <span class="level-item" v-show="publications.length">
-          ({{
-            publications.length === 1
-              ? "1 publication"
-              : publications.length + " publications"
-          }})
+        <span class="level-item">
+          <span v-show="publications.length">
+            ({{
+              publications.length === 1
+                ? "1 publication"
+                : publications.length + " publications"
+            }})
+          </span>
+          <button
+            class="delete ml-1"
+            v-on:click="clear"
+            data-tippy-content="Clear selected publications (clears also the list of removed publications)."
+            v-tippy
+            v-show="publications.length"
+          ></button>
         </span>
-        <button
-          class="delete"
-          v-on:click="clear"
-          data-tippy-content="Clear selected publications (clears also the list of removed publications)."
-          v-tippy
-          v-show="publications.length"
-        ></button>
       </div>
       <div class="level-right">
         <div class="level-item">
@@ -60,12 +67,12 @@
         </div>
       </div>
     </div>
-    <form v-on:submit.prevent class="field has-addons">
+    <form v-on:submit.prevent class="field has-addons" v-show="!collapsed">
       <p class="control is-expanded">
         <input
           class="input"
           type="text"
-          placeholder="To add paper(s), provide DOI(s) or publication title here"
+          placeholder="publication DOI(s) or title"
           v-model="addQuery"
           autofocus
         />
@@ -82,7 +89,22 @@
         </button>
       </p>
     </form>
-    <div>
+    <div v-show="!collapsed">
+      <div
+        class="
+          notification
+          has-background-danger-light has-text-danger-dark
+          mb-2
+          p-2
+        "
+        v-show="noPublicationWarning"
+      >
+        <button
+          class="delete"
+          v-on:click="noPublicationWarning = false"
+        ></button>
+        Cannot find a publication with this or similar title.
+      </div>
       <div
         class="notification mb-2 p-2 is-size-5"
         v-show="publications.length === 0"
@@ -105,26 +127,12 @@
           >). Alternatively, you can paste a publication <b>title</b>.
         </p>
       </div>
-      <div
-        class="
-          notification
-          has-background-danger-light has-text-danger-dark
-          mb-2
-          p-2
-        "
-        v-show="noPublicationWarning"
-      >
-        <button
-          class="delete"
-          v-on:click="noPublicationWarning = false"
-        ></button>
-        Cannot find a publication with this or similar title.
-      </div>
     </div>
     <PublicationListComponent
       :publications="publications"
       v-on:activate="activatePublication"
       v-on:remove="removePublication"
+      v-show="!collapsed"
     />
   </div>
 </template>
@@ -140,6 +148,7 @@ export default {
   },
   props: {
     publications: Array,
+    collapsed: Boolean,
   },
   data() {
     return {
@@ -174,6 +183,9 @@ export default {
     clearBoostKeyword: function () {
       this.boostKeywordString = "";
       this.$emit("updateBoost", this.boostKeywordString);
+    },
+    toggleCollapse: function () {
+      this.$emit("toggleCollapse", "selected");
     },
   },
   watch: {

@@ -1,18 +1,22 @@
 <template>
   <div id="app">
-    <div class="box px-2 py-1 is-radiusless" id="header">
+    <div class="box px-2 py-1 m-0 is-radiusless" id="header">
       <div class="level">
         <div class="level-left">
-          <b-icon
-            icon="tint"
-            size="is-large"
-            class="level-item has-text-grey mt-0"
-          ></b-icon>
-          <h1 class="level-item title mt-1">
-            <span class="has-text-primary">PURE&nbsp;</span>
-            <span class="has-text-info">suggest</span>
-          </h1>
-          <div class="subtitle level-item has-text-grey mt-1 ml-4">
+          <div class="level-item">
+            <b-icon
+              icon="tint"
+              size="is-large"
+              class="level-item has-text-grey mt-0"
+            ></b-icon>
+            <h1 class="level-item title">
+              <span class="has-text-primary">PURE&nbsp;</span>
+              <span class="has-text-info">suggest</span>
+            </h1>
+          </div>
+          <div
+            class="subtitle level-item has-text-grey mt-2 ml-4 is-hidden-mobile"
+          >
             citation-based literature search
           </div>
         </div>
@@ -20,25 +24,31 @@
     </div>
     <SelectedPublicationsComponent
       :publications="selectedPublications"
+      :collapsed="collapsed['selected']"
       v-on:add="addPublicationsToSelection"
       v-on:remove="removePublication"
       v-on:activate="activatePublication"
       v-on:clear="clearSelection"
       v-on:updateBoost="updateBoost"
+      v-on:toggleCollapse="toggleCollapse"
     />
     <SuggestedPublicationsComponent
       :publications="suggestedPublications"
       :loadingSuggestions="loadingSuggestions"
+      :collapsed="collapsed['suggested']"
       v-on:add="addPublicationsToSelection"
       v-on:remove="removePublication"
       v-on:activate="activatePublication"
+      v-on:toggleCollapse="toggleCollapse"
     />
     <NetworkVisComponent
       :selectedPublications="selectedPublications"
       :suggestedPublications="suggestedPublications"
+      :collapsed="collapsed['network']"
       :svgWidth="1500"
       :svgHeight="300"
       v-on:activate="activatePublication"
+      v-on:toggleCollapse="toggleCollapse"
     />
   </div>
 </template>
@@ -67,6 +77,7 @@ export default {
       suggestedPublications: [],
       loadingSuggestions: false,
       boostKeywords: [],
+      collapsed: { selected: false, suggested: window.innerWidth <= 768, network: window.innerWidth <= 768 },
     };
   },
   methods: {
@@ -166,6 +177,19 @@ export default {
       this.rankSelectedPublications();
       this.updateSuggestions();
     },
+
+    toggleCollapse: function (component) {
+      if (window.innerWidth <= 768) {
+        if (this.collapsed[component]) {
+          Object.keys(this.collapsed).forEach(
+            (component) => (this.collapsed[component] = true)
+          );
+          this.collapsed[component] = false;
+        }
+      } else if (component === "network") {
+        this.collapsed[component] = !this.collapsed[component];
+      }
+    },
   },
   beforeMount() {
     this.updateSuggestions();
@@ -257,8 +281,12 @@ $box-padding: 1rem;
     "left right"
     "vis vis";
   height: 100vh;
-  grid-template-rows: max-content 50fr 30fr;
+  grid-template-rows: max-content 50fr max-content;
   grid-template-columns: 50fr 50fr;
+  grid-row-gap: 0.5rem;
+}
+#app > div {
+  margin: 0.5rem;
 }
 #header {
   grid-area: header;
@@ -273,5 +301,22 @@ $box-padding: 1rem;
 }
 .network-of-references {
   grid-area: vis;
+}
+
+@include mobile {
+  #app {
+    grid-template-areas:
+      "header"
+      "left"
+      "right";
+    grid-template-rows: max-content auto auto;
+    grid-template-columns: 100fr;
+    grid-row-gap: 0.25rem;
+  }
+
+  #app > div {
+    margin: 0.25rem;
+    padding: 0.5rem;
+  }
 }
 </style>

@@ -1,9 +1,14 @@
 <template>
-  <div class="suggested-publications box has-background-info mx-2">
+  <div class="suggested-publications box has-background-info">
     <div class="level">
       <div class="level-left">
-        <h2 class="level-item is-size-5">Suggested</h2>
-        <span class="level-item icon">
+        <h2
+          class="level-item is-size-5 is-clickable"
+          v-on:click="this.toggleCollapse"
+        >
+          Suggested
+        </h2>
+        <span class="level-item icon is-hidden-mobile">
           <i
             class="fas fa-info-circle"
             data-tippy-content="The <b>suggested publications</b> based on references to and from the selected publications, sorted by score."
@@ -18,6 +23,7 @@
       v-on:activate="activatePublication"
       v-on:add="addPublication"
       v-on:remove="removePublication"
+      v-show="!collapsed"
     />
     <b-loading
       :is-full-page="false"
@@ -39,6 +45,7 @@ export default {
     title: String,
     publications: Array,
     loadingSuggestions: Boolean,
+    collapsed: Boolean,
   },
   methods: {
     addPublication: function (doi) {
@@ -49,6 +56,9 @@ export default {
     },
     activatePublication: function (doi) {
       this.$emit("activate", doi);
+    },
+    toggleCollapse: function () {
+      this.$emit("toggleCollapse", "suggested");
     },
   },
 };
