@@ -60,25 +60,51 @@
         </div>
       </div>
     </div>
-    <form v-on:submit.prevent class="level">
-      <input
-        class="input"
-        type="text"
-        placeholder="To add paper(s), provide DOI(s) or publication title here"
-        v-model="addQuery"
-        autofocus
-      />
-      <button
-        class="button level-right"
-        type="submit"
-        v-on:click="add"
-        data-tippy-content="Add listed DOIs to selected publications (the list might be separate by different characters or the DOI can also be included in a different format such as BibTeX)."
-        v-tippy
-      >
-        <i class="fas fa-plus"></i>
-      </button>
+    <form v-on:submit.prevent class="field has-addons">
+      <p class="control is-expanded">
+        <input
+          class="input"
+          type="text"
+          placeholder="To add paper(s), provide DOI(s) or publication title here"
+          v-model="addQuery"
+          autofocus
+        />
+      </p>
+      <p class="control">
+        <button
+          class="button level-right has-background-primary-light"
+          type="submit"
+          v-on:click="add"
+          data-tippy-content="Add listed DOIs to selected publications (the list might be separate by different characters or the DOI can also be included in a different format such as BibTeX)."
+          v-tippy
+        >
+          <span class="icon"><i class="fas fa-plus"></i></span>
+        </button>
+      </p>
     </form>
     <div>
+      <div
+        class="notification mb-2 p-2 is-size-5"
+        v-show="publications.length === 0"
+      >
+        <p>
+          <b
+            ><span class="has-text-primary">PURE</span>
+            <span class="has-text-info">suggest</span></b
+          >
+          makes <b class="has-text-info">suggestions</b> for related
+          <b class="has-text-primary">pu</b>blications connected by
+          <b class="has-text-primary">re</b>ferences to a set of currently
+          selected publications.
+        </p>
+        <p class="pt-2">
+          To start your citatation-based search, select one or multiple
+          publications by providing their <b>DOIs</b> (<a
+            href="https://www.doi.org/"
+            >Document Object Intentfier</a
+          >). Alternatively, you can paste a publication <b>title</b>.
+        </p>
+      </div>
       <div
         class="
           notification

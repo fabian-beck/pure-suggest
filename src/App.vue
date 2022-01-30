@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <div class="box px-2 py-1" id="header">
+    <div class="box px-2 py-1 is-radiusless" id="header">
       <div class="level">
         <div class="level-left">
           <b-icon
@@ -8,22 +8,12 @@
             size="is-large"
             class="level-item has-text-grey mt-0"
           ></b-icon>
-          <h1 class="level-item title mt">
+          <h1 class="level-item title mt-1">
             <span class="has-text-primary">PURE&nbsp;</span>
             <span class="has-text-info">suggest</span>
           </h1>
-          <div class="subtitle level-item has-text-grey mt-2 ml-4">
-            literature search
-          </div>
-          <div>
-            <span class="icon level-item">
-              <i
-                class="fas fa-info-circle"
-                data-tippy-content="Suggest scientific
-              <b>pu</b>blications by <b>re</b>ference: For a set of selected publications, the tool looks up all citations and references and lists those publications as suggestions often referencing or getting referenced by the selected ones."
-                v-tippy
-              ></i>
-            </span>
+          <div class="subtitle level-item has-text-grey mt-1 ml-4">
+            citation-based literature search
           </div>
         </div>
       </div>
