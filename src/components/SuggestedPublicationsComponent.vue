@@ -1,14 +1,20 @@
 <template>
-  <div class="suggested-publications box has-background-info">
+  <div
+    class="suggested-publications box has-background-info"
+    :class="{ collapsed: collapsed }"
+  >
     <div class="level">
       <div class="level-left">
         <h2
-          class="level-item is-size-5 is-clickable"
+          class="level-item is-size-5"
           v-on:click="this.toggleCollapse"
         >
           Suggested
         </h2>
-        <span class="level-item icon is-hidden-mobile">
+        <span
+          class="level-item icon is-hidden-touch"
+          v-show="publications.length"
+        >
           <i
             class="fas fa-info-circle"
             data-tippy-content="The <b>suggested publications</b> based on references to and from the selected publications, sorted by score."
@@ -23,7 +29,7 @@
       v-on:activate="activatePublication"
       v-on:add="addPublication"
       v-on:remove="removePublication"
-      v-show="!collapsed"
+      v-show="!collapsed && publications.length"
     />
     <b-loading
       :is-full-page="false"

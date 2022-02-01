@@ -1,5 +1,5 @@
 <template>
-  <div class="network-of-references is-hidden-mobile" >
+  <div class="network-of-references is-hidden-mobile">
     <div class="box">
       <div class="level">
         <div class="level-left">
@@ -9,7 +9,10 @@
           >
             Network of references
           </h2>
-          <span class="level-item icon is-hidden-mobile">
+          <span
+            class="level-item icon is-hidden-touch"
+            v-show="selectedPublications.length"
+          >
             <i
               class="fas fa-info-circle"
               data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>green</b>: selected; <b class='has-text-info'>blue</b>: suggested) with references connecting them as links. The layout places publications from left to right based on publication year and from top to bottom by reference frequency (<b class='has-text-primary'>selected</b>: summed references and citations; <b class='has-text-info'>suggested</b>: suggestion score). You can highlight a publication on click, zoom using the mouse wheel, and pan on drag."

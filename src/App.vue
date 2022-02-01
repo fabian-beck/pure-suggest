@@ -15,7 +15,8 @@
             </h1>
           </div>
           <div
-            class="subtitle level-item has-text-grey mt-2 ml-4 is-hidden-mobile"
+            class="subtitle level-item has-text-grey mt-2 ml-4"
+            v-show="!isMobile || selectedPublications.length === 0"
           >
             citation-based literature search
           </div>
@@ -77,8 +78,17 @@ export default {
       suggestedPublications: [],
       loadingSuggestions: false,
       boostKeywords: [],
-      collapsed: { selected: false, suggested: window.innerWidth <= 768, network: window.innerWidth <= 768 },
+      collapsed: {
+        selected: false,
+        suggested: window.innerWidth <= 768,
+        network: window.innerWidth <= 768,
+      },
     };
+  },
+  computed: {
+    isMobile: function() {
+      return window.innerWidth <= 768
+    }
   },
   methods: {
     updateSuggestions: async function () {
@@ -179,7 +189,7 @@ export default {
     },
 
     toggleCollapse: function (component) {
-      if (window.innerWidth <= 768) {
+      if (this.isMobile) {
         if (this.collapsed[component]) {
           Object.keys(this.collapsed).forEach(
             (component) => (this.collapsed[component] = true)
@@ -287,6 +297,9 @@ $box-padding: 1rem;
 }
 #app > div {
   margin: 0.5rem;
+}
+.collapsed {
+  max-height: 3rem;
 }
 #header {
   grid-area: header;

@@ -1,22 +1,28 @@
 <template>
-  <div class="selected-publications box has-background-primary">
+  <div
+    class="selected-publications box has-background-primary"
+    :class="{ collapsed: collapsed }"
+  >
     <div class="level">
       <div class="level-left">
         <h2
-          class="level-item is-size-5 is-clickable"
+          class="level-item is-size-5"
           v-on:click="this.toggleCollapse"
         >
           Selected
         </h2>
-        <span class="level-item icon is-hidden-mobile">
+        <span
+          class="level-item icon is-hidden-touch"
+          v-show="publications.length"
+        >
           <i
             class="fas fa-info-circle"
             data-tippy-content="The <b>publications selected as seeds</b> for computing the suggestions, sorted by score."
             v-tippy
           ></i>
         </span>
-        <span class="level-item">
-          <span v-show="publications.length">
+        <span class="level-item" v-show="publications.length && !collapsed">
+          <span>
             ({{
               publications.length === 1
                 ? "1 publication"
@@ -28,12 +34,11 @@
             v-on:click="clear"
             data-tippy-content="Clear selected publications (clears also the list of removed publications)."
             v-tippy
-            v-show="publications.length"
           ></button>
         </span>
       </div>
       <div class="level-right">
-        <div class="level-item">
+        <div class="level-item" v-show="publications.length && !collapsed">
           <div
             class="field has-addons"
             data-tippy-content="Boost by factors of 2 the score of publications that contain the following keyword(s) in their title.<br><br>Use commas to separate multiple keywords."
@@ -132,7 +137,7 @@
       :publications="publications"
       v-on:activate="activatePublication"
       v-on:remove="removePublication"
-      v-show="!collapsed"
+      v-show="!collapsed && publications.length"
     />
   </div>
 </template>
