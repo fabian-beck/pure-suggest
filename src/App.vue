@@ -21,6 +21,15 @@
             citation-based literature search
           </div>
         </div>
+        <div class="level-right">
+          <b-navbar>
+            <template #start>
+              <b-navbar-item href="#" v-on:click="exportDOIs">
+                    Export selected DOIs
+                </b-navbar-item>
+            </template>
+          </b-navbar>
+        </div>
       </div>
     </div>
     <SelectedPublicationsComponent
@@ -86,9 +95,9 @@ export default {
     };
   },
   computed: {
-    isMobile: function() {
-      return window.innerWidth <= 768
-    }
+    isMobile: function () {
+      return window.innerWidth <= 768;
+    },
   },
   methods: {
     updateSuggestions: async function () {
@@ -200,6 +209,10 @@ export default {
         this.collapsed[component] = !this.collapsed[component];
       }
     },
+
+    exportDOIs: function () {
+      save("selectedDois.txt", JSON.stringify(Object.keys(publications)));
+    },
   },
   beforeMount() {
     this.updateSuggestions();
@@ -270,6 +283,21 @@ async function computeSuggestions() {
     suggestedPublication.fetchData();
   });
   return filteredSuggestions;
+}
+
+// https://stackoverflow.com/questions/3665115/how-to-create-a-file-in-memory-for-user-to-download-but-not-through-server?answertab=active#tab-top
+function save(filename, data) {
+  const blob = new Blob([data], { type: "text/csv" });
+  if (window.navigator.msSaveOrOpenBlob) {
+    window.navigator.msSaveBlob(blob, filename);
+  } else {
+    const elem = window.document.createElement("a");
+    elem.href = window.URL.createObjectURL(blob);
+    elem.download = filename;
+    document.body.appendChild(elem);
+    elem.click();
+    document.body.removeChild(elem);
+  }
 }
 </script>
 
