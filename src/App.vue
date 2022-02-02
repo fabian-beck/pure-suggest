@@ -31,6 +31,9 @@
               >
                 Export selected DOIs
               </b-navbar-item>
+              <b-navbar-item href="#" v-on:click="isAboutActive = true">
+                About
+              </b-navbar-item>
             </template>
           </b-navbar>
         </div>
@@ -64,6 +67,26 @@
       v-on:activate="activatePublication"
       v-on:toggleCollapse="toggleCollapse"
     />
+    <b-modal v-model="isAboutActive">
+      <div id="about" class="box content">
+        <section>
+          <h1 class="title mb-5">PURE suggest &ndash; citation-based literature search</h1>
+          <p>
+            created by <a href="https://github.com/fabian-beck">Fabian Beck</a>
+          </p>
+          <p>
+            PURE suggest is a scientific literature search tool that, starting
+            from some seed papers, suggests scientific publications through
+            citations/references.
+          </p>
+          <h3>Data Sources</h3>
+          <ul>
+            <li><a href="https://opencitations.net/">OpenCitations</a></li>
+            <li><a href="https://www.crossref.org/">CrossRef</a></li>
+          </ul>
+        </section>
+      </div>
+    </b-modal>
   </div>
 </template>
 
@@ -96,6 +119,7 @@ export default {
         suggested: window.innerWidth <= 768,
         network: window.innerWidth <= 768,
       },
+      isAboutActive: false,
     };
   },
   computed: {
