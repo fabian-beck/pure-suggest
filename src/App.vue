@@ -21,12 +21,16 @@
             citation-based literature search
           </div>
         </div>
-        <div class="level-right">
+        <div class="level-right is-hidden-touch">
           <b-navbar>
             <template #start>
-              <b-navbar-item href="#" v-on:click="exportDOIs">
-                    Export selected DOIs
-                </b-navbar-item>
+              <b-navbar-item
+                href="#"
+                v-on:click="exportDOIs"
+                v-show="selectedPublications.length"
+              >
+                Export selected DOIs
+              </b-navbar-item>
             </template>
           </b-navbar>
         </div>
@@ -129,6 +133,12 @@ export default {
         this.activatePublication(addedDoi);
       }
       this.rankSelectedPublications();
+      this.$buefy.toast.open({
+        message: `Added ${
+          dois.length === 1 ? "a publication" : dois.length + " publications"
+        } to selected and updating suggested`,
+        position: "is-bottom",
+      });
     },
 
     activatePublication: function (doi) {
@@ -181,6 +191,10 @@ export default {
       delete publications[doi];
       this.rankSelectedPublications();
       this.updateSuggestions();
+      this.$buefy.toast.open({
+        message: `Excluded a publication and updating suggested`,
+        position: "is-bottom",
+      });
     },
 
     rankSelectedPublications: function () {

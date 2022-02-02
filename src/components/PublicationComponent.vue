@@ -151,7 +151,7 @@
       <div>
         <button
           class="button is-small"
-          data-tippy-content="Remove publication from the list of publications."
+          data-tippy-content="Remove publication from the list and exclude for suggestions."
           v-on:click.stop="$emit('remove', publication.doi)"
           v-tippy
         >

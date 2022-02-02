@@ -180,7 +180,10 @@ export default {
       this.$emit("activate", doi);
     },
     clear: function () {
-      this.$emit("clear");
+        this.$buefy.dialog.confirm({
+        message: "You are going to clear all selected articles and jump back to the initial state.",
+        onConfirm: () => this.$emit("clear")
+      });      
     },
     setBoostKeyword: function () {
       this.$emit("updateBoost", this.boostKeywordString);
