@@ -3,10 +3,7 @@
     <div class="box">
       <div class="level">
         <div class="level-left">
-          <h2
-            class="level-item is-size-5 is-clickable"
-            v-on:click="this.toggleCollapse"
-          >
+          <h2 class="level-item is-size-5" v-on:click="this.toggleCollapse">
             Network of references
           </h2>
           <span
@@ -134,7 +131,7 @@ export default {
 
     this.link = this.svg.append("g").attr("class", "links").selectAll("path");
 
-    this.node = this.svg.append("g").attr("class", "nodes").selectAll("circle");
+    this.node = this.svg.append("g").attr("class", "nodes").selectAll("rect");
   },
   methods: {
     plot: function () {
@@ -198,15 +195,16 @@ export default {
               "data-tippy-content",
               (d) => `${d.publication.title} (${d.publication.shortReference})`
             );
-          g.append("circle");
+          g.append("rect");
           g.append("text");
+          g.append("circle");
           g.on("click", this.activatePublication);
           tippy(g.nodes());
           return g;
         });
 
       this.node
-        .select("circle")
+        .select("rect")
         .attr(
           "class",
           (d) =>
@@ -214,14 +212,23 @@ export default {
             (d.publication.isActive ? " active" : "") +
             (d.publication.isLinkedToActive ? " linkedToActive" : "")
         )
-        .attr("r", (d) => (d.publication.isActive ? 15 : 10))
-        .attr("stroke-width", (d) => (d.publication.isActive ? 8 : 5));
+        .attr("width", (d) => (d.publication.isActive ? 30 : 20))
+        .attr("height", (d) => (d.publication.isActive ? 30 : 20))
+        .attr("x", (d) => (d.publication.isActive ? -15 : -10))
+        .attr("y", (d) => (d.publication.isActive ? -15 : -10))
+        .attr("stroke-width", (d) => (d.publication.isActive ? 4 : 3));
 
       this.node
         .select("text")
-        .attr("x", -4.5)
-        .attr("y", 5.5)
-        .text((d) => (d.publication.isSelected ? "" : d.publication.score));
+        .attr("x", -5)
+        .attr("y", 5)
+        .text((d) => d.publication.score);
+
+      this.node
+        .select("circle")
+        .attr("cx", (d) => (d.publication.isActive ? 15 : 10)-1)
+        .attr("cy", (d) => (d.publication.isActive ? 15 : 10)-1)
+        .attr("r", (d) => (d.publication.boostFactor > 1 ? (d.publication.isActive ? 6 : 4) : 0));
 
       this.link = this.link
         .data(this.graph.links, (d) => [d.source, d.target])
@@ -288,27 +295,30 @@ export default {
 #network-svg g.node-container text {
   cursor: pointer;
 }
-#network-svg circle {
+#network-svg rect {
   fill: white;
   cursor: pointer;
 }
-#network-svg circle.selected {
+#network-svg rect.selected {
   stroke: $primary;
 }
-#network-svg circle.selected.linkedToActive {
+#network-svg rect.selected.linkedToActive {
   fill: $info;
 }
-#network-svg circle.suggested {
+#network-svg rect.suggested {
   stroke: $info;
 }
-#network-svg circle.suggested.linkedToActive {
+#network-svg rect.suggested.linkedToActive {
   fill: $primary;
 }
-#network-svg circle:hover {
+#network-svg rect:hover {
   fill: $white-ter;
 }
-#network-svg circle.active {
+#network-svg rect.active {
   fill: $grey-lighter;
+}
+#network-svg circle {
+  fill: $warning;
 }
 #network-svg path {
   fill: none;

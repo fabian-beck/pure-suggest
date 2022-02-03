@@ -250,9 +250,7 @@ export default {
           );
           this.collapsed[component] = false;
         }
-      } else if (component === "network") {
-        this.collapsed[component] = !this.collapsed[component];
-      }
+      } 
     },
 
     exportDOIs: function () {
@@ -364,7 +362,7 @@ $box-padding: 1rem;
     "left right"
     "vis vis";
   height: 100vh;
-  grid-template-rows: max-content 50fr max-content;
+  grid-template-rows: max-content 50fr 30fr;
   grid-template-columns: 50fr 50fr;
   grid-row-gap: 0.5rem;
 }
