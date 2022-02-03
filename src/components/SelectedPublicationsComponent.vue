@@ -29,12 +29,6 @@
                 : publications.length + " publications"
             }})
           </span>
-          <button
-            class="delete ml-1"
-            v-on:click="clear"
-            data-tippy-content="Clear selected publications (clears also the list of removed publications)."
-            v-tippy
-          ></button>
         </span>
       </div>
       <div class="level-right">
@@ -178,12 +172,6 @@ export default {
     },
     activatePublication: function (doi) {
       this.$emit("activate", doi);
-    },
-    clear: function () {
-        this.$buefy.dialog.confirm({
-        message: "You are going to clear all selected articles and jump back to the initial state.",
-        onConfirm: () => this.$emit("clear")
-      });      
     },
     setBoostKeyword: function () {
       this.$emit("updateBoost", this.boostKeywordString);

@@ -1,43 +1,43 @@
 <template>
   <div id="app">
-    <div class="box px-2 py-1 m-0 is-radiusless" id="header">
-      <div class="level">
-        <div class="level-left">
-          <div class="level-item">
+    <div class="box p-0 m-0 is-radiusless" id="header">
+      <b-navbar>
+        <template #brand>
+          <b-navbar-item>
             <b-icon
               icon="tint"
               size="is-large"
-              class="level-item has-text-grey mt-0"
+              class="has-text-grey mt-0"
             ></b-icon>
-            <h1 class="level-item title">
+            <h1 class="title">
               <span class="has-text-primary">PURE&nbsp;</span>
               <span class="has-text-info">suggest</span>
             </h1>
-          </div>
-          <div
-            class="subtitle level-item has-text-grey mt-2 ml-4"
-            v-show="!isMobile || selectedPublications.length === 0"
+            <div
+              class="subtitle level-item has-text-grey mt-0 ml-4"
+              v-show="!isMobile"
+            >
+              citation-based literature search
+            </div>
+          </b-navbar-item>
+        </template>
+        <template #end>
+          <b-navbar-dropdown
+            label="Selection"
+            v-show="selectedPublications.length"
           >
-            citation-based literature search
-          </div>
-        </div>
-        <div class="level-right is-hidden-touch">
-          <b-navbar>
-            <template #start>
-              <b-navbar-item
-                href="#"
-                v-on:click="exportDOIs"
-                v-show="selectedPublications.length"
-              >
-                Export selected DOIs
-              </b-navbar-item>
-              <b-navbar-item href="#" v-on:click="isAboutActive = true">
-                About
-              </b-navbar-item>
-            </template>
-          </b-navbar>
-        </div>
-      </div>
+            <b-navbar-item href="#" v-on:click="clearSelection">
+              Clear
+            </b-navbar-item>
+            <b-navbar-item href="#" v-on:click="exportDOIs">
+              Export selected DOIs
+            </b-navbar-item>
+          </b-navbar-dropdown>
+          <b-navbar-item href="#" v-on:click="isAboutActive = true">
+            About
+          </b-navbar-item>
+        </template>
+      </b-navbar>
     </div>
     <SelectedPublicationsComponent
       :publications="selectedPublications"
@@ -45,7 +45,6 @@
       v-on:add="addPublicationsToSelection"
       v-on:remove="removePublication"
       v-on:activate="activatePublication"
-      v-on:clear="clearSelection"
       v-on:updateBoost="updateBoost"
       v-on:toggleCollapse="toggleCollapse"
     />
@@ -70,7 +69,9 @@
     <b-modal v-model="isAboutActive">
       <div id="about" class="box content">
         <section>
-          <h1 class="title mb-5">PURE suggest &ndash; citation-based literature search</h1>
+          <h1 class="title mb-5">
+            PURE suggest &ndash; citation-based literature search
+          </h1>
           <p>
             created by <a href="https://github.com/fabian-beck">Fabian Beck</a>
           </p>
@@ -160,7 +161,7 @@ export default {
       this.$buefy.toast.open({
         message: `Added ${
           dois.length === 1 ? "a publication" : dois.length + " publications"
-        } to selected and updating suggested`,
+        } to selected`,
         position: "is-bottom",
       });
     },
@@ -195,10 +196,16 @@ export default {
     },
 
     clearSelection: function () {
-      publications = {};
-      this.selectedPublications = [];
-      removedPublicationDois = new Set();
-      this.updateSuggestions();
+      this.$buefy.dialog.confirm({
+        message:
+          "You are going to clear all selected articles and jump back to the initial state.",
+        onConfirm: () => {
+          publications = {};
+          this.selectedPublications = [];
+          removedPublicationDois = new Set();
+          this.updateSuggestions();
+        },
+      });
     },
 
     clearActive: function () {
@@ -216,7 +223,7 @@ export default {
       this.rankSelectedPublications();
       this.updateSuggestions();
       this.$buefy.toast.open({
-        message: `Excluded a publication and updating suggested`,
+        message: `Excluded a publication`,
         position: "is-bottom",
       });
     },
