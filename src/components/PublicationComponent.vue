@@ -2,47 +2,26 @@
   <li
     class="publication-component media"
     v-bind:class="{
-      'has-background-grey-lighter': publication.isActive,
-      'has-background-primary-light':
-        !suggestion && publication.isLinkedToActive,
-      'has-background-info-light': suggestion && publication.isLinkedToActive,
       active: publication.isActive,
+      selected: publication.isSelected,
+      linkedToActive: publication.isLinkedToActive,
     }"
     v-on:click="$emit('activate', publication.doi)"
   >
     <div
       class="media-left has-text-centered"
-      v-bind:class="{
-        'has-background-primary': publication.isActive,
-        'has-background-white-bis':
-          !publication.isActive &&
-          publication.score >= 2 &&
-          publication.score < 3,
-        'has-background-white-ter':
-          !publication.isActive &&
-          publication.score >= 3 &&
-          publication.score < 5,
-        'has-background-grey-lighter':
-          !publication.isActive &&
-          publication.score >= 5 &&
-          publication.score < 10,
-        'has-background-grey-light':
-          !publication.isActive &&
-          publication.score >= 10 &&
-          publication.score < 20,
-        'has-background-grey': !publication.isActive && publication.score >= 20,
-      }"
+      v-bind:style="{ 'background-color': publication.scoreColor }"
     >
       <tippy>
         <template v-slot:trigger>
           <div class="tooltip-target">
-            <div class="is-size-2 is-inline-block">{{ publication.score }}</div>
+            <div class="is-size-3 is-inline-block">{{ publication.score }}</div>
             <div
               class="has-background-warning is-size-7 is-inline-block p-1 ml-1"
               v-if="publication.boostFactor > 1"
             >
-              <i class="fas fa-angle-double-up"></i
-            ></div>
+              <i class="fas fa-angle-double-up"></i>
+            </div>
           </div>
           <div class="is-size-7">
             {{ publication.referenceCount }}
@@ -182,30 +161,54 @@ li.publication-component {
   margin: 0;
   cursor: pointer;
   min-height: 5rem;
-}
-li.publication-component:hover {
-  background: $white-ter;
-}
-.media-left {
-  width: 5rem;
-  padding-bottom: 0.6rem;
-}
-.stats-selected {
-  padding-top: 0.5rem;
-}
-.media-content {
-  padding: 0.5rem;
-}
-.level {
-  margin-bottom: 0.2rem !important;
-}
-.button {
-  margin: 0.25rem;
-}
-label {
-  padding-right: 0.2rem;
-}
-.media-right {
-  margin-right: 0.5rem;
+
+  &:hover {
+    background: $white-ter;
+  }
+
+  &.active {
+    background: $grey-lighter;
+  }
+
+  & .media-left {
+    width: 5rem;
+    height: 5rem;
+    margin: 0.5rem;
+    border-width: 0.125rem;
+    border-color: $info;
+    border-style: solid;
+  }
+
+  &.selected .media-left {
+    border-color: $primary;
+  }
+
+  &.active .media-left {
+    border-width: 0.375rem;
+  }
+
+  &.linkedToActive .media-left {
+    border-width: 0.25rem;
+  }
+
+  & .media-content {
+    padding: 0.5rem;
+  }
+
+  & .level {
+    margin-bottom: 0.2rem !important;
+  }
+
+  & .button {
+    margin: 0.25rem;
+  }
+
+  & label {
+    padding-right: 0.2rem;
+  }
+
+  & .media-right {
+    margin-right: 0.5rem;
+  }
 }
 </style>

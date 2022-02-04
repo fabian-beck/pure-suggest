@@ -9,6 +9,7 @@ export default class Publication {
         this.referenceCount = 0;
         this.boostFactor = 1;
         this.score = 0;
+        this.scoreColor = "#FFF"
         this.title = "";
         this.titleHighlighted = "";
         this.container = "";
@@ -72,6 +73,19 @@ export default class Publication {
             }
         });
         this.score = (this.citationCount + this.referenceCount) * this.boostFactor;
+        let lightness = 100;
+        if (this.score >= 20) {
+            lightness = 50;
+        } else if (this.score >= 10) {
+            lightness = 70;
+        } else if (this.score >= 5) {
+            lightness = 80;
+        } else if (this.score >= 3) {
+            lightness = 90;
+        } else if (this.score >= 2) {
+            lightness = 95;
+        }        
+        this.scoreColor = `hsl(0, 0%, ${lightness}%)`;
     }
 
     static sortPublications(publicationList) {

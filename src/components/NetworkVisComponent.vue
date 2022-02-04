@@ -30,6 +30,9 @@ import * as d3 from "d3";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
 
+const RECT_SIZE = 20;
+const ENLARGE_FACTOR = 1.5;
+
 export default {
   props: {
     selectedPublications: Array,
@@ -135,6 +138,10 @@ export default {
   },
   methods: {
     plot: function () {
+      function getRectSize(d) {
+        return RECT_SIZE * (d.publication.isActive ? ENLARGE_FACTOR : 1);
+      }
+
       const doiToIndex = {};
       this.yearMin = 3000;
       this.yearMax = 0;
@@ -212,23 +219,25 @@ export default {
             (d.publication.isActive ? " active" : "") +
             (d.publication.isLinkedToActive ? " linkedToActive" : "")
         )
-        .attr("width", (d) => (d.publication.isActive ? 30 : 20))
-        .attr("height", (d) => (d.publication.isActive ? 30 : 20))
-        .attr("x", (d) => (d.publication.isActive ? -15 : -10))
-        .attr("y", (d) => (d.publication.isActive ? -15 : -10))
-        .attr("stroke-width", (d) => (d.publication.isActive ? 4 : 3));
+        .attr("width", (d) => getRectSize(d))
+        .attr("height", (d) => getRectSize(d))
+        .attr("x", (d) => -getRectSize(d) / 2)
+        .attr("y", (d) => -getRectSize(d) / 2)
+        .attr("stroke-width", (d) => (d.publication.isActive ? 4 : 3))
+        .attr("fill", (d) => d.publication.scoreColor);
 
       this.node
         .select("text")
-        .attr("x", -5)
-        .attr("y", 5)
+        .attr("y", 1)
         .text((d) => d.publication.score);
 
       this.node
         .select("circle")
-        .attr("cx", (d) => (d.publication.isActive ? 15 : 10)-1)
-        .attr("cy", (d) => (d.publication.isActive ? 15 : 10)-1)
-        .attr("r", (d) => (d.publication.boostFactor > 1 ? (d.publication.isActive ? 6 : 4) : 0));
+        .attr("cx", (d) => getRectSize(d) / 2 - 1)
+        .attr("cy", (d) => getRectSize(d) / 2 - 1)
+        .attr("r", (d) =>
+          d.publication.boostFactor > 1 ? getRectSize(d) / 5 : 0
+        );
 
       this.link = this.link
         .data(this.graph.links, (d) => [d.source, d.target])
@@ -283,50 +292,60 @@ export default {
 
 <style lang="scss">
 @import "~bulma/sass/utilities/_all";
+
 .network-of-references .box {
   background: $grey-lighter;
   height: 100%;
   display: grid;
   grid-template-rows: max-content auto;
 }
+
 #network-svg {
   background: white;
-}
-#network-svg g.node-container text {
-  cursor: pointer;
-}
-#network-svg rect {
-  fill: white;
-  cursor: pointer;
-}
-#network-svg rect.selected {
-  stroke: $primary;
-}
-#network-svg rect.selected.linkedToActive {
-  fill: $info;
-}
-#network-svg rect.suggested {
-  stroke: $info;
-}
-#network-svg rect.suggested.linkedToActive {
-  fill: $primary;
-}
-#network-svg rect:hover {
-  fill: $white-ter;
-}
-#network-svg rect.active {
-  fill: $grey-lighter;
-}
-#network-svg circle {
-  fill: $warning;
-}
-#network-svg path {
-  fill: none;
-  stroke-width: 2;
-  stroke: #00000010;
-}
-#network-svg path.active {
-  stroke: #000000aa;
+
+  & g.node-container {
+    cursor: pointer;
+
+    & rect {
+      cursor: pointer;
+      stroke-width: 2;
+
+      &.selected {
+        stroke: $primary;
+      }
+      &.suggested {
+        stroke: $info;
+      }
+      &.active {
+        stroke-width: 6;
+      }
+      &.linkedToActive {
+        stroke-width: 4;
+      }
+    }
+
+    & circle {
+      fill: $warning;
+    }
+
+    & text {
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+
+    &:hover rect{
+      transform: scale(1.2);
+    }
+  }
+  & path {
+    fill: none;
+    stroke-width: 2;
+    stroke: #00000010;
+
+    &.active {
+      stroke: #000000aa;
+    }
+  }
 }
 
 @include mobile {
