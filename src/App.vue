@@ -13,31 +13,59 @@
               <span class="has-text-primary">PURE&nbsp;</span>
               <span class="has-text-info">suggest</span>
             </h1>
-            <div
-              class="subtitle level-item has-text-grey mt-0 ml-4"
-              v-show="!isMobile"
-            >
-              citation-based literature search
-            </div>
           </b-navbar-item>
         </template>
-        <template #end>
+        <template #start>
           <b-navbar-dropdown
-            label="Selection"
+            :label="'Session (' + selectedPublications.length + ' selected)'"
             v-show="selectedPublications.length"
           >
-            <b-navbar-item href="#" v-on:click="clearSelection">
-              Clear
-            </b-navbar-item>
             <b-navbar-item href="#" v-on:click="exportDOIs">
-              Export selected DOIs
+              <b-icon icon="share-square" size="is-small"></b-icon>
+              <span class="ml-2">Export selected DOIs</span>
+            </b-navbar-item>
+            <b-navbar-item
+              href="#"
+              v-on:click="clearSelection"
+              class="has-text-danger"
+            >
+              <b-icon icon="trash" size="is-small"></b-icon
+              ><span class="ml-2">Clear</span>
             </b-navbar-item>
           </b-navbar-dropdown>
+        </template>
+        <template #end>
           <b-navbar-item href="#" v-on:click="isAboutActive = true">
             About
           </b-navbar-item>
         </template>
       </b-navbar>
+      <div class="columns" v-show="selectedPublications.length === 0">
+        <div class="column">
+          <div class="subtitle level-item mt-3">
+            Citation-based literature search
+          </div>
+        </div>
+        <div class="column is-three-quarters">
+          <div
+            class="notification has-text-centered p-2"
+            v-show="selectedPublications.length === 0"
+          >
+            <p>
+              Based on a set of selected publications,
+              <b class="has-text-info">suggest</b>ing related
+              <b class="has-text-primary">pu</b>blications connected by
+              <b class="has-text-primary">re</b>ferences.
+            </p>
+            <p>
+              To start, add one or more publications to the selection by
+              providing their <b>DOIs</b> (<a href="https://www.doi.org/"
+                >Document Object Intentfier</a
+              >) or a <b>title</b> (one publication).
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
     <SelectedPublicationsComponent
       :publications="selectedPublications"
@@ -250,7 +278,7 @@ export default {
           );
           this.collapsed[component] = false;
         }
-      } 
+      }
     },
 
     exportDOIs: function () {
@@ -374,6 +402,13 @@ $box-padding: 1rem;
 }
 #header {
   grid-area: header;
+
+  & .columns {
+    & .column {
+      margin: $block-spacing;
+      vertical-align: middle;
+    }
+  }
 }
 .selected-publications {
   grid-area: left;

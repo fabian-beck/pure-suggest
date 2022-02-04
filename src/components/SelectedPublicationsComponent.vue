@@ -5,10 +5,7 @@
   >
     <div class="level">
       <div class="level-left">
-        <h2
-          class="level-item is-size-5"
-          v-on:click="this.toggleCollapse"
-        >
+        <h2 class="level-item is-size-5" v-on:click="this.toggleCollapse">
           Selected
         </h2>
         <span
@@ -20,15 +17,6 @@
             data-tippy-content="The <b>publications selected as seeds</b> for computing the suggestions, sorted by score."
             v-tippy
           ></i>
-        </span>
-        <span class="level-item" v-show="publications.length && !collapsed">
-          <span>
-            ({{
-              publications.length === 1
-                ? "1 publication"
-                : publications.length + " publications"
-            }})
-          </span>
         </span>
       </div>
       <div class="level-right">
@@ -103,28 +91,6 @@
           v-on:click="noPublicationWarning = false"
         ></button>
         Cannot find a publication with this or similar title.
-      </div>
-      <div
-        class="notification mb-2 p-2 is-size-5"
-        v-show="publications.length === 0"
-      >
-        <p>
-          <b
-            ><span class="has-text-primary">PURE</span>
-            <span class="has-text-info">suggest</span></b
-          >
-          makes <b class="has-text-info">suggestions</b> for related
-          <b class="has-text-primary">pu</b>blications connected by
-          <b class="has-text-primary">re</b>ferences to a set of currently
-          selected publications.
-        </p>
-        <p class="pt-2">
-          To start your citatation-based search, select one or multiple
-          publications by providing their <b>DOIs</b> (<a
-            href="https://www.doi.org/"
-            >Document Object Intentfier</a
-          >). Alternatively, you can paste a publication <b>title</b>.
-        </p>
       </div>
     </div>
     <PublicationListComponent
