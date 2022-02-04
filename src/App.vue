@@ -1,14 +1,10 @@
 <template>
   <div id="app">
     <div class="box p-0 m-0 is-radiusless" id="header">
-      <b-navbar>
+      <b-navbar :fixed-top="isMobile">
         <template #brand>
           <b-navbar-item>
-            <b-icon
-              icon="tint"
-              size="is-large"
-              class="has-text-grey mt-0"
-            ></b-icon>
+            <b-icon icon="tint" size="is-medium" class="has-text-grey"></b-icon>
             <h1 class="title">
               <span class="has-text-primary">PURE&nbsp;</span>
               <span class="has-text-info">suggest</span>
@@ -53,9 +49,10 @@
           >
             <p>
               Based on a set of selected publications,
-              <b class="has-text-info">suggest</b>ing related
-              <b class="has-text-primary">pu</b>blications connected by
-              <b class="has-text-primary">re</b>ferences.
+              <b class="has-text-info" v-on:click="srollTo('suggest')"
+                >suggest</b
+              >ing related <b class="has-text-primary">pu</b>blications
+              connected by <b class="has-text-primary">re</b>ferences.
             </p>
             <p>
               To start, add one or more publications to the selection by
@@ -68,32 +65,46 @@
       </div>
     </div>
     <SelectedPublicationsComponent
+      id="selected"
       :publications="selectedPublications"
-      :collapsed="collapsed['selected']"
       v-on:add="addPublicationsToSelection"
       v-on:remove="removePublication"
       v-on:activate="activatePublication"
       v-on:updateBoost="updateBoost"
-      v-on:toggleCollapse="toggleCollapse"
     />
     <SuggestedPublicationsComponent
+      id="suggested"
       :publications="suggestedPublications"
       :loadingSuggestions="loadingSuggestions"
-      :collapsed="collapsed['suggested']"
       v-on:add="addPublicationsToSelection"
       v-on:remove="removePublication"
       v-on:activate="activatePublication"
-      v-on:toggleCollapse="toggleCollapse"
     />
     <NetworkVisComponent
+      id="network"
       :selectedPublications="selectedPublications"
       :suggestedPublications="suggestedPublications"
-      :collapsed="collapsed['network']"
       :svgWidth="1500"
-      :svgHeight="300"
+      :svgHeight="600"
       v-on:activate="activatePublication"
-      v-on:toggleCollapse="toggleCollapse"
     />
+    <div id="quick-access" class="is-hidden-tablet">
+      <b-button
+        type="is-primary"
+        icon-right="file-export"
+        v-on:click="scrollTo('selected')"
+      />
+      <b-button
+        type="is-info"
+        icon-right="file-import"
+        v-on:click="scrollTo('suggested')"
+      />
+      <b-button
+        type="has-background-grey has-text-white"
+        icon-right="chart-bar"
+        v-on:click="scrollTo('network')"
+      />
+    </div>
     <b-modal v-model="isAboutActive">
       <div id="about" class="box content">
         <section>
@@ -143,11 +154,6 @@ export default {
       suggestedPublications: [],
       loadingSuggestions: false,
       boostKeywords: [],
-      collapsed: {
-        selected: false,
-        suggested: window.innerWidth <= 768,
-        network: window.innerWidth <= 768,
-      },
       isAboutActive: false,
     };
   },
@@ -270,19 +276,12 @@ export default {
       this.updateSuggestions();
     },
 
-    toggleCollapse: function (component) {
-      if (this.isMobile) {
-        if (this.collapsed[component]) {
-          Object.keys(this.collapsed).forEach(
-            (component) => (this.collapsed[component] = true)
-          );
-          this.collapsed[component] = false;
-        }
-      }
-    },
-
     exportDOIs: function () {
       save("selectedDois.txt", JSON.stringify(Object.keys(publications)));
+    },
+
+    scrollTo(id) {
+      scrollToTargetAdjusted(id);
     },
   },
   beforeMount() {
@@ -370,6 +369,19 @@ function save(filename, data) {
     document.body.removeChild(elem);
   }
 }
+
+// https://stackoverflow.com/questions/49820013/javascript-scrollintoview-smooth-scroll-and-offset
+function scrollToTargetAdjusted(id){
+    var element = document.getElementById(id);
+    var headerOffset = 55;
+    var elementPosition = element.getBoundingClientRect().top;
+    var offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+  
+    window.scrollTo({
+         top: offsetPosition,
+         behavior: "smooth"
+    });
+}
 </script>
 
 <!---------------------------------------------------------------------------------->
@@ -392,16 +404,20 @@ $box-padding: 1rem;
   height: 100vh;
   grid-template-rows: max-content 50fr 30fr;
   grid-template-columns: 50fr 50fr;
-  grid-row-gap: 0.5rem;
 }
 #app > div {
   margin: 0.5rem;
 }
-.collapsed {
-  max-height: 3rem;
-}
 #header {
   grid-area: header;
+
+  & .title {
+    font-size: $size-4;
+  }
+
+  & .subtitle {
+    font-size: $size-5;
+  }
 
   & .columns {
     & .column {
@@ -424,18 +440,27 @@ $box-padding: 1rem;
 
 @include mobile {
   #app {
-    grid-template-areas:
-      "header"
-      "left"
-      "right";
-    grid-template-rows: max-content auto auto;
-    grid-template-columns: 100fr;
-    grid-row-gap: 0.25rem;
-  }
+    display: block;
 
-  #app > div {
-    margin: 0.25rem;
-    padding: 0.5rem;
+    & > div {
+      margin: 0.25rem;
+      padding: 0.5rem;
+    }
+
+    & #network {
+      margin-bottom: 5rem !important;
+    }
+
+    & #quick-access {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      text-align: center;
+
+      & button {
+        margin: $block-spacing;
+      }
+    }
   }
 }
 </style>

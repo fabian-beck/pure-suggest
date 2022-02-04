@@ -1,11 +1,12 @@
 <template>
-  <div class="network-of-references is-hidden-mobile">
-    <div class="box">
+  <div class="network-of-references">
+    <div class="box has-background-grey">
       <div class="level">
-        <div class="level-left">
-          <h2 class="level-item is-size-5" v-on:click="this.toggleCollapse">
-            Network of references
-          </h2>
+        <div class="level-left has-text-white">
+          <div class="level-item">
+            <b-icon icon="chart-bar"></b-icon>
+            <h2 class="is-size-5 ml-2">Citation network</h2>
+          </div>
           <span
             class="level-item icon is-hidden-touch"
             v-show="selectedPublications.length"
@@ -18,7 +19,7 @@
           ></span>
         </div>
       </div>
-      <div id="network-svg-container" v-show="!collapsed">
+      <div id="network-svg-container">
         <svg id="network-svg" />
       </div>
     </div>
@@ -37,7 +38,6 @@ export default {
   props: {
     selectedPublications: Array,
     suggestedPublications: Array,
-    collapsed: Boolean,
   },
   data: function () {
     return {
@@ -282,10 +282,6 @@ export default {
     activatePublication: function (d) {
       this.$emit("activate", d.publication.doi);
     },
-
-    toggleCollapse: function () {
-      this.$emit("toggleCollapse", "network");
-    },
   },
 };
 </script>
@@ -294,7 +290,6 @@ export default {
 @import "~bulma/sass/utilities/_all";
 
 .network-of-references .box {
-  background: $grey-lighter;
   height: 100%;
   display: grid;
   grid-template-rows: max-content auto;
@@ -333,7 +328,7 @@ export default {
       dominant-baseline: middle;
     }
 
-    &:hover rect{
+    &:hover rect {
       transform: scale(1.2);
     }
   }

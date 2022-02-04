@@ -1,16 +1,13 @@
 <template>
   <div
     class="suggested-publications box has-background-info"
-    :class="{ collapsed: collapsed }"
   >
     <div class="level">
-      <div class="level-left">
-        <h2
-          class="level-item is-size-5"
-          v-on:click="this.toggleCollapse"
-        >
-          Suggested
-        </h2>
+      <div class="level-left has-text-white">
+        <div class="level-item">
+          <b-icon icon="file-import"></b-icon>
+          <h2 class="is-size-5 ml-2">Suggested</h2>
+        </div>
         <span
           class="level-item icon is-hidden-touch"
           v-show="publications.length"
@@ -29,7 +26,7 @@
       v-on:activate="activatePublication"
       v-on:add="addPublication"
       v-on:remove="removePublication"
-      v-show="!collapsed && publications.length"
+      v-show="publications.length"
     />
     <b-loading
       :is-full-page="false"
@@ -51,7 +48,6 @@ export default {
     title: String,
     publications: Array,
     loadingSuggestions: Boolean,
-    collapsed: Boolean,
   },
   methods: {
     addPublication: function (doi) {
@@ -63,9 +59,6 @@ export default {
     activatePublication: function (doi) {
       this.$emit("activate", doi);
     },
-    toggleCollapse: function () {
-      this.$emit("toggleCollapse", "suggested");
-    },
   },
 };
 </script>
@@ -73,7 +66,6 @@ export default {
 <style lang="scss" scoped>
 @import "~bulma/sass/utilities/_all";
 .box {
-  height: 100%;
   display: grid;
   grid-template-rows: max-content auto;
   position: relative;

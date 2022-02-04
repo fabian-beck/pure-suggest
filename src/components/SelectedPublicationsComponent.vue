@@ -1,13 +1,11 @@
 <template>
-  <div
-    class="selected-publications box has-background-primary"
-    :class="{ collapsed: collapsed }"
-  >
+  <div class="selected-publications box has-background-primary">
     <div class="level">
-      <div class="level-left">
-        <h2 class="level-item is-size-5" v-on:click="this.toggleCollapse">
-          Selected
-        </h2>
+      <div class="level-left has-text-white">
+        <div class="level-item">
+          <b-icon icon="file-export"></b-icon>
+          <h2 class="is-size-5 ml-2">Selected</h2>
+        </div>
         <span
           class="level-item icon is-hidden-touch"
           v-show="publications.length"
@@ -20,7 +18,7 @@
         </span>
       </div>
       <div class="level-right">
-        <div class="level-item" v-show="publications.length && !collapsed">
+        <div class="level-item" v-show="publications.length">
           <div
             class="field has-addons"
             data-tippy-content="Boost by factors of 2 the score of publications that contain the following keyword(s) in their title.<br><br>Use commas to separate multiple keywords."
@@ -54,7 +52,7 @@
         </div>
       </div>
     </div>
-    <form v-on:submit.prevent class="field has-addons" v-show="!collapsed">
+    <form v-on:submit.prevent class="field has-addons">
       <p class="control is-expanded">
         <input
           class="input"
@@ -76,7 +74,7 @@
         </button>
       </p>
     </form>
-    <div v-show="!collapsed">
+    <div>
       <div
         class="
           notification
@@ -97,7 +95,7 @@
       :publications="publications"
       v-on:activate="activatePublication"
       v-on:remove="removePublication"
-      v-show="!collapsed && publications.length"
+      v-show="publications.length"
     />
   </div>
 </template>
@@ -113,7 +111,6 @@ export default {
   },
   props: {
     publications: Array,
-    collapsed: Boolean,
   },
   data() {
     return {
@@ -146,9 +143,6 @@ export default {
       this.boostKeywordString = "";
       this.$emit("updateBoost", this.boostKeywordString);
     },
-    toggleCollapse: function () {
-      this.$emit("toggleCollapse", "selected");
-    },
   },
   watch: {
     addQuery: function () {
@@ -161,7 +155,6 @@ export default {
 <style lang="scss" scoped>
 @import "~bulma/sass/utilities/_all";
 .box {
-  height: 100%;
   display: grid;
   grid-template-rows: max-content max-content max-content auto;
 }
