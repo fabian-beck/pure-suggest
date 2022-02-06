@@ -422,12 +422,12 @@ $box-padding: 1rem;
 
   & #main {
     grid-area: main;
-    margin: $block-spacing;
+    margin: 0.5rem;
     display: grid;
     grid-template-areas:
       "selected suggested"
       "vis vis";
-    height: calc(100%-$block-spacing);
+    height: calc(100% - 1rem);
     overflow: auto;
 
     grid-template-columns: 50fr 50fr;
@@ -462,6 +462,8 @@ $box-padding: 1rem;
     & #main {
       display: block;
       margin: 0;
+      overflow: scroll;
+      height: auto;
 
       & > div {
         margin: 0.25rem;
