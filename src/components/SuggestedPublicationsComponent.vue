@@ -1,23 +1,18 @@
 <template>
-  <div
-    class="suggested-publications box has-background-info"
-  >
+  <div class="suggested-publications box has-background-info">
     <div class="level">
       <div class="level-left has-text-white">
         <div class="level-item">
           <b-icon icon="file-import"></b-icon>
           <h2 class="is-size-5 ml-2">Suggested</h2>
+          <span class="icon" v-show="publications.length">
+            <i
+              class="fas fa-info-circle"
+              data-tippy-content="The <b>suggested publications</b> based on references to and from the selected publications, sorted by score."
+              v-tippy
+            ></i
+          ></span>
         </div>
-        <span
-          class="level-item icon is-hidden-touch"
-          v-show="publications.length"
-        >
-          <i
-            class="fas fa-info-circle"
-            data-tippy-content="The <b>suggested publications</b> based on references to and from the selected publications, sorted by score."
-            v-tippy
-          ></i
-        ></span>
       </div>
     </div>
     <PublicationListComponent
@@ -26,7 +21,6 @@
       v-on:activate="activatePublication"
       v-on:add="addPublication"
       v-on:remove="removePublication"
-      v-show="publications.length"
     />
     <b-loading
       :is-full-page="false"

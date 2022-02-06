@@ -38,7 +38,7 @@
       </b-navbar>
       <div class="columns" v-show="selectedPublications.length === 0">
         <div class="column">
-          <div class="subtitle level-item mt-3">
+          <div class="subtitle level-item mt-2">
             Citation-based literature search
           </div>
         </div>
@@ -53,12 +53,6 @@
                 >suggest</b
               >ing related <b class="has-text-primary">pu</b>blications
               connected by <b class="has-text-primary">re</b>ferences.
-            </p>
-            <p>
-              To start, add one or more publications to the selection by
-              providing their <b>DOIs</b> (<a href="https://www.doi.org/"
-                >Document Object Intentfier</a
-              >) or a <b>title</b> (one publication).
             </p>
           </div>
         </div>
@@ -90,12 +84,12 @@
     />
     <div id="quick-access" class="is-hidden-tablet">
       <b-button
-        type="is-primary"
+        type="has-background-primary has-text-white"
         icon-right="file-export"
         v-on:click="scrollTo('selected')"
       />
       <b-button
-        type="is-info"
+        type="has-background-info has-text-white"
         icon-right="file-import"
         v-on:click="scrollTo('suggested')"
       />
@@ -196,7 +190,6 @@ export default {
         message: `Added ${
           dois.length === 1 ? "a publication" : dois.length + " publications"
         } to selected`,
-        position: "is-bottom",
       });
     },
 
@@ -258,7 +251,6 @@ export default {
       this.updateSuggestions();
       this.$buefy.toast.open({
         message: `Excluded a publication`,
-        position: "is-bottom",
       });
     },
 
@@ -288,6 +280,11 @@ export default {
     this.updateSuggestions();
   },
 };
+
+// triggers a prompt before closing/reloading the page
+window.onbeforeunload = function() {
+     return "";
+}
 
 let publications = {};
 let removedPublicationDois = new Set();
@@ -371,16 +368,16 @@ function save(filename, data) {
 }
 
 // https://stackoverflow.com/questions/49820013/javascript-scrollintoview-smooth-scroll-and-offset
-function scrollToTargetAdjusted(id){
-    var element = document.getElementById(id);
-    var headerOffset = 55;
-    var elementPosition = element.getBoundingClientRect().top;
-    var offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-  
-    window.scrollTo({
-         top: offsetPosition,
-         behavior: "smooth"
-    });
+function scrollToTargetAdjusted(id) {
+  var element = document.getElementById(id);
+  var headerOffset = 55;
+  var elementPosition = element.getBoundingClientRect().top;
+  var offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+  window.scrollTo({
+    top: offsetPosition,
+    behavior: "smooth",
+  });
 }
 </script>
 
@@ -441,14 +438,30 @@ $box-padding: 1rem;
 @include mobile {
   #app {
     display: block;
+    margin-bottom: 5rem;
 
     & > div {
       margin: 0.25rem;
       padding: 0.5rem;
     }
 
-    & #network {
-      margin-bottom: 5rem !important;
+    & #selected {
+      min-height: 20rem;
+    }
+
+    & #suggested {
+      min-height: 20rem;
+    }
+
+    & #network .box {
+      min-height: 70vh;
+    }
+
+    /* Empty space for quick access buttons; used "::after" instead of plain margin-bottom as workaround for Chrome */
+    & #network::after {
+      content: "";
+      min-height: 5rem;
+      display: block;
     }
 
     & #quick-access {
@@ -459,6 +472,7 @@ $box-padding: 1rem;
 
       & button {
         margin: $block-spacing;
+        box-shadow: 0.25rem 0.25rem 0.75rem grey;
       }
     }
   }

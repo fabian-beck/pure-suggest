@@ -5,25 +5,18 @@
         <div class="level-item">
           <b-icon icon="file-export"></b-icon>
           <h2 class="is-size-5 ml-2">Selected</h2>
+          <span class="icon" v-show="publications.length">
+            <i
+              class="fas fa-info-circle"
+              data-tippy-content="The <b>publications selected as seeds</b> for computing the suggestions, sorted by score."
+              v-tippy
+            ></i>
+          </span>
         </div>
-        <span
-          class="level-item icon is-hidden-touch"
-          v-show="publications.length"
-        >
-          <i
-            class="fas fa-info-circle"
-            data-tippy-content="The <b>publications selected as seeds</b> for computing the suggestions, sorted by score."
-            v-tippy
-          ></i>
-        </span>
       </div>
-      <div class="level-right">
-        <div class="level-item" v-show="publications.length">
-          <div
-            class="field has-addons"
-            data-tippy-content="Boost by factors of 2 the score of publications that contain the following keyword(s) in their title.<br><br>Use commas to separate multiple keywords."
-            v-tippy
-          >
+      <div class="level-right" v-show="publications.length">
+        <div class="level-item">
+          <div class="field has-addons">
             <p class="control has-icons-right">
               <input
                 class="input has-background-warning-light"
@@ -31,6 +24,8 @@
                 v-model="boostKeywordString"
                 placeholder="keyword(s)"
                 @keyup.enter="setBoostKeyword"
+                data-tippy-content="Boost by factors of 2 the score of publications that contain the following keyword(s) in their title.<br><br>Use commas to separate multiple keywords."
+                v-tippy
               />
               <span class="icon is-small is-right is-clickable">
                 <i class="fas fa-times" v-on:click="clearBoostKeyword"></i>
@@ -59,7 +54,8 @@
           type="text"
           placeholder="publication DOI(s) or title"
           v-model="addQuery"
-          autofocus
+          data-tippy-content="One or more <b>DOIs</b> (separated by different characters or included in a different format such as BibTeX).<br/>Alternatively, <b>paper title</b> or a unique part of it (only works for one publication)"
+          v-tippy
         />
       </p>
       <p class="control">
@@ -67,14 +63,23 @@
           class="button level-right has-background-primary-light"
           type="submit"
           v-on:click="add"
-          data-tippy-content="Add listed DOIs to selected publications (the list might be separate by different characters or the DOI can also be included in a different format such as BibTeX)."
-          v-tippy
         >
           <span class="icon"><i class="fas fa-plus"></i></span>
         </button>
       </p>
     </form>
     <div>
+      <div
+        class="notification has-text-centered p-2"
+        v-show="publications.length === 0"
+      >
+        <p>
+          To start, add one or more publications to the selection by providing
+          their <b>DOIs</b> (<a href="https://www.doi.org/"
+            >Document Object Intentfier</a
+          >) or a <b>title</b> (one publication).
+        </p>
+      </div>
       <div
         class="
           notification
@@ -95,7 +100,6 @@
       :publications="publications"
       v-on:activate="activatePublication"
       v-on:remove="removePublication"
-      v-show="publications.length"
     />
   </div>
 </template>

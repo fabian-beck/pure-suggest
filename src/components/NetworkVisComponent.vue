@@ -6,17 +6,14 @@
           <div class="level-item">
             <b-icon icon="chart-bar"></b-icon>
             <h2 class="is-size-5 ml-2">Citation network</h2>
+            <span class="icon" v-show="selectedPublications.length">
+              <i
+                class="fas fa-info-circle"
+                data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>green</b>: selected; <b class='has-text-info'>blue</b>: suggested) with references connecting them as links. The layout places publications from left to right based on publication year and from top to bottom by reference frequency (<b class='has-text-primary'>selected</b>: summed references and citations; <b class='has-text-info'>suggested</b>: suggestion score). You can highlight a publication on click, zoom using the mouse wheel, and pan on drag."
+                v-tippy
+              ></i
+            ></span>
           </div>
-          <span
-            class="level-item icon is-hidden-touch"
-            v-show="selectedPublications.length"
-          >
-            <i
-              class="fas fa-info-circle"
-              data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>green</b>: selected; <b class='has-text-info'>blue</b>: suggested) with references connecting them as links. The layout places publications from left to right based on publication year and from top to bottom by reference frequency (<b class='has-text-primary'>selected</b>: summed references and citations; <b class='has-text-info'>suggested</b>: suggestion score). You can highlight a publication on click, zoom using the mouse wheel, and pan on drag."
-              v-tippy
-            ></i
-          ></span>
         </div>
       </div>
       <div id="network-svg-container">
