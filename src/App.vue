@@ -58,30 +58,32 @@
         </div>
       </div>
     </div>
-    <SelectedPublicationsComponent
-      id="selected"
-      :publications="selectedPublications"
-      v-on:add="addPublicationsToSelection"
-      v-on:remove="removePublication"
-      v-on:activate="activatePublication"
-      v-on:updateBoost="updateBoost"
-    />
-    <SuggestedPublicationsComponent
-      id="suggested"
-      :publications="suggestedPublications"
-      :loadingSuggestions="loadingSuggestions"
-      v-on:add="addPublicationsToSelection"
-      v-on:remove="removePublication"
-      v-on:activate="activatePublication"
-    />
-    <NetworkVisComponent
-      id="network"
-      :selectedPublications="selectedPublications"
-      :suggestedPublications="suggestedPublications"
-      :svgWidth="1500"
-      :svgHeight="600"
-      v-on:activate="activatePublication"
-    />
+    <div id="main">
+      <SelectedPublicationsComponent
+        id="selected"
+        :publications="selectedPublications"
+        v-on:add="addPublicationsToSelection"
+        v-on:remove="removePublication"
+        v-on:activate="activatePublication"
+        v-on:updateBoost="updateBoost"
+      />
+      <SuggestedPublicationsComponent
+        id="suggested"
+        :publications="suggestedPublications"
+        :loadingSuggestions="loadingSuggestions"
+        v-on:add="addPublicationsToSelection"
+        v-on:remove="removePublication"
+        v-on:activate="activatePublication"
+      />
+      <NetworkVisComponent
+        id="network"
+        :selectedPublications="selectedPublications"
+        :suggestedPublications="suggestedPublications"
+        :svgWidth="1500"
+        :svgHeight="600"
+        v-on:activate="activatePublication"
+      />
+    </div>
     <div id="quick-access" class="is-hidden-tablet">
       <b-button
         type="has-background-primary has-text-white"
@@ -282,9 +284,9 @@ export default {
 };
 
 // triggers a prompt before closing/reloading the page
-window.onbeforeunload = function() {
-     return "";
-}
+window.onbeforeunload = function () {
+  return "";
+};
 
 let publications = {};
 let removedPublicationDois = new Set();
@@ -395,44 +397,61 @@ $box-padding: 1rem;
 #app {
   display: grid;
   grid-template-areas:
-    "header header"
-    "left right"
-    "vis vis";
+    "header"
+    "main";
   height: 100vh;
-  grid-template-rows: max-content 50fr 30fr;
-  grid-template-columns: 50fr 50fr;
-}
-#app > div {
-  margin: 0.5rem;
-}
-#header {
-  grid-area: header;
+  grid-template-rows: max-content auto;
 
-  & .title {
-    font-size: $size-4;
-  }
+  & #header {
+    grid-area: header;
 
-  & .subtitle {
-    font-size: $size-5;
-  }
+    & .title {
+      font-size: $size-4;
+    }
 
-  & .columns {
-    & .column {
-      margin: $block-spacing;
-      vertical-align: middle;
+    & .subtitle {
+      font-size: $size-5;
+    }
+
+    & .columns {
+      & .column {
+        margin: $block-spacing;
+      }
     }
   }
-}
-.selected-publications {
-  grid-area: left;
-  overflow-y: hidden;
-}
-.suggested-publications {
-  grid-area: right;
-  overflow-y: hidden;
-}
-.network-of-references {
-  grid-area: vis;
+
+  & #main {
+    grid-area: main;
+    margin: $block-spacing;
+    display: grid;
+    grid-template-areas:
+      "selected suggested"
+      "vis vis";
+    height: calc(100%-$block-spacing);
+    overflow: auto;
+
+    grid-template-columns: 50fr 50fr;
+    grid-template-rows: auto 35vh;
+    gap: $block-spacing;
+
+    & #selected {
+      grid-area: selected;
+      overflow-y: hidden;
+    }
+
+    & #suggested {
+      grid-area: suggested;
+      overflow-y: hidden;
+    }
+
+    & #network {
+      grid-area: vis;
+    }
+
+    & > div {
+      margin: 0;
+    }
+  }
 }
 
 @include mobile {
@@ -440,33 +459,38 @@ $box-padding: 1rem;
     display: block;
     margin-bottom: 5rem;
 
-    & > div {
-      margin: 0.25rem;
-      padding: 0.5rem;
-    }
-
-    & #selected {
-      min-height: 20rem;
-    }
-
-    & #suggested {
-      min-height: 20rem;
-    }
-
-    & #network .box {
-      min-height: 70vh;
-    }
-
-    /* Empty space for quick access buttons; used "::after" instead of plain margin-bottom as workaround for Chrome */
-    & #network::after {
-      content: "";
-      min-height: 5rem;
+    & #main {
       display: block;
+      margin: 0;
+
+      & > div {
+        margin: 0.25rem;
+        padding: 0.5rem;
+      }
+
+      & #selected {
+        min-height: 20rem;
+      }
+
+      & #suggested {
+        min-height: 20rem;
+      }
+
+      & #network .box {
+        min-height: 70vh;
+      }
+
+      /* Empty space for quick access buttons; used "::after" instead of plain margin-bottom as workaround for Chrome */
+      &::after {
+        content: "";
+        min-height: 4rem;
+        display: block;
+      }
     }
 
     & #quick-access {
       position: fixed;
-      bottom: 0;
+      bottom: 0.5rem;
       width: 100%;
       text-align: center;
 
