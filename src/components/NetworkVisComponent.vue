@@ -251,20 +251,20 @@ export default {
         .attr("d", (d) => {
           var dx = d.target.x - d.source.x,
             dy = d.target.y - d.source.y,
-            dr = Math.sqrt(dx * dx + dy * dy);
+            dr = Math.pow(dx * dx + dy * dy, 0.6);
           return (
             "M" +
-            d.source.x +
+            d.target.x +
             "," +
-            d.source.y +
+            d.target.y +
             "A" +
             dr +
             "," +
             dr +
             " 0 0,1 " +
-            d.target.x +
+            d.source.x +
             "," +
-            d.target.y
+            d.source.y
           );
         })
         .attr("class", (d) =>
