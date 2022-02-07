@@ -75,8 +75,8 @@ export default {
       .attr("width", container.clientWidth)
       .attr("height", container.clientHeight)
       .call(
-        d3.zoom().on("zoom", function () {
-          that.svg.attr("transform", d3.event.transform);
+        d3.zoom().on("zoom", function (event, d) {
+          that.svg.attr("transform", event.transform);
         })
       )
       .append("g");
@@ -276,7 +276,7 @@ export default {
       this.node.attr("transform", (d) => `translate(${d.x}, ${d.y})`);
     },
 
-    activatePublication: function (d) {
+    activatePublication: function (event, d) {
       this.$emit("activate", d.publication.doi);
     },
   },
