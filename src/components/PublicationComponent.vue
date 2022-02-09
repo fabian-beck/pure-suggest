@@ -49,11 +49,12 @@
           >.
         </div>
         <div v-if="publication.isLinkedToActive">
-          Marked as refered by or referencing highlighted selected publication.
+          <br />
+          Marked as refered by or referencing currently active publication.
         </div>
         <div v-if="publication.isActive">
-          Currently highlighted with marked selected publications indicating
-          reference links.
+          <br />
+          Currently active, with linked publications highlighted.
         </div>
       </tippy>
     </div>
@@ -89,13 +90,19 @@
       >
         {{ publication.author }}. <em>{{ publication.container }}</em
         >.
+        <label>DOI:</label>
+        <a :href="'https://doi.org/' + publication.doi" target="_blank">{{
+          publication.doi
+        }}</a>
       </div>
       <div v-if="publication.isActive" class="level is-size-7">
         <div class="doi level-left">
-          <label>DOI:</label>
-          <a :href="'https://doi.org/' + publication.doi" target="_blank">{{
-            publication.doi
-          }}</a>
+          <div class="level-item">
+            <label>Citing:</label> {{ publication.referenceDois.length }}
+          </div>
+          <div class="level-item">
+            <label>Cited by:</label> {{ publication.citationDois.length }}
+          </div>
         </div>
         <div class="level-right">
           <div
@@ -197,10 +204,14 @@ li.publication-component {
 
   & .level {
     margin-bottom: 0.2rem !important;
+
+    & .level-left .level-item {
+      margin-right: 1.5rem;
+    }
   }
 
   & .button {
-    margin: 0.25rem;
+    margin: 0.5rem 0;
   }
 
   & label {
