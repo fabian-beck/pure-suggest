@@ -105,11 +105,14 @@
             <label>Cited by:</label> {{ publication.citationDois.length }}
           </div>
         </div>
-        <div class="level-right">
-          <div
-            v-if="publication.title && publication.isActive"
-            class="level-item"
-          >
+        <div
+          class="level-right"
+          v-if="publication.title && publication.isActive"
+        >
+          <div class="level-item" v-if="publication.oaLink">
+            <a :href="publication.oaLink" target="_blank">Open access</a>
+          </div>
+          <div class="level-item">
             <a
               :href="
                 'https://scholar.google.de/scholar?hl=en&q=' + publication.title
@@ -209,6 +212,10 @@ li.publication-component {
     & .level-left .level-item {
       margin-right: 1.5rem;
     }
+
+    & .level-right .level-item {
+      margin-left: 1.5rem;
+    }
   }
 
   & .button {
@@ -241,14 +248,14 @@ li.publication-component {
 
           & .level-item {
             justify-content: right;
+            margin: 0;
           }
         }
       }
-   
-   }
-   & .media-right {
-     margin-left: 0.5rem;
-   }
+    }
+    & .media-right {
+      margin-left: 0.5rem;
+    }
   }
 }
 </style>

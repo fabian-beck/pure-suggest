@@ -2,14 +2,9 @@ import cachedFetch from "./Cache.js";
 
 export default class Publication {
     constructor(doi) {
+        // identifier
         this.doi = doi;
-        this.citationDois = [];
-        this.referenceDois = [];
-        this.citationCount = 0;
-        this.referenceCount = 0;
-        this.boostFactor = 1;
-        this.score = 0;
-        this.scoreColor = "#FFF"
+        // meta-data
         this.title = "";
         this.titleHighlighted = "";
         this.container = "";
@@ -17,6 +12,16 @@ export default class Publication {
         this.author = undefined;
         this.authorShort = undefined;
         this.authorOrcid = undefined;
+        this.oaLink = undefined;
+        // citation-related data
+        this.citationDois = [];
+        this.referenceDois = [];
+        this.citationCount = 0;
+        this.referenceCount = 0;
+        this.boostFactor = 1;
+        this.score = 0;
+        this.scoreColor = "#FFF"
+        // interface properties
         this.isActive = false;
         this.isLinkedToActive = false;
         this.isSelected = false;
@@ -60,6 +65,7 @@ export default class Publication {
                             this.citationDois.push(citationDoi);
                         }
                     });
+                    this.oaLink = data.oa_link;
                 }
             );
         }
