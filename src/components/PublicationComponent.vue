@@ -223,4 +223,32 @@ li.publication-component {
     margin-right: 0.5rem;
   }
 }
+
+@include mobile {
+  li.publication-component {
+    & .media-content {
+      padding-left: 0;
+      padding-right: 0;
+
+      .level {
+        & .level-left .level-item {
+          justify-content: left;
+          margin: 0;
+        }
+
+        & .level-right {
+          margin: 0;
+
+          & .level-item {
+            justify-content: right;
+          }
+        }
+      }
+   
+   }
+   & .media-right {
+     margin-left: 0.5rem;
+   }
+  }
+}
 </style>
