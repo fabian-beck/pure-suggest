@@ -86,9 +86,10 @@
           publication.author &&
           publication.container
         "
-        class="is-size-7"
+        class="is-size-6"
       >
-        {{ publication.author }}. <em>{{ publication.container }}</em
+        <span v-html="publication.authorOrcid"></span>.
+        <em>{{ publication.container }}</em
         >.
         <label>DOI:</label>
         <a :href="'https://doi.org/' + publication.doi" target="_blank">{{
