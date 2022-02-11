@@ -7,11 +7,14 @@ export default class Publication {
         // meta-data
         this.title = "";
         this.titleHighlighted = "";
-        this.container = "";
         this.year = undefined;
         this.author = undefined;
         this.authorShort = undefined;
         this.authorOrcid = undefined;
+        this.container = undefined;
+        this.volume = undefined;
+        this.issue = undefined;
+        this.page = undefined;
         this.oaLink = undefined;
         // citation-related data
         this.citationDois = [];
@@ -49,12 +52,17 @@ export default class Publication {
                         } else if (authorArray.length > 2) {
                             this.authorShort = `${authorArray[0].split(', ')[0]} et al.`;
                         }
-                        this.author = data.author;
-                        this.authorOrcid = data.author.replace(/(\,\s+)(\d{4}-\d{4}-\d{4}-\d{4})/g, " <a href='https://orcid.org/$2' target='_blank'><img alt='ORCID logo' src='https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png' width='14' height='14' /></a>");
+                        this.author = data.author.replace(/(\,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, "");
+                        this.authorOrcid = data.author.replace(/(\,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, " <a href='https://orcid.org/$2' target='_blank'><img alt='ORCID logo' src='https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png' width='14' height='14' /></a>");
                     }
-                    this.container = data.source_title;
                     this.shortReference = `${this.authorShort ? this.authorShort : "[unknown author]"
                         }, ${this.year ? this.year : "[unknown year]"}`;
+                    this.container = data.source_title;
+                    this.volume = data.volume;
+                    this.issue = data.issue;
+                    this.page = data.page;
+                    this.oaLink = data.oa_link;
+                    // references and citations
                     data.reference.split("; ").forEach(referenceDoi => {
                         if (referenceDoi) {
                             this.referenceDois.push(referenceDoi);
@@ -65,7 +73,6 @@ export default class Publication {
                             this.citationDois.push(citationDoi);
                         }
                     });
-                    this.oaLink = data.oa_link;
                 }
             );
         }
@@ -95,6 +102,35 @@ export default class Publication {
             lightness = 95;
         }
         this.scoreColor = `hsl(0, 0%, ${lightness}%)`;
+    }
+
+    toBibtex() {
+        let type = "misc";
+        let other = "";
+        if (this.volume) {
+            type = "article"
+            other += `
+    journal = {${this.container}},
+    volume = {${this.volume}},`
+            if (this.issue) {
+                other += `
+    number = {${this.issue}},`
+            }
+        } else if (this.container) {
+            type = this.container.toLowerCase().indexOf("proceedings") >= 0 ? "inproceedings" : "incollection";
+            other += `
+    booktitle = {${this.container}},`
+        }
+        if (this.page) {
+            other += `
+    pages = {${this.page}},`
+        }
+        return `@${type}{${this.author.split(",")[0] + this.year + this.title.split(" ")[0]},
+    title = {${this.title}},
+    author = {${this.author.replaceAll(";", " and")}},${other}
+    year = {${this.year}},
+    doi = {${this.doi}}
+}`
     }
 
     static sortPublications(publicationList) {

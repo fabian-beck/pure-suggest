@@ -16,9 +16,13 @@
             :label="'Session (' + selectedPublications.length + ' selected)'"
             v-show="selectedPublications.length"
           >
-            <b-navbar-item href="#" v-on:click="exportDOIs">
+            <b-navbar-item href="#" v-on:click="exportDois">
               <b-icon icon="share-square" size="is-small"></b-icon>
-              <span class="ml-2">Export selected DOIs</span>
+              <span class="ml-2">Export selected as DOIs</span>
+            </b-navbar-item>
+            <b-navbar-item href="#" v-on:click="exportBibtex">
+              <b-icon icon="share-square" size="is-small"></b-icon>
+              <span class="ml-2">Export selected as BibTeX</span>
             </b-navbar-item>
             <b-navbar-item
               href="#"
@@ -270,8 +274,16 @@ export default {
       this.updateSuggestions();
     },
 
-    exportDOIs: function () {
-      save("selectedDois.txt", JSON.stringify(Object.keys(publications)));
+    exportDois: function () {
+      save("publication_dois.txt", JSON.stringify(Object.keys(publications)));
+    },
+
+    exportBibtex: function () {
+      let bib = "";
+      Object.values(this.selectedPublications).forEach(
+        (publication) => (bib += publication.toBibtex() + "\n\n")
+      );
+      save("publications.bib", bib);
     },
 
     scrollTo(id) {
