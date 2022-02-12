@@ -41,8 +41,14 @@ export default class Publication {
                         return;
                     }
                     const data = message[0];
+                    // title
                     this.title = data.title;
-                    this.year = data.year;
+                    this.title = "";
+                    data.title.split(" ").forEach(word => {
+                        const mappedWord = TITLE_WORD_MAP[word.toLowerCase()];
+                        this.title += (mappedWord ? mappedWord : word) + " ";
+                    });
+                    this.title = this.title.charAt(0).toUpperCase() + this.title.slice(1); // make first character uppercase
                     // author
                     if (data.author) {
                         const authorArray = data.author.split('; ');
@@ -69,14 +75,14 @@ export default class Publication {
                         } else if (/^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})(\.?)$/i.test(word)) { // roman numerals - see: https://regexpattern.com/roman-numerals/
                             mappedWord = word.toUpperCase();
                         } else {
-                            mappedWord = CONTAINER_WORD_MAP[word.toLowerCase()];
+                            mappedWord = TITLE_WORD_MAP[word.toLowerCase()];
                         }
                         this.container += (mappedWord ? mappedWord : word) + " ";
                     });
                     this.container = this.container.trim();
                     this.container = this.container.charAt(0).toUpperCase() + this.container.slice(1); // make first character uppercase
-                    console.log(this.container);
                     // other meta-data
+                    this.year = data.year;
                     this.volume = data.volume;
                     this.issue = data.issue;
                     this.page = data.page;
@@ -136,7 +142,8 @@ export default class Publication {
     number = {${this.issue}},`
             }
         } else if (this.container) {
-            type = this.container.toLowerCase().indexOf("proceedings") >= 0 ? "inproceedings" : "incollection";
+            const container = this.container.toLowerCase();
+            type = (container.indexOf("proceedings") >= 0 || container.indexOf("conference") >= 0 || container.indexOf("symposium") >= 0 || container.indexOf("workshop") >= 0) ? "inproceedings" : "incollection";
             other += `
     booktitle = {${this.container}},`
         }
@@ -144,7 +151,7 @@ export default class Publication {
             other += `
     pages = {${this.page}},`
         }
-        return `@${type}{${this.author.split(",")[0] + this.year + this.title.split(" ")[0]},
+        return `@${type}{${this.author.split(",")[0] + this.year + this.title.split(/\W/)[0]},
     title = {${this.title}},
     author = {${this.author.replaceAll(";", " and")}},${other}
     year = {${this.year}},
@@ -158,14 +165,26 @@ export default class Publication {
 
 }
 
-const CONTAINER_WORD_MAP = {
+const TITLE_WORD_MAP = {
+    "a": "a",
+    "an": "an",
     "acm": "ACM",
     "and": "and",
+    "by": "by",
     "chi": "CHI",
+    "during": "during",
     "for": "for",
+    "from": "from",
     "ieee": "IEEE",
     "in": "in",
+    "not": "not",
     "of": "of",
+    "or": "or",
     "on": "on",
     "the": "the",
+    "their": "their",
+    "through": "through",
+    "to": "to",
+    "with": "with",
+    "within": "within",
 }
