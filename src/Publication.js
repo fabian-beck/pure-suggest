@@ -43,6 +43,7 @@ export default class Publication {
                     const data = message[0];
                     this.title = data.title;
                     this.year = data.year;
+                    // author
                     if (data.author) {
                         const authorArray = data.author.split('; ');
                         if (authorArray.length === 1) {
@@ -57,7 +58,25 @@ export default class Publication {
                     }
                     this.shortReference = `${this.authorShort ? this.authorShort : "[unknown author]"
                         }, ${this.year ? this.year : "[unknown year]"}`;
-                    this.container = data.source_title;
+                    // container (booktitle or journal) 
+                    this.container = "";
+                    data.source_title.split(" ").forEach(word => {
+                        let mappedWord = "";
+                        if (/\(.+\)/.test(word)) { // acronyms in brackets
+                            mappedWord = word.toUpperCase();
+                        } else if (/\d+(st|nd|rd|th)/i.test(word)) { // 1st 2nd 3rd 4th etc.
+                            mappedWord = word.toLowerCase();
+                        } else if (/^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})(\.?)$/i.test(word)) { // roman numerals - see: https://regexpattern.com/roman-numerals/
+                            mappedWord = word.toUpperCase();
+                        } else {
+                            mappedWord = CONTAINER_WORD_MAP[word.toLowerCase()];
+                        }
+                        this.container += (mappedWord ? mappedWord : word) + " ";
+                    });
+                    this.container = this.container.trim();
+                    this.container = this.container.charAt(0).toUpperCase() + this.container.slice(1); // make first character uppercase
+                    console.log(this.container);
+                    // other meta-data
                     this.volume = data.volume;
                     this.issue = data.issue;
                     this.page = data.page;
@@ -137,4 +156,16 @@ export default class Publication {
         publicationList.sort((a, b) => b.score - a.score);
     }
 
+}
+
+const CONTAINER_WORD_MAP = {
+    "acm": "ACM",
+    "and": "and",
+    "chi": "CHI",
+    "for": "for",
+    "ieee": "IEEE",
+    "in": "in",
+    "of": "of",
+    "on": "on",
+    "the": "the",
 }
