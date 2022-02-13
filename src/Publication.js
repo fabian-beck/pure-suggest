@@ -25,6 +25,7 @@ export default class Publication {
         this.score = 0;
         this.scoreColor = "#FFF";
         this.isSurvey = false;
+        this.isHighlyCited = false;
         // interface properties
         this.isActive = false;
         this.isLinkedToActive = false;
@@ -100,7 +101,9 @@ export default class Publication {
                             this.citationDois.push(citationDoi);
                         }
                     });
+                    // tags
                     this.isSurvey = this.referenceDois.length >= 100 || (this.referenceDois.length >= 50 && /.*(survey|state|review|advances|future).*/i.test(this.title));
+                    this.isHighlyCited = this.citationDois.length / (Math.max(1, CURRENT_YEAR - this.year)) >= 10;
                 }
             );
         }
@@ -167,6 +170,8 @@ export default class Publication {
     }
 
 }
+
+const CURRENT_YEAR = new Date().getFullYear();
 
 const TITLE_WORD_MAP = {
     "a": "a",

@@ -59,7 +59,7 @@
       </tippy>
     </div>
     <div class="media-content">
-      <div class="level">
+      <div class="summary">
         <span v-if="publication.title">
           <strong
             ><span
@@ -78,8 +78,13 @@
         <span v-if="!publication.title">
           <strong>...</strong>
         </span>
-        <b-taglist v-if="publication.isSurvey">
-          <b-tag icon="table" class="is-dark">Literature survey</b-tag>
+        <b-taglist>
+          <b-tag icon="star" class="is-dark" v-if="publication.isHighlyCited"
+            >Highly cited</b-tag
+          >
+          <b-tag icon="table" class="is-dark" v-if="publication.isSurvey"
+            >Literature survey</b-tag
+          >
         </b-taglist>
       </div>
       <div
@@ -89,7 +94,6 @@
           publication.author &&
           publication.container
         "
-        class="is-size-6"
       >
         <span v-html="publication.authorOrcid"></span>.
         <em>{{ publication.container }}</em
@@ -99,7 +103,7 @@
           publication.doi
         }}</a>
       </div>
-      <div v-if="publication.isActive" class="level is-size-7">
+      <div v-if="publication.isActive" class="stats-and-links level is-size-7">
         <div class="doi level-left">
           <div class="level-item">
             <label>Citing:</label> {{ publication.referenceDois.length }}
@@ -207,30 +211,37 @@ li.publication-component {
 
   & .media-content {
     padding: 0.5rem;
-  }
 
-  & .level {
-    margin-bottom: 0.2rem !important;
+    & div.summary {
+      margin-bottom: 0.5rem;
 
-    & .level-left .level-item {
-      margin-right: 1.5rem;
+      & .tag {
+        margin-top: 0.25rem;
+        margin-bottom: 0.25rem;
+      }
     }
 
-    & .level-right .level-item {
-      margin-left: 1.5rem;
+    & label {
+      padding-right: 0.2rem;
     }
-  }
 
-  & .button {
-    margin: 0.5rem 0;
-  }
+    & .stats-and-links {
+      & .level-left .level-item {
+        margin-right: 1.5rem;
+      }
 
-  & label {
-    padding-right: 0.2rem;
+      & .level-right .level-item {
+        margin-left: 1.5rem;
+      }
+    }
   }
 
   & .media-right {
     margin-right: 0.5rem;
+
+    & .button {
+      margin: 0.5rem 0;
+    }
   }
 }
 
