@@ -78,6 +78,9 @@
         <span v-if="!publication.title">
           <strong>...</strong>
         </span>
+        <b-taglist v-if="publication.isSurvey">
+          <b-tag icon="table" class="is-dark">Literature survey</b-tag>
+        </b-taglist>
       </div>
       <div
         v-if="

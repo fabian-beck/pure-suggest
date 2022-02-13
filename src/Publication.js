@@ -23,7 +23,8 @@ export default class Publication {
         this.referenceCount = 0;
         this.boostFactor = 1;
         this.score = 0;
-        this.scoreColor = "#FFF"
+        this.scoreColor = "#FFF";
+        this.isSurvey = false;
         // interface properties
         this.isActive = false;
         this.isLinkedToActive = false;
@@ -62,8 +63,6 @@ export default class Publication {
                         this.author = data.author.replace(/(\,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, "");
                         this.authorOrcid = data.author.replace(/(\,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, " <a href='https://orcid.org/$2' target='_blank'><img alt='ORCID logo' src='https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png' width='14' height='14' /></a>");
                     }
-                    this.shortReference = `${this.authorShort ? this.authorShort : "[unknown author]"
-                        }, ${this.year ? this.year : "[unknown year]"}`;
                     // container (booktitle or journal) 
                     this.container = "";
                     data.source_title.split(" ").forEach(word => {
@@ -87,6 +86,9 @@ export default class Publication {
                     this.issue = data.issue;
                     this.page = data.page;
                     this.oaLink = data.oa_link;
+                    // short reference
+                    this.shortReference = `${this.authorShort ? this.authorShort : "[unknown author]"
+                        }, ${this.year ? this.year : "[unknown year]"}`;
                     // references and citations
                     data.reference.split("; ").forEach(referenceDoi => {
                         if (referenceDoi) {
@@ -98,6 +100,7 @@ export default class Publication {
                             this.citationDois.push(citationDoi);
                         }
                     });
+                    this.isSurvey = this.referenceDois.length >= 100 || (this.referenceDois.length >= 50 && /.*(survey|state|review|advances|future).*/i.test(this.title));
                 }
             );
         }
