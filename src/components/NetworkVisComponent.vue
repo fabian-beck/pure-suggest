@@ -75,9 +75,10 @@ export default {
       .attr("width", container.clientWidth)
       .attr("height", container.clientHeight)
       .call(
-        d3.zoom().on("zoom", function (event, d) {
-          that.svg.attr("transform", event.transform);
-        })
+        // eslint-disable-next-line no-unused-vars
+        d3.zoom().on("zoom", (event, d) => {
+            that.svg.attr("transform", event.transform);
+          })
       )
       .append("g");
 

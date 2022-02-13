@@ -1,3 +1,5 @@
+import _ from "lodash";
+
 import cachedFetch from "./Cache.js";
 
 export default class PublicationQuery {
