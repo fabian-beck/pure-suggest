@@ -62,7 +62,7 @@ export default class Publication {
                             this.authorShort = `${authorArray[0].split(', ')[0]} et al.`;
                         }
                         this.author = data.author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, "");
-                        this.authorOrcid = data.author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, " <a href='https://orcid.org/$2' target='_blank'><img alt='ORCID logo' src='https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png' width='14' height='14' /></a>");
+                        this.authorOrcid = data.author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, " <a href='https://orcid.org/$2'><img alt='ORCID logo' src='https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png' width='14' height='14' /></a>");
                     }
                     // container (booktitle or journal) 
                     this.container = "";

@@ -99,7 +99,7 @@
         <em>{{ publication.container }}</em
         >.
         <label>DOI:</label>
-        <a :href="'https://doi.org/' + publication.doi" target="_blank">{{
+        <a :href="'https://doi.org/' + publication.doi">{{
           publication.doi
         }}</a>
       </div>
@@ -117,14 +117,13 @@
           v-if="publication.title && publication.isActive"
         >
           <div class="level-item" v-if="publication.oaLink">
-            <a :href="publication.oaLink" target="_blank">Open access</a>
+            <a :href="publication.oaLink">Open access</a>
           </div>
           <div class="level-item">
             <a
               :href="
                 'https://scholar.google.de/scholar?hl=en&q=' + publication.title
               "
-              target="_blank"
               >Google Scholar</a
             >
           </div>
