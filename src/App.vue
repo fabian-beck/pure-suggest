@@ -1,66 +1,14 @@
 <template>
   <div id="app">
-    <div class="box p-0 m-0 is-radiusless" id="header">
-      <b-navbar :fixed-top="isMobile">
-        <template #brand>
-          <b-navbar-item>
-            <b-icon icon="tint" size="is-medium" class="has-text-grey"></b-icon>
-            <h1 class="title">
-              <span class="has-text-primary">PURE&nbsp;</span>
-              <span class="has-text-info">suggest</span>
-            </h1>
-          </b-navbar-item>
-        </template>
-        <template #start>
-          <b-navbar-dropdown
-            :label="'Session (' + selectedPublications.length + ' selected)'"
-            v-show="selectedPublications.length"
-          >
-            <b-navbar-item v-on:click="exportDois">
-              <b-icon icon="share-square" size="is-small"></b-icon>
-              <span class="ml-2">Export selected as DOIs</span>
-            </b-navbar-item>
-            <b-navbar-item v-on:click="exportBibtex">
-              <b-icon icon="share-square" size="is-small"></b-icon>
-              <span class="ml-2">Export selected as BibTeX</span>
-            </b-navbar-item>
-            <b-navbar-item
-              v-on:click="clearSelection"
-              class="has-text-danger"
-            >
-              <b-icon icon="trash" size="is-small"></b-icon
-              ><span class="ml-2">Clear</span>
-            </b-navbar-item>
-          </b-navbar-dropdown>
-        </template>
-        <template #end>
-          <b-navbar-item v-on:click="isAboutActive = true">
-            About
-          </b-navbar-item>
-        </template>
-      </b-navbar>
-      <div class="columns" v-show="selectedPublications.length === 0">
-        <div class="column">
-          <div class="subtitle level-item mt-2">
-            Citation-based literature search
-          </div>
-        </div>
-        <div class="column is-three-quarters">
-          <div
-            class="notification has-text-centered p-2"
-            v-show="selectedPublications.length === 0"
-          >
-            <p>
-              Based on a set of selected publications,
-              <b class="has-text-info" v-on:click="srollTo('suggest')"
-                >suggest</b
-              >ing related <b class="has-text-primary">pu</b>blications
-              connected by <b class="has-text-primary">re</b>ferences.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <HeaderPanel
+      id="header"
+      :isMobile="isMobile"
+      :selectedPublicationsCount="selectedPublications.length"
+      v-on:exportDois="exportDois"
+      v-on:exportBibtex="exportBibtex"
+      v-on:clearSelection="clearSelection"
+      v-on:openAbout="isAboutPageShown = true"
+    />
     <div id="main">
       <SelectedPublicationsComponent
         id="selected"
@@ -87,24 +35,8 @@
         v-on:activate="activatePublication"
       />
     </div>
-    <div id="quick-access" class="is-hidden-tablet">
-      <b-button
-        type="has-background-primary has-text-white"
-        icon-right="file-export"
-        v-on:click="scrollTo('selected')"
-      />
-      <b-button
-        type="has-background-info has-text-white"
-        icon-right="file-import"
-        v-on:click="scrollTo('suggested')"
-      />
-      <b-button
-        type="has-background-grey has-text-white"
-        icon-right="chart-bar"
-        v-on:click="scrollTo('network')"
-      />
-    </div>
-    <b-modal v-model="isAboutActive">
+    <QuickAccessBar id="quick-access" class="is-hidden-tablet" />
+    <b-modal v-model="isAboutPageShown">
       <AboutPage />
     </b-modal>
   </div>
@@ -113,19 +45,24 @@
 <!---------------------------------------------------------------------------------->
 
 <script>
+import HeaderPanel from "./components/HeaderPanel.vue";
 import SelectedPublicationsComponent from "./components/SelectedPublicationsComponent.vue";
 import SuggestedPublicationsComponent from "./components/SuggestedPublicationsComponent.vue";
 import NetworkVisComponent from "./components/NetworkVisComponent.vue";
+import QuickAccessBar from "./components/QuickAccessBar.vue";
 import AboutPage from "./components/AboutPage.vue";
 
 import Publication from "./Publication.js";
+import { saveAsFile } from "./Util.js";
 
 export default {
   name: "App",
   components: {
+    HeaderPanel,
     SelectedPublicationsComponent,
     SuggestedPublicationsComponent,
     NetworkVisComponent,
+    QuickAccessBar,
     AboutPage,
   },
   data() {
@@ -134,7 +71,7 @@ export default {
       suggestedPublications: [],
       loadingSuggestions: false,
       boostKeywords: [],
-      isAboutActive: false,
+      isAboutPageShown: false,
     };
   },
   computed: {
@@ -146,7 +83,12 @@ export default {
     updateSuggestions: async function () {
       this.loadingSuggestions = true;
       this.clearActive();
-      this.suggestedPublications = Object.values(await computeSuggestions());
+      this.suggestedPublications = Object.values(
+        await Publication.computeSuggestions(
+          publications,
+          removedPublicationDois
+        )
+      );
       this.suggestedPublications.forEach((publication) =>
         publication.updateScore(this.boostKeywords)
       );
@@ -255,7 +197,10 @@ export default {
     },
 
     exportDois: function () {
-      save("publication_dois.txt", JSON.stringify(Object.keys(publications)));
+      saveAsFile(
+        "publication_dois.txt",
+        JSON.stringify(Object.keys(publications))
+      );
     },
 
     exportBibtex: function () {
@@ -263,11 +208,7 @@ export default {
       Object.values(this.selectedPublications).forEach(
         (publication) => (bib += publication.toBibtex() + "\n\n")
       );
-      save("publications.bib", bib);
-    },
-
-    scrollTo(id) {
-      scrollToTargetAdjusted(id);
+      saveAsFile("publications.bib", bib);
     },
   },
   beforeMount() {
@@ -282,97 +223,6 @@ window.onbeforeunload = function () {
 
 let publications = {};
 let removedPublicationDois = new Set();
-
-async function computeSuggestions() {
-  function incrementSuggestedPublicationCounter(
-    doi,
-    counter,
-    doiList,
-    sourceDoi
-  ) {
-    if (!removedPublicationDois.has(doi)) {
-      if (!publications[doi]) {
-        if (!suggestedPublications[doi]) {
-          const citingPublication = new Publication(doi);
-          suggestedPublications[doi] = citingPublication;
-        }
-        suggestedPublications[doi][doiList].push(sourceDoi);
-        suggestedPublications[doi][counter]++;
-      } else {
-        publications[doi][counter]++;
-      }
-    }
-  }
-
-  const suggestedPublications = {};
-  await Promise.all(
-    Object.values(publications).map(async (publication) => {
-      await publication.fetchData();
-      publication.isSelected = true;
-    })
-  );
-  Object.values(publications).forEach((publication) => {
-    publication.citationCount = 0;
-    publication.referenceCount = 0;
-  });
-  Object.values(publications).forEach((publication) => {
-    publication.citationDois.forEach((citationDoi) => {
-      incrementSuggestedPublicationCounter(
-        citationDoi,
-        "citationCount",
-        "referenceDois",
-        publication.doi
-      );
-    });
-    publication.referenceDois.forEach((referenceDoi) => {
-      incrementSuggestedPublicationCounter(
-        referenceDoi,
-        "referenceCount",
-        "citationDois",
-        publication.doi
-      );
-    });
-  });
-  let filteredSuggestions = Object.values(suggestedPublications);
-  // titles not yet fetched, that is why sorting can be only done on citations/references
-  filteredSuggestions.sort(
-    (a, b) =>
-      b.citationCount + b.referenceCount - (a.citationCount + a.referenceCount)
-  );
-  filteredSuggestions = filteredSuggestions.slice(0, 50);
-  filteredSuggestions.forEach(async (suggestedPublication) => {
-    suggestedPublication.fetchData();
-  });
-  return filteredSuggestions;
-}
-
-// https://stackoverflow.com/questions/3665115/how-to-create-a-file-in-memory-for-user-to-download-but-not-through-server?answertab=active#tab-top
-function save(filename, data) {
-  const blob = new Blob([data], { type: "text/csv" });
-  if (window.navigator.msSaveOrOpenBlob) {
-    window.navigator.msSaveBlob(blob, filename);
-  } else {
-    const elem = window.document.createElement("a");
-    elem.href = window.URL.createObjectURL(blob);
-    elem.download = filename;
-    document.body.appendChild(elem);
-    elem.click();
-    document.body.removeChild(elem);
-  }
-}
-
-// https://stackoverflow.com/questions/49820013/javascript-scrollintoview-smooth-scroll-and-offset
-function scrollToTargetAdjusted(id) {
-  var element = document.getElementById(id);
-  var headerOffset = 55;
-  var elementPosition = element.getBoundingClientRect().top;
-  var offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-  window.scrollTo({
-    top: offsetPosition,
-    behavior: "smooth",
-  });
-}
 </script>
 
 <!---------------------------------------------------------------------------------->
@@ -396,20 +246,6 @@ $box-padding: 1rem;
 
   & #header {
     grid-area: header;
-
-    & .title {
-      font-size: $size-4;
-    }
-
-    & .subtitle {
-      font-size: $size-5;
-    }
-
-    & .columns {
-      & .column {
-        margin: $block-spacing;
-      }
-    }
   }
 
   & #main {
@@ -482,16 +318,11 @@ $box-padding: 1rem;
       }
     }
 
-    & #quick-access {
+    #quick-access {
       position: fixed;
       bottom: 0.5rem;
       width: 100%;
       text-align: center;
-
-      & button {
-        margin: $block-spacing;
-        box-shadow: 0.25rem 0.25rem 0.75rem grey;
-      }
     }
   }
 }

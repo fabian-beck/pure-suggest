@@ -165,6 +165,69 @@ export default class Publication {
 }`
     }
 
+    static async computeSuggestions(publications, removedPublicationDois) {
+        function incrementSuggestedPublicationCounter(
+            doi,
+            counter,
+            doiList,
+            sourceDoi
+        ) {
+            if (!removedPublicationDois.has(doi)) {
+                if (!publications[doi]) {
+                    if (!suggestedPublications[doi]) {
+                        const citingPublication = new Publication(doi);
+                        suggestedPublications[doi] = citingPublication;
+                    }
+                    suggestedPublications[doi][doiList].push(sourceDoi);
+                    suggestedPublications[doi][counter]++;
+                } else {
+                    publications[doi][counter]++;
+                }
+            }
+        }
+
+        const suggestedPublications = {};
+        await Promise.all(
+            Object.values(publications).map(async (publication) => {
+                await publication.fetchData();
+                publication.isSelected = true;
+            })
+        );
+        Object.values(publications).forEach((publication) => {
+            publication.citationCount = 0;
+            publication.referenceCount = 0;
+        });
+        Object.values(publications).forEach((publication) => {
+            publication.citationDois.forEach((citationDoi) => {
+                incrementSuggestedPublicationCounter(
+                    citationDoi,
+                    "citationCount",
+                    "referenceDois",
+                    publication.doi
+                );
+            });
+            publication.referenceDois.forEach((referenceDoi) => {
+                incrementSuggestedPublicationCounter(
+                    referenceDoi,
+                    "referenceCount",
+                    "citationDois",
+                    publication.doi
+                );
+            });
+        });
+        let filteredSuggestions = Object.values(suggestedPublications);
+        // titles not yet fetched, that is why sorting can be only done on citations/references
+        filteredSuggestions.sort(
+            (a, b) =>
+                b.citationCount + b.referenceCount - (a.citationCount + a.referenceCount)
+        );
+        filteredSuggestions = filteredSuggestions.slice(0, 50);
+        filteredSuggestions.forEach(async (suggestedPublication) => {
+            suggestedPublication.fetchData();
+        });
+        return filteredSuggestions;
+    }
+
     static sortPublications(publicationList) {
         publicationList.sort((a, b) => b.score - a.score);
     }

@@ -70,14 +70,14 @@
     </form>
     <div>
       <div
-        class="notification has-text-centered p-2"
+        class="notification has-text-centered has-background-primary-light p-2"
         v-show="publications.length === 0"
       >
         <p>
-          To start, add one or more publications to the selection by providing
+          To start, add one or more publications by providing
           their <b>DOIs</b> (<a href="https://www.doi.org/"
             >Document Object Intentfier</a
-          >) or a <b>title</b> (one publication).
+          >) or a <b>title</b>.
         </p>
       </div>
       <div

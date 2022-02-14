@@ -6,11 +6,21 @@
     <div class="card-content">
       <div class="content">
         <section>
-          <p class="title">
-            <span class="has-text-primary">PURE&nbsp;</span>
-            <span class="has-text-info">suggest</span>
-          </p>
-          <p class="subtitle">Citation-based literature search</p>
+          <div class="level">
+            <div class="level-left">
+              <div class="level-item">
+                <span v-html="this.$appNameHtml" class="title"></span>
+              </div>
+              <div class="level-item">
+                <span class="subtitle">{{ this.$appSubtitle }}</span>
+              </div>
+            </div>
+            <div class="level-right">
+              <span class="is-size-7 level-item"
+                ><label>Version:&nbsp;</label>{{ this.$version }}</span
+              >
+            </div>
+          </div>
           <p>
             <em>PURE suggest</em> is a scientific literature search tool that,
             starting from some seed papers, suggests scientific publications
@@ -38,8 +48,8 @@
           <h2>Similar Tools</h2>
           <p>
             <em>PURE suggest</em> is not the first of its kind, but other tools
-            are available that provide a visually supported literature search
-            through citation links.
+            are available that also provide a visually supported literature
+            search through citation links.
           </p>
           <ul>
             <li>
@@ -60,6 +70,10 @@
 
 .card {
   .card-content {
+    & .subtitle {
+      margin-top: 0.5rem;
+    }
+
     & h2 {
       font-size: $size-5 !important;
     }
