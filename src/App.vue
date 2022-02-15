@@ -86,13 +86,10 @@ export default {
       this.suggestedPublications = Object.values(
         await Publication.computeSuggestions(
           publications,
-          removedPublicationDois
+          removedPublicationDois,
+          this.boostKeywords
         )
       );
-      this.suggestedPublications.forEach((publication) =>
-        publication.updateScore(this.boostKeywords)
-      );
-      Publication.sortPublications(this.suggestedPublications);
       this.loadingSuggestions = false;
     },
 

@@ -109,7 +109,10 @@
             <label>Citing:</label> {{ publication.referenceDois.length }}
           </div>
           <div class="level-item">
-            <label>Cited by:</label> {{ publication.citationDois.length }}
+            <label>Cited by:</label> {{ publication.citationDois.length }} ({{
+              publication.citationsPerYear.toFixed(1)
+            }}
+            per year)
           </div>
         </div>
         <div

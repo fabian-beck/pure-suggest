@@ -25,6 +25,7 @@ export default class Publication {
         this.score = 0;
         this.scoreColor = "#FFF";
         this.isSurvey = false;
+        this.citationsPerYear = 0;
         this.isHighlyCited = false;
         // interface properties
         this.isActive = false;
@@ -34,6 +35,7 @@ export default class Publication {
 
     async fetchData() {
         if (!this.title) {
+            console.log(`Requesting metadata for DOI ${this.doi}.`)
             await cachedFetch(
                 `https://opencitations.net/index/coci/api/v1/metadata/${this.doi}`,
                 message => {
@@ -51,6 +53,7 @@ export default class Publication {
                         this.title += (mappedWord ? mappedWord : word) + " ";
                     });
                     this.title = this.title.charAt(0).toUpperCase() + this.title.slice(1); // make first character uppercase
+                    this.title = this.title.trim();
                     // author
                     if (data.author) {
                         const authorArray = data.author.split('; ');
@@ -101,9 +104,11 @@ export default class Publication {
                             this.citationDois.push(citationDoi);
                         }
                     });
+                    this.citationsPerYear = this.citationDois.length / (Math.max(1, CURRENT_YEAR - this.year));
                     // tags
                     this.isSurvey = this.referenceDois.length >= 100 || (this.referenceDois.length >= 50 && /.*(survey|state|review|advances|future).*/i.test(this.title));
-                    this.isHighlyCited = this.citationDois.length / (Math.max(1, CURRENT_YEAR - this.year)) >= 10;
+                    this.isHighlyCited = this.citationsPerYear >= 10;
+                    console.log(`Successfully fetched metadata of DOI ${this.doi} ("${this.title}").`);
                 }
             );
         }
@@ -165,7 +170,7 @@ export default class Publication {
 }`
     }
 
-    static async computeSuggestions(publications, removedPublicationDois) {
+    static async computeSuggestions(publications, removedPublicationDois, boostKeywords) {
         function incrementSuggestedPublicationCounter(
             doi,
             counter,
@@ -186,6 +191,7 @@ export default class Publication {
             }
         }
 
+        console.log("Starting to load new suggestions.");
         const suggestedPublications = {};
         await Promise.all(
             Object.values(publications).map(async (publication) => {
@@ -216,20 +222,27 @@ export default class Publication {
             });
         });
         let filteredSuggestions = Object.values(suggestedPublications);
+        console.log(`Identified ${filteredSuggestions.length} publications as suggestions.`);
         // titles not yet fetched, that is why sorting can be only done on citations/references
         filteredSuggestions.sort(
             (a, b) =>
                 b.citationCount + b.referenceCount - (a.citationCount + a.referenceCount)
         );
         filteredSuggestions = filteredSuggestions.slice(0, 50);
-        filteredSuggestions.forEach(async (suggestedPublication) => {
-            suggestedPublication.fetchData();
-        });
+        console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates.`);
+        await Promise.all(filteredSuggestions.map(async (suggestedPublication) => await suggestedPublication.fetchData()));
+        filteredSuggestions.forEach((publication) =>
+            publication.updateScore(boostKeywords)
+        );
+        this.sortPublications(filteredSuggestions);
+        console.log("Completed loading of new suggestions.");
         return filteredSuggestions;
     }
 
     static sortPublications(publicationList) {
-        publicationList.sort((a, b) => b.score - a.score);
+        publicationList.sort((a, b) => {
+            return b.score - 1 / (b.citationsPerYear + 1) - (a.score - 1 / (a.citationsPerYear + 1))
+        });
     }
 
 }
