@@ -17,7 +17,7 @@
         </div>
       </div>
       <div id="network-svg-container">
-        <svg id="network-svg" />
+        <svg id="network-svg" width="100%" height="100%"/>
       </div>
     </div>
   </div>
@@ -72,8 +72,6 @@ export default {
 
     this.svg = d3
       .select("#network-svg")
-      .attr("width", container.clientWidth)
-      .attr("height", container.clientHeight)
       .call(
         // eslint-disable-next-line no-unused-vars
         d3.zoom().on("zoom", (event, d) => {
