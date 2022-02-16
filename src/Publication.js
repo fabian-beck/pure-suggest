@@ -226,7 +226,7 @@ export default class Publication {
             (a, b) =>
                 b.citationCount + b.referenceCount - (a.citationCount + a.referenceCount)
         );
-        filteredSuggestions = filteredSuggestions.slice(0, 50);
+        filteredSuggestions = filteredSuggestions.slice(0, 30 * Math.sqrt(Object.keys(publications).length));
         console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`);
         await Promise.all(filteredSuggestions.map(async (suggestedPublication) => await suggestedPublication.fetchData()));
         filteredSuggestions.forEach((publication) =>
