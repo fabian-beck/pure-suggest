@@ -59,7 +59,7 @@ export default class Publication {
                         if (authorArray.length === 1) {
                             this.authorShort = authorArray[0].split(', ')[0];
                         } else if (authorArray.length === 2) {
-                            this.authorShort = `${authorArray[0].split(', ')[0]} and ${authorArray[1].split(', ')[1]}`;
+                            this.authorShort = `${authorArray[0].split(', ')[0]} and ${authorArray[1].split(', ')[0]}`;
                         } else if (authorArray.length > 2) {
                             this.authorShort = `${authorArray[0].split(', ')[0]} et al.`;
                         }
