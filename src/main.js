@@ -18,7 +18,7 @@ Vue.config.productionTip = false
 Vue.prototype.$appName = "PURE suggest";
 Vue.prototype.$appNameHtml = '<span class="has-text-primary">PURE&nbsp;</span><span class="has-text-info">suggest</span>';
 Vue.prototype.$appSubtitle = "Citation-based literature search"
-Vue.prototype.$version = "v0.1.0-alpha";
+Vue.prototype.$version = "0.1.0-beta";
 
 new Vue({
   render: h => h(App),
