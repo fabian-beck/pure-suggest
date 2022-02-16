@@ -35,12 +35,11 @@ export default class Publication {
 
     async fetchData() {
         if (!this.title) {
-            console.log(`Requesting metadata for DOI ${this.doi}.`)
             await cachedFetch(
                 `https://opencitations.net/index/coci/api/v1/metadata/${this.doi}`,
                 message => {
                     if (!message || message.length === 0) {
-                        console.error(`Could not retrieve metadata for DOI "${this.doi}".`)
+                        console.error(`Unable to process metadata for DOI "${this.doi}" because of empty message.`)
                         this.title = "[unknown metadata]"
                         return;
                     }
@@ -108,7 +107,6 @@ export default class Publication {
                     // tags
                     this.isSurvey = this.referenceDois.length >= 100 || (this.referenceDois.length >= 50 && /.*(survey|state|review|advances|future).*/i.test(this.title));
                     this.isHighlyCited = this.citationsPerYear >= 10;
-                    console.log(`Successfully fetched metadata of DOI ${this.doi} ("${this.title}").`);
                 }
             );
         }
@@ -191,7 +189,7 @@ export default class Publication {
             }
         }
 
-        console.log("Starting to load new suggestions.");
+        console.log("Starting to compute new suggestions.");
         const suggestedPublications = {};
         await Promise.all(
             Object.values(publications).map(async (publication) => {
@@ -229,13 +227,13 @@ export default class Publication {
                 b.citationCount + b.referenceCount - (a.citationCount + a.referenceCount)
         );
         filteredSuggestions = filteredSuggestions.slice(0, 50);
-        console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates.`);
+        console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`);
         await Promise.all(filteredSuggestions.map(async (suggestedPublication) => await suggestedPublication.fetchData()));
         filteredSuggestions.forEach((publication) =>
             publication.updateScore(boostKeywords)
         );
         this.sortPublications(filteredSuggestions);
-        console.log("Completed loading of new suggestions.");
+        console.log("Completed computing and loading of new suggestions.");
         return filteredSuggestions;
     }
 
