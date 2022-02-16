@@ -23,19 +23,19 @@
                 type="text"
                 v-model="boostKeywordString"
                 placeholder="keyword(s)"
-                @keyup.enter="setBoostKeyword"
+                @keyup.enter="updateBoost"
                 data-tippy-content="Boost by factors of 2 the score of publications that contain the following keyword(s) in their title.<br><br>Use commas to separate multiple keywords."
                 v-tippy
               />
               <span class="icon is-small is-right is-clickable">
-                <i class="fas fa-times" v-on:click="clearBoostKeyword"></i>
+                <i class="fas fa-times" v-on:click="clearBoost"></i>
               </span>
             </p>
             <p class="control">
               <button
                 class="button has-background-warning"
                 type="submit"
-                v-on:click="setBoostKeyword"
+                v-on:click="updateBoost"
               >
                 <span class="icon">
                   <i class="fas fa-angle-double-up"></i>
@@ -74,10 +74,13 @@
         v-show="publications.length === 0"
       >
         <p>
-          To start, add one or more publications by providing
-          their <b>DOIs</b> (<a href="https://www.doi.org/"
+          To start, add one or more publications by providing their
+          <b>DOIs</b> (<a href="https://www.doi.org/"
             >Document Object Intentfier</a
-          >) or a <b>title</b>.
+          >) or a <b>title</b>. Alternative: 
+          <button class="button is-small" @click="$emit('loadExample')">
+            <b>load example</b>
+          </button>
         </p>
       </div>
       <div
@@ -140,13 +143,17 @@ export default {
     activatePublication: function (doi) {
       this.$emit("activate", doi);
     },
-    setBoostKeyword: function () {
+    updateBoost: function () {
       this.$emit("updateBoost", this.boostKeywordString);
     },
-    clearBoostKeyword: function () {
+    clearBoost: function () {
       this.boostKeywordString = "";
       this.$emit("updateBoost", this.boostKeywordString);
     },
+    setBoost: function(boostKeywordString) {
+      this.boostKeywordString = boostKeywordString;
+      this.updateBoost();
+    }
   },
   watch: {
     addQuery: function () {

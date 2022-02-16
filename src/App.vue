@@ -12,11 +12,13 @@
     <div id="main">
       <SelectedPublicationsComponent
         id="selected"
+        ref="selected"
         :publications="selectedPublications"
         v-on:add="addPublicationsToSelection"
         v-on:remove="removePublication"
         v-on:activate="activatePublication"
         v-on:updateBoost="updateBoost"
+        v-on:loadExample="loadExample"
       />
       <SuggestedPublicationsComponent
         id="suggested"
@@ -207,6 +209,11 @@ export default {
       );
       saveAsFile("publications.bib", bib);
     },
+
+    loadExample: function () {
+      this.$refs.selected.setBoost("cit, vis");
+      this.addPublicationsToSelection(["10.1109/tvcg.2015.2467757", "10.1109/tvcg.2015.2467621"]);
+    }
   },
   beforeMount() {
     this.updateSuggestions();
