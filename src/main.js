@@ -11,6 +11,7 @@ Vue.use(Buefy, { defaultIconPack: 'fas' })
 
 import VueTippy, { TippyComponent } from "vue-tippy";
 Vue.use(VueTippy);
+// eslint-disable-next-line vue/multi-word-component-names
 Vue.component("tippy", TippyComponent);
 
 Vue.config.productionTip = false

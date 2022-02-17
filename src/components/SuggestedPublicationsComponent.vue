@@ -24,7 +24,7 @@
     />
     <b-loading
       :is-full-page="false"
-      :active.sync="loadingSuggestions"
+      v-model="isLoading"
       :can-cancel="false"
     ></b-loading>
   </div>
@@ -41,7 +41,11 @@ export default {
   props: {
     title: String,
     publications: Array,
-    loadingSuggestions: Boolean,
+  },
+  data() {
+    return {
+      isLoading: false
+    };
   },
   methods: {
     addPublication: function (doi) {
@@ -53,6 +57,9 @@ export default {
     activatePublication: function (doi) {
       this.$emit("activate", doi);
     },
+    setLoading(isLoading) {
+      this.isLoading = isLoading;
+    }
   },
 };
 </script>

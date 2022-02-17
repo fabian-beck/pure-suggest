@@ -22,8 +22,8 @@
       />
       <SuggestedPublicationsComponent
         id="suggested"
+        ref="suggested"
         :publications="suggestedPublications"
-        :loadingSuggestions="loadingSuggestions"
         v-on:add="addPublicationsToSelection"
         v-on:remove="removePublication"
         v-on:activate="activatePublication"
@@ -71,7 +71,6 @@ export default {
     return {
       selectedPublications: [],
       suggestedPublications: [],
-      loadingSuggestions: false,
       boostKeywords: [],
       isAboutPageShown: false,
     };
@@ -83,7 +82,7 @@ export default {
   },
   methods: {
     updateSuggestions: async function () {
-      this.loadingSuggestions = true;
+      this.$refs.suggested.setLoading(true);
       this.clearActive();
       this.suggestedPublications = Object.values(
         await Publication.computeSuggestions(
@@ -92,7 +91,7 @@ export default {
           this.boostKeywords
         )
       );
-      this.loadingSuggestions = false;
+      this.$refs.suggested.setLoading(false);
     },
 
     addPublicationsToSelection: async function (dois) {
