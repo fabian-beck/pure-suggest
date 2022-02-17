@@ -89,15 +89,19 @@
       </div>
       <div v-if="publication.isActive">
         <span>
-          <span v-html="publication.authorOrcid" v-if="publication.author"
-            >.</span
-          >
+          <span
+            v-html="
+              publication.authorOrcid +
+              (publication.authorOrcid.endsWith('.') ? '' : '.')
+            "
+            v-if="publication.author"
+          ></span>
           <span v-else>[unknown author].</span>
         </span>
         <span v-if="publication.container"
-          ><em>&nbsp;{{ publication.container }}.</em></span
+          ><em> {{ publication.container }}.</em></span
         >
-        <label>&nbsp;DOI:</label>
+        <label> DOI:</label>
         <a :href="'https://doi.org/' + publication.doi">{{
           publication.doi
         }}</a>
