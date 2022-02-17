@@ -214,9 +214,6 @@ export default {
       this.addPublicationsToSelection(["10.1109/tvcg.2015.2467757", "10.1109/tvcg.2015.2467621"]);
     }
   },
-  beforeMount() {
-    this.updateSuggestions();
-  },
 };
 
 // triggers a prompt before closing/reloading the page
