@@ -87,24 +87,23 @@
           >
         </b-taglist>
       </div>
-      <div
-        v-if="
-          publication.isActive &&
-          publication.title &&
-          publication.author &&
-          publication.container
-        "
-      >
-        <span v-html="publication.authorOrcid"></span>.
-        <em>{{ publication.container }}</em
-        >.
-        <label>DOI:</label>
+      <div v-if="publication.isActive">
+        <span>
+          <span v-html="publication.authorOrcid" v-if="publication.author"
+            >.</span
+          >
+          <span v-else>[unknown author].</span>
+        </span>
+        <span v-if="publication.container"
+          ><em>&nbsp;{{ publication.container }}.</em></span
+        >
+        <label>&nbsp;DOI:</label>
         <a :href="'https://doi.org/' + publication.doi">{{
           publication.doi
         }}</a>
       </div>
       <div v-if="publication.isActive" class="stats-and-links level is-size-7">
-        <div class="doi level-left">
+        <div class="level-left">
           <div class="level-item">
             <label>Citing:</label> {{ publication.referenceDois.length }}
           </div>
