@@ -6,7 +6,7 @@
       selected: publication.isSelected,
       linkedToActive: publication.isLinkedToActive,
     }"
-    v-on:click="$emit('activate', publication.doi)"
+    @click.stop="$emit('activate', publication.doi)"
   >
     <div
       class="media-left has-text-centered"
@@ -142,7 +142,7 @@
           v-if="suggestion"
           class="button is-primary is-small"
           data-tippy-content="Add publication to list of selected publications."
-          v-on:click.stop="$emit('add', publication.doi)"
+          @click.stop="$emit('add', publication.doi)"
           v-tippy
         >
           <span class="icon">
@@ -154,7 +154,7 @@
         <button
           class="button is-small"
           data-tippy-content="Remove publication from the list and exclude for suggestions."
-          v-on:click.stop="$emit('remove', publication.doi)"
+          @click.stop="$emit('remove', publication.doi)"
           v-tippy
         >
           <span class="icon">

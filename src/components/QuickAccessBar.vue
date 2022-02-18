@@ -3,17 +3,17 @@
     <b-button
       type="has-background-primary has-text-white"
       icon-right="file-export"
-      v-on:click="scrollTo('selected')"
+      @click="scrollTo('selected')"
     />
     <b-button
       type="has-background-info has-text-white"
       icon-right="file-import"
-      v-on:click="scrollTo('suggested')"
+      @click="scrollTo('suggested')"
     />
     <b-button
       type="has-background-grey has-text-white"
       icon-right="chart-bar"
-      v-on:click="scrollTo('network')"
+      @click="scrollTo('network')"
     />
   </div>
 </template>

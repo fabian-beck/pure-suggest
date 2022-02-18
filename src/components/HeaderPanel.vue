@@ -14,16 +14,16 @@
           :label="'Session (' + selectedPublicationsCount + ' selected)'"
           v-show="selectedPublicationsCount"
         >
-          <b-navbar-item v-on:click="$emit('exportDois')">
+          <b-navbar-item @click="$emit('exportDois')">
             <b-icon icon="share-square" size="is-small"></b-icon>
             <span class="ml-2">Export selected as DOIs</span>
           </b-navbar-item>
-          <b-navbar-item v-on:click="$emit('exportBibtex')">
+          <b-navbar-item @click="$emit('exportBibtex')">
             <b-icon icon="share-square" size="is-small"></b-icon>
             <span class="ml-2">Export selected as BibTeX</span>
           </b-navbar-item>
           <b-navbar-item
-            v-on:click="$emit('clearSelection')"
+            @click="$emit('clearSelection')"
             class="has-text-danger"
           >
             <b-icon icon="trash" size="is-small"></b-icon
@@ -32,7 +32,7 @@
         </b-navbar-dropdown>
       </template>
       <template #end>
-        <b-navbar-item v-on:click="$emit('openAbout')"> About </b-navbar-item>
+        <b-navbar-item @click="$emit('openAbout')"> About </b-navbar-item>
       </template>
     </b-navbar>
     <div class="columns" v-show="selectedPublicationsCount === 0">
