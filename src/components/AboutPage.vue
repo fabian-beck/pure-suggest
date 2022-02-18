@@ -24,8 +24,7 @@
           <p>
             <em>PURE suggest</em> is a scientific literature search tool that,
             starting from some seed papers, suggests scientific publications
-            through citations/references. It has been created by
-            <a href="https://github.com/fabian-beck">Fabian Beck</a>.
+            through citations/references.
           </p>
           <p>
             The code is available on
@@ -59,6 +58,16 @@
               <a href="https://www.connectedpapers.com">Connected Papers</a>
             </li>
           </ul>
+          <h2>Contact</h2>
+          <p><em>PURE suggest</em> has been created by:</p>
+          <p>
+            <a href="https://github.com/fabian-beck">Fabian Beck</a> <br />
+            University of Bamberg <br />
+            96047 Bamberg, Germany <br />
+            <a href="mailto:fabian.beck@uni-bamberg.de"
+              >fabian.beck@uni-bamberg.de</a
+            >
+          </p>
         </section>
       </div>
     </div>
