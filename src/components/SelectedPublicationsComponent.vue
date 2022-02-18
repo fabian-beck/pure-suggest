@@ -28,7 +28,7 @@
                 v-tippy
               />
               <span class="icon is-small is-right is-clickable">
-                <i class="fas fa-times" v-on:click="clearBoost"></i>
+                <i class="fas fa-times" @click.stop="clearBoost"></i>
               </span>
             </p>
             <p class="control">
@@ -62,7 +62,7 @@
         <button
           class="button level-right has-background-primary-light"
           type="submit"
-          v-on:click="add"
+          @click.stop="add"
         >
           <span class="icon"><i class="fas fa-plus"></i></span>
         </button>
@@ -77,8 +77,8 @@
           To start, add one or more publications by providing their
           <b>DOIs</b> (<a href="https://www.doi.org/"
             >Document Object Intentfier</a
-          >) or a <b>title</b>. Alternative: 
-          <button class="button is-small" @click="$emit('loadExample')">
+          >) or a <b>title</b>. Alternative:
+          <button class="button is-small" @click.stop="$emit('loadExample')">
             <b>load example</b>
           </button>
         </p>
@@ -94,7 +94,7 @@
       >
         <button
           class="delete"
-          v-on:click="noPublicationWarning = false"
+          @click.stop="noPublicationWarning = false"
         ></button>
         Cannot find a publication with this or similar title.
       </div>
@@ -150,10 +150,10 @@ export default {
       this.boostKeywordString = "";
       this.$emit("updateBoost", this.boostKeywordString);
     },
-    setBoost: function(boostKeywordString) {
+    setBoost: function (boostKeywordString) {
       this.boostKeywordString = boostKeywordString;
       this.updateBoost();
-    }
+    },
   },
   watch: {
     addQuery: function () {

@@ -54,7 +54,7 @@ export default {
           "active"
         )[0];
         if (publicationComponent) {
-          publicationComponent.scrollIntoView();
+          publicationComponent.scrollIntoView({behavior: "smooth", block: "end", inline: "nearest"});
         }
       } else {
         this.onNextActivatedScroll = true;

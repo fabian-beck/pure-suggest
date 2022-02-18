@@ -1,3 +1,5 @@
+import _ from "lodash";
+
 import cachedFetch from "./Cache.js";
 
 export default class Publication {
@@ -81,7 +83,7 @@ export default class Publication {
                         }
                         this.container += (mappedWord ? mappedWord : word) + " ";
                     });
-                    this.container = this.container.trim();
+                    this.container = _.trim(this.container, '. ');
                     this.container = this.container.charAt(0).toUpperCase() + this.container.slice(1); // make first character uppercase
                     // other meta-data
                     this.year = data.year;

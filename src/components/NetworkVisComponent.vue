@@ -277,6 +277,7 @@ export default {
 
     activatePublication: function (event, d) {
       this.$emit("activate", d.publication.doi);
+      event.stopPropagation();
     },
   },
 };

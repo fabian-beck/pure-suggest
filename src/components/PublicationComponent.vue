@@ -6,7 +6,7 @@
       selected: publication.isSelected,
       linkedToActive: publication.isLinkedToActive,
     }"
-    v-on:click="$emit('activate', publication.doi)"
+    @click.stop="$emit('activate', publication.doi)"
   >
     <div
       class="media-left has-text-centered"
@@ -87,24 +87,27 @@
           >
         </b-taglist>
       </div>
-      <div
-        v-if="
-          publication.isActive &&
-          publication.title &&
-          publication.author &&
-          publication.container
-        "
-      >
-        <span v-html="publication.authorOrcid"></span>.
-        <em>{{ publication.container }}</em
-        >.
-        <label>DOI:</label>
+      <div v-if="publication.isActive">
+        <span>
+          <span
+            v-html="
+              publication.authorOrcid +
+              (publication.authorOrcid.endsWith('.') ? '' : '.')
+            "
+            v-if="publication.author"
+          ></span>
+          <span v-else>[unknown author].</span>
+        </span>
+        <span v-if="publication.container"
+          ><em> {{ publication.container }}.</em></span
+        >
+        <label> DOI:</label>
         <a :href="'https://doi.org/' + publication.doi">{{
           publication.doi
         }}</a>
       </div>
       <div v-if="publication.isActive" class="stats-and-links level is-size-7">
-        <div class="doi level-left">
+        <div class="level-left">
           <div class="level-item">
             <label>Citing:</label> {{ publication.referenceDois.length }}
           </div>
@@ -139,7 +142,7 @@
           v-if="suggestion"
           class="button is-primary is-small"
           data-tippy-content="Add publication to list of selected publications."
-          v-on:click.stop="$emit('add', publication.doi)"
+          @click.stop="$emit('add', publication.doi)"
           v-tippy
         >
           <span class="icon">
@@ -151,7 +154,7 @@
         <button
           class="button is-small"
           data-tippy-content="Remove publication from the list and exclude for suggestions."
-          v-on:click.stop="$emit('remove', publication.doi)"
+          @click.stop="$emit('remove', publication.doi)"
           v-tippy
         >
           <span class="icon">

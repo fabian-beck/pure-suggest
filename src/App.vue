@@ -9,24 +9,24 @@
       v-on:clearSelection="clearSelection"
       v-on:openAbout="isAboutPageShown = true"
     />
-    <div id="main">
+    <div id="main" @click="clearActivePublication('clicked anywhere')">
       <SelectedPublicationsComponent
         id="selected"
         ref="selected"
         :publications="selectedPublications"
         v-on:add="addPublicationsToSelection"
         v-on:remove="removePublication"
-        v-on:activate="activatePublication"
+        v-on:activate="setActivePublication"
         v-on:updateBoost="updateBoost"
         v-on:loadExample="loadExample"
       />
       <SuggestedPublicationsComponent
         id="suggested"
+        ref="suggested"
         :publications="suggestedPublications"
-        :loadingSuggestions="loadingSuggestions"
         v-on:add="addPublicationsToSelection"
         v-on:remove="removePublication"
-        v-on:activate="activatePublication"
+        v-on:activate="setActivePublication"
       />
       <NetworkVisComponent
         id="network"
@@ -34,7 +34,7 @@
         :suggestedPublications="suggestedPublications"
         :svgWidth="1500"
         :svgHeight="600"
-        v-on:activate="activatePublication"
+        v-on:activate="setActivePublication"
       />
     </div>
     <QuickAccessBar id="quick-access" class="is-hidden-tablet" />
@@ -71,7 +71,6 @@ export default {
     return {
       selectedPublications: [],
       suggestedPublications: [],
-      loadingSuggestions: false,
       boostKeywords: [],
       isAboutPageShown: false,
     };
@@ -83,8 +82,7 @@ export default {
   },
   methods: {
     updateSuggestions: async function () {
-      this.loadingSuggestions = true;
-      this.clearActive();
+      this.$refs.suggested.setLoading(true);
       this.suggestedPublications = Object.values(
         await Publication.computeSuggestions(
           publications,
@@ -92,10 +90,11 @@ export default {
           this.boostKeywords
         )
       );
-      this.loadingSuggestions = false;
+      this.$refs.suggested.setLoading(false);
     },
 
     addPublicationsToSelection: async function (dois) {
+      console.log(`Adding to selection publications with DOIs: ${dois}.`);
       if (typeof dois === "string") {
         dois = [dois];
       }
@@ -109,10 +108,10 @@ export default {
         addedPublicationsCount++;
       });
       await this.updateSuggestions();
-      if (addedPublicationsCount == 1) {
-        this.activatePublication(addedDoi);
-      }
       this.rankSelectedPublications();
+      if (addedPublicationsCount == 1) {
+        this.setActivePublication(addedDoi);
+      }
       this.$buefy.toast.open({
         message: `Added ${
           dois.length === 1 ? "a publication" : dois.length + " publications"
@@ -120,8 +119,8 @@ export default {
       });
     },
 
-    activatePublication: function (doi) {
-      this.clearActive();
+    setActivePublication: function (doi) {
+      this.clearActivePublication("setting active publication");
       this.selectedPublications.forEach((selectedPublication) => {
         selectedPublication.isActive = selectedPublication.doi === doi;
         if (selectedPublication.isActive) {
@@ -147,6 +146,19 @@ export default {
           });
         }
       });
+      console.log(`Highlighted as active publication with DOI ${doi}.`);
+    },
+
+    clearActivePublication: function (source) {
+      this.selectedPublications
+        .concat(this.suggestedPublications)
+        .forEach((publication) => {
+          publication.isActive = false;
+          publication.isLinkedToActive = false;
+        });
+      console.log(
+        `Cleared any highlighted active publication, triggered by "${source}".`
+      );
     },
 
     clearSelection: function () {
@@ -160,15 +172,6 @@ export default {
           this.updateSuggestions();
         },
       });
-    },
-
-    clearActive: function () {
-      this.selectedPublications
-        .concat(this.suggestedPublications)
-        .forEach((publication) => {
-          publication.isActive = false;
-          publication.isLinkedToActive = false;
-        });
     },
 
     removePublication: function (doi) {
@@ -212,11 +215,11 @@ export default {
 
     loadExample: function () {
       this.$refs.selected.setBoost("cit, vis");
-      this.addPublicationsToSelection(["10.1109/tvcg.2015.2467757", "10.1109/tvcg.2015.2467621"]);
-    }
-  },
-  beforeMount() {
-    this.updateSuggestions();
+      this.addPublicationsToSelection([
+        "10.1109/tvcg.2015.2467757",
+        "10.1109/tvcg.2015.2467621",
+      ]);
+    },
   },
 };
 
