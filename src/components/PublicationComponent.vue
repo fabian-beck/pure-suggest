@@ -127,9 +127,9 @@
           </div>
           <div class="level-item">
             <a
-              :href="
-                'https://scholar.google.de/scholar?hl=en&q=' + publication.title
-              "
+              :href="`https://scholar.google.de/scholar?hl=en&q=${
+                publication.title
+              } ${publication.author ? publication.author : ''}`"
               >Google Scholar</a
             >
           </div>
