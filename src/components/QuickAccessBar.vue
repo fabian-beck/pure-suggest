@@ -12,7 +12,7 @@
     />
     <b-button
       type="has-background-grey has-text-white"
-      icon-right="chart-bar"
+      icon-right="sitemap-outline"
       @click="scrollTo('network')"
     />
   </div>

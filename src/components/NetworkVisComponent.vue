@@ -4,20 +4,21 @@
       <div class="level">
         <div class="level-left has-text-white">
           <div class="level-item">
-            <b-icon icon="chart-bar"></b-icon>
+            <b-icon icon="sitemap-outline"></b-icon>
             <h2 class="is-size-5 ml-2">Citation network</h2>
-            <span class="icon" v-show="selectedPublications.length">
-              <i
-                class="fas fa-info-circle"
-                data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>green</b>: selected; <b class='has-text-info'>blue</b>: suggested) with references connecting them as links. The layout places publications from left to right based on publication year and from top to bottom by reference frequency (<b class='has-text-primary'>selected</b>: summed references and citations; <b class='has-text-info'>suggested</b>: suggestion score). You can highlight a publication on click, zoom using the mouse wheel, and pan on drag."
-                v-tippy
-              ></i
-            ></span>
+            <b-icon
+              icon="information-outline"
+              size="is-small"
+              class="ml-2"
+              v-show="selectedPublications.length"
+              data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>green</b>: selected; <b class='has-text-info'>blue</b>: suggested) with references connecting them as links. The layout places publications from left to right based on publication year and from top to bottom by reference frequency (<b class='has-text-primary'>selected</b>: summed references and citations; <b class='has-text-info'>suggested</b>: suggestion score). You can highlight a publication on click, zoom using the mouse wheel, and pan on drag."
+              v-tippy
+            ></b-icon>
           </div>
         </div>
       </div>
       <div id="network-svg-container">
-        <svg id="network-svg" width="100%" height="100%"/>
+        <svg id="network-svg" width="100%" height="100%" />
       </div>
     </div>
   </div>
@@ -75,8 +76,8 @@ export default {
       .call(
         // eslint-disable-next-line no-unused-vars
         d3.zoom().on("zoom", (event, d) => {
-            that.svg.attr("transform", event.transform);
-          })
+          that.svg.attr("transform", event.transform);
+        })
       )
       .append("g");
 

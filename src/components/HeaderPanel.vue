@@ -3,8 +3,8 @@
     <b-navbar :fixed-top="isMobile">
       <template #brand>
         <b-navbar-item>
-          <b-icon icon="tint" size="is-medium" class="has-text-grey"></b-icon>
-          <h1 class="title">
+          <b-icon icon="water-plus-outline" size="is-medium" class="has-text-grey"></b-icon>
+          <h1 class="title ml-2">
             <span v-html="$appNameHtml"></span>
           </h1>
         </b-navbar-item>
@@ -15,18 +15,18 @@
           v-show="selectedPublicationsCount"
         >
           <b-navbar-item @click="$emit('exportDois')">
-            <b-icon icon="share-square" size="is-small"></b-icon>
+            <b-icon icon="export" size="is-small"></b-icon>
             <span class="ml-2">Export selected as DOIs</span>
           </b-navbar-item>
           <b-navbar-item @click="$emit('exportBibtex')">
-            <b-icon icon="share-square" size="is-small"></b-icon>
+            <b-icon icon="export" size="is-small"></b-icon>
             <span class="ml-2">Export selected as BibTeX</span>
           </b-navbar-item>
           <b-navbar-item
             @click="$emit('clearSelection')"
             class="has-text-danger"
           >
-            <b-icon icon="trash" size="is-small"></b-icon
+            <b-icon icon="delete-outline" size="is-small"></b-icon
             ><span class="ml-2">Clear</span>
           </b-navbar-item>
         </b-navbar-dropdown>

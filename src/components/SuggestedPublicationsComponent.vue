@@ -5,13 +5,14 @@
         <div class="level-item">
           <b-icon icon="file-import"></b-icon>
           <h2 class="is-size-5 ml-2">Suggested</h2>
-          <span class="icon" v-show="publications.length">
-            <i
-              class="fas fa-info-circle"
-              data-tippy-content="The <b>suggested publications</b> based on references to and from the selected publications, sorted by score."
-              v-tippy
-            ></i
-          ></span>
+          <b-icon
+            icon="information-outline"
+            size="is-small"
+            class="ml-2"
+            v-show="publications.length"
+            data-tippy-content="The <b>suggested publications</b> based on references to and from the selected publications, sorted by score."
+            v-tippy
+          ></b-icon>
         </div>
       </div>
     </div>
@@ -44,7 +45,7 @@ export default {
   },
   data() {
     return {
-      isLoading: false
+      isLoading: false,
     };
   },
   methods: {
@@ -59,7 +60,7 @@ export default {
     },
     setLoading(isLoading) {
       this.isLoading = isLoading;
-    }
+    },
   },
 };
 </script>
