@@ -1,20 +1,23 @@
 <template>
   <div>
-    <b-button
-      type="has-background-primary has-text-white"
-      icon-right="file-export"
+    <button
+      class="button has-background-primary has-text-white"
       @click="scrollTo('selected')"
-    />
-    <b-button
-      type="has-background-info has-text-white"
-      icon-right="file-import"
+    >
+      <b-icon icon="water-outline"></b-icon>
+    </button>
+    <button
+      class="button has-background-info has-text-white"
       @click="scrollTo('suggested')"
-    />
-    <b-button
-      type="has-background-grey has-text-white"
-      icon-right="chart-bar"
+    >
+      <b-icon icon="water-plus-outline"></b-icon>
+    </button>
+    <button
+      class="button has-background-grey has-text-white"
       @click="scrollTo('network')"
-    />
+    >
+      <b-icon icon="chart-bubble"></b-icon>
+    </button>
   </div>
 </template>
 <script>
@@ -24,7 +27,7 @@ export default {
   name: "QuickAccessBar",
   methods: {
     scrollTo(id) {
-      scrollToTargetAdjusted(id);
+      scrollToTargetAdjusted(document.getElementById(id), 55);
     },
   },
 };
@@ -35,5 +38,10 @@ export default {
 button {
   margin: 0.5rem;
   box-shadow: 0.25rem 0.25rem 0.75rem grey;
+
+  & .icon {
+    height: 2rem !important;
+    width: 2rem !important;
+  }
 }
 </style>

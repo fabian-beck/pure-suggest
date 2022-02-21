@@ -17,34 +17,37 @@
           <div class="tooltip-target">
             <div class="is-size-3 is-inline-block">{{ publication.score }}</div>
             <div
-              class="has-background-warning is-size-7 is-inline-block p-1 ml-1"
+              class="has-background-warning is-size-6 is-inline-block ml-1"
               v-if="publication.boostFactor > 1"
             >
-              <i class="fas fa-angle-double-up"></i>
+              <b-icon :icon="chevronType" size="is-small"></b-icon>
             </div>
           </div>
           <div class="is-size-7">
             {{ publication.referenceCount }}
-            <i class="fas fa-arrow-left"></i>
+            <b-icon icon="arrow-left-thick" size="is-small"></b-icon>
             + {{ publication.citationCount }}
-            <i class="fas fa-arrow-right"></i>
+            <b-icon icon="arrow-right-thick" size="is-small"></b-icon>
           </div>
         </template>
         <div>
           Suggestion score of
           <b>{{ publication.score }}</b
           >:<br />
-          Referenced by <b>{{ publication.referenceCount }}</b> (<i
-            class="fas fa-arrow-left"
-          ></i
-          >) and referencing <b>{{ publication.citationCount }}</b> (<i
-            class="fas fa-arrow-right"
-          ></i
+          Referenced by <b>{{ publication.referenceCount }}</b> (<b-icon
+            icon="arrow-left-thick"
+            size="is-small"
+          ></b-icon
+          >) and referencing <b>{{ publication.citationCount }}</b> (<b-icon
+            icon="arrow-right-thick"
+            size="is-small"
+          ></b-icon
           >) selected publications<span v-if="publication.boostFactor != 1"
             >, multiplied by a boost factor of
-            <b>{{ publication.boostFactor }}</b> (<i
-              class="fas fa-angle-double-up"
-            ></i
+            <b>{{ publication.boostFactor }}</b> (<b-icon
+              :icon="chevronType"
+              size="is-small"
+            ></b-icon
             >)</span
           >.
         </div>
@@ -79,11 +82,32 @@
           <strong>...</strong>
         </span>
         <b-taglist>
-          <b-tag icon="star" class="is-dark" v-if="publication.isHighlyCited"
+          <b-tag
+            icon="star"
+            class="is-dark"
+            size="is-small"
+            v-if="publication.isHighlyCited"
+            :data-tippy-content="`Identified as highly cited: ${publication.isHighlyCited}.`"
+            v-tippy
             >Highly cited</b-tag
           >
-          <b-tag icon="table" class="is-dark" v-if="publication.isSurvey"
+          <b-tag
+            icon="table"
+            class="is-dark"
+            size="is-small"
+            v-if="publication.isSurvey"
+            :data-tippy-content="`Identified as literature survey: ${publication.isSurvey}.`"
+            v-tippy
             >Literature survey</b-tag
+          >
+          <b-tag
+            icon="alarm"
+            class="is-dark"
+            size="is-small"
+            v-if="publication.isNew"
+            :data-tippy-content="`Identified as new: ${publication.isNew}.`"
+            v-tippy
+            >New</b-tag
           >
         </b-taglist>
       </div>
@@ -109,13 +133,14 @@
       <div v-if="publication.isActive" class="stats-and-links level is-size-7">
         <div class="level-left">
           <div class="level-item">
-            <label>Citing:</label> {{ publication.referenceDois.length }}
+            <label>Citing:</label> <b>{{ publication.referenceDois.length }}</b>
           </div>
           <div class="level-item">
-            <label>Cited by:</label> {{ publication.citationDois.length }} ({{
-              publication.citationsPerYear.toFixed(1)
-            }}
+            <label>Cited by:</label> <b>{{ publication.citationDois.length }}</b>
+            <span v-if="publication.citationsPerYear > 0">
+              &nbsp;({{ publication.citationsPerYear.toFixed(1) }}
             per year)
+            </span>
           </div>
         </div>
         <div
@@ -127,9 +152,9 @@
           </div>
           <div class="level-item">
             <a
-              :href="
-                'https://scholar.google.de/scholar?hl=en&q=' + publication.title
-              "
+              :href="`https://scholar.google.de/scholar?hl=en&q=${
+                publication.title
+              } ${publication.author ? publication.author : ''}`"
               >Google Scholar</a
             >
           </div>
@@ -138,29 +163,25 @@
     </div>
     <div class="media-right">
       <div>
-        <button
+        <b-button
           v-if="suggestion"
-          class="button is-primary is-small"
+          class="is-primary is-small"
+          icon-left="plus-thick"
           data-tippy-content="Add publication to list of selected publications."
           @click.stop="$emit('add', publication.doi)"
           v-tippy
         >
-          <span class="icon">
-            <i class="fas fa-plus"></i>
-          </span>
-        </button>
+        </b-button>
       </div>
       <div>
-        <button
-          class="button is-small"
+        <b-button
+          class="is-small"
+          icon-left="minus-thick"
           data-tippy-content="Remove publication from the list and exclude for suggestions."
           @click.stop="$emit('remove', publication.doi)"
           v-tippy
         >
-          <span class="icon">
-            <i class="fas fa-minus"></i>
-          </span>
-        </button>
+        </b-button>
       </div>
     </div>
   </li>
@@ -172,6 +193,18 @@ export default {
   props: {
     publication: Object,
     suggestion: Boolean,
+  },
+  computed: {
+    chevronType: function () {
+      if (this.publication.boostFactor >= 8) {
+        return "chevron-triple-up";
+      } else if (this.publication.boostFactor >= 4) {
+        return "chevron-double-up";
+      } else if (this.publication.boostFactor > 1) {
+        return "chevron-up";
+      }
+      return "";
+    },
   },
 };
 </script>

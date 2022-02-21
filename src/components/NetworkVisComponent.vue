@@ -4,20 +4,39 @@
       <div class="level">
         <div class="level-left has-text-white">
           <div class="level-item">
-            <b-icon icon="chart-bar"></b-icon>
+            <b-icon icon="chart-bubble"></b-icon>
             <h2 class="is-size-5 ml-2">Citation network</h2>
-            <span class="icon" v-show="selectedPublications.length">
-              <i
-                class="fas fa-info-circle"
-                data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>green</b>: selected; <b class='has-text-info'>blue</b>: suggested) with references connecting them as links. The layout places publications from left to right based on publication year and from top to bottom by reference frequency (<b class='has-text-primary'>selected</b>: summed references and citations; <b class='has-text-info'>suggested</b>: suggestion score). You can highlight a publication on click, zoom using the mouse wheel, and pan on drag."
-                v-tippy
-              ></i
-            ></span>
+            <b-icon
+              icon="information-outline"
+              size="is-small"
+              class="ml-2"
+              v-show="selectedPublications.length"
+              data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>selected</b>; <b class='has-text-info'>suggested</b>) with citations as links.<br><br>The diagram places publications from left to right based on year and from top to bottom by reference/citation frequency (ignoring boost).<br><br>You can click a pubication for details as well as zoom and pan the diagram."
+              v-tippy
+            ></b-icon>
           </div>
+        </div>
+        <div class="level-right is-hidden-mobile">
+          <b-button
+            icon-right="arrow-expand-up"
+            size="is-small"
+            data-tippy-content="Expand diagram"
+            v-tippy
+            v-show="!isExpanded"
+            @click="$emit('expand')"
+          ></b-button>
+          <b-button
+            icon-right="arrow-expand-down"
+            size="is-small"
+            data-tippy-content="Collapse diagram"
+            v-tippy
+            v-show="isExpanded"
+            @click="$emit('collapse')"
+          ></b-button>
         </div>
       </div>
       <div id="network-svg-container">
-        <svg id="network-svg" width="100%" height="100%"/>
+        <svg id="network-svg" width="100%" height="100%" />
       </div>
     </div>
   </div>
@@ -35,6 +54,7 @@ export default {
   props: {
     selectedPublications: Array,
     suggestedPublications: Array,
+    isExpanded: Boolean,
   },
   data: function () {
     return {
@@ -75,8 +95,8 @@ export default {
       .call(
         // eslint-disable-next-line no-unused-vars
         d3.zoom().on("zoom", (event, d) => {
-            that.svg.attr("transform", event.transform);
-          })
+          that.svg.attr("transform", event.transform);
+        })
       )
       .append("g");
 
@@ -113,11 +133,11 @@ export default {
           .y(function (d) {
             return (
               (-Math.log(
-                d.publication.isSelected
-                  ? d.publication.citationDois.length +
-                      d.publication.referenceDois.length +
-                      1
-                  : d.publication.score * 10 + 1
+                (d.publication.citationCount +
+                  d.publication.referenceCount +
+                  (d.publication.isSelected ? 1 : 0) +
+                  1) *
+                  10
               ) *
                 0.12 + // spread by
                 0.8) * // move down by

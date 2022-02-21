@@ -28,14 +28,14 @@
           </p>
           <p>
             The code is available on
-            <a href="https://github.com/fabian-beck/pure-suggest">GitHub</a>
+            <a href="https://github.com/fabian-beck/pure-suggest">GitHub <b-icon icon="github" size="is-small"/></a>
             under
             <a
               href="https://github.com/fabian-beck/pure-suggest/blob/master/LICENSE"
-              >MIT License</a
+              >MIT License <b-icon icon="license" size="is-small"/></a
             >.
           </p>
-          <h2>Data Sources</h2>
+          <h2><b-icon icon="database"/> Data Sources</h2>
           <p>
             APIs by the following projects are used to retrieve the literature
             meta-data and citation information.
@@ -44,11 +44,12 @@
             <li><a href="https://opencitations.net/">OpenCitations</a></li>
             <li><a href="https://www.crossref.org/">CrossRef</a></li>
           </ul>
-          <h2>Similar Tools</h2>
+          <h2><b-icon icon="tools"/> Similar Tools</h2>
           <p>
             <em>PURE suggest</em> is not the first of its kind, but other tools
             are available that also provide a visually supported literature
-            search through citation links.
+            search through citation links. Try them out and decide yourself
+            which one you like best!
           </p>
           <ul>
             <li>
@@ -57,8 +58,11 @@
             <li>
               <a href="https://www.connectedpapers.com">Connected Papers</a>
             </li>
+            <li>
+              <a href="https://www.researchrabbit.ai/">Research Rabbit</a>
+            </li>
           </ul>
-          <h2>Contact</h2>
+          <h2><b-icon icon="card-account-mail"/> Contact</h2>
           <p><em>PURE suggest</em> has been created by:</p>
           <p>
             <a href="https://github.com/fabian-beck">Fabian Beck</a> <br />
