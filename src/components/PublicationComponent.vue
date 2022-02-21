@@ -100,6 +100,15 @@
             v-tippy
             >Literature survey</b-tag
           >
+          <b-tag
+            icon="alarm"
+            class="is-dark"
+            size="is-small"
+            v-if="publication.isNew"
+            :data-tippy-content="`Identified as new: ${publication.isNew}.`"
+            v-tippy
+            >New</b-tag
+          >
         </b-taglist>
       </div>
       <div v-if="publication.isActive">
