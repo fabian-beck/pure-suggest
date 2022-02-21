@@ -46,7 +46,7 @@
         </div>
       </div>
     </div>
-    <form v-on:submit.prevent class="field has-addons">
+    <form v-on:submit.prevent="add" class="field has-addons">
       <p class="control is-expanded">
         <input
           class="input"
