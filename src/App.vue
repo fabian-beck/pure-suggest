@@ -182,11 +182,11 @@ export default {
       });
     },
 
-    removePublication: function (doi) {
+    removePublication: async function (doi) {
       removedPublicationDois.add(doi);
       delete publications[doi];
+      await this.updateSuggestions();
       this.rankSelectedPublications();
-      this.updateSuggestions();
       this.$buefy.toast.open({
         message: `Excluded a publication`,
       });
