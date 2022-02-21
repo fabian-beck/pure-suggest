@@ -87,6 +87,8 @@
             class="is-dark"
             size="is-small"
             v-if="publication.isHighlyCited"
+            :data-tippy-content="`Identified as highly cited: ${publication.isHighlyCited}.`"
+            v-tippy
             >Highly cited</b-tag
           >
           <b-tag
@@ -94,6 +96,8 @@
             class="is-dark"
             size="is-small"
             v-if="publication.isSurvey"
+            :data-tippy-content="`Identified as literature survey: ${publication.isSurvey}.`"
+            v-tippy
             >Literature survey</b-tag
           >
         </b-taglist>

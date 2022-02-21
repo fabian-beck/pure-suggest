@@ -107,8 +107,12 @@ export default class Publication {
                     });
                     this.citationsPerYear = this.citationDois.length / (Math.max(1, CURRENT_YEAR - this.year));
                     // tags
-                    this.isSurvey = this.referenceDois.length >= 100 || (this.referenceDois.length >= 50 && /.*(survey|state|review|advances|future).*/i.test(this.title));
-                    this.isHighlyCited = this.citationsPerYear >= 10;
+                    if (this.referenceDois.length > 100) {
+                        this.isSurvey = `more than 100 references (${this.referenceDois.length})`;
+                    } else if (this.referenceDois.length >= 50 && /.*(survey|state|review|advances|future).*/i.test(this.title)) {
+                        this.isSurvey = `more than 50 references (${this.referenceDois.length}) and "${/(survey|state|review|advances|future)/i.exec(this.title)[0]}" in the title`;
+                    }
+                    this.isHighlyCited = this.citationsPerYear > 10 ? `more than 10 citations per year (${this.citationsPerYear})` : false;
                 }
             );
         }
