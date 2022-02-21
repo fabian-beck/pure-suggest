@@ -27,7 +27,7 @@ export default {
   name: "QuickAccessBar",
   methods: {
     scrollTo(id) {
-      scrollToTargetAdjusted(id);
+      scrollToTargetAdjusted(document.getElementById(id), 55);
     },
   },
 };

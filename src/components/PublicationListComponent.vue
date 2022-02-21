@@ -13,53 +13,62 @@
 </template>
 
 <script>
+import { scrollToTargetAdjusted } from "./../Util.js";
+
 import PublicationComponent from "./PublicationComponent.vue";
 
 export default {
   name: "SelectedPublicationsComponent",
   components: {
-    PublicationComponent
+    PublicationComponent,
   },
   props: {
     publications: Array,
-    suggestion: Boolean
+    suggestion: Boolean,
   },
   watch: {
     publications: {
       deep: true,
-      handler: function() {
+      handler: function () {
         this.$nextTick(this.scrollToActivated);
-      }
-    }
+      },
+    },
   },
   data() {
     return {
-      onNextActivatedScroll: true
+      onNextActivatedScroll: true,
     };
   },
   methods: {
-    addPublication: function(doi) {
+    addPublication: function (doi) {
       this.$emit("add", doi);
     },
-    removePublication: function(doi) {
+    removePublication: function (doi) {
       this.$emit("remove", doi);
     },
-    activatePublication: function(doi) {
+    activatePublication: function (doi) {
       this.onNextActivatedScroll = false;
       this.$emit("activate", doi);
     },
     scrollToActivated() {
       if (this.onNextActivatedScroll) {
-        const publicationComponent = this.$el.getElementsByClassName(
-          "active"
-        )[0];
+        const publicationComponent =
+          this.$el.getElementsByClassName("active")[0];
         if (publicationComponent) {
-          publicationComponent.scrollIntoView({behavior: "smooth", block: "end", inline: "nearest"});
+          if (window.innerWidth <= 768)
+            scrollToTargetAdjusted(publicationComponent, 65);
+          else {
+            publicationComponent.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+              inline: "nearest",
+            });
+          }
         }
       } else {
         this.onNextActivatedScroll = true;
       }
-    }
-  }
+    },
+  },
 };
 </script>
