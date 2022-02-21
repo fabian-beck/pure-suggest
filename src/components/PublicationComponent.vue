@@ -133,13 +133,14 @@
       <div v-if="publication.isActive" class="stats-and-links level is-size-7">
         <div class="level-left">
           <div class="level-item">
-            <label>Citing:</label> {{ publication.referenceDois.length }}
+            <label>Citing:</label> <b>{{ publication.referenceDois.length }}</b>
           </div>
           <div class="level-item">
-            <label>Cited by:</label> {{ publication.citationDois.length }} ({{
-              publication.citationsPerYear.toFixed(1)
-            }}
+            <label>Cited by:</label> <b>{{ publication.citationDois.length }}</b>
+            <span v-if="publication.citationsPerYear > 0">
+              &nbsp;({{ publication.citationsPerYear.toFixed(1) }}
             per year)
+            </span>
           </div>
         </div>
         <div
