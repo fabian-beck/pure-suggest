@@ -25,9 +25,9 @@
           </div>
           <div class="is-size-7">
             {{ publication.referenceCount }}
-            <b-icon icon="arrow-left" size="is-small"></b-icon>
+            <b-icon icon="arrow-left-thick" size="is-small"></b-icon>
             + {{ publication.citationCount }}
-            <b-icon icon="arrow-right" size="is-small"></b-icon>
+            <b-icon icon="arrow-right-thick" size="is-small"></b-icon>
           </div>
         </template>
         <div>
@@ -35,11 +35,11 @@
           <b>{{ publication.score }}</b
           >:<br />
           Referenced by <b>{{ publication.referenceCount }}</b> (<b-icon
-            icon="arrow-left"
+            icon="arrow-left-thick"
             size="is-small"
           ></b-icon
           >) and referencing <b>{{ publication.citationCount }}</b> (<b-icon
-            icon="arrow-right"
+            icon="arrow-right-thick"
             size="is-small"
           ></b-icon
           >) selected publications<span v-if="publication.boostFactor != 1"

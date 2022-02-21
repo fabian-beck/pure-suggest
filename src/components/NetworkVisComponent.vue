@@ -4,7 +4,7 @@
       <div class="level">
         <div class="level-left has-text-white">
           <div class="level-item">
-            <b-icon icon="sitemap-outline"></b-icon>
+            <b-icon icon="chart-bubble"></b-icon>
             <h2 class="is-size-5 ml-2">Citation network</h2>
             <b-icon
               icon="information-outline"

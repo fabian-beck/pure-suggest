@@ -3,7 +3,7 @@
     <div class="level">
       <div class="level-left has-text-white">
         <div class="level-item">
-          <b-icon icon="file-export"></b-icon>
+          <b-icon icon="water-outline"></b-icon>
           <h2 class="is-size-5 ml-2">Selected</h2>
           <b-icon
             icon="information-outline"
