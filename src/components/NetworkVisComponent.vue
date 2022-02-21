@@ -11,7 +11,7 @@
               size="is-small"
               class="ml-2"
               v-show="selectedPublications.length"
-              data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>green</b>: selected; <b class='has-text-info'>blue</b>: suggested) with references connecting them as links. The layout places publications from left to right based on publication year and from top to bottom by reference frequency (<b class='has-text-primary'>selected</b>: summed references and citations; <b class='has-text-info'>suggested</b>: suggestion score). You can highlight a publication on click, zoom using the mouse wheel, and pan on drag."
+              data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>selected</b>; <b class='has-text-info'>suggested</b>) with citations as links.<br><br>The diagram places publications from left to right based on year and from top to bottom by reference/citation frequency (ignoring boost).<br><br>You can click a pubication for details as well as zoom and pan the diagram."
               v-tippy
             ></b-icon>
           </div>
@@ -114,11 +114,11 @@ export default {
           .y(function (d) {
             return (
               (-Math.log(
-                d.publication.isSelected
-                  ? d.publication.citationDois.length +
-                      d.publication.referenceDois.length +
-                      1
-                  : d.publication.score * 10 + 1
+                (d.publication.citationCount +
+                  d.publication.referenceCount +
+                  (d.publication.isSelected ? 1 : 0) +
+                  1) *
+                  10
               ) *
                 0.12 + // spread by
                 0.8) * // move down by
