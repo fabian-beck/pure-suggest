@@ -9,7 +9,11 @@
       v-on:clearSelection="clearSelection"
       v-on:openAbout="isAboutPageShown = true"
     />
-    <div id="main" @click="clearActivePublication('clicked anywhere')">
+    <div
+      id="main"
+      @click="clearActivePublication('clicked anywhere')"
+      :class="{ 'network-expanded': isNetworkExpanded }"
+    >
       <SelectedPublicationsComponent
         id="selected"
         ref="selected"
@@ -32,9 +36,12 @@
         id="network"
         :selectedPublications="selectedPublications"
         :suggestedPublications="suggestedPublications"
+        :isExpanded="isNetworkExpanded"
         :svgWidth="1500"
         :svgHeight="600"
         v-on:activate="setActivePublication"
+        v-on:expand="isNetworkExpanded = true"
+        v-on:collapse="isNetworkExpanded = false"
       />
     </div>
     <QuickAccessBar id="quick-access" class="is-hidden-tablet" />
@@ -73,6 +80,7 @@ export default {
       suggestedPublications: [],
       boostKeywords: [],
       isAboutPageShown: false,
+      isNetworkExpanded: false,
     };
   },
   computed: {
@@ -268,6 +276,10 @@ $box-padding: 1rem;
     grid-template-columns: 50fr 50fr;
     grid-template-rows: auto 35vh;
     gap: $block-spacing;
+
+    &.network-expanded {
+      grid-template-rows: auto 65vh;
+    }
 
     & #selected {
       grid-area: selected;

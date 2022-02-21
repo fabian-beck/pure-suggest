@@ -16,6 +16,24 @@
             ></b-icon>
           </div>
         </div>
+        <div class="level-right is-hidden-mobile">
+          <b-button
+            icon-right="arrow-expand-up"
+            size="is-small"
+            data-tippy-content="Expand diagram"
+            v-tippy
+            v-show="!isExpanded"
+            @click="$emit('expand')"
+          ></b-button>
+          <b-button
+            icon-right="arrow-expand-down"
+            size="is-small"
+            data-tippy-content="Collapse diagram"
+            v-tippy
+            v-show="isExpanded"
+            @click="$emit('collapse')"
+          ></b-button>
+        </div>
       </div>
       <div id="network-svg-container">
         <svg id="network-svg" width="100%" height="100%" />
@@ -36,6 +54,7 @@ export default {
   props: {
     selectedPublications: Array,
     suggestedPublications: Array,
+    isExpanded: Boolean,
   },
   data: function () {
     return {
