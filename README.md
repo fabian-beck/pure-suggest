@@ -13,7 +13,7 @@ The tool is available at: https://fabian-beck.github.io/pure-suggest/
 * Boost the score with specific keywords of interest
 * Visualization of citations in a network diagram on a timeline
 * Highlighting of an active publication across the views
-* Automatic tagging of highly cited publications and literature surveys
+* Automatic tagging of special publication characteristics (e.g., highly cited)
 * Quick access to publications through links (DOIs, open access versions, or Google Scholar)
 * Export selected publications to BibTeX
 * Responsive design that allows working on your phone
