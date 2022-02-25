@@ -20,7 +20,7 @@
           <div class="field has-addons">
             <p class="control has-icons-right">
               <input
-                class="input has-background-warning-light"
+                class="input boost has-background-warning-light"
                 type="text"
                 v-model="boostKeywordString"
                 placeholder="keyword(s)"
@@ -39,7 +39,7 @@
                 icon-left="chevron-double-up"
                 v-on:click="updateBoost"
               >
-                <span>Boost</span>
+                <span><span class="key">B</span>oost</span>
               </b-button>
             </p>
           </div>
@@ -49,7 +49,7 @@
     <form v-on:submit.prevent="add" class="field has-addons">
       <p class="control is-expanded">
         <input
-          class="input"
+          class="input add-publication"
           type="text"
           placeholder="publication DOI(s) or title"
           v-model="addQuery"
@@ -64,6 +64,7 @@
           icon-left="plus-thick"
           @click.stop="add"
         >
+        <span class="key">A</span>dd
         </b-button>
       </p>
     </form>

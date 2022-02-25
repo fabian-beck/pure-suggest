@@ -79,6 +79,7 @@ export default {
       selectedPublications: [],
       suggestedPublications: [],
       boostKeywords: [],
+      activePublication: undefined,
       isAboutPageShown: false,
       isNetworkExpanded: false,
     };
@@ -91,6 +92,7 @@ export default {
   methods: {
     updateSuggestions: async function () {
       this.$refs.suggested.setLoading(true);
+      this.clearActivePublication();
       this.suggestedPublications = Object.values(
         await Publication.computeSuggestions(
           publications,
@@ -129,9 +131,11 @@ export default {
 
     setActivePublication: function (doi) {
       this.clearActivePublication("setting active publication");
+
       this.selectedPublications.forEach((selectedPublication) => {
         selectedPublication.isActive = selectedPublication.doi === doi;
         if (selectedPublication.isActive) {
+          this.activePublication = selectedPublication;
           this.selectedPublications.forEach((publication) => {
             publication.isLinkedToActive =
               selectedPublication.citationDois.indexOf(publication.doi) >= 0 ||
@@ -147,6 +151,7 @@ export default {
       this.suggestedPublications.forEach((suggestedPublication) => {
         suggestedPublication.isActive = suggestedPublication.doi === doi;
         if (suggestedPublication.isActive) {
+          this.activePublication = suggestedPublication;
           this.selectedPublications.forEach((publication) => {
             publication.isLinkedToActive =
               suggestedPublication.citationDois.indexOf(publication.doi) >= 0 ||
@@ -158,6 +163,7 @@ export default {
     },
 
     clearActivePublication: function (source) {
+      this.activePublication = undefined;
       this.selectedPublications
         .concat(this.suggestedPublications)
         .forEach((publication) => {
@@ -229,6 +235,50 @@ export default {
       ]);
     },
   },
+
+  mounted() {
+    this._keyListener = function (e) {
+      if (document.activeElement.nodeName === "INPUT") {
+        return;
+      }
+      if (e.key === "c") {
+        e.preventDefault();
+        this.clearSelection();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        this.clearActivePublication();
+      } else if (e.key === "a") {
+        e.preventDefault();
+        document.getElementsByClassName("input add-publication")[0].focus();
+      } else if (e.key === "b") {
+        e.preventDefault();
+        document.getElementsByClassName("input boost")[0].focus();
+      } else if (this.activePublication) {
+        if (e.key === "+") {
+          e.preventDefault();
+          this.addPublicationsToSelection(this.activePublication.doi);
+        } else if (e.key === "-") {
+          e.preventDefault();
+          this.removePublication(this.activePublication.doi);
+        } else if (e.key === "d") {
+          e.preventDefault();
+          window.open(this.activePublication.doiUrl);
+        } else if (e.key === "o" && this.activePublication.oaLink) {
+          e.preventDefault();
+          window.open(this.activePublication.oaLink);
+        } else if (e.key === "g") {
+          e.preventDefault();
+          window.open(this.activePublication.gsUrl);
+        }
+      }
+    };
+
+    document.addEventListener("keydown", this._keyListener.bind(this));
+  },
+
+  beforeDestroy() {
+    document.removeEventListener("keydown", this._keyListener);
+  },
 };
 
 // triggers a prompt before closing/reloading the page
@@ -299,6 +349,10 @@ $box-padding: 1rem;
       margin: 0;
     }
   }
+
+  & .key {
+    text-decoration: underline;
+  }
 }
 
 @include mobile {
@@ -342,6 +396,10 @@ $box-padding: 1rem;
       bottom: 0.5rem;
       width: 100%;
       text-align: center;
+    }
+
+    & .key {
+      text-decoration: none;
     }
   }
 }

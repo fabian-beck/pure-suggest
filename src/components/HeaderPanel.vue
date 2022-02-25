@@ -27,7 +27,7 @@
             class="has-text-danger"
           >
             <b-icon icon="delete-outline" size="is-small"></b-icon
-            ><span class="ml-2">Clear</span>
+            ><span class="ml-2"><span class="key">C</span>lear</span>
           </b-navbar-item>
         </b-navbar-dropdown>
       </template>

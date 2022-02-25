@@ -6,6 +6,8 @@
       selected: publication.isSelected,
       linkedToActive: publication.isLinkedToActive,
     }"
+    tabindex="0"
+    v-on:focus ="$emit('activate', publication.doi)"
     @click.stop="$emit('activate', publication.doi)"
   >
     <div
@@ -123,10 +125,10 @@
           <span v-else>[unknown author].</span>
         </span>
         <span v-if="publication.container"
-          ><em> {{ publication.container }}.</em></span
+          ><em> {{ publication.container }}. </em></span
         >
-        <label> DOI:</label>
-        <a :href="'https://doi.org/' + publication.doi">{{
+        <label><span class="key">D</span>OI:</label>
+        <a :href="publication.doiUrl">{{
           publication.doi
         }}</a>
       </div>
@@ -148,14 +150,12 @@
           v-if="publication.title && publication.isActive"
         >
           <div class="level-item" v-if="publication.oaLink">
-            <a :href="publication.oaLink">Open access</a>
+            <a :href="publication.oaLink"><span class="key">O</span>pen access</a>
           </div>
           <div class="level-item">
             <a
-              :href="`https://scholar.google.de/scholar?hl=en&q=${
-                publication.title
-              } ${publication.author ? publication.author : ''}`"
-              >Google Scholar</a
+              :href="publication.gsUrl"
+              ><span class="key">G</span>oogle Scholar</a
             >
           </div>
         </div>

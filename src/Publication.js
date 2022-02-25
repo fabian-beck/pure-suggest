@@ -6,6 +6,7 @@ export default class Publication {
     constructor(doi) {
         // identifier
         this.doi = doi;
+        this.doiUrl = "https://doi.org/" + doi;
         // meta-data
         this.title = "";
         this.titleHighlighted = "";
@@ -92,6 +93,8 @@ export default class Publication {
                     this.issue = data.issue;
                     this.page = data.page;
                     this.oaLink = data.oa_link;
+                    this.gsUrl = `https://scholar.google.de/scholar?hl=en&q=${this.title
+                        } ${this.author ? this.author : ''}`
                     // short reference
                     this.shortReference = `${this.authorShort ? this.authorShort : "[unknown author]"
                         }, ${this.year ? this.year : "[unknown year]"}`;
@@ -114,7 +117,7 @@ export default class Publication {
                         this.isSurvey = `more than 50 references (${this.referenceDois.length}) and "${/(survey|state|review|advances|future)/i.exec(this.title)[0]}" in the title`;
                     }
                     this.isHighlyCited = this.citationsPerYear > 10 ? `more than 10 citations per year (${this.citationsPerYear.toFixed(1)})` : false;
-                    this.isNew = (CURRENT_YEAR - this.year) < 2? "published within the last two calendar years": false;
+                    this.isNew = (CURRENT_YEAR - this.year) < 2 ? "published within the last two calendar years" : false;
                 }
             );
         }
