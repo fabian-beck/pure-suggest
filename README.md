@@ -4,6 +4,8 @@
 
 The tool is available at: https://fabian-beck.github.io/pure-suggest/
 
+![Interface of PURE suggest](pure_suggest.png)
+
 ## Key features
 
 * Select multiple publications and get suggestions based on citations of these
