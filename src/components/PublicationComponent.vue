@@ -122,7 +122,7 @@
             "
             v-if="publication.author"
           ></span>
-          <span v-else>[unknown author].</span>
+          <span v-else>[unknown author]. </span>
         </span>
         <span v-if="publication.container"
           ><em> {{ publication.container }}. </em></span

@@ -202,12 +202,6 @@ export default class Publication {
 
         console.log("Starting to compute new suggestions.");
         const suggestedPublications = {};
-        await Promise.all(
-            Object.values(publications).map(async (publication) => {
-                await publication.fetchData();
-                publication.isSelected = true;
-            })
-        );
         Object.values(publications).forEach((publication) => {
             publication.citationCount = 0;
             publication.referenceCount = 0;

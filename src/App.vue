@@ -92,19 +92,6 @@ export default {
     },
   },
   methods: {
-    updateSuggestions: async function () {
-      this.$refs.suggested.setLoading(true);
-      this.clearActivePublication();
-      this.suggestedPublications = Object.values(
-        await Publication.computeSuggestions(
-          publications,
-          removedPublicationDois,
-          this.boostKeywords
-        )
-      );
-      this.$refs.suggested.setLoading(false);
-    },
-
     addPublicationsToSelection: async function (dois) {
       console.log(`Adding to selection publications with DOIs: ${dois}.`);
       if (typeof dois === "string") {
@@ -119,8 +106,7 @@ export default {
         addedDoi = doi;
         addedPublicationsCount++;
       });
-      await this.updateSuggestions();
-      this.rankSelectedPublications();
+      await this.update();
       if (addedPublicationsCount == 1) {
         this.setActivePublication(addedDoi);
       }
@@ -131,7 +117,53 @@ export default {
       });
     },
 
-    setActivePublication: function (doi) {
+    removePublication: async function (doi) {
+      removedPublicationDois.add(doi);
+      delete publications[doi];
+      await this.update();
+      this.$buefy.toast.open({
+        message: `Excluded a publication`,
+      });
+    },
+
+    update: async function() {
+      await this.updateSelected();
+      await this.updateSuggested();
+    },
+
+    updateSelected: async function () {
+      await Promise.all(
+        Object.values(publications).map(async (publication) => {
+          await publication.fetchData();
+          publication.isSelected = true;
+        })
+      );
+      this.selectedPublications = Object.values(publications);
+      this.selectedPublications.forEach((publication) =>
+        publication.updateScore(this.boostKeywords)
+      );
+      Publication.sortPublications(this.selectedPublications);
+    },
+
+    updateSuggested: async function () {
+      this.$refs.suggested.setLoading(true);
+      this.clearActivePublication();
+      this.suggestedPublications = Object.values(
+        await Publication.computeSuggestions(
+          publications,
+          removedPublicationDois,
+          this.boostKeywords
+        )
+      );
+      this.$refs.suggested.setLoading(false);
+    },
+
+    updateBoost: async function (boostKeywordString) {
+      this.boostKeywords = boostKeywordString.toLowerCase().split(/,\s*/);
+      await this.update();
+    },
+
+        setActivePublication: function (doi) {
       this.clearActivePublication("setting active publication");
 
       this.selectedPublications.forEach((selectedPublication) => {
@@ -177,30 +209,6 @@ export default {
       );
     },
 
-    removePublication: async function (doi) {
-      removedPublicationDois.add(doi);
-      delete publications[doi];
-      await this.updateSuggestions();
-      this.rankSelectedPublications();
-      this.$buefy.toast.open({
-        message: `Excluded a publication`,
-      });
-    },
-
-    rankSelectedPublications: function () {
-      this.selectedPublications = Object.values(publications);
-      this.selectedPublications.forEach((publication) =>
-        publication.updateScore(this.boostKeywords)
-      );
-      Publication.sortPublications(this.selectedPublications);
-    },
-
-    updateBoost: function (boostKeywordString) {
-      this.boostKeywords = boostKeywordString.toLowerCase().split(/,\s*/);
-      this.rankSelectedPublications();
-      this.updateSuggestions();
-    },
-
     exportDois: function () {
       saveAsFile(
         "publication_dois.txt",
@@ -224,12 +232,12 @@ export default {
           publications = {};
           this.selectedPublications = [];
           removedPublicationDois = new Set();
-          this.updateSuggestions();
+          this.update();
         },
       });
     },
 
-    clearCache: function() {
+    clearCache: function () {
       clearCache();
       this.clearSelection();
     },
