@@ -1,4 +1,4 @@
-export default async function cachedFetch(url, processData) {
+export async function cachedFetch(url, processData) {
   if (localStorage[url]) {
     processData(JSON.parse(localStorage[url]));
   } else {
@@ -32,4 +32,8 @@ export default async function cachedFetch(url, processData) {
       console.error(`Unable to fetch or process data for "${url}": ${error3}`)
     }
   }
+}
+
+export function clearCache() {
+  localStorage.clear(); 
 }

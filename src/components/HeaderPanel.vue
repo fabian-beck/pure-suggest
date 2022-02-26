@@ -3,7 +3,11 @@
     <b-navbar :fixed-top="isMobile" class="box p-0 m-0 is-radiusless">
       <template #brand>
         <b-navbar-item>
-          <b-icon icon="water-plus-outline" size="is-medium" class="has-text-grey"></b-icon>
+          <b-icon
+            icon="water-plus-outline"
+            size="is-medium"
+            class="has-text-grey"
+          ></b-icon>
           <h1 class="title ml-2">
             <span v-html="$appNameHtml"></span>
           </h1>
@@ -15,24 +19,30 @@
           v-show="selectedPublicationsCount"
         >
           <b-navbar-item @click="$emit('exportDois')">
-            <b-icon icon="export" size="is-small"></b-icon>
+            <b-icon icon="export"></b-icon>
             <span class="ml-2">Export selected as DOIs</span>
           </b-navbar-item>
           <b-navbar-item @click="$emit('exportBibtex')">
-            <b-icon icon="export" size="is-small"></b-icon>
+            <b-icon icon="export"></b-icon>
             <span class="ml-2">Export selected as BibTeX</span>
           </b-navbar-item>
           <b-navbar-item
             @click="$emit('clearSelection')"
             class="has-text-danger"
           >
-            <b-icon icon="delete-outline" size="is-small"></b-icon
-            ><span class="ml-2"><span class="key">C</span>lear</span>
+            <b-icon icon="delete"></b-icon
+            ><span class="ml-2"><span class="key">C</span>lear session</span>
           </b-navbar-item>
         </b-navbar-dropdown>
       </template>
       <template #end>
         <b-navbar-item @click="$emit('openAbout')"> About </b-navbar-item>
+        <b-navbar-dropdown label="⋮" icon-left="dots-vertical" right collapsible>
+          <b-navbar-item @click="$emit('clearCache')" class="has-text-danger">
+            <b-icon icon="cached"></b-icon
+            ><span class="ml-2">Clear cache (and session)</span>
+          </b-navbar-item>
+        </b-navbar-dropdown>
       </template>
     </b-navbar>
     <div class="columns" v-show="selectedPublicationsCount === 0">

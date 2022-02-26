@@ -7,6 +7,7 @@
       v-on:exportDois="exportDois"
       v-on:exportBibtex="exportBibtex"
       v-on:clearSelection="clearSelection"
+      v-on:clearCache="clearCache"
       v-on:openAbout="isAboutPageShown = true"
     />
     <div
@@ -63,6 +64,7 @@ import AboutPage from "./components/AboutPage.vue";
 
 import Publication from "./Publication.js";
 import { saveAsFile } from "./Util.js";
+import { clearCache } from "./Cache.js";
 
 export default {
   name: "App",
@@ -175,19 +177,6 @@ export default {
       );
     },
 
-    clearSelection: function () {
-      this.$buefy.dialog.confirm({
-        message:
-          "You are going to clear all selected articles and jump back to the initial state.",
-        onConfirm: () => {
-          publications = {};
-          this.selectedPublications = [];
-          removedPublicationDois = new Set();
-          this.updateSuggestions();
-        },
-      });
-    },
-
     removePublication: async function (doi) {
       removedPublicationDois.add(doi);
       delete publications[doi];
@@ -225,6 +214,24 @@ export default {
         (publication) => (bib += publication.toBibtex() + "\n\n")
       );
       saveAsFile("publications.bib", bib);
+    },
+
+    clearSelection: function () {
+      this.$buefy.dialog.confirm({
+        message:
+          "You are going to clear all selected articles and jump back to the initial state.",
+        onConfirm: () => {
+          publications = {};
+          this.selectedPublications = [];
+          removedPublicationDois = new Set();
+          this.updateSuggestions();
+        },
+      });
+    },
+
+    clearCache: function() {
+      clearCache();
+      this.clearSelection();
     },
 
     loadExample: function () {
