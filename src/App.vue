@@ -84,6 +84,7 @@ export default {
       activePublication: undefined,
       isAboutPageShown: false,
       isNetworkExpanded: false,
+      isLoading: false,
     };
   },
   computed: {
@@ -130,8 +131,10 @@ export default {
       const loadingComponent = this.$buefy.loading.open({
         container: null,
       });
+      this.isLoading = true;
       await this.updateSelected();
       await this.updateSuggested();
+      this.isLoading = false;
       loadingComponent.close();
     },
 
@@ -255,10 +258,12 @@ export default {
 
   mounted() {
     this._keyListener = function (e) {
-      if (document.activeElement.nodeName === "INPUT") {
+      if (this.isLoading) {
+        e.preventDefault
         return;
-      }
-      if (e.key === "c") {
+      } else if (document.activeElement.nodeName === "INPUT" ) {
+        return;
+      } else if (e.key === "c") {
         e.preventDefault();
         this.clearSelection();
       } else if (e.key === "Escape") {
