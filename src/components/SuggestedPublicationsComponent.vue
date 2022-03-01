@@ -23,11 +23,6 @@
       v-on:add="addPublication"
       v-on:remove="removePublication"
     />
-    <b-loading
-      :is-full-page="false"
-      v-model="isLoading"
-      :can-cancel="false"
-    ></b-loading>
   </div>
 </template>
 
@@ -43,11 +38,6 @@ export default {
     title: String,
     publications: Array,
   },
-  data() {
-    return {
-      isLoading: false,
-    };
-  },
   methods: {
     addPublication: function (doi) {
       this.$emit("add", doi);
@@ -57,9 +47,6 @@ export default {
     },
     activatePublication: function (doi) {
       this.$emit("activate", doi);
-    },
-    setLoading(isLoading) {
-      this.isLoading = isLoading;
     },
   },
 };

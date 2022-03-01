@@ -126,9 +126,13 @@ export default {
       });
     },
 
-    update: async function() {
+    update: async function () {
+      const loadingComponent = this.$buefy.loading.open({
+        container: null,
+      });
       await this.updateSelected();
       await this.updateSuggested();
+      loadingComponent.close()
     },
 
     updateSelected: async function () {
@@ -146,7 +150,6 @@ export default {
     },
 
     updateSuggested: async function () {
-      this.$refs.suggested.setLoading(true);
       this.clearActivePublication();
       this.suggestedPublications = Object.values(
         await Publication.computeSuggestions(
@@ -155,7 +158,6 @@ export default {
           this.boostKeywords
         )
       );
-      this.$refs.suggested.setLoading(false);
     },
 
     updateBoost: async function (boostKeywordString) {
@@ -163,7 +165,7 @@ export default {
       await this.update();
     },
 
-        setActivePublication: function (doi) {
+    setActivePublication: function (doi) {
       this.clearActivePublication("setting active publication");
 
       this.selectedPublications.forEach((selectedPublication) => {
