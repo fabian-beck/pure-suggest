@@ -132,7 +132,7 @@ export default {
       });
       await this.updateSelected();
       await this.updateSuggested();
-      loadingComponent.close()
+      loadingComponent.close();
     },
 
     updateSelected: async function () {
@@ -266,12 +266,43 @@ export default {
         this.clearActivePublication();
       } else if (e.key === "a") {
         e.preventDefault();
+        this.clearActivePublication();
         document.getElementsByClassName("input add-publication")[0].focus();
       } else if (e.key === "b") {
         e.preventDefault();
+        this.clearActivePublication();
         document.getElementsByClassName("input boost")[0].focus();
+      } else if (e.keyCode === 37) {
+        // left arrow
+        e.preventDefault();
+        if (this.selectedPublications.length) {
+          this.setActivePublication(this.selectedPublications[0].doi);
+        }
+      } else if (e.keyCode === 39) {
+        // right arrow
+        e.preventDefault();
+        if (this.suggestedPublications.length) {
+          this.setActivePublication(this.suggestedPublications[0].doi);
+        }
       } else if (this.activePublication) {
-        if (e.key === "+") {
+        if (e.keyCode === 40 || e.keyCode === 38) {
+          // down or up arrow
+          e.preventDefault();
+          const publicationList = this.activePublication.isSelected
+            ? this.selectedPublications
+            : this.suggestedPublications;
+          let i = 0;
+          while (!publicationList[i].isActive && i < publicationList.length) {
+            i++;
+          }
+          if (e.keyCode === 40 && publicationList.length > i + 1) {
+            // down arrow
+            this.setActivePublication(publicationList[i + 1].doi);
+          } else if (e.keyCode === 38 && i > 0) {
+            // up arrow
+            this.setActivePublication(publicationList[i - 1].doi);
+          }
+        } else if (e.key === "+") {
           e.preventDefault();
           this.addPublicationsToSelection(this.activePublication.doi);
         } else if (e.key === "-") {
