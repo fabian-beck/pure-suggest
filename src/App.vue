@@ -107,7 +107,7 @@ export default {
         addedDoi = doi;
         addedPublicationsCount++;
       });
-      await this.update();
+      await this.updateSuggestions();
       if (addedPublicationsCount == 1) {
         this.setActivePublication(addedDoi);
       }
@@ -121,39 +121,24 @@ export default {
     removePublication: async function (doi) {
       removedPublicationDois.add(doi);
       delete publications[doi];
-      await this.update();
+      await this.updateSuggestions();
       this.$buefy.toast.open({
         message: `Excluded a publication`,
       });
     },
 
-    update: async function () {
+    updateSuggestions: async function () {
       const loadingComponent = this.$buefy.loading.open({
         container: null,
       });
       this.isLoading = true;
-      await this.updateSelected();
-      await this.updateSuggested();
-      this.isLoading = false;
-      loadingComponent.close();
-    },
-
-    updateSelected: async function () {
+      this.clearActivePublication("updating suggestions");
       await Promise.all(
         Object.values(publications).map(async (publication) => {
           await publication.fetchData();
           publication.isSelected = true;
         })
       );
-      this.selectedPublications = Object.values(publications);
-      this.selectedPublications.forEach((publication) =>
-        publication.updateScore(this.boostKeywords)
-      );
-      Publication.sortPublications(this.selectedPublications);
-    },
-
-    updateSuggested: async function () {
-      this.clearActivePublication("updating suggestions");
       this.suggestedPublications = Object.values(
         await Publication.computeSuggestions(
           publications,
@@ -161,6 +146,10 @@ export default {
           this.boostKeywords
         )
       );
+      this.selectedPublications = Object.values(publications);
+      Publication.sortPublications(this.selectedPublications);
+      this.isLoading = false;
+      loadingComponent.close();
     },
 
     updateBoost: async function (
@@ -169,7 +158,7 @@ export default {
     ) {
       this.boostKeywords = boostKeywordString.toLowerCase().split(/,\s*/);
       if (!preventUpdateSuggestions) {
-        await this.update();
+        await this.updateSuggestions();
       }
     },
 
@@ -242,7 +231,7 @@ export default {
           publications = {};
           this.selectedPublications = [];
           removedPublicationDois = new Set();
-          this.update();
+          this.updateSuggestions();
         },
       });
     },

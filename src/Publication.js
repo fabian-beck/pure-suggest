@@ -147,6 +147,7 @@ export default class Publication {
             lightness = 95;
         }
         this.scoreColor = `hsl(0, 0%, ${lightness}%)`;
+        console.log(this.title, this.score);
     }
 
     toBibtex() {
@@ -224,6 +225,9 @@ export default class Publication {
                 );
             });
         });
+        Object.values(publications).forEach((publication) =>
+            publication.updateScore(boostKeywords)
+        );
         let filteredSuggestions = Object.values(suggestedPublications);
         console.log(`Identified ${filteredSuggestions.length} publications as suggestions.`);
         // titles not yet fetched, that is why sorting can be only done on citations/references
