@@ -147,7 +147,6 @@ export default class Publication {
             lightness = 95;
         }
         this.scoreColor = `hsl(0, 0%, ${lightness}%)`;
-        console.log(this.title, this.score);
     }
 
     toBibtex() {
@@ -180,14 +179,14 @@ export default class Publication {
 }`
     }
 
-    static async computeSuggestions(publications, removedPublicationDois, boostKeywords) {
+    static async computeSuggestions(publications, excludedPublicationsDois, boostKeywords) {
         function incrementSuggestedPublicationCounter(
             doi,
             counter,
             doiList,
             sourceDoi
         ) {
-            if (!removedPublicationDois.has(doi)) {
+            if (!excludedPublicationsDois.has(doi)) {
                 if (!publications[doi]) {
                     if (!suggestedPublications[doi]) {
                         const citingPublication = new Publication(doi);
@@ -201,7 +200,7 @@ export default class Publication {
             }
         }
 
-        console.log(`Starting to compute new suggestions based on ${Object.keys(publications).length} selected (and ${removedPublicationDois.size} excluded).`);
+        console.log(`Starting to compute new suggestions based on ${Object.keys(publications).length} selected (and ${excludedPublicationsDois.size} excluded).`);
         const suggestedPublications = {};
         Object.values(publications).forEach((publication) => {
             publication.citationCount = 0;

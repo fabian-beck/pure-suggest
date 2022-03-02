@@ -4,6 +4,7 @@
       id="header"
       :isMobile="isMobile"
       :selectedPublicationsCount="selectedPublications.length"
+      :excludedPublicationsCount="excludedPublicationsDois.size"
       v-on:exportDois="exportDois"
       v-on:exportBibtex="exportBibtex"
       v-on:clearSelection="clearSelection"
@@ -81,6 +82,7 @@ export default {
       selectedPublications: [],
       suggestedPublications: [],
       boostKeywords: [],
+      excludedPublicationsDois: new Set(),
       activePublication: undefined,
       isAboutPageShown: false,
       isNetworkExpanded: false,
@@ -101,6 +103,9 @@ export default {
       let addedPublicationsCount = 0;
       let addedDoi = "";
       dois.forEach((doi) => {
+        if (this.excludedPublicationsDois.has(doi)) {
+          this.excludedPublicationsDois.delete(doi);
+        }
         if (!publications[doi]) {
           publications[doi] = new Publication(doi);
         }
@@ -119,7 +124,7 @@ export default {
     },
 
     removePublication: async function (doi) {
-      removedPublicationDois.add(doi);
+      this.excludedPublicationsDois.add(doi);
       delete publications[doi];
       await this.updateSuggestions();
       this.$buefy.toast.open({
@@ -142,7 +147,7 @@ export default {
       this.suggestedPublications = Object.values(
         await Publication.computeSuggestions(
           publications,
-          removedPublicationDois,
+          this.excludedPublicationsDois,
           this.boostKeywords
         )
       );
@@ -230,7 +235,7 @@ export default {
         onConfirm: () => {
           publications = {};
           this.selectedPublications = [];
-          removedPublicationDois = new Set();
+          this.excludedPublicationsDois = new Set();
           this.updateSuggestions();
         },
       });
@@ -337,7 +342,6 @@ window.onbeforeunload = function () {
 };
 
 let publications = {};
-let removedPublicationDois = new Set();
 </script>
 
 <!---------------------------------------------------------------------------------->

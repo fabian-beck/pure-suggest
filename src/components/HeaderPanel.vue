@@ -15,7 +15,7 @@
       </template>
       <template #start>
         <b-navbar-dropdown
-          :label="'Session (' + selectedPublicationsCount + ' selected)'"
+          :label="`Session (${selectedPublicationsCount} selected${excludedPublicationsCount?`; ${excludedPublicationsCount} excluded`:''})`"
           v-show="selectedPublicationsCount"
         >
           <b-navbar-item @click="$emit('exportDois')">
@@ -74,6 +74,7 @@ export default {
   props: {
     isMobile: Boolean,
     selectedPublicationsCount: Number,
+    excludedPublicationsCount: Number,
   },
 };
 </script>
