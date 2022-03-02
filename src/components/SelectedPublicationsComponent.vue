@@ -152,7 +152,6 @@ export default {
     },
     setBoost: function (boostKeywordString) {
       this.boostKeywordString = boostKeywordString;
-      this.updateBoost();
     },
   },
   watch: {

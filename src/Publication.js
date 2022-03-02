@@ -200,7 +200,7 @@ export default class Publication {
             }
         }
 
-        console.log("Starting to compute new suggestions.");
+        console.log(`Starting to compute new suggestions based on ${Object.keys(publications).length} selected (and ${removedPublicationDois.size} excluded).`);
         const suggestedPublications = {};
         Object.values(publications).forEach((publication) => {
             publication.citationCount = 0;

@@ -153,7 +153,7 @@ export default {
     },
 
     updateSuggested: async function () {
-      this.clearActivePublication();
+      this.clearActivePublication("updating suggestions");
       this.suggestedPublications = Object.values(
         await Publication.computeSuggestions(
           publications,
@@ -163,9 +163,14 @@ export default {
       );
     },
 
-    updateBoost: async function (boostKeywordString) {
+    updateBoost: async function (
+      boostKeywordString,
+      preventUpdateSuggestions = false
+    ) {
       this.boostKeywords = boostKeywordString.toLowerCase().split(/,\s*/);
-      await this.update();
+      if (!preventUpdateSuggestions) {
+        await this.update();
+      }
     },
 
     setActivePublication: function (doi) {
@@ -248,7 +253,10 @@ export default {
     },
 
     loadExample: function () {
-      this.$refs.selected.setBoost("cit, vis");
+      console.log("Loading example");
+      const boostKeywordString = "cit, vis";
+      this.$refs.selected.setBoost(boostKeywordString);
+      this.updateBoost(boostKeywordString, true);
       this.addPublicationsToSelection([
         "10.1109/tvcg.2015.2467757",
         "10.1109/tvcg.2015.2467621",
@@ -259,23 +267,23 @@ export default {
   mounted() {
     this._keyListener = function (e) {
       if (this.isLoading) {
-        e.preventDefault
+        e.preventDefault;
         return;
-      } else if (document.activeElement.nodeName === "INPUT" ) {
+      } else if (document.activeElement.nodeName === "INPUT") {
         return;
       } else if (e.key === "c") {
         e.preventDefault();
         this.clearSelection();
       } else if (e.key === "Escape") {
         e.preventDefault();
-        this.clearActivePublication();
+        this.clearActivePublication("escape key");
       } else if (e.key === "a") {
         e.preventDefault();
-        this.clearActivePublication();
+        this.clearActivePublication("setting focus on text field");
         document.getElementsByClassName("input add-publication")[0].focus();
       } else if (e.key === "b") {
         e.preventDefault();
-        this.clearActivePublication();
+        this.clearActivePublication("setting focus on text field");
         document.getElementsByClassName("input boost")[0].focus();
       } else if (e.keyCode === 37) {
         // left arrow
