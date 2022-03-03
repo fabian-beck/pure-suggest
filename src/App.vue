@@ -87,6 +87,7 @@ export default {
       isAboutPageShown: false,
       isNetworkExpanded: false,
       isLoading: false,
+      isOverlay: false,
     };
   },
   computed: {
@@ -97,6 +98,7 @@ export default {
   methods: {
     addPublicationsToSelection: async function (dois) {
       console.log(`Adding to selection publications with DOIs: ${dois}.`);
+      document.activeElement.blur();
       if (typeof dois === "string") {
         dois = [dois];
       }
@@ -229,6 +231,7 @@ export default {
     },
 
     clearSelection: function () {
+      this.isOverlay = true;
       this.$buefy.dialog.confirm({
         message:
           "You are going to clear all selected articles and jump back to the initial state.",
@@ -237,6 +240,10 @@ export default {
           this.selectedPublications = [];
           this.excludedPublicationsDois = new Set();
           this.updateSuggestions();
+          this.isOverlay = false;
+        },
+        onCancel: () => {
+          this.isOverlay = false;
         },
       });
     },
@@ -260,11 +267,17 @@ export default {
 
   mounted() {
     this._keyListener = function (e) {
-      if (this.isLoading) {
-        e.preventDefault;
+      if (e.ctrlKey || e.shiftKey || e.metaKey || e.repeat) {
+        return;
+      } else if (this.isLoading || this.isOverlay || this.isAboutPageShown) {
+        e.preventDefault();
         return;
       } else if (document.activeElement.nodeName === "INPUT") {
-        return;
+        if (e.key === "Escape") {
+          document.activeElement.blur();
+        } else {
+          return;
+        }
       } else if (e.key === "c") {
         e.preventDefault();
         this.clearSelection();
@@ -279,21 +292,18 @@ export default {
         e.preventDefault();
         this.clearActivePublication("setting focus on text field");
         document.getElementsByClassName("input boost")[0].focus();
-      } else if (e.keyCode === 37) {
-        // left arrow
+      } else if (e.key === "ArrowLeft") {
         e.preventDefault();
         if (this.selectedPublications.length) {
           this.setActivePublication(this.selectedPublications[0].doi);
         }
-      } else if (e.keyCode === 39) {
-        // right arrow
+      } else if (e.key === "ArrowRight") {
         e.preventDefault();
         if (this.suggestedPublications.length) {
           this.setActivePublication(this.suggestedPublications[0].doi);
         }
       } else if (this.activePublication) {
-        if (e.keyCode === 40 || e.keyCode === 38) {
-          // down or up arrow
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
           e.preventDefault();
           const publicationList = this.activePublication.isSelected
             ? this.selectedPublications
@@ -302,11 +312,9 @@ export default {
           while (!publicationList[i].isActive && i < publicationList.length) {
             i++;
           }
-          if (e.keyCode === 40 && publicationList.length > i + 1) {
-            // down arrow
+          if (e.key === "ArrowDown" && publicationList.length > i + 1) {
             this.setActivePublication(publicationList[i + 1].doi);
-          } else if (e.keyCode === 38 && i > 0) {
-            // up arrow
+          } else if (e.key === "ArrowUp" && i > 0) {
             this.setActivePublication(publicationList[i - 1].doi);
           }
         } else if (e.key === "+") {
