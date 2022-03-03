@@ -287,10 +287,9 @@ export default {
           );
         })
         .attr("class", (d) =>
-          d.source.publication.isActive || d.target.publication.isActive
-            ? "active"
-            : ""
-        );
+            (d.source.publication.isActive || d.target.publication.isActive ? "active" : "") +
+            (d.source.publication.isSelected && d.target.publication.isSelected ? "" : " external")
+        )
 
       this.node.attr("transform", (d) => `translate(${d.x}, ${d.y})`);
     },
@@ -356,6 +355,10 @@ export default {
 
     &.active {
       stroke: #000000aa;
+    }
+
+    &.external {
+      stroke-dasharray: 5 5;
     }
   }
 }
