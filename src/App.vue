@@ -268,6 +268,7 @@ export default {
       this.addPublicationsToSelection([
         "10.1109/tvcg.2015.2467757",
         "10.1109/tvcg.2015.2467621",
+        "10.1002/asi.24171"
       ]);
     },
   },
