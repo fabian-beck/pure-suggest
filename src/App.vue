@@ -10,6 +10,7 @@
       v-on:clearSelection="clearSelection"
       v-on:clearCache="clearCache"
       v-on:openAbout="isAboutPageShown = true"
+      v-on:openKeyboardControls="isKeyboardControlsShown = true"
     />
     <div
       id="main"
@@ -50,6 +51,9 @@
     <b-modal v-model="isAboutPageShown">
       <AboutPage />
     </b-modal>
+    <b-modal v-model="isKeyboardControlsShown">
+      <KeyboardControlsPage />
+    </b-modal>
   </div>
 </template>
 
@@ -62,6 +66,7 @@ import SuggestedPublicationsComponent from "./components/SuggestedPublicationsCo
 import NetworkVisComponent from "./components/NetworkVisComponent.vue";
 import QuickAccessBar from "./components/QuickAccessBar.vue";
 import AboutPage from "./components/AboutPage.vue";
+import KeyboardControlsPage from "./components/KeyboardControlsPage.vue";
 
 import Publication from "./Publication.js";
 import { saveAsFile } from "./Util.js";
@@ -76,6 +81,7 @@ export default {
     NetworkVisComponent,
     QuickAccessBar,
     AboutPage,
+    KeyboardControlsPage,
   },
   data() {
     return {
@@ -85,6 +91,7 @@ export default {
       excludedPublicationsDois: new Set(),
       activePublication: undefined,
       isAboutPageShown: false,
+      isKeyboardControlsShown: false,
       isNetworkExpanded: false,
       isLoading: false,
       isOverlay: false,
@@ -269,7 +276,12 @@ export default {
     this._keyListener = function (e) {
       if (e.ctrlKey || e.shiftKey || e.metaKey || e.repeat) {
         return;
-      } else if (this.isLoading || this.isOverlay || this.isAboutPageShown) {
+      } else if (
+        this.isLoading ||
+        this.isOverlay ||
+        this.isAboutPageShown ||
+        this.isKeyboardControlsShown
+      ) {
         e.preventDefault();
         return;
       } else if (document.activeElement.nodeName === "INPUT") {

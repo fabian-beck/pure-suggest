@@ -15,7 +15,11 @@
       </template>
       <template #start>
         <b-navbar-dropdown
-          :label="`Session (${selectedPublicationsCount} selected${excludedPublicationsCount?`; ${excludedPublicationsCount} excluded`:''})`"
+          :label="`Session (${selectedPublicationsCount} selected${
+            excludedPublicationsCount
+              ? `; ${excludedPublicationsCount} excluded`
+              : ''
+          })`"
           v-show="selectedPublicationsCount"
         >
           <b-navbar-item @click="$emit('exportDois')">
@@ -36,8 +40,18 @@
         </b-navbar-dropdown>
       </template>
       <template #end>
-        <b-navbar-item @click="$emit('openAbout')"> About </b-navbar-item>
-        <b-navbar-dropdown label="⋮" icon-left="dots-vertical" right collapsible>
+        <b-navbar-dropdown
+          label="⋮"
+          icon-left="dots-vertical"
+          right
+          collapsible
+        >
+          <b-navbar-item
+            @click="$emit('openKeyboardControls')"
+            class="is-hidden-mobile"
+            >Keyboard controls</b-navbar-item
+          >
+          <b-navbar-item @click="$emit('openAbout')">About</b-navbar-item>
           <b-navbar-item @click="$emit('clearCache')" class="has-text-danger">
             <b-icon icon="cached"></b-icon
             ><span class="ml-2">Clear cache (and session)</span>

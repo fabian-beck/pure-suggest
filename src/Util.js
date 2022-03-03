@@ -15,7 +15,6 @@ export function saveAsFile(filename, data) {
 
 // https://stackoverflow.com/questions/49820013/javascript-scrollintoview-smooth-scroll-and-offset
 export function scrollToTargetAdjusted(element, offsetY) {
-  console.log(element);
   var elementPosition = element.getBoundingClientRect().top;
   var offsetPosition = elementPosition + window.pageYOffset - offsetY;
 
