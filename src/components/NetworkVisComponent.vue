@@ -352,13 +352,14 @@ export default {
     fill: none;
     stroke-width: 2;
     stroke: #00000010;
+    stroke-dasharray: 15 5;
 
     &.active {
       stroke: #000000aa;
     }
 
     &.external {
-      stroke-dasharray: 5 5;
+      stroke-dasharray: none;
     }
   }
 }
