@@ -171,7 +171,7 @@ export default class Publication {
             other += `
     pages = {${this.page}},`
         }
-        return `@${type}{${this.author.split(",")[0] + this.year + this.title.split(/\W/)[0]},
+        return `@${type}{${this.author.split(/[,\s]/)[0] + this.year + this.title.split(/\W/)[0]},
     title = {${this.title}},
     author = {${this.author.replaceAll(";", " and")}},${other}
     year = {${this.year}},
