@@ -6,6 +6,7 @@
       selected: publication.isSelected,
       linkedToActive: publication.isLinkedToActive,
     }"
+    :id="publication.doi"
     tabindex="0"
     v-on:focus ="$emit('activate', publication.doi)"
     @click.stop="$emit('activate', publication.doi)"
@@ -217,6 +218,7 @@ li.publication-component {
   margin: 0;
   cursor: pointer;
   min-height: 5rem;
+  outline-offset: -0.25rem;
 
   &:hover {
     background: $white-ter;

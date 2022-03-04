@@ -42,7 +42,7 @@
         :isExpanded="isNetworkExpanded"
         :svgWidth="1500"
         :svgHeight="600"
-        v-on:activate="setActivePublication"
+        v-on:activate="activatePublicationComponentByDoi"
         v-on:expand="isNetworkExpanded = true"
         v-on:collapse="isNetworkExpanded = false"
       />
@@ -123,7 +123,7 @@ export default {
       });
       await this.updateSuggestions();
       if (addedPublicationsCount == 1) {
-        this.setActivePublication(addedDoi);
+        this.activatePublicationComponentByDoi(addedDoi);
       }
       this.$buefy.toast.open({
         message: `Added ${
@@ -178,7 +178,6 @@ export default {
 
     setActivePublication: function (doi) {
       this.clearActivePublication("setting active publication");
-
       this.selectedPublications.forEach((selectedPublication) => {
         selectedPublication.isActive = selectedPublication.doi === doi;
         if (selectedPublication.isActive) {
@@ -220,6 +219,17 @@ export default {
       console.log(
         `Cleared any highlighted active publication, triggered by "${source}".`
       );
+    },
+
+    activatePublicationComponent: function (publicationComponent) {
+      if (publicationComponent) {
+        publicationComponent.click();
+        publicationComponent.focus();
+      }
+    },
+
+    activatePublicationComponentByDoi: function (doi) {
+      this.activatePublicationComponent(document.getElementById(doi));
     },
 
     exportDois: function () {
@@ -268,7 +278,7 @@ export default {
       this.addPublicationsToSelection([
         "10.1109/tvcg.2015.2467757",
         "10.1109/tvcg.2015.2467621",
-        "10.1002/asi.24171"
+        "10.1002/asi.24171",
       ]);
     },
   },
@@ -296,6 +306,7 @@ export default {
         this.clearSelection();
       } else if (e.key === "Escape") {
         e.preventDefault();
+        document.activeElement.blur();
         this.clearActivePublication("escape key");
       } else if (e.key === "a") {
         e.preventDefault();
@@ -307,29 +318,29 @@ export default {
         document.getElementsByClassName("input boost")[0].focus();
       } else if (e.key === "ArrowLeft") {
         e.preventDefault();
-        if (this.selectedPublications.length) {
-          this.setActivePublication(this.selectedPublications[0].doi);
-        }
+        this.activatePublicationComponent(
+          document
+            .getElementById("selected")
+            .getElementsByClassName("publication-component")[0]
+        );
       } else if (e.key === "ArrowRight") {
         e.preventDefault();
-        if (this.suggestedPublications.length) {
-          this.setActivePublication(this.suggestedPublications[0].doi);
-        }
+        this.activatePublicationComponent(
+          document
+            .getElementById("suggested")
+            .getElementsByClassName("publication-component")[0]
+        );
       } else if (this.activePublication) {
         if (e.key === "ArrowDown" || e.key === "ArrowUp") {
           e.preventDefault();
-          const publicationList = this.activePublication.isSelected
-            ? this.selectedPublications
-            : this.suggestedPublications;
-          let i = 0;
-          while (!publicationList[i].isActive && i < publicationList.length) {
-            i++;
-          }
-          if (e.key === "ArrowDown" && publicationList.length > i + 1) {
-            this.setActivePublication(publicationList[i + 1].doi);
-          } else if (e.key === "ArrowUp" && i > 0) {
-            this.setActivePublication(publicationList[i - 1].doi);
-          }
+          const activePublicationComponent = document.getElementsByClassName(
+            "publication-component active"
+          )[0];
+          this.activatePublicationComponent(
+            e.key === "ArrowDown"
+              ? activePublicationComponent.nextSibling
+              : activePublicationComponent.previousSibling
+          );
         } else if (e.key === "+") {
           e.preventDefault();
           this.addPublicationsToSelection(this.activePublication.doi);
@@ -427,6 +438,10 @@ $box-padding: 1rem;
 
   & .key {
     text-decoration: underline;
+  }
+
+  & *:focus {
+    outline: 1px solid $dark;
   }
 }
 
