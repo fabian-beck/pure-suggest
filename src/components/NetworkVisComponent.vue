@@ -222,7 +222,9 @@ export default {
           g.append("text");
           g.append("circle");
           g.on("click", this.activatePublication);
-          tippy(g.nodes());
+          tippy(g.nodes(), {
+            maxWidth: "min(400px,70vw)",
+          });
           return g;
         });
 
@@ -286,10 +288,16 @@ export default {
             d.source.y
           );
         })
-        .attr("class", (d) =>
-            (d.source.publication.isActive || d.target.publication.isActive ? "active" : "") +
-            (d.source.publication.isSelected && d.target.publication.isSelected ? "" : " external")
-        )
+        .attr(
+          "class",
+          (d) =>
+            (d.source.publication.isActive || d.target.publication.isActive
+              ? "active"
+              : "") +
+            (d.source.publication.isSelected && d.target.publication.isSelected
+              ? ""
+              : " external")
+        );
 
       this.node.attr("transform", (d) => `translate(${d.x}, ${d.y})`);
     },

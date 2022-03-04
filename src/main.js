@@ -7,7 +7,9 @@ import Buefy from 'buefy'
 Vue.use(Buefy, { defaultIconPack: 'mdi' })
 
 import VueTippy, { TippyComponent } from "vue-tippy";
-Vue.use(VueTippy);
+Vue.use(VueTippy, {
+  maxWidth: 'min(400px,70vw)'
+});
 // eslint-disable-next-line vue/multi-word-component-names
 Vue.component("tippy", TippyComponent);
 
