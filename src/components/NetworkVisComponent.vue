@@ -46,6 +46,7 @@
 import * as d3 from "d3";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
+import _ from "lodash";
 
 const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;
@@ -67,6 +68,7 @@ export default {
       yearMax: Number,
       node: null,
       link: null,
+      label: null,
     };
   },
   watch: {
@@ -151,6 +153,8 @@ export default {
     this.link = this.svg.append("g").attr("class", "links").selectAll("path");
 
     this.node = this.svg.append("g").attr("class", "nodes").selectAll("rect");
+
+    this.label = this.svg.append("g").attr("class", "labels").selectAll("text");
   },
   methods: {
     plot: function () {
@@ -258,6 +262,31 @@ export default {
       this.link = this.link
         .data(this.graph.links, (d) => [d.source, d.target])
         .join("path");
+
+      const yearRange = _.range(this.yearMin, this.yearMax + 1).filter(
+        (year) => year % 5 === 0
+      );
+      this.label = this.label
+        .data(yearRange, (d) => d)
+        .join("text")
+        .attr("x", (d) =>
+          ((d - this.yearMin) / Math.sqrt(1 + this.yearMax - this.yearMin)) *
+          this.svgWidth *
+          0.15
+        )
+        .attr("y", () =>
+          (-Math.log(
+              (this.selectedPublications.length +
+                this.suggestedPublications.length) *
+              10
+          ) *
+            0.12 + // spread by
+            0.8) * // move down by
+          this.svgHeight
+        )
+        .attr("text-anchor", "middle")
+        .text((d) => d);
+
       this.simulation.nodes(this.graph.nodes);
       this.simulation.force("link").links(this.graph.links);
       if (old.size != this.graph.nodes.length) {
