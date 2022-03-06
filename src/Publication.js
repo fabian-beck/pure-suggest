@@ -1,6 +1,7 @@
 import _ from "lodash";
 
 import { cachedFetch } from "./Cache.js";
+import {shuffle} from "./Util.js"
 
 export default class Publication {
     constructor(doi) {
@@ -229,13 +230,15 @@ export default class Publication {
             publication.updateScore(boostKeywords)
         );
         let filteredSuggestions = Object.values(suggestedPublications);
+        filteredSuggestions = shuffle(filteredSuggestions, 0);
+        console.log(filteredSuggestions);
         console.log(`Identified ${filteredSuggestions.length} publications as suggestions.`);
         // titles not yet fetched, that is why sorting can be only done on citations/references
         filteredSuggestions.sort(
             (a, b) =>
                 b.citationCount + b.referenceCount - (a.citationCount + a.referenceCount)
         );
-        filteredSuggestions = filteredSuggestions.slice(0, 30 * Math.sqrt(Object.keys(publications).length));
+        filteredSuggestions = filteredSuggestions.slice(0, 50);
         console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`);
         let publicationsLoadedCount = 0;
         loadingToast.message = `${publicationsLoadedCount}/${filteredSuggestions.length} suggested publications loaded`;
