@@ -285,7 +285,7 @@ li.publication-component {
   }
 }
 
-@include mobile {
+@include touch {
   li.publication-component {
     & .media-content {
       padding-left: 0;

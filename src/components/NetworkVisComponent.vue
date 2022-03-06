@@ -16,7 +16,7 @@
             ></b-icon>
           </div>
         </div>
-        <div class="level-right is-hidden-mobile">
+        <div class="level-right is-hidden-touch">
           <b-button
             icon-right="arrow-expand-up"
             size="is-small"
@@ -401,7 +401,7 @@ export default {
   }
 }
 
-@include mobile {
+@include touch {
   .network-of-references {
     padding: 0 !important;
   }

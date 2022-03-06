@@ -48,7 +48,7 @@
         >
           <b-navbar-item
             @click="$emit('openKeyboardControls')"
-            class="is-hidden-mobile"
+            class="is-hidden-touch"
             >Keyboard controls</b-navbar-item
           >
           <b-navbar-item @click="$emit('openAbout')">About</b-navbar-item>

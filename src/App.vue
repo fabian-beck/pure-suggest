@@ -47,7 +47,7 @@
         v-on:collapse="isNetworkExpanded = false"
       />
     </div>
-    <QuickAccessBar id="quick-access" class="is-hidden-tablet" />
+    <QuickAccessBar id="quick-access" class="is-hidden-desktop" />
     <b-modal v-model="isAboutPageShown">
       <AboutPage />
     </b-modal>
@@ -99,7 +99,7 @@ export default {
   },
   computed: {
     isMobile: function () {
-      return window.innerWidth <= 768;
+      return window.innerWidth <= 1023;
     },
   },
   methods: {
@@ -460,7 +460,7 @@ $box-padding: 1rem;
   }
 }
 
-@include mobile {
+@include touch {
   #app {
     display: block;
     margin-bottom: 5rem;
