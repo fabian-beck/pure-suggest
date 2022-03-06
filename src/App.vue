@@ -145,24 +145,39 @@ export default {
       const loadingComponent = this.$buefy.loading.open({
         container: null,
       });
+      let publicationsLoaded = 0;
+      this.loadingToast = this.$buefy.toast.open({
+        indefinite: true,
+        message: `${publicationsLoaded}/${
+          Object.keys(publications).length
+        } selected publications loaded`,
+        type: "is-warning",
+      });
       this.isLoading = true;
       this.clearActivePublication("updating suggestions");
       await Promise.all(
         Object.values(publications).map(async (publication) => {
           await publication.fetchData();
           publication.isSelected = true;
+          publicationsLoaded++;
+          this.loadingToast.message = `${publicationsLoaded}/${
+            Object.keys(publications).length
+          } selected publications loaded`;
         })
       );
       this.suggestedPublications = Object.values(
         await Publication.computeSuggestions(
           publications,
           this.excludedPublicationsDois,
-          this.boostKeywords
+          this.boostKeywords,
+          this.loadingToast
         )
       );
       this.selectedPublications = Object.values(publications);
       Publication.sortPublications(this.selectedPublications);
       this.isLoading = false;
+      this.loadingToast.close();
+      this.loadingToast = null;
       loadingComponent.close();
     },
 
