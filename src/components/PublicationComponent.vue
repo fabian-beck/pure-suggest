@@ -20,7 +20,7 @@
           <div class="tooltip-target">
             <div class="is-size-3 is-inline-block">{{ publication.score }}</div>
             <div
-              class="has-background-warning is-size-6 is-inline-block ml-1"
+              class="boost-indicator has-background-warning is-size-6 is-inline-block ml-1"
               v-if="publication.boostFactor > 1"
             >
               <b-icon :icon="chevronType" size="is-small"></b-icon>
@@ -212,6 +212,14 @@ export default {
 
 <style lang="scss" scoped>
 @import "~bulma/sass/utilities/_all";
+
+.boost-indicator {
+  border-radius: 50%;
+  height: 25px;
+  width: 25px;
+  position: relative;
+  top: -5px;
+}
 
 li.publication-component {
   padding: 0;
