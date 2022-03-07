@@ -269,6 +269,12 @@ export default {
       this.label = this.label
         .data(yearRange, (d) => d)
         .join("text")
+        .attr("text-anchor", "middle")
+        .attr("visibility", this.selectedPublications.length > 0 ? "visible" : "hidden")
+        .text((d) => d);
+
+      if (this.selectedPublications.length > 0) {
+        this.label
         .attr("x", (d) =>
           ((d - this.yearMin) / Math.sqrt(1 + this.yearMax - this.yearMin)) *
           this.svgWidth *
@@ -284,8 +290,7 @@ export default {
             0.8) * // move down by
           this.svgHeight
         )
-        .attr("text-anchor", "middle")
-        .text((d) => d);
+      }
 
       this.simulation.nodes(this.graph.nodes);
       this.simulation.force("link").links(this.graph.links);
