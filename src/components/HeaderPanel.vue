@@ -22,9 +22,9 @@
           })`"
           v-show="selectedPublicationsCount"
         >
-          <b-navbar-item @click="$emit('exportDois')">
+          <b-navbar-item @click="$emit('exportSession')">
             <b-icon icon="export"></b-icon>
-            <span class="ml-2">Export selected as DOIs</span>
+            <span class="ml-2">Export session as JSON</span>
           </b-navbar-item>
           <b-navbar-item @click="$emit('exportBibtex')">
             <b-icon icon="export"></b-icon>

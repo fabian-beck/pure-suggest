@@ -70,18 +70,29 @@
     </form>
     <div>
       <div
-        class="notification has-text-centered has-background-primary-light p-2"
+        class="notification has-text-centered has-background-white p-2"
         v-show="publications.length === 0"
       >
         <p>
           To start, add one or more publications by providing their
           <b>DOIs</b> (<a href="https://www.doi.org/"
             >Document Object Intentfier</a
-          >) or a <b>title</b>. Alternative:
-          <button class="button is-small" @click.stop="$emit('loadExample')">
-            <b>load example</b>
-          </button>
+          >), a <b>title</b>, or: 
         </p>
+        <div class="level mt-2">
+          <div class="level-item">
+            <button class="button is-small is-primary" @click.stop="$emit('loadExample')">
+              <b>Load example</b>
+            </button>
+          </div>
+          <div class="level-item has-background-light p-2">
+            <label>Load session from:&nbsp;</label>
+              <input type="file" />
+            <button class="button is-small is-primary" @click.stop="$emit('importSession')">
+              <b>Import JSON</b>
+            </button>
+          </div>
+        </div>
       </div>
       <div
         class="

@@ -5,7 +5,7 @@
       :isMobile="isMobile"
       :selectedPublicationsCount="selectedPublications.length"
       :excludedPublicationsCount="excludedPublicationsDois.size"
-      v-on:exportDois="exportDois"
+      v-on:exportSession="exportSession"
       v-on:exportBibtex="exportBibtex"
       v-on:clearSelection="clearSelection"
       v-on:clearCache="clearCache"
@@ -247,11 +247,20 @@ export default {
       this.activatePublicationComponent(document.getElementById(doi));
     },
 
-    exportDois: function () {
+    exportSession: function () {
+      let data = {
+        selected: Object.keys(publications),
+        excluded: Array.from(this.excludedPublicationsDois),
+        boost: this.boostKeywords
+      };
       saveAsFile(
-        "publication_dois.txt",
-        JSON.stringify(Object.keys(publications))
+        "session.json",
+        JSON.stringify(data)
       );
+    },
+
+    importSession: function() {
+      
     },
 
     exportBibtex: function () {
