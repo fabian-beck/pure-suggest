@@ -118,14 +118,7 @@ export default {
         "x",
         d3
           .forceX()
-          .x(function (d) {
-            return (
-              ((d.publication.year - that.yearMin) /
-                Math.sqrt(1 + that.yearMax - that.yearMin)) *
-              that.svgWidth *
-              0.15
-            );
-          })
+          .x((d) => this.yearX(d.publication.year))
           .strength(1.0)
       )
       .force(
@@ -276,9 +269,7 @@ export default {
       if (this.selectedPublications.length > 0) {
         this.label
         .attr("x", (d) =>
-          ((d - this.yearMin) / Math.sqrt(1 + this.yearMax - this.yearMin)) *
-          this.svgWidth *
-          0.15
+          this.yearX(d)
         )
         .attr("y", () =>
           (-Math.log(
@@ -299,6 +290,7 @@ export default {
       }
       this.simulation.restart();
     },
+
     tick: function () {
       this.link
         .attr("d", (d) => {
@@ -326,6 +318,11 @@ export default {
         )
 
       this.node.attr("transform", (d) => `translate(${d.x}, ${d.y})`);
+    },
+
+    yearX: function (year) {
+      return ((year - this.yearMin) / Math.sqrt(1 + this.yearMax - this.yearMin))
+        *  this.svgWidth * 0.15;
     },
 
     activatePublication: function (event, d) {
