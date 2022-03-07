@@ -23,14 +23,21 @@
               class="boost-indicator has-background-warning is-size-6 is-inline-block ml-1"
               v-if="publication.boostFactor > 1"
             >
-              <b-icon :icon="chevronType" size="is-small"></b-icon>
+              <b-icon
+              :icon="chevronType"
+              size="is-small"/>
             </div>
           </div>
           <div class="is-size-7">
+            <span :style="`color: ${publication.referenceCount > 0 ? 'black' : 'grey'}`">
             {{ publication.referenceCount }}
             <b-icon icon="arrow-left-thick" size="is-small"></b-icon>
-            + {{ publication.citationCount }}
+            </span>
+            +
+            <span :style="`color: ${publication.citationCount > 0 ? 'black' : 'grey'}`">
+              {{ publication.citationCount }}
             <b-icon icon="arrow-right-thick" size="is-small"></b-icon>
+            </span>
           </div>
         </template>
         <div>
