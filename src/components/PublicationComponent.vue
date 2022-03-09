@@ -222,8 +222,8 @@ export default {
 
 .boost-indicator {
   border-radius: 50%;
-  height: 25px;
-  width: 25px;
+  height: 1.5rem;
+  width: 1.5rem;
   position: relative;
   top: -5px;
 }
