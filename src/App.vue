@@ -26,6 +26,7 @@
         v-on:activate="setActivePublication"
         v-on:updateBoost="updateBoost"
         v-on:loadExample="loadExample"
+        v-on:importSession="importSession"
       />
       <SuggestedPublicationsComponent
         id="suggested"
@@ -251,16 +252,17 @@ export default {
       let data = {
         selected: Object.keys(publications),
         excluded: Array.from(this.excludedPublicationsDois),
-        boost: this.boostKeywords
+        boost: this.boostKeywords,
       };
-      saveAsFile(
-        "session.json",
-        JSON.stringify(data)
-      );
+      saveAsFile("session.json", JSON.stringify(data));
     },
 
-    importSession: function() {
-      
+    importSession: function (file) {
+      const fileReader = new FileReader();
+      fileReader.onload = () => {
+        console.log(fileReader.result);
+      }
+      fileReader.readAsText(file);
     },
 
     exportBibtex: function () {

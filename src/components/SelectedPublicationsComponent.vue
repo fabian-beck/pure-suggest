@@ -90,13 +90,7 @@
           </div>
           <div class="level-item has-background-grey-lighter p-2">
             <label>Load session from:&nbsp;</label>
-            <input type="file" />
-            <button
-              class="button is-small is-primary"
-              @click.stop="$emit('importSession')"
-            >
-              <b>Import JSON</b>
-            </button>
+            <input type="file" @change="importSession"/>
           </div>
         </div>
       </div>
@@ -170,6 +164,9 @@ export default {
     setBoost: function (boostKeywordString) {
       this.boostKeywordString = boostKeywordString;
     },
+    importSession: function(event) {
+      this.$emit("importSession", event.target.files[0]);
+    }
   },
   watch: {
     addQuery: function () {
