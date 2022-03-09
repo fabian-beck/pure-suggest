@@ -252,7 +252,7 @@ export default {
       let data = {
         selected: Object.keys(publications),
         excluded: Array.from(this.excludedPublicationsDois),
-        boost: this.boostKeywords,
+        boost: this.boostKeywords.join(", "),
       };
       saveAsFile("session.json", JSON.stringify(data));
     },
@@ -260,8 +260,14 @@ export default {
     importSession: function (file) {
       const fileReader = new FileReader();
       fileReader.onload = () => {
-        console.log(fileReader.result);
-      }
+        try {
+          const content = fileReader.result;
+          const session = JSON.parse(content);
+          this.loadSession(session);
+        } catch {
+          console.error(`Cannot read JSON from file "${file.name}".`);
+        }
+      };
       fileReader.readAsText(file);
     },
 
@@ -296,16 +302,32 @@ export default {
       this.clearSelection();
     },
 
+    loadSession: function (session) {
+      console.log(`Loading session ${JSON.stringify(session)}`);
+      if (!session || !session.selected) {
+        console.error("Cannot load session from JSON because of wrong file content.");
+        return
+      }
+      if (session.boost) {
+        this.$refs.selected.setBoost(session.boost);
+        this.updateBoost(session.boost, true);
+      }
+      if (session.excluded) {
+        this.excludedPublicationsDois = new Set(session.excluded);
+      }
+      this.addPublicationsToSelection(session.selected);
+    },
+
     loadExample: function () {
-      console.log("Loading example");
-      const boostKeywordString = "cit, vis";
-      this.$refs.selected.setBoost(boostKeywordString);
-      this.updateBoost(boostKeywordString, true);
-      this.addPublicationsToSelection([
-        "10.1109/tvcg.2015.2467757",
-        "10.1109/tvcg.2015.2467621",
-        "10.1002/asi.24171",
-      ]);
+      const session = {
+        selected: [
+          "10.1109/tvcg.2015.2467757",
+          "10.1109/tvcg.2015.2467621",
+          "10.1002/asi.24171",
+        ],
+        boost: "cit, vis",
+      };
+      this.loadSession(session);
     },
   },
 
