@@ -231,7 +231,6 @@ export default class Publication {
         );
         let filteredSuggestions = Object.values(suggestedPublications);
         filteredSuggestions = shuffle(filteredSuggestions, 0);
-        console.log(filteredSuggestions);
         console.log(`Identified ${filteredSuggestions.length} publications as suggestions.`);
         // titles not yet fetched, that is why sorting can be only done on citations/references
         filteredSuggestions.sort(
