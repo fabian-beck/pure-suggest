@@ -28,14 +28,14 @@
               size="is-small"/>
             </div>
           </div>
-          <div class="is-size-6">
-            <div class="reference-count" style="float: left">
+          <div class="reference-counts is-size-6">
+            <div style="float: left">
               <span v-if="publication.referenceCount > 0">
                 {{ publication.referenceCount }}
                 <b-icon icon="arrow-left-thick" size="is-small"></b-icon>
               </span>
             </div>
-            <div class="reference-count" style="float: right">
+            <div style="float: right">
               <span v-if="publication.citationCount > 0">
               <b-icon icon="arrow-right-thick" size="is-small"></b-icon>
                 {{ publication.citationCount }}
@@ -227,7 +227,7 @@ export default {
   position: relative;
 }
 
-.reference-count {
+.reference-counts > div {
   width: 50%;
 }
 
