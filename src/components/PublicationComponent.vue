@@ -28,16 +28,19 @@
               size="is-small"/>
             </div>
           </div>
-          <div class="is-size-7">
-            <span :style="`color: ${publication.referenceCount > 0 ? 'black' : 'grey'}`">
-            {{ publication.referenceCount }}
-            <b-icon icon="arrow-left-thick" size="is-small"></b-icon>
-            </span>
-            +
-            <span :style="`color: ${publication.citationCount > 0 ? 'black' : 'grey'}`">
-              {{ publication.citationCount }}
-            <b-icon icon="arrow-right-thick" size="is-small"></b-icon>
-            </span>
+          <div class="is-size-6">
+            <div class="reference-count" style="float: left">
+              <span v-if="publication.referenceCount > 0">
+                {{ publication.referenceCount }}
+                <b-icon icon="arrow-left-thick" size="is-small"></b-icon>
+              </span>
+            </div>
+            <div class="reference-count" style="float: right">
+              <span v-if="publication.citationCount > 0">
+              <b-icon icon="arrow-right-thick" size="is-small"></b-icon>
+                {{ publication.citationCount }}
+              </span>
+            </div>
           </div>
         </template>
         <div>
@@ -220,12 +223,22 @@ export default {
 <style lang="scss" scoped>
 @import "~bulma/sass/utilities/_all";
 
+.tooltip-target {
+  position: relative;
+}
+
+.reference-count {
+  width: 50%;
+}
+
 .boost-indicator {
   border-radius: 50%;
   height: 1.5rem;
   width: 1.5rem;
-  position: relative;
+  position: absolute;
   top: -5px;
+  right: -5px;
+  border: 1px solid black;
 }
 
 li.publication-component {

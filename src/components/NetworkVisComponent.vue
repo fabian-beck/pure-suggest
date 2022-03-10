@@ -252,10 +252,11 @@ export default {
       this.node
         .select("circle")
         .attr("cx", (d) => getRectSize(d) / 2 - 1)
-        .attr("cy", (d) => getRectSize(d) / 2 - 1)
+        .attr("cy", (d) => -getRectSize(d) / 2 + 1)
         .attr("r", (d) =>
           d.publication.boostFactor > 1 ? getRectSize(d) / 5 : 0
-        );
+        )
+        .attr("stroke", "black");
 
       this.link = this.link
         .data(this.graph.links, (d) => [d.source, d.target])
