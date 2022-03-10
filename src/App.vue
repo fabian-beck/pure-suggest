@@ -265,7 +265,7 @@ export default {
           const session = JSON.parse(content);
           this.loadSession(session);
         } catch {
-          console.error(`Cannot read JSON from file "${file.name}".`);
+          this.showErrorMessage(`Cannot read JSON from file.`);
         }
       };
       fileReader.readAsText(file);
@@ -305,8 +305,10 @@ export default {
     loadSession: function (session) {
       console.log(`Loading session ${JSON.stringify(session)}`);
       if (!session || !session.selected) {
-        console.error("Cannot load session from JSON because of wrong file content.");
-        return
+        this.showErrorMessage(
+          "Cannot read session state from JSON."
+        );
+        return;
       }
       if (session.boost) {
         this.$refs.selected.setBoost(session.boost);
@@ -328,6 +330,15 @@ export default {
         boost: "cit, vis",
       };
       this.loadSession(session);
+    },
+
+    showErrorMessage: function (errorMessage) {
+      this.$buefy.toast.open({
+        duration: 5000,
+        message: errorMessage,
+        type: "is-danger",
+      });
+      console.error(errorMessage);
     },
   },
 

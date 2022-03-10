@@ -82,15 +82,16 @@
         <div class="level mt-2">
           <div class="level-item">
             <button
-              class="button is-small is-primary"
+              class="button is-primary"
               @click.stop="$emit('loadExample')"
             >
-              <b>Load example</b>
+              Load example
             </button>
           </div>
-          <div class="level-item has-background-grey-lighter p-2">
-            <label>Load session from:&nbsp;</label>
-            <input type="file" @change="importSession"/>
+          <div class="level-item">
+            <button class="button is-primary" @click="importSession">
+              Import session from JSON
+            </button>
           </div>
         </div>
       </div>
@@ -164,9 +165,14 @@ export default {
     setBoost: function (boostKeywordString) {
       this.boostKeywordString = boostKeywordString;
     },
-    importSession: function(event) {
-      this.$emit("importSession", event.target.files[0]);
-    }
+    importSession: function () {
+      this.$buefy.dialog.confirm({
+        title: "Import session",
+        message: `<label>Choose an exported session JSON file:&nbsp;</label>
+            <input type="file" id="import-json-input" accept="application/JSON"/>`,
+        onConfirm: () => this.$emit("importSession", document.getElementById("import-json-input").files[0]),
+      });
+    },
   },
   watch: {
     addQuery: function () {
