@@ -20,12 +20,14 @@
           <div class="tooltip-target">
             <div class="is-size-3 is-inline-block">{{ publication.score }}</div>
             <div
-              class="boost-indicator has-background-warning is-size-6 is-inline-block ml-1"
+              class="boost-indicator has-background-warning is-size-5 is-inline-block ml-1"
               v-if="publication.boostFactor > 1"
+              :style="boostIndicatorSize"
             >
               <b-icon
               :icon="chevronType"
-              size="is-small"/>
+              size="is-small"
+              :style="chevronOffset" />
             </div>
           </div>
           <div class="reference-counts is-size-6">
@@ -216,6 +218,28 @@ export default {
       }
       return "";
     },
+
+    boostIndicatorSize: function() {
+      if (this.publication.boostFactor >= 8) {
+        return { width: "2rem", height: "2rem" };
+      } else if (this.publication.boostFactor >= 4) {
+        return { width: "1.6rem", height: "1.6rem" };
+      } else if (this.publication.boostFactor > 1) {
+        return { width: "1.3rem", height: "1.3rem "};
+      }
+      return "";
+    },
+
+    chevronOffset: function() {
+      if (this.publication.boostFactor >= 8) {
+        return { position: "relative", top: "0rem" };
+      } else if (this.publication.boostFactor >= 4) {
+        return { position: "relative", top: "-0.15rem" };
+      } else if (this.publication.boostFactor > 1) {
+        return { position: "relative", top: "-0.3rem" };
+      }
+      return "";
+    },
   },
 };
 </script>
@@ -233,12 +257,10 @@ export default {
 
 .boost-indicator {
   border-radius: 50%;
-  height: 1.5rem;
-  width: 1.5rem;
   position: absolute;
-  top: -5px;
-  right: -5px;
-  border: 1px solid black;
+  top: -7px;
+  right: -7px;
+  // vertical-align: middle;
 }
 
 li.publication-component {
