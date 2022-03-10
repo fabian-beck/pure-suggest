@@ -29,13 +29,13 @@
             </div>
           </div>
           <div class="reference-counts is-size-6">
-            <div style="float: left">
+            <div class="is-pulled-left">
               <span v-if="publication.referenceCount > 0">
                 {{ publication.referenceCount }}
                 <b-icon icon="arrow-left-thick" size="is-small"></b-icon>
               </span>
             </div>
-            <div style="float: right">
+            <div class="is-pulled-right">
               <span v-if="publication.citationCount > 0">
               <b-icon icon="arrow-right-thick" size="is-small"></b-icon>
                 {{ publication.citationCount }}
