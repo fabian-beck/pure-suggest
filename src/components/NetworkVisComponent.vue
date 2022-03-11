@@ -11,13 +11,15 @@
               size="is-small"
               class="ml-2"
               v-show="selectedPublications.length"
-              data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>selected</b>; <b class='has-text-info'>suggested</b>) with citations as links.<br><br>The diagram places publications from left to right based on year and from top to bottom by reference/citation frequency (ignoring boost).<br><br>You can click a pubication for details as well as zoom and pan the diagram."
+              data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>selected</b>; <b class='has-text-info'>suggested</b>) with citations as links.<br><br>You can click a publication for details as well as zoom and pan the diagram."
               v-tippy
             ></b-icon>
           </div>
         </div>
         <div class="level-right">
-          <b-field class="level-item has-text-white mr-4 mb-0">
+          <b-field class="level-item has-text-white mr-4 mb-0"
+                        data-tippy-content="Therea are two display modes:<br><br><b>Timeline:</b> The diagram places publications from left to right based on year and from top to bottom by reference/citation frequency (ignoring boost).<br><br><b>Clusters:</b> The diagram groups linked nodes close to each other, irrespective of year and score."
+              v-tippy>
             <label
               class="mr-2"
               :class="{ 'has-text-grey-light': isClusters }"
