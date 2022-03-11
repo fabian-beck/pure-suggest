@@ -127,8 +127,7 @@ export default {
       )
       .append("g");
 
-    this.simulation = d3
-        .forceSimulation();
+    this.simulation = d3.forceSimulation();
 
     this.initForces();
 
@@ -150,7 +149,7 @@ export default {
             .distance(50)
             .strength(!that.isClusters ? 0.02 : 0.15)
         )
-        .force("charge", d3.forceManyBody().strength(-120))
+        .force("charge", d3.forceManyBody().strength(-150))
         .force(
           "x",
           d3
@@ -446,16 +445,23 @@ export default {
   & path {
     fill: none;
     stroke-width: 2;
-    stroke: #00000010;
+    stroke: #00000020;
     stroke-dasharray: 15 5;
-
-    &.active {
-      stroke: #000000aa;
-    }
 
     &.external {
       stroke-dasharray: none;
+      stroke: #0000000a;
     }
+
+    &.active {
+      stroke: #000000aa;
+
+      &.external {
+        stroke: #00000077;
+      }
+    }
+
+    
   }
 }
 
