@@ -20,24 +20,29 @@
           <div class="tooltip-target">
             <div class="is-size-3 is-inline-block">{{ publication.score }}</div>
             <div
-              class="boost-indicator has-background-warning is-size-6 is-inline-block ml-1"
+              class="boost-indicator has-background-warning is-size-5 is-inline-block ml-1"
               v-if="publication.boostFactor > 1"
+              :style="boostIndicatorSize"
             >
               <b-icon
               :icon="chevronType"
-              size="is-small"/>
+              size="is-small"
+              :style="chevronOffset" />
             </div>
           </div>
-          <div class="is-size-7">
-            <span :style="`color: ${publication.referenceCount > 0 ? 'black' : 'grey'}`">
-            {{ publication.referenceCount }}
-            <b-icon icon="arrow-left-thick" size="is-small"></b-icon>
-            </span>
-            +
-            <span :style="`color: ${publication.citationCount > 0 ? 'black' : 'grey'}`">
-              {{ publication.citationCount }}
-            <b-icon icon="arrow-right-thick" size="is-small"></b-icon>
-            </span>
+          <div class="reference-counts is-size-6">
+            <div class="is-pulled-left">
+              <span v-if="publication.referenceCount > 0">
+                {{ publication.referenceCount }}
+                <b-icon icon="arrow-left-thick" size="is-small"></b-icon>
+              </span>
+            </div>
+            <div class="is-pulled-right">
+              <span v-if="publication.citationCount > 0">
+              <b-icon icon="arrow-right-thick" size="is-small"></b-icon>
+                {{ publication.citationCount }}
+              </span>
+            </div>
           </div>
         </template>
         <div>
@@ -213,6 +218,28 @@ export default {
       }
       return "";
     },
+
+    boostIndicatorSize: function() {
+      if (this.publication.boostFactor >= 8) {
+        return { width: "2rem", height: "2rem" };
+      } else if (this.publication.boostFactor >= 4) {
+        return { width: "1.6rem", height: "1.6rem" };
+      } else if (this.publication.boostFactor > 1) {
+        return { width: "1.3rem", height: "1.3rem "};
+      }
+      return "";
+    },
+
+    chevronOffset: function() {
+      if (this.publication.boostFactor >= 8) {
+        return { position: "relative", top: "0rem" };
+      } else if (this.publication.boostFactor >= 4) {
+        return { position: "relative", top: "-0.15rem" };
+      } else if (this.publication.boostFactor > 1) {
+        return { position: "relative", top: "-0.3rem" };
+      }
+      return "";
+    },
   },
 };
 </script>
@@ -220,12 +247,20 @@ export default {
 <style lang="scss" scoped>
 @import "~bulma/sass/utilities/_all";
 
+.tooltip-target {
+  position: relative;
+}
+
+.reference-counts > div {
+  width: 50%;
+}
+
 .boost-indicator {
   border-radius: 50%;
-  height: 25px;
-  width: 25px;
-  position: relative;
-  top: -5px;
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  // vertical-align: middle;
 }
 
 li.publication-component {
