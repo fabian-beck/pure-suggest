@@ -445,19 +445,18 @@ export default {
   & path {
     fill: none;
     stroke-width: 2;
-    stroke: #00000020;
-    stroke-dasharray: 15 5;
+    stroke: #00000010;
 
     &.external {
-      stroke-dasharray: none;
-      stroke: #0000000a;
+      stroke: #00000006;
     }
 
     &.active {
       stroke: #000000aa;
+      stroke-dasharray: 5 5;
 
       &.external {
-        stroke: #00000077;
+        stroke: #00000066;
       }
     }
   }
