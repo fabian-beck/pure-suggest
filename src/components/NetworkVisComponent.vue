@@ -157,6 +157,17 @@ export default {
       function getRectSize(d) {
         return RECT_SIZE * (d.publication.isActive ? ENLARGE_FACTOR : 1);
       }
+      function getBoostIndicatorSize(d) {
+        let factor = 1;
+        if (d.publication.boostFactor >= 8) {
+          factor = 2;
+        } else if (d.publication.boostFactor >= 4) {
+          factor = 1.6;
+        } else if (d.publication.boostFactor > 1) {
+          factor = 1.3;
+        }
+        return getRectSize(d) * factor;
+      }
 
       const doiToIndex = {};
       this.yearMin = 3000;
@@ -252,10 +263,11 @@ export default {
       this.node
         .select("circle")
         .attr("cx", (d) => getRectSize(d) / 2 - 1)
-        .attr("cy", (d) => getRectSize(d) / 2 - 1)
+        .attr("cy", (d) => -getRectSize(d) / 2 + 1)
         .attr("r", (d) =>
-          d.publication.boostFactor > 1 ? getRectSize(d) / 5 : 0
-        );
+          d.publication.boostFactor > 1 ? getBoostIndicatorSize(d) / 6 : 0
+        )
+        .attr("stroke", "black");
 
       this.link = this.link
         .data(this.graph.links, (d) => [d.source, d.target])
