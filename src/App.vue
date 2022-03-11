@@ -307,9 +307,7 @@ export default {
     loadSession: function (session) {
       console.log(`Loading session ${JSON.stringify(session)}`);
       if (!session || !session.selected) {
-        this.showErrorMessage(
-          "Cannot read session state from JSON."
-        );
+        this.showErrorMessage("Cannot read session state from JSON.");
         return;
       }
       if (session.boost) {
@@ -532,6 +530,10 @@ $box-padding: 1rem;
 
       & #network .box {
         min-height: 70vh;
+      }
+
+      & .level-left + .level-right {
+        margin-top: 0.5rem;
       }
 
       /* Empty space for quick access buttons; used "::after" instead of plain margin-bottom as workaround for Chrome */

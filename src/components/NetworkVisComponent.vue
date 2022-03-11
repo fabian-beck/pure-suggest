@@ -16,11 +16,11 @@
             ></b-icon>
           </div>
         </div>
-        <div class="level-right is-hidden-touch">
-          <b-field class="level-item has-text-white mr-4">
+        <div class="level-right">
+          <b-field class="level-item has-text-white mr-4 mb-0">
             <label
               class="mr-2"
-              :style="{ 'text-decoration': isClusters ? 'none' : 'underline' }"
+              :class="{ 'has-text-grey-light': isClusters }"
               >Timeline</label
             >
             <b-switch
@@ -29,12 +29,12 @@
               passive-type="is-dark"
             ></b-switch>
             <label
-              :style="{ 'text-decoration': isClusters ? 'underline' : 'none' }"
+              :class="{ 'has-text-grey-light': !isClusters }"
               >Clusters</label
             >
           </b-field>
           <b-button
-            class="level-item"
+            class="level-item is-hidden-touch"
             icon-right="arrow-expand-up"
             size="is-small"
             data-tippy-content="Expand diagram"
@@ -43,7 +43,7 @@
             @click="$emit('expand')"
           ></b-button>
           <b-button
-            class="level-item"
+            class="level-item is-hidden-touch"
             icon-right="arrow-expand-down"
             size="is-small"
             data-tippy-content="Collapse diagram"
@@ -342,7 +342,7 @@ export default {
       if (restart) {
         this.simulation.alpha(0.3);
       }
-        this.simulation.restart();
+      this.simulation.restart();
     },
 
     tick: function () {
