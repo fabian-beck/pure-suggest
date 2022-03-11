@@ -339,10 +339,10 @@ export default {
 
       this.simulation.nodes(this.graph.nodes);
       this.simulation.force("link").links(this.graph.links);
-      if (old.size != this.graph.nodes.length || restart) {
-        this.simulation.alpha(1.0);
+      if (restart) {
+        this.simulation.alpha(0.3);
       }
-      this.simulation.restart();
+        this.simulation.restart();
     },
 
     tick: function () {
@@ -460,8 +460,6 @@ export default {
         stroke: #00000077;
       }
     }
-
-    
   }
 }
 

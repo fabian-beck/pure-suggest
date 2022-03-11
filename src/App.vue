@@ -38,6 +38,7 @@
       />
       <NetworkVisComponent
         id="network"
+        ref="network"
         :selectedPublications="selectedPublications"
         :suggestedPublications="suggestedPublications"
         :isExpanded="isNetworkExpanded"
@@ -176,6 +177,7 @@ export default {
       );
       this.selectedPublications = Object.values(publications);
       Publication.sortPublications(this.selectedPublications);
+      this.$refs.network.plot(true);
       this.isLoading = false;
       this.loadingToast.close();
       this.loadingToast = null;
