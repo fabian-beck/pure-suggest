@@ -127,6 +127,9 @@ export default {
       )
       .append("g");
 
+    this.simulation = d3
+        .forceSimulation();
+
     this.initForces();
 
     this.link = this.svg.append("g").attr("class", "links").selectAll("path");
@@ -138,8 +141,7 @@ export default {
   methods: {
     initForces: function () {
       const that = this;
-      this.simulation = d3
-        .forceSimulation()
+      this.simulation
         .force(
           "link",
           d3
@@ -154,7 +156,7 @@ export default {
           d3
             .forceX()
             .x((d) => this.yearX(d.publication.year))
-            .strength(!that.isClusters ? 1.0 : 0.0001)
+            .strength(!that.isClusters ? 1.0 : 0)
         )
         .force(
           "y",
