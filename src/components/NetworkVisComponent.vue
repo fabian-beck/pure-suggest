@@ -17,7 +17,24 @@
           </div>
         </div>
         <div class="level-right is-hidden-touch">
+          <b-field class="level-item has-text-white mr-4">
+            <label
+              class="mr-2"
+              :style="{ 'text-decoration': isClusters ? 'none' : 'underline' }"
+              >Timeline</label
+            >
+            <b-switch
+              v-model="isClusters"
+              type="is-dark"
+              passive-type="is-dark"
+            ></b-switch>
+            <label
+              :style="{ 'text-decoration': isClusters ? 'underline' : 'none' }"
+              >Clusters</label
+            >
+          </b-field>
           <b-button
+            class="level-item"
             icon-right="arrow-expand-up"
             size="is-small"
             data-tippy-content="Expand diagram"
@@ -26,6 +43,7 @@
             @click="$emit('expand')"
           ></b-button>
           <b-button
+            class="level-item"
             icon-right="arrow-expand-down"
             size="is-small"
             data-tippy-content="Collapse diagram"
@@ -69,7 +87,7 @@ export default {
       node: null,
       link: null,
       label: null,
-      isTimeline: false,
+      isClusters: false,
     };
   },
   watch: {
@@ -83,6 +101,12 @@ export default {
       deep: true,
       handler: function () {
         this.plot();
+      },
+    },
+    isClusters: {
+      handler: function () {
+        this.initForces();
+        this.plot(true);
       },
     },
   },
@@ -103,49 +127,7 @@ export default {
       )
       .append("g");
 
-    this.simulation = d3
-      .forceSimulation()
-      .force(
-        "link",
-        d3
-          .forceLink()
-          .id((d) => d.id)
-          .distance(50)
-          .strength(that.isTimeline ? 0.02 : 0.15)
-      )
-      .force("charge", d3.forceManyBody().strength(-120))
-      .force(
-        "x",
-        d3
-          .forceX()
-          .x((d) => this.yearX(d.publication.year))
-          .strength(that.isTimeline ? 1.0 : 0.001)
-      )
-      .force(
-        "y",
-        d3
-          .forceY()
-          .y(function (d) {
-            if (that.isTimeline) {
-              return (
-                (-Math.log(
-                  (d.publication.citationCount +
-                    d.publication.referenceCount +
-                    (d.publication.isSelected ? 1 : 0) +
-                    1) *
-                    10
-                ) *
-                  0.12 + // spread by
-                  0.8) * // move down by
-                that.svgHeight
-              );
-            } else {
-              return 0.5 * that.svgHeight;
-            }
-          })
-          .strength(that.isTimeline ? 0.4 : 0.1)
-      )
-      .on("tick", this.tick);
+    this.initForces();
 
     this.link = this.svg.append("g").attr("class", "links").selectAll("path");
 
@@ -154,8 +136,54 @@ export default {
     this.label = this.svg.append("g").attr("class", "labels").selectAll("text");
   },
   methods: {
-    plot: function () {
+    initForces: function () {
+      const that = this;
+      this.simulation = d3
+        .forceSimulation()
+        .force(
+          "link",
+          d3
+            .forceLink()
+            .id((d) => d.id)
+            .distance(50)
+            .strength(!that.isClusters ? 0.02 : 0.15)
+        )
+        .force("charge", d3.forceManyBody().strength(-120))
+        .force(
+          "x",
+          d3
+            .forceX()
+            .x((d) => this.yearX(d.publication.year))
+            .strength(!that.isClusters ? 1.0 : 0.0001)
+        )
+        .force(
+          "y",
+          d3
+            .forceY()
+            .y(function (d) {
+              if (!that.isClusters) {
+                return (
+                  (-Math.log(
+                    (d.publication.citationCount +
+                      d.publication.referenceCount +
+                      (d.publication.isSelected ? 1 : 0) +
+                      1) *
+                      10
+                  ) *
+                    0.12 + // spread by
+                    0.8) * // move down by
+                  that.svgHeight
+                );
+              } else {
+                return 0.5 * that.svgHeight;
+              }
+            })
+            .strength(!that.isClusters ? 0.4 : 0.1)
+        )
+        .on("tick", this.tick);
+    },
 
+    plot: function (restart) {
       function getRectSize(d) {
         return RECT_SIZE * (d.publication.isActive ? ENLARGE_FACTOR : 1);
       }
@@ -285,7 +313,9 @@ export default {
         .attr("text-anchor", "middle")
         .attr(
           "visibility",
-          (this.selectedPublications.length > 0 && this.isTimeline) ? "visible" : "hidden"
+          this.selectedPublications.length > 0 && !this.isClusters
+            ? "visible"
+            : "hidden"
         )
         .text((d) => d);
 
@@ -308,7 +338,7 @@ export default {
 
       this.simulation.nodes(this.graph.nodes);
       this.simulation.force("link").links(this.graph.links);
-      if (old.size != this.graph.nodes.length) {
+      if (old.size != this.graph.nodes.length || restart) {
         this.simulation.alpha(1.0);
       }
       this.simulation.restart();
