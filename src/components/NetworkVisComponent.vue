@@ -69,6 +69,7 @@ export default {
       node: null,
       link: null,
       label: null,
+      isTimeline: false,
     };
   },
   watch: {
@@ -110,36 +111,39 @@ export default {
           .forceLink()
           .id((d) => d.id)
           .distance(50)
-          .strength(0.02)
+          .strength(that.isTimeline ? 0.02 : 0.15)
       )
       .force("charge", d3.forceManyBody().strength(-120))
-      //.force("center", d3.forceCenter(this.svgWidth / 2, this.svgHeight / 2))
       .force(
         "x",
         d3
           .forceX()
           .x((d) => this.yearX(d.publication.year))
-          .strength(1.0)
+          .strength(that.isTimeline ? 1.0 : 0.001)
       )
       .force(
         "y",
         d3
           .forceY()
           .y(function (d) {
-            return (
-              (-Math.log(
-                (d.publication.citationCount +
-                  d.publication.referenceCount +
-                  (d.publication.isSelected ? 1 : 0) +
-                  1) *
-                  10
-              ) *
-                0.12 + // spread by
-                0.8) * // move down by
-              that.svgHeight
-            );
+            if (that.isTimeline) {
+              return (
+                (-Math.log(
+                  (d.publication.citationCount +
+                    d.publication.referenceCount +
+                    (d.publication.isSelected ? 1 : 0) +
+                    1) *
+                    10
+                ) *
+                  0.12 + // spread by
+                  0.8) * // move down by
+                that.svgHeight
+              );
+            } else {
+              return 0.5 * that.svgHeight;
+            }
           })
-          .strength(0.4)
+          .strength(that.isTimeline ? 0.4 : 0.1)
       )
       .on("tick", this.tick);
 
@@ -151,9 +155,11 @@ export default {
   },
   methods: {
     plot: function () {
+
       function getRectSize(d) {
         return RECT_SIZE * (d.publication.isActive ? ENLARGE_FACTOR : 1);
       }
+
       function getBoostIndicatorSize(d) {
         let factor = 1;
         if (d.publication.boostFactor >= 8) {
@@ -277,24 +283,27 @@ export default {
         .data(yearRange, (d) => d)
         .join("text")
         .attr("text-anchor", "middle")
-        .attr("visibility", this.selectedPublications.length > 0 ? "visible" : "hidden")
+        .attr(
+          "visibility",
+          (this.selectedPublications.length > 0 && this.isTimeline) ? "visible" : "hidden"
+        )
         .text((d) => d);
 
       if (this.selectedPublications.length > 0) {
         this.label
-        .attr("x", (d) =>
-          this.yearX(d)
-        )
-        .attr("y", () =>
-          (-Math.log(
-              (this.selectedPublications.length +
-                this.suggestedPublications.length) *
-              10
-          ) *
-            0.12 + // spread by
-            0.8) * // move down by
-          this.svgHeight
-        )
+          .attr("x", (d) => this.yearX(d))
+          .attr(
+            "y",
+            () =>
+              (-Math.log(
+                (this.selectedPublications.length +
+                  this.suggestedPublications.length) *
+                  10
+              ) *
+                0.12 + // spread by
+                0.8) * // move down by
+              this.svgHeight
+          );
       }
 
       this.simulation.nodes(this.graph.nodes);
@@ -341,8 +350,11 @@ export default {
     },
 
     yearX: function (year) {
-      return ((year - this.yearMin) / Math.sqrt(1 + this.yearMax - this.yearMin))
-        *  this.svgWidth * 0.15;
+      return (
+        ((year - this.yearMin) / Math.sqrt(1 + this.yearMax - this.yearMin)) *
+        this.svgWidth *
+        0.15
+      );
     },
 
     activatePublication: function (event, d) {
