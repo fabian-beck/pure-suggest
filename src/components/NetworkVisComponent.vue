@@ -144,11 +144,11 @@ export default {
       )
       .on("tick", this.tick);
 
+    this.label = this.svg.append("g").attr("class", "labels").selectAll("text");
+
     this.link = this.svg.append("g").attr("class", "links").selectAll("path");
 
     this.node = this.svg.append("g").attr("class", "nodes").selectAll("rect");
-
-    this.label = this.svg.append("g").attr("class", "labels").selectAll("text");
   },
   methods: {
     plot: function () {
