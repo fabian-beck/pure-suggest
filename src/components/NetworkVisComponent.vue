@@ -155,6 +155,17 @@ export default {
       function getRectSize(d) {
         return RECT_SIZE * (d.publication.isActive ? ENLARGE_FACTOR : 1);
       }
+      function getBoostIndicatorSize(d) {
+        let factor = 1;
+        if (d.publication.boostFactor >= 8) {
+          factor = 2;
+        } else if (d.publication.boostFactor >= 4) {
+          factor = 1.6;
+        } else if (d.publication.boostFactor > 1) {
+          factor = 1.3;
+        }
+        return getRectSize(d) * factor;
+      }
 
       const doiToIndex = {};
       this.yearMin = 3000;
@@ -220,7 +231,9 @@ export default {
           g.append("text");
           g.append("circle");
           g.on("click", this.activatePublication);
-          tippy(g.nodes());
+          tippy(g.nodes(), {
+            maxWidth: "min(400px,70vw)",
+          });
           return g;
         });
 
@@ -248,10 +261,11 @@ export default {
       this.node
         .select("circle")
         .attr("cx", (d) => getRectSize(d) / 2 - 1)
-        .attr("cy", (d) => getRectSize(d) / 2 - 1)
+        .attr("cy", (d) => -getRectSize(d) / 2 + 1)
         .attr("r", (d) =>
-          d.publication.boostFactor > 1 ? getRectSize(d) / 5 : 0
-        );
+          d.publication.boostFactor > 1 ? getBoostIndicatorSize(d) / 6 : 0
+        )
+        .attr("stroke", "black");
 
       this.link = this.link
         .data(this.graph.links, (d) => [d.source, d.target])
@@ -314,10 +328,16 @@ export default {
             d.source.y
           );
         })
-        .attr("class", (d) =>
-            (d.source.publication.isActive || d.target.publication.isActive ? "active" : "") +
-            (d.source.publication.isSelected && d.target.publication.isSelected ? "" : " external")
-        )
+        .attr(
+          "class",
+          (d) =>
+            (d.source.publication.isActive || d.target.publication.isActive
+              ? "active"
+              : "") +
+            (d.source.publication.isSelected && d.target.publication.isSelected
+              ? ""
+              : " external")
+        );
 
       this.node.attr("transform", (d) => `translate(${d.x}, ${d.y})`);
     },
@@ -385,13 +405,14 @@ export default {
     fill: none;
     stroke-width: 2;
     stroke: #00000010;
+    stroke-dasharray: 15 5;
 
     &.active {
       stroke: #000000aa;
     }
 
     &.external {
-      stroke-dasharray: 5 5;
+      stroke-dasharray: none;
     }
   }
 }

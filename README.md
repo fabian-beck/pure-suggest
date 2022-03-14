@@ -16,6 +16,7 @@ The tool is available at: https://fabian-beck.github.io/pure-suggest/
 * Automatic tagging of special publication characteristics (e.g., highly cited)
 * Quick access to publications through links (DOIs, open access versions, or Google Scholar)
 * Export selected publications to BibTeX
+* Keyboard controls for an efficient workflow
 * Responsive design that allows working on your phone
 
 ## Project setup

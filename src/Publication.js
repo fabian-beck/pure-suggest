@@ -1,11 +1,12 @@
 import _ from "lodash";
 
-import cachedFetch from "./Cache.js";
+import { cachedFetch } from "./Cache.js";
 
 export default class Publication {
     constructor(doi) {
         // identifier
         this.doi = doi;
+        this.doiUrl = "https://doi.org/" + doi;
         // meta-data
         this.title = "";
         this.titleHighlighted = "";
@@ -92,6 +93,8 @@ export default class Publication {
                     this.issue = data.issue;
                     this.page = data.page;
                     this.oaLink = data.oa_link;
+                    this.gsUrl = `https://scholar.google.de/scholar?hl=en&q=${this.title
+                        } ${this.author ? this.author : ''}`
                     // short reference
                     this.shortReference = `${this.authorShort ? this.authorShort : "[unknown author]"
                         }, ${this.year ? this.year : "[unknown year]"}`;
@@ -114,7 +117,7 @@ export default class Publication {
                         this.isSurvey = `more than 50 references (${this.referenceDois.length}) and "${/(survey|state|review|advances|future)/i.exec(this.title)[0]}" in the title`;
                     }
                     this.isHighlyCited = this.citationsPerYear > 10 ? `more than 10 citations per year (${this.citationsPerYear.toFixed(1)})` : false;
-                    this.isNew = (CURRENT_YEAR - this.year) < 2? "published within the last two calendar years": false;
+                    this.isNew = (CURRENT_YEAR - this.year) < 2 ? "published within the last two calendar years" : false;
                 }
             );
         }
@@ -168,7 +171,7 @@ export default class Publication {
             other += `
     pages = {${this.page}},`
         }
-        return `@${type}{${this.author.split(",")[0] + this.year + this.title.split(/\W/)[0]},
+        return `@${type}{${this.author.split(/[,\s]/)[0] + this.year + this.title.split(/\W/)[0]},
     title = {${this.title}},
     author = {${this.author.replaceAll(";", " and")}},${other}
     year = {${this.year}},
@@ -176,14 +179,14 @@ export default class Publication {
 }`
     }
 
-    static async computeSuggestions(publications, removedPublicationDois, boostKeywords) {
+    static async computeSuggestions(publications, excludedPublicationsDois, boostKeywords) {
         function incrementSuggestedPublicationCounter(
             doi,
             counter,
             doiList,
             sourceDoi
         ) {
-            if (!removedPublicationDois.has(doi)) {
+            if (!excludedPublicationsDois.has(doi)) {
                 if (!publications[doi]) {
                     if (!suggestedPublications[doi]) {
                         const citingPublication = new Publication(doi);
@@ -197,14 +200,8 @@ export default class Publication {
             }
         }
 
-        console.log("Starting to compute new suggestions.");
+        console.log(`Starting to compute new suggestions based on ${Object.keys(publications).length} selected (and ${excludedPublicationsDois.size} excluded).`);
         const suggestedPublications = {};
-        await Promise.all(
-            Object.values(publications).map(async (publication) => {
-                await publication.fetchData();
-                publication.isSelected = true;
-            })
-        );
         Object.values(publications).forEach((publication) => {
             publication.citationCount = 0;
             publication.referenceCount = 0;
@@ -227,6 +224,9 @@ export default class Publication {
                 );
             });
         });
+        Object.values(publications).forEach((publication) =>
+            publication.updateScore(boostKeywords)
+        );
         let filteredSuggestions = Object.values(suggestedPublications);
         console.log(`Identified ${filteredSuggestions.length} publications as suggestions.`);
         // titles not yet fetched, that is why sorting can be only done on citations/references
