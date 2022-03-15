@@ -69,6 +69,7 @@ import _ from "lodash";
 
 const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;
+const margin = 20;
 
 export default {
   props: {
@@ -132,11 +133,11 @@ export default {
 
     this.initForces();
 
+    this.label = this.svg.append("g").attr("class", "labels").selectAll("text");
+
     this.link = this.svg.append("g").attr("class", "links").selectAll("path");
 
     this.node = this.svg.append("g").attr("class", "nodes").selectAll("rect");
-
-    this.label = this.svg.append("g").attr("class", "labels").selectAll("text");
   },
   methods: {
     initForces: function () {
@@ -306,36 +307,32 @@ export default {
         .data(this.graph.links, (d) => [d.source, d.target])
         .join("path");
 
-      const yearRange = _.range(this.yearMin, this.yearMax + 1).filter(
+      const yearRange = _.range(this.yearMin - 5, this.yearMax + 1).filter(
         (year) => year % 5 === 0
       );
       this.label = this.label
         .data(yearRange, (d) => d)
-        .join("text")
+        .join((enter) => {
+          const g = enter.append("g");
+          g.append("text");
+          g.append("text");
+          return g;
+        });
+
+      this.label
+        .selectAll("text")
         .attr("text-anchor", "middle")
-        .attr(
-          "visibility",
-          this.selectedPublications.length > 0 && !this.isClusters
-            ? "visible"
-            : "hidden"
-        )
-        .text((d) => d);
+        .attr("visibility", this.selectedPublications.length > 0 && !this.isClusters ? "visible" : "hidden")
+        .text((d) => d)
+        .attr("fill", "grey");
 
       if (this.selectedPublications.length > 0) {
         this.label
-          .attr("x", (d) => this.yearX(d))
-          .attr(
-            "y",
-            () =>
-              (-Math.log(
-                (this.selectedPublications.length +
-                  this.suggestedPublications.length) *
-                  10
-              ) *
-                0.12 + // spread by
-                0.8) * // move down by
-              this.svgHeight
-          );
+        .attr("transform", (d) =>
+          `translate(${this.yearX(d)},${this.svgHeight - margin})`
+        )
+        .select("text")
+        .attr("y", -this.svgHeight + 2 * margin)
       }
 
       this.simulation.nodes(this.graph.nodes);
