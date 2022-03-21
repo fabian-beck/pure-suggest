@@ -40,12 +40,12 @@
             <div class="is-pulled-left">
               <span v-if="publication.referenceCount > 0">
                 {{ publication.referenceCount }}
-                <b-icon icon="arrow-left-thick" size="is-small"></b-icon>
+                <b-icon icon="arrow-down-right-bold" size="is-small"></b-icon>
               </span>
             </div>
             <div class="is-pulled-right">
               <span v-if="publication.citationCount > 0">
-                <b-icon icon="arrow-right-thick" size="is-small"></b-icon>
+                <b-icon icon="arrow-right-top-bold" size="is-small"></b-icon>
                 {{ publication.citationCount }}
               </span>
             </div>
@@ -55,12 +55,12 @@
           Suggestion score of
           <b>{{ publication.score }}</b
           >:<br />
-          Referenced by <b>{{ publication.referenceCount }}</b> (<b-icon
-            icon="arrow-left-thick"
+          Cited by <b>{{ publication.referenceCount }}</b> (<b-icon
+            icon="arrow-down-right-bold"
             size="is-small"
           ></b-icon
-          >) and referencing <b>{{ publication.citationCount }}</b> (<b-icon
-            icon="arrow-right-thick"
+          >) and citing <b>{{ publication.citationCount }}</b> (<b-icon
+            icon="arrow-right-top-bold"
             size="is-small"
           ></b-icon
           >) selected publications<span v-if="publication.boostFactor != 1"
@@ -152,15 +152,15 @@
       <div v-if="publication.isActive" class="stats-and-links level is-size-7">
         <div class="level-left">
           <div class="level-item">
-            <label>Citing:</label> <b>{{ publication.referenceDois.length }}</b>
-          </div>
-          <div class="level-item">
-            <label>Cited by:</label>
+            <label><b-icon icon="arrow-down-right-bold" size="is-small"></b-icon>Cited by:</label>
             <b>{{ publication.citationDois.length }}</b>
             <span v-if="publication.citationsPerYear > 0">
               &nbsp;({{ publication.citationsPerYear.toFixed(1) }}
               per year)
             </span>
+          </div>
+          <div class="level-item">
+            <label><b-icon icon="arrow-right-top-bold" size="is-small"></b-icon>Citing:</label> <b>{{ publication.referenceDois.length }}</b>
           </div>
         </div>
         <div
