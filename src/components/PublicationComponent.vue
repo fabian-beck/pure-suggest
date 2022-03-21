@@ -8,7 +8,7 @@
     }"
     :id="publication.doi"
     tabindex="0"
-    v-on:focus ="$emit('activate', publication.doi)"
+    v-on:focus="$emit('activate', publication.doi)"
     @click.stop="$emit('activate', publication.doi)"
   >
     <div
@@ -20,14 +20,20 @@
           <div class="tooltip-target">
             <div class="is-size-3 is-inline-block">{{ publication.score }}</div>
             <div
-              class="boost-indicator has-background-warning is-size-5 is-inline-block ml-1"
+              class="
+                boost-indicator
+                has-background-warning
+                is-size-5 is-inline-block
+                ml-1
+              "
               v-if="publication.boostFactor > 1"
               :style="boostIndicatorSize"
             >
               <b-icon
-              :icon="chevronType"
-              size="is-small"
-              :style="chevronOffset" />
+                :icon="chevronType"
+                size="is-small"
+                :style="chevronOffset"
+              />
             </div>
           </div>
           <div class="reference-counts is-size-6">
@@ -39,7 +45,7 @@
             </div>
             <div class="is-pulled-right">
               <span v-if="publication.citationCount > 0">
-              <b-icon icon="arrow-right-thick" size="is-small"></b-icon>
+                <b-icon icon="arrow-right-thick" size="is-small"></b-icon>
                 {{ publication.citationCount }}
               </span>
             </div>
@@ -141,9 +147,7 @@
           ><em> {{ publication.container }}. </em></span
         >
         <label><span class="key">D</span>OI:</label>
-        <a :href="publication.doiUrl">{{
-          publication.doi
-        }}</a>
+        <a :href="publication.doiUrl">{{ publication.doi }}</a>
       </div>
       <div v-if="publication.isActive" class="stats-and-links level is-size-7">
         <div class="level-left">
@@ -151,10 +155,11 @@
             <label>Citing:</label> <b>{{ publication.referenceDois.length }}</b>
           </div>
           <div class="level-item">
-            <label>Cited by:</label> <b>{{ publication.citationDois.length }}</b>
+            <label>Cited by:</label>
+            <b>{{ publication.citationDois.length }}</b>
             <span v-if="publication.citationsPerYear > 0">
               &nbsp;({{ publication.citationsPerYear.toFixed(1) }}
-            per year)
+              per year)
             </span>
           </div>
         </div>
@@ -163,11 +168,12 @@
           v-if="publication.title && publication.isActive"
         >
           <div class="level-item" v-if="publication.oaLink">
-            <a :href="publication.oaLink"><span class="key">O</span>pen access</a>
+            <a :href="publication.oaLink"
+              ><span class="key">O</span>pen access</a
+            >
           </div>
           <div class="level-item">
-            <a
-              :href="publication.gsUrl"
+            <a :href="publication.gsUrl"
               ><span class="key">G</span>oogle Scholar</a
             >
           </div>
@@ -219,18 +225,18 @@ export default {
       return "";
     },
 
-    boostIndicatorSize: function() {
+    boostIndicatorSize: function () {
       if (this.publication.boostFactor >= 8) {
         return { width: "2rem", height: "2rem" };
       } else if (this.publication.boostFactor >= 4) {
         return { width: "1.6rem", height: "1.6rem" };
       } else if (this.publication.boostFactor > 1) {
-        return { width: "1.3rem", height: "1.3rem "};
+        return { width: "1.3rem", height: "1.3rem " };
       }
       return "";
     },
 
-    chevronOffset: function() {
+    chevronOffset: function () {
       if (this.publication.boostFactor >= 8) {
         return { position: "relative", top: "0rem" };
       } else if (this.publication.boostFactor >= 4) {
@@ -261,6 +267,10 @@ export default {
   top: -7px;
   right: -7px;
   // vertical-align: middle;
+}
+
+*:focus {
+  outline: 1px solid $dark;
 }
 
 li.publication-component {

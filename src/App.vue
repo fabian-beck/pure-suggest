@@ -493,15 +493,13 @@ $box-padding: 1rem;
     & > div {
       margin: 0;
     }
+
   }
 
   & .key {
     text-decoration: underline;
   }
 
-  & *:focus {
-    outline: 1px solid $dark;
-  }
 }
 
 @include touch {
