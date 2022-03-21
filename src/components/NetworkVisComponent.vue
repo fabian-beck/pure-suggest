@@ -19,7 +19,7 @@
         <div class="level-right" v-show="selectedPublications.length">
           <b-field
             class="level-item has-text-white mr-4 mb-0"
-            data-tippy-content="Therea are two display modes:<br><br><b>Timeline:</b> The diagram places publications from left to right based on year and from top to bottom by reference/citation frequency (ignoring boost).<br><br><b>Clusters:</b> The diagram groups linked nodes close to each other, irrespective of year and score."
+            data-tippy-content="There are two display modes:<br><br><b>Timeline:</b> The diagram places publications from left to right based on year and from top to bottom by reference/citation frequency (ignoring boost).<br><br><b>Clusters:</b> The diagram groups linked publications close to each other, irrespective of year and score."
             v-tippy
           >
             <label class="mr-2" :class="{ 'has-text-grey-light': isClusters }"
