@@ -1,6 +1,7 @@
 import _ from "lodash";
 
 import { cachedFetch } from "./Cache.js";
+import { shuffle } from "./Util.js"
 
 export default class Publication {
     constructor(doi) {
@@ -125,15 +126,41 @@ export default class Publication {
 
     updateScore(boostKeywords) {
         this.boostFactor = 1;
-        this.titleHighlighted = this.title;
+        // use an array to keep track of highlighted title fragements
+        let titleFragments = [this.title];
+        // iterate over all boost keywords
         boostKeywords.forEach(boostKeyword => {
-            const index = this.titleHighlighted.toLowerCase().indexOf(boostKeyword);
-            if (boostKeyword && index >= 0) {
-                this.boostFactor = this.boostFactor * 2;
-                this.titleHighlighted = this.titleHighlighted.substring(0, index) + "<u style='text-decoration-color: hsl(48, 100%, 67%); text-decoration-thickness: 0.25rem;'>" + this.titleHighlighted.substring(index, index + boostKeyword.length) + "</u>" + this.titleHighlighted.substring(index + boostKeyword.length);
+            if (!boostKeyword) {
+                return
             }
+            // iterate overa all title fragments
+            for (let i = 0; i < titleFragments.length; i++) {
+                const titleFragment = titleFragments[i];
+                // ignore already highlighted parts
+                if (titleFragment.indexOf("<") == 0) {
+                    continue
+                }
+                // search keyword in title fragement
+                const index = titleFragment.toLowerCase().indexOf(boostKeyword);
+                if (index >= 0) {
+                    // split matched title fragement
+                    this.boostFactor = this.boostFactor * 2;
+                    titleFragments[i] = [
+                        titleFragment.substring(0, index),
+                        "<u style='text-decoration-color: hsl(48, 100%, 67%); text-decoration-thickness: 0.25rem;'>" + titleFragment.substring(index, index + boostKeyword.length) + "</u>",
+                        titleFragment.substring(index + boostKeyword.length)
+                    ];
+                    break
+                }
+            }
+            // flatten the array for matching the next keyword
+            titleFragments = titleFragments.flat();
         });
+        // join highlighted title
+        this.titleHighlighted = titleFragments.join("");
+        // update score
         this.score = (this.citationCount + this.referenceCount) * this.boostFactor;
+        // update score color
         let lightness = 100;
         if (this.score >= 20) {
             lightness = 50;
@@ -179,7 +206,7 @@ export default class Publication {
 }`
     }
 
-    static async computeSuggestions(publications, excludedPublicationsDois, boostKeywords) {
+    static async computeSuggestions(publications, excludedPublicationsDois, boostKeywords, loadingToast) {
         function incrementSuggestedPublicationCounter(
             doi,
             counter,
@@ -201,6 +228,7 @@ export default class Publication {
         }
 
         console.log(`Starting to compute new suggestions based on ${Object.keys(publications).length} selected (and ${excludedPublicationsDois.size} excluded).`);
+        loadingToast.message = `Computing suggestions`;
         const suggestedPublications = {};
         Object.values(publications).forEach((publication) => {
             publication.citationCount = 0;
@@ -228,15 +256,22 @@ export default class Publication {
             publication.updateScore(boostKeywords)
         );
         let filteredSuggestions = Object.values(suggestedPublications);
+        filteredSuggestions = shuffle(filteredSuggestions, 0);
         console.log(`Identified ${filteredSuggestions.length} publications as suggestions.`);
         // titles not yet fetched, that is why sorting can be only done on citations/references
         filteredSuggestions.sort(
             (a, b) =>
                 b.citationCount + b.referenceCount - (a.citationCount + a.referenceCount)
         );
-        filteredSuggestions = filteredSuggestions.slice(0, 30 * Math.sqrt(Object.keys(publications).length));
+        filteredSuggestions = filteredSuggestions.slice(0, 50);
         console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`);
-        await Promise.all(filteredSuggestions.map(async (suggestedPublication) => await suggestedPublication.fetchData()));
+        let publicationsLoadedCount = 0;
+        loadingToast.message = `${publicationsLoadedCount}/${filteredSuggestions.length} suggested publications loaded`;
+        await Promise.all(filteredSuggestions.map(async (suggestedPublication) => {
+            await suggestedPublication.fetchData()
+            publicationsLoadedCount++;
+            loadingToast.message = `${publicationsLoadedCount}/${filteredSuggestions.length} suggested publications loaded`;
+        }));
         filteredSuggestions.forEach((publication) =>
             publication.updateScore(boostKeywords)
         );

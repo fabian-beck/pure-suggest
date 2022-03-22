@@ -11,27 +11,46 @@
               size="is-small"
               class="ml-2"
               v-show="selectedPublications.length"
-              data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>selected</b>; <b class='has-text-info'>suggested</b>) with citations as links.<br><br>The diagram places publications from left to right based on year and from top to bottom by reference/citation frequency (ignoring boost).<br><br>You can click a pubication for details as well as zoom and pan the diagram."
+              data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>selected</b>; <b class='has-text-info'>suggested</b>) with citations as links.<br><br>You can click a publication for details as well as zoom and pan the diagram."
               v-tippy
             ></b-icon>
           </div>
         </div>
-        <div class="level-right is-hidden-mobile">
+        <div class="level-right" v-show="selectedPublications.length">
+          <b-field
+            class="level-item has-text-white mr-4 mb-0"
+            data-tippy-content="There are two display modes:<br><br><b>Timeline:</b> The diagram places publications from left to right based on year and from top to bottom by reference/citation frequency (ignoring boost).<br><br><b>Clusters:</b> The diagram groups linked publications close to each other, irrespective of year and score."
+            v-tippy
+          >
+            <label class="mr-2" :class="{ 'has-text-grey-light': isClusters }"
+              >Timeline</label
+            >
+            <b-switch
+              v-model="isClusters"
+              type="is-dark"
+              passive-type="is-dark" 
+            ></b-switch>
+            <label :class="{ 'has-text-grey-light': !isClusters }"
+              >Clusters</label
+            >
+          </b-field>
           <b-button
+            class="level-item is-hidden-touch"
             icon-right="arrow-expand-up"
             size="is-small"
             data-tippy-content="Expand diagram"
             v-tippy
             v-show="!isExpanded"
-            @click="$emit('expand')"
+            @click.stop="$emit('expand')"
           ></b-button>
           <b-button
+            class="level-item is-hidden-touch"
             icon-right="arrow-expand-down"
             size="is-small"
             data-tippy-content="Collapse diagram"
             v-tippy
             v-show="isExpanded"
-            @click="$emit('collapse')"
+            @click.stop="$emit('collapse')"
           ></b-button>
         </div>
       </div>
@@ -46,9 +65,11 @@
 import * as d3 from "d3";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
+import _ from "lodash";
 
 const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;
+const margin = 20;
 
 export default {
   props: {
@@ -67,6 +88,8 @@ export default {
       yearMax: Number,
       node: null,
       link: null,
+      label: null,
+      isClusters: false,
     };
   },
   watch: {
@@ -80,6 +103,12 @@ export default {
       deep: true,
       handler: function () {
         this.plot();
+      },
+    },
+    isClusters: {
+      handler: function () {
+        this.initForces();
+        this.plot(true);
       },
     },
   },
@@ -100,63 +129,68 @@ export default {
       )
       .append("g");
 
-    this.simulation = d3
-      .forceSimulation()
-      .force(
-        "link",
-        d3
-          .forceLink()
-          .id((d) => d.id)
-          .distance(50)
-          .strength(0.02)
-      )
-      .force("charge", d3.forceManyBody().strength(-120))
-      //.force("center", d3.forceCenter(this.svgWidth / 2, this.svgHeight / 2))
-      .force(
-        "x",
-        d3
-          .forceX()
-          .x(function (d) {
-            return (
-              ((d.publication.year - that.yearMin) /
-                Math.sqrt(1 + that.yearMax - that.yearMin)) *
-              that.svgWidth *
-              0.15
-            );
-          })
-          .strength(1.0)
-      )
-      .force(
-        "y",
-        d3
-          .forceY()
-          .y(function (d) {
-            return (
-              (-Math.log(
-                (d.publication.citationCount +
-                  d.publication.referenceCount +
-                  (d.publication.isSelected ? 1 : 0) +
-                  1) *
-                  10
-              ) *
-                0.12 + // spread by
-                0.8) * // move down by
-              that.svgHeight
-            );
-          })
-          .strength(0.4)
-      )
-      .on("tick", this.tick);
+    this.simulation = d3.forceSimulation();
+
+    this.initForces();
+
+    this.label = this.svg.append("g").attr("class", "labels").selectAll("text");
 
     this.link = this.svg.append("g").attr("class", "links").selectAll("path");
 
     this.node = this.svg.append("g").attr("class", "nodes").selectAll("rect");
   },
   methods: {
-    plot: function () {
+    initForces: function () {
+      const that = this;
+      this.simulation
+        .force(
+          "link",
+          d3
+            .forceLink()
+            .id((d) => d.id)
+            .distance(50)
+            .strength(!that.isClusters ? 0.02 : 0.15)
+        )
+        .force("charge", d3.forceManyBody().strength(-150))
+        .force(
+          "x",
+          d3
+            .forceX()
+            .x((d) => this.yearX(d.publication.year))
+            .strength(!that.isClusters ? 1.0 : 0)
+        )
+        .force(
+          "y",
+          d3
+            .forceY()
+            .y(function (d) {
+              if (!that.isClusters) {
+                return (
+                  (-Math.log(
+                    (d.publication.citationCount +
+                      d.publication.referenceCount +
+                      (d.publication.isSelected ? 1 : 0) +
+                      1) *
+                      10
+                  ) *
+                    0.12 + // spread by
+                    0.8) * // move down by
+                  that.svgHeight
+                );
+              } else {
+                return 0.5 * that.svgHeight;
+              }
+            })
+            .strength(!that.isClusters ? 0.4 : 0.1)
+        )
+        .on("tick", this.tick);
+    },
+
+    plot: function (restart) {
       function getRectSize(d) {
         return RECT_SIZE * (d.publication.isActive ? ENLARGE_FACTOR : 1);
       }
+
       function getBoostIndicatorSize(d) {
         let factor = 1;
         if (d.publication.boostFactor >= 8) {
@@ -273,13 +307,43 @@ export default {
       this.link = this.link
         .data(this.graph.links, (d) => [d.source, d.target])
         .join("path");
+
+      const yearRange = _.range(this.yearMin - 5, this.yearMax + 1).filter(
+        (year) => year % 5 === 0
+      );
+      this.label = this.label
+        .data(yearRange, (d) => d)
+        .join((enter) => {
+          const g = enter.append("g");
+          g.append("text");
+          g.append("text");
+          return g;
+        });
+
+      this.label
+        .selectAll("text")
+        .attr("text-anchor", "middle")
+        .attr("visibility", this.selectedPublications.length > 0 && !this.isClusters ? "visible" : "hidden")
+        .text((d) => d)
+        .attr("fill", "grey");
+
+      if (this.selectedPublications.length > 0) {
+        this.label
+        .attr("transform", (d) =>
+          `translate(${this.yearX(d)},${this.svgHeight - margin})`
+        )
+        .select("text")
+        .attr("y", -this.svgHeight + 2 * margin)
+      }
+
       this.simulation.nodes(this.graph.nodes);
       this.simulation.force("link").links(this.graph.links);
-      if (old.size != this.graph.nodes.length) {
-        this.simulation.alpha(1.0);
+      if (restart) {
+        this.simulation.alpha(0.3);
       }
       this.simulation.restart();
     },
+
     tick: function () {
       this.link
         .attr("d", (d) => {
@@ -313,6 +377,14 @@ export default {
         );
 
       this.node.attr("transform", (d) => `translate(${d.x}, ${d.y})`);
+    },
+
+    yearX: function (year) {
+      return (
+        ((year - this.yearMin) / Math.sqrt(1 + this.yearMax - this.yearMin)) *
+        this.svgWidth *
+        0.15
+      );
     },
 
     activatePublication: function (event, d) {
@@ -373,19 +445,23 @@ export default {
     fill: none;
     stroke-width: 2;
     stroke: #00000010;
-    stroke-dasharray: 15 5;
+
+    &.external {
+      stroke: #00000006;
+    }
 
     &.active {
       stroke: #000000aa;
-    }
+      stroke-dasharray: 5 5;
 
-    &.external {
-      stroke-dasharray: none;
+      &.external {
+        stroke: #00000066;
+      }
     }
   }
 }
 
-@include mobile {
+@include touch {
   .network-of-references {
     padding: 0 !important;
   }

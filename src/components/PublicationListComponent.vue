@@ -55,7 +55,7 @@ export default {
         const publicationComponent =
           this.$el.getElementsByClassName("active")[0];
         if (publicationComponent) {
-          if (window.innerWidth <= 768)
+          if (window.innerWidth <= 1023)
             scrollToTargetAdjusted(publicationComponent, 65);
           else {
             publicationComponent.scrollIntoView({

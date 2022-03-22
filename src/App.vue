@@ -5,7 +5,7 @@
       :isMobile="isMobile"
       :selectedPublicationsCount="selectedPublications.length"
       :excludedPublicationsCount="excludedPublicationsDois.size"
-      v-on:exportDois="exportDois"
+      v-on:exportSession="exportSession"
       v-on:exportBibtex="exportBibtex"
       v-on:clearSelection="clearSelection"
       v-on:clearCache="clearCache"
@@ -26,6 +26,7 @@
         v-on:activate="setActivePublication"
         v-on:updateBoost="updateBoost"
         v-on:loadExample="loadExample"
+        v-on:importSession="importSession"
       />
       <SuggestedPublicationsComponent
         id="suggested"
@@ -37,6 +38,7 @@
       />
       <NetworkVisComponent
         id="network"
+        ref="network"
         :selectedPublications="selectedPublications"
         :suggestedPublications="suggestedPublications"
         :isExpanded="isNetworkExpanded"
@@ -47,7 +49,7 @@
         v-on:collapse="isNetworkExpanded = false"
       />
     </div>
-    <QuickAccessBar id="quick-access" class="is-hidden-tablet" />
+    <QuickAccessBar id="quick-access" class="is-hidden-desktop" />
     <b-modal v-model="isAboutPageShown">
       <AboutPage />
     </b-modal>
@@ -99,7 +101,7 @@ export default {
   },
   computed: {
     isMobile: function () {
-      return window.innerWidth <= 768;
+      return window.innerWidth <= 1023;
     },
   },
   methods: {
@@ -145,24 +147,40 @@ export default {
       const loadingComponent = this.$buefy.loading.open({
         container: null,
       });
+      let publicationsLoaded = 0;
+      this.loadingToast = this.$buefy.toast.open({
+        indefinite: true,
+        message: `${publicationsLoaded}/${
+          Object.keys(publications).length
+        } selected publications loaded`,
+        type: "is-warning",
+      });
       this.isLoading = true;
       this.clearActivePublication("updating suggestions");
       await Promise.all(
         Object.values(publications).map(async (publication) => {
           await publication.fetchData();
           publication.isSelected = true;
+          publicationsLoaded++;
+          this.loadingToast.message = `${publicationsLoaded}/${
+            Object.keys(publications).length
+          } selected publications loaded`;
         })
       );
       this.suggestedPublications = Object.values(
         await Publication.computeSuggestions(
           publications,
           this.excludedPublicationsDois,
-          this.boostKeywords
+          this.boostKeywords,
+          this.loadingToast
         )
       );
       this.selectedPublications = Object.values(publications);
       Publication.sortPublications(this.selectedPublications);
+      this.$refs.network.plot(true);
       this.isLoading = false;
+      this.loadingToast.close();
+      this.loadingToast = null;
       loadingComponent.close();
     },
 
@@ -232,11 +250,27 @@ export default {
       this.activatePublicationComponent(document.getElementById(doi));
     },
 
-    exportDois: function () {
-      saveAsFile(
-        "publication_dois.txt",
-        JSON.stringify(Object.keys(publications))
-      );
+    exportSession: function () {
+      let data = {
+        selected: Object.keys(publications),
+        excluded: Array.from(this.excludedPublicationsDois),
+        boost: this.boostKeywords.join(", "),
+      };
+      saveAsFile("session.json", JSON.stringify(data));
+    },
+
+    importSession: function (file) {
+      const fileReader = new FileReader();
+      fileReader.onload = () => {
+        try {
+          const content = fileReader.result;
+          const session = JSON.parse(content);
+          this.loadSession(session);
+        } catch {
+          this.showErrorMessage(`Cannot read JSON from file.`);
+        }
+      };
+      fileReader.readAsText(file);
     },
 
     exportBibtex: function () {
@@ -270,16 +304,41 @@ export default {
       this.clearSelection();
     },
 
+    loadSession: function (session) {
+      console.log(`Loading session ${JSON.stringify(session)}`);
+      if (!session || !session.selected) {
+        this.showErrorMessage("Cannot read session state from JSON.");
+        return;
+      }
+      if (session.boost) {
+        this.$refs.selected.setBoost(session.boost);
+        this.updateBoost(session.boost, true);
+      }
+      if (session.excluded) {
+        this.excludedPublicationsDois = new Set(session.excluded);
+      }
+      this.addPublicationsToSelection(session.selected);
+    },
+
     loadExample: function () {
-      console.log("Loading example");
-      const boostKeywordString = "cit, vis";
-      this.$refs.selected.setBoost(boostKeywordString);
-      this.updateBoost(boostKeywordString, true);
-      this.addPublicationsToSelection([
-        "10.1109/tvcg.2015.2467757",
-        "10.1109/tvcg.2015.2467621",
-        "10.1002/asi.24171",
-      ]);
+      const session = {
+        selected: [
+          "10.1109/tvcg.2015.2467757",
+          "10.1109/tvcg.2015.2467621",
+          "10.1002/asi.24171",
+        ],
+        boost: "cit, vis",
+      };
+      this.loadSession(session);
+    },
+
+    showErrorMessage: function (errorMessage) {
+      this.$buefy.toast.open({
+        duration: 5000,
+        message: errorMessage,
+        type: "is-danger",
+      });
+      console.error(errorMessage);
     },
   },
 
@@ -434,18 +493,16 @@ $box-padding: 1rem;
     & > div {
       margin: 0;
     }
+
   }
 
   & .key {
     text-decoration: underline;
   }
 
-  & *:focus {
-    outline: 1px solid $dark;
-  }
 }
 
-@include mobile {
+@include touch {
   #app {
     display: block;
     margin-bottom: 5rem;
@@ -471,6 +528,10 @@ $box-padding: 1rem;
 
       & #network .box {
         min-height: 70vh;
+      }
+
+      & .level-left + .level-right {
+        margin-top: 0.5rem;
       }
 
       /* Empty space for quick access buttons; used "::after" instead of plain margin-bottom as workaround for Chrome */
