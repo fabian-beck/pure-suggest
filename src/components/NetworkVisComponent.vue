@@ -200,7 +200,7 @@ export default {
         } else if (d.publication.boostFactor > 1) {
           factor = 1.3;
         }
-        return getRectSize(d) * factor;
+        return getRectSize(d) * factor * 0.8;
       }
 
       const doiToIndex = {};
@@ -292,6 +292,7 @@ export default {
       this.node
         .select("text")
         .attr("y", 1)
+        .attr("font-size", "0.8em")
         .text((d) => d.publication.score);
 
       this.node
