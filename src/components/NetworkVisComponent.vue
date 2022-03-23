@@ -19,7 +19,7 @@
         <div class="level-right" v-show="selectedPublications.length">
           <b-field
             class="level-item has-text-white mr-4 mb-0"
-            data-tippy-content="There are two display modes:<br><br><b>Timeline:</b> The diagram places publications from left to right based on year and from top to bottom by reference/citation frequency (ignoring boost).<br><br><b>Clusters:</b> The diagram groups linked publications close to each other, irrespective of year and score."
+            data-tippy-content="There are two display modes:<br><br><b>Timeline:</b> The diagram places publications from left to right based on year, and vertically tries to group linked publications close to each other.<br><br><b>Clusters:</b> The diagram groups linked publications close to each other, irrespective of publication year."
             v-tippy
           >
             <label class="mr-2" :class="{ 'has-text-grey-light': isClusters }"
@@ -28,7 +28,7 @@
             <b-switch
               v-model="isClusters"
               type="is-dark"
-              passive-type="is-dark" 
+              passive-type="is-dark"
             ></b-switch>
             <label :class="{ 'has-text-grey-light': !isClusters }"
               >Clusters</label
@@ -130,6 +130,7 @@ export default {
       .append("g");
 
     this.simulation = d3.forceSimulation();
+    this.simulation.alphaDecay(0.02);
 
     this.initForces();
 
@@ -149,39 +150,22 @@ export default {
             .forceLink()
             .id((d) => d.id)
             .distance(50)
-            .strength(!that.isClusters ? 0.02 : 0.15)
+            .strength(!that.isClusters ? 0.08 : 0.15)
         )
-        .force("charge", d3.forceManyBody().strength(-150))
+        .force("charge", d3.forceManyBody().strength(-180))
         .force(
           "x",
           d3
             .forceX()
             .x((d) => this.yearX(d.publication.year))
-            .strength(!that.isClusters ? 1.0 : 0)
+            .strength(!that.isClusters ? 10 : 0)
         )
         .force(
           "y",
           d3
             .forceY()
-            .y(function (d) {
-              if (!that.isClusters) {
-                return (
-                  (-Math.log(
-                    (d.publication.citationCount +
-                      d.publication.referenceCount +
-                      (d.publication.isSelected ? 1 : 0) +
-                      1) *
-                      10
-                  ) *
-                    0.12 + // spread by
-                    0.8) * // move down by
-                  that.svgHeight
-                );
-              } else {
-                return 0.5 * that.svgHeight;
-              }
-            })
-            .strength(!that.isClusters ? 0.4 : 0.1)
+            .y(0.5 * (that.svgHeight - RECT_SIZE))
+            .strength(!that.isClusters ? 0.25 : 0.1)
         )
         .on("tick", this.tick);
     },
@@ -323,23 +307,29 @@ export default {
       this.label
         .selectAll("text")
         .attr("text-anchor", "middle")
-        .attr("visibility", this.selectedPublications.length > 0 && !this.isClusters ? "visible" : "hidden")
+        .attr(
+          "visibility",
+          this.selectedPublications.length > 0 && !this.isClusters
+            ? "visible"
+            : "hidden"
+        )
         .text((d) => d)
         .attr("fill", "grey");
 
       if (this.selectedPublications.length > 0) {
         this.label
-        .attr("transform", (d) =>
-          `translate(${this.yearX(d)},${this.svgHeight - margin})`
-        )
-        .select("text")
-        .attr("y", -this.svgHeight + 2 * margin)
+          .attr(
+            "transform",
+            (d) => `translate(${this.yearX(d)},${this.svgHeight - margin})`
+          )
+          .select("text")
+          .attr("y", -this.svgHeight + 2 * margin);
       }
 
       this.simulation.nodes(this.graph.nodes);
       this.simulation.force("link").links(this.graph.links);
       if (restart) {
-        this.simulation.alpha(0.3);
+        this.simulation.alpha(0.4);
       }
       this.simulation.restart();
     },
