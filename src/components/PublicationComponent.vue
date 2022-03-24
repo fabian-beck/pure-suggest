@@ -38,15 +38,15 @@
           </div>
           <div class="reference-counts is-size-6">
             <div class="is-pulled-left">
-              <span v-if="publication.referenceCount > 0">
-                {{ publication.referenceCount }}
-                <b-icon icon="arrow-down-right-bold" size="is-small"></b-icon>
+              <span v-if="publication.citationCount > 0">
+                <b-icon icon="arrow-bottom-left-thick" size="is-small"></b-icon>
+                {{ publication.citationCount }}
               </span>
             </div>
             <div class="is-pulled-right">
-              <span v-if="publication.citationCount > 0">
-                <b-icon icon="arrow-right-top-bold" size="is-small"></b-icon>
-                {{ publication.citationCount }}
+              <span v-if="publication.referenceCount > 0">
+                {{ publication.referenceCount }}
+                <b-icon icon="arrow-top-left-thick" size="is-small"></b-icon>
               </span>
             </div>
           </div>
@@ -257,8 +257,14 @@ export default {
   position: relative;
 }
 
-.reference-counts > div {
-  width: 50%;
+.reference-counts {
+  .icon {
+    margin: -0.4em;
+  }
+
+  div {
+   width: 50%;
+  }
 }
 
 .boost-indicator {
