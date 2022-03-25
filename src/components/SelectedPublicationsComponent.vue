@@ -64,7 +64,7 @@
           icon-left="plus-thick"
           @click.stop="add"
         >
-        <span class="key">A</span>dd
+          <span class="key">A</span>dd
         </b-button>
       </p>
     </form>
@@ -77,11 +77,23 @@
           To start, add one or more publications by providing their
           <b>DOIs</b> (<a href="https://www.doi.org/"
             >Document Object Intentfier</a
-          >) or a <b>title</b>. Alternative:
-          <button class="button is-small" @click.stop="$emit('loadExample')">
-            <b>load example</b>
-          </button>
+          >), a <b>title</b>, or:
         </p>
+        <div class="level mt-2">
+          <div class="level-item">
+            <button
+              class="button is-primary"
+              @click.stop="$emit('loadExample')"
+            >
+              Load example
+            </button>
+          </div>
+          <div class="level-item">
+            <button class="button is-primary" @click="importSession">
+              Import session from JSON
+            </button>
+          </div>
+        </div>
       </div>
       <div
         class="
@@ -152,6 +164,14 @@ export default {
     },
     setBoost: function (boostKeywordString) {
       this.boostKeywordString = boostKeywordString;
+    },
+    importSession: function () {
+      this.$buefy.dialog.confirm({
+        title: "Import session",
+        message: `<label>Choose an exported session JSON file:&nbsp;</label>
+            <input type="file" id="import-json-input" accept="application/JSON"/>`,
+        onConfirm: () => this.$emit("importSession", document.getElementById("import-json-input").files[0]),
+      });
     },
   },
   watch: {

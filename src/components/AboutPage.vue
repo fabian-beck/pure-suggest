@@ -72,6 +72,7 @@
               >fabian.beck@uni-bamberg.de</a
             >
           </p>
+          <p>Thanks a lot to all other contributors, especially <a href="https://github.com/cedrickrause">Cedric Krause</a>.</p>
         </section>
       </div>
     </div>
