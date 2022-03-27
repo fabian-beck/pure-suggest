@@ -115,6 +115,7 @@
       :publications="publications"
       v-on:activate="activatePublication"
       v-on:remove="removePublication"
+      v-on:exportSingleBibtex="exportSingleBibtex"
     />
   </div>
 </template>
@@ -155,6 +156,9 @@ export default {
     activatePublication: function (doi) {
       this.$emit("activate", doi);
     },
+    exportSingleBibtex: function (doi) {
+      this.$emit("exportSingleBibtex", doi);
+    },
     updateBoost: function () {
       this.$emit("updateBoost", this.boostKeywordString);
     },
@@ -170,7 +174,11 @@ export default {
         title: "Import session",
         message: `<label>Choose an exported session JSON file:&nbsp;</label>
             <input type="file" id="import-json-input" accept="application/JSON"/>`,
-        onConfirm: () => this.$emit("importSession", document.getElementById("import-json-input").files[0]),
+        onConfirm: () =>
+          this.$emit(
+            "importSession",
+            document.getElementById("import-json-input").files[0]
+          ),
       });
     },
   },

@@ -6,7 +6,7 @@
       :selectedPublicationsCount="selectedPublications.length"
       :excludedPublicationsCount="excludedPublicationsDois.size"
       v-on:exportSession="exportSession"
-      v-on:exportBibtex="exportBibtex"
+      v-on:exportBibtex="exportAllBibtex"
       v-on:clearSelection="clearSelection"
       v-on:clearCache="clearCache"
       v-on:openAbout="isAboutPageShown = true"
@@ -24,6 +24,7 @@
         v-on:add="addPublicationsToSelection"
         v-on:remove="removePublication"
         v-on:activate="setActivePublication"
+        v-on:exportSingleBibtex="exportSingleBibtex"
         v-on:updateBoost="updateBoost"
         v-on:loadExample="loadExample"
         v-on:importSession="importSession"
@@ -273,11 +274,17 @@ export default {
       fileReader.readAsText(file);
     },
 
-    exportBibtex: function () {
+    exportAllBibtex: function () {
+      this.exportBibtex(Object.keys(publications));
+    },
+
+    exportSingleBibtex: function (doi) {
+      this.exportBibtex([doi]);
+    },
+
+    exportBibtex: function (dois) {
       let bib = "";
-      Object.values(this.selectedPublications).forEach(
-        (publication) => (bib += publication.toBibtex() + "\n\n")
-      );
+      dois.forEach((doi) => (bib += publications[doi].toBibtex() + "\n\n"));
       saveAsFile("publications.bib", bib);
     },
 
@@ -415,6 +422,9 @@ export default {
         } else if (e.key === "g") {
           e.preventDefault();
           window.open(this.activePublication.gsUrl);
+        } else if (e.key === "x") {
+          e.preventDefault();
+          this.exportSingleBibtex(this.activePublication.doi);
         }
       }
     };
@@ -493,13 +503,11 @@ $box-padding: 1rem;
     & > div {
       margin: 0;
     }
-
   }
 
   & .key {
     text-decoration: underline;
   }
-
 }
 
 @include touch {

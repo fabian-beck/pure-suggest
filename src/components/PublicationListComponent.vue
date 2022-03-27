@@ -8,6 +8,7 @@
       v-on:add="addPublication"
       v-on:remove="removePublication"
       v-on:activate="activatePublication"
+      v-on:exportBibtex="exportSingleBibtex"
     ></PublicationComponent>
   </ul>
 </template>
@@ -49,6 +50,9 @@ export default {
     activatePublication: function (doi) {
       this.onNextActivatedScroll = false;
       this.$emit("activate", doi);
+    },
+    exportSingleBibtex: function(doi) {
+      this.$emit("exportSingleBibtex", doi);
     },
     scrollToActivated() {
       if (this.onNextActivatedScroll) {
