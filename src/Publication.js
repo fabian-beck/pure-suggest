@@ -88,7 +88,7 @@ export default class Publication {
                     });
                     this.container = _.trim(this.container, '. ');
                     this.container = this.container.charAt(0).toUpperCase() + this.container.slice(1); // make first character uppercase
-                    // other meta-data
+                    // bibString meta-data
                     this.year = data.year;
                     this.volume = data.volume;
                     this.issue = data.issue;
@@ -178,32 +178,38 @@ export default class Publication {
 
     toBibtex() {
         let type = "misc";
-        let other = "";
+        let bibString = "";
+        if (this.author) {
+            bibString += `
+    author = {${this.author.replaceAll(";", " and")}},`;
+        }
+        if (this.year) {
+            bibString += `
+    year = {${this.year}},`;
+        }
         if (this.volume) {
             type = "article"
-            other += `
+         bibString += `
     journal = {${this.container}},
-    volume = {${this.volume}},`
+    volume = {${this.volume}},`;
             if (this.issue) {
-                other += `
-    number = {${this.issue}},`
+             bibString += `
+    number = {${this.issue}},`;
             }
         } else if (this.container) {
             const container = this.container.toLowerCase();
             type = (container.indexOf("proceedings") >= 0 || container.indexOf("conference") >= 0 || container.indexOf("symposium") >= 0 || container.indexOf("workshop") >= 0) ? "inproceedings" : "incollection";
-            other += `
-    booktitle = {${this.container}},`
+         bibString += `
+    booktitle = {${this.container}},`;
         }
         if (this.page) {
-            other += `
-    pages = {${this.page}},`
+         bibString += `
+    pages = {${this.page}},`;
         }
-        return `@${type}{${this.author.split(/[,\s]/)[0] + this.year + this.title.split(/\W/)[0]},
-    title = {${this.title}},
-    author = {${this.author.replaceAll(";", " and")}},${other}
-    year = {${this.year}},
+        return `@${type}{${this.doi},
+    title = {${this.title}},${bibString}
     doi = {${this.doi}}
-}`
+}`;
     }
 
     static async computeSuggestions(publications, excludedPublicationsDois, boostKeywords, loadingToast) {
