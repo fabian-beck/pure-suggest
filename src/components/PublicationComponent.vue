@@ -152,11 +152,17 @@
       <div v-if="publication.isActive" class="stats-and-links level is-size-7">
         <div class="level-left">
           <div class="level-item">
-            <label><b-icon icon="arrow-bottom-left-thick" size="is-small"></b-icon>Citing:</label>
+            <label
+              ><b-icon icon="arrow-bottom-left-thick" size="is-small"></b-icon
+              >Citing:</label
+            >
             <b>{{ publication.referenceDois.length }}</b>
           </div>
           <div class="level-item">
-            <label><b-icon icon="arrow-top-left-thick" size="is-small"></b-icon>Cited by:</label>
+            <label
+              ><b-icon icon="arrow-top-left-thick" size="is-small"></b-icon
+              >Cited by:</label
+            >
             <b>{{ publication.citationDois.length }}</b>
             <span v-if="publication.citationsPerYear > 0">
               &nbsp;({{ publication.citationsPerYear.toFixed(1) }}
@@ -177,6 +183,15 @@
             <a :href="publication.gsUrl"
               ><span class="key">G</span>oogle Scholar</a
             >
+          </div>
+          <div
+            class="level-item"
+            data-tippy-content="Export BibTe<span style='text-decoration: underline;'>X</span> citation"
+            v-tippy
+          >
+            <a @click.stop="$emit('exportBibtex', publication.doi)"
+              ><b-icon icon="format-quote-close"></b-icon
+            ></a>
           </div>
         </div>
       </div>
@@ -264,7 +279,7 @@ export default {
   }
 
   div {
-   width: 50%;
+    width: 50%;
   }
 }
 
