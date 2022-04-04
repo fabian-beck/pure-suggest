@@ -44,6 +44,7 @@
             <li><b>d</b> &ndash; Open "DOI" link</li>
             <li><b>o</b> &ndash; Open "Open access" link</li>
             <li><b>g</b> &ndash; Open "Google Scholar" link</li>
+            <li><b>x</b> &ndash; Export as BibTeX citation</li>
           </ul>
         </section>
       </div>

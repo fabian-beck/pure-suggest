@@ -36,6 +36,7 @@
         v-on:add="addPublicationsToSelection"
         v-on:remove="removePublication"
         v-on:activate="setActivePublication"
+        v-on:exportSingleBibtex="exportSingleBibtex"
       />
       <NetworkVisComponent
         id="network"
@@ -275,16 +276,17 @@ export default {
     },
 
     exportAllBibtex: function () {
-      this.exportBibtex(Object.keys(publications));
+      this.exportBibtex(this.selectedPublications);
     },
 
-    exportSingleBibtex: function (doi) {
-      this.exportBibtex([doi]);
+    exportSingleBibtex: function (publication) {
+      this.exportBibtex([publication]);
     },
 
-    exportBibtex: function (dois) {
+    exportBibtex: function (publicationList) {
       let bib = "";
-      dois.forEach((doi) => (bib += publications[doi].toBibtex() + "\n\n"));
+      console.log(publicationList)
+      publicationList.forEach((publication) => (bib += publication.toBibtex() + "\n\n"));
       saveAsFile("publications.bib", bib);
     },
 
@@ -424,7 +426,7 @@ export default {
           window.open(this.activePublication.gsUrl);
         } else if (e.key === "x") {
           e.preventDefault();
-          this.exportSingleBibtex(this.activePublication.doi);
+          this.exportSingleBibtex(this.activePublication);
         }
       }
     };

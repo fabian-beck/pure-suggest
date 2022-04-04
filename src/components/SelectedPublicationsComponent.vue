@@ -156,8 +156,8 @@ export default {
     activatePublication: function (doi) {
       this.$emit("activate", doi);
     },
-    exportSingleBibtex: function (doi) {
-      this.$emit("exportSingleBibtex", doi);
+    exportSingleBibtex: function (publication) {
+      this.$emit("exportSingleBibtex", publication);
     },
     updateBoost: function () {
       this.$emit("updateBoost", this.boostKeywordString);

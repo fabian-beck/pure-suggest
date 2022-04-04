@@ -186,10 +186,10 @@
           </div>
           <div
             class="level-item"
-            data-tippy-content="Export BibTe<span style='text-decoration: underline;'>X</span> citation"
+            data-tippy-content="Export as BibTe<span style='text-decoration: underline;'>X</span> citation"
             v-tippy
           >
-            <a @click.stop="$emit('exportBibtex', publication.doi)"
+            <a @click.stop="$emit('exportBibtex', publication)"
               ><b-icon icon="format-quote-close"></b-icon
             ></a>
           </div>
