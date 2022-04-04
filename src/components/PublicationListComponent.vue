@@ -51,8 +51,8 @@ export default {
       this.onNextActivatedScroll = false;
       this.$emit("activate", doi);
     },
-    exportSingleBibtex: function(doi) {
-      this.$emit("exportSingleBibtex", doi);
+    exportSingleBibtex: function(publication) {
+      this.$emit("exportSingleBibtex", publication);
     },
     scrollToActivated() {
       if (this.onNextActivatedScroll) {

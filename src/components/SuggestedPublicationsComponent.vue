@@ -19,9 +19,10 @@
     <PublicationListComponent
       :publications="publications"
       :suggestion="true"
-      v-on:activate="activatePublication"
       v-on:add="addPublication"
       v-on:remove="removePublication"
+      v-on:activate="activatePublication"
+      v-on:exportSingleBibtex="exportSingleBibtex"
     />
   </div>
 </template>
@@ -47,6 +48,9 @@ export default {
     },
     activatePublication: function (doi) {
       this.$emit("activate", doi);
+    },
+    exportSingleBibtex: function (publication) {
+      this.$emit("exportSingleBibtex", publication);
     },
   },
 };
