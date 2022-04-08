@@ -32,6 +32,7 @@
             <li>
               <b>Escape</b> &ndash; Escape input field or active publication
             </li>
+            <li><b>m</b> &ndash; Toggle mode of citation network visualization between <em>timeline</em> and <em>clusters</em></li>
           </ul>
           <h2>Active Publication</h2>
           <p>If a publication is marked as active:</p>

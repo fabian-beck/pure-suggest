@@ -391,6 +391,9 @@ export default {
         e.preventDefault();
         this.clearActivePublication("setting focus on text field");
         document.getElementsByClassName("input boost")[0].focus();
+      } else if (e.key === "m") {
+        e.preventDefault();
+        this.$refs.network.toggleMode();
       } else if (e.key === "ArrowLeft") {
         e.preventDefault();
         this.activatePublicationComponent(
@@ -513,10 +516,11 @@ $box-padding: 1rem;
       margin: 0;
     }
   }
+}
 
-  & .key {
-    text-decoration: underline;
-  }
+// placed outside the #app scope to apply to tooltips also
+.key {
+  text-decoration: underline;
 }
 
 @include touch {
@@ -566,9 +570,11 @@ $box-padding: 1rem;
       text-align: center;
     }
 
-    & .key {
+  }
+
+  // placed outside the #app scope to apply to tooltips also
+  .key {
       text-decoration: none;
     }
-  }
 }
 </style>

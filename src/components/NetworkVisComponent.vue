@@ -19,7 +19,7 @@
         <div class="level-right" v-show="selectedPublications.length">
           <b-field
             class="level-item has-text-white mr-4 mb-0"
-            data-tippy-content="There are two display modes:<br><br><b>Timeline:</b> The diagram places publications from left to right based on year, and vertically tries to group linked publications close to each other.<br><br><b>Clusters:</b> The diagram groups linked publications close to each other, irrespective of publication year."
+            data-tippy-content="There are two display <span class='key'>m</span>odes:<br><br><b>Timeline:</b> The diagram places publications from left to right based on year, and vertically tries to group linked publications close to each other.<br><br><b>Clusters:</b> The diagram groups linked publications close to each other, irrespective of publication year."
             v-tippy
           >
             <label class="mr-2" :class="{ 'has-text-grey-light': isClusters }"
@@ -381,6 +381,10 @@ export default {
       this.$emit("activate", d.publication.doi);
       event.stopPropagation();
     },
+
+    toggleMode() {
+      this.isClusters = !this.isClusters;
+    }
   },
 };
 </script>

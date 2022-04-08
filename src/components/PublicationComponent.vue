@@ -186,7 +186,7 @@
           </div>
           <div
             class="level-item"
-            data-tippy-content="Export as BibTe<span style='text-decoration: underline;'>X</span> citation"
+            data-tippy-content="Export as BibTe<span class='key'>X</span> citation"
             v-tippy
           >
             <a @click.stop="$emit('exportBibtex', publication)"
