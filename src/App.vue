@@ -516,10 +516,11 @@ $box-padding: 1rem;
       margin: 0;
     }
   }
+}
 
-  & .key {
-    text-decoration: underline;
-  }
+// placed outside the #app scope to apply to tooltips also
+.key {
+  text-decoration: underline;
 }
 
 @include touch {
@@ -569,9 +570,11 @@ $box-padding: 1rem;
       text-align: center;
     }
 
-    & .key {
+  }
+
+  // placed outside the #app scope to apply to tooltips also
+  .key {
       text-decoration: none;
     }
-  }
 }
 </style>
