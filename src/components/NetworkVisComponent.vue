@@ -381,6 +381,10 @@ export default {
       this.$emit("activate", d.publication.doi);
       event.stopPropagation();
     },
+
+    toggleMode() {
+      this.isClusters = !this.isClusters;
+    }
   },
 };
 </script>
