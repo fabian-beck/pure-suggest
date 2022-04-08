@@ -285,8 +285,10 @@ export default {
 
     exportBibtex: function (publicationList) {
       let bib = "";
-      console.log(publicationList)
-      publicationList.forEach((publication) => (bib += publication.toBibtex() + "\n\n"));
+      console.log(publicationList);
+      publicationList.forEach(
+        (publication) => (bib += publication.toBibtex() + "\n\n")
+      );
       saveAsFile("publications.bib", bib);
     },
 
@@ -353,7 +355,12 @@ export default {
 
   mounted() {
     this._keyListener = function (e) {
-      if (e.ctrlKey || e.shiftKey || e.metaKey || e.repeat) {
+      if (
+        e.ctrlKey ||
+        e.shiftKey ||
+        e.metaKey ||
+        (e.repeat && !(e.key === "ArrowDown" || e.key === "ArrowUp"))
+      ) {
         return;
       } else if (
         this.isLoading ||
