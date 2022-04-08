@@ -11,12 +11,12 @@
     v-on:focus="$emit('activate', publication.doi)"
     @click.stop="$emit('activate', publication.doi)"
   >
-    <div
-      class="media-left has-text-centered"
-      v-bind:style="{ 'background-color': publication.scoreColor }"
-    >
-      <tippy>
-        <template v-slot:trigger>
+    <tippy class="glyph">
+      <template v-slot:trigger>
+        <div
+          class="media-left has-text-centered"
+          v-bind:style="{ 'background-color': publication.scoreColor }"
+        >
           <div class="tooltip-target">
             <div class="is-size-3 is-inline-block">{{ publication.score }}</div>
             <div
@@ -50,38 +50,38 @@
               </span>
             </div>
           </div>
-        </template>
-        <div>
-          Suggestion score of
-          <b>{{ publication.score }}</b
-          >:<br />
-          Citing <b>{{ publication.citationCount }}</b> (<b-icon
-            icon="arrow-bottom-left-thick"
+        </div>
+      </template>
+      <div>
+        Suggestion score of
+        <b>{{ publication.score }}</b
+        >:<br />
+        Citing <b>{{ publication.citationCount }}</b> (<b-icon
+          icon="arrow-bottom-left-thick"
+          size="is-small"
+        ></b-icon
+        >) and cited by <b>{{ publication.referenceCount }}</b> (<b-icon
+          icon="arrow-top-left-thick"
+          size="is-small"
+        ></b-icon
+        >) selected publications<span v-if="publication.boostFactor != 1"
+          >, multiplied by a boost factor of
+          <b>{{ publication.boostFactor }}</b> (<b-icon
+            :icon="chevronType"
             size="is-small"
           ></b-icon
-          >) and cited by <b>{{ publication.referenceCount }}</b> (<b-icon
-            icon="arrow-top-left-thick"
-            size="is-small"
-          ></b-icon
-          >) selected publications<span v-if="publication.boostFactor != 1"
-            >, multiplied by a boost factor of
-            <b>{{ publication.boostFactor }}</b> (<b-icon
-              :icon="chevronType"
-              size="is-small"
-            ></b-icon
-            >)</span
-          >.
-        </div>
-        <div v-if="publication.isLinkedToActive">
-          <br />
-          Marked as refered by or referencing currently active publication.
-        </div>
-        <div v-if="publication.isActive">
-          <br />
-          Currently active, with linked publications highlighted.
-        </div>
-      </tippy>
-    </div>
+          >)</span
+        >.
+      </div>
+      <div v-if="publication.isLinkedToActive">
+        <br />
+        Marked as refered by or referencing currently active publication.
+      </div>
+      <div v-if="publication.isActive">
+        <br />
+        Currently active, with linked publications highlighted.
+      </div>
+    </tippy>
     <div class="media-content">
       <div class="summary">
         <span v-if="publication.title">
@@ -331,6 +331,11 @@ li.publication-component {
     border-width: 0.25rem;
   }
 
+  & .glyph > div:focus > div {  
+    outline: 1px solid $dark;
+    outline-offset: 0.1rem;
+  }
+
   & .media-content {
     padding: 0.5rem;
 
@@ -340,6 +345,10 @@ li.publication-component {
       & .tag {
         margin-top: 0.25rem;
         margin-bottom: 0.25rem;
+      }
+
+      & .tag:focus {
+        outline-offset: 0.1rem;
       }
     }
 

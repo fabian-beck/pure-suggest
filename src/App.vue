@@ -23,7 +23,7 @@
         :publications="selectedPublications"
         v-on:add="addPublicationsToSelection"
         v-on:remove="removePublication"
-        v-on:activate="setActivePublication"
+        v-on:activate="activatePublicationComponentByDoi"
         v-on:exportSingleBibtex="exportSingleBibtex"
         v-on:updateBoost="updateBoost"
         v-on:loadExample="loadExample"
@@ -35,7 +35,7 @@
         :publications="suggestedPublications"
         v-on:add="addPublicationsToSelection"
         v-on:remove="removePublication"
-        v-on:activate="setActivePublication"
+        v-on:activate="activatePublicationComponentByDoi"
         v-on:exportSingleBibtex="exportSingleBibtex"
       />
       <NetworkVisComponent
@@ -243,13 +243,13 @@ export default {
 
     activatePublicationComponent: function (publicationComponent) {
       if (publicationComponent) {
-        publicationComponent.click();
         publicationComponent.focus();
       }
     },
 
     activatePublicationComponentByDoi: function (doi) {
       this.activatePublicationComponent(document.getElementById(doi));
+      this.setActivePublication(doi);
     },
 
     exportSession: function () {
