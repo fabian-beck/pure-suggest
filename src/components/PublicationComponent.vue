@@ -100,7 +100,7 @@
           >
         </span>
         <span v-if="!publication.title">
-          <strong>...</strong>
+          <strong>[unknown title]</strong>
         </span>
         <b-taglist>
           <b-tag

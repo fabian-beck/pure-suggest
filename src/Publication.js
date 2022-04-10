@@ -44,8 +44,7 @@ export default class Publication {
                 `https://opencitations.net/index/coci/api/v1/metadata/${this.doi}`,
                 message => {
                     if (!message || message.length === 0) {
-                        console.error(`Unable to process metadata for DOI "${this.doi}" because of empty message.`)
-                        this.title = "[unknown metadata]"
+                        console.error(`Unable to process metadata for DOI "${this.doi}" because of empty message.`);
                         return;
                     }
                     const data = message[0];
@@ -179,6 +178,10 @@ export default class Publication {
     toBibtex() {
         let type = "misc";
         let bibString = "";
+        if (this.title) {
+            bibString += `
+    title = {${this.title}},`;
+        }
         if (this.author) {
             bibString += `
     author = {${this.author.replaceAll(";", " and")}},`;
@@ -189,25 +192,24 @@ export default class Publication {
         }
         if (this.volume) {
             type = "article"
-         bibString += `
+            bibString += `
     journal = {${this.container}},
     volume = {${this.volume}},`;
             if (this.issue) {
-             bibString += `
+                bibString += `
     number = {${this.issue}},`;
             }
         } else if (this.container) {
             const container = this.container.toLowerCase();
             type = (container.indexOf("proceedings") >= 0 || container.indexOf("conference") >= 0 || container.indexOf("symposium") >= 0 || container.indexOf("workshop") >= 0) ? "inproceedings" : "incollection";
-         bibString += `
+            bibString += `
     booktitle = {${this.container}},`;
         }
         if (this.page) {
-         bibString += `
+            bibString += `
     pages = {${this.page}},`;
         }
-        return `@${type}{${this.doi},
-    title = {${this.title}},${bibString}
+        return `@${type}{${this.doi},${bibString}
     doi = {${this.doi}}
 }`;
     }
