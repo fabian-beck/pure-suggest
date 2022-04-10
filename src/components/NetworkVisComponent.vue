@@ -292,7 +292,7 @@ export default {
         .data(this.graph.links, (d) => [d.source, d.target])
         .join("path");
 
-      const yearRange = _.range(this.yearMin - 5, this.yearMax + 1).filter(
+      const yearRange = _.range(this.yearMin - 4, this.yearMax + 1).filter(
         (year) => year % 5 === 0
       );
       this.label = this.label
