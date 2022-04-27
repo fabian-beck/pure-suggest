@@ -248,8 +248,10 @@ export default {
     },
 
     activatePublicationComponentByDoi: function (doi) {
-      this.activatePublicationComponent(document.getElementById(doi));
-      this.setActivePublication(doi);
+      if (doi !== this.activePublication?.doi) {
+        this.activatePublicationComponent(document.getElementById(doi));
+        this.setActivePublication(doi);
+      }
     },
 
     exportSession: function () {
