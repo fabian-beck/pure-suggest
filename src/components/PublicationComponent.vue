@@ -38,9 +38,15 @@
           </div>
           <div class="reference-counts is-size-6">
             <div class="is-pulled-left">
-              <span v-if="publication.citationCount > 0">
+              <span
+                v-if="
+                  publication.citationCount > 0 ||
+                  publication.referenceDois.length === 0
+                "
+                :class="publication.referenceDois.length ? '' : 'unknown'"
+              >
                 <b-icon icon="arrow-bottom-left-thick" size="is-small"></b-icon>
-                {{ publication.citationCount }}
+                {{ publication.citationCount?publication.citationCount:"-" }}
               </span>
             </div>
             <div class="is-pulled-right">
@@ -151,12 +157,19 @@
       </div>
       <div v-if="publication.isActive" class="stats-and-links level is-size-7">
         <div class="level-left">
-          <div class="level-item">
+          <div
+            class="level-item"
+            :class="publication.referenceDois.length ? '' : 'unknown'"
+          >
             <label
               ><b-icon icon="arrow-bottom-left-thick" size="is-small"></b-icon
               >Citing:</label
             >
-            <b>{{ publication.referenceDois.length }}</b>
+            <b>{{
+              publication.referenceDois.length
+                ? publication.referenceDois.length
+                : "not available"
+            }}</b>
           </div>
           <div class="level-item">
             <label
@@ -331,7 +344,7 @@ li.publication-component {
     border-width: 0.25rem;
   }
 
-  & .glyph > div:focus > div {  
+  & .glyph > div:focus > div {
     outline: 1px solid $dark;
     outline-offset: 0.1rem;
   }
@@ -373,6 +386,10 @@ li.publication-component {
     & .button {
       margin: 0.5rem 0;
     }
+  }
+
+  & .unknown {
+    color: $danger;
   }
 }
 
