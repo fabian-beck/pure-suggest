@@ -285,7 +285,10 @@ export default class Publication {
         );
         this.sortPublications(filteredSuggestions);
         console.log("Completed computing and loading of new suggestions.");
-        return filteredSuggestions;
+        return {
+            publications: Object.values(filteredSuggestions),
+            totalSuggestions: Object.values(suggestedPublications).length
+        };
     }
 
     static sortPublications(publicationList) {

@@ -9,15 +9,18 @@
             icon="information-outline"
             size="is-small"
             class="ml-2"
-            v-show="publications.length"
+            v-show="suggestion"
             data-tippy-content="The <b>suggested publications</b> based on references to and from the selected publications, sorted by score."
             v-tippy
           ></b-icon>
         </div>
       </div>
+      <div class="level-right has-text-white" v-if="suggestion">
+        {{ suggestion.publications.length }} of {{ suggestion.totalSuggestions }} suggestions
+      </div>
     </div>
     <PublicationListComponent
-      :publications="publications"
+      :publications="suggestion?suggestion.publications:[]"
       :suggestion="true"
       v-on:add="addPublication"
       v-on:remove="removePublication"
@@ -37,7 +40,7 @@ export default {
   },
   props: {
     title: String,
-    publications: Array,
+    suggestion: Object,
   },
   methods: {
     addPublication: function (doi) {
