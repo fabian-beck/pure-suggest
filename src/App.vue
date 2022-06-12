@@ -37,12 +37,13 @@
         v-on:remove="removePublication"
         v-on:activate="activatePublicationComponentByDoi"
         v-on:exportSingleBibtex="exportSingleBibtex"
+        v-on:loadMore="loadMoreSuggestions"
       />
       <NetworkVisComponent
         id="network"
         ref="network"
         :selectedPublications="selectedPublications"
-        :suggestedPublications="suggestion?suggestion.publications:[]"
+        :suggestedPublications="suggestion ? suggestion.publications : []"
         :isExpanded="isNetworkExpanded"
         :svgWidth="1500"
         :svgHeight="600"
@@ -174,7 +175,8 @@ export default {
         publications,
         this.excludedPublicationsDois,
         this.boostKeywords,
-        this.loadingToast
+        this.loadingToast,
+        100
       );
       this.selectedPublications = Object.values(publications);
       Publication.sortPublications(this.selectedPublications);
@@ -184,6 +186,8 @@ export default {
       this.loadingToast = null;
       loadingComponent.close();
     },
+
+    loadMoreSuggestions: function () {},
 
     updateBoost: async function (
       boostKeywordString,
@@ -230,7 +234,7 @@ export default {
     clearActivePublication: function (source) {
       this.activePublication = undefined;
       this.selectedPublications
-        .concat(this.suggestion?this.suggestion.publications:[])
+        .concat(this.suggestion ? this.suggestion.publications : [])
         .forEach((publication) => {
           publication.isActive = false;
           publication.isLinkedToActive = false;

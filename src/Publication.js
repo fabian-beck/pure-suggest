@@ -214,7 +214,7 @@ export default class Publication {
 }`;
     }
 
-    static async computeSuggestions(publications, excludedPublicationsDois, boostKeywords, loadingToast) {
+    static async computeSuggestions(publications, excludedPublicationsDois, boostKeywords, loadingToast, maxSuggestions) {
         function incrementSuggestedPublicationCounter(
             doi,
             counter,
@@ -271,7 +271,7 @@ export default class Publication {
             (a, b) =>
                 b.citationCount + b.referenceCount - (a.citationCount + a.referenceCount)
         );
-        filteredSuggestions = filteredSuggestions.slice(0, 50);
+        filteredSuggestions = filteredSuggestions.slice(0, maxSuggestions);
         console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`);
         let publicationsLoadedCount = 0;
         loadingToast.message = `${publicationsLoadedCount}/${filteredSuggestions.length} suggested publications loaded`;

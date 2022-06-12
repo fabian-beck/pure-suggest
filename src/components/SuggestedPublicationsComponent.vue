@@ -16,11 +16,21 @@
         </div>
       </div>
       <div class="level-right has-text-white" v-if="suggestion">
-        {{ suggestion.publications.length }} of {{ suggestion.totalSuggestions }} suggestions
+        <div class="level-item">
+          {{ suggestion.publications.length }} of
+          {{ suggestion.totalSuggestions }} suggestions
+        </div>
+        <b-button
+          class="level-item"
+          icon-right="playlist-plus"
+          data-tippy-content="Load more suggestions"
+          v-tippy
+          @click.stop="$emit('loadMore')"
+        ></b-button>
       </div>
     </div>
     <PublicationListComponent
-      :publications="suggestion?suggestion.publications:[]"
+      :publications="suggestion ? suggestion.publications : []"
       :suggestion="true"
       v-on:add="addPublication"
       v-on:remove="removePublication"
