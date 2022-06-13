@@ -35,7 +35,7 @@
             >
           </b-field>
           <b-button
-            class="level-item is-hidden-touch"
+            class="level-item compact-button is-hidden-touch"
             icon-right="arrow-expand"
             data-tippy-content="Expand diagram"
             v-tippy
@@ -43,7 +43,7 @@
             @click.stop="$emit('expand')"
           ></b-button>
           <b-button
-            class="level-item is-hidden-touch"
+            class="level-item compact-button is-hidden-touch"
             icon-right="arrow-collapse"
             data-tippy-content="Collapse diagram"
             v-tippy
@@ -394,19 +394,6 @@ export default {
   height: 100%;
   display: grid;
   grid-template-rows: max-content auto;
-
-  & button {
-    background: transparent;
-    color: $white;
-    height: 1.5rem;
-    margin-right: 0 !important;
-    margin-left: 1rem;
-    padding: 0.5rem;
-
-    &:hover {
-      color: $light;
-    }
-  }
 }
 
 #network-svg {

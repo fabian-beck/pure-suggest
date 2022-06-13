@@ -274,11 +274,11 @@ export default class Publication {
         filteredSuggestions = filteredSuggestions.slice(0, maxSuggestions);
         console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`);
         let publicationsLoadedCount = 0;
-        loadingToast.message = `${publicationsLoadedCount}/${filteredSuggestions.length} suggested publications loaded`;
+        loadingToast.message = `${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`;
         await Promise.all(filteredSuggestions.map(async (suggestedPublication) => {
             await suggestedPublication.fetchData()
             publicationsLoadedCount++;
-            loadingToast.message = `${publicationsLoadedCount}/${filteredSuggestions.length} suggested publications loaded`;
+            loadingToast.message = `${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`;
         }));
         filteredSuggestions.forEach((publication) =>
             publication.updateScore(boostKeywords)

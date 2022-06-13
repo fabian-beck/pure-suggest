@@ -93,6 +93,7 @@ export default {
       selectedPublications: [],
       suggestedPublications: [],
       suggestion: undefined,
+      maxSuggestions: 50,
       boostKeywords: [],
       excludedPublicationsDois: new Set(),
       activePublication: undefined,
@@ -147,7 +148,8 @@ export default {
       });
     },
 
-    updateSuggestions: async function () {
+    updateSuggestions: async function (maxSuggestions = 50) {
+      this.maxSuggestions = maxSuggestions;
       const loadingComponent = this.$buefy.loading.open({
         container: null,
       });
@@ -176,7 +178,7 @@ export default {
         this.excludedPublicationsDois,
         this.boostKeywords,
         this.loadingToast,
-        100
+        this.maxSuggestions
       );
       this.selectedPublications = Object.values(publications);
       Publication.sortPublications(this.selectedPublications);
@@ -187,7 +189,9 @@ export default {
       loadingComponent.close();
     },
 
-    loadMoreSuggestions: function () {},
+    loadMoreSuggestions: function () {
+      this.updateSuggestions(this.maxSuggestions + 50);
+    },
 
     updateBoost: async function (
       boostKeywordString,
@@ -519,6 +523,19 @@ $box-padding: 1rem;
 
     & > div {
       margin: 0;
+    }
+  }
+
+  & .compact-button {
+    background: transparent;
+    color: $white;
+    height: 1.5rem;
+    margin-right: 0 !important;
+    margin-left: 1rem;
+    padding: 0.5rem;
+
+    &:hover {
+      color: $light;
     }
   }
 }

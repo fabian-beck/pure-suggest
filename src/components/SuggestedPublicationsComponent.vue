@@ -17,16 +17,18 @@
       </div>
       <div class="level-right has-text-white" v-if="suggestion">
         <div class="level-item">
-          {{ suggestion.publications.length }} of
-          {{ suggestion.totalSuggestions }} suggestions
+          <span>
+            {{ suggestion.publications.length }} of
+            {{ suggestion.totalSuggestions }} suggestions
+          </span>
+          <b-button
+            class="level-item compact-button"
+            icon-right="playlist-plus"
+            data-tippy-content="Load more suggestions"
+            v-tippy
+            @click.stop="$emit('loadMore')"
+          ></b-button>
         </div>
-        <b-button
-          class="level-item"
-          icon-right="playlist-plus"
-          data-tippy-content="Load more suggestions"
-          v-tippy
-          @click.stop="$emit('loadMore')"
-        ></b-button>
       </div>
     </div>
     <PublicationListComponent
