@@ -214,7 +214,7 @@ export default class Publication {
 }`;
     }
 
-    static async computeSuggestions(publications, excludedPublicationsDois, boostKeywords, loadingToast) {
+    static async computeSuggestions(publications, excludedPublicationsDois, boostKeywords, loadingToast, maxSuggestions) {
         function incrementSuggestedPublicationCounter(
             doi,
             counter,
@@ -271,21 +271,24 @@ export default class Publication {
             (a, b) =>
                 b.citationCount + b.referenceCount - (a.citationCount + a.referenceCount)
         );
-        filteredSuggestions = filteredSuggestions.slice(0, 50);
+        filteredSuggestions = filteredSuggestions.slice(0, maxSuggestions);
         console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`);
         let publicationsLoadedCount = 0;
-        loadingToast.message = `${publicationsLoadedCount}/${filteredSuggestions.length} suggested publications loaded`;
+        loadingToast.message = `${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`;
         await Promise.all(filteredSuggestions.map(async (suggestedPublication) => {
             await suggestedPublication.fetchData()
             publicationsLoadedCount++;
-            loadingToast.message = `${publicationsLoadedCount}/${filteredSuggestions.length} suggested publications loaded`;
+            loadingToast.message = `${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`;
         }));
         filteredSuggestions.forEach((publication) =>
             publication.updateScore(boostKeywords)
         );
         this.sortPublications(filteredSuggestions);
         console.log("Completed computing and loading of new suggestions.");
-        return filteredSuggestions;
+        return {
+            publications: Object.values(filteredSuggestions),
+            totalSuggestions: Object.values(suggestedPublications).length
+        };
     }
 
     static sortPublications(publicationList) {

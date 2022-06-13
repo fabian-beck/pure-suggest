@@ -9,15 +9,30 @@
             icon="information-outline"
             size="is-small"
             class="ml-2"
-            v-show="publications.length"
+            v-show="suggestion"
             data-tippy-content="The <b>suggested publications</b> based on references to and from the selected publications, sorted by score."
             v-tippy
           ></b-icon>
         </div>
       </div>
+      <div class="level-right has-text-white" v-if="suggestion">
+        <div class="level-item">
+          <span>
+            {{ suggestion.publications.length }} of
+            {{ suggestion.totalSuggestions }} suggestions
+          </span>
+          <b-button
+            class="level-item compact-button"
+            icon-right="playlist-plus"
+            data-tippy-content="Load more suggestions"
+            v-tippy
+            @click.stop="$emit('loadMore')"
+          ></b-button>
+        </div>
+      </div>
     </div>
     <PublicationListComponent
-      :publications="publications"
+      :publications="suggestion ? suggestion.publications : []"
       :suggestion="true"
       v-on:add="addPublication"
       v-on:remove="removePublication"
@@ -37,7 +52,7 @@ export default {
   },
   props: {
     title: String,
-    publications: Array,
+    suggestion: Object,
   },
   methods: {
     addPublication: function (doi) {

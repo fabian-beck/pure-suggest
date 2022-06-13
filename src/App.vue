@@ -32,17 +32,18 @@
       <SuggestedPublicationsComponent
         id="suggested"
         ref="suggested"
-        :publications="suggestedPublications"
+        :suggestion="suggestion"
         v-on:add="addPublicationsToSelection"
         v-on:remove="removePublication"
         v-on:activate="activatePublicationComponentByDoi"
         v-on:exportSingleBibtex="exportSingleBibtex"
+        v-on:loadMore="loadMoreSuggestions"
       />
       <NetworkVisComponent
         id="network"
         ref="network"
         :selectedPublications="selectedPublications"
-        :suggestedPublications="suggestedPublications"
+        :suggestedPublications="suggestion ? suggestion.publications : []"
         :isExpanded="isNetworkExpanded"
         :svgWidth="1500"
         :svgHeight="600"
@@ -91,6 +92,8 @@ export default {
     return {
       selectedPublications: [],
       suggestedPublications: [],
+      suggestion: undefined,
+      maxSuggestions: 50,
       boostKeywords: [],
       excludedPublicationsDois: new Set(),
       activePublication: undefined,
@@ -145,7 +148,8 @@ export default {
       });
     },
 
-    updateSuggestions: async function () {
+    updateSuggestions: async function (maxSuggestions = 50) {
+      this.maxSuggestions = maxSuggestions;
       const loadingComponent = this.$buefy.loading.open({
         container: null,
       });
@@ -169,13 +173,12 @@ export default {
           } selected publications loaded`;
         })
       );
-      this.suggestedPublications = Object.values(
-        await Publication.computeSuggestions(
-          publications,
-          this.excludedPublicationsDois,
-          this.boostKeywords,
-          this.loadingToast
-        )
+      this.suggestion = await Publication.computeSuggestions(
+        publications,
+        this.excludedPublicationsDois,
+        this.boostKeywords,
+        this.loadingToast,
+        this.maxSuggestions
       );
       this.selectedPublications = Object.values(publications);
       Publication.sortPublications(this.selectedPublications);
@@ -184,6 +187,10 @@ export default {
       this.loadingToast.close();
       this.loadingToast = null;
       loadingComponent.close();
+    },
+
+    loadMoreSuggestions: function () {
+      this.updateSuggestions(this.maxSuggestions + 50);
     },
 
     updateBoost: async function (
@@ -207,14 +214,14 @@ export default {
               selectedPublication.citationDois.indexOf(publication.doi) >= 0 ||
               selectedPublication.referenceDois.indexOf(publication.doi) >= 0;
           });
-          this.suggestedPublications.forEach((publication) => {
+          this.suggestion.publications.forEach((publication) => {
             publication.isLinkedToActive =
               selectedPublication.citationDois.indexOf(publication.doi) >= 0 ||
               selectedPublication.referenceDois.indexOf(publication.doi) >= 0;
           });
         }
       });
-      this.suggestedPublications.forEach((suggestedPublication) => {
+      this.suggestion.publications.forEach((suggestedPublication) => {
         suggestedPublication.isActive = suggestedPublication.doi === doi;
         if (suggestedPublication.isActive) {
           this.activePublication = suggestedPublication;
@@ -231,7 +238,7 @@ export default {
     clearActivePublication: function (source) {
       this.activePublication = undefined;
       this.selectedPublications
-        .concat(this.suggestedPublications)
+        .concat(this.suggestion ? this.suggestion.publications : [])
         .forEach((publication) => {
           publication.isActive = false;
           publication.isLinkedToActive = false;
@@ -518,6 +525,19 @@ $box-padding: 1rem;
       margin: 0;
     }
   }
+
+  & .compact-button {
+    background: transparent;
+    color: $white;
+    height: 1.5rem;
+    margin-right: 0 !important;
+    margin-left: 1rem;
+    padding: 0.5rem;
+
+    &:hover {
+      color: $light;
+    }
+  }
 }
 
 // placed outside the #app scope to apply to tooltips also
@@ -571,12 +591,11 @@ $box-padding: 1rem;
       width: 100%;
       text-align: center;
     }
-
   }
 
   // placed outside the #app scope to apply to tooltips also
   .key {
-      text-decoration: none;
-    }
+    text-decoration: none;
+  }
 }
 </style>
