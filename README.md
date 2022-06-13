@@ -24,7 +24,7 @@ The tool is available at: https://fabian-beck.github.io/pure-suggest/
 
 If you want to cite the tool, you can refer to the following publication:
 
-* Beck, F. and Krause, C., 2022. Visually Explaining Publication Ranks in Citation-based Literature Search with PURE suggest. In EuroVis 2022 - Posters. DOI: [10.2312/evp.20221110](https://doi.org/10.2312/evp.20221110).
+* Beck, F. and Krause, C., 2022. Visually Explaining Publication Ranks in Citation-based Literature Search with PURE suggest. In EuroVis 2022 - Posters. DOI: [10.2312/evp.20221110](https://diglib.eg.org/handle/10.2312/evp20221110). [[PDF](https://diglib.eg.org/bitstream/handle/10.2312/evp20221110/019-021.pdf)]
 
 ## Project setup
 ```
