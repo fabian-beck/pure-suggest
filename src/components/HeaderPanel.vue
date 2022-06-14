@@ -31,7 +31,7 @@
             <span class="ml-2">Export selected as BibTeX</span>
           </b-navbar-item>
           <b-navbar-item
-            @click="$emit('clearSelection')"
+            @click="$emit('clearSession')"
             class="has-text-danger"
           >
             <b-icon icon="delete"></b-icon
