@@ -7,7 +7,7 @@
       :excludedPublicationsCount="excludedPublicationsDois.size"
       v-on:exportSession="exportSession"
       v-on:exportBibtex="exportAllBibtex"
-      v-on:clearSelection="clearSelection"
+      v-on:clearSession="clearSession"
       v-on:clearCache="clearCache"
       v-on:openAbout="isAboutPageShown = true"
       v-on:openKeyboardControls="isKeyboardControlsShown = true"
@@ -203,6 +203,11 @@ export default {
       }
     },
 
+    setBoostKeywords: async function(boostKeywordString) {
+      this.$refs.selected.setBoost(boostKeywordString);
+      this.updateBoost(boostKeywordString, true);
+    },
+
     setActivePublication: function (doi) {
       this.clearActivePublication("setting active publication");
       this.selectedPublications.forEach((selectedPublication) => {
@@ -301,7 +306,7 @@ export default {
       saveAsFile("publications.bib", bib);
     },
 
-    clearSelection: function () {
+    clearSession: function () {
       this.isOverlay = true;
       this.$buefy.dialog.confirm({
         message:
@@ -310,6 +315,7 @@ export default {
           publications = {};
           this.selectedPublications = [];
           this.excludedPublicationsDois = new Set();
+          this.setBoostKeywords("");
           this.updateSuggestions();
           this.isOverlay = false;
         },
@@ -321,7 +327,7 @@ export default {
 
     clearCache: function () {
       clearCache();
-      this.clearSelection();
+      this.clearSession();
     },
 
     loadSession: function (session) {
@@ -331,8 +337,7 @@ export default {
         return;
       }
       if (session.boost) {
-        this.$refs.selected.setBoost(session.boost);
-        this.updateBoost(session.boost, true);
+        this.setBoostKeywords(session.boost);
       }
       if (session.excluded) {
         this.excludedPublicationsDois = new Set(session.excluded);
@@ -387,7 +392,7 @@ export default {
         }
       } else if (e.key === "c") {
         e.preventDefault();
-        this.clearSelection();
+        this.clearSession();
       } else if (e.key === "Escape") {
         e.preventDefault();
         document.activeElement.blur();
