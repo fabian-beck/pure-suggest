@@ -46,7 +46,9 @@
                 :class="publication.referenceDois.length ? '' : 'unknown'"
               >
                 <b-icon icon="arrow-bottom-left-thick" size="is-small"></b-icon>
-                {{ publication.citationCount?publication.citationCount:"-" }}
+                {{
+                  publication.citationCount ? publication.citationCount : "-"
+                }}
               </span>
             </div>
             <div class="is-pulled-right">
@@ -60,9 +62,15 @@
       </template>
       <div>
         Suggestion score of
-        <b>{{ publication.score }}</b
-        >:<br />
-        Citing <b>{{ publication.citationCount }}</b> (<b-icon
+        <b
+          >{{ publication.score }} =
+          <span v-if="publication.boostFactor != 1">(</span
+          >{{ publication.citationCount }} + {{ publication.referenceCount
+          }}<span v-if="publication.boostFactor != 1"
+            >) &middot; {{ publication.boostFactor }}</span
+          ></b
+        >,<br />
+        citing <b>{{ publication.citationCount }}</b> (<b-icon
           icon="arrow-bottom-left-thick"
           size="is-small"
         ></b-icon
@@ -72,11 +80,17 @@
         ></b-icon
         >) selected publications<span v-if="publication.boostFactor != 1"
           >, multiplied by a boost factor of
-          <b>{{ publication.boostFactor }}</b> (<b-icon
-            :icon="chevronType"
-            size="is-small"
-          ></b-icon
-          >)</span
+          <b
+            >{{ publication.boostFactor }} = 2<sup>{{
+              publication.boostMatches
+            }}</sup>
+          </b>
+          (<b-icon :icon="chevronType" size="is-small"></b-icon>;
+          {{ publication.boostMatches }} keyword<span
+            v-if="publication.boostMatches > 1"
+            >s</span
+          >
+          matched)</span
         >.
       </div>
       <div v-if="publication.isLinkedToActive">

@@ -25,6 +25,7 @@ export default class Publication {
         this.referenceDois = [];
         this.citationCount = 0;
         this.referenceCount = 0;
+        this.boostMatches = 0;
         this.boostFactor = 1;
         this.score = 0;
         this.scoreColor = "#FFF";
@@ -124,6 +125,7 @@ export default class Publication {
     }
 
     updateScore(boostKeywords) {
+        this.boostMatches = 0;
         this.boostFactor = 1;
         // use an array to keep track of highlighted title fragements
         let titleFragments = [this.title];
@@ -143,6 +145,7 @@ export default class Publication {
                 const index = titleFragment.toLowerCase().indexOf(boostKeyword);
                 if (index >= 0) {
                     // split matched title fragement
+                    this.boostMatches += 1;
                     this.boostFactor = this.boostFactor * 2;
                     titleFragments[i] = [
                         titleFragment.substring(0, index),
