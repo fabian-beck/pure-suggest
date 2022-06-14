@@ -19,7 +19,7 @@
         <div class="level-item">
           <span>
             {{ suggestion.publications.length }} of
-            {{ suggestion.totalSuggestions }} suggestions
+            {{ suggestion.totalSuggestions.toLocaleString('en') }} suggestions
           </span>
           <b-button
             class="level-item compact-button"
@@ -27,6 +27,7 @@
             data-tippy-content="Load more suggestions"
             v-tippy
             @click.stop="$emit('loadMore')"
+            :disabled="suggestion.publications.length === suggestion.totalSuggestions"
           ></b-button>
         </div>
       </div>
