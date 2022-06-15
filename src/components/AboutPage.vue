@@ -28,14 +28,34 @@
           </p>
           <p>
             The code is available on
-            <a href="https://github.com/fabian-beck/pure-suggest">GitHub <b-icon icon="github" size="is-small"/></a>
+            <a href="https://github.com/fabian-beck/pure-suggest"
+              >GitHub <b-icon icon="github" size="is-small"
+            /></a>
             under
             <a
               href="https://github.com/fabian-beck/pure-suggest/blob/master/LICENSE"
-              >MIT License <b-icon icon="license" size="is-small"/></a
+              >MIT License <b-icon icon="license" size="is-small" /></a
             >.
           </p>
-          <h2><b-icon icon="database"/> Data Sources</h2>
+          <h2>Scientific Publication</h2>
+          <p>
+            If you want to cite the tool, you can refer to the following
+            publication:
+          </p>
+          <ul>
+            <li>
+              Beck, F. and Krause, C., 2022. Visually Explaining Publication
+              Ranks in Citation-based Literature Search with PURE suggest. In
+              EuroVis 2022 - Posters. DOI:
+              <a href="https://diglib.eg.org/handle/10.2312/evp20221110"
+                >10.2312/evp.20221110</a
+              >. [<a
+                href="https://diglib.eg.org/bitstream/handle/10.2312/evp20221110/019-021.pdf"
+                >PDF</a
+              >]
+            </li>
+          </ul>
+          <h2><b-icon icon="database" /> Data Sources</h2>
           <p>
             APIs by the following projects are used to retrieve the literature
             meta-data and citation information.
@@ -44,7 +64,7 @@
             <li><a href="https://opencitations.net/">OpenCitations</a></li>
             <li><a href="https://www.crossref.org/">CrossRef</a></li>
           </ul>
-          <h2><b-icon icon="tools"/> Similar Tools</h2>
+          <h2><b-icon icon="tools" /> Similar Tools</h2>
           <p>
             <em>PURE suggest</em> is not the first of its kind, but other tools
             are available that also provide a visually supported literature
@@ -62,7 +82,7 @@
               <a href="https://www.researchrabbit.ai/">Research Rabbit</a>
             </li>
           </ul>
-          <h2><b-icon icon="card-account-mail"/> Contact</h2>
+          <h2><b-icon icon="card-account-mail" /> Contact</h2>
           <p><em>PURE suggest</em> has been created by:</p>
           <p>
             <a href="https://github.com/fabian-beck">Fabian Beck</a> <br />
@@ -72,7 +92,10 @@
               >fabian.beck@uni-bamberg.de</a
             >
           </p>
-          <p>Thanks a lot to all other contributors, especially <a href="https://github.com/cedrickrause">Cedric Krause</a>.</p>
+          <p>
+            Thanks a lot to all other contributors, especially
+            <a href="https://github.com/cedrickrause">Cedric Krause</a>.
+          </p>
         </section>
       </div>
     </div>
