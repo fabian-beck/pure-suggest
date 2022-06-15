@@ -1,7 +1,7 @@
 <template>
   <li
     class="publication-component media"
-    v-bind:class="{
+    :class="{
       active: publication.isActive,
       selected: publication.isSelected,
       linkedToActive: publication.isLinkedToActive,
@@ -105,7 +105,7 @@
     <div class="media-content">
       <div class="summary">
         <span v-if="publication.title">
-          <strong
+          <b
             ><span
               v-html="
                 publication.titleHighlighted
@@ -113,14 +113,23 @@
                   : publication.title
               "
             ></span
-            >&nbsp;</strong
-          >
-          <span v-if="publication.shortReference"
-            >({{ publication.shortReference }})</span
+            >&nbsp;</b
           >
         </span>
-        <span v-if="!publication.title">
-          <strong>[unknown title]</strong>
+        <span v-if="!publication.title" class="unknown">
+          <b>[unknown title] </b>
+        </span>
+        <span
+          >(<span :class="publication.authorShort ? '' : 'unknown'">{{
+            publication.authorShort
+              ? publication.authorShort
+              : "[unknown author]"
+          }}</span
+          >,
+          <span :class="publication.year ? '' : 'unknown'">{{
+            publication.year ? publication.year : "[unknown year]"
+          }}</span
+          >)
         </span>
         <b-taglist>
           <b-tag
@@ -161,7 +170,7 @@
             "
             v-if="publication.author"
           ></span>
-          <span v-else>[unknown author]. </span>
+          <span v-else class="unknown">[unknown author]</span>.
         </span>
         <span v-if="publication.container"
           ><em> {{ publication.container }}. </em></span

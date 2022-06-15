@@ -96,9 +96,6 @@ export default class Publication {
                     this.oaLink = data.oa_link;
                     this.gsUrl = `https://scholar.google.de/scholar?hl=en&q=${this.title
                         } ${this.author ? this.author : ''}`
-                    // short reference
-                    this.shortReference = `${this.authorShort ? this.authorShort : "[unknown author]"
-                        }, ${this.year ? this.year : "[unknown year]"}`;
                     // references and citations
                     data.reference.split("; ").forEach(referenceDoi => {
                         if (referenceDoi) {
