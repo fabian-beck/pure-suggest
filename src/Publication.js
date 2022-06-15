@@ -90,6 +90,12 @@ export default class Publication {
                     this.container = this.container.charAt(0).toUpperCase() + this.container.slice(1); // make first character uppercase
                     // bibString meta-data
                     this.year = data.year;
+                    if (!this.year) {
+                        const match = this.doi.match(/\.((19|20)\d\d)\./);
+                        if (match) {
+                            this.year = match[1];
+                        }
+                    }
                     this.volume = data.volume;
                     this.issue = data.issue;
                     this.page = data.page;
