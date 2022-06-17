@@ -176,9 +176,30 @@
       </div>
       <div
         class="notification has-background-danger-light has-text-danger-dark"
-        v-if="!publication.year && publication.isActive">
-        The publication cannot be shown in the citation network visualization because of the unknown
-        publication year.
+        v-if="
+          !publication.year &&
+          !publication.title & !publication.author &&
+          !publication.container &&
+          publication.isActive
+        "
+      >
+        No metadata could be retrieved for the publication from
+        <a
+          :href="`https://opencitations.net/index/coci/api/v1/metadata/${publication.doi}`"
+          >Open Citations</a
+        >.
+        <span v-if="publication.score === 0"
+          >Also, it is not cited by another selected publication&mdash;<b
+            >please check if the DOI is correct.</b
+          >
+        </span>
+      </div>
+      <div
+        class="notification has-background-danger-light has-text-danger-dark"
+        v-if="!publication.year && publication.isActive"
+      >
+        The publication cannot be shown in the citation network visualization
+        because of the unknown publication year.
       </div>
       <div v-if="publication.isActive" class="stats-and-links level is-size-7">
         <div class="level-left">
