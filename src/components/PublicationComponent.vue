@@ -121,9 +121,7 @@
         </span>
         <span
           >(<span>{{
-            publication.authorShort
-              ? publication.authorShort+ ", "
-              : ""
+            publication.authorShort ? publication.authorShort + ", " : ""
           }}</span
           ><span :class="publication.year ? '' : 'unknown'">{{
             publication.year ? publication.year : "[unknown year]"
@@ -175,6 +173,12 @@
         >
         <label><span class="key">D</span>OI:</label>
         <a :href="publication.doiUrl">{{ publication.doi }}</a>
+      </div>
+      <div
+        class="notification has-background-danger-light has-text-danger-dark"
+        v-if="!publication.year && publication.isActive">
+        The publication cannot be shown in the citation network visualization because of the unknown
+        publication year.
       </div>
       <div v-if="publication.isActive" class="stats-and-links level is-size-7">
         <div class="level-left">
@@ -388,6 +392,11 @@ li.publication-component {
 
     & label {
       padding-right: 0.2rem;
+    }
+
+    & .notification {
+      padding: 0.5rem;
+      margin: 0.5rem 0;
     }
 
     & .stats-and-links {
