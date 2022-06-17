@@ -247,8 +247,8 @@ export default {
                 `${
                   d.publication.title ? d.publication.title : "[unknown title]"
                 } (${
-                  d.publication.authorShort ? d.publication.authorShort : "[unknown author]"
-                }, ${d.publication.year ? d.publication.year : "[unknown year]"})`
+                  d.publication.authorShort ? d.publication.authorShort + ", " : ""
+                }${d.publication.year ? d.publication.year : "[unknown year]"})`
             );
           g.append("rect");
           g.append("text");

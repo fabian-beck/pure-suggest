@@ -120,13 +120,12 @@
           <b>[unknown title] </b>
         </span>
         <span
-          >(<span :class="publication.authorShort ? '' : 'unknown'">{{
+          >(<span>{{
             publication.authorShort
-              ? publication.authorShort
-              : "[unknown author]"
+              ? publication.authorShort+ ", "
+              : ""
           }}</span
-          >,
-          <span :class="publication.year ? '' : 'unknown'">{{
+          ><span :class="publication.year ? '' : 'unknown'">{{
             publication.year ? publication.year : "[unknown year]"
           }}</span
           >)
@@ -170,7 +169,6 @@
             "
             v-if="publication.author"
           ></span>
-          <span v-else><span class="unknown">[unknown author]</span>. </span>
         </span>
         <span v-if="publication.container"
           ><em> {{ publication.container }}. </em></span
