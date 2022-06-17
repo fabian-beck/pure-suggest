@@ -299,7 +299,6 @@ export default {
 
     exportBibtex: function (publicationList) {
       let bib = "";
-      console.log(publicationList);
       publicationList.forEach(
         (publication) => (bib += publication.toBibtex() + "\n\n")
       );
