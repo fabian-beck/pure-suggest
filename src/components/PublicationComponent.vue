@@ -166,13 +166,16 @@
               (publication.authorOrcid.endsWith('.') ? '' : '.')
             "
             v-if="publication.author"
+            @click.stop="refocus"
           ></span>
         </span>
         <span v-if="publication.container"
           ><em> {{ publication.container }}. </em></span
         >
         <label><span class="key">D</span>OI:</label>
-        <a :href="publication.doiUrl">{{ publication.doi }}</a>
+        <a :href="publication.doiUrl" @click.stop="refocus">{{
+          publication.doi
+        }}</a>
       </div>
       <div
         class="notification has-background-danger-light has-text-danger-dark"
@@ -186,6 +189,7 @@
         No metadata could be retrieved for the publication from
         <a
           :href="`https://opencitations.net/index/coci/api/v1/metadata/${publication.doi}`"
+          @click.stop="refocus"
           >Open Citations</a
         >.
         <span v-if="publication.score === 0"
@@ -234,12 +238,12 @@
           v-if="publication.title && publication.isActive"
         >
           <div class="level-item" v-if="publication.oaLink">
-            <a :href="publication.oaLink"
+            <a :href="publication.oaLink" @click.stop="refocus"
               ><span class="key">O</span>pen access</a
             >
           </div>
           <div class="level-item">
-            <a :href="publication.gsUrl"
+            <a :href="publication.gsUrl" @click.stop="refocus"
               ><span class="key">G</span>oogle Scholar</a
             >
           </div>
@@ -248,7 +252,7 @@
             data-tippy-content="Export as BibTe<span class='key'>X</span> citation"
             v-tippy
           >
-            <a @click.stop="$emit('exportBibtex', publication)"
+            <a @click.stop="exportBibtex"
               ><b-icon icon="format-quote-close"></b-icon
             ></a>
           </div>
@@ -321,6 +325,16 @@ export default {
       }
       return "";
     },
+  },
+  methods: {
+    refocus: function () {
+      document.getElementById(this.publication.doi).focus();
+    },
+
+    exportBibtex: function() {
+      this.$emit('exportBibtex', this.publication);
+      this.refocus();
+    }
   },
 };
 </script>
