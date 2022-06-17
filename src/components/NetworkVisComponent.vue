@@ -243,7 +243,12 @@ export default {
             .attr("class", "node-container")
             .attr(
               "data-tippy-content",
-              (d) => `${d.publication.title} (${d.publication.shortReference})`
+              (d) =>
+                `${
+                  d.publication.title ? d.publication.title : "[unknown title]"
+                } (${
+                  d.publication.authorShort ? d.publication.authorShort + ", " : ""
+                }${d.publication.year ? d.publication.year : "[unknown year]"})`
             );
           g.append("rect");
           g.append("text");
@@ -382,7 +387,7 @@ export default {
 
     toggleMode() {
       this.isClusters = !this.isClusters;
-    }
+    },
   },
 };
 </script>

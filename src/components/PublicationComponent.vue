@@ -1,7 +1,7 @@
 <template>
   <li
     class="publication-component media"
-    v-bind:class="{
+    :class="{
       active: publication.isActive,
       selected: publication.isSelected,
       linkedToActive: publication.isLinkedToActive,
@@ -105,7 +105,7 @@
     <div class="media-content">
       <div class="summary">
         <span v-if="publication.title">
-          <strong
+          <b
             ><span
               v-html="
                 publication.titleHighlighted
@@ -113,14 +113,20 @@
                   : publication.title
               "
             ></span
-            >&nbsp;</strong
-          >
-          <span v-if="publication.shortReference"
-            >({{ publication.shortReference }})</span
+            >&nbsp;</b
           >
         </span>
-        <span v-if="!publication.title">
-          <strong>[unknown title]</strong>
+        <span v-if="!publication.title" class="unknown">
+          <b>[unknown title] </b>
+        </span>
+        <span
+          >(<span>{{
+            publication.authorShort ? publication.authorShort + ", " : ""
+          }}</span
+          ><span :class="publication.year ? '' : 'unknown'">{{
+            publication.year ? publication.year : "[unknown year]"
+          }}</span
+          >)
         </span>
         <b-taglist>
           <b-tag
@@ -161,13 +167,39 @@
             "
             v-if="publication.author"
           ></span>
-          <span v-else>[unknown author]. </span>
         </span>
         <span v-if="publication.container"
           ><em> {{ publication.container }}. </em></span
         >
         <label><span class="key">D</span>OI:</label>
         <a :href="publication.doiUrl">{{ publication.doi }}</a>
+      </div>
+      <div
+        class="notification has-background-danger-light has-text-danger-dark"
+        v-if="
+          !publication.year &&
+          !publication.title & !publication.author &&
+          !publication.container &&
+          publication.isActive
+        "
+      >
+        No metadata could be retrieved for the publication from
+        <a
+          :href="`https://opencitations.net/index/coci/api/v1/metadata/${publication.doi}`"
+          >Open Citations</a
+        >.
+        <span v-if="publication.score === 0"
+          >Also, it is not cited by another selected publication&mdash;<b
+            >please check if the DOI is correct.</b
+          >
+        </span>
+      </div>
+      <div
+        class="notification has-background-danger-light has-text-danger-dark"
+        v-if="!publication.year && publication.isActive"
+      >
+        The publication cannot be shown in the citation network visualization
+        because of the unknown publication year.
       </div>
       <div v-if="publication.isActive" class="stats-and-links level is-size-7">
         <div class="level-left">
@@ -381,6 +413,11 @@ li.publication-component {
 
     & label {
       padding-right: 0.2rem;
+    }
+
+    & .notification {
+      padding: 0.5rem;
+      margin: 0.5rem 0;
     }
 
     & .stats-and-links {
