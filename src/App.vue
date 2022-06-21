@@ -549,6 +549,10 @@ $box-padding: 1rem;
   text-decoration: underline;
 }
 
+.unknown {
+  color: $danger;
+}
+
 @include touch {
   #app {
     display: block;

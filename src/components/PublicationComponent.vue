@@ -73,8 +73,9 @@
         citing <b>{{ publication.citationCount }}</b> (<b-icon
           icon="arrow-bottom-left-thick"
           size="is-small"
+          :class="publication.referenceDois.length ? '' : 'unknown'"
         ></b-icon
-        >) and cited by <b>{{ publication.referenceCount }}</b> (<b-icon
+        ><span v-if="!publication.referenceDois.length" class="unknown">, citing data not available</span>) and cited by <b>{{ publication.referenceCount }}</b> (<b-icon
           icon="arrow-top-left-thick"
           size="is-small"
         ></b-icon
@@ -208,8 +209,7 @@
       <div v-if="publication.isActive" class="stats-and-links level is-size-7">
         <div class="level-left">
           <div
-            class="level-item"
-            :class="publication.referenceDois.length ? '' : 'unknown'"
+            :class="`level-item ${publication.referenceDois.length ? '' : 'unknown'}`"
           >
             <label
               ><b-icon icon="arrow-bottom-left-thick" size="is-small"></b-icon
@@ -451,10 +451,6 @@ li.publication-component {
     & .button {
       margin: 0.5rem 0;
     }
-  }
-
-  & .unknown {
-    color: $danger;
   }
 }
 
