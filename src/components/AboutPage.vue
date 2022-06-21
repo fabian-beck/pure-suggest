@@ -37,7 +37,7 @@
               >MIT License <b-icon icon="license" size="is-small" /></a
             >.
           </p>
-          <h2>Scientific Publication</h2>
+          <h2><b-icon icon="file-document" /> Scientific Publication</h2>
           <p>
             If you want to cite the tool, you can refer to the following
             publication:
