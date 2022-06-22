@@ -1,6 +1,6 @@
 <template>
   <div class="suggested-publications box has-background-info">
-    <div class="level">
+    <div class="level box-header">
       <div class="level-left has-text-white">
         <div class="level-item">
           <b-icon icon="water-plus-outline"></b-icon>
@@ -18,8 +18,17 @@
       <div class="level-right has-text-white" v-if="suggestion">
         <div class="level-item">
           <span>
-            {{ suggestion.publications.length }} of
-            {{ suggestion.totalSuggestions.toLocaleString('en') }} suggestions
+            {{ suggestion.publications.length }}
+            <b-tag
+              icon="bell"
+              size="is-small"
+              v-if="unreadSuggestionsCount > 0"
+              data-tippy-content="The number of unread suggestions."
+              v-tippy
+              >{{ unreadSuggestionsCount }}</b-tag
+            >
+            of
+            {{ suggestion.totalSuggestions.toLocaleString("en") }} suggestions
           </span>
           <b-button
             class="level-item compact-button"
@@ -27,7 +36,9 @@
             data-tippy-content="Load more suggestions"
             v-tippy
             @click.stop="$emit('loadMore')"
-            :disabled="suggestion.publications.length === suggestion.totalSuggestions"
+            :disabled="
+              suggestion.publications.length === suggestion.totalSuggestions
+            "
           ></b-button>
         </div>
       </div>
@@ -55,6 +66,13 @@ export default {
     title: String,
     suggestion: Object,
   },
+  computed: {
+    unreadSuggestionsCount() {
+      return this.suggestion.publications.filter(
+        (publication) => !publication.isRead
+      ).length;
+    },
+  },
   methods: {
     addPublication: function (doi) {
       this.$emit("add", doi);
@@ -78,6 +96,15 @@ export default {
   display: grid;
   grid-template-rows: max-content auto;
   position: relative;
+
+  & .box-header .tag {
+    position: relative;
+    top: -0.4rem;
+    padding: 0 0.2rem;
+    height: 1.2rem;
+    background-color: $info-light;
+    color: $info-dark;
+  }
 }
 .publication-list {
   max-height: 100%;
