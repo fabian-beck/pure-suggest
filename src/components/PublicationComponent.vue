@@ -391,8 +391,12 @@ li.publication-component {
   &.unread {
     background: $info-light;
 
-    & .summary b {
-      color: $info;
+    & .summary {
+      color: $info-dark;
+    }
+
+    & .glyph {
+      color: $info-dark;
     }
   }
 
