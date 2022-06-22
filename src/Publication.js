@@ -37,6 +37,7 @@ export default class Publication {
         this.isActive = false;
         this.isLinkedToActive = false;
         this.isSelected = false;
+        this.isRead = false;
     }
 
     async fetchData() {

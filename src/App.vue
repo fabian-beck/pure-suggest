@@ -229,6 +229,7 @@ export default {
       this.suggestion.publications.forEach((suggestedPublication) => {
         suggestedPublication.isActive = suggestedPublication.doi === doi;
         if (suggestedPublication.isActive) {
+          suggestedPublication.isRead = true;
           this.activePublication = suggestedPublication;
           this.selectedPublications.forEach((publication) => {
             publication.isLinkedToActive =
