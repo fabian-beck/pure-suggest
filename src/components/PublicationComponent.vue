@@ -5,6 +5,7 @@
       active: publication.isActive,
       selected: publication.isSelected,
       linkedToActive: publication.isLinkedToActive,
+      unread: !publication.isRead && !publication.isSelected,
     }"
     :id="publication.doi"
     tabindex="0"
@@ -75,7 +76,9 @@
           size="is-small"
           :class="publication.referenceDois.length ? '' : 'unknown'"
         ></b-icon
-        ><span v-if="!publication.referenceDois.length" class="unknown">, citing data not available</span>) and cited by <b>{{ publication.referenceCount }}</b> (<b-icon
+        ><span v-if="!publication.referenceDois.length" class="unknown"
+          >, citing data not available</span
+        >) and cited by <b>{{ publication.referenceCount }}</b> (<b-icon
           icon="arrow-top-left-thick"
           size="is-small"
         ></b-icon
@@ -209,7 +212,9 @@
       <div v-if="publication.isActive" class="stats-and-links level is-size-7">
         <div class="level-left">
           <div
-            :class="`level-item ${publication.referenceDois.length ? '' : 'unknown'}`"
+            :class="`level-item ${
+              publication.referenceDois.length ? '' : 'unknown'
+            }`"
           >
             <label
               ><b-icon icon="arrow-bottom-left-thick" size="is-small"></b-icon
@@ -331,10 +336,10 @@ export default {
       document.getElementById(this.publication.doi).focus();
     },
 
-    exportBibtex: function() {
-      this.$emit('exportBibtex', this.publication);
+    exportBibtex: function () {
+      this.$emit("exportBibtex", this.publication);
       this.refocus();
-    }
+    },
   },
 };
 </script>
@@ -381,6 +386,18 @@ li.publication-component {
 
   &.active {
     background: $grey-lighter;
+  }
+
+  &.unread {
+    background: $info-light;
+
+    & .summary {
+      color: $info-dark;
+    }
+
+    & .glyph {
+      color: $info-dark;
+    }
   }
 
   & .media-left {

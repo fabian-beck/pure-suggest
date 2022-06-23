@@ -96,6 +96,7 @@ export default {
       maxSuggestions: 50,
       boostKeywords: [],
       excludedPublicationsDois: new Set(),
+      readPublicationsDois: new Set(),
       activePublication: undefined,
       isAboutPageShown: false,
       isKeyboardControlsShown: false,
@@ -180,6 +181,9 @@ export default {
         this.loadingToast,
         this.maxSuggestions
       );
+      this.suggestion.publications.forEach((publication) => {
+        publication.isRead = this.readPublicationsDois.has(publication.doi);
+      });
       this.selectedPublications = Object.values(publications);
       Publication.sortPublications(this.selectedPublications);
       this.$refs.network.plot(true);
@@ -203,7 +207,7 @@ export default {
       }
     },
 
-    setBoostKeywords: async function(boostKeywordString) {
+    setBoostKeywords: async function (boostKeywordString) {
       this.$refs.selected.setBoost(boostKeywordString);
       this.updateBoost(boostKeywordString, true);
     },
@@ -229,6 +233,8 @@ export default {
       this.suggestion.publications.forEach((suggestedPublication) => {
         suggestedPublication.isActive = suggestedPublication.doi === doi;
         if (suggestedPublication.isActive) {
+          suggestedPublication.isRead = true;
+          this.readPublicationsDois.add(doi);
           this.activePublication = suggestedPublication;
           this.selectedPublications.forEach((publication) => {
             publication.isLinkedToActive =
@@ -314,6 +320,7 @@ export default {
           publications = {};
           this.selectedPublications = [];
           this.excludedPublicationsDois = new Set();
+          this.readPublicationsDois = new Set();
           this.setBoostKeywords("");
           this.updateSuggestions();
           this.isOverlay = false;
