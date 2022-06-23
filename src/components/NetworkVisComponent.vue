@@ -247,7 +247,9 @@ export default {
                 `${
                   d.publication.title ? d.publication.title : "[unknown title]"
                 } (${
-                  d.publication.authorShort ? d.publication.authorShort + ", " : ""
+                  d.publication.authorShort
+                    ? d.publication.authorShort + ", "
+                    : ""
                 }${d.publication.year ? d.publication.year : "[unknown year]"})`
             );
           g.append("rect");
@@ -278,6 +280,13 @@ export default {
 
       this.node
         .select("text")
+        .attr(
+          "class",
+          (d) =>
+            `${
+              !d.publication.isRead && !d.publication.isSelected ? "unread" : ""
+            }`
+        )
         .attr("y", 1)
         .attr("font-size", "0.8em")
         .text((d) => d.publication.score);
@@ -432,6 +441,11 @@ export default {
     & text {
       text-anchor: middle;
       dominant-baseline: middle;
+    }
+
+    & text.unread {
+      fill: $info;
+      font-weight: 1000;
     }
 
     &:hover rect {
