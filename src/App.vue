@@ -53,6 +53,9 @@
       />
     </div>
     <QuickAccessBar id="quick-access" class="is-hidden-desktop" />
+    <b-modal v-model="isSearchPanelShown">
+      <SearchPanel />
+    </b-modal>
     <b-modal v-model="isAboutPageShown">
       <AboutPage />
     </b-modal>
@@ -70,6 +73,7 @@ import SelectedPublicationsComponent from "./components/SelectedPublicationsComp
 import SuggestedPublicationsComponent from "./components/SuggestedPublicationsComponent.vue";
 import NetworkVisComponent from "./components/NetworkVisComponent.vue";
 import QuickAccessBar from "./components/QuickAccessBar.vue";
+import SearchPanel from "./components/SearchPanel.vue"
 import AboutPage from "./components/AboutPage.vue";
 import KeyboardControlsPage from "./components/KeyboardControlsPage.vue";
 
@@ -85,6 +89,7 @@ export default {
     SuggestedPublicationsComponent,
     NetworkVisComponent,
     QuickAccessBar,
+    SearchPanel,
     AboutPage,
     KeyboardControlsPage,
   },
@@ -98,6 +103,7 @@ export default {
       excludedPublicationsDois: new Set(),
       readPublicationsDois: new Set(),
       activePublication: undefined,
+      isSearchPanelShown: true,
       isAboutPageShown: false,
       isKeyboardControlsShown: false,
       isNetworkExpanded: false,
