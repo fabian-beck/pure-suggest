@@ -29,23 +29,33 @@
           <ul>
             <li
               v-for="item in searchResults"
+              class="publication-component media"
               :key="item.DOI"
-              @click.stop="$emit('add', item.DOI)"
             >
-              <b>
-                {{
-                  item.title[0] +
-                  (item.subtitle && item.title[0] !== item.subtitle[0]
-                    ? " " + item.subtitle[0]
-                    : "")
-                }}. </b
-              ><span v-if="item.author">
-                {{
-                  item.author
-                    .filter((name) => name.family)
-                    .map((name) => name.family)
-                }}.</span
-              ><span v-if="item.issued"> {{ item.issued }}.</span>
+              <div class="media-content">
+                <b>
+                  {{
+                    item.title[0] +
+                    (item.subtitle && item.title[0] !== item.subtitle[0]
+                      ? " " + item.subtitle[0]
+                      : "")
+                  }} </b
+                ><span v-if="item.author">
+                  {{ createShortReference(item) }}</span
+                >
+              </div>
+              <div class="media-right">
+                <div>
+                  <b-button
+                    class="is-primary is-small"
+                    icon-left="plus-thick"
+                    data-tippy-content="Add publication to list of selected publications."
+                    @click.stop="$emit('add', item.DOI)"
+                    v-tippy
+                  >
+                  </b-button>
+                </div>
+              </div>
             </li>
           </ul>
         </section>
@@ -69,7 +79,29 @@ export default {
     search: async function () {
       const publicationSearch = new PublicationSearch(this.searchQuery);
       this.searchResults = await publicationSearch.execute();
-      console.log(this.searchResults);
+    },
+    createShortReference: function (item) {
+      console.log(item.issued);
+      const lastNames = item.author
+        .filter((name) => name.family)
+        .map((name) => name.family);
+      let authorShort = "";
+      if (lastNames.length > 0) {
+        authorShort = lastNames[0];
+        if (lastNames.length === 2) {
+          authorShort += " and " + lastNames[1];
+        } else {
+          authorShort += " et al.";
+        }
+      }
+      let year = "";
+      if (item.published) {
+        year = item.published["date-parts"][0][0];
+      }
+      if (authorShort && year) {
+        return `(${authorShort}, ${year})`;
+      }
+      return `(${authorShort+year})`;
     },
   },
 };
