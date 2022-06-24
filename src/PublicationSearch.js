@@ -11,9 +11,9 @@ export default class PublicationSearch {
         console.log(`Searching for publications with title or similar to '${this.query}'.`)
         let results = [];
         await cachedFetch(
-            "https://api.crossref.org/works?query.bibliographic=" + simplifiedQuery,
+            `https://api.crossref.org/works?query=${simplifiedQuery}&mailto=fabian.beck@uni-bamberg.de&filter=has-references:true`,
             (data) => {
-                data.message.items.filter(item => item.title).forEach((item) => {                        
+                data.message.items.filter(item => item.title).forEach((item) => {
                     results.push(item);
                 });
             }

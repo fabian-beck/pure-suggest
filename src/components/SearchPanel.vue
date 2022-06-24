@@ -81,7 +81,6 @@ export default {
       this.searchResults = await publicationSearch.execute();
     },
     createShortReference: function (item) {
-      console.log(item.issued);
       const lastNames = item.author
         .filter((name) => name.family)
         .map((name) => name.family);
