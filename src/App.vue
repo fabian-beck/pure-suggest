@@ -55,7 +55,7 @@
     </div>
     <QuickAccessBar id="quick-access" class="is-hidden-desktop" />
     <b-modal v-model="isSearchPanelShown">
-      <SearchPanel />
+      <SearchPanel v-on:add="addPublicationsToSelection" />
     </b-modal>
     <b-modal v-model="isAboutPageShown">
       <AboutPage />
@@ -392,8 +392,8 @@ export default {
       } else if (
         this.isLoading ||
         this.isOverlay ||
-        (this.isSearchPanelShown &
-          (document.activeElement.nodeName != "INPUT")) ||
+        this.isSearchPanelShown &
+          (document.activeElement.nodeName != "INPUT") ||
         this.isAboutPageShown ||
         this.isKeyboardControlsShown
       ) {

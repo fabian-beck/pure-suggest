@@ -27,7 +27,11 @@
             </p>
           </form>
           <ul>
-            <li v-for="item in searchResults" :key="item.DOI">
+            <li
+              v-for="item in searchResults"
+              :key="item.DOI"
+              @click.stop="$emit('add', item.DOI)"
+            >
               <b>
                 {{
                   item.title[0] +
@@ -41,11 +45,7 @@
                     .filter((name) => name.family)
                     .map((name) => name.family)
                 }}.</span
-              ><span v-if="item.issued">
-                {{
-                  item.issued
-                }}.</span
-              >
+              ><span v-if="item.issued"> {{ item.issued }}.</span>
             </li>
           </ul>
         </section>
