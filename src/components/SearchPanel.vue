@@ -11,6 +11,7 @@
               <input
                 class="input add-publication"
                 type="text"
+                placeholder="title search query"
                 v-model="searchQuery"
               />
             </p>
