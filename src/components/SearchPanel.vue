@@ -28,13 +28,23 @@
           <ul>
             <li v-for="item in searchResults" :key="item.DOI">
               <b>
-                  {{
-                    item.title[0] +
-                    (item.subtitle && item.title[0] !== item.subtitle[0]
-                      ? " " + item.subtitle[0]
-                      : "")
-                  }}.
-              </b><span v-if="item.author"> {{ item.author.filter(name => name.family).map(name => name.family) }}.</span>
+                {{
+                  item.title[0] +
+                  (item.subtitle && item.title[0] !== item.subtitle[0]
+                    ? " " + item.subtitle[0]
+                    : "")
+                }}. </b
+              ><span v-if="item.author">
+                {{
+                  item.author
+                    .filter((name) => name.family)
+                    .map((name) => name.family)
+                }}.</span
+              ><span v-if="item.issued">
+                {{
+                  item.issued
+                }}.</span
+              >
             </li>
           </ul>
         </section>
@@ -58,7 +68,7 @@ export default {
     search: async function () {
       const publicationSearch = new PublicationSearch(this.searchQuery);
       this.searchResults = await publicationSearch.execute();
-      console.log(this.searchResults)
+      console.log(this.searchResults);
     },
   },
 };

@@ -22,6 +22,7 @@
         ref="selected"
         :publications="selectedPublications"
         v-on:add="addPublicationsToSelection"
+        v-on:openSearch="isSearchPanelShown = true"
         v-on:remove="removePublication"
         v-on:activate="activatePublicationComponentByDoi"
         v-on:exportSingleBibtex="exportSingleBibtex"
@@ -103,7 +104,7 @@ export default {
       excludedPublicationsDois: new Set(),
       readPublicationsDois: new Set(),
       activePublication: undefined,
-      isSearchPanelShown: true,
+      isSearchPanelShown: false,
       isAboutPageShown: false,
       isKeyboardControlsShown: false,
       isNetworkExpanded: false,
@@ -391,6 +392,7 @@ export default {
       } else if (
         this.isLoading ||
         this.isOverlay ||
+        this.isSearchPanelShown ||
         this.isAboutPageShown ||
         this.isKeyboardControlsShown
       ) {

@@ -67,6 +67,14 @@
           <span class="key">A</span>dd
         </b-button>
       </p>
+        <b-button
+          class="button level-right has-background-primary-light"
+          type="submit"
+          icon-left="magnify"
+          @click.stop="$emit('openSearch')"
+        >
+          <span class="key">S</span>earch
+        </b-button>
     </form>
     <div>
       <div
