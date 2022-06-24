@@ -11,7 +11,7 @@
               <input
                 class="input add-publication"
                 type="text"
-                placeholder="title search query"
+                placeholder="Search query"
                 v-model="searchQuery"
               />
             </p>
@@ -28,7 +28,7 @@
           </form>
           <ul>
             <li
-              v-for="item in searchResults"
+              v-for="item in filteredSearchResults"
               class="publication-component media"
               :key="item.DOI"
             >
@@ -69,11 +69,21 @@ import PublicationSearch from "./../PublicationSearch.js";
 
 export default {
   name: "SearchPanel",
+  props: {
+    selectedPublicationsDois: Array,
+  },
   data() {
     return {
       searchQuery: "",
       searchResults: [],
     };
+  },
+  computed: {
+    filteredSearchResults: function () {
+      return this.searchResults.filter(
+        (item) => !this.selectedPublicationsDois.includes(item.DOI)
+      );
+    },
   },
   methods: {
     search: async function () {
@@ -100,7 +110,7 @@ export default {
       if (authorShort && year) {
         return `(${authorShort}, ${year})`;
       }
-      return `(${authorShort+year})`;
+      return `(${authorShort + year})`;
     },
   },
 };

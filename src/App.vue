@@ -55,7 +55,10 @@
     </div>
     <QuickAccessBar id="quick-access" class="is-hidden-desktop" />
     <b-modal v-model="isSearchPanelShown">
-      <SearchPanel v-on:add="addPublicationsToSelection" />
+      <SearchPanel
+        :selectedPublicationsDois="selectedPublicationsDois"
+        v-on:add="addPublicationsToSelection"
+      />
     </b-modal>
     <b-modal v-model="isAboutPageShown">
       <AboutPage />
@@ -115,6 +118,9 @@ export default {
   computed: {
     isMobile: function () {
       return window.innerWidth <= 1023;
+    },
+    selectedPublicationsDois: function () {
+      return this.selectedPublications.map((publication) => publication.doi);
     },
   },
   methods: {
