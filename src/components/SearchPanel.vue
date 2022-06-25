@@ -26,7 +26,7 @@
               </b-button>
             </p>
           </form>
-          <ul>
+          <ul class="publication-list">
             <li
               v-for="item in filteredSearchResults"
               class="publication-component media"
@@ -43,12 +43,10 @@
                 ><span v-if="item.author">
                   {{ createShortReference(item) }}</span
                 >
-                &ndash;
                 <span>
                   DOI:
                   <a :href="`https://doi.org/${item.DOI}`">{{ item.DOI }}</a>
                 </span>
-                &ndash;
                 <span>
                   <a
                     :href="`https://scholar.google.de/scholar?hl=en&q=${
@@ -58,10 +56,10 @@
                         ? item.author.map((name) => name.family).join(' ')
                         : ''
                     }`"
+                    class="ml-2"
                   >
-                    <b-icon icon="school" size="is-small"></b-icon>&nbsp;Google
-                    Scholar</a
-                  >
+                    <b-icon icon="school" size="is-small"></b-icon
+                  ></a>
                 </span>
               </div>
               <div class="media-right">
@@ -137,4 +135,9 @@ export default {
 </script>
 
 <style>
+.content ul.publication-list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
 </style>
