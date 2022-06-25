@@ -13,6 +13,7 @@
                 type="text"
                 placeholder="Search query"
                 v-model="searchQuery"
+                ref="searchInput"
               />
             </p>
             <p class="control">
@@ -96,6 +97,11 @@ export default {
       searchResults: [],
     };
   },
+  mounted() {
+    setTimeout(() => {
+      this.$refs.searchInput.focus();
+    }, 300);
+  },
   computed: {
     filteredSearchResults: function () {
       return this.searchResults.filter(
@@ -103,6 +109,7 @@ export default {
       );
     },
   },
+
   methods: {
     search: async function () {
       const publicationSearch = new PublicationSearch(this.searchQuery);
