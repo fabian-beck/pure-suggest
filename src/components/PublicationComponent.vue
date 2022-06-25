@@ -209,7 +209,7 @@
         The publication cannot be shown in the citation network visualization
         because of the unknown publication year.
       </div>
-      <div v-if="publication.isActive" class="stats-and-links level is-size-7">
+      <div v-if="publication.isActive" class="stats-and-links level">
         <div class="level-left">
           <div
             :class="`level-item ${
@@ -242,22 +242,28 @@
           class="level-right"
           v-if="publication.title && publication.isActive"
         >
-          <div class="level-item" v-if="publication.oaLink">
-            <a :href="publication.oaLink" @click.stop="refocus"
-              ><span class="key">O</span>pen access</a
-            >
-          </div>
           <div class="level-item">
-            <a :href="publication.gsUrl" @click.stop="refocus"
-              ><span class="key">G</span>oogle Scholar</a
-            >
-          </div>
-          <div
-            class="level-item"
-            data-tippy-content="Export as BibTe<span class='key'>X</span> citation"
-            v-tippy
-          >
-            <a @click.stop="exportBibtex"
+            <a
+              v-if="publication.oaLink"
+              :href="publication.oaLink"
+              @click.stop="refocus"
+              data-tippy-content="<span class='key'>O</span>pen access"
+              v-tippy
+              ><b-icon icon="lock-open-check-outline" size="is-small"></b-icon
+            ></a>
+            <a
+              :href="publication.gsUrl"
+              class="ml-4"
+              @click.stop="refocus"
+              data-tippy-content="<span class='key'>G</span>oogle Scholar"
+              v-tippy
+              ><b-icon icon="school" size="is-small"></b-icon
+            ></a>
+            <a
+              @click.stop="exportBibtex"
+              class="ml-4"
+              data-tippy-content="Export as BibTe<span class='key'>X</span> citation"
+              v-tippy
               ><b-icon icon="format-quote-close"></b-icon
             ></a>
           </div>
