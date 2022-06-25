@@ -5,6 +5,7 @@
       active: publication.isActive,
       selected: publication.isSelected,
       linkedToActive: publication.isLinkedToActive,
+      unread: !publication.isRead && !publication.isSelected,
     }"
     :id="publication.doi"
     tabindex="0"
@@ -390,6 +391,18 @@ li.publication-component {
 
   &.active {
     background: $grey-lighter;
+  }
+
+  &.unread {
+    background: $info-light;
+
+    & .summary {
+      color: $info-dark;
+    }
+
+    & .glyph {
+      color: $info-dark;
+    }
   }
 
   & .media-left {
