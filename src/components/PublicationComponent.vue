@@ -75,7 +75,9 @@
           size="is-small"
           :class="publication.referenceDois.length ? '' : 'unknown'"
         ></b-icon
-        ><span v-if="!publication.referenceDois.length" class="unknown">, citing data not available</span>) and cited by <b>{{ publication.referenceCount }}</b> (<b-icon
+        ><span v-if="!publication.referenceDois.length" class="unknown"
+          >, citing data not available</span
+        >) and cited by <b>{{ publication.referenceCount }}</b> (<b-icon
           icon="arrow-top-left-thick"
           size="is-small"
         ></b-icon
@@ -206,10 +208,12 @@
         The publication cannot be shown in the citation network visualization
         because of the unknown publication year.
       </div>
-      <div v-if="publication.isActive" class="stats-and-links level is-size-7">
+      <div v-if="publication.isActive" class="stats-and-links level">
         <div class="level-left">
           <div
-            :class="`level-item ${publication.referenceDois.length ? '' : 'unknown'}`"
+            :class="`level-item ${
+              publication.referenceDois.length ? '' : 'unknown'
+            }`"
           >
             <label
               ><b-icon icon="arrow-bottom-left-thick" size="is-small"></b-icon
@@ -238,21 +242,26 @@
           v-if="publication.title && publication.isActive"
         >
           <div class="level-item" v-if="publication.oaLink">
-            <a :href="publication.oaLink" @click.stop="refocus"
-              ><span class="key">O</span>pen access</a
-            >
-          </div>
-          <div class="level-item">
-            <a :href="publication.gsUrl" @click.stop="refocus"
-              ><span class="key">G</span>oogle Scholar</a
-            >
-          </div>
-          <div
-            class="level-item"
-            data-tippy-content="Export as BibTe<span class='key'>X</span> citation"
-            v-tippy
-          >
-            <a @click.stop="exportBibtex"
+            <a
+              :href="publication.oaLink"
+              @click.stop="refocus"
+              data-tippy-content="<span class='key'>O</span>pen access"
+              v-tippy
+              ><b-icon icon="lock-open-check-outline" size="is-small"></b-icon
+            ></a>
+            <a
+              :href="publication.gsUrl"
+              class="ml-4"
+              @click.stop="refocus"
+              data-tippy-content="<span class='key'>G</span>oogle Scholar"
+              v-tippy
+              ><b-icon icon="school" size="is-small"></b-icon
+            ></a>
+            <a
+              @click.stop="exportBibtex"
+              class="ml-4"
+              data-tippy-content="Export as BibTe<span class='key'>X</span> citation"
+              v-tippy
               ><b-icon icon="format-quote-close"></b-icon
             ></a>
           </div>
@@ -331,10 +340,10 @@ export default {
       document.getElementById(this.publication.doi).focus();
     },
 
-    exportBibtex: function() {
-      this.$emit('exportBibtex', this.publication);
+    exportBibtex: function () {
+      this.$emit("exportBibtex", this.publication);
       this.refocus();
-    }
+    },
   },
 };
 </script>
