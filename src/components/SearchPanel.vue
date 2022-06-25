@@ -134,10 +134,19 @@ export default {
 };
 </script>
 
-<style>
-.content ul.publication-list {
+<style lang="scss" scoped>
+@import "~bulma/sass/utilities/_all";
+
+.publication-list {
   padding: 0;
   margin: 0;
   list-style: none;
+  height: 50vh;
+  overflow-y: scroll;
+  border: 1px solid $border;
+}
+
+.publication-list li {
+  padding: 0.5rem;
 }
 </style>
