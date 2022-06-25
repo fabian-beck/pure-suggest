@@ -242,8 +242,9 @@
           class="level-right"
           v-if="publication.title && publication.isActive"
         >
-          <div class="level-item" v-if="publication.oaLink">
+          <div class="level-item">
             <a
+              v-if="publication.oaLink"
               :href="publication.oaLink"
               @click.stop="refocus"
               data-tippy-content="<span class='key'>O</span>pen access"
