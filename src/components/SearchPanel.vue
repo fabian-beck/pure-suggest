@@ -43,6 +43,26 @@
                 ><span v-if="item.author">
                   {{ createShortReference(item) }}</span
                 >
+                &ndash;
+                <span>
+                  DOI:
+                  <a :href="`https://doi.org/${item.DOI}`">{{ item.DOI }}</a>
+                </span>
+                &ndash;
+                <span>
+                  <a
+                    :href="`https://scholar.google.de/scholar?hl=en&q=${
+                      item.title
+                    } ${
+                      item.author
+                        ? item.author.map((name) => name.family).join(' ')
+                        : ''
+                    }`"
+                  >
+                    <b-icon icon="school" size="is-small"></b-icon>&nbsp;Google
+                    Scholar</a
+                  >
+                </span>
               </div>
               <div class="media-right">
                 <div>
