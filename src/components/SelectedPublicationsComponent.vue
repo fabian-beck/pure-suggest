@@ -67,14 +67,14 @@
           <span class="key">A</span>dd
         </b-button>
       </p>
-        <b-button
-          class="button level-right has-background-primary-light"
-          type="submit"
-          icon-left="magnify"
-          @click.stop="$emit('openSearch')"
-        >
-          <span class="key">S</span>earch
-        </b-button>
+      <b-button
+        class="button level-right has-background-primary-light ml-2"
+        type="submit"
+        icon-left="magnify"
+        @click.stop="$emit('openSearch')"
+      >
+        <span class="key">S</span>earch
+      </b-button>
     </form>
     <div>
       <div
@@ -82,24 +82,33 @@
         v-show="publications.length === 0"
       >
         <p>
-          To start, add one or more publications by providing their
-          <b>DOIs</b> (<a href="https://www.doi.org/"
+          To start,
+          <b><b-icon icon="plus-thick" size="is-small"></b-icon> add</b>
+          publications through a <b>title</b> or <b>DOI(s)</b> (<a
+            href="https://www.doi.org/"
             >Document Object Intentfier</a
-          >), a <b>title</b>, or:
+          >), <br />
+          <b><b-icon icon="magnify" size="is-small"></b-icon> search</b> using
+          <b>keywords</b>, or:
         </p>
         <div class="level mt-2">
           <div class="level-item">
-            <button
-              class="button is-primary"
+            <b-button
+              class="button has-background-primary-light"
+              icon-left="file-document"
               @click.stop="$emit('loadExample')"
             >
               Load example
-            </button>
+            </b-button>
           </div>
           <div class="level-item">
-            <button class="button is-primary" @click="importSession">
+            <b-button
+              class="button has-background-primary-light"
+              icon-left="import"
+              @click="importSession"
+            >
               Import session from JSON
-            </button>
+            </b-button>
           </div>
         </div>
       </div>
