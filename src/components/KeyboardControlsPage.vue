@@ -13,6 +13,7 @@
           <h2>General</h2>
           <ul>
             <li><b>a</b> &ndash; Jump to "Add" input field</li>
+            <li><b>s</b> &ndash; Open "Search" dialog</li>
             <li><b>b</b> &ndash; Jump to "Boost" input field</li>
             <li><b>c</b> &ndash; Clear session</li>
             <li>

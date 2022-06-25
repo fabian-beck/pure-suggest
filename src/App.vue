@@ -422,6 +422,9 @@ export default {
         e.preventDefault();
         this.clearActivePublication("setting focus on text field");
         document.getElementsByClassName("input add-publication")[0].focus();
+      } else if (e.key === "s") {
+        e.preventDefault();
+        this.isSearchPanelShown = true;
       } else if (e.key === "b") {
         e.preventDefault();
         this.clearActivePublication("setting focus on text field");

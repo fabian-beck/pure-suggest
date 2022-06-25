@@ -9,7 +9,7 @@
           <form v-on:submit.prevent="search" class="field has-addons">
             <p class="control is-expanded">
               <input
-                class="input add-publication"
+                class="input search-publication"
                 type="text"
                 placeholder="Search query"
                 v-model="searchQuery"
