@@ -20,6 +20,7 @@ export default class Publication {
         this.issue = undefined;
         this.page = undefined;
         this.oaLink = undefined;
+        this.abstract = undefined;
         // citation-related data
         this.citationDois = [];
         this.referenceDois = [];
@@ -125,6 +126,11 @@ export default class Publication {
                     this.isNew = (CURRENT_YEAR - this.year) < 2 ? "published within the last two calendar years" : false;
                 }
             );
+            cachedFetch(`https://api.crossref.org/v1/works/${this.doi}?mailto=fabian.beck@uni-bamberg.de`, response => {
+                if (response.message.abstract) {
+                    this.abstract = response.message.abstract.replaceAll(/<jats:/gi, "<").replaceAll(/<\/jats:/gi, "</").replaceAll(/<.*?>abstract<.*?>/gi, "");
+                }
+            });
         }
     }
 
