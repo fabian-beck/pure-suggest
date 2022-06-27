@@ -457,16 +457,14 @@ li.publication-component {
       padding-right: 0.25rem;
     }
 
-    }
-
     & .abstract {
       font-style: italic;
       font-size: 0.95rem;
       padding: 0.5rem 0;
 
-      &::before{
+      &::before {
         content: "Abstract: ";
-        font-weight: bold; 
+        font-weight: bold;
       }
     }
 
