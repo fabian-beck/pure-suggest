@@ -11,6 +11,7 @@ export default class Publication {
         // meta-data
         this.title = "";
         this.titleHighlighted = "";
+        this.subtitle = undefined;
         this.year = undefined;
         this.author = undefined;
         this.authorShort = undefined;
@@ -129,6 +130,10 @@ export default class Publication {
             cachedFetch(`https://api.crossref.org/v1/works/${this.doi}?mailto=fabian.beck@uni-bamberg.de`, response => {
                 if (response.message.abstract) {
                     this.abstract = response.message.abstract.replaceAll(/<jats:/gi, "<").replaceAll(/<\/jats:/gi, "</").replaceAll(/<.*?>abstract<.*?>/gi, "");
+                }
+                const subtitle = response.message.subtitle;
+                if (subtitle.length && this.title.toLowerCase().indexOf(subtitle[0].toLowerCase())) {
+                    this.subtitle = subtitle[0];
                 }
             });
         }
