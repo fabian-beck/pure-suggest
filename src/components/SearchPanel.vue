@@ -1,7 +1,7 @@
 <template>
   <div class="card">
     <header class="card-header has-background-primary">
-      <p class="card-header-title has-text-white">Search</p>
+      <p class="card-header-title has-text-white"><b-icon icon="magnify"></b-icon> Search Publications</p>
     </header>
     <div class="card-content">
       <div class="content">
@@ -11,7 +11,6 @@
               <input
                 class="input search-publication"
                 type="text"
-                placeholder="Search query"
                 v-model="searchQuery"
                 ref="searchInput"
               />
@@ -23,7 +22,6 @@
                 icon-left="magnify"
                 @click.stop="search"
               >
-                Search
               </b-button>
             </p>
           </form>
