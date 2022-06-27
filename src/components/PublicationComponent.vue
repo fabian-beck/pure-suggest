@@ -182,6 +182,11 @@
         }}</a>
       </div>
       <div
+        class="abstract"
+        v-if="publication.abstract && publication.isActive"
+        v-html="publication.abstract"
+      ></div>
+      <div
         class="notification has-background-danger-light has-text-danger-dark"
         v-if="
           !publication.year &&
@@ -450,6 +455,17 @@ li.publication-component {
 
     & label {
       padding-right: 0.2rem;
+    }
+
+    & .abstract {
+      font-style: italic;
+      font-size: 0.95rem;
+      padding: 0.5rem 0;
+
+      &::before{
+        content: "Abstract: ";
+        font-weight: bold; 
+      }
     }
 
     & .notification {
