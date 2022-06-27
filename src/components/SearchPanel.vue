@@ -76,6 +76,7 @@
                 </div>
               </div>
             </li>
+            <b-loading v-model="isLoading"></b-loading>
           </ul>
         </section>
       </div>
@@ -95,6 +96,7 @@ export default {
     return {
       searchQuery: "",
       searchResults: [],
+      isLoading: false,
     };
   },
   mounted() {
@@ -112,8 +114,10 @@ export default {
 
   methods: {
     search: async function () {
+      this.isLoading = true;
       const publicationSearch = new PublicationSearch(this.searchQuery);
       this.searchResults = await publicationSearch.execute();
+      this.isLoading = false;
     },
     createShortReference: function (item) {
       const lastNames = item.author
