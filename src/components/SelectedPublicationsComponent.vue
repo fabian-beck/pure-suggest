@@ -51,30 +51,65 @@
         <input
           class="input add-publication"
           type="text"
-          placeholder="publication DOI(s) or title"
+          placeholder="DOI(s)/title or search"
           v-model="addQuery"
           data-tippy-content="One or more <b>DOIs</b> (separated by different characters or included in a different format such as BibTeX).<br/>Alternatively, <b>paper title</b> or a unique part of it (only works for one publication)"
           v-tippy
         />
       </p>
+      <!-- copies of buttons necessary as just hiding text inside button leads to empty span tag inside buttons and layout issues -->
       <p class="control">
         <b-button
-          class="button level-right has-background-primary-light"
+          class="
+            button
+            level-right
+            has-background-primary-light
+            is-hidden-touch
+          "
           type="submit"
           icon-left="plus-thick"
           @click.stop="add"
-        >
-          <span class="key">A</span>dd
+          ><span class="key">A</span>dd
         </b-button>
+        <b-button
+          class="
+            button
+            level-right
+            has-background-primary-light
+            is-hidden-desktop
+          "
+          type="submit"
+          icon-left="plus-thick"
+          @click.stop="add"
+        ></b-button>
       </p>
-      <b-button
-        class="button level-right has-background-primary-light ml-2"
-        type="submit"
-        icon-left="magnify"
-        @click.stop="$emit('openSearch')"
-      >
-        <span class="key">S</span>earch
-      </b-button>
+      <p class="control">
+        <b-button
+          class="
+            button
+            level-right
+            has-background-primary-light
+            ml-1
+            is-hidden-touch
+          "
+          type="submit"
+          icon-left="magnify"
+          @click.stop="$emit('openSearch', addQuery)"
+          ><span class="key">S</span>earch</b-button
+        >
+        <b-button
+          class="
+            button
+            level-right
+            has-background-primary-light
+            ml-1
+            is-hidden-desktop
+          "
+          type="submit"
+          icon-left="magnify"
+          @click.stop="$emit('openSearch', addQuery)"
+        ></b-button>
+      </p>
     </form>
     <div>
       <div

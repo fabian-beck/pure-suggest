@@ -22,7 +22,7 @@
         ref="selected"
         :publications="selectedPublications"
         v-on:add="addPublicationsToSelection"
-        v-on:openSearch="isSearchPanelShown = true"
+        v-on:openSearch="openSearch"
         v-on:remove="removePublication"
         v-on:activate="activatePublicationComponentByDoi"
         v-on:exportSingleBibtex="exportSingleBibtex"
@@ -56,6 +56,7 @@
     <QuickAccessBar id="quick-access" class="is-hidden-desktop" />
     <b-modal v-model="isSearchPanelShown">
       <SearchPanel
+        :searchQuery="searchQuery"
         :selectedPublicationsDois="selectedPublicationsDois"
         v-on:add="addPublicationsToSelection"
       />
@@ -104,6 +105,7 @@ export default {
       suggestion: undefined,
       maxSuggestions: 50,
       boostKeywords: [],
+      searchQuery: "",
       excludedPublicationsDois: new Set(),
       readPublicationsDois: new Set(),
       activePublication: undefined,
@@ -283,6 +285,11 @@ export default {
         this.activatePublicationComponent(document.getElementById(doi));
         this.setActivePublication(doi);
       }
+    },
+
+    openSearch: function (query) {
+      this.isSearchPanelShown = true;
+      this.searchQuery = query;
     },
 
     exportSession: function () {

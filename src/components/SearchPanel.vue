@@ -1,7 +1,9 @@
 <template>
   <div class="card">
     <header class="card-header has-background-primary">
-      <p class="card-header-title has-text-white"><b-icon icon="magnify"></b-icon> Search Publications</p>
+      <p class="card-header-title has-text-white">
+        <b-icon icon="magnify"></b-icon> Search Publications
+      </p>
     </header>
     <div class="card-content">
       <div class="content">
@@ -88,11 +90,11 @@ import PublicationSearch from "./../PublicationSearch.js";
 export default {
   name: "SearchPanel",
   props: {
+    searchQuery: String,
     selectedPublicationsDois: Array,
   },
   data() {
     return {
-      searchQuery: "",
       searchResults: [],
       isLoading: false,
     };
