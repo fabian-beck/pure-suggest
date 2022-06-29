@@ -117,9 +117,9 @@
                   : publication.title
               "
             ></span
-            >&nbsp;</b
-          >
-        </span>
+            ></b
+          >&ensp;</span
+        >
         <span v-if="!publication.title" class="unknown">
           <b>[unknown title] </b>
         </span>
