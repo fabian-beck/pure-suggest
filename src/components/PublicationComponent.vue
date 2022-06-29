@@ -117,9 +117,9 @@
                   : publication.title
               "
             ></span
-            >&nbsp;</b
-          >
-        </span>
+            ></b
+          >&ensp;</span
+        >
         <span v-if="!publication.title" class="unknown">
           <b>[unknown title] </b>
         </span>
@@ -462,9 +462,9 @@ li.publication-component {
       font-size: 0.95rem;
       padding: 0.5rem 0;
 
-      &::before{
+      &::before {
         content: "Abstract: ";
-        font-weight: bold; 
+        font-weight: bold;
       }
     }
 
