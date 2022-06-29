@@ -182,6 +182,11 @@
         }}</a>
       </div>
       <div
+        class="abstract"
+        v-if="publication.abstract && publication.isActive"
+        v-html="publication.abstract"
+      ></div>
+      <div
         class="notification has-background-danger-light has-text-danger-dark"
         v-if="
           !publication.year &&
@@ -222,7 +227,7 @@
             >
             <b>{{
               publication.referenceDois.length
-                ? publication.referenceDois.length
+                ? publication.referenceDois.length.toLocaleString("en")
                 : "not available"
             }}</b>
           </div>
@@ -231,7 +236,7 @@
               ><b-icon icon="arrow-top-left-thick" size="is-small"></b-icon
               >Cited by:</label
             >
-            <b>{{ publication.citationDois.length }}</b>
+            <b>{{ publication.citationDois.length.toLocaleString("en") }}</b>
             <span v-if="publication.citationsPerYear > 0">
               &nbsp;({{ publication.citationsPerYear.toFixed(1) }}
               per year)
@@ -449,7 +454,18 @@ li.publication-component {
     }
 
     & label {
-      padding-right: 0.2rem;
+      padding-right: 0.25rem;
+    }
+
+    & .abstract {
+      font-style: italic;
+      font-size: 0.95rem;
+      padding: 0.5rem 0;
+
+      &::before {
+        content: "Abstract: ";
+        font-weight: bold;
+      }
     }
 
     & .notification {
