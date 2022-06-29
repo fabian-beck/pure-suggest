@@ -117,10 +117,8 @@
                   : publication.title
               "
             ></span
-            ><span class="sub-title" v-if="publication.subtitle"
-              >: {{ publication.subtitle }}</span
-            >
-          </b>&ensp;</span
+            ></b
+          >&ensp;</span
         >
         <span v-if="!publication.title" class="unknown">
           <b>[unknown title] </b>
@@ -444,10 +442,6 @@ li.publication-component {
 
     & div.summary {
       margin-bottom: 0.5rem;
-
-      & .sub-title {
-        opacity: 0.5;
-      }
 
       & .tag {
         margin-top: 0.25rem;
