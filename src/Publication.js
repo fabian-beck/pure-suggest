@@ -233,7 +233,7 @@ export default class Publication {
 }`;
     }
 
-    static async computeSuggestions(publications, excludedPublicationsDois, boostKeywords, loadingToast, maxSuggestions) {
+    static async computeSuggestions(publications, excludedPublicationsDois, boostKeywords, updateLoadingToast, maxSuggestions) {
         function incrementSuggestedPublicationCounter(
             doi,
             counter,
@@ -255,7 +255,7 @@ export default class Publication {
         }
 
         console.log(`Starting to compute new suggestions based on ${Object.keys(publications).length} selected (and ${excludedPublicationsDois.size} excluded).`);
-        loadingToast.message = `Computing suggestions`;
+        updateLoadingToast(`Computing suggestions`);
         const suggestedPublications = {};
         Object.values(publications).forEach((publication) => {
             publication.citationCount = 0;
@@ -293,11 +293,11 @@ export default class Publication {
         filteredSuggestions = filteredSuggestions.slice(0, maxSuggestions);
         console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`);
         let publicationsLoadedCount = 0;
-        loadingToast.message = `${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`;
+        updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`);
         await Promise.all(filteredSuggestions.map(async (suggestedPublication) => {
             await suggestedPublication.fetchData()
             publicationsLoadedCount++;
-            loadingToast.message = `${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`;
+            updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`);
         }));
         filteredSuggestions.forEach((publication) =>
             publication.updateScore(boostKeywords)

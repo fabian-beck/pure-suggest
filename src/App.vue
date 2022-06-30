@@ -22,6 +22,7 @@
         ref="selected"
         :publications="selectedPublications"
         v-on:add="addPublicationsToSelection"
+        v-on:startSearching="startSearchingSelected"
         v-on:openSearch="openSearch"
         v-on:remove="removePublication"
         v-on:activate="activatePublicationComponentByDoi"
@@ -114,6 +115,7 @@ export default {
       isKeyboardControlsShown: false,
       isNetworkExpanded: false,
       isLoading: false,
+      loadingComponent: undefined,
       isOverlay: false,
     };
   },
@@ -126,6 +128,11 @@ export default {
     },
   },
   methods: {
+    startSearchingSelected: function () {
+      this.startLoading();
+      this.updateLoadingToast("Searching for publication with matching title");
+    },
+
     addPublicationsToSelection: async function (dois) {
       console.log(`Adding to selection publications with DOIs: ${dois}.`);
       document.activeElement.blur();
@@ -166,34 +173,29 @@ export default {
 
     updateSuggestions: async function (maxSuggestions = 50) {
       this.maxSuggestions = maxSuggestions;
-      const loadingComponent = this.$buefy.loading.open({
-        container: null,
-      });
+      this.startLoading();
       let publicationsLoaded = 0;
-      this.loadingToast = this.$buefy.toast.open({
-        indefinite: true,
-        message: `${publicationsLoaded}/${
+      this.updateLoadingToast(
+        `${publicationsLoaded}/${
           Object.keys(publications).length
-        } selected publications loaded`,
-        type: "is-warning",
-      });
-      this.isLoading = true;
+        } selected publications loaded`
+      );
       this.clearActivePublication("updating suggestions");
       await Promise.all(
         Object.values(publications).map(async (publication) => {
           await publication.fetchData();
           publication.isSelected = true;
           publicationsLoaded++;
-          this.loadingToast.message = `${publicationsLoaded}/${
+          this.updateLoadingToast(`${publicationsLoaded}/${
             Object.keys(publications).length
-          } selected publications loaded`;
+          } selected publications loaded`);
         })
       );
       this.suggestion = await Publication.computeSuggestions(
         publications,
         this.excludedPublicationsDois,
         this.boostKeywords,
-        this.loadingToast,
+        this.updateLoadingToast,
         this.maxSuggestions
       );
       this.suggestion.publications.forEach((publication) => {
@@ -202,10 +204,7 @@ export default {
       this.selectedPublications = Object.values(publications);
       Publication.sortPublications(this.selectedPublications);
       this.$refs.network.plot(true);
-      this.isLoading = false;
-      this.loadingToast.close();
-      this.loadingToast = null;
-      loadingComponent.close();
+      this.endLoading();
     },
 
     loadMoreSuggestions: function () {
@@ -285,6 +284,32 @@ export default {
         this.activatePublicationComponent(document.getElementById(doi));
         this.setActivePublication(doi);
       }
+    },
+
+    startLoading: function () {
+      if (this.isLoading) return;
+      this.loadingComponent = this.$buefy.loading.open({
+        container: null,
+      });
+      this.isLoading = true;
+    },
+
+    endLoading: function () {
+      this.isLoading = false;
+      this.loadingToast.close();
+      this.loadingToast = null;
+      this.loadingComponent.close();
+      this.loadingComponent = null;
+    },
+
+    updateLoadingToast: function (message) {
+      if (!this.loadingToast) {
+        this.loadingToast = this.$buefy.toast.open({
+          indefinite: true,
+          type: "is-warning",
+        });
+      }
+      this.loadingToast.message = message;
     },
 
     openSearch: function (query) {
