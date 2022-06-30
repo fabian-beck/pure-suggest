@@ -193,6 +193,7 @@ export default {
   },
   methods: {
     add: async function () {
+      this.$emit("startSearching");
       const publicationQuery = new PublicationQuery(this.addQuery);
       const dois = await publicationQuery.execute();
       if (dois.length > 0) {
