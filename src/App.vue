@@ -314,10 +314,14 @@ export default {
 
     endLoading: function () {
       this.isLoading = false;
-      this.loadingToast.close();
-      this.loadingToast = null;
-      this.loadingComponent.close();
-      this.loadingComponent = null;
+      if (this.loadingToast) {
+        this.loadingToast.close();
+        this.loadingToast = null;
+      }
+      if (this.loadingComponent) {
+        this.loadingComponent.close();
+        this.loadingComponent = null;
+      }
     },
 
     updateLoadingToast: function (message, type) {
