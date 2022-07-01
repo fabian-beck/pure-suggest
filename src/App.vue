@@ -57,7 +57,7 @@
     <QuickAccessBar id="quick-access" class="is-hidden-desktop" />
     <b-modal v-model="isSearchPanelShown">
       <SearchPanel
-        :searchQuery="searchQuery"
+        :initialSearchQuery="searchQuery"
         :selectedPublicationsDois="selectedPublicationsDois"
         v-on:add="addPublicationsToSelection"
       />
@@ -313,8 +313,8 @@ export default {
     },
 
     openSearch: function (query) {
-      this.isSearchPanelShown = true;
       this.searchQuery = query;
+      this.isSearchPanelShown = true;
     },
 
     exportSession: function () {

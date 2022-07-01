@@ -90,16 +90,18 @@ import PublicationSearch from "./../PublicationSearch.js";
 export default {
   name: "SearchPanel",
   props: {
-    searchQuery: String,
+    initialSearchQuery: String,
     selectedPublicationsDois: Array,
   },
   data() {
     return {
+      searchQuery: "",
       searchResults: [],
       isLoading: false,
     };
   },
   mounted() {
+    this.searchQuery = this.initialSearchQuery;
     setTimeout(() => {
       this.$refs.searchInput.focus();
     }, 300);
