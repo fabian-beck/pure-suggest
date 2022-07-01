@@ -22,6 +22,9 @@
         ref="selected"
         :publications="selectedPublications"
         v-on:add="addPublicationsToSelection"
+        v-on:startSearching="startSearchingSelected"
+        v-on:endSearching="endLoading"
+        v-on:openSearch="openSearch"
         v-on:remove="removePublication"
         v-on:activate="activatePublicationComponentByDoi"
         v-on:exportSingleBibtex="exportSingleBibtex"
@@ -53,6 +56,13 @@
       />
     </div>
     <QuickAccessBar id="quick-access" class="is-hidden-desktop" />
+    <b-modal v-model="isSearchPanelShown">
+      <SearchPanel
+        :initialSearchQuery="searchQuery"
+        :selectedPublicationsDois="selectedPublicationsDois"
+        v-on:add="addPublicationsToSelection"
+      />
+    </b-modal>
     <b-modal v-model="isAboutPageShown">
       <AboutPage />
     </b-modal>
@@ -70,6 +80,7 @@ import SelectedPublicationsComponent from "./components/SelectedPublicationsComp
 import SuggestedPublicationsComponent from "./components/SuggestedPublicationsComponent.vue";
 import NetworkVisComponent from "./components/NetworkVisComponent.vue";
 import QuickAccessBar from "./components/QuickAccessBar.vue";
+import SearchPanel from "./components/SearchPanel.vue";
 import AboutPage from "./components/AboutPage.vue";
 import KeyboardControlsPage from "./components/KeyboardControlsPage.vue";
 
@@ -85,6 +96,7 @@ export default {
     SuggestedPublicationsComponent,
     NetworkVisComponent,
     QuickAccessBar,
+    SearchPanel,
     AboutPage,
     KeyboardControlsPage,
   },
@@ -95,13 +107,16 @@ export default {
       suggestion: undefined,
       maxSuggestions: 50,
       boostKeywords: [],
+      searchQuery: "",
       excludedPublicationsDois: new Set(),
       readPublicationsDois: new Set(),
       activePublication: undefined,
+      isSearchPanelShown: false,
       isAboutPageShown: false,
       isKeyboardControlsShown: false,
       isNetworkExpanded: false,
       isLoading: false,
+      loadingComponent: undefined,
       isOverlay: false,
     };
   },
@@ -109,8 +124,19 @@ export default {
     isMobile: function () {
       return window.innerWidth <= 1023;
     },
+    selectedPublicationsDois: function () {
+      return this.selectedPublications.map((publication) => publication.doi);
+    },
   },
   methods: {
+    startSearchingSelected: function () {
+      this.startLoading();
+      this.updateLoadingToast(
+        "Searching for publication with matching title",
+        "is-primary"
+      );
+    },
+
     addPublicationsToSelection: async function (dois) {
       console.log(`Adding to selection publications with DOIs: ${dois}.`);
       document.activeElement.blur();
@@ -125,19 +151,29 @@ export default {
         }
         if (!publications[doi]) {
           publications[doi] = new Publication(doi);
+          addedDoi = doi;
+          addedPublicationsCount++;
         }
-        addedDoi = doi;
-        addedPublicationsCount++;
       });
-      await this.updateSuggestions();
-      if (addedPublicationsCount == 1) {
-        this.activatePublicationComponentByDoi(addedDoi);
+      if (addedPublicationsCount > 0) {
+        await this.updateSuggestions();
+        if (addedPublicationsCount == 1) {
+          this.activatePublicationComponentByDoi(addedDoi);
+        }
+        this.$buefy.toast.open({
+          message: `Added ${
+            addedPublicationsCount === 1
+              ? "a publication"
+              : addedPublicationsCount + " publications"
+          } to selected`,
+        });
+      } else {
+        this.$buefy.toast.open({
+          message: `Publication${
+            dois.length > 1 ? "s" : ""
+          } already in selected`,
+        });
       }
-      this.$buefy.toast.open({
-        message: `Added ${
-          dois.length === 1 ? "a publication" : dois.length + " publications"
-        } to selected`,
-      });
     },
 
     removePublication: async function (doi) {
@@ -151,34 +187,33 @@ export default {
 
     updateSuggestions: async function (maxSuggestions = 50) {
       this.maxSuggestions = maxSuggestions;
-      const loadingComponent = this.$buefy.loading.open({
-        container: null,
-      });
+      this.startLoading();
       let publicationsLoaded = 0;
-      this.loadingToast = this.$buefy.toast.open({
-        indefinite: true,
-        message: `${publicationsLoaded}/${
+      this.updateLoadingToast(
+        `${publicationsLoaded}/${
           Object.keys(publications).length
         } selected publications loaded`,
-        type: "is-warning",
-      });
-      this.isLoading = true;
+        "is-primary"
+      );
       this.clearActivePublication("updating suggestions");
       await Promise.all(
         Object.values(publications).map(async (publication) => {
           await publication.fetchData();
           publication.isSelected = true;
           publicationsLoaded++;
-          this.loadingToast.message = `${publicationsLoaded}/${
-            Object.keys(publications).length
-          } selected publications loaded`;
+          this.updateLoadingToast(
+            `${publicationsLoaded}/${
+              Object.keys(publications).length
+            } selected publications loaded`,
+            "is-primary"
+          );
         })
       );
       this.suggestion = await Publication.computeSuggestions(
         publications,
         this.excludedPublicationsDois,
         this.boostKeywords,
-        this.loadingToast,
+        this.updateLoadingToast,
         this.maxSuggestions
       );
       this.suggestion.publications.forEach((publication) => {
@@ -187,10 +222,7 @@ export default {
       this.selectedPublications = Object.values(publications);
       Publication.sortPublications(this.selectedPublications);
       this.$refs.network.plot(true);
-      this.isLoading = false;
-      this.loadingToast.close();
-      this.loadingToast = null;
-      loadingComponent.close();
+      this.endLoading();
     },
 
     loadMoreSuggestions: function () {
@@ -270,6 +302,41 @@ export default {
         this.activatePublicationComponent(document.getElementById(doi));
         this.setActivePublication(doi);
       }
+    },
+
+    startLoading: function () {
+      if (this.isLoading) return;
+      this.loadingComponent = this.$buefy.loading.open({
+        container: null,
+      });
+      this.isLoading = true;
+    },
+
+    endLoading: function () {
+      this.isLoading = false;
+      if (this.loadingToast) {
+        this.loadingToast.close();
+        this.loadingToast = null;
+      }
+      if (this.loadingComponent) {
+        this.loadingComponent.close();
+        this.loadingComponent = null;
+      }
+    },
+
+    updateLoadingToast: function (message, type) {
+      if (!this.loadingToast) {
+        this.loadingToast = this.$buefy.toast.open({
+          indefinite: true,
+        });
+      }
+      this.loadingToast.message = message;
+      this.loadingToast.type = type;
+    },
+
+    openSearch: function (query) {
+      this.searchQuery = query;
+      this.isSearchPanelShown = true;
     },
 
     exportSession: function () {
@@ -385,6 +452,8 @@ export default {
       } else if (
         this.isLoading ||
         this.isOverlay ||
+        this.isSearchPanelShown &
+          (document.activeElement.nodeName != "INPUT") ||
         this.isAboutPageShown ||
         this.isKeyboardControlsShown
       ) {
@@ -407,6 +476,9 @@ export default {
         e.preventDefault();
         this.clearActivePublication("setting focus on text field");
         document.getElementsByClassName("input add-publication")[0].focus();
+      } else if (e.key === "s") {
+        e.preventDefault();
+        this.isSearchPanelShown = true;
       } else if (e.key === "b") {
         e.preventDefault();
         this.clearActivePublication("setting focus on text field");

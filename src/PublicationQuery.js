@@ -20,7 +20,7 @@ export default class PublicationQuery {
             const simplifiedQuery = this.query.replace(/\W+/g, "+").toLowerCase();
             console.log(`Searching for publications with title or similar to '${this.query}'.`)
             await cachedFetch(
-                "https://api.crossref.org/works?query.bibliographic=" + simplifiedQuery,
+                `https://api.crossref.org/works?query.bibliographic=${simplifiedQuery}&mailto=fabian.beck@uni-bamberg.de`,
                 (data) => {
                     let maxSimilarity = 0.7;
                     let maxTitle = "";
