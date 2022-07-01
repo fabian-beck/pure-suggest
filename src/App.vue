@@ -130,7 +130,7 @@ export default {
   methods: {
     startSearchingSelected: function () {
       this.startLoading();
-      this.updateLoadingToast("Searching for publication with matching title");
+      this.updateLoadingToast("Searching for publication with matching title", "is-primary");
     },
 
     addPublicationsToSelection: async function (dois) {
@@ -178,7 +178,7 @@ export default {
       this.updateLoadingToast(
         `${publicationsLoaded}/${
           Object.keys(publications).length
-        } selected publications loaded`
+        } selected publications loaded`, "is-primary"
       );
       this.clearActivePublication("updating suggestions");
       await Promise.all(
@@ -188,7 +188,7 @@ export default {
           publicationsLoaded++;
           this.updateLoadingToast(`${publicationsLoaded}/${
             Object.keys(publications).length
-          } selected publications loaded`);
+          } selected publications loaded`, "is-primary");
         })
       );
       this.suggestion = await Publication.computeSuggestions(
@@ -302,14 +302,14 @@ export default {
       this.loadingComponent = null;
     },
 
-    updateLoadingToast: function (message) {
+    updateLoadingToast: function (message, type) {
       if (!this.loadingToast) {
         this.loadingToast = this.$buefy.toast.open({
           indefinite: true,
-          type: "is-warning",
         });
       }
       this.loadingToast.message = message;
+      this.loadingToast.type = type;
     },
 
     openSearch: function (query) {

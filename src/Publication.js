@@ -255,7 +255,6 @@ export default class Publication {
         }
 
         console.log(`Starting to compute new suggestions based on ${Object.keys(publications).length} selected (and ${excludedPublicationsDois.size} excluded).`);
-        updateLoadingToast(`Computing suggestions`);
         const suggestedPublications = {};
         Object.values(publications).forEach((publication) => {
             publication.citationCount = 0;
@@ -293,11 +292,11 @@ export default class Publication {
         filteredSuggestions = filteredSuggestions.slice(0, maxSuggestions);
         console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`);
         let publicationsLoadedCount = 0;
-        updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`);
+        updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "is-info");
         await Promise.all(filteredSuggestions.map(async (suggestedPublication) => {
             await suggestedPublication.fetchData()
             publicationsLoadedCount++;
-            updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`);
+            updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "is-info");
         }));
         filteredSuggestions.forEach((publication) =>
             publication.updateScore(boostKeywords)
