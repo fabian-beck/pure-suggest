@@ -130,7 +130,10 @@ export default {
   methods: {
     startSearchingSelected: function () {
       this.startLoading();
-      this.updateLoadingToast("Searching for publication with matching title", "is-primary");
+      this.updateLoadingToast(
+        "Searching for publication with matching title",
+        "is-primary"
+      );
     },
 
     addPublicationsToSelection: async function (dois) {
@@ -147,19 +150,30 @@ export default {
         }
         if (!publications[doi]) {
           publications[doi] = new Publication(doi);
+          addedDoi = doi;
+          addedPublicationsCount++;
         }
-        addedDoi = doi;
-        addedPublicationsCount++;
       });
-      await this.updateSuggestions();
-      if (addedPublicationsCount == 1) {
-        this.activatePublicationComponentByDoi(addedDoi);
+      if (addedPublicationsCount > 0) {
+        await this.updateSuggestions();
+        if (addedPublicationsCount == 1) {
+          this.activatePublicationComponentByDoi(addedDoi);
+        }
+        this.$buefy.toast.open({
+          message: `Added ${
+            addedPublicationsCount === 1
+              ? "a publication"
+              : addedPublicationsCount + " publications"
+          } to selected`,
+        });
+      } else {
+        this.$buefy.toast.open({
+          message: `Publication${
+            dois.length > 1 ? "s" : ""
+          } already in selected`,
+        });
       }
-      this.$buefy.toast.open({
-        message: `Added ${
-          dois.length === 1 ? "a publication" : dois.length + " publications"
-        } to selected`,
-      });
+      this.endLoading();
     },
 
     removePublication: async function (doi) {
@@ -178,7 +192,8 @@ export default {
       this.updateLoadingToast(
         `${publicationsLoaded}/${
           Object.keys(publications).length
-        } selected publications loaded`, "is-primary"
+        } selected publications loaded`,
+        "is-primary"
       );
       this.clearActivePublication("updating suggestions");
       await Promise.all(
@@ -186,9 +201,12 @@ export default {
           await publication.fetchData();
           publication.isSelected = true;
           publicationsLoaded++;
-          this.updateLoadingToast(`${publicationsLoaded}/${
-            Object.keys(publications).length
-          } selected publications loaded`, "is-primary");
+          this.updateLoadingToast(
+            `${publicationsLoaded}/${
+              Object.keys(publications).length
+            } selected publications loaded`,
+            "is-primary"
+          );
         })
       );
       this.suggestion = await Publication.computeSuggestions(
