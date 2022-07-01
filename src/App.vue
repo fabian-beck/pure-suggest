@@ -23,6 +23,7 @@
         :publications="selectedPublications"
         v-on:add="addPublicationsToSelection"
         v-on:startSearching="startSearchingSelected"
+        v-on:endSearching="endLoading"
         v-on:openSearch="openSearch"
         v-on:remove="removePublication"
         v-on:activate="activatePublicationComponentByDoi"
@@ -173,7 +174,6 @@ export default {
           } already in selected`,
         });
       }
-      this.endLoading();
     },
 
     removePublication: async function (doi) {

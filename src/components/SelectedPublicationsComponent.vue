@@ -202,6 +202,7 @@ export default {
       } else {
         this.noPublicationWarning = true;
       }
+      this.$emit("endSearching");
     },
     removePublication: function (doi) {
       this.$emit("remove", doi);
