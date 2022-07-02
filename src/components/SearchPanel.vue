@@ -105,6 +105,9 @@ export default {
     setTimeout(() => {
       this.$refs.searchInput.focus();
     }, 300);
+    if (this.searchQuery) {
+        this.search();
+    }
   },
   computed: {
     filteredSearchResults: function () {
