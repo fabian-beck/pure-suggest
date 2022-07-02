@@ -94,7 +94,7 @@
           "
           type="submit"
           icon-left="magnify"
-          @click.stop="openSearch"
+          @click.stop="openSearch(false)"
           ><span class="key">S</span>earch</b-button
         >
         <b-button
@@ -107,7 +107,7 @@
           "
           type="submit"
           icon-left="magnify"
-          @click.stop="openSearch"
+          @click.stop="openSearch(false)"
         ></b-button>
       </p>
     </form>
@@ -196,18 +196,20 @@ export default {
       this.$emit("startSearching");
       const publicationQuery = new PublicationQuery(this.addQuery);
       const query = await publicationQuery.execute();
-      if (query.ambiguousResult) {
-        this.$emit("searchEndedWithoutResult");
-        this.openSearch(true);
-      } else if (query.dois.length > 0) {
-        this.$emit("add", query.dois);
-        this.addQuery = "";
+      if (query.dois.length > 0) {
+        if (query.ambiguousResult) {
+          this.$emit("searchEndedWithoutResult");
+          this.openSearch(true);
+        } else {
+          this.$emit("add", query.dois);
+          this.addQuery = "";
+        }
       } else {
         this.noPublicationWarning = true;
         this.$emit("searchEndedWithoutResult");
       }
     },
-    openSearch: function (ambiguous) {
+    openSearch: function (ambiguous = false) {
       this.$emit(
         "openSearch",
         this.addQuery,
