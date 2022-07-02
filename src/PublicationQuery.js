@@ -2,6 +2,8 @@ import _ from "lodash";
 
 import { cachedFetch } from "./Cache.js";
 
+const minSimilarityDifference = 0.1;
+
 export default class PublicationQuery {
 
     constructor(query) {
@@ -10,6 +12,7 @@ export default class PublicationQuery {
 
     async execute() {
         let dois = [];
+        let ambiguousResult = false;
         this.query.split(/ |"|\{|\}|doi:|doi.org\//).forEach((doi) => {
             doi = _.trim(doi, ".");
             if (doi.indexOf("10.") === 0) {
@@ -24,11 +27,20 @@ export default class PublicationQuery {
                 (data) => {
                     let maxSimilarity = 0.7;
                     let maxTitle = "";
+                    ambiguousResult = true;
                     data.message.items.filter(item => item.title).forEach((item) => {
                         const title =
                             item.title[0] +
                             (item.subtitle && item.title[0] !== item.subtitle[0] ? " " + item.subtitle[0] : "")
                         const similarity = this.computeTitleSimilarity(simplifiedQuery, title);
+                        const similarityDifference = similarity - maxSimilarity
+                        if (similarityDifference > minSimilarityDifference) {
+                            // clear new max 
+                            ambiguousResult = false;
+                        } else if (similarityDifference > -minSimilarityDifference) {
+                            // close to max
+                            ambiguousResult = true;
+                        }
                         console.log(`  ... similarity to '${title}' is ${similarity}.`)
                         if (similarity > maxSimilarity) {
                             dois = [item.DOI];
@@ -37,14 +49,18 @@ export default class PublicationQuery {
                         }
                     });
                     if (maxTitle) {
-                        console.log(`  Identified as best fit: '${maxTitle}' (${dois[0]})`);
+                        if (!ambiguousResult) {
+                            console.log(`  Identified as best fit: '${maxTitle}' (${dois[0]})`);
+                        } else {
+                            console.log("  Some publication titles are sufficiently similar, but the result is ambiguous.");
+                        }
                     } else {
                         console.log("  None of the publication titles is sufficiently similar.");
                     }
                 }
             );
         }
-        return dois;
+        return { dois: dois, ambiguousResult: ambiguousResult };
     }
 
     computeTitleSimilarity(query, title) {

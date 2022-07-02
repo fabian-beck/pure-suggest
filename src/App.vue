@@ -23,7 +23,7 @@
         :publications="selectedPublications"
         v-on:add="addPublicationsToSelection"
         v-on:startSearching="startSearchingSelected"
-        v-on:endSearching="endLoading"
+        v-on:searchEndedWithoutResult="endLoading"
         v-on:openSearch="openSearch"
         v-on:remove="removePublication"
         v-on:activate="activatePublicationComponentByDoi"
@@ -334,9 +334,16 @@ export default {
       this.loadingToast.type = type;
     },
 
-    openSearch: function (query) {
+    openSearch: function (query, message) {
       this.searchQuery = query;
       this.isSearchPanelShown = true;
+      if (message) {
+        this.$buefy.toast.open({
+          duration: 5000,
+          message: message,
+          type: "is-primary",
+        });
+      }
     },
 
     exportSession: function () {

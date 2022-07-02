@@ -94,7 +94,7 @@
           "
           type="submit"
           icon-left="magnify"
-          @click.stop="$emit('openSearch', addQuery)"
+          @click.stop="openSearch(false)"
           ><span class="key">S</span>earch</b-button
         >
         <b-button
@@ -107,7 +107,7 @@
           "
           type="submit"
           icon-left="magnify"
-          @click.stop="$emit('openSearch', addQuery)"
+          @click.stop="openSearch(false)"
         ></b-button>
       </p>
     </form>
@@ -195,14 +195,27 @@ export default {
     add: async function () {
       this.$emit("startSearching");
       const publicationQuery = new PublicationQuery(this.addQuery);
-      const dois = await publicationQuery.execute();
-      if (dois.length > 0) {
-        this.$emit("add", dois);
-        this.addQuery = "";
+      const query = await publicationQuery.execute();
+      if (query.dois.length > 0) {
+        if (query.ambiguousResult) {
+          this.$emit("searchEndedWithoutResult");
+          this.openSearch(true);
+        } else {
+          this.$emit("add", query.dois);
+          this.addQuery = "";
+        }
       } else {
         this.noPublicationWarning = true;
+        this.$emit("searchEndedWithoutResult");
       }
-      this.$emit("endSearching");
+    },
+    openSearch: function (ambiguous = false) {
+      this.$emit(
+        "openSearch",
+        this.addQuery,
+        ambiguous ? "Several publications might match, please select..." : null
+      );
+      this.addQuery = "";
     },
     removePublication: function (doi) {
       this.$emit("remove", doi);
