@@ -444,7 +444,7 @@ export default {
     }
 
     & text.unread {
-      fill: $info;
+      fill: $info-dark;
       font-weight: 1000;
     }
 

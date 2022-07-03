@@ -408,6 +408,7 @@ li.publication-component {
 
     & .glyph {
       color: $info-dark;
+      text-shadow: 0 0 15px $grey-lighter;
     }
   }
 
