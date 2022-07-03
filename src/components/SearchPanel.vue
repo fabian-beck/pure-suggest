@@ -59,7 +59,12 @@
                     }`"
                     class="ml-2"
                   >
-                    <b-icon icon="school" size="is-small"></b-icon
+                    <b-icon
+                      icon="school"
+                      size="is-small"
+                      data-tippy-content="Google Scholar"
+                      v-tippy
+                    ></b-icon
                   ></a>
                 </span>
               </div>
@@ -160,6 +165,7 @@ export default {
 }
 
 .publication-list li {
+  margin: 0 !important;
   padding: 0.5rem;
 }
 </style>
