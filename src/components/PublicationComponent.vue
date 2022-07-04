@@ -247,28 +247,28 @@
               @click.stop="showAbstract"
               data-tippy-content="Abs<span class='key'>t</span>ract"
               v-tippy
-              ><b-icon icon="text" size="is-small"></b-icon
+              ><b-icon icon="text"></b-icon
             ></a>
             <a
               v-if="publication.oaLink"
               :href="publication.oaLink"
-              class="ml-4"
+              class="ml-5"
               @click.stop="refocus"
               data-tippy-content="<span class='key'>O</span>pen access"
               v-tippy
-              ><b-icon icon="lock-open-check-outline" size="is-small"></b-icon
+              ><b-icon icon="lock-open-check-outline"></b-icon
             ></a>
             <a
               :href="publication.gsUrl"
-              class="ml-4"
+              class="ml-5"
               @click.stop="refocus"
               data-tippy-content="<span class='key'>G</span>oogle Scholar"
               v-tippy
-              ><b-icon icon="school" size="is-small"></b-icon
+              ><b-icon icon="school"></b-icon
             ></a>
             <a
               @click.stop="exportBibtex"
-              class="ml-4"
+              class="ml-5"
               data-tippy-content="Export as BibTe<span class='key'>X</span> citation"
               v-tippy
               ><b-icon icon="format-quote-close"></b-icon
