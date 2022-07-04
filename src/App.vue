@@ -27,6 +27,7 @@
         v-on:openSearch="openSearch"
         v-on:remove="removePublication"
         v-on:activate="activatePublicationComponentByDoi"
+        v-on:showAbstract="showAbstract"
         v-on:exportSingleBibtex="exportSingleBibtex"
         v-on:updateBoost="updateBoost"
         v-on:loadExample="loadExample"
@@ -39,6 +40,7 @@
         v-on:add="addPublicationsToSelection"
         v-on:remove="removePublication"
         v-on:activate="activatePublicationComponentByDoi"
+        v-on:showAbstract="showAbstract"
         v-on:exportSingleBibtex="exportSingleBibtex"
         v-on:loadMore="loadMoreSuggestions"
       />
@@ -346,6 +348,25 @@ export default {
       }
     },
 
+    showAbstract: function (publication) {
+      const _this = this;
+      const onClose = function() {
+        _this.isOverlay = false;
+        _this.activatePublicationComponent(document.getElementById(publication.doi));
+      }
+      this.isOverlay = true;
+      this.$buefy.dialog.alert({
+        message: `<div><b>${publication.title}</b></div><div><i>${publication.abstract}</i></div>`,
+        type: "is-dark",
+        hasIcon: true,
+        icon: "text",
+        confirmText: "Close",
+        canCancel: ["escape", "outside"],
+        onConfirm: onClose,
+        onCancel: onClose,
+      });
+    },
+
     exportSession: function () {
       let data = {
         selected: Object.keys(publications),
@@ -527,6 +548,9 @@ export default {
         } else if (e.key === "d") {
           e.preventDefault();
           window.open(this.activePublication.doiUrl);
+        } else if (e.key === "t" && this.activePublication.abstract) {
+          e.preventDefault();
+          this.showAbstract(this.activePublication);
         } else if (e.key === "o" && this.activePublication.oaLink) {
           e.preventDefault();
           window.open(this.activePublication.oaLink);

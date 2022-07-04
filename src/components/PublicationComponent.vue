@@ -116,8 +116,7 @@
                   ? publication.titleHighlighted
                   : publication.title
               "
-            ></span
-            ></b
+            ></span></b
           >&ensp;</span
         >
         <span v-if="!publication.title" class="unknown">
@@ -182,11 +181,6 @@
         }}</a>
       </div>
       <div
-        class="abstract"
-        v-if="publication.abstract && publication.isActive"
-        v-html="publication.abstract"
-      ></div>
-      <div
         class="notification has-background-danger-light has-text-danger-dark"
         v-if="
           !publication.year &&
@@ -249,8 +243,16 @@
         >
           <div class="level-item">
             <a
+              v-if="publication.abstract"
+              @click.stop="showAbstract"
+              data-tippy-content="Abs<span class='key'>t</span>ract"
+              v-tippy
+              ><b-icon icon="text" size="is-small"></b-icon
+            ></a>
+            <a
               v-if="publication.oaLink"
               :href="publication.oaLink"
+              class="ml-4"
               @click.stop="refocus"
               data-tippy-content="<span class='key'>O</span>pen access"
               v-tippy
@@ -343,13 +345,17 @@ export default {
     },
   },
   methods: {
-    refocus: function () {
-      document.getElementById(this.publication.doi).focus();
+    showAbstract: function () {
+      this.$emit("showAbstract", this.publication);
     },
 
     exportBibtex: function () {
       this.$emit("exportBibtex", this.publication);
       this.refocus();
+    },
+
+    refocus: function () {
+      document.getElementById(this.publication.doi).focus();
     },
   },
 };
