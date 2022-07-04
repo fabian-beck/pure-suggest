@@ -245,7 +245,7 @@
             <a
               v-if="publication.abstract"
               @click.stop="showAbstract"
-              data-tippy-content="Abstract"
+              data-tippy-content="Abs<span class='key'>t</span>ract"
               v-tippy
               ><b-icon icon="text" size="is-small"></b-icon
             ></a>
@@ -346,16 +346,7 @@ export default {
   },
   methods: {
     showAbstract: function () {
-      this.$buefy.dialog.alert({
-        message: `<b>${this.publication.title}</b><i>${this.publication.abstract}</i>`,
-        type: "is-dark",
-        hasIcon: true,
-        icon: "text",
-        confirmText: "Close",
-        canCancel: ["escape", "outside"],
-        onConfirm: this.refocus,
-        onCancel: this.refocus,
-      });
+      this.$emit("showAbstract", this.publication);
     },
 
     exportBibtex: function () {
