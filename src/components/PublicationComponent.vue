@@ -232,8 +232,7 @@
             >
             <b>{{ publication.citationDois.length.toLocaleString("en") }}</b>
             <span v-if="publication.citationsPerYear > 0">
-              &nbsp;({{ publication.citationsPerYear.toFixed(1) }}
-              per year)
+              &nbsp;({{ publication.citationsPerYear.toFixed(1) }}/year)
             </span>
           </div>
         </div>
@@ -446,6 +445,7 @@ li.publication-component {
 
   & .media-content {
     padding: 0.5rem;
+    overflow: auto;
 
     & div.summary {
       margin-bottom: 0.5rem;
@@ -481,12 +481,26 @@ li.publication-component {
     }
 
     & .stats-and-links {
+      flex-wrap: wrap;
+
+      & .level-left,
+      & .level-right {
+        margin-top: 0.25rem;
+        flex-wrap: wrap;
+        flex-grow: 1;
+      }
+
+      & .level-item {
+        flex-wrap: wrap;
+      }
+
       & .level-left .level-item {
         margin-right: 1.5rem;
       }
 
       & .level-right .level-item {
-        margin-left: 1.5rem;
+        justify-content: right;
+        margin: 0;
       }
     }
   }
@@ -509,16 +523,10 @@ li.publication-component {
       .level {
         & .level-left .level-item {
           justify-content: left;
-          margin: 0;
         }
 
-        & .level-right {
-          margin: 0;
-
-          & .level-item {
-            justify-content: right;
-            margin: 0;
-          }
+        & .level-right .level-item {
+          justify-content: right;
         }
       }
     }
