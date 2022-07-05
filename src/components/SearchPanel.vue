@@ -127,6 +127,9 @@ export default {
       this.isLoading = true;
       const publicationSearch = new PublicationSearch(this.searchQuery);
       this.searchResults = await publicationSearch.execute();
+      if (this.filteredSearchResults.length === 0) {
+          this.$emit("searchEmpty");
+      }
       this.isLoading = false;
     },
     createShortReference: function (item) {
