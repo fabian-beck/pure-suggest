@@ -63,6 +63,7 @@
         :initialSearchQuery="searchQuery"
         :selectedPublicationsDois="selectedPublicationsDois"
         v-on:add="addPublicationsToSelection"
+        v-on:searchEmpty="notifySearchEmpty"
       />
     </b-modal>
     <b-modal v-model="isAboutPageShown">
@@ -346,6 +347,14 @@ export default {
           type: "is-primary",
         });
       }
+    },
+
+    notifySearchEmpty: function() {
+      this.$buefy.toast.open({
+          duration: 5000,
+          message: "No matching publications found",
+          type: "is-danger",
+        });
     },
 
     showAbstract: function (publication) {
