@@ -176,6 +176,7 @@ export default {
             dois.length > 1 ? "s" : ""
           } already in selected`,
         });
+        this.endLoading();
       }
     },
 
