@@ -1,4 +1,4 @@
-# PURE suggest
+# PURE suggest – Citation-based literature search
 
 *PURE suggest* is a scientific literature search tool that, starting from some seed papers, suggests scientific publications through citations/references.
 
