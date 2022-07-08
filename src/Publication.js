@@ -6,7 +6,7 @@ import { shuffle } from "./Util.js"
 export default class Publication {
     constructor(doi) {
         // identifier
-        this.doi = doi;
+        this.doi = doi.toLowerCase();
         this.doiUrl = "https://doi.org/" + doi;
         // meta-data
         this.title = "";
@@ -107,12 +107,12 @@ export default class Publication {
                     // references and citations
                     data.reference.split("; ").forEach(referenceDoi => {
                         if (referenceDoi) {
-                            this.referenceDois.push(referenceDoi);
+                            this.referenceDois.push(referenceDoi.toLowerCase());
                         }
                     });
                     data.citation.split("; ").forEach(citationDoi => {
                         if (citationDoi) {
-                            this.citationDois.push(citationDoi);
+                            this.citationDois.push(citationDoi.toLowerCase());
                         }
                     });
                     this.citationsPerYear = this.citationDois.length / (Math.max(1, CURRENT_YEAR - this.year));
@@ -234,6 +234,7 @@ export default class Publication {
     }
 
     static async computeSuggestions(publications, excludedPublicationsDois, boostKeywords, updateLoadingToast, maxSuggestions) {
+
         function incrementSuggestedPublicationCounter(
             doi,
             counter,

@@ -149,6 +149,7 @@ export default {
       let addedPublicationsCount = 0;
       let addedDoi = "";
       dois.forEach((doi) => {
+        doi = doi.toLowerCase();
         if (this.excludedPublicationsDois.has(doi)) {
           this.excludedPublicationsDois.delete(doi);
         }
@@ -302,6 +303,7 @@ export default {
     },
 
     activatePublicationComponentByDoi: function (doi) {
+      console.log(publications[doi])
       if (doi !== this.activePublication?.doi) {
         this.activatePublicationComponent(document.getElementById(doi));
         this.setActivePublication(doi);
