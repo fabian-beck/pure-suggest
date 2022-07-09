@@ -119,10 +119,10 @@
         <p>
           To start,
           <b><b-icon icon="plus-thick" size="is-small"></b-icon> add</b>
-          publications through a <b>title</b> or <b>DOI(s)</b> (<a
+          publications through a <b>title</b> or <a
             href="https://www.doi.org/"
-            >Document Object Intentfier</a
-          >), <br />
+            ><b>DOI(s)</b></a
+          >, <br />
           <b><b-icon icon="magnify" size="is-small"></b-icon> search</b> using
           <b>keywords</b>, or:
         </p>

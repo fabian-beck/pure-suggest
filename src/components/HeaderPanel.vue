@@ -65,7 +65,7 @@
           {{ this.$appSubtitle }}
         </div>
       </div>
-      <div class="column is-three-quarters">
+      <div class="column is-two-thirds">
         <div
           class="notification has-text-centered p-2"
           v-show="selectedPublicationsCount === 0"
