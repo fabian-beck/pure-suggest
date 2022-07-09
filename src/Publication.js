@@ -290,6 +290,7 @@ export default class Publication {
             (a, b) =>
                 b.citationCount + b.referenceCount - (a.citationCount + a.referenceCount)
         );
+        const preloadSuggestions = filteredSuggestions.slice(maxSuggestions, maxSuggestions + 50);
         filteredSuggestions = filteredSuggestions.slice(0, maxSuggestions);
         console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`);
         let publicationsLoadedCount = 0;
@@ -304,6 +305,9 @@ export default class Publication {
         );
         this.sortPublications(filteredSuggestions);
         console.log("Completed computing and loading of new suggestions.");
+        preloadSuggestions.forEach(publication => {
+            publication.fetchData()
+        })
         return {
             publications: Object.values(filteredSuggestions),
             totalSuggestions: Object.values(suggestedPublications).length
