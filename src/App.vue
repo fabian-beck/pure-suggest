@@ -385,7 +385,7 @@ export default {
         excluded: Array.from(this.excludedPublicationsDois),
         boost: this.boostKeywords.join(", "),
       };
-      saveAsFile("session.json", JSON.stringify(data));
+      saveAsFile("session.json", "application/json", JSON.stringify(data));
     },
 
     importSession: function (file) {
@@ -415,7 +415,7 @@ export default {
       publicationList.forEach(
         (publication) => (bib += publication.toBibtex() + "\n\n")
       );
-      saveAsFile("publications.bib", bib);
+      saveAsFile("publications.bib", "application/x-bibtex", bib);
     },
 
     clearSession: function () {
