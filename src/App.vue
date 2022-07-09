@@ -303,7 +303,7 @@ export default {
     },
 
     activatePublicationComponentByDoi: function (doi) {
-      console.log(publications[doi])
+      console.log(publications[doi]);
       if (doi !== this.activePublication?.doi) {
         this.activatePublicationComponent(document.getElementById(doi));
         this.setActivePublication(doi);
@@ -352,20 +352,22 @@ export default {
       }
     },
 
-    notifySearchEmpty: function() {
+    notifySearchEmpty: function () {
       this.$buefy.toast.open({
-          duration: 5000,
-          message: "No matching publications found",
-          type: "is-danger",
-        });
+        duration: 5000,
+        message: "No matching publications found",
+        type: "is-danger",
+      });
     },
 
     showAbstract: function (publication) {
       const _this = this;
-      const onClose = function() {
+      const onClose = function () {
         _this.isOverlay = false;
-        _this.activatePublicationComponent(document.getElementById(publication.doi));
-      }
+        _this.activatePublicationComponent(
+          document.getElementById(publication.doi)
+        );
+      };
       this.isOverlay = true;
       this.$buefy.dialog.alert({
         message: `<div><b>${publication.title}</b></div><div><i>${publication.abstract}</i></div>`,
@@ -577,16 +579,19 @@ export default {
     };
 
     document.addEventListener("keydown", this._keyListener.bind(this));
+
+    // triggers a prompt before closing/reloading the page
+    window.onbeforeunload = () => {
+      console.log(this.selectedPublications);
+      if (this.selectedPublications && this.selectedPublications.length)
+        return "";
+      return null;
+    };
   },
 
   beforeDestroy() {
     document.removeEventListener("keydown", this._keyListener);
   },
-};
-
-// triggers a prompt before closing/reloading the page
-window.onbeforeunload = function () {
-  return "";
 };
 
 let publications = {};
