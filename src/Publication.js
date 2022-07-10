@@ -127,14 +127,20 @@ export default class Publication {
                 }
             );
             await cachedFetch(`https://api.crossref.org/v1/works/${this.doi}?mailto=fabian.beck@uni-bamberg.de`, response => {
-                if (response.message.abstract) {
-                    this.abstract = response.message.abstract.replaceAll(/<jats:/gi, "<").replaceAll(/<\/jats:/gi, "</").replaceAll(/<.*?>abstract<.*?>/gi, "");
+                const message = response.message;
+                if (message.abstract) {
+                    this.abstract = message.abstract.replaceAll(/<jats:/gi, "<").replaceAll(/<\/jats:/gi, "</").replaceAll(/<.*?>abstract<.*?>/gi, "");
                 }
-                const subtitle = response.message.subtitle;
+                const subtitle = message.subtitle;
                 if (subtitle.length && this.title.toLowerCase().indexOf(subtitle[0].toLowerCase())) {
                     // merging title and subtitle, while adding a colon only when title does not end with a non-alpha-numeric character (cleaning potential html tags first)
                     const cleanedTitle = this.title.replaceAll(/<[^>]*>/g, "");
                     this.title = `${this.title}${cleanedTitle.match(/^.*\W$/) ? "" : ":"}  ${subtitle[0]}`;
+                }
+                if (!this.year) {
+                    if (message.created) {
+                        this.year = message.created["date-parts"][0][0];
+                    }
                 }
             });
         }
