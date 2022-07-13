@@ -37,6 +37,12 @@
               >MIT License <b-icon icon="license" size="is-small" /></a
             >.
           </p>
+          <p>
+            Follow updates on
+            <a href="https://twitter.com/pure_suggest">
+              Twitter <b-icon icon="twitter" size="is-small"></b-icon> (@pure_suggest)
+            </a>.
+          </p>
           <h2><b-icon icon="file-document" /> Scientific Publication</h2>
           <p>
             If you want to cite the tool, you can refer to the following

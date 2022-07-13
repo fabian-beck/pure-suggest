@@ -30,16 +30,21 @@
             <b-icon icon="export"></b-icon>
             <span class="ml-2">Export selected as BibTeX</span>
           </b-navbar-item>
-          <b-navbar-item
-            @click="$emit('clearSession')"
-            class="has-text-danger"
-          >
+          <b-navbar-item @click="$emit('clearSession')" class="has-text-danger">
             <b-icon icon="delete"></b-icon
             ><span class="ml-2"><span class="key">C</span>lear session</span>
           </b-navbar-item>
         </b-navbar-dropdown>
       </template>
       <template #end>
+         <b-navbar-item tag="div" class="mr-6 ml-1">
+          <a href="https://twitter.com/pure_suggest">
+            <b-icon icon="twitter"></b-icon>
+          </a>
+          <a href="https://github.com/fabian-beck/pure-suggest" class="ml-5">
+            <b-icon icon="github"></b-icon>
+          </a>
+        </b-navbar-item>
         <b-navbar-dropdown
           label="⋮"
           icon-left="dots-vertical"
