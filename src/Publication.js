@@ -42,7 +42,8 @@ export default class Publication {
     }
 
     async fetchData() {
-        if (!this.title) {
+        if (this.title) return
+        try {
             await cachedFetch(
                 `https://opencitations.net/index/coci/api/v1/metadata/${this.doi}`,
                 message => {
@@ -53,13 +54,6 @@ export default class Publication {
                     const data = message[0];
                     // title
                     this.title = data.title;
-                    this.title = "";
-                    data.title.split(" ").forEach(word => {
-                        const mappedWord = TITLE_WORD_MAP[word.toLowerCase()];
-                        this.title += (mappedWord ? mappedWord : word) + " ";
-                    });
-                    this.title = this.title.charAt(0).toUpperCase() + this.title.slice(1); // make first character uppercase
-                    this.title = this.title.trim();
                     // author
                     if (data.author) {
                         const authorArray = data.author.split('; ');
@@ -135,7 +129,7 @@ export default class Publication {
                 if (subtitle.length && this.title.toLowerCase().indexOf(subtitle[0].toLowerCase())) {
                     // merging title and subtitle, while adding a colon only when title does not end with a non-alpha-numeric character (cleaning potential html tags first)
                     const cleanedTitle = this.title.replaceAll(/<[^>]*>/g, "");
-                    this.title = `${this.title}${cleanedTitle.match(/^.*\W$/) ? "" : ":"}  ${subtitle[0]}`;
+                    this.title += `${cleanedTitle.match(/^.*\W$/) ? "" : ":"}  ${subtitle[0]}`;
                 }
                 if (!this.year) {
                     if (message.created) {
@@ -143,6 +137,9 @@ export default class Publication {
                     }
                 }
             });
+            this.title = cleanTitle(this.title);
+        } catch (error) {
+            console.log(error);
         }
     }
 
@@ -341,6 +338,8 @@ const TITLE_WORD_MAP = {
     "for": "for",
     "from": "from",
     "ieee": "IEEE",
+    "ii": "II",
+    "iii": "III",
     "in": "in",
     "not": "not",
     "of": "of",
@@ -350,6 +349,22 @@ const TITLE_WORD_MAP = {
     "their": "their",
     "through": "through",
     "to": "to",
+    "via": "via",
     "with": "with",
     "within": "within",
+}
+
+function removeHtmlTags(string) {
+    return string.replaceAll(/<[^>]*>/g, "");
+}
+
+function cleanTitle(title) {
+    let cleanedTitle = "";
+    removeHtmlTags(title).split(" ").forEach(word => {
+        const mappedWord = TITLE_WORD_MAP[word.toLowerCase()];
+        cleanedTitle += (mappedWord ? mappedWord : word) + " ";
+    });
+    cleanedTitle = cleanedTitle.charAt(0).toUpperCase() + cleanedTitle.slice(1); // make first character uppercase
+    cleanedTitle = cleanedTitle.trim();
+    return cleanedTitle;
 }

@@ -303,7 +303,6 @@ export default {
     },
 
     activatePublicationComponentByDoi: function (doi) {
-      console.log(publications[doi]);
       if (doi !== this.activePublication?.doi) {
         this.activatePublicationComponent(document.getElementById(doi));
         this.setActivePublication(doi);
