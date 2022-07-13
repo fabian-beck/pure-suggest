@@ -433,6 +433,7 @@ export default {
           this.setBoostKeywords("");
           this.updateSuggestions();
           this.isOverlay = false;
+          this.isNetworkExpanded = false;
         },
         onCancel: () => {
           this.isOverlay = false;
