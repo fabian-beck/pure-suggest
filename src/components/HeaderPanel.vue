@@ -51,6 +51,10 @@
           right
           collapsible
         >
+        <b-navbar-item @click="$emit('openFeedback')">
+            <b-icon icon="comment-quote-outline"></b-icon
+            ><span class="ml-2">Feedback</span>
+          </b-navbar-item>
           <b-navbar-item
             @click="$emit('openKeyboardControls')"
             class="is-hidden-touch"

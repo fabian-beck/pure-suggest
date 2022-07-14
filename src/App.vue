@@ -8,9 +8,10 @@
       v-on:exportSession="exportSession"
       v-on:exportBibtex="exportAllBibtex"
       v-on:clearSession="clearSession"
-      v-on:clearCache="clearCache"
+      v-on:openFeedback="openFeedback"
       v-on:openAbout="isAboutPageShown = true"
       v-on:openKeyboardControls="isKeyboardControlsShown = true"
+      v-on:clearCache="clearCache"
     />
     <div
       id="main"
@@ -470,6 +471,20 @@ export default {
         boost: "cit, vis",
       };
       this.loadSession(session);
+    },
+
+    openFeedback: function () {
+      this.isOverlay = true;
+      this.$buefy.dialog.confirm({
+        message: "<p><b>We are interested in your opinion!</b></p><p>&nbsp;</p><p>What you like and do not like, what features are missing, how you are using the tool, bugs, criticism, ... anything.</p><p>&nbsp;</p><p>We invite you to provide feedback publicly. Clicking 'OK' will open a GitHub discussion in another tab where you can post a comment (account required). Alternatively, you can always send a private message to <a href='mailto:fabian.beck@uni-bamberg.de'>fabian.beck@uni-bamberg.de</a>.</p>",
+        onConfirm: () => {
+          window.open("https://github.com/fabian-beck/pure-suggest/discussions/214");
+          this.isOverlay = false;
+        },
+        onCancel: () => {
+          this.isOverlay = false;
+        },
+      });
     },
 
     showErrorMessage: function (errorMessage) {
