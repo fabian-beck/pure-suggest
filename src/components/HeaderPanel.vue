@@ -37,7 +37,7 @@
         </b-navbar-dropdown>
       </template>
       <template #end>
-         <b-navbar-item tag="div" class="mr-6 ml-1">
+        <b-navbar-item tag="div" class="mr-6 ml-1">
           <a href="https://twitter.com/pure_suggest">
             <b-icon icon="twitter"></b-icon>
           </a>
@@ -54,9 +54,14 @@
           <b-navbar-item
             @click="$emit('openKeyboardControls')"
             class="is-hidden-touch"
-            >Keyboard controls</b-navbar-item
           >
-          <b-navbar-item @click="$emit('openAbout')">About</b-navbar-item>
+            <b-icon icon="keyboard-outline"></b-icon
+            ><span class="ml-2">Keyboard controls</span>
+          </b-navbar-item>
+          <b-navbar-item @click="$emit('openAbout')">
+            <b-icon icon="information-outline"></b-icon
+            ><span class="ml-2">About</span>
+          </b-navbar-item>
           <b-navbar-item @click="$emit('clearCache')" class="has-text-danger">
             <b-icon icon="cached"></b-icon
             ><span class="ml-2">Clear cache (and session)</span>

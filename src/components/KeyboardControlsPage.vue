@@ -1,7 +1,9 @@
 <template>
   <div id="keyboardControls" class="card">
-    <header class="card-header has-background-primary">
-      <p class="card-header-title has-text-white">Keyboard Controls</p>
+    <header class="card-header has-background-light">
+      <p class="card-header-title">
+        <b-icon icon="keyboard-outline"></b-icon>&ensp;Keyboard Controls
+      </p>
     </header>
     <div class="card-content">
       <div class="content">
@@ -33,7 +35,10 @@
             <li>
               <b>Escape</b> &ndash; Escape input field or active publication
             </li>
-            <li><b>m</b> &ndash; Toggle mode of citation network visualization between <em>timeline</em> and <em>clusters</em></li>
+            <li>
+              <b>m</b> &ndash; Toggle mode of citation network visualization
+              between <em>timeline</em> and <em>clusters</em>
+            </li>
           </ul>
           <h2>Active Publication</h2>
           <p>If a publication is marked as active:</p>

@@ -1,7 +1,9 @@
 <template>
   <div id="about" class="card">
-    <header class="card-header has-background-primary">
-      <p class="card-header-title has-text-white">About</p>
+    <header class="card-header has-background-light">
+      <p class="card-header-title">
+        <b-icon icon="information-outline"></b-icon>&ensp;About
+      </p>
     </header>
     <div class="card-content">
       <div class="content">
@@ -40,8 +42,10 @@
           <p>
             Follow updates on
             <a href="https://twitter.com/pure_suggest">
-              Twitter <b-icon icon="twitter" size="is-small"></b-icon> (@pure_suggest)
-            </a>.
+              Twitter
+              <b-icon icon="twitter" size="is-small"></b-icon>
+              (@pure_suggest) </a
+            >.
           </p>
           <h2><b-icon icon="file-document" /> Scientific Publication</h2>
           <p>
