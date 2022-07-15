@@ -170,15 +170,19 @@
             "
             v-if="publication.author"
             @click.stop="refocus"
+            @click.middle.stop="refocus"
           ></span>
         </span>
         <span v-if="publication.container"
           ><em> {{ publication.container }}. </em></span
         >
         <label><span class="key">D</span>OI:</label>
-        <a :href="publication.doiUrl" @click.stop="refocus">{{
-          publication.doi
-        }}</a>
+        <a
+          :href="publication.doiUrl"
+          @click.stop="refocus"
+          @click.middle.stop="refocus"
+          >{{ publication.doi }}</a
+        >
       </div>
       <div
         class="notification has-background-danger-light has-text-danger-dark"
@@ -193,6 +197,7 @@
         <a
           :href="`https://opencitations.net/index/coci/api/v1/metadata/${publication.doi}`"
           @click.stop="refocus"
+          @click.middle.stop="refocus"
           >Open Citations</a
         >.
         <span v-if="publication.score === 0"
@@ -244,6 +249,7 @@
             <a
               v-if="publication.abstract"
               @click.stop="showAbstract"
+              @click.middle.stop="showAbstract"
               data-tippy-content="Abs<span class='key'>t</span>ract"
               v-tippy
               ><b-icon icon="text"></b-icon
@@ -253,6 +259,7 @@
               :href="publication.oaLink"
               class="ml-5"
               @click.stop="refocus"
+              @click.middle.stop="refocus"
               data-tippy-content="<span class='key'>O</span>pen access"
               v-tippy
               ><b-icon icon="lock-open-check-outline"></b-icon
@@ -261,12 +268,14 @@
               :href="publication.gsUrl"
               class="ml-5"
               @click.stop="refocus"
+              @click.middle.stop="refocus"
               data-tippy-content="<span class='key'>G</span>oogle Scholar"
               v-tippy
               ><b-icon icon="school"></b-icon
             ></a>
             <a
               @click.stop="exportBibtex"
+              @click.middle.stop="exportBibtex"
               class="ml-5"
               data-tippy-content="Export as BibTe<span class='key'>X</span> citation"
               v-tippy
