@@ -402,6 +402,7 @@ li.publication-component {
 
   &.active {
     background: $grey-lighter;
+    cursor: default;
   }
 
   &.unread {
