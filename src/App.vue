@@ -716,6 +716,10 @@ $box-padding: 1rem;
   color: $danger;
 }
 
+.dialog .modal-card {
+  max-width: 720px;
+}
+
 @include touch {
   #app {
     display: block;
