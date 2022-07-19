@@ -24,7 +24,7 @@
         :publications="selectedPublications"
         v-on:add="addPublicationsToSelection"
         v-on:startSearching="startSearchingSelected"
-        v-on:searchEndedWithoutResult="endLoading"
+        v-on:searchEndedWithoutResult="notifySearchEmpty"
         v-on:openSearch="openSearch"
         v-on:remove="removePublication"
         v-on:activate="activatePublicationComponentByDoi"
@@ -360,11 +360,8 @@ export default {
     },
 
     notifySearchEmpty: function () {
-      this.$buefy.toast.open({
-        duration: 5000,
-        message: "No matching publications found",
-        type: "is-danger",
-      });
+      this.showErrorMessage("No matching publications found");
+      this.endLoading();
     },
 
     showAbstract: function (publication) {

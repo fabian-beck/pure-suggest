@@ -147,21 +147,6 @@
           </div>
         </div>
       </div>
-      <div
-        class="
-          notification
-          has-background-danger-light has-text-danger-dark
-          mb-2
-          p-2
-        "
-        v-show="noPublicationWarning"
-      >
-        <button
-          class="delete"
-          @click.stop="noPublicationWarning = false"
-        ></button>
-        Cannot find a publication with this or similar title.
-      </div>
     </div>
     <PublicationListComponent
       :publications="publications"
@@ -188,7 +173,6 @@ export default {
   data() {
     return {
       addQuery: "",
-      noPublicationWarning: false,
       boostKeywordString: "",
     };
   },
@@ -206,7 +190,6 @@ export default {
           this.addQuery = "";
         }
       } else {
-        this.noPublicationWarning = true;
         this.$emit("searchEndedWithoutResult");
       }
     },
@@ -251,11 +234,6 @@ export default {
             document.getElementById("import-json-input").files[0]
           ),
       });
-    },
-  },
-  watch: {
-    addQuery: function () {
-      this.noPublicationWarning = false;
     },
   },
 };
