@@ -89,6 +89,9 @@
               <a href="https://www.connectedpapers.com">Connected Papers</a>
             </li>
             <li>
+              <a href="https://inciteful.xyz/">Inciteful</a>
+            </li>
+            <li>
               <a href="https://www.researchrabbit.ai/">Research Rabbit</a>
             </li>
           </ul>
