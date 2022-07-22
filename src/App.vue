@@ -97,7 +97,7 @@ import { clearCache } from "./Cache.js";
 export default {
   name: "App",
   setup() {
-    let sessionStore = useSessionStore();
+    const sessionStore = useSessionStore();
     return { sessionStore };
   },
   components: {

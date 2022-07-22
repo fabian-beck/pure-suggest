@@ -51,7 +51,7 @@
           right
           collapsible
         >
-        <b-navbar-item @click="$emit('openFeedback')">
+          <b-navbar-item @click="$emit('openFeedback')">
             <b-icon icon="comment-quote-outline"></b-icon
             ><span class="ml-2">Feedback</span>
           </b-navbar-item>
@@ -97,12 +97,22 @@
 </template>
 
 <script>
+import { useSessionStore } from "./../stores/session.js";
+
 export default {
   name: "HeaderPanel",
+  setup() {
+    const sessionStore = useSessionStore();
+    return { sessionStore };
+  },
   props: {
     isMobile: Boolean,
-    selectedPublicationsCount: Number,
     excludedPublicationsCount: Number,
+  },
+  computed: {
+    selectedPublicationsCount: function () {
+      return this.sessionStore.selectedPublications.length;
+    },
   },
 };
 </script>

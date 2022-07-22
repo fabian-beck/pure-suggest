@@ -97,7 +97,7 @@ import PublicationSearch from "./../PublicationSearch.js";
 export default {
   name: "SearchPanel",
   setup() {
-    let sessionStore = useSessionStore();
+    const sessionStore = useSessionStore();
     return { sessionStore };
   },
   props: {
