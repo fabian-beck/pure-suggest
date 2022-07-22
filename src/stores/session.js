@@ -6,4 +6,9 @@ export const useSessionStore = defineStore('session', {
       selectedPublications: [],
     }
   },
+  getters: {
+    selectedPublicationsDois: (state) => {
+      return state.selectedPublications.map((publication) => publication.doi);
+    },
+  },
 })

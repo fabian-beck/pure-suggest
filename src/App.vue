@@ -62,7 +62,7 @@
     <b-modal v-model="isSearchPanelShown">
       <SearchPanel
         :initialSearchQuery="searchQuery"
-        :selectedPublicationsDois="selectedPublicationsDois"
+        :selectedPublicationsDois="sessionStore.selectedPublicationsDois"
         v-on:add="addPublicationsToSelection"
         v-on:searchEmpty="notifySearchEmpty"
       />
@@ -134,9 +134,7 @@ export default {
     isMobile: function () {
       return window.innerWidth <= 1023;
     },
-    selectedPublicationsDois: function () {
-      return this.sessionStore.selectedPublications.map((publication) => publication.doi);
-    },
+    
   },
   methods: {
     startSearchingSelected: function () {
