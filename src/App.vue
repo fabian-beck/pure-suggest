@@ -79,6 +79,8 @@
 <!---------------------------------------------------------------------------------->
 
 <script>
+import { useSessionStore } from "./stores/session.js";
+
 import HeaderPanel from "./components/HeaderPanel.vue";
 import SelectedPublicationsComponent from "./components/SelectedPublicationsComponent.vue";
 import SuggestedPublicationsComponent from "./components/SuggestedPublicationsComponent.vue";
@@ -94,6 +96,10 @@ import { clearCache } from "./Cache.js";
 
 export default {
   name: "App",
+  setup() {
+    let sessionStore = useSessionStore();
+    return { sessionStore };
+  },
   components: {
     HeaderPanel,
     SelectedPublicationsComponent,
