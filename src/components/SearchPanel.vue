@@ -90,13 +90,18 @@
 </template>
 
 <script>
+import { useSessionStore } from "./../stores/session.js";
+
 import PublicationSearch from "./../PublicationSearch.js";
 
 export default {
   name: "SearchPanel",
+  setup() {
+    let sessionStore = useSessionStore();
+    return { sessionStore };
+  },
   props: {
     initialSearchQuery: String,
-    selectedPublicationsDois: Array,
   },
   data() {
     return {
@@ -117,7 +122,7 @@ export default {
   computed: {
     filteredSearchResults: function () {
       return this.searchResults.filter(
-        (item) => !this.selectedPublicationsDois.includes(item.DOI)
+        (item) => !this.sessionStore.selectedPublicationsDois.includes(item.DOI)
       );
     },
   },
