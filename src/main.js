@@ -2,6 +2,10 @@ import Vue from 'vue'
 import App from './App.vue'
 import {version} from './../package.json';
 
+import { createPinia, PiniaVuePlugin } from 'pinia'
+Vue.use(PiniaVuePlugin)
+const pinia = createPinia()
+
 import '@mdi/font/css/materialdesignicons.css'
 import Buefy from 'buefy'
 Vue.use(Buefy, { defaultIconPack: 'mdi' })
@@ -22,4 +26,5 @@ Vue.prototype.$version = version;
 
 new Vue({
   render: h => h(App),
+  pinia,
 }).$mount('#app')
