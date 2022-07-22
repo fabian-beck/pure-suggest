@@ -159,6 +159,15 @@
             v-tippy
             >New</b-tag
           >
+          <b-tag
+            icon="alert-box-outline"
+            class="is-dark"
+            size="is-small"
+            v-if="publication.isUnnoted"
+            :data-tippy-content="`Identified as yet unnoted: ${publication.isUnnoted}.`"
+            v-tippy
+            >Unnoted</b-tag
+          >
         </b-taglist>
       </div>
       <div v-if="publication.isActive">
