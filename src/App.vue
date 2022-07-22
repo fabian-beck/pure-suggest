@@ -3,8 +3,6 @@
     <HeaderPanel
       id="header"
       :isMobile="isMobile"
-      :selectedPublicationsCount="sessionStore.selectedPublications.length"
-      :excludedPublicationsCount="excludedPublicationsDois.size"
       v-on:exportSession="exportSession"
       v-on:exportBibtex="exportAllBibtex"
       v-on:clearSession="clearSession"
@@ -117,7 +115,6 @@ export default {
       maxSuggestions: 50,
       boostKeywords: [],
       searchQuery: "",
-      excludedPublicationsDois: new Set(),
       readPublicationsDois: new Set(),
       activePublication: undefined,
       isSearchPanelShown: false,
@@ -134,7 +131,6 @@ export default {
     isMobile: function () {
       return window.innerWidth <= 1023;
     },
-    
   },
   methods: {
     startSearchingSelected: function () {
@@ -155,8 +151,8 @@ export default {
       let addedDoi = "";
       dois.forEach((doi) => {
         doi = doi.toLowerCase();
-        if (this.excludedPublicationsDois.has(doi)) {
-          this.excludedPublicationsDois.delete(doi);
+        if (this.sessionStore.isDoiExcluded(doi)) {
+          this.sessionStore.removeFromExcludedPublicationByDoi(doi); // todo
         }
         if (!publications[doi]) {
           publications[doi] = new Publication(doi);
@@ -193,7 +189,7 @@ export default {
     },
 
     removePublication: async function (doi) {
-      this.excludedPublicationsDois.add(doi);
+      this.sessionStore.excludePublicationByDoi(doi);
       delete publications[doi];
       await this.updateSuggestions();
       this.$buefy.toast.open({
@@ -227,7 +223,7 @@ export default {
       );
       this.suggestion = await Publication.computeSuggestions(
         publications,
-        this.excludedPublicationsDois,
+        this.sessionStore.excludedPublicationsDois,
         this.boostKeywords,
         this.updateLoadingToast,
         this.maxSuggestions
@@ -391,7 +387,7 @@ export default {
     exportSession: function () {
       let data = {
         selected: Object.keys(publications),
-        excluded: Array.from(this.excludedPublicationsDois),
+        excluded: this.sessionStore.excludedPublicationsDois,
         boost: this.boostKeywords.join(", "),
       };
       saveAsFile("session.json", "application/json", JSON.stringify(data));
@@ -434,8 +430,7 @@ export default {
           "You are going to clear all selected articles and jump back to the initial state.",
         onConfirm: () => {
           publications = {};
-          this.sessionStore.selectedPublications = [];
-          this.excludedPublicationsDois = new Set();
+          this.sessionStore.reset();
           this.readPublicationsDois = new Set();
           this.setBoostKeywords("");
           this.updateSuggestions();
@@ -463,7 +458,7 @@ export default {
         this.setBoostKeywords(session.boost);
       }
       if (session.excluded) {
-        this.excludedPublicationsDois = new Set(session.excluded);
+        this.sessionStore.excludedPublicationsDois = session.excluded;
       }
       this.addPublicationsToSelection(session.selected);
     },
@@ -619,7 +614,10 @@ export default {
     // triggers a prompt before closing/reloading the page
     window.onbeforeunload = () => {
       console.log(this.sessionStore.selectedPublications);
-      if (this.sessionStore.selectedPublications && this.sessionStore.selectedPublications.length)
+      if (
+        this.sessionStore.selectedPublications &&
+        this.sessionStore.selectedPublications.length
+      )
         return "";
       return null;
     };

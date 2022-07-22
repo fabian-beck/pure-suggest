@@ -246,7 +246,7 @@ export default class Publication {
             doiList,
             sourceDoi
         ) {
-            if (!excludedPublicationsDois.has(doi)) {
+            if (!excludedPublicationsDois.includes(doi)) {
                 if (!publications[doi]) {
                     if (!suggestedPublications[doi]) {
                         const citingPublication = new Publication(doi);
@@ -260,7 +260,7 @@ export default class Publication {
             }
         }
 
-        console.log(`Starting to compute new suggestions based on ${Object.keys(publications).length} selected (and ${excludedPublicationsDois.size} excluded).`);
+        console.log(`Starting to compute new suggestions based on ${Object.keys(publications).length} selected (and ${excludedPublicationsDois.length} excluded).`);
         const suggestedPublications = {};
         Object.values(publications).forEach((publication) => {
             publication.citationCount = 0;

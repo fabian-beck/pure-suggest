@@ -15,12 +15,12 @@
       </template>
       <template #start>
         <b-navbar-dropdown
-          :label="`Session (${selectedPublicationsCount} selected${
-            excludedPublicationsCount
-              ? `; ${excludedPublicationsCount} excluded`
+          :label="`Session (${sessionStore.selectedPublicationsCount} selected${
+            sessionStore.excludedPublicationsCount
+              ? `; ${sessionStore.excludedPublicationsCount} excluded`
               : ''
           })`"
-          v-show="selectedPublicationsCount"
+          v-show="sessionStore.selectedPublicationsCount"
         >
           <b-navbar-item @click="$emit('exportSession')">
             <b-icon icon="export"></b-icon>
@@ -73,7 +73,7 @@
         </b-navbar-dropdown>
       </template>
     </b-navbar>
-    <div class="columns" v-show="selectedPublicationsCount === 0">
+    <div class="columns" v-show="sessionStore.selectedPublicationsCount === 0">
       <div class="column">
         <div class="subtitle level-item mt-2">
           {{ this.$appSubtitle }}
@@ -82,7 +82,7 @@
       <div class="column is-two-thirds">
         <div
           class="notification has-text-centered p-2"
-          v-show="selectedPublicationsCount === 0"
+          v-show="sessionStore.selectedPublicationsCount === 0"
         >
           <p>
             Based on a set of selected publications,
@@ -107,12 +107,6 @@ export default {
   },
   props: {
     isMobile: Boolean,
-    excludedPublicationsCount: Number,
-  },
-  computed: {
-    selectedPublicationsCount: function () {
-      return this.sessionStore.selectedPublications.length;
-    },
   },
 };
 </script>
