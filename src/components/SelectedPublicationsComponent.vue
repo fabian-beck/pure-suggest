@@ -152,7 +152,6 @@
       v-on:activate="activatePublication"
       v-on:remove="removePublication"
       v-on:showAbstract="showAbstract"
-      v-on:exportSingleBibtex="exportSingleBibtex"
     />
   </div>
 </template>
@@ -211,9 +210,6 @@ export default {
     },
     showAbstract: function (publication) {
       this.$emit("showAbstract", publication);
-    },
-    exportSingleBibtex: function (publication) {
-      this.sessionStore.exportSingleBibtex(publication)
     },
     updateBoost: function () {
       this.$emit("updateBoost", this.boostKeywordString);

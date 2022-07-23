@@ -321,8 +321,14 @@
 </template>
 
 <script>
+import { useSessionStore } from "./../stores/session.js";
+
 export default {
   name: "PublicationComponent",
+  setup() {
+    const sessionStore = useSessionStore();
+    return { sessionStore };
+  },
   props: {
     publication: Object,
     suggestion: Boolean,
@@ -367,7 +373,7 @@ export default {
     },
 
     exportBibtex: function () {
-      this.$emit("exportBibtex", this.publication);
+      this.sessionStore.exportSingleBibtex(this.publication);
       this.refocus();
     },
 

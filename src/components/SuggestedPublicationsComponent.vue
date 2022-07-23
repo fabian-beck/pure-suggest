@@ -50,7 +50,6 @@
       v-on:remove="removePublication"
       v-on:activate="activatePublication"
       v-on:showAbstract="showAbstract"
-      v-on:exportSingleBibtex="sessionStore.exportSingleBibtex"
     />
   </div>
 </template>
