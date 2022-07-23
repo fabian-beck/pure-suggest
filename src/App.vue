@@ -217,7 +217,7 @@ export default {
           );
         })
       );
-      this.sessionStore.suggestion = await this.sessionStore.computeSuggestions(
+      await this.sessionStore.computeSuggestions(
         this.boostKeywords,
         this.updateLoadingToast,
         this.maxSuggestions

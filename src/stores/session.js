@@ -110,8 +110,8 @@ export const useSessionStore = defineStore('session', {
       console.log("Completed computing and loading of new suggestions.");
       preloadSuggestions.forEach(publication => {
         publication.fetchData()
-      })
-      return {
+      });
+      this.suggestion = {
         publications: Object.values(filteredSuggestions),
         totalSuggestions: Object.values(suggestedPublications).length
       };
