@@ -47,7 +47,7 @@ export default {
     removePublication: function (doi) {
       this.$emit("remove", doi);
     },
-    activatePublication: function (doi) {
+    activatePublication: function () {
       this.onNextActivatedScroll = false;
     },
     showAbstract: function (publication) {
