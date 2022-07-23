@@ -160,6 +160,20 @@ export const useSessionStore = defineStore('session', {
       console.log(`Highlighted as active publication with DOI ${doi}.`);
     },
 
+    activatePublicationComponentByDoi: function (doi) {
+      if (doi !== this.activePublication?.doi) {
+        this.activatePublicationComponent(document.getElementById(doi));
+        this.setActivePublication(doi);
+      }
+    },
+
+    activatePublicationComponent: function (publicationComponent) {
+      if (publicationComponent) {
+        publicationComponent.focus();
+      }
+    },
+
+
     clearActivePublication: function (source) {
       this.activePublication = undefined;
       this.selectedPublications

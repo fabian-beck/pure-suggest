@@ -49,7 +49,6 @@ export default {
     },
     activatePublication: function (doi) {
       this.onNextActivatedScroll = false;
-      this.$emit("activate", doi);
     },
     showAbstract: function (publication) {
       this.$emit("showAbstract", publication);

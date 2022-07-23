@@ -9,8 +9,8 @@
     }"
     :id="publication.doi"
     tabindex="0"
-    v-on:focus="$emit('activate', publication.doi)"
-    @click.stop="$emit('activate', publication.doi)"
+    v-on:focus="activate"
+    @click.stop="activate"
   >
     <tippy class="glyph">
       <template v-slot:trigger>
@@ -368,6 +368,11 @@ export default {
     },
   },
   methods: {
+    activate: function () {
+      this.sessionStore.activatePublicationComponentByDoi(this.publication.doi);
+      this.$emit("activate", this.publication.doi);
+    },
+
     showAbstract: function () {
       this.$emit("showAbstract", this.publication);
     },

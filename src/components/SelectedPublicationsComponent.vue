@@ -149,7 +149,6 @@
     </div>
     <PublicationListComponent
       :publications="sessionStore.selectedPublications"
-      v-on:activate="activatePublication"
       v-on:remove="removePublication"
       v-on:showAbstract="showAbstract"
     />
@@ -204,9 +203,6 @@ export default {
     },
     removePublication: function (doi) {
       this.$emit("remove", doi);
-    },
-    activatePublication: function (doi) {
-      this.$emit("activate", doi);
     },
     showAbstract: function (publication) {
       this.$emit("showAbstract", publication);

@@ -48,7 +48,6 @@
       :suggestion="true"
       v-on:add="addPublication"
       v-on:remove="removePublication"
-      v-on:activate="activatePublication"
       v-on:showAbstract="showAbstract"
     />
   </div>
@@ -84,9 +83,6 @@ export default {
     },
     removePublication: function (doi) {
       this.$emit("remove", doi);
-    },
-    activatePublication: function (doi) {
-      this.$emit("activate", doi);
     },
     showAbstract: function (publication) {
       this.$emit("showAbstract", publication);

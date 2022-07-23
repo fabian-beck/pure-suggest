@@ -22,7 +22,6 @@
         v-on:searchEndedWithoutResult="notifySearchEmpty"
         v-on:openSearch="openSearch"
         v-on:remove="removePublication"
-        v-on:activate="activatePublicationComponentByDoi"
         v-on:showAbstract="showAbstract"
         v-on:updateBoost="updateBoost"
         v-on:loadExample="loadExample"
@@ -33,7 +32,6 @@
         ref="suggested"
         v-on:add="addPublicationsToSelection"
         v-on:remove="removePublication"
-        v-on:activate="activatePublicationComponentByDoi"
         v-on:showAbstract="showAbstract"
         v-on:loadMore="loadMoreSuggestions"
       />
@@ -45,7 +43,7 @@
         :isExpanded="isNetworkExpanded"
         :svgWidth="1500"
         :svgHeight="600"
-        v-on:activate="activatePublicationComponentByDoi"
+        v-on:activate="sessionStore.activatePublicationComponentByDoi"
         v-on:expand="isNetworkExpanded = true"
         v-on:collapse="isNetworkExpanded = false"
       />
@@ -150,7 +148,7 @@ export default {
       if (addedPublicationsCount > 0) {
         await this.updateSuggestions();
         if (addedPublicationsCount == 1) {
-          this.activatePublicationComponentByDoi(addedDoi);
+          this.sessionStore.activatePublicationComponentByDoi(addedDoi);
         }
         this.$buefy.toast.open({
           message: `Added ${
@@ -233,19 +231,6 @@ export default {
       this.updateBoost(boostKeywordString, true);
     },
 
-    activatePublicationComponent: function (publicationComponent) {
-      if (publicationComponent) {
-        publicationComponent.focus();
-      }
-    },
-
-    activatePublicationComponentByDoi: function (doi) {
-      if (doi !== this.sessionStore.activePublication?.doi) {
-        this.activatePublicationComponent(document.getElementById(doi));
-        this.sessionStore.setActivePublication(doi);
-      }
-    },
-
     startLoading: function () {
       if (this.isLoading) return;
       this.loadingComponent = this.$buefy.loading.open({
@@ -297,7 +282,7 @@ export default {
       const _this = this;
       const onClose = function () {
         _this.isOverlay = false;
-        _this.activatePublicationComponent(
+        _this.sessionStore.activatePublicationComponent(
           document.getElementById(publication.doi)
         );
       };
@@ -464,14 +449,14 @@ export default {
         this.$refs.network.toggleMode();
       } else if (e.key === "ArrowLeft") {
         e.preventDefault();
-        this.activatePublicationComponent(
+        this.sessionStore.activatePublicationComponent(
           document
             .getElementById("selected")
             .getElementsByClassName("publication-component")[0]
         );
       } else if (e.key === "ArrowRight") {
         e.preventDefault();
-        this.activatePublicationComponent(
+        this.sessionStore.activatePublicationComponent(
           document
             .getElementById("suggested")
             .getElementsByClassName("publication-component")[0]
@@ -482,7 +467,7 @@ export default {
           const activePublicationComponent = document.getElementsByClassName(
             "publication-component active"
           )[0];
-          this.activatePublicationComponent(
+          this.sessionStore.activatePublicationComponent(
             e.key === "ArrowDown"
               ? activePublicationComponent.nextSibling
               : activePublicationComponent.previousSibling
