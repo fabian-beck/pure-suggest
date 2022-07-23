@@ -64,6 +64,7 @@ export const useSessionStore = defineStore('session', {
       }
 
       console.log(`Starting to compute new suggestions based on ${this.selectedPublicationsCount} selected (and ${this.excludedPublicationsCount} excluded).`);
+      this.clearActivePublication("updating suggestions");
       const suggestedPublications = {};
       this.selectedPublications.forEach((publication) => {
         publication.citationCount = 0;
@@ -110,9 +111,10 @@ export const useSessionStore = defineStore('session', {
         publicationsLoadedCount++;
         updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "is-info");
       }));
-      filteredSuggestions.forEach((publication) =>
-        publication.updateScore(this.boostKeywords)
-      );
+      filteredSuggestions.forEach((publication) => {
+        publication.updateScore(this.boostKeywords);
+        publication.isRead = this.readPublicationsDois.has(publication.doi);
+    });
       Publication.sortPublications(filteredSuggestions);
       console.log("Completed computing and loading of new suggestions.");
       preloadSuggestions.forEach(publication => {

@@ -195,7 +195,6 @@ export default {
         } selected publications loaded`,
         "is-primary"
       );
-      this.sessionStore.clearActivePublication("updating suggestions");
       await Promise.all(
         this.sessionStore.selectedPublications.map(async (publication) => {
           await publication.fetchData();
@@ -212,9 +211,6 @@ export default {
       await this.sessionStore.computeSuggestions(
         this.updateLoadingToast,
       );
-      this.sessionStore.suggestion.publications.forEach((publication) => {
-        publication.isRead = this.sessionStore.readPublicationsDois.has(publication.doi);
-      });
       Publication.sortPublications(this.sessionStore.selectedPublications);
       this.$refs.network.plot(true);
       this.endLoading();
