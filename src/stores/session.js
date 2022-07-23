@@ -20,6 +20,9 @@ export const useSessionStore = defineStore('session', {
     selectedPublicationsCount: (state) => state.selectedPublications.length,
     excludedPublicationsCount: (state) => state.excludedPublicationsDois.length,
     suggestedPublications: (state) => state.suggestion ? state.suggestion.publications : [],
+    unreadSuggestionsCount: (state) => state.suggestedPublications.filter(
+      (publication) => !publication.isRead
+    ).length,
     isEmpty: (state) => state.selectedPublicationsCount === 0,
     isDoiSelected: (state) => (doi) => state.selectedPublicationsDois.includes(doi),
     isDoiExcluded: (state) => (doi) => state.excludedPublicationsDois.includes(doi),
@@ -115,7 +118,7 @@ export const useSessionStore = defineStore('session', {
       filteredSuggestions.forEach((publication) => {
         publication.updateScore(this.boostKeywords);
         publication.isRead = this.readPublicationsDois.has(publication.doi);
-    });
+      });
       Publication.sortPublications(filteredSuggestions);
       console.log("Completed computing and loading of new suggestions.");
       preloadSuggestions.forEach(publication => {
@@ -138,14 +141,14 @@ export const useSessionStore = defineStore('session', {
               selectedPublication.citationDois.indexOf(publication.doi) >= 0 ||
               selectedPublication.referenceDois.indexOf(publication.doi) >= 0;
           });
-          this.suggestion.publications.forEach((publication) => {
+          this.suggestedPublications.forEach((publication) => {
             publication.isLinkedToActive =
               selectedPublication.citationDois.indexOf(publication.doi) >= 0 ||
               selectedPublication.referenceDois.indexOf(publication.doi) >= 0;
           });
         }
       });
-      this.suggestion.publications.forEach((suggestedPublication) => {
+      this.suggestedPublications.forEach((suggestedPublication) => {
         suggestedPublication.isActive = suggestedPublication.doi === doi;
         if (suggestedPublication.isActive) {
           suggestedPublication.isRead = true;
@@ -174,11 +177,10 @@ export const useSessionStore = defineStore('session', {
       }
     },
 
-
     clearActivePublication: function (source) {
       this.activePublication = undefined;
       this.selectedPublications
-        .concat(this.suggestion ? this.suggestion.publications : [])
+        .concat(this.suggestedPublications)
         .forEach((publication) => {
           publication.isActive = false;
           publication.isLinkedToActive = false;
