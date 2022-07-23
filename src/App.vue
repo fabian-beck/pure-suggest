@@ -38,12 +38,9 @@
       <NetworkVisComponent
         id="network"
         ref="network"
-        :selectedPublications="sessionStore.selectedPublications"
-        :suggestedPublications="sessionStore.suggestion ? sessionStore.suggestion.publications : []"
         :isExpanded="isNetworkExpanded"
         :svgWidth="1500"
         :svgHeight="600"
-        v-on:activate="sessionStore.activatePublicationComponentByDoi"
         v-on:expand="isNetworkExpanded = true"
         v-on:collapse="isNetworkExpanded = false"
       />

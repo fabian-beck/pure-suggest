@@ -10,13 +10,13 @@
               icon="information-outline"
               size="is-small"
               class="ml-2"
-              v-show="selectedPublications.length"
+              v-show="!sessionStore.isEmpty"
               data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>selected</b>; <b class='has-text-info'>suggested</b>) with citations as links.<br><br>You can click a publication for details as well as zoom and pan the diagram."
               v-tippy
             ></b-icon>
           </div>
         </div>
-        <div class="level-right" v-show="selectedPublications.length">
+        <div class="level-right" v-show="!sessionStore.isEmpty">
           <b-field
             class="level-item has-text-white mr-4 mb-0"
             data-tippy-content="There are two display <span class='key'>m</span>odes:<br><br><b>Timeline:</b> The diagram places publications from left to right based on year, and vertically tries to group linked publications close to each other.<br><br><b>Clusters:</b> The diagram groups linked publications close to each other, irrespective of publication year."
@@ -65,14 +65,19 @@ import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
 import _ from "lodash";
 
+import { useSessionStore } from "./../stores/session.js";
+
 const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;
 const margin = 20;
 
 export default {
+  name: "NetworkVisComponent",
+  setup() {
+    const sessionStore = useSessionStore();
+    return { sessionStore };
+  },
   props: {
-    selectedPublications: Array,
-    suggestedPublications: Array,
     isExpanded: Boolean,
   },
   data: function () {
@@ -91,18 +96,6 @@ export default {
     };
   },
   watch: {
-    selectedPublications: {
-      deep: true,
-      handler: function () {
-        this.plot();
-      },
-    },
-    suggestedPublications: {
-      deep: true,
-      handler: function () {
-        this.plot();
-      },
-    },
     isClusters: {
       handler: function () {
         this.initForces();
@@ -137,6 +130,8 @@ export default {
     this.link = this.svg.append("g").attr("class", "links").selectAll("path");
 
     this.node = this.svg.append("g").attr("class", "nodes").selectAll("rect");
+
+    this.sessionStore.$subscribe(() => this.plot());
   },
   methods: {
     initForces: function () {
@@ -191,8 +186,8 @@ export default {
 
       const nodes = [];
       let i = 0;
-      this.selectedPublications
-        .concat(this.suggestedPublications)
+      this.sessionStore.selectedPublications
+        .concat(this.sessionStore.suggestedPublications)
         .forEach((publication) => {
           if (publication.year) {
             this.yearMin = Math.min(this.yearMin, publication.year);
@@ -207,7 +202,7 @@ export default {
         });
 
       const links = [];
-      this.selectedPublications.forEach((publication) => {
+      this.sessionStore.selectedPublications.forEach((publication) => {
         if (publication.doi in doiToIndex) {
           publication.citationDois.forEach((citationDoi) => {
             if (citationDoi in doiToIndex) {
@@ -321,14 +316,14 @@ export default {
         .attr("text-anchor", "middle")
         .attr(
           "visibility",
-          this.selectedPublications.length > 0 && !this.isClusters
+          !this.sessionStore.isEmpty && !this.isClusters
             ? "visible"
             : "hidden"
         )
         .text((d) => d)
         .attr("fill", "grey");
 
-      if (this.selectedPublications.length > 0) {
+      if (!this.sessionStore.isEmpty) {
         this.label
           .attr(
             "transform",
@@ -390,7 +385,7 @@ export default {
     },
 
     activatePublication: function (event, d) {
-      this.$emit("activate", d.publication.doi);
+      this.sessionStore.activatePublicationComponentByDoi(d.publication.doi);
       event.stopPropagation();
     },
 

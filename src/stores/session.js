@@ -19,6 +19,7 @@ export const useSessionStore = defineStore('session', {
     selectedPublicationsDois: (state) => state.selectedPublications.map((publication) => publication.doi),
     selectedPublicationsCount: (state) => state.selectedPublications.length,
     excludedPublicationsCount: (state) => state.excludedPublicationsDois.length,
+    suggestedPublications: (state) => state.suggestion ? state.suggestion.publications : [],
     isEmpty: (state) => state.selectedPublicationsCount === 0,
     isDoiSelected: (state) => (doi) => state.selectedPublicationsDois.includes(doi),
     isDoiExcluded: (state) => (doi) => state.excludedPublicationsDois.includes(doi),
