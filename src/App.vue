@@ -152,8 +152,8 @@ export default {
         if (this.sessionStore.isDoiExcluded(doi)) {
           this.sessionStore.removeFromExcludedPublicationByDoi(doi); // todo
         }
-        if (!publications[doi]) {
-          publications[doi] = new Publication(doi);
+        if (!this.sessionStore.getSelectedPublicationByDoi(doi)) {
+          this.sessionStore.selectedPublications.push(new Publication(doi));
           addedDoi = doi;
           addedPublicationsCount++;
         }
@@ -188,7 +188,6 @@ export default {
 
     removePublication: async function (doi) {
       this.sessionStore.excludePublicationByDoi(doi);
-      delete publications[doi];
       await this.updateSuggestions();
       this.$buefy.toast.open({
         message: `Excluded a publication`,
@@ -201,27 +200,25 @@ export default {
       let publicationsLoaded = 0;
       this.updateLoadingToast(
         `${publicationsLoaded}/${
-          Object.keys(publications).length
+          this.sessionStore.selectedPublicationsCount
         } selected publications loaded`,
         "is-primary"
       );
       this.clearActivePublication("updating suggestions");
       await Promise.all(
-        Object.values(publications).map(async (publication) => {
+        this.sessionStore.selectedPublications.map(async (publication) => {
           await publication.fetchData();
           publication.isSelected = true;
           publicationsLoaded++;
           this.updateLoadingToast(
             `${publicationsLoaded}/${
-              Object.keys(publications).length
+              this.sessionStore.selectedPublicationsCount
             } selected publications loaded`,
             "is-primary"
           );
         })
       );
-      this.suggestion = await Publication.computeSuggestions(
-        publications,
-        this.sessionStore.excludedPublicationsDois,
+      this.suggestion = await this.sessionStore.computeSuggestions(
         this.boostKeywords,
         this.updateLoadingToast,
         this.maxSuggestions
@@ -229,7 +226,6 @@ export default {
       this.suggestion.publications.forEach((publication) => {
         publication.isRead = this.readPublicationsDois.has(publication.doi);
       });
-      this.sessionStore.selectedPublications = Object.values(publications);
       Publication.sortPublications(this.sessionStore.selectedPublications);
       this.$refs.network.plot(true);
       this.endLoading();
@@ -384,7 +380,7 @@ export default {
 
     exportSession: function () {
       let data = {
-        selected: Object.keys(publications),
+        selected: this.sessionStore.selectedPublicationsDois,
         excluded: this.sessionStore.excludedPublicationsDois,
         boost: this.boostKeywords.join(", "),
       };
@@ -427,7 +423,6 @@ export default {
         message:
           "You are going to clear all selected articles and jump back to the initial state.",
         onConfirm: () => {
-          publications = {};
           this.sessionStore.reset();
           this.readPublicationsDois = new Set();
           this.setBoostKeywords("");
@@ -625,8 +620,6 @@ export default {
     document.removeEventListener("keydown", this._keyListener);
   },
 };
-
-let publications = {};
 </script>
 
 <!---------------------------------------------------------------------------------->
