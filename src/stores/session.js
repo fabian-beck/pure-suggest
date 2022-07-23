@@ -65,7 +65,6 @@ export const useSessionStore = defineStore('session', {
 
       console.log(`Starting to compute new suggestions based on ${this.selectedPublicationsCount} selected (and ${this.excludedPublicationsCount} excluded).`);
       const suggestedPublications = {};
-      console.log(this);
       this.selectedPublications.forEach((publication) => {
         publication.citationCount = 0;
         publication.referenceCount = 0;
@@ -123,6 +122,53 @@ export const useSessionStore = defineStore('session', {
         publications: Object.values(filteredSuggestions),
         totalSuggestions: Object.values(suggestedPublications).length
       };
+    },
+
+    setActivePublication: function (doi) {
+      this.clearActivePublication("setting active publication");
+      this.selectedPublications.forEach((selectedPublication) => {
+        selectedPublication.isActive = selectedPublication.doi === doi;
+        if (selectedPublication.isActive) {
+          this.activePublication = selectedPublication;
+          this.selectedPublications.forEach((publication) => {
+            publication.isLinkedToActive =
+              selectedPublication.citationDois.indexOf(publication.doi) >= 0 ||
+              selectedPublication.referenceDois.indexOf(publication.doi) >= 0;
+          });
+          this.suggestion.publications.forEach((publication) => {
+            publication.isLinkedToActive =
+              selectedPublication.citationDois.indexOf(publication.doi) >= 0 ||
+              selectedPublication.referenceDois.indexOf(publication.doi) >= 0;
+          });
+        }
+      });
+      this.suggestion.publications.forEach((suggestedPublication) => {
+        suggestedPublication.isActive = suggestedPublication.doi === doi;
+        if (suggestedPublication.isActive) {
+          suggestedPublication.isRead = true;
+          this.readPublicationsDois.add(doi);
+          this.activePublication = suggestedPublication;
+          this.selectedPublications.forEach((publication) => {
+            publication.isLinkedToActive =
+              suggestedPublication.citationDois.indexOf(publication.doi) >= 0 ||
+              suggestedPublication.referenceDois.indexOf(publication.doi) >= 0;
+          });
+        }
+      });
+      console.log(`Highlighted as active publication with DOI ${doi}.`);
+    },
+
+    clearActivePublication: function (source) {
+      this.activePublication = undefined;
+      this.selectedPublications
+        .concat(this.suggestion ? this.suggestion.publications : [])
+        .forEach((publication) => {
+          publication.isActive = false;
+          publication.isLinkedToActive = false;
+        });
+      console.log(
+        `Cleared any highlighted active publication, triggered by "${source}".`
+      );
     },
 
     exportSession: function () {

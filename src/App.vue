@@ -11,7 +11,7 @@
     />
     <div
       id="main"
-      @click="clearActivePublication('clicked anywhere')"
+      @click="sessionStore.clearActivePublication('clicked anywhere')"
       :class="{ 'network-expanded': isNetworkExpanded }"
     >
       <SelectedPublicationsComponent
@@ -195,7 +195,7 @@ export default {
         } selected publications loaded`,
         "is-primary"
       );
-      this.clearActivePublication("updating suggestions");
+      this.sessionStore.clearActivePublication("updating suggestions");
       await Promise.all(
         this.sessionStore.selectedPublications.map(async (publication) => {
           await publication.fetchData();
@@ -239,53 +239,6 @@ export default {
       this.updateBoost(boostKeywordString, true);
     },
 
-    setActivePublication: function (doi) {
-      this.clearActivePublication("setting active publication");
-      this.sessionStore.selectedPublications.forEach((selectedPublication) => {
-        selectedPublication.isActive = selectedPublication.doi === doi;
-        if (selectedPublication.isActive) {
-          this.sessionStore.activePublication = selectedPublication;
-          this.sessionStore.selectedPublications.forEach((publication) => {
-            publication.isLinkedToActive =
-              selectedPublication.citationDois.indexOf(publication.doi) >= 0 ||
-              selectedPublication.referenceDois.indexOf(publication.doi) >= 0;
-          });
-          this.sessionStore.suggestion.publications.forEach((publication) => {
-            publication.isLinkedToActive =
-              selectedPublication.citationDois.indexOf(publication.doi) >= 0 ||
-              selectedPublication.referenceDois.indexOf(publication.doi) >= 0;
-          });
-        }
-      });
-      this.sessionStore.suggestion.publications.forEach((suggestedPublication) => {
-        suggestedPublication.isActive = suggestedPublication.doi === doi;
-        if (suggestedPublication.isActive) {
-          suggestedPublication.isRead = true;
-          this.sessionStore.readPublicationsDois.add(doi);
-          this.sessionStore.activePublication = suggestedPublication;
-          this.sessionStore.selectedPublications.forEach((publication) => {
-            publication.isLinkedToActive =
-              suggestedPublication.citationDois.indexOf(publication.doi) >= 0 ||
-              suggestedPublication.referenceDois.indexOf(publication.doi) >= 0;
-          });
-        }
-      });
-      console.log(`Highlighted as active publication with DOI ${doi}.`);
-    },
-
-    clearActivePublication: function (source) {
-      this.sessionStore.activePublication = undefined;
-      this.sessionStore.selectedPublications
-        .concat(this.sessionStore.suggestion ? this.sessionStore.suggestion.publications : [])
-        .forEach((publication) => {
-          publication.isActive = false;
-          publication.isLinkedToActive = false;
-        });
-      console.log(
-        `Cleared any highlighted active publication, triggered by "${source}".`
-      );
-    },
-
     activatePublicationComponent: function (publicationComponent) {
       if (publicationComponent) {
         publicationComponent.focus();
@@ -295,7 +248,7 @@ export default {
     activatePublicationComponentByDoi: function (doi) {
       if (doi !== this.sessionStore.activePublication?.doi) {
         this.activatePublicationComponent(document.getElementById(doi));
-        this.setActivePublication(doi);
+        this.sessionStore.setActivePublication(doi);
       }
     },
 
@@ -500,17 +453,17 @@ export default {
       } else if (e.key === "Escape") {
         e.preventDefault();
         document.activeElement.blur();
-        this.clearActivePublication("escape key");
+        this.sessionStore.clearActivePublication("escape key");
       } else if (e.key === "a") {
         e.preventDefault();
-        this.clearActivePublication("setting focus on text field");
+        this.sessionStore.clearActivePublication("setting focus on text field");
         document.getElementsByClassName("input add-publication")[0].focus();
       } else if (e.key === "s") {
         e.preventDefault();
         this.isSearchPanelShown = true;
       } else if (e.key === "b") {
         e.preventDefault();
-        this.clearActivePublication("setting focus on text field");
+        this.sessionStore.clearActivePublication("setting focus on text field");
         document.getElementsByClassName("input boost")[0].focus();
       } else if (e.key === "m") {
         e.preventDefault();
