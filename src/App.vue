@@ -49,7 +49,6 @@
     <b-modal v-model="isSearchPanelShown">
       <SearchPanel
         :initialSearchQuery="searchQuery"
-        :selectedPublicationsDois="sessionStore.selectedPublicationsDois"
         v-on:add="addPublicationsToSelection"
         v-on:searchEmpty="notifySearchEmpty"
       />
@@ -183,9 +182,7 @@ export default {
       this.startLoading();
       let publicationsLoaded = 0;
       this.updateLoadingToast(
-        `${publicationsLoaded}/${
-          this.sessionStore.selectedPublicationsCount
-        } selected publications loaded`,
+        `${publicationsLoaded}/${this.sessionStore.selectedPublicationsCount} selected publications loaded`,
         "is-primary"
       );
       await Promise.all(
@@ -194,16 +191,12 @@ export default {
           publication.isSelected = true;
           publicationsLoaded++;
           this.updateLoadingToast(
-            `${publicationsLoaded}/${
-              this.sessionStore.selectedPublicationsCount
-            } selected publications loaded`,
+            `${publicationsLoaded}/${this.sessionStore.selectedPublicationsCount} selected publications loaded`,
             "is-primary"
           );
         })
       );
-      await this.sessionStore.computeSuggestions(
-        this.updateLoadingToast,
-      );
+      await this.sessionStore.computeSuggestions(this.updateLoadingToast);
       Publication.sortPublications(this.sessionStore.selectedPublications);
       this.$refs.network.plot(true);
       this.endLoading();
@@ -217,7 +210,9 @@ export default {
       boostKeywordString,
       preventUpdateSuggestions = false
     ) {
-      this.sessionStore.boostKeywords = boostKeywordString.toLowerCase().split(/,\s*/);
+      this.sessionStore.boostKeywords = boostKeywordString
+        .toLowerCase()
+        .split(/,\s*/);
       if (!preventUpdateSuggestions) {
         await this.updateSuggestions();
       }
@@ -471,17 +466,25 @@ export default {
           );
         } else if (e.key === "+") {
           e.preventDefault();
-          this.addPublicationsToSelection(this.sessionStore.activePublication.doi);
+          this.addPublicationsToSelection(
+            this.sessionStore.activePublication.doi
+          );
         } else if (e.key === "-") {
           e.preventDefault();
           this.removePublication(this.sessionStore.activePublication.doi);
         } else if (e.key === "d") {
           e.preventDefault();
           window.open(this.sessionStore.activePublication.doiUrl);
-        } else if (e.key === "t" && this.sessionStore.activePublication.abstract) {
+        } else if (
+          e.key === "t" &&
+          this.sessionStore.activePublication.abstract
+        ) {
           e.preventDefault();
           this.showAbstract(this.sessionStore.activePublication);
-        } else if (e.key === "o" && this.sessionStore.activePublication.oaLink) {
+        } else if (
+          e.key === "o" &&
+          this.sessionStore.activePublication.oaLink
+        ) {
           e.preventDefault();
           window.open(this.sessionStore.activePublication.oaLink);
         } else if (e.key === "g") {
@@ -489,7 +492,9 @@ export default {
           window.open(this.sessionStore.activePublication.gsUrl);
         } else if (e.key === "x") {
           e.preventDefault();
-          this.sessionStore.exportSingleBibtex(this.sessionStore.activePublication);
+          this.sessionStore.exportSingleBibtex(
+            this.sessionStore.activePublication
+          );
         }
       }
     };
@@ -498,12 +503,7 @@ export default {
 
     // triggers a prompt before closing/reloading the page
     window.onbeforeunload = () => {
-      console.log(this.sessionStore.selectedPublications);
-      if (
-        this.sessionStore.selectedPublications &&
-        this.sessionStore.selectedPublications.length
-      )
-        return "";
+      if (!this.sessionStore.isEmpty) return "";
       return null;
     };
   },
