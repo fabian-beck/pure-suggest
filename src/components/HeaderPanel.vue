@@ -15,18 +15,18 @@
       </template>
       <template #start>
         <b-navbar-dropdown
-          :label="`Session (${selectedPublicationsCount} selected${
-            excludedPublicationsCount
-              ? `; ${excludedPublicationsCount} excluded`
+          :label="`Session (${sessionStore.selectedPublicationsCount} selected${
+            sessionStore.excludedPublicationsCount
+              ? `; ${sessionStore.excludedPublicationsCount} excluded`
               : ''
           })`"
-          v-show="selectedPublicationsCount"
+          v-show="sessionStore.selectedPublicationsCount"
         >
-          <b-navbar-item @click="$emit('exportSession')">
+          <b-navbar-item @click="sessionStore.exportSession">
             <b-icon icon="export"></b-icon>
             <span class="ml-2">Export session as JSON</span>
           </b-navbar-item>
-          <b-navbar-item @click="$emit('exportBibtex')">
+          <b-navbar-item @click="sessionStore.exportAllBibtex">
             <b-icon icon="export"></b-icon>
             <span class="ml-2">Export selected as BibTeX</span>
           </b-navbar-item>
@@ -51,7 +51,7 @@
           right
           collapsible
         >
-        <b-navbar-item @click="$emit('openFeedback')">
+          <b-navbar-item @click="$emit('openFeedback')">
             <b-icon icon="comment-quote-outline"></b-icon
             ><span class="ml-2">Feedback</span>
           </b-navbar-item>
@@ -73,7 +73,7 @@
         </b-navbar-dropdown>
       </template>
     </b-navbar>
-    <div class="columns" v-show="selectedPublicationsCount === 0">
+    <div class="columns" v-show="sessionStore.selectedPublicationsCount === 0">
       <div class="column">
         <div class="subtitle level-item mt-2">
           {{ this.$appSubtitle }}
@@ -82,7 +82,7 @@
       <div class="column is-two-thirds">
         <div
           class="notification has-text-centered p-2"
-          v-show="selectedPublicationsCount === 0"
+          v-show="sessionStore.selectedPublicationsCount === 0"
         >
           <p>
             Based on a set of selected publications,
@@ -97,12 +97,16 @@
 </template>
 
 <script>
+import { useSessionStore } from "./../stores/session.js";
+
 export default {
   name: "HeaderPanel",
+  setup() {
+    const sessionStore = useSessionStore();
+    return { sessionStore };
+  },
   props: {
     isMobile: Boolean,
-    selectedPublicationsCount: Number,
-    excludedPublicationsCount: Number,
   },
 };
 </script>

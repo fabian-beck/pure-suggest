@@ -9,13 +9,13 @@
             icon="information-outline"
             size="is-small"
             class="ml-2"
-            v-show="publications.length"
+            v-show="!sessionStore.isEmpty"
             data-tippy-content="The <b>publications selected as seeds</b> for computing the suggestions, sorted by score."
             v-tippy
           ></b-icon>
         </div>
       </div>
-      <div class="level-right" v-show="publications.length">
+      <div class="level-right" v-show="!sessionStore.isEmpty">
         <div class="level-item">
           <div class="field has-addons">
             <p class="control has-icons-right">
@@ -114,14 +114,13 @@
     <div>
       <div
         class="notification has-text-centered has-background-primary-light p-2"
-        v-show="publications.length === 0"
+        v-show="sessionStore.isEmpty"
       >
         <p>
           To start,
           <b><b-icon icon="plus-thick" size="is-small"></b-icon> add</b>
-          publications through a <b>title</b> or <a
-            href="https://www.doi.org/"
-            ><b>DOI(s)</b></a
+          publications through a <b>title</b> or
+          <a href="https://www.doi.org/"><b>DOI(s)</b></a
           >, <br />
           <b><b-icon icon="magnify" size="is-small"></b-icon> search</b> using
           <b>keywords</b>, or:
@@ -149,26 +148,27 @@
       </div>
     </div>
     <PublicationListComponent
-      :publications="publications"
-      v-on:activate="activatePublication"
+      :publications="sessionStore.selectedPublications"
       v-on:remove="removePublication"
       v-on:showAbstract="showAbstract"
-      v-on:exportSingleBibtex="exportSingleBibtex"
     />
   </div>
 </template>
 
 <script>
+import { useSessionStore } from "./../stores/session.js";
+
 import PublicationListComponent from "./PublicationListComponent.vue";
 import PublicationQuery from "./../PublicationQuery.js";
 
 export default {
   name: "SelectedPublicationsComponent",
+  setup() {
+    const sessionStore = useSessionStore();
+    return { sessionStore };
+  },
   components: {
     PublicationListComponent,
-  },
-  props: {
-    publications: Array,
   },
   data() {
     return {
@@ -204,14 +204,8 @@ export default {
     removePublication: function (doi) {
       this.$emit("remove", doi);
     },
-    activatePublication: function (doi) {
-      this.$emit("activate", doi);
-    },
     showAbstract: function (publication) {
       this.$emit("showAbstract", publication);
-    },
-    exportSingleBibtex: function (publication) {
-      this.$emit("exportSingleBibtex", publication);
     },
     updateBoost: function () {
       this.$emit("updateBoost", this.boostKeywordString);

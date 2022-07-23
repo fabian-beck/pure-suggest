@@ -1,7 +1,6 @@
 import _ from "lodash";
 
 import { cachedFetch } from "./Cache.js";
-import { shuffle } from "./Util.js"
 
 export default class Publication {
     constructor(doi) {
@@ -236,87 +235,6 @@ export default class Publication {
         return `@${type}{${this.doi},${bibString}
     doi = {${this.doi}}
 }`;
-    }
-
-    static async computeSuggestions(publications, excludedPublicationsDois, boostKeywords, updateLoadingToast, maxSuggestions) {
-
-        function incrementSuggestedPublicationCounter(
-            doi,
-            counter,
-            doiList,
-            sourceDoi
-        ) {
-            if (!excludedPublicationsDois.has(doi)) {
-                if (!publications[doi]) {
-                    if (!suggestedPublications[doi]) {
-                        const citingPublication = new Publication(doi);
-                        suggestedPublications[doi] = citingPublication;
-                    }
-                    suggestedPublications[doi][doiList].push(sourceDoi);
-                    suggestedPublications[doi][counter]++;
-                } else {
-                    publications[doi][counter]++;
-                }
-            }
-        }
-
-        console.log(`Starting to compute new suggestions based on ${Object.keys(publications).length} selected (and ${excludedPublicationsDois.size} excluded).`);
-        const suggestedPublications = {};
-        Object.values(publications).forEach((publication) => {
-            publication.citationCount = 0;
-            publication.referenceCount = 0;
-        });
-        Object.values(publications).forEach((publication) => {
-            publication.citationDois.forEach((citationDoi) => {
-                incrementSuggestedPublicationCounter(
-                    citationDoi,
-                    "citationCount",
-                    "referenceDois",
-                    publication.doi
-                );
-            });
-            publication.referenceDois.forEach((referenceDoi) => {
-                incrementSuggestedPublicationCounter(
-                    referenceDoi,
-                    "referenceCount",
-                    "citationDois",
-                    publication.doi
-                );
-            });
-        });
-        Object.values(publications).forEach((publication) =>
-            publication.updateScore(boostKeywords)
-        );
-        let filteredSuggestions = Object.values(suggestedPublications);
-        filteredSuggestions = shuffle(filteredSuggestions, 0);
-        console.log(`Identified ${filteredSuggestions.length} publications as suggestions.`);
-        // titles not yet fetched, that is why sorting can be only done on citations/references
-        filteredSuggestions.sort(
-            (a, b) =>
-                b.citationCount + b.referenceCount - (a.citationCount + a.referenceCount)
-        );
-        const preloadSuggestions = filteredSuggestions.slice(maxSuggestions, maxSuggestions + 50);
-        filteredSuggestions = filteredSuggestions.slice(0, maxSuggestions);
-        console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`);
-        let publicationsLoadedCount = 0;
-        updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "is-info");
-        await Promise.all(filteredSuggestions.map(async (suggestedPublication) => {
-            await suggestedPublication.fetchData()
-            publicationsLoadedCount++;
-            updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "is-info");
-        }));
-        filteredSuggestions.forEach((publication) =>
-            publication.updateScore(boostKeywords)
-        );
-        this.sortPublications(filteredSuggestions);
-        console.log("Completed computing and loading of new suggestions.");
-        preloadSuggestions.forEach(publication => {
-            publication.fetchData()
-        })
-        return {
-            publications: Object.values(filteredSuggestions),
-            totalSuggestions: Object.values(suggestedPublications).length
-        };
     }
 
     static sortPublications(publicationList) {

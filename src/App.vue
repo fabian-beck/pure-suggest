@@ -3,10 +3,6 @@
     <HeaderPanel
       id="header"
       :isMobile="isMobile"
-      :selectedPublicationsCount="selectedPublications.length"
-      :excludedPublicationsCount="excludedPublicationsDois.size"
-      v-on:exportSession="exportSession"
-      v-on:exportBibtex="exportAllBibtex"
       v-on:clearSession="clearSession"
       v-on:openFeedback="openFeedback"
       v-on:openAbout="isAboutPageShown = true"
@@ -15,21 +11,18 @@
     />
     <div
       id="main"
-      @click="clearActivePublication('clicked anywhere')"
+      @click="sessionStore.clearActivePublication('clicked anywhere')"
       :class="{ 'network-expanded': isNetworkExpanded }"
     >
       <SelectedPublicationsComponent
         id="selected"
         ref="selected"
-        :publications="selectedPublications"
         v-on:add="addPublicationsToSelection"
         v-on:startSearching="startSearchingSelected"
         v-on:searchEndedWithoutResult="notifySearchEmpty"
         v-on:openSearch="openSearch"
         v-on:remove="removePublication"
-        v-on:activate="activatePublicationComponentByDoi"
         v-on:showAbstract="showAbstract"
-        v-on:exportSingleBibtex="exportSingleBibtex"
         v-on:updateBoost="updateBoost"
         v-on:loadExample="loadExample"
         v-on:importSession="importSession"
@@ -37,23 +30,17 @@
       <SuggestedPublicationsComponent
         id="suggested"
         ref="suggested"
-        :suggestion="suggestion"
         v-on:add="addPublicationsToSelection"
         v-on:remove="removePublication"
-        v-on:activate="activatePublicationComponentByDoi"
         v-on:showAbstract="showAbstract"
-        v-on:exportSingleBibtex="exportSingleBibtex"
         v-on:loadMore="loadMoreSuggestions"
       />
       <NetworkVisComponent
         id="network"
         ref="network"
-        :selectedPublications="selectedPublications"
-        :suggestedPublications="suggestion ? suggestion.publications : []"
         :isExpanded="isNetworkExpanded"
         :svgWidth="1500"
         :svgHeight="600"
-        v-on:activate="activatePublicationComponentByDoi"
         v-on:expand="isNetworkExpanded = true"
         v-on:collapse="isNetworkExpanded = false"
       />
@@ -62,7 +49,6 @@
     <b-modal v-model="isSearchPanelShown">
       <SearchPanel
         :initialSearchQuery="searchQuery"
-        :selectedPublicationsDois="selectedPublicationsDois"
         v-on:add="addPublicationsToSelection"
         v-on:searchEmpty="notifySearchEmpty"
       />
@@ -79,6 +65,8 @@
 <!---------------------------------------------------------------------------------->
 
 <script>
+import { useSessionStore } from "./stores/session.js";
+
 import HeaderPanel from "./components/HeaderPanel.vue";
 import SelectedPublicationsComponent from "./components/SelectedPublicationsComponent.vue";
 import SuggestedPublicationsComponent from "./components/SuggestedPublicationsComponent.vue";
@@ -89,11 +77,14 @@ import AboutPage from "./components/AboutPage.vue";
 import KeyboardControlsPage from "./components/KeyboardControlsPage.vue";
 
 import Publication from "./Publication.js";
-import { saveAsFile } from "./Util.js";
 import { clearCache } from "./Cache.js";
 
 export default {
   name: "App",
+  setup() {
+    const sessionStore = useSessionStore();
+    return { sessionStore };
+  },
   components: {
     HeaderPanel,
     SelectedPublicationsComponent,
@@ -106,15 +97,7 @@ export default {
   },
   data() {
     return {
-      selectedPublications: [],
-      suggestedPublications: [],
-      suggestion: undefined,
-      maxSuggestions: 50,
-      boostKeywords: [],
       searchQuery: "",
-      excludedPublicationsDois: new Set(),
-      readPublicationsDois: new Set(),
-      activePublication: undefined,
       isSearchPanelShown: false,
       isAboutPageShown: false,
       isKeyboardControlsShown: false,
@@ -128,9 +111,6 @@ export default {
   computed: {
     isMobile: function () {
       return window.innerWidth <= 1023;
-    },
-    selectedPublicationsDois: function () {
-      return this.selectedPublications.map((publication) => publication.doi);
     },
   },
   methods: {
@@ -152,11 +132,11 @@ export default {
       let addedDoi = "";
       dois.forEach((doi) => {
         doi = doi.toLowerCase();
-        if (this.excludedPublicationsDois.has(doi)) {
-          this.excludedPublicationsDois.delete(doi);
+        if (this.sessionStore.isDoiExcluded(doi)) {
+          this.sessionStore.removeFromExcludedPublicationByDoi(doi); // todo
         }
-        if (!publications[doi]) {
-          publications[doi] = new Publication(doi);
+        if (!this.sessionStore.getSelectedPublicationByDoi(doi)) {
+          this.sessionStore.selectedPublications.push(new Publication(doi));
           addedDoi = doi;
           addedPublicationsCount++;
         }
@@ -164,7 +144,7 @@ export default {
       if (addedPublicationsCount > 0) {
         await this.updateSuggestions();
         if (addedPublicationsCount == 1) {
-          this.activatePublicationComponentByDoi(addedDoi);
+          this.sessionStore.activatePublicationComponentByDoi(addedDoi);
         }
         this.$buefy.toast.open({
           message: `Added ${
@@ -183,15 +163,14 @@ export default {
       }
       if (
         !this.feedbackInvitationShown &&
-        this.selectedPublications.length >= 10
+        this.sessionStore.selectedPublications.length >= 10
       ) {
         this.showFeedbackInvitation();
       }
     },
 
     removePublication: async function (doi) {
-      this.excludedPublicationsDois.add(doi);
-      delete publications[doi];
+      this.sessionStore.excludePublicationByDoi(doi);
       await this.updateSuggestions();
       this.$buefy.toast.open({
         message: `Excluded a publication`,
@@ -199,54 +178,41 @@ export default {
     },
 
     updateSuggestions: async function (maxSuggestions = 50) {
-      this.maxSuggestions = maxSuggestions;
+      this.sessionStore.maxSuggestions = maxSuggestions;
       this.startLoading();
       let publicationsLoaded = 0;
       this.updateLoadingToast(
-        `${publicationsLoaded}/${
-          Object.keys(publications).length
-        } selected publications loaded`,
+        `${publicationsLoaded}/${this.sessionStore.selectedPublicationsCount} selected publications loaded`,
         "is-primary"
       );
-      this.clearActivePublication("updating suggestions");
       await Promise.all(
-        Object.values(publications).map(async (publication) => {
+        this.sessionStore.selectedPublications.map(async (publication) => {
           await publication.fetchData();
           publication.isSelected = true;
           publicationsLoaded++;
           this.updateLoadingToast(
-            `${publicationsLoaded}/${
-              Object.keys(publications).length
-            } selected publications loaded`,
+            `${publicationsLoaded}/${this.sessionStore.selectedPublicationsCount} selected publications loaded`,
             "is-primary"
           );
         })
       );
-      this.suggestion = await Publication.computeSuggestions(
-        publications,
-        this.excludedPublicationsDois,
-        this.boostKeywords,
-        this.updateLoadingToast,
-        this.maxSuggestions
-      );
-      this.suggestion.publications.forEach((publication) => {
-        publication.isRead = this.readPublicationsDois.has(publication.doi);
-      });
-      this.selectedPublications = Object.values(publications);
-      Publication.sortPublications(this.selectedPublications);
+      await this.sessionStore.computeSuggestions(this.updateLoadingToast);
+      Publication.sortPublications(this.sessionStore.selectedPublications);
       this.$refs.network.plot(true);
       this.endLoading();
     },
 
     loadMoreSuggestions: function () {
-      this.updateSuggestions(this.maxSuggestions + 50);
+      this.updateSuggestions(this.sessionStore.maxSuggestions + 50);
     },
 
     updateBoost: async function (
       boostKeywordString,
       preventUpdateSuggestions = false
     ) {
-      this.boostKeywords = boostKeywordString.toLowerCase().split(/,\s*/);
+      this.sessionStore.boostKeywords = boostKeywordString
+        .toLowerCase()
+        .split(/,\s*/);
       if (!preventUpdateSuggestions) {
         await this.updateSuggestions();
       }
@@ -255,66 +221,6 @@ export default {
     setBoostKeywords: async function (boostKeywordString) {
       this.$refs.selected.setBoost(boostKeywordString);
       this.updateBoost(boostKeywordString, true);
-    },
-
-    setActivePublication: function (doi) {
-      this.clearActivePublication("setting active publication");
-      this.selectedPublications.forEach((selectedPublication) => {
-        selectedPublication.isActive = selectedPublication.doi === doi;
-        if (selectedPublication.isActive) {
-          this.activePublication = selectedPublication;
-          this.selectedPublications.forEach((publication) => {
-            publication.isLinkedToActive =
-              selectedPublication.citationDois.indexOf(publication.doi) >= 0 ||
-              selectedPublication.referenceDois.indexOf(publication.doi) >= 0;
-          });
-          this.suggestion.publications.forEach((publication) => {
-            publication.isLinkedToActive =
-              selectedPublication.citationDois.indexOf(publication.doi) >= 0 ||
-              selectedPublication.referenceDois.indexOf(publication.doi) >= 0;
-          });
-        }
-      });
-      this.suggestion.publications.forEach((suggestedPublication) => {
-        suggestedPublication.isActive = suggestedPublication.doi === doi;
-        if (suggestedPublication.isActive) {
-          suggestedPublication.isRead = true;
-          this.readPublicationsDois.add(doi);
-          this.activePublication = suggestedPublication;
-          this.selectedPublications.forEach((publication) => {
-            publication.isLinkedToActive =
-              suggestedPublication.citationDois.indexOf(publication.doi) >= 0 ||
-              suggestedPublication.referenceDois.indexOf(publication.doi) >= 0;
-          });
-        }
-      });
-      console.log(`Highlighted as active publication with DOI ${doi}.`);
-    },
-
-    clearActivePublication: function (source) {
-      this.activePublication = undefined;
-      this.selectedPublications
-        .concat(this.suggestion ? this.suggestion.publications : [])
-        .forEach((publication) => {
-          publication.isActive = false;
-          publication.isLinkedToActive = false;
-        });
-      console.log(
-        `Cleared any highlighted active publication, triggered by "${source}".`
-      );
-    },
-
-    activatePublicationComponent: function (publicationComponent) {
-      if (publicationComponent) {
-        publicationComponent.focus();
-      }
-    },
-
-    activatePublicationComponentByDoi: function (doi) {
-      if (doi !== this.activePublication?.doi) {
-        this.activatePublicationComponent(document.getElementById(doi));
-        this.setActivePublication(doi);
-      }
     },
 
     startLoading: function () {
@@ -368,7 +274,7 @@ export default {
       const _this = this;
       const onClose = function () {
         _this.isOverlay = false;
-        _this.activatePublicationComponent(
+        _this.sessionStore.activatePublicationComponent(
           document.getElementById(publication.doi)
         );
       };
@@ -385,15 +291,6 @@ export default {
       });
     },
 
-    exportSession: function () {
-      let data = {
-        selected: Object.keys(publications),
-        excluded: Array.from(this.excludedPublicationsDois),
-        boost: this.boostKeywords.join(", "),
-      };
-      saveAsFile("session.json", "application/json", JSON.stringify(data));
-    },
-
     importSession: function (file) {
       const fileReader = new FileReader();
       fileReader.onload = () => {
@@ -408,32 +305,13 @@ export default {
       fileReader.readAsText(file);
     },
 
-    exportAllBibtex: function () {
-      this.exportBibtex(this.selectedPublications);
-    },
-
-    exportSingleBibtex: function (publication) {
-      this.exportBibtex([publication]);
-    },
-
-    exportBibtex: function (publicationList) {
-      let bib = "";
-      publicationList.forEach(
-        (publication) => (bib += publication.toBibtex() + "\n\n")
-      );
-      saveAsFile("publications.bib", "application/x-bibtex", bib);
-    },
-
     clearSession: function () {
       this.isOverlay = true;
       this.$buefy.dialog.confirm({
         message:
           "You are going to clear all selected articles and jump back to the initial state.",
         onConfirm: () => {
-          publications = {};
-          this.selectedPublications = [];
-          this.excludedPublicationsDois = new Set();
-          this.readPublicationsDois = new Set();
+          this.sessionStore.reset();
           this.setBoostKeywords("");
           this.updateSuggestions();
           this.isOverlay = false;
@@ -460,7 +338,7 @@ export default {
         this.setBoostKeywords(session.boost);
       }
       if (session.excluded) {
-        this.excludedPublicationsDois = new Set(session.excluded);
+        this.sessionStore.excludedPublicationsDois = session.excluded;
       }
       this.addPublicationsToSelection(session.selected);
     },
@@ -546,67 +424,77 @@ export default {
       } else if (e.key === "Escape") {
         e.preventDefault();
         document.activeElement.blur();
-        this.clearActivePublication("escape key");
+        this.sessionStore.clearActivePublication("escape key");
       } else if (e.key === "a") {
         e.preventDefault();
-        this.clearActivePublication("setting focus on text field");
+        this.sessionStore.clearActivePublication("setting focus on text field");
         document.getElementsByClassName("input add-publication")[0].focus();
       } else if (e.key === "s") {
         e.preventDefault();
         this.isSearchPanelShown = true;
       } else if (e.key === "b") {
         e.preventDefault();
-        this.clearActivePublication("setting focus on text field");
+        this.sessionStore.clearActivePublication("setting focus on text field");
         document.getElementsByClassName("input boost")[0].focus();
       } else if (e.key === "m") {
         e.preventDefault();
         this.$refs.network.toggleMode();
       } else if (e.key === "ArrowLeft") {
         e.preventDefault();
-        this.activatePublicationComponent(
+        this.sessionStore.activatePublicationComponent(
           document
             .getElementById("selected")
             .getElementsByClassName("publication-component")[0]
         );
       } else if (e.key === "ArrowRight") {
         e.preventDefault();
-        this.activatePublicationComponent(
+        this.sessionStore.activatePublicationComponent(
           document
             .getElementById("suggested")
             .getElementsByClassName("publication-component")[0]
         );
-      } else if (this.activePublication) {
+      } else if (this.sessionStore.activePublication) {
         if (e.key === "ArrowDown" || e.key === "ArrowUp") {
           e.preventDefault();
           const activePublicationComponent = document.getElementsByClassName(
             "publication-component active"
           )[0];
-          this.activatePublicationComponent(
+          this.sessionStore.activatePublicationComponent(
             e.key === "ArrowDown"
               ? activePublicationComponent.nextSibling
               : activePublicationComponent.previousSibling
           );
         } else if (e.key === "+") {
           e.preventDefault();
-          this.addPublicationsToSelection(this.activePublication.doi);
+          this.addPublicationsToSelection(
+            this.sessionStore.activePublication.doi
+          );
         } else if (e.key === "-") {
           e.preventDefault();
-          this.removePublication(this.activePublication.doi);
+          this.removePublication(this.sessionStore.activePublication.doi);
         } else if (e.key === "d") {
           e.preventDefault();
-          window.open(this.activePublication.doiUrl);
-        } else if (e.key === "t" && this.activePublication.abstract) {
+          window.open(this.sessionStore.activePublication.doiUrl);
+        } else if (
+          e.key === "t" &&
+          this.sessionStore.activePublication.abstract
+        ) {
           e.preventDefault();
-          this.showAbstract(this.activePublication);
-        } else if (e.key === "o" && this.activePublication.oaLink) {
+          this.showAbstract(this.sessionStore.activePublication);
+        } else if (
+          e.key === "o" &&
+          this.sessionStore.activePublication.oaLink
+        ) {
           e.preventDefault();
-          window.open(this.activePublication.oaLink);
+          window.open(this.sessionStore.activePublication.oaLink);
         } else if (e.key === "g") {
           e.preventDefault();
-          window.open(this.activePublication.gsUrl);
+          window.open(this.sessionStore.activePublication.gsUrl);
         } else if (e.key === "x") {
           e.preventDefault();
-          this.exportSingleBibtex(this.activePublication);
+          this.sessionStore.exportSingleBibtex(
+            this.sessionStore.activePublication
+          );
         }
       }
     };
@@ -615,9 +503,7 @@ export default {
 
     // triggers a prompt before closing/reloading the page
     window.onbeforeunload = () => {
-      console.log(this.selectedPublications);
-      if (this.selectedPublications && this.selectedPublications.length)
-        return "";
+      if (!this.sessionStore.isEmpty) return "";
       return null;
     };
   },
@@ -626,8 +512,6 @@ export default {
     document.removeEventListener("keydown", this._keyListener);
   },
 };
-
-let publications = {};
 </script>
 
 <!---------------------------------------------------------------------------------->
