@@ -107,7 +107,6 @@ export default {
     return {
       searchQuery: "",
       readPublicationsDois: new Set(),
-      activePublication: undefined,
       isSearchPanelShown: false,
       isAboutPageShown: false,
       isKeyboardControlsShown: false,
@@ -246,7 +245,7 @@ export default {
       this.sessionStore.selectedPublications.forEach((selectedPublication) => {
         selectedPublication.isActive = selectedPublication.doi === doi;
         if (selectedPublication.isActive) {
-          this.activePublication = selectedPublication;
+          this.sessionStore.activePublication = selectedPublication;
           this.sessionStore.selectedPublications.forEach((publication) => {
             publication.isLinkedToActive =
               selectedPublication.citationDois.indexOf(publication.doi) >= 0 ||
@@ -264,7 +263,7 @@ export default {
         if (suggestedPublication.isActive) {
           suggestedPublication.isRead = true;
           this.readPublicationsDois.add(doi);
-          this.activePublication = suggestedPublication;
+          this.sessionStore.activePublication = suggestedPublication;
           this.sessionStore.selectedPublications.forEach((publication) => {
             publication.isLinkedToActive =
               suggestedPublication.citationDois.indexOf(publication.doi) >= 0 ||
@@ -276,7 +275,7 @@ export default {
     },
 
     clearActivePublication: function (source) {
-      this.activePublication = undefined;
+      this.sessionStore.activePublication = undefined;
       this.sessionStore.selectedPublications
         .concat(this.sessionStore.suggestion ? this.sessionStore.suggestion.publications : [])
         .forEach((publication) => {
@@ -295,7 +294,7 @@ export default {
     },
 
     activatePublicationComponentByDoi: function (doi) {
-      if (doi !== this.activePublication?.doi) {
+      if (doi !== this.sessionStore.activePublication?.doi) {
         this.activatePublicationComponent(document.getElementById(doi));
         this.setActivePublication(doi);
       }
@@ -532,7 +531,7 @@ export default {
             .getElementById("suggested")
             .getElementsByClassName("publication-component")[0]
         );
-      } else if (this.activePublication) {
+      } else if (this.sessionStore.activePublication) {
         if (e.key === "ArrowDown" || e.key === "ArrowUp") {
           e.preventDefault();
           const activePublicationComponent = document.getElementsByClassName(
@@ -545,25 +544,25 @@ export default {
           );
         } else if (e.key === "+") {
           e.preventDefault();
-          this.addPublicationsToSelection(this.activePublication.doi);
+          this.addPublicationsToSelection(this.sessionStore.activePublication.doi);
         } else if (e.key === "-") {
           e.preventDefault();
-          this.removePublication(this.activePublication.doi);
+          this.removePublication(this.sessionStore.activePublication.doi);
         } else if (e.key === "d") {
           e.preventDefault();
-          window.open(this.activePublication.doiUrl);
-        } else if (e.key === "t" && this.activePublication.abstract) {
+          window.open(this.sessionStore.activePublication.doiUrl);
+        } else if (e.key === "t" && this.sessionStore.activePublication.abstract) {
           e.preventDefault();
-          this.showAbstract(this.activePublication);
-        } else if (e.key === "o" && this.activePublication.oaLink) {
+          this.showAbstract(this.sessionStore.activePublication);
+        } else if (e.key === "o" && this.sessionStore.activePublication.oaLink) {
           e.preventDefault();
-          window.open(this.activePublication.oaLink);
+          window.open(this.sessionStore.activePublication.oaLink);
         } else if (e.key === "g") {
           e.preventDefault();
-          window.open(this.activePublication.gsUrl);
+          window.open(this.sessionStore.activePublication.gsUrl);
         } else if (e.key === "x") {
           e.preventDefault();
-          this.sessionStore.exportSingleBibtex(this.activePublication);
+          this.sessionStore.exportSingleBibtex(this.sessionStore.activePublication);
         }
       }
     };

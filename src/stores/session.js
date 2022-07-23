@@ -11,6 +11,7 @@ export const useSessionStore = defineStore('session', {
       suggestion: undefined,
       maxSuggestions: 50,
       boostKeywords: [],
+      activePublication: undefined,
     }
   },
   getters: {
