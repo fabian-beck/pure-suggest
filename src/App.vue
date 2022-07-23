@@ -110,7 +110,6 @@ export default {
   },
   data() {
     return {
-      suggestedPublications: [],
       suggestion: undefined,
       maxSuggestions: 50,
       boostKeywords: [],
