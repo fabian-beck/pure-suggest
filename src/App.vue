@@ -3,7 +3,6 @@
     <HeaderPanel
       id="header"
       :isMobile="isMobile"
-      v-on:exportBibtex="exportAllBibtex"
       v-on:clearSession="clearSession"
       v-on:openFeedback="openFeedback"
       v-on:openAbout="isAboutPageShown = true"
@@ -25,7 +24,6 @@
         v-on:remove="removePublication"
         v-on:activate="activatePublicationComponentByDoi"
         v-on:showAbstract="showAbstract"
-        v-on:exportSingleBibtex="exportSingleBibtex"
         v-on:updateBoost="updateBoost"
         v-on:loadExample="loadExample"
         v-on:importSession="importSession"
@@ -38,7 +36,7 @@
         v-on:remove="removePublication"
         v-on:activate="activatePublicationComponentByDoi"
         v-on:showAbstract="showAbstract"
-        v-on:exportSingleBibtex="exportSingleBibtex"
+        v-on:exportSingleBibtex="sessionStore.exportSingleBibtex"
         v-on:loadMore="loadMoreSuggestions"
       />
       <NetworkVisComponent
@@ -87,7 +85,6 @@ import AboutPage from "./components/AboutPage.vue";
 import KeyboardControlsPage from "./components/KeyboardControlsPage.vue";
 
 import Publication from "./Publication.js";
-import { saveAsFile } from "./Util.js";
 import { clearCache } from "./Cache.js";
 
 export default {
@@ -386,22 +383,6 @@ export default {
       fileReader.readAsText(file);
     },
 
-    exportAllBibtex: function () {
-      this.exportBibtex(this.sessionStore.selectedPublications);
-    },
-
-    exportSingleBibtex: function (publication) {
-      this.exportBibtex([publication]);
-    },
-
-    exportBibtex: function (publicationList) {
-      let bib = "";
-      publicationList.forEach(
-        (publication) => (bib += publication.toBibtex() + "\n\n")
-      );
-      saveAsFile("publications.bib", "application/x-bibtex", bib);
-    },
-
     clearSession: function () {
       this.isOverlay = true;
       this.$buefy.dialog.confirm({
@@ -582,7 +563,7 @@ export default {
           window.open(this.activePublication.gsUrl);
         } else if (e.key === "x") {
           e.preventDefault();
-          this.exportSingleBibtex(this.activePublication);
+          this.sessionStore.exportSingleBibtex(this.activePublication);
         }
       }
     };

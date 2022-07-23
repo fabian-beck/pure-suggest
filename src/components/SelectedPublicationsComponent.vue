@@ -213,7 +213,7 @@ export default {
       this.$emit("showAbstract", publication);
     },
     exportSingleBibtex: function (publication) {
-      this.$emit("exportSingleBibtex", publication);
+      this.sessionStore.exportSingleBibtex(publication)
     },
     updateBoost: function () {
       this.$emit("updateBoost", this.boostKeywordString);

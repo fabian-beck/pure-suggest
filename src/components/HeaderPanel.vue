@@ -26,7 +26,7 @@
             <b-icon icon="export"></b-icon>
             <span class="ml-2">Export session as JSON</span>
           </b-navbar-item>
-          <b-navbar-item @click="$emit('exportBibtex')">
+          <b-navbar-item @click="sessionStore.exportAllBibtex">
             <b-icon icon="export"></b-icon>
             <span class="ml-2">Export selected as BibTeX</span>
           </b-navbar-item>

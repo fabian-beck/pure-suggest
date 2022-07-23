@@ -130,5 +130,21 @@ export const useSessionStore = defineStore('session', {
       };
       saveAsFile("session.json", "application/json", JSON.stringify(data));
     },
+
+    exportAllBibtex: function () {
+      this.exportBibtex(this.selectedPublications);
+    },
+
+    exportSingleBibtex: function (publication) {
+      this.exportBibtex([publication]);
+    },
+
+    exportBibtex: function (publicationList) {
+      let bib = "";
+      publicationList.forEach(
+        (publication) => (bib += publication.toBibtex() + "\n\n")
+      );
+      saveAsFile("publications.bib", "application/x-bibtex", bib);
+    },
   }
 })
