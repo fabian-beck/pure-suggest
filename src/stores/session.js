@@ -12,6 +12,7 @@ export const useSessionStore = defineStore('session', {
       maxSuggestions: 50,
       boostKeywords: [],
       activePublication: undefined,
+      readPublicationsDois: new Set(),
     }
   },
   getters: {
@@ -27,6 +28,7 @@ export const useSessionStore = defineStore('session', {
     reset() {
       this.selectedPublications = [];
       this.excludedPublicationsDois = [];
+      this.readPublicationsDois = new Set();
     },
 
     removeFromExcludedPublicationByDoi(doi) {

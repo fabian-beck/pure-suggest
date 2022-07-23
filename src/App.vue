@@ -106,7 +106,6 @@ export default {
   data() {
     return {
       searchQuery: "",
-      readPublicationsDois: new Set(),
       isSearchPanelShown: false,
       isAboutPageShown: false,
       isKeyboardControlsShown: false,
@@ -214,7 +213,7 @@ export default {
         this.updateLoadingToast,
       );
       this.sessionStore.suggestion.publications.forEach((publication) => {
-        publication.isRead = this.readPublicationsDois.has(publication.doi);
+        publication.isRead = this.sessionStore.readPublicationsDois.has(publication.doi);
       });
       Publication.sortPublications(this.sessionStore.selectedPublications);
       this.$refs.network.plot(true);
@@ -262,7 +261,7 @@ export default {
         suggestedPublication.isActive = suggestedPublication.doi === doi;
         if (suggestedPublication.isActive) {
           suggestedPublication.isRead = true;
-          this.readPublicationsDois.add(doi);
+          this.sessionStore.readPublicationsDois.add(doi);
           this.sessionStore.activePublication = suggestedPublication;
           this.sessionStore.selectedPublications.forEach((publication) => {
             publication.isLinkedToActive =
@@ -389,7 +388,6 @@ export default {
           "You are going to clear all selected articles and jump back to the initial state.",
         onConfirm: () => {
           this.sessionStore.reset();
-          this.readPublicationsDois = new Set();
           this.setBoostKeywords("");
           this.updateSuggestions();
           this.isOverlay = false;
