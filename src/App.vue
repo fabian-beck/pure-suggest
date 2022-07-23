@@ -31,12 +31,10 @@
       <SuggestedPublicationsComponent
         id="suggested"
         ref="suggested"
-        :suggestion="sessionStore.suggestion"
         v-on:add="addPublicationsToSelection"
         v-on:remove="removePublication"
         v-on:activate="activatePublicationComponentByDoi"
         v-on:showAbstract="showAbstract"
-        v-on:exportSingleBibtex="sessionStore.exportSingleBibtex"
         v-on:loadMore="loadMoreSuggestions"
       />
       <NetworkVisComponent

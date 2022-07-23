@@ -9,16 +9,16 @@
             icon="information-outline"
             size="is-small"
             class="ml-2"
-            v-show="suggestion"
+            v-show="sessionStore.suggestion"
             data-tippy-content="The <b>suggested publications</b> based on references to and from the selected publications, sorted by score."
             v-tippy
           ></b-icon>
         </div>
       </div>
-      <div class="level-right has-text-white" v-if="suggestion">
+      <div class="level-right has-text-white" v-if="sessionStore.suggestion">
         <div class="level-item">
           <span>
-            {{ suggestion.publications.length }}
+            {{ sessionStore.suggestion.publications.length }}
             <b-tag
               icon="bell"
               size="is-small"
@@ -28,7 +28,7 @@
               >{{ unreadSuggestionsCount }}</b-tag
             >
             of
-            {{ suggestion.totalSuggestions.toLocaleString("en") }} suggestions
+            {{ sessionStore.suggestion.totalSuggestions.toLocaleString("en") }} suggestions
           </span>
           <b-button
             class="level-item compact-button"
@@ -37,39 +37,44 @@
             v-tippy
             @click.stop="$emit('loadMore')"
             :disabled="
-              suggestion.publications.length === suggestion.totalSuggestions
+              sessionStore.suggestion.publications.length === sessionStore.suggestion.totalSuggestions
             "
           ></b-button>
         </div>
       </div>
     </div>
     <PublicationListComponent
-      :publications="suggestion ? suggestion.publications : []"
+      :publications="sessionStore.suggestion ? sessionStore.suggestion.publications : []"
       :suggestion="true"
       v-on:add="addPublication"
       v-on:remove="removePublication"
       v-on:activate="activatePublication"
       v-on:showAbstract="showAbstract"
-      v-on:exportSingleBibtex="exportSingleBibtex"
+      v-on:exportSingleBibtex="sessionStore.exportSingleBibtex"
     />
   </div>
 </template>
 
 <script>
+import { useSessionStore } from "./../stores/session.js";
+
 import PublicationListComponent from "./PublicationListComponent.vue";
 
 export default {
   name: "SuggestedPublicationsComponent",
+  setup() {
+    const sessionStore = useSessionStore();
+    return { sessionStore };
+  },
   components: {
     PublicationListComponent,
   },
   props: {
     title: String,
-    suggestion: Object,
   },
   computed: {
     unreadSuggestionsCount() {
-      return this.suggestion.publications.filter(
+      return this.sessionStore.suggestion.publications.filter(
         (publication) => !publication.isRead
       ).length;
     },
@@ -86,9 +91,6 @@ export default {
     },
     showAbstract: function (publication) {
       this.$emit("showAbstract", publication);
-    },
-    exportSingleBibtex: function (publication) {
-      this.$emit("exportSingleBibtex", publication);
     },
   },
 };
