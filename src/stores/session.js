@@ -8,6 +8,7 @@ export const useSessionStore = defineStore('session', {
     return {
       selectedPublications: [],
       excludedPublicationsDois: [],
+      suggestion: undefined,
     }
   },
   getters: {

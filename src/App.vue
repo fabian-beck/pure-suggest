@@ -34,7 +34,7 @@
       <SuggestedPublicationsComponent
         id="suggested"
         ref="suggested"
-        :suggestion="suggestion"
+        :suggestion="sessionStore.suggestion"
         v-on:add="addPublicationsToSelection"
         v-on:remove="removePublication"
         v-on:activate="activatePublicationComponentByDoi"
@@ -46,7 +46,7 @@
         id="network"
         ref="network"
         :selectedPublications="sessionStore.selectedPublications"
-        :suggestedPublications="suggestion ? suggestion.publications : []"
+        :suggestedPublications="sessionStore.suggestion ? sessionStore.suggestion.publications : []"
         :isExpanded="isNetworkExpanded"
         :svgWidth="1500"
         :svgHeight="600"
@@ -109,7 +109,6 @@ export default {
   },
   data() {
     return {
-      suggestion: undefined,
       maxSuggestions: 50,
       boostKeywords: [],
       searchQuery: "",
@@ -218,12 +217,12 @@ export default {
           );
         })
       );
-      this.suggestion = await this.sessionStore.computeSuggestions(
+      this.sessionStore.suggestion = await this.sessionStore.computeSuggestions(
         this.boostKeywords,
         this.updateLoadingToast,
         this.maxSuggestions
       );
-      this.suggestion.publications.forEach((publication) => {
+      this.sessionStore.suggestion.publications.forEach((publication) => {
         publication.isRead = this.readPublicationsDois.has(publication.doi);
       });
       Publication.sortPublications(this.sessionStore.selectedPublications);
@@ -261,14 +260,14 @@ export default {
               selectedPublication.citationDois.indexOf(publication.doi) >= 0 ||
               selectedPublication.referenceDois.indexOf(publication.doi) >= 0;
           });
-          this.suggestion.publications.forEach((publication) => {
+          this.sessionStore.suggestion.publications.forEach((publication) => {
             publication.isLinkedToActive =
               selectedPublication.citationDois.indexOf(publication.doi) >= 0 ||
               selectedPublication.referenceDois.indexOf(publication.doi) >= 0;
           });
         }
       });
-      this.suggestion.publications.forEach((suggestedPublication) => {
+      this.sessionStore.suggestion.publications.forEach((suggestedPublication) => {
         suggestedPublication.isActive = suggestedPublication.doi === doi;
         if (suggestedPublication.isActive) {
           suggestedPublication.isRead = true;
@@ -287,7 +286,7 @@ export default {
     clearActivePublication: function (source) {
       this.activePublication = undefined;
       this.sessionStore.selectedPublications
-        .concat(this.suggestion ? this.suggestion.publications : [])
+        .concat(this.sessionStore.suggestion ? this.sessionStore.suggestion.publications : [])
         .forEach((publication) => {
           publication.isActive = false;
           publication.isLinkedToActive = false;
