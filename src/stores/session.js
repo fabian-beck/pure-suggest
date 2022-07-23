@@ -9,6 +9,7 @@ export const useSessionStore = defineStore('session', {
       selectedPublications: [],
       excludedPublicationsDois: [],
       suggestion: undefined,
+      maxSuggestions: 50,
     }
   },
   getters: {
@@ -32,7 +33,7 @@ export const useSessionStore = defineStore('session', {
       this.selectedPublications = this.selectedPublications.filter(publication => publication.doi != doi)
       this.excludedPublicationsDois.push(doi);
     },
-    async computeSuggestions(boostKeywords, updateLoadingToast, maxSuggestions) {
+    async computeSuggestions(boostKeywords, updateLoadingToast) {
 
       function incrementSuggestedPublicationCounter(
         _this,
@@ -93,8 +94,8 @@ export const useSessionStore = defineStore('session', {
         (a, b) =>
           b.citationCount + b.referenceCount - (a.citationCount + a.referenceCount)
       );
-      const preloadSuggestions = filteredSuggestions.slice(maxSuggestions, maxSuggestions + 50);
-      filteredSuggestions = filteredSuggestions.slice(0, maxSuggestions);
+      const preloadSuggestions = filteredSuggestions.slice(this.maxSuggestions, this.maxSuggestions + 50);
+      filteredSuggestions = filteredSuggestions.slice(0, this.maxSuggestions);
       console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`);
       let publicationsLoadedCount = 0;
       updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "is-info");

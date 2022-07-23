@@ -109,7 +109,6 @@ export default {
   },
   data() {
     return {
-      maxSuggestions: 50,
       boostKeywords: [],
       searchQuery: "",
       readPublicationsDois: new Set(),
@@ -194,7 +193,7 @@ export default {
     },
 
     updateSuggestions: async function (maxSuggestions = 50) {
-      this.maxSuggestions = maxSuggestions;
+      this.sessionStore.maxSuggestions = maxSuggestions;
       this.startLoading();
       let publicationsLoaded = 0;
       this.updateLoadingToast(
@@ -220,7 +219,6 @@ export default {
       await this.sessionStore.computeSuggestions(
         this.boostKeywords,
         this.updateLoadingToast,
-        this.maxSuggestions
       );
       this.sessionStore.suggestion.publications.forEach((publication) => {
         publication.isRead = this.readPublicationsDois.has(publication.doi);
@@ -231,7 +229,7 @@ export default {
     },
 
     loadMoreSuggestions: function () {
-      this.updateSuggestions(this.maxSuggestions + 50);
+      this.updateSuggestions(this.sessionStore.maxSuggestions + 50);
     },
 
     updateBoost: async function (
