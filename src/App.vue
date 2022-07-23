@@ -3,7 +3,6 @@
     <HeaderPanel
       id="header"
       :isMobile="isMobile"
-      v-on:exportSession="exportSession"
       v-on:exportBibtex="exportAllBibtex"
       v-on:clearSession="clearSession"
       v-on:openFeedback="openFeedback"
@@ -371,15 +370,6 @@ export default {
         onConfirm: onClose,
         onCancel: onClose,
       });
-    },
-
-    exportSession: function () {
-      let data = {
-        selected: this.sessionStore.selectedPublicationsDois,
-        excluded: this.sessionStore.excludedPublicationsDois,
-        boost: this.sessionStore.boostKeywords.join(", "),
-      };
-      saveAsFile("session.json", "application/json", JSON.stringify(data));
     },
 
     importSession: function (file) {

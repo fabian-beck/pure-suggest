@@ -22,7 +22,7 @@
           })`"
           v-show="sessionStore.selectedPublicationsCount"
         >
-          <b-navbar-item @click="$emit('exportSession')">
+          <b-navbar-item @click="sessionStore.exportSession">
             <b-icon icon="export"></b-icon>
             <span class="ml-2">Export session as JSON</span>
           </b-navbar-item>

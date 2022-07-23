@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 
 import Publication from "./../Publication.js";
-import { shuffle } from "./../Util.js"
+import { shuffle, saveAsFile } from "./../Util.js"
 
 export const useSessionStore = defineStore('session', {
   state: () => {
@@ -27,13 +27,16 @@ export const useSessionStore = defineStore('session', {
       this.selectedPublications = [];
       this.excludedPublicationsDois = [];
     },
+
     removeFromExcludedPublicationByDoi(doi) {
       this.excludedPublicationsDois = this.excludedPublicationsDois.filter(excludedDoi => excludedDoi != doi)
     },
+
     excludePublicationByDoi(doi) {
       this.selectedPublications = this.selectedPublications.filter(publication => publication.doi != doi)
       this.excludedPublicationsDois.push(doi);
     },
+
     async computeSuggestions(updateLoadingToast) {
 
       function incrementSuggestedPublicationCounter(
@@ -117,6 +120,15 @@ export const useSessionStore = defineStore('session', {
         publications: Object.values(filteredSuggestions),
         totalSuggestions: Object.values(suggestedPublications).length
       };
+    },
+
+    exportSession: function () {
+      let data = {
+        selected: this.selectedPublicationsDois,
+        excluded: this.excludedPublicationsDois,
+        boost: this.boostKeywords.join(", "),
+      };
+      saveAsFile("session.json", "application/json", JSON.stringify(data));
     },
   }
 })
