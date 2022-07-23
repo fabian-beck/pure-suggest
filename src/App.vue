@@ -19,7 +19,6 @@
       <SelectedPublicationsComponent
         id="selected"
         ref="selected"
-        :publications="sessionStore.selectedPublications"
         v-on:add="addPublicationsToSelection"
         v-on:startSearching="startSearchingSelected"
         v-on:searchEndedWithoutResult="notifySearchEmpty"

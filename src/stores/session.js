@@ -11,7 +11,8 @@ export const useSessionStore = defineStore('session', {
     selectedPublicationsDois: (state) => state.selectedPublications.map((publication) => publication.doi),
     selectedPublicationsCount: (state) => state.selectedPublications.length,
     excludedPublicationsCount: (state) => state.excludedPublicationsDois.length,
-    isDoiExcluded: (state) => (doi) => state.excludedPublicationsDois.includes(doi)
+    isDoiExcluded: (state) => (doi) => state.excludedPublicationsDois.includes(doi),
+    isEmpty: (state) => state.selectedPublicationsCount === 0,
   },
   actions: {
     reset() {
