@@ -10,6 +10,7 @@ export const useSessionStore = defineStore('session', {
       excludedPublicationsDois: [],
       suggestion: undefined,
       maxSuggestions: 50,
+      boostKeywords: [],
     }
   },
   getters: {
@@ -33,7 +34,7 @@ export const useSessionStore = defineStore('session', {
       this.selectedPublications = this.selectedPublications.filter(publication => publication.doi != doi)
       this.excludedPublicationsDois.push(doi);
     },
-    async computeSuggestions(boostKeywords, updateLoadingToast) {
+    async computeSuggestions(updateLoadingToast) {
 
       function incrementSuggestedPublicationCounter(
         _this,
@@ -84,7 +85,7 @@ export const useSessionStore = defineStore('session', {
         });
       });
       this.selectedPublications.forEach((publication) =>
-        publication.updateScore(boostKeywords)
+        publication.updateScore(this.boostKeywords)
       );
       let filteredSuggestions = Object.values(suggestedPublications);
       filteredSuggestions = shuffle(filteredSuggestions, 0);
@@ -105,7 +106,7 @@ export const useSessionStore = defineStore('session', {
         updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "is-info");
       }));
       filteredSuggestions.forEach((publication) =>
-        publication.updateScore(boostKeywords)
+        publication.updateScore(this.boostKeywords)
       );
       Publication.sortPublications(filteredSuggestions);
       console.log("Completed computing and loading of new suggestions.");

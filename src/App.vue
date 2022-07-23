@@ -109,7 +109,6 @@ export default {
   },
   data() {
     return {
-      boostKeywords: [],
       searchQuery: "",
       readPublicationsDois: new Set(),
       activePublication: undefined,
@@ -217,7 +216,6 @@ export default {
         })
       );
       await this.sessionStore.computeSuggestions(
-        this.boostKeywords,
         this.updateLoadingToast,
       );
       this.sessionStore.suggestion.publications.forEach((publication) => {
@@ -236,7 +234,7 @@ export default {
       boostKeywordString,
       preventUpdateSuggestions = false
     ) {
-      this.boostKeywords = boostKeywordString.toLowerCase().split(/,\s*/);
+      this.sessionStore.boostKeywords = boostKeywordString.toLowerCase().split(/,\s*/);
       if (!preventUpdateSuggestions) {
         await this.updateSuggestions();
       }
@@ -379,7 +377,7 @@ export default {
       let data = {
         selected: this.sessionStore.selectedPublicationsDois,
         excluded: this.sessionStore.excludedPublicationsDois,
-        boost: this.boostKeywords.join(", "),
+        boost: this.sessionStore.boostKeywords.join(", "),
       };
       saveAsFile("session.json", "application/json", JSON.stringify(data));
     },
