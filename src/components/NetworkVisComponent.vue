@@ -186,20 +186,18 @@ export default {
 
       const nodes = [];
       let i = 0;
-      this.sessionStore.selectedPublications
-        .concat(this.sessionStore.suggestedPublications)
-        .forEach((publication) => {
-          if (publication.year) {
-            this.yearMin = Math.min(this.yearMin, publication.year);
-            this.yearMax = Math.max(this.yearMax, publication.year);
-            doiToIndex[publication.doi] = i;
-            nodes.push({
-              id: publication.doi,
-              publication: publication,
-            });
-            i++;
-          }
-        });
+      this.sessionStore.publications.forEach((publication) => {
+        if (publication.year) {
+          this.yearMin = Math.min(this.yearMin, publication.year);
+          this.yearMax = Math.max(this.yearMax, publication.year);
+          doiToIndex[publication.doi] = i;
+          nodes.push({
+            id: publication.doi,
+            publication: publication,
+          });
+          i++;
+        }
+      });
 
       const links = [];
       this.sessionStore.selectedPublications.forEach((publication) => {
@@ -316,9 +314,7 @@ export default {
         .attr("text-anchor", "middle")
         .attr(
           "visibility",
-          !this.sessionStore.isEmpty && !this.isClusters
-            ? "visible"
-            : "hidden"
+          !this.sessionStore.isEmpty && !this.isClusters ? "visible" : "hidden"
         )
         .text((d) => d)
         .attr("fill", "grey");

@@ -23,7 +23,6 @@
         v-on:openSearch="openSearch"
         v-on:remove="removePublication"
         v-on:showAbstract="showAbstract"
-        v-on:updateBoost="updateBoost"
         v-on:loadExample="loadExample"
         v-on:importSession="importSession"
       />
@@ -197,30 +196,12 @@ export default {
         })
       );
       await this.sessionStore.computeSuggestions(this.updateLoadingToast);
-      Publication.sortPublications(this.sessionStore.selectedPublications);
       this.$refs.network.plot(true);
       this.endLoading();
     },
 
     loadMoreSuggestions: function () {
       this.updateSuggestions(this.sessionStore.maxSuggestions + 50);
-    },
-
-    updateBoost: async function (
-      boostKeywordString,
-      preventUpdateSuggestions = false
-    ) {
-      this.sessionStore.boostKeywords = boostKeywordString
-        .toLowerCase()
-        .split(/,\s*/);
-      if (!preventUpdateSuggestions) {
-        await this.updateSuggestions();
-      }
-    },
-
-    setBoostKeywords: async function (boostKeywordString) {
-      this.$refs.selected.setBoost(boostKeywordString);
-      this.updateBoost(boostKeywordString, true);
     },
 
     startLoading: function () {
@@ -312,7 +293,6 @@ export default {
           "You are going to clear all selected and excluded articles and jump back to the initial state.",
         onConfirm: () => {
           this.sessionStore.reset();
-          this.setBoostKeywords("");
           this.updateSuggestions();
           this.isOverlay = false;
           this.isNetworkExpanded = false;
@@ -335,7 +315,7 @@ export default {
         return;
       }
       if (session.boost) {
-        this.setBoostKeywords(session.boost);
+        this.sessionStore.setBoostKeywordString(session.boost);
       }
       if (session.excluded) {
         this.sessionStore.excludedPublicationsDois = session.excluded;

@@ -10,7 +10,7 @@ export const useSessionStore = defineStore('session', {
       excludedPublicationsDois: [],
       suggestion: undefined,
       maxSuggestions: 50,
-      boostKeywords: [],
+      boostKeywordString: "",
       activePublication: undefined,
       readPublicationsDois: new Set(),
     }
@@ -20,9 +20,11 @@ export const useSessionStore = defineStore('session', {
     selectedPublicationsCount: (state) => state.selectedPublications.length,
     excludedPublicationsCount: (state) => state.excludedPublicationsDois.length,
     suggestedPublications: (state) => state.suggestion ? state.suggestion.publications : [],
+    publications: (state) => state.selectedPublications.concat(state.suggestedPublications),
     unreadSuggestionsCount: (state) => state.suggestedPublications.filter(
       (publication) => !publication.isRead
     ).length,
+    boostKeywords: (state) => state.boostKeywordString.toLowerCase().split(/,\s*/),
     isEmpty: (state) => state.selectedPublicationsCount === 0 && state.excludedPublicationsCount === 0,
     isDoiSelected: (state) => (doi) => state.selectedPublicationsDois.includes(doi),
     isDoiExcluded: (state) => (doi) => state.excludedPublicationsDois.includes(doi),
@@ -32,6 +34,7 @@ export const useSessionStore = defineStore('session', {
     reset() {
       this.selectedPublications = [];
       this.excludedPublicationsDois = [];
+      this.boostKeywordString = "";
       this.readPublicationsDois = new Set();
     },
 
@@ -42,6 +45,11 @@ export const useSessionStore = defineStore('session', {
     excludePublicationByDoi(doi) {
       this.selectedPublications = this.selectedPublications.filter(publication => publication.doi != doi)
       this.excludedPublicationsDois.push(doi);
+    },
+
+    setBoostKeywordString(boostKeywordString) {
+      this.boostKeywordString = boostKeywordString;
+      this.updateScores();
     },
 
     async computeSuggestions(updateLoadingToast) {
@@ -94,9 +102,6 @@ export const useSessionStore = defineStore('session', {
           );
         });
       });
-      this.selectedPublications.forEach((publication) =>
-        publication.updateScore(this.boostKeywords)
-      );
       let filteredSuggestions = Object.values(suggestedPublications);
       filteredSuggestions = shuffle(filteredSuggestions, 0);
       console.log(`Identified ${filteredSuggestions.length} publications as suggestions.`);
@@ -116,10 +121,8 @@ export const useSessionStore = defineStore('session', {
         updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "is-info");
       }));
       filteredSuggestions.forEach((publication) => {
-        publication.updateScore(this.boostKeywords);
         publication.isRead = this.readPublicationsDois.has(publication.doi);
       });
-      Publication.sortPublications(filteredSuggestions);
       console.log("Completed computing and loading of new suggestions.");
       preloadSuggestions.forEach(publication => {
         publication.fetchData()
@@ -128,6 +131,16 @@ export const useSessionStore = defineStore('session', {
         publications: Object.values(filteredSuggestions),
         totalSuggestions: Object.values(suggestedPublications).length
       };
+      this.updateScores();
+    },
+
+    updateScores() {
+      console.log("Updating scores of publications and reordering them.");
+      this.publications.forEach((publication) => {
+        publication.updateScore(this.boostKeywords);
+      });
+      Publication.sortPublications(this.selectedPublications);
+      Publication.sortPublications(this.suggestedPublications);
     },
 
     setActivePublication: function (doi) {
@@ -179,9 +192,7 @@ export const useSessionStore = defineStore('session', {
 
     clearActivePublication: function (source) {
       this.activePublication = undefined;
-      this.selectedPublications
-        .concat(this.suggestedPublications)
-        .forEach((publication) => {
+      this.publications.forEach((publication) => {
           publication.isActive = false;
           publication.isLinkedToActive = false;
         });

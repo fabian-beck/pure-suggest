@@ -22,9 +22,9 @@
               <input
                 class="input boost has-background-warning-light"
                 type="text"
-                v-model="boostKeywordString"
+                v-model="sessionStore.boostKeywordString"
                 placeholder="keyword(s)"
-                @keyup.enter="updateBoost"
+                @keyup.enter="sessionStore.updateScores"
                 data-tippy-content="Boost by factors of 2 the score of publications that contain the following keyword(s) in their title.<br><br>Use commas to separate multiple keywords."
                 v-tippy
               />
@@ -37,7 +37,7 @@
                 class="button has-background-warning"
                 type="submit"
                 icon-left="chevron-double-up"
-                v-on:click="updateBoost"
+                v-on:click="sessionStore.updateScores"
               >
                 <span><span class="key">B</span>oost</span>
               </b-button>
@@ -173,7 +173,6 @@ export default {
   data() {
     return {
       addQuery: "",
-      boostKeywordString: "",
     };
   },
   methods: {
@@ -207,15 +206,8 @@ export default {
     showAbstract: function (publication) {
       this.$emit("showAbstract", publication);
     },
-    updateBoost: function () {
-      this.$emit("updateBoost", this.boostKeywordString);
-    },
     clearBoost: function () {
-      this.boostKeywordString = "";
-      this.$emit("updateBoost", this.boostKeywordString);
-    },
-    setBoost: function (boostKeywordString) {
-      this.boostKeywordString = boostKeywordString;
+      this.sessionStore.setBoostKeywordString("");
     },
     importSession: function () {
       this.$buefy.dialog.confirm({
