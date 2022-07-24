@@ -196,18 +196,12 @@ export default {
         })
       );
       await this.sessionStore.computeSuggestions(this.updateLoadingToast);
-      Publication.sortPublications(this.sessionStore.selectedPublications);
       this.$refs.network.plot(true);
       this.endLoading();
     },
 
     loadMoreSuggestions: function () {
       this.updateSuggestions(this.sessionStore.maxSuggestions + 50);
-    },
-
-    setBoostKeywords: async function (boostKeywordString) {
-      this.$refs.selected.setBoost(boostKeywordString);
-      this.sessionStore.setBoostKeywordString(boostKeywordString);
     },
 
     startLoading: function () {
@@ -321,7 +315,7 @@ export default {
         return;
       }
       if (session.boost) {
-        this.setBoostKeywords(session.boost);
+        this.sessionStore.setBoostKeywordString(session.boost);
       }
       if (session.excluded) {
         this.sessionStore.excludedPublicationsDois = session.excluded;

@@ -20,6 +20,7 @@ export const useSessionStore = defineStore('session', {
     selectedPublicationsCount: (state) => state.selectedPublications.length,
     excludedPublicationsCount: (state) => state.excludedPublicationsDois.length,
     suggestedPublications: (state) => state.suggestion ? state.suggestion.publications : [],
+    publications: (state) => state.selectedPublications.concat(state.suggestedPublications),
     unreadSuggestionsCount: (state) => state.suggestedPublications.filter(
       (publication) => !publication.isRead
     ).length,
@@ -48,7 +49,7 @@ export const useSessionStore = defineStore('session', {
 
     setBoostKeywordString(boostKeywordString) {
       this.boostKeywordString = boostKeywordString;
-      this.updateSuggestionScores();
+      this.updateScores();
     },
 
     async computeSuggestions(updateLoadingToast) {
@@ -101,9 +102,6 @@ export const useSessionStore = defineStore('session', {
           );
         });
       });
-      this.selectedPublications.forEach((publication) =>
-        publication.updateScore(this.boostKeywords)
-      );
       let filteredSuggestions = Object.values(suggestedPublications);
       filteredSuggestions = shuffle(filteredSuggestions, 0);
       console.log(`Identified ${filteredSuggestions.length} publications as suggestions.`);
@@ -133,14 +131,15 @@ export const useSessionStore = defineStore('session', {
         publications: Object.values(filteredSuggestions),
         totalSuggestions: Object.values(suggestedPublications).length
       };
-      this.updateSuggestionScores();
+      this.updateScores();
     },
 
-    updateSuggestionScores() {
-      console.log("Updating scores of suggested publications and reordering them.");
-      this.suggestedPublications.forEach((publication) => {
+    updateScores() {
+      console.log("Updating scores of publications and reordering them.");
+      this.publications.forEach((publication) => {
         publication.updateScore(this.boostKeywords);
       });
+      Publication.sortPublications(this.selectedPublications);
       Publication.sortPublications(this.suggestedPublications);
     },
 
@@ -193,9 +192,7 @@ export const useSessionStore = defineStore('session', {
 
     clearActivePublication: function (source) {
       this.activePublication = undefined;
-      this.selectedPublications
-        .concat(this.suggestedPublications)
-        .forEach((publication) => {
+      this.publications.forEach((publication) => {
           publication.isActive = false;
           publication.isLinkedToActive = false;
         });
