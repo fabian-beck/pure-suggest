@@ -239,7 +239,7 @@ export default class Publication {
 
     static sortPublications(publicationList) {
         publicationList.sort((a, b) => {
-            return b.score - 1 / (b.citationsPerYear + 1) - (a.score - 1 / (a.citationsPerYear + 1))
+            return b.score - 1 / ((b.year ? b.year : 0) + 2) - (a.score - 1 / ((a.year ? a.year : 0) + 2))
         });
     }
 
