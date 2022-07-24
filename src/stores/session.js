@@ -10,7 +10,7 @@ export const useSessionStore = defineStore('session', {
       excludedPublicationsDois: [],
       suggestion: undefined,
       maxSuggestions: 50,
-      boostKeywords: [],
+      boostKeywordString: "",
       activePublication: undefined,
       readPublicationsDois: new Set(),
     }
@@ -23,6 +23,7 @@ export const useSessionStore = defineStore('session', {
     unreadSuggestionsCount: (state) => state.suggestedPublications.filter(
       (publication) => !publication.isRead
     ).length,
+    boostKeywords: (state) => state.boostKeywordString.toLowerCase().split(/,\s*/),
     isEmpty: (state) => state.selectedPublicationsCount === 0 && state.excludedPublicationsCount === 0,
     isDoiSelected: (state) => (doi) => state.selectedPublicationsDois.includes(doi),
     isDoiExcluded: (state) => (doi) => state.excludedPublicationsDois.includes(doi),
@@ -32,6 +33,7 @@ export const useSessionStore = defineStore('session', {
     reset() {
       this.selectedPublications = [];
       this.excludedPublicationsDois = [];
+      this.boostKeywordString = "";
       this.readPublicationsDois = new Set();
     },
 
@@ -42,6 +44,11 @@ export const useSessionStore = defineStore('session', {
     excludePublicationByDoi(doi) {
       this.selectedPublications = this.selectedPublications.filter(publication => publication.doi != doi)
       this.excludedPublicationsDois.push(doi);
+    },
+
+    setBoostKeywordString(boostKeywordString) {
+      this.boostKeywordString = boostKeywordString;
+      this.updateSuggestionScores();
     },
 
     async computeSuggestions(updateLoadingToast) {
@@ -116,10 +123,8 @@ export const useSessionStore = defineStore('session', {
         updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "is-info");
       }));
       filteredSuggestions.forEach((publication) => {
-        publication.updateScore(this.boostKeywords);
         publication.isRead = this.readPublicationsDois.has(publication.doi);
       });
-      Publication.sortPublications(filteredSuggestions);
       console.log("Completed computing and loading of new suggestions.");
       preloadSuggestions.forEach(publication => {
         publication.fetchData()
@@ -128,6 +133,15 @@ export const useSessionStore = defineStore('session', {
         publications: Object.values(filteredSuggestions),
         totalSuggestions: Object.values(suggestedPublications).length
       };
+      this.updateSuggestionScores();
+    },
+
+    updateSuggestionScores() {
+      console.log("Updating scores of suggested publications and reordering them.");
+      this.suggestedPublications.forEach((publication) => {
+        publication.updateScore(this.boostKeywords);
+      });
+      Publication.sortPublications(this.suggestedPublications);
     },
 
     setActivePublication: function (doi) {

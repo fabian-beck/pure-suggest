@@ -23,7 +23,6 @@
         v-on:openSearch="openSearch"
         v-on:remove="removePublication"
         v-on:showAbstract="showAbstract"
-        v-on:updateBoost="updateBoost"
         v-on:loadExample="loadExample"
         v-on:importSession="importSession"
       />
@@ -206,21 +205,9 @@ export default {
       this.updateSuggestions(this.sessionStore.maxSuggestions + 50);
     },
 
-    updateBoost: async function (
-      boostKeywordString,
-      preventUpdateSuggestions = false
-    ) {
-      this.sessionStore.boostKeywords = boostKeywordString
-        .toLowerCase()
-        .split(/,\s*/);
-      if (!preventUpdateSuggestions) {
-        await this.updateSuggestions();
-      }
-    },
-
     setBoostKeywords: async function (boostKeywordString) {
       this.$refs.selected.setBoost(boostKeywordString);
-      this.updateBoost(boostKeywordString, true);
+      this.sessionStore.setBoostKeywordString(boostKeywordString);
     },
 
     startLoading: function () {
@@ -312,7 +299,6 @@ export default {
           "You are going to clear all selected and excluded articles and jump back to the initial state.",
         onConfirm: () => {
           this.sessionStore.reset();
-          this.setBoostKeywords("");
           this.updateSuggestions();
           this.isOverlay = false;
           this.isNetworkExpanded = false;

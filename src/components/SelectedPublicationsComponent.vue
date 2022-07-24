@@ -208,7 +208,7 @@ export default {
       this.$emit("showAbstract", publication);
     },
     updateBoost: function () {
-      this.$emit("updateBoost", this.boostKeywordString);
+      this.sessionStore.setBoostKeywordString(this.boostKeywordString);
     },
     clearBoost: function () {
       this.boostKeywordString = "";
