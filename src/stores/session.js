@@ -23,7 +23,7 @@ export const useSessionStore = defineStore('session', {
     unreadSuggestionsCount: (state) => state.suggestedPublications.filter(
       (publication) => !publication.isRead
     ).length,
-    isEmpty: (state) => state.selectedPublicationsCount === 0,
+    isEmpty: (state) => state.selectedPublicationsCount === 0 && state.excludedPublicationsCount === 0,
     isDoiSelected: (state) => (doi) => state.selectedPublicationsDois.includes(doi),
     isDoiExcluded: (state) => (doi) => state.excludedPublicationsDois.includes(doi),
     getSelectedPublicationByDoi: (state) => (doi) => state.selectedPublications.filter(publication => publication.doi === doi)[0]

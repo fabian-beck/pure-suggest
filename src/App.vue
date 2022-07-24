@@ -309,7 +309,7 @@ export default {
       this.isOverlay = true;
       this.$buefy.dialog.confirm({
         message:
-          "You are going to clear all selected articles and jump back to the initial state.",
+          "You are going to clear all selected and excluded articles and jump back to the initial state.",
         onConfirm: () => {
           this.sessionStore.reset();
           this.setBoostKeywords("");

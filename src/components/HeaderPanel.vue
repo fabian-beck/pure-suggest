@@ -20,7 +20,7 @@
               ? `; ${sessionStore.excludedPublicationsCount} excluded`
               : ''
           })`"
-          v-show="sessionStore.selectedPublicationsCount"
+          v-show="!sessionStore.isEmpty"
         >
           <b-navbar-item @click="sessionStore.exportSession">
             <b-icon icon="export"></b-icon>
@@ -73,7 +73,7 @@
         </b-navbar-dropdown>
       </template>
     </b-navbar>
-    <div class="columns" v-show="sessionStore.selectedPublicationsCount === 0">
+    <div class="columns" v-show="sessionStore.isEmpty">
       <div class="column">
         <div class="subtitle level-item mt-2">
           {{ this.$appSubtitle }}
@@ -82,7 +82,7 @@
       <div class="column is-two-thirds">
         <div
           class="notification has-text-centered p-2"
-          v-show="sessionStore.selectedPublicationsCount === 0"
+          v-show="sessionStore.isEmpty"
         >
           <p>
             Based on a set of selected publications,
