@@ -45,7 +45,9 @@
       />
     </div>
     <QuickAccessBar id="quick-access" class="is-hidden-desktop" />
-    <div v-show="sessionStore.isUpdatable"><b-button @click="update">Update</b-button></div>
+    <div v-show="sessionStore.isUpdatable">
+      <b-button @click="update">Update</b-button>
+    </div>
     <b-modal v-model="isSearchPanelShown">
       <SearchPanel
         :initialSearchQuery="searchQuery"
@@ -66,6 +68,7 @@
 
 <script>
 import { useSessionStore } from "./stores/session.js";
+import { useInterfaceStore } from "./stores/interface.js";
 
 import HeaderPanel from "./components/HeaderPanel.vue";
 import SelectedPublicationsComponent from "./components/SelectedPublicationsComponent.vue";
@@ -83,7 +86,8 @@ export default {
   name: "App",
   setup() {
     const sessionStore = useSessionStore();
-    return { sessionStore };
+    const interfaceStore = useInterfaceStore();
+    return { sessionStore, interfaceStore };
   },
   components: {
     HeaderPanel,
@@ -151,19 +155,17 @@ export default {
         if (addedPublicationsCount == 1) {
           this.sessionStore.activatePublicationComponentByDoi(addedDoi);
         }
-        this.$buefy.toast.open({
-          message: `Added ${
+        this.interfaceStore.showMessage(
+          `Added ${
             addedPublicationsCount === 1
               ? "a publication"
               : addedPublicationsCount + " publications"
-          } to selected`,
-        });
+          } to selected`
+        );
       } else {
-        this.$buefy.toast.open({
-          message: `Publication${
-            dois.length > 1 ? "s" : ""
-          } already in selected`,
-        });
+        this.interfaceStore.showMessage(
+          `Publication${dois.length > 1 ? "s" : ""} already in selected`
+        );
         this.endLoading();
       }
       if (
@@ -177,9 +179,7 @@ export default {
     removePublication: async function (doi) {
       this.sessionStore.excludePublicationByDoi(doi);
       await this.updateSuggestions();
-      this.$buefy.toast.open({
-        message: `Excluded a publication`,
-      });
+      this.interfaceStore.showMessage("Excluded a publication");
     },
 
     updateSuggestions: async function (maxSuggestions = 50) {
@@ -243,17 +243,11 @@ export default {
     openSearch: function (query, message) {
       this.searchQuery = query;
       this.isSearchPanelShown = true;
-      if (message) {
-        this.$buefy.toast.open({
-          duration: 5000,
-          message: message,
-          type: "is-primary",
-        });
-      }
+      this.interfaceStore.showImportantMessage(message);
     },
 
     notifySearchEmpty: function () {
-      this.showErrorMessage("No matching publications found");
+      this.interfaceStore.showErrorMessage("No matching publications found");
       this.endLoading();
     },
 
@@ -286,7 +280,7 @@ export default {
           const session = JSON.parse(content);
           this.loadSession(session);
         } catch {
-          this.showErrorMessage(`Cannot read JSON from file.`);
+          this.interfaceStore.showErrorMessage(`Cannot read JSON from file.`);
         }
       };
       fileReader.readAsText(file);
@@ -317,7 +311,9 @@ export default {
     loadSession: function (session) {
       console.log(`Loading session ${JSON.stringify(session)}`);
       if (!session || !session.selected) {
-        this.showErrorMessage("Cannot read session state from JSON.");
+        this.interfaceStore.showErrorMessage(
+          "Cannot read session state from JSON."
+        );
         return;
       }
       if (session.boost) {
@@ -367,15 +363,6 @@ export default {
         cancelText: "Maybe later",
         onAction: this.openFeedback,
       });
-    },
-
-    showErrorMessage: function (errorMessage) {
-      this.$buefy.toast.open({
-        duration: 5000,
-        message: errorMessage,
-        type: "is-danger",
-      });
-      console.error(errorMessage);
     },
   },
 
