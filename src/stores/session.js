@@ -7,6 +7,7 @@ export const useSessionStore = defineStore('session', {
   state: () => {
     return {
       selectedPublications: [],
+      selectedDoisQueue: [],
       excludedPublicationsDois: [],
       suggestion: undefined,
       maxSuggestions: 50,
@@ -25,6 +26,7 @@ export const useSessionStore = defineStore('session', {
       (publication) => !publication.isRead
     ).length,
     boostKeywords: (state) => state.boostKeywordString.toLowerCase().split(/,\s*/),
+    isUpdatable: (state) => state.selectedDoisQueue.length > 0,
     isEmpty: (state) => state.selectedPublicationsCount === 0 && state.excludedPublicationsCount === 0,
     isDoiSelected: (state) => (doi) => state.selectedPublicationsDois.includes(doi),
     isDoiExcluded: (state) => (doi) => state.excludedPublicationsDois.includes(doi),
