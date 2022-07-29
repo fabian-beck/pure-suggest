@@ -4,7 +4,6 @@
       id="header"
       :isMobile="isMobile"
       v-on:clearSession="clearSession"
-      v-on:openFeedback="openFeedback"
       v-on:openAbout="isAboutPageShown = true"
       v-on:openKeyboardControls="isKeyboardControlsShown = true"
       v-on:clearCache="clearCache"
@@ -17,7 +16,7 @@
       <SelectedPublicationsComponent
         id="selected"
         ref="selected"
-        v-on:add="addPublicationsToSelection"
+        v-on:add="sessionStore.addPublicationsToSelection"
         v-on:startSearching="startSearchingSelected"
         v-on:searchEndedWithoutResult="notifySearchEmpty"
         v-on:openSearch="openSearch"
@@ -29,7 +28,7 @@
       <SuggestedPublicationsComponent
         id="suggested"
         ref="suggested"
-        v-on:add="addPublicationsToSelection"
+        v-on:add="sessionStore.addPublicationsToSelection"
         v-on:remove="removePublication"
         v-on:showAbstract="showAbstract"
         v-on:loadMore="loadMoreSuggestions"
@@ -51,7 +50,7 @@
     <b-modal v-model="isSearchPanelShown">
       <SearchPanel
         :initialSearchQuery="searchQuery"
-        v-on:add="addPublicationsToSelection"
+        v-on:add="sessionStore.addPublicationsToSelection"
         v-on:searchEmpty="notifySearchEmpty"
       />
     </b-modal>
@@ -107,8 +106,6 @@ export default {
       isAboutPageShown: false,
       isKeyboardControlsShown: false,
       isNetworkExpanded: false,
-      isOverlay: false,
-      feedbackInvitationShown: false,
     };
   },
   computed: {
@@ -126,53 +123,8 @@ export default {
     },
 
     update() {
-      this.addPublicationsToSelection(this.sessionStore.selectedDoisQueue);
+      this.sessionStore.addPublicationsToSelection(this.sessionStore.selectedDoisQueue);
       this.sessionStore.selectedDoisQueue = [];
-    },
-
-    addPublicationsToSelection: async function (dois) {
-      console.log(`Adding to selection publications with DOIs: ${dois}.`);
-      document.activeElement.blur();
-      if (typeof dois === "string") {
-        dois = [dois];
-      }
-      let addedPublicationsCount = 0;
-      let addedDoi = "";
-      dois.forEach((doi) => {
-        doi = doi.toLowerCase();
-        if (this.sessionStore.isDoiExcluded(doi)) {
-          this.sessionStore.removeFromExcludedPublicationByDoi(doi); // todo
-        }
-        if (!this.sessionStore.getSelectedPublicationByDoi(doi)) {
-          this.sessionStore.selectedPublications.push(new Publication(doi));
-          addedDoi = doi;
-          addedPublicationsCount++;
-        }
-      });
-      if (addedPublicationsCount > 0) {
-        await this.sessionStore.updateSuggestions();
-        if (addedPublicationsCount == 1) {
-          this.sessionStore.activatePublicationComponentByDoi(addedDoi);
-        }
-        this.interfaceStore.showMessage(
-          `Added ${
-            addedPublicationsCount === 1
-              ? "a publication"
-              : addedPublicationsCount + " publications"
-          } to selected`
-        );
-      } else {
-        this.interfaceStore.showMessage(
-          `Publication${dois.length > 1 ? "s" : ""} already in selected`
-        );
-        this.interfaceStore.endLoading();
-      }
-      if (
-        !this.feedbackInvitationShown &&
-        this.sessionStore.selectedPublications.length >= 10
-      ) {
-        this.showFeedbackInvitation();
-      }
     },
 
     removePublication: async function (doi) {
@@ -199,12 +151,12 @@ export default {
     showAbstract: function (publication) {
       const _this = this;
       const onClose = function () {
-        _this.isOverlay = false;
+        _this.interfaceStore.isOverlay = false;
         _this.sessionStore.activatePublicationComponent(
           document.getElementById(publication.doi)
         );
       };
-      this.isOverlay = true;
+      this.interfaceStore.isOverlay = true;
       this.$buefy.dialog.alert({
         message: `<div><b>${publication.title}</b></div><div><i>${publication.abstract}</i></div>`,
         type: "is-dark",
@@ -232,18 +184,18 @@ export default {
     },
 
     clearSession: function () {
-      this.isOverlay = true;
+      this.interfaceStore.isOverlay = true;
       this.$buefy.dialog.confirm({
         message:
           "You are going to clear all selected and excluded articles and jump back to the initial state.",
         onConfirm: () => {
           this.sessionStore.reset();
           this.sessionStore.updateSuggestions();
-          this.isOverlay = false;
+          this.interfaceStore.isOverlay = false;
           this.isNetworkExpanded = false;
         },
         onCancel: () => {
-          this.isOverlay = false;
+          this.interfaceStore.isOverlay = false;
         },
       });
     },
@@ -267,7 +219,7 @@ export default {
       if (session.excluded) {
         this.sessionStore.excludedPublicationsDois = session.excluded;
       }
-      this.addPublicationsToSelection(session.selected);
+      this.sessionStore.addPublicationsToSelection(session.selected);
     },
 
     loadExample: function () {
@@ -280,34 +232,6 @@ export default {
         boost: "cit, vis",
       };
       this.loadSession(session);
-    },
-
-    openFeedback: function () {
-      this.isOverlay = true;
-      this.$buefy.dialog.confirm({
-        message:
-          "<p><b>We are interested in your opinion!</b></p><p>&nbsp;</p><p>What you like and do not like, what features are missing, how you are using the tool, bugs, criticism, ... anything.</p><p>&nbsp;</p><p>We invite you to provide feedback publicly. Clicking 'OK' will open a GitHub discussion in another tab where you can post a comment (account required). Alternatively, you can always send a private message to <a href='mailto:fabian.beck@uni-bamberg.de'>fabian.beck@uni-bamberg.de</a>.</p>",
-        onConfirm: () => {
-          window.open(
-            "https://github.com/fabian-beck/pure-suggest/discussions/214"
-          );
-          this.isOverlay = false;
-        },
-        onCancel: () => {
-          this.isOverlay = false;
-        },
-      });
-    },
-
-    showFeedbackInvitation: function () {
-      this.feedbackInvitationShown = true;
-      this.$buefy.snackbar.open({
-        indefinite: true,
-        message:
-          "You have added the 10th publication to selected—we invite you to share your <b>feedback</b> on the tool!",
-        cancelText: "Maybe later",
-        onAction: this.openFeedback,
-      });
     },
   },
 
@@ -322,7 +246,7 @@ export default {
         return;
       } else if (
         this.interfaceStore.isLoading ||
-        this.isOverlay ||
+        this.interfaceStore.isOverlay ||
         this.isSearchPanelShown &
           (document.activeElement.nodeName != "INPUT") ||
         this.isAboutPageShown ||
@@ -384,7 +308,7 @@ export default {
           );
         } else if (e.key === "+") {
           e.preventDefault();
-          this.addPublicationsToSelection(
+          this.sessionStore.addPublicationsToSelection(
             this.sessionStore.activePublication.doi
           );
         } else if (e.key === "-") {

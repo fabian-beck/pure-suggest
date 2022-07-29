@@ -56,6 +56,51 @@ export const useSessionStore = defineStore('session', {
       this.updateScores();
     },
 
+    addPublicationsToSelection: async function (dois) {
+      const interfaceStore = useInterfaceStore();
+      console.log(`Adding to selection publications with DOIs: ${dois}.`);
+      document.activeElement.blur();
+      if (typeof dois === "string") {
+        dois = [dois];
+      }
+      let addedPublicationsCount = 0;
+      let addedDoi = "";
+      dois.forEach((doi) => {
+        doi = doi.toLowerCase();
+        if (this.isDoiExcluded(doi)) {
+          this.removeFromExcludedPublicationByDoi(doi); // todo
+        }
+        if (!this.getSelectedPublicationByDoi(doi)) {
+          this.selectedPublications.push(new Publication(doi));
+          addedDoi = doi;
+          addedPublicationsCount++;
+        }
+      });
+      if (addedPublicationsCount > 0) {
+        await this.updateSuggestions();
+        if (addedPublicationsCount == 1) {
+          this.activatePublicationComponentByDoi(addedDoi);
+        }
+        interfaceStore.showMessage(
+          `Added ${addedPublicationsCount === 1
+            ? "a publication"
+            : addedPublicationsCount + " publications"
+          } to selected`
+        );
+      } else {
+        interfaceStore.showMessage(
+          `Publication${dois.length > 1 ? "s" : ""} already in selected`
+        );
+        interfaceStore.endLoading();
+      }
+      if (
+        !interfaceStore.feedbackInvitationShown &&
+        this.selectedPublications.length >= 10
+      ) {
+        interfaceStore.showFeedbackInvitation();
+      }
+    },
+
     async updateSuggestions(maxSuggestions = 50) {
       const interfaceStore = useInterfaceStore();
       this.maxSuggestions = maxSuggestions;
