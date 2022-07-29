@@ -107,7 +107,6 @@ export default {
       isAboutPageShown: false,
       isKeyboardControlsShown: false,
       isNetworkExpanded: false,
-      loadingComponent: undefined,
       isOverlay: false,
       feedbackInvitationShown: false,
     };
@@ -119,8 +118,8 @@ export default {
   },
   methods: {
     startSearchingSelected: function () {
-      this.startLoading();
-      this.updateLoadingToast(
+      this.interfaceStore.startLoading();
+      this.interfaceStore.updateLoadingToast(
         "Searching for publication with matching title",
         "is-primary"
       );
@@ -166,7 +165,7 @@ export default {
         this.interfaceStore.showMessage(
           `Publication${dois.length > 1 ? "s" : ""} already in selected`
         );
-        this.endLoading();
+        this.interfaceStore.endLoading();
       }
       if (
         !this.feedbackInvitationShown &&
@@ -184,9 +183,9 @@ export default {
 
     updateSuggestions: async function (maxSuggestions = 50) {
       this.sessionStore.maxSuggestions = maxSuggestions;
-      this.startLoading();
+      this.interfaceStore.startLoading();
       let publicationsLoaded = 0;
-      this.updateLoadingToast(
+      this.interfaceStore.updateLoadingToast(
         `${publicationsLoaded}/${this.sessionStore.selectedPublicationsCount} selected publications loaded`,
         "is-primary"
       );
@@ -195,41 +194,19 @@ export default {
           await publication.fetchData();
           publication.isSelected = true;
           publicationsLoaded++;
-          this.updateLoadingToast(
+          this.interfaceStore.updateLoadingToast(
             `${publicationsLoaded}/${this.sessionStore.selectedPublicationsCount} selected publications loaded`,
             "is-primary"
           );
         })
       );
-      await this.sessionStore.computeSuggestions(this.updateLoadingToast);
+      await this.sessionStore.computeSuggestions(this.interfaceStore.updateLoadingToast);
       this.$refs.network.plot(true);
-      this.endLoading();
+      this.interfaceStore.endLoading();
     },
 
     loadMoreSuggestions: function () {
       this.updateSuggestions(this.sessionStore.maxSuggestions + 50);
-    },
-
-    startLoading: function () {
-      this.interfaceStore.startLoading();
-    },
-
-    endLoading: function () {
-      if (this.loadingToast) {
-        this.loadingToast.close();
-        this.loadingToast = null;
-      }
-      this.interfaceStore.endLoading();
-    },
-
-    updateLoadingToast: function (message, type) {
-      if (!this.loadingToast) {
-        this.loadingToast = this.$buefy.toast.open({
-          indefinite: true,
-        });
-      }
-      this.loadingToast.message = message;
-      this.loadingToast.type = type;
     },
 
     openSearch: function (query, message) {
@@ -240,7 +217,7 @@ export default {
 
     notifySearchEmpty: function () {
       this.interfaceStore.showErrorMessage("No matching publications found");
-      this.endLoading();
+      this.interfaceStore.endLoading();
     },
 
     showAbstract: function (publication) {
