@@ -200,7 +200,7 @@ export default {
           );
         })
       );
-      await this.sessionStore.computeSuggestions(this.interfaceStore.updateLoadingToast);
+      await this.sessionStore.computeSuggestions();
       this.$refs.network.plot(true);
       this.interfaceStore.endLoading();
     },

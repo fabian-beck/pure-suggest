@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 
+import { useInterfaceStore } from "./interface.js";
+
 import Publication from "./../Publication.js";
 import { shuffle, saveAsFile } from "./../Util.js"
 
@@ -54,7 +56,7 @@ export const useSessionStore = defineStore('session', {
       this.updateScores();
     },
 
-    async computeSuggestions(updateLoadingToast) {
+    async computeSuggestions() {
 
       function incrementSuggestedPublicationCounter(
         _this,
@@ -78,6 +80,7 @@ export const useSessionStore = defineStore('session', {
       }
 
       console.log(`Starting to compute new suggestions based on ${this.selectedPublicationsCount} selected (and ${this.excludedPublicationsCount} excluded).`);
+      const interfaceStore = useInterfaceStore();
       this.clearActivePublication("updating suggestions");
       const suggestedPublications = {};
       this.selectedPublications.forEach((publication) => {
@@ -116,11 +119,11 @@ export const useSessionStore = defineStore('session', {
       filteredSuggestions = filteredSuggestions.slice(0, this.maxSuggestions);
       console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`);
       let publicationsLoadedCount = 0;
-      updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "is-info");
+      interfaceStore.updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "is-info");
       await Promise.all(filteredSuggestions.map(async (suggestedPublication) => {
         await suggestedPublication.fetchData()
         publicationsLoadedCount++;
-        updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "is-info");
+        interfaceStore.updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "is-info");
       }));
       filteredSuggestions.forEach((publication) => {
         publication.isRead = this.readPublicationsDois.has(publication.doi);
