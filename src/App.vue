@@ -150,7 +150,7 @@ export default {
         }
       });
       if (addedPublicationsCount > 0) {
-        await this.updateSuggestions();
+        await this.sessionStore.updateSuggestions();
         if (addedPublicationsCount == 1) {
           this.sessionStore.activatePublicationComponentByDoi(addedDoi);
         }
@@ -177,36 +177,12 @@ export default {
 
     removePublication: async function (doi) {
       this.sessionStore.excludePublicationByDoi(doi);
-      await this.updateSuggestions();
+      await this.sessionStore.updateSuggestions();
       this.interfaceStore.showMessage("Excluded a publication");
     },
 
-    updateSuggestions: async function (maxSuggestions = 50) {
-      this.sessionStore.maxSuggestions = maxSuggestions;
-      this.interfaceStore.startLoading();
-      let publicationsLoaded = 0;
-      this.interfaceStore.updateLoadingToast(
-        `${publicationsLoaded}/${this.sessionStore.selectedPublicationsCount} selected publications loaded`,
-        "is-primary"
-      );
-      await Promise.all(
-        this.sessionStore.selectedPublications.map(async (publication) => {
-          await publication.fetchData();
-          publication.isSelected = true;
-          publicationsLoaded++;
-          this.interfaceStore.updateLoadingToast(
-            `${publicationsLoaded}/${this.sessionStore.selectedPublicationsCount} selected publications loaded`,
-            "is-primary"
-          );
-        })
-      );
-      await this.sessionStore.computeSuggestions();
-      this.$refs.network.plot(true);
-      this.interfaceStore.endLoading();
-    },
-
     loadMoreSuggestions: function () {
-      this.updateSuggestions(this.sessionStore.maxSuggestions + 50);
+      this.sessionStore.updateSuggestions(this.sessionStore.maxSuggestions + 50);
     },
 
     openSearch: function (query, message) {
@@ -262,7 +238,7 @@ export default {
           "You are going to clear all selected and excluded articles and jump back to the initial state.",
         onConfirm: () => {
           this.sessionStore.reset();
-          this.updateSuggestions();
+          this.sessionStore.updateSuggestions();
           this.isOverlay = false;
           this.isNetworkExpanded = false;
         },

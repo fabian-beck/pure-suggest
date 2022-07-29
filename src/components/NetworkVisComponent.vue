@@ -66,6 +66,7 @@ import "tippy.js/dist/tippy.css";
 import _ from "lodash";
 
 import { useSessionStore } from "./../stores/session.js";
+import { useInterfaceStore } from "./../stores/interface.js";
 
 const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;
@@ -75,7 +76,8 @@ export default {
   name: "NetworkVisComponent",
   setup() {
     const sessionStore = useSessionStore();
-    return { sessionStore };
+    const interfaceStore = useInterfaceStore();
+    return { sessionStore, interfaceStore };
   },
   props: {
     isExpanded: Boolean,
@@ -131,7 +133,18 @@ export default {
 
     this.node = this.svg.append("g").attr("class", "nodes").selectAll("rect");
 
-    this.sessionStore.$subscribe(() => this.plot());
+    this.sessionStore.$onAction(({ name, after }) => {
+      after(() => {
+        if (name === "updateSuggestions") this.plot(true);
+        else if (
+          name === "setBoostKeywordString" ||
+          name === "setActivePublication" ||
+          name === "clearActivePublication" ||
+          name === "reset"
+        )
+          this.plot();
+      });
+    });
   },
   methods: {
     initForces: function () {

@@ -56,6 +56,30 @@ export const useSessionStore = defineStore('session', {
       this.updateScores();
     },
 
+    async updateSuggestions(maxSuggestions = 50) {
+      const interfaceStore = useInterfaceStore();
+      this.maxSuggestions = maxSuggestions;
+      interfaceStore.startLoading();
+      let publicationsLoaded = 0;
+      interfaceStore.updateLoadingToast(
+        `${publicationsLoaded}/${this.selectedPublicationsCount} selected publications loaded`,
+        "is-primary"
+      );
+      await Promise.all(
+        this.selectedPublications.map(async (publication) => {
+          await publication.fetchData();
+          publication.isSelected = true;
+          publicationsLoaded++;
+          interfaceStore.updateLoadingToast(
+            `${publicationsLoaded}/${this.selectedPublicationsCount} selected publications loaded`,
+            "is-primary"
+          );
+        })
+      );
+      await this.computeSuggestions();
+      interfaceStore.endLoading();
+    },
+
     async computeSuggestions() {
 
       function incrementSuggestedPublicationCounter(
@@ -149,7 +173,6 @@ export const useSessionStore = defineStore('session', {
     },
 
     setActivePublication: function (doi) {
-      this.clearActivePublication("setting active publication");
       this.selectedPublications.forEach((selectedPublication) => {
         selectedPublication.isActive = selectedPublication.doi === doi;
         if (selectedPublication.isActive) {
@@ -198,9 +221,9 @@ export const useSessionStore = defineStore('session', {
     clearActivePublication: function (source) {
       this.activePublication = undefined;
       this.publications.forEach((publication) => {
-          publication.isActive = false;
-          publication.isLinkedToActive = false;
-        });
+        publication.isActive = false;
+        publication.isLinkedToActive = false;
+      });
       console.log(
         `Cleared any highlighted active publication, triggered by "${source}".`
       );
