@@ -61,6 +61,7 @@
     <b-modal v-model="isKeyboardControlsShown">
       <KeyboardControlsPage />
     </b-modal>
+    <b-loading :is-full-page="true" v-model="interfaceStore.isLoading" :can-cancel="false"></b-loading>
   </div>
 </template>
 
@@ -106,7 +107,6 @@ export default {
       isAboutPageShown: false,
       isKeyboardControlsShown: false,
       isNetworkExpanded: false,
-      isLoading: false,
       loadingComponent: undefined,
       isOverlay: false,
       feedbackInvitationShown: false,
@@ -211,23 +211,15 @@ export default {
     },
 
     startLoading: function () {
-      if (this.isLoading) return;
-      this.loadingComponent = this.$buefy.loading.open({
-        container: null,
-      });
-      this.isLoading = true;
+      this.interfaceStore.startLoading();
     },
 
     endLoading: function () {
-      this.isLoading = false;
       if (this.loadingToast) {
         this.loadingToast.close();
         this.loadingToast = null;
       }
-      if (this.loadingComponent) {
-        this.loadingComponent.close();
-        this.loadingComponent = null;
-      }
+      this.interfaceStore.endLoading();
     },
 
     updateLoadingToast: function (message, type) {
@@ -376,7 +368,7 @@ export default {
       ) {
         return;
       } else if (
-        this.isLoading ||
+        this.interfaceStore.isLoading ||
         this.isOverlay ||
         this.isSearchPanelShown &
           (document.activeElement.nodeName != "INPUT") ||

@@ -5,12 +5,25 @@ import { ToastProgrammatic as Toast } from 'buefy'
 export const useInterfaceStore = defineStore('interface', {
     state: () => {
         return {
+            isLoading: false,
         }
     },
     getters: {
 
     },
     actions: {
+        startLoading() {
+            this.isLoading = true;
+          },
+      
+          endLoading() {
+            this.isLoading = false;
+            /*if (this.loadingToast) {
+              this.loadingToast.close();
+              this.loadingToast = null;
+            }*/
+          },
+
         showMessage(message) {
             showToastMessage({
                 message: message,
