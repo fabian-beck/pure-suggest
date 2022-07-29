@@ -9,7 +9,7 @@ export const useSessionStore = defineStore('session', {
   state: () => {
     return {
       selectedPublications: [],
-      selectedDoisQueue: [],
+      selectedQueue: [],
       excludedPublicationsDois: [],
       suggestion: undefined,
       maxSuggestions: 50,
@@ -28,7 +28,7 @@ export const useSessionStore = defineStore('session', {
       (publication) => !publication.isRead
     ).length,
     boostKeywords: (state) => state.boostKeywordString.toLowerCase().split(/,\s*/),
-    isUpdatable: (state) => state.selectedDoisQueue.length > 0,
+    isUpdatable: (state) => state.selectedQueue.length > 0,
     isEmpty: (state) => state.selectedPublicationsCount === 0 && state.excludedPublicationsCount === 0,
     isDoiSelected: (state) => (doi) => state.selectedPublicationsDois.includes(doi),
     isDoiExcluded: (state) => (doi) => state.excludedPublicationsDois.includes(doi),
@@ -54,6 +54,15 @@ export const useSessionStore = defineStore('session', {
     setBoostKeywordString(boostKeywordString) {
       this.boostKeywordString = boostKeywordString;
       this.updateScores();
+    },
+
+    queueForSelected(doi) {
+      this.selectedQueue.push(doi);
+    },
+
+    updateQueued() {
+      this.addPublicationsToSelection(this.selectedQueue);
+      this.selectedQueue = [];
     },
 
     addPublicationsToSelection: async function (dois) {

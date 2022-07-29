@@ -74,7 +74,7 @@
                     class="is-primary is-small"
                     icon-left="plus-thick"
                     data-tippy-content="Add publication to list of selected publications."
-                    @click.stop="sessionStore.selectedDoisQueue.push(item.DOI)"
+                    @click.stop="sessionStore.queueForSelected(item.DOI)"
                     v-tippy
                   >
                   </b-button>
@@ -124,7 +124,7 @@ export default {
       return this.searchResults.filter(
         (item) =>
           !this.sessionStore.selectedPublicationsDois.includes(item.DOI) &&
-          !this.sessionStore.selectedDoisQueue.includes(item.DOI)
+          !this.sessionStore.selectedQueue.includes(item.DOI)
       );
     },
   },

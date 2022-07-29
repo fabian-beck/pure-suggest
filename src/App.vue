@@ -45,7 +45,7 @@
     </div>
     <QuickAccessBar id="quick-access" class="is-hidden-desktop" />
     <div v-show="sessionStore.isUpdatable">
-      <b-button @click="update">Update</b-button>
+      <b-button @click="sessionStore.updateQueued">Update</b-button>
     </div>
     <b-modal v-model="isSearchPanelShown">
       <SearchPanel
@@ -79,7 +79,6 @@ import SearchPanel from "./components/SearchPanel.vue";
 import AboutPage from "./components/AboutPage.vue";
 import KeyboardControlsPage from "./components/KeyboardControlsPage.vue";
 
-import Publication from "./Publication.js";
 import { clearCache } from "./Cache.js";
 
 export default {
@@ -120,11 +119,6 @@ export default {
         "Searching for publication with matching title",
         "is-primary"
       );
-    },
-
-    update() {
-      this.sessionStore.addPublicationsToSelection(this.sessionStore.selectedDoisQueue);
-      this.sessionStore.selectedDoisQueue = [];
     },
 
     removePublication: async function (doi) {
