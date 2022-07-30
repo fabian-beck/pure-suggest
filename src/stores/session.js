@@ -29,7 +29,10 @@ export const useSessionStore = defineStore('session', {
     ).length,
     boostKeywords: (state) => state.boostKeywordString.toLowerCase().split(/,\s*/),
     isUpdatable: (state) => state.selectedQueue.length > 0,
-    isEmpty: (state) => state.selectedPublicationsCount === 0 && state.excludedPublicationsCount === 0,
+    isEmpty: (state) =>
+      state.selectedPublicationsCount === 0
+      && state.excludedPublicationsCount === 0
+      && state.selectedQueue.length === 0,
     isDoiSelected: (state) => (doi) => state.selectedPublicationsDois.includes(doi),
     isDoiExcluded: (state) => (doi) => state.excludedPublicationsDois.includes(doi),
     getSelectedPublicationByDoi: (state) => (doi) => state.selectedPublications.filter(publication => publication.doi === doi)[0]

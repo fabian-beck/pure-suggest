@@ -113,6 +113,26 @@
     </form>
     <div>
       <div
+        class="notification has-background-primary-light level p-2"
+        v-show="sessionStore.isUpdatable"
+      >
+        <b-icon icon="tray-full" class="ml-2c"></b-icon>
+        <div class="has-text-centered">
+          {{
+            sessionStore.selectedQueue.length > 1
+              ? `${sessionStore.selectedQueue.length} publications are`
+              : "A publication is"
+          }}
+          waiting to be added.
+        </div>
+        <b-button
+          @click="sessionStore.updateQueued"
+          class="button has-background-primary has-text-white ml-2"
+          icon-left="update"
+          >Update</b-button
+        >
+      </div>
+      <div
         class="notification has-text-centered has-background-primary-light p-2"
         v-show="sessionStore.isEmpty"
       >

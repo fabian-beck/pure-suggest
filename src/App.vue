@@ -44,9 +44,6 @@
       />
     </div>
     <QuickAccessBar id="quick-access" class="is-hidden-desktop" />
-    <div v-show="sessionStore.isUpdatable">
-      <b-button @click="sessionStore.updateQueued">Update</b-button>
-    </div>
     <b-modal v-model="isSearchPanelShown">
       <SearchPanel
         :initialSearchQuery="searchQuery"
@@ -60,7 +57,11 @@
     <b-modal v-model="isKeyboardControlsShown">
       <KeyboardControlsPage />
     </b-modal>
-    <b-loading :is-full-page="true" v-model="interfaceStore.isLoading" :can-cancel="false"></b-loading>
+    <b-loading
+      :is-full-page="true"
+      v-model="interfaceStore.isLoading"
+      :can-cancel="false"
+    ></b-loading>
   </div>
 </template>
 
@@ -128,7 +129,9 @@ export default {
     },
 
     loadMoreSuggestions: function () {
-      this.sessionStore.updateSuggestions(this.sessionStore.maxSuggestions + 50);
+      this.sessionStore.updateSuggestions(
+        this.sessionStore.maxSuggestions + 50
+      );
     },
 
     openSearch: function (query, message) {
