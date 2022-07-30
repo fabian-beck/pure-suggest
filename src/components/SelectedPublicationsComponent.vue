@@ -129,7 +129,7 @@
           @click="sessionStore.updateQueued"
           class="button media-right has-background-primary has-text-white ml-2"
           icon-left="update"
-          >Update</b-button
+          ><span class="key">U</span>pdate</b-button
         >
       </div>
       <div

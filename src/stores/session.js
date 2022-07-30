@@ -69,6 +69,7 @@ export const useSessionStore = defineStore('session', {
     },
 
     updateQueued() {
+      if (!this.selectedQueue.length) return
       this.addPublicationsToSelection(this.selectedQueue);
       this.selectedQueue = [];
     },

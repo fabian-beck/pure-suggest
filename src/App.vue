@@ -253,6 +253,9 @@ export default {
         e.preventDefault();
         this.sessionStore.clearActivePublication("setting focus on text field");
         document.getElementsByClassName("input boost")[0].focus();
+      } else if (e.key === "u") {
+        e.preventDefault();
+        this.sessionStore.updateQueued();
       } else if (e.key === "m") {
         e.preventDefault();
         this.$refs.network.toggleMode();

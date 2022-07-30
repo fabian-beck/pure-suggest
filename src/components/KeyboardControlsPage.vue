@@ -14,10 +14,13 @@
           </p>
           <h2>General</h2>
           <ul>
+            <li><b>b</b> &ndash; Jump to "Boost" input field</li>
             <li><b>a</b> &ndash; Jump to "Add" input field</li>
             <li><b>s</b> &ndash; Open "Search" dialog</li>
-            <li><b>b</b> &ndash; Jump to "Boost" input field</li>
-            <li><b>c</b> &ndash; Clear session</li>
+            <li>
+              <b>u</b> &ndash; Update selected publications (if publications are
+              waiting)
+            </li>
             <li>
               <b>Arrow left</b> &ndash; Jump to first publication of "Selected"
             </li>
@@ -35,10 +38,7 @@
             <li>
               <b>Escape</b> &ndash; Escape input field or active publication
             </li>
-            <li>
-              <b>m</b> &ndash; Toggle mode of citation network visualization
-              between <em>timeline</em> and <em>clusters</em>
-            </li>
+            <li><b>c</b> &ndash; Clear session</li>
           </ul>
           <h2>Active Publication</h2>
           <p>If a publication is marked as active:</p>
@@ -52,6 +52,13 @@
             <li><b>o</b> &ndash; Open "Open access" link</li>
             <li><b>g</b> &ndash; Open "Google Scholar" link</li>
             <li><b>x</b> &ndash; Export as BibTeX citation</li>
+          </ul>
+          <h2>Citation Network</h2>
+          <ul>
+            <li>
+              <b>m</b> &ndash; Toggle mode of citation network visualization
+              between <em>timeline</em> and <em>clusters</em>
+            </li>
           </ul>
         </section>
       </div>
