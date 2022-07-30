@@ -24,7 +24,7 @@ export const useSessionStore = defineStore('session', {
     excludedPublicationsCount: (state) => state.excludedPublicationsDois.length,
     suggestedPublications: (state) => state.suggestion ? state.suggestion.publications : [],
     suggestedPublicationsWithoutQueued: (state) => state.suggestedPublications.filter(publication => !state.selectedQueue.includes(publication.doi)),
-    publications: (state) => state.selectedPublications.concat(state.suggestedPublications),
+    publications: (state) => state.selectedPublications.concat(state.suggestedPublicationsWithoutQueued),
     unreadSuggestionsCount: (state) => state.suggestedPublicationsWithoutQueued.filter(
       (publication) => !publication.isRead
     ).length,

@@ -135,7 +135,11 @@ export default {
 
     this.sessionStore.$onAction(({ name, after }) => {
       after(() => {
-        if (name === "updateSuggestions") this.plot(true);
+        if (
+          name === "updateSuggestions" ||
+          name === "addPublicationToQueueForSelected"
+        )
+          this.plot(true);
         else if (
           name === "setBoostKeywordString" ||
           name === "setActivePublication" ||
