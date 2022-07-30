@@ -74,7 +74,7 @@
                     class="is-primary is-small"
                     icon-left="plus-thick"
                     data-tippy-content="Add publication to list of selected publications."
-                    @click.stop="sessionStore.queueForSelected(item.DOI)"
+                    @click.stop="sessionStore.addPublicationToQueueForSelected(item.DOI)"
                     v-tippy
                   >
                   </b-button>

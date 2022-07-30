@@ -23,6 +23,7 @@ export const useSessionStore = defineStore('session', {
     selectedPublicationsCount: (state) => state.selectedPublications.length,
     excludedPublicationsCount: (state) => state.excludedPublicationsDois.length,
     suggestedPublications: (state) => state.suggestion ? state.suggestion.publications : [],
+    suggestedPublicationsWithoutQueued: (state) => state.suggestedPublications.filter(publication => !state.selectedQueue.includes(publication.doi)),
     publications: (state) => state.selectedPublications.concat(state.suggestedPublications),
     unreadSuggestionsCount: (state) => state.suggestedPublications.filter(
       (publication) => !publication.isRead
@@ -64,7 +65,7 @@ export const useSessionStore = defineStore('session', {
       this.updateScores();
     },
 
-    queueForSelected(doi) {
+    addPublicationToQueueForSelected(doi) {
       this.selectedQueue.push(doi);
     },
 

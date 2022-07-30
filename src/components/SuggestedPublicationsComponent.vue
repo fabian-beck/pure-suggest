@@ -44,7 +44,7 @@
       </div>
     </div>
     <PublicationListComponent
-      :publications="sessionStore.suggestion ? sessionStore.suggestedPublications : []"
+      :publications="sessionStore.suggestedPublicationsWithoutQueued"
       :suggestion="true"
       v-on:add="addPublication"
       v-on:remove="removePublication"
@@ -72,7 +72,7 @@ export default {
   },
   methods: {
     addPublication: function (doi) {
-      this.$emit("add", doi);
+      this.sessionStore.addPublicationToQueueForSelected(doi);
     },
     removePublication: function (doi) {
       this.$emit("remove", doi);

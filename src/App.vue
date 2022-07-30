@@ -27,7 +27,6 @@
       <SuggestedPublicationsComponent
         id="suggested"
         ref="suggested"
-        v-on:add="sessionStore.addPublicationsToSelection"
         v-on:remove="removePublication"
         v-on:showAbstract="showAbstract"
         v-on:loadMore="loadMoreSuggestions"
@@ -286,7 +285,7 @@ export default {
           );
         } else if (e.key === "+") {
           e.preventDefault();
-          this.sessionStore.addPublicationsToSelection(
+          this.sessionStore.addPublicationToQueueForSelected(
             this.sessionStore.activePublication.doi
           );
         } else if (e.key === "-") {
