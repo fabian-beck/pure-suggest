@@ -285,9 +285,14 @@ export default {
           );
         } else if (e.key === "+") {
           e.preventDefault();
+          if (this.sessionStore.activePublication.isSelected) return;
+          const doi = this.sessionStore.activePublication.doi;
+          const nextDoi = this.sessionStore.nextSuggestedDoiAfter(doi);
           this.sessionStore.addPublicationToQueueForSelected(
             this.sessionStore.activePublication.doi
           );
+          if (nextDoi)
+            this.sessionStore.activatePublicationComponentByDoi(nextDoi);
         } else if (e.key === "-") {
           e.preventDefault();
           this.removePublication(this.sessionStore.activePublication.doi);

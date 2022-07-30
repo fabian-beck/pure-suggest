@@ -19,7 +19,7 @@ export const useSessionStore = defineStore('session', {
     }
   },
   getters: {
-    selectedPublicationsDois: (state) => state.selectedPublications.map((publication) => publication.doi),
+    selectedPublicationsDois: (state) => asDois(state.selectedPublications),
     selectedPublicationsCount: (state) => state.selectedPublications.length,
     excludedPublicationsCount: (state) => state.excludedPublicationsDois.length,
     suggestedPublications: (state) => state.suggestion ? state.suggestion.publications : [],
@@ -36,7 +36,19 @@ export const useSessionStore = defineStore('session', {
       && state.selectedQueue.length === 0,
     isDoiSelected: (state) => (doi) => state.selectedPublicationsDois.includes(doi),
     isDoiExcluded: (state) => (doi) => state.excludedPublicationsDois.includes(doi),
-    getSelectedPublicationByDoi: (state) => (doi) => state.selectedPublications.filter(publication => publication.doi === doi)[0]
+    getSelectedPublicationByDoi: (state) => (doi) => state.selectedPublications.filter(publication => publication.doi === doi)[0],
+    nextSuggestedDoiAfter(state) {
+      return (doi) => {
+        const suggestedDois = asDois(state.suggestedPublicationsWithoutQueued);
+        if (!suggestedDois.includes(doi)) return null;
+        const index = suggestedDois.indexOf(doi)
+        let nextIndex = index + 1;
+        if (nextIndex >= suggestedDois.length) {
+          nextIndex = index - 1;
+        }
+        return suggestedDois[nextIndex];
+      }
+    }
   },
   actions: {
     clear() {
@@ -66,6 +78,7 @@ export const useSessionStore = defineStore('session', {
     },
 
     addPublicationToQueueForSelected(doi) {
+      if (this.selectedQueue.includes(doi)) return;
       this.selectedQueue.push(doi);
     },
 
@@ -324,3 +337,7 @@ export const useSessionStore = defineStore('session', {
     },
   }
 })
+
+function asDois(publications) {
+  return publications.map((publication) => publication.doi);
+}
