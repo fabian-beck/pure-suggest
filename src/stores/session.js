@@ -38,11 +38,15 @@ export const useSessionStore = defineStore('session', {
     getSelectedPublicationByDoi: (state) => (doi) => state.selectedPublications.filter(publication => publication.doi === doi)[0]
   },
   actions: {
-    reset() {
+    clear() {
       this.selectedPublications = [];
+      this.selectedQueue = [],
       this.excludedPublicationsDois = [];
+      this.suggestion = undefined;
+      this.maxSuggestions = 50;
       this.boostKeywordString = "";
-      this.readPublicationsDois = new Set();
+      this.activePublication = undefined;
+      // do not reset read publications as the user might to carry this information to the next session
     },
 
     removeFromExcludedPublicationByDoi(doi) {

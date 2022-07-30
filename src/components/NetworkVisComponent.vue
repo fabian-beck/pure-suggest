@@ -39,16 +39,16 @@
             icon-right="arrow-expand"
             data-tippy-content="Expand diagram"
             v-tippy
-            v-show="!isExpanded"
-            @click.stop="$emit('expand')"
+            v-show="!interfaceStore.isNetworkExpanded"
+            @click.stop="interfaceStore.isNetworkExpanded = true"
           ></b-button>
           <b-button
             class="level-item compact-button is-hidden-touch"
             icon-right="arrow-collapse"
             data-tippy-content="Collapse diagram"
             v-tippy
-            v-show="isExpanded"
-            @click.stop="$emit('collapse')"
+            v-show="interfaceStore.isNetworkExpanded"
+            @click.stop="interfaceStore.isNetworkExpanded = false"
           ></b-button>
         </div>
       </div>
@@ -78,9 +78,6 @@ export default {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
     return { sessionStore, interfaceStore };
-  },
-  props: {
-    isExpanded: Boolean,
   },
   data: function () {
     return {
@@ -140,7 +137,7 @@ export default {
           name === "setBoostKeywordString" ||
           name === "setActivePublication" ||
           name === "clearActivePublication" ||
-          name === "reset"
+          name === "clear"
         )
           this.plot();
       });

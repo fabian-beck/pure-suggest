@@ -11,7 +11,7 @@
     <div
       id="main"
       @click="sessionStore.clearActivePublication('clicked anywhere')"
-      :class="{ 'network-expanded': isNetworkExpanded }"
+      :class="{ 'network-expanded': interfaceStore.isNetworkExpanded }"
     >
       <SelectedPublicationsComponent
         id="selected"
@@ -36,11 +36,8 @@
       <NetworkVisComponent
         id="network"
         ref="network"
-        :isExpanded="isNetworkExpanded"
         :svgWidth="1500"
         :svgHeight="600"
-        v-on:expand="isNetworkExpanded = true"
-        v-on:collapse="isNetworkExpanded = false"
       />
     </div>
     <QuickAccessBar id="quick-access" class="is-hidden-desktop" />
@@ -105,7 +102,6 @@ export default {
       isSearchPanelShown: false,
       isAboutPageShown: false,
       isKeyboardControlsShown: false,
-      isNetworkExpanded: false,
     };
   },
   computed: {
@@ -186,10 +182,9 @@ export default {
         message:
           "You are going to clear all selected and excluded articles and jump back to the initial state.",
         onConfirm: () => {
-          this.sessionStore.reset();
-          this.sessionStore.updateSuggestions();
+          this.sessionStore.clear();
           this.interfaceStore.isOverlay = false;
-          this.isNetworkExpanded = false;
+          this.interfaceStore.isNetworkExpanded = false;
         },
         onCancel: () => {
           this.interfaceStore.isOverlay = false;

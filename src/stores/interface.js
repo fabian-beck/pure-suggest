@@ -10,6 +10,7 @@ export const useInterfaceStore = defineStore('interface', {
             isLoading: false,
             loadingToast: undefined,
             isOverlay: false,
+            isNetworkExpanded: false,
             feedbackInvitationShown: false,
         }
     },
