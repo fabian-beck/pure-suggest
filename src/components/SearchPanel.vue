@@ -74,7 +74,7 @@
                     class="is-primary is-small"
                     icon-left="plus-thick"
                     data-tippy-content="Add publication to list of selected publications."
-                    @click.stop="$emit('add', item.DOI)"
+                    @click.stop="sessionStore.queueForSelected(item.DOI)"
                     v-tippy
                   >
                   </b-button>
@@ -116,13 +116,15 @@ export default {
       this.$refs.searchInput.focus();
     }, 300);
     if (this.searchQuery) {
-        this.search();
+      this.search();
     }
   },
   computed: {
     filteredSearchResults: function () {
       return this.searchResults.filter(
-        (item) => !this.sessionStore.selectedPublicationsDois.includes(item.DOI)
+        (item) =>
+          !this.sessionStore.selectedPublicationsDois.includes(item.DOI) &&
+          !this.sessionStore.selectedQueue.includes(item.DOI)
       );
     },
   },
@@ -133,7 +135,7 @@ export default {
       const publicationSearch = new PublicationSearch(this.searchQuery);
       this.searchResults = await publicationSearch.execute();
       if (this.filteredSearchResults.length === 0) {
-          this.$emit("searchEmpty");
+        this.$emit("searchEmpty");
       }
       this.isLoading = false;
     },

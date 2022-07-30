@@ -30,7 +30,7 @@
             <b-icon icon="export"></b-icon>
             <span class="ml-2">Export selected as BibTeX</span>
           </b-navbar-item>
-          <b-navbar-item @click="$emit('clearSession')" class="has-text-danger">
+          <b-navbar-item @click="sessionStore.clearSession" class="has-text-danger">
             <b-icon icon="delete"></b-icon
             ><span class="ml-2"><span class="key">C</span>lear session</span>
           </b-navbar-item>
@@ -51,7 +51,7 @@
           right
           collapsible
         >
-          <b-navbar-item @click="$emit('openFeedback')">
+          <b-navbar-item @click="interfaceStore.openFeedback">
             <b-icon icon="comment-quote-outline"></b-icon
             ><span class="ml-2">Feedback</span>
           </b-navbar-item>
@@ -98,12 +98,14 @@
 
 <script>
 import { useSessionStore } from "./../stores/session.js";
+import { useInterfaceStore } from "./../stores/interface.js";
 
 export default {
   name: "HeaderPanel",
   setup() {
     const sessionStore = useSessionStore();
-    return { sessionStore };
+    const interfaceStore = useInterfaceStore();
+    return { sessionStore, interfaceStore };
   },
   props: {
     isMobile: Boolean,

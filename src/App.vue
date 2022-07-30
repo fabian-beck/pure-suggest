@@ -3,8 +3,6 @@
     <HeaderPanel
       id="header"
       :isMobile="isMobile"
-      v-on:clearSession="clearSession"
-      v-on:openFeedback="openFeedback"
       v-on:openAbout="isAboutPageShown = true"
       v-on:openKeyboardControls="isKeyboardControlsShown = true"
       v-on:clearCache="clearCache"
@@ -12,12 +10,12 @@
     <div
       id="main"
       @click="sessionStore.clearActivePublication('clicked anywhere')"
-      :class="{ 'network-expanded': isNetworkExpanded }"
+      :class="{ 'network-expanded': interfaceStore.isNetworkExpanded }"
     >
       <SelectedPublicationsComponent
         id="selected"
         ref="selected"
-        v-on:add="addPublicationsToSelection"
+        v-on:add="sessionStore.addPublicationsToSelection"
         v-on:startSearching="startSearchingSelected"
         v-on:searchEndedWithoutResult="notifySearchEmpty"
         v-on:openSearch="openSearch"
@@ -29,7 +27,7 @@
       <SuggestedPublicationsComponent
         id="suggested"
         ref="suggested"
-        v-on:add="addPublicationsToSelection"
+        v-on:add="sessionStore.addPublicationsToSelection"
         v-on:remove="removePublication"
         v-on:showAbstract="showAbstract"
         v-on:loadMore="loadMoreSuggestions"
@@ -37,18 +35,15 @@
       <NetworkVisComponent
         id="network"
         ref="network"
-        :isExpanded="isNetworkExpanded"
         :svgWidth="1500"
         :svgHeight="600"
-        v-on:expand="isNetworkExpanded = true"
-        v-on:collapse="isNetworkExpanded = false"
       />
     </div>
     <QuickAccessBar id="quick-access" class="is-hidden-desktop" />
     <b-modal v-model="isSearchPanelShown">
       <SearchPanel
         :initialSearchQuery="searchQuery"
-        v-on:add="addPublicationsToSelection"
+        v-on:add="sessionStore.addPublicationsToSelection"
         v-on:searchEmpty="notifySearchEmpty"
       />
     </b-modal>
@@ -58,6 +53,11 @@
     <b-modal v-model="isKeyboardControlsShown">
       <KeyboardControlsPage />
     </b-modal>
+    <b-loading
+      :is-full-page="true"
+      v-model="interfaceStore.isLoading"
+      :can-cancel="false"
+    ></b-loading>
   </div>
 </template>
 
@@ -65,6 +65,7 @@
 
 <script>
 import { useSessionStore } from "./stores/session.js";
+import { useInterfaceStore } from "./stores/interface.js";
 
 import HeaderPanel from "./components/HeaderPanel.vue";
 import SelectedPublicationsComponent from "./components/SelectedPublicationsComponent.vue";
@@ -75,14 +76,14 @@ import SearchPanel from "./components/SearchPanel.vue";
 import AboutPage from "./components/AboutPage.vue";
 import KeyboardControlsPage from "./components/KeyboardControlsPage.vue";
 
-import Publication from "./Publication.js";
 import { clearCache } from "./Cache.js";
 
 export default {
   name: "App",
   setup() {
     const sessionStore = useSessionStore();
-    return { sessionStore };
+    const interfaceStore = useInterfaceStore();
+    return { sessionStore, interfaceStore };
   },
   components: {
     HeaderPanel,
@@ -100,11 +101,6 @@ export default {
       isSearchPanelShown: false,
       isAboutPageShown: false,
       isKeyboardControlsShown: false,
-      isNetworkExpanded: false,
-      isLoading: false,
-      loadingComponent: undefined,
-      isOverlay: false,
-      feedbackInvitationShown: false,
     };
   },
   computed: {
@@ -114,152 +110,45 @@ export default {
   },
   methods: {
     startSearchingSelected: function () {
-      this.startLoading();
-      this.updateLoadingToast(
+      this.interfaceStore.startLoading();
+      this.interfaceStore.updateLoadingToast(
         "Searching for publication with matching title",
         "is-primary"
       );
     },
 
-    addPublicationsToSelection: async function (dois) {
-      console.log(`Adding to selection publications with DOIs: ${dois}.`);
-      document.activeElement.blur();
-      if (typeof dois === "string") {
-        dois = [dois];
-      }
-      let addedPublicationsCount = 0;
-      let addedDoi = "";
-      dois.forEach((doi) => {
-        doi = doi.toLowerCase();
-        if (this.sessionStore.isDoiExcluded(doi)) {
-          this.sessionStore.removeFromExcludedPublicationByDoi(doi); // todo
-        }
-        if (!this.sessionStore.getSelectedPublicationByDoi(doi)) {
-          this.sessionStore.selectedPublications.push(new Publication(doi));
-          addedDoi = doi;
-          addedPublicationsCount++;
-        }
-      });
-      if (addedPublicationsCount > 0) {
-        await this.updateSuggestions();
-        if (addedPublicationsCount == 1) {
-          this.sessionStore.activatePublicationComponentByDoi(addedDoi);
-        }
-        this.$buefy.toast.open({
-          message: `Added ${
-            addedPublicationsCount === 1
-              ? "a publication"
-              : addedPublicationsCount + " publications"
-          } to selected`,
-        });
-      } else {
-        this.$buefy.toast.open({
-          message: `Publication${
-            dois.length > 1 ? "s" : ""
-          } already in selected`,
-        });
-        this.endLoading();
-      }
-      if (
-        !this.feedbackInvitationShown &&
-        this.sessionStore.selectedPublications.length >= 10
-      ) {
-        this.showFeedbackInvitation();
-      }
-    },
-
     removePublication: async function (doi) {
       this.sessionStore.excludePublicationByDoi(doi);
-      await this.updateSuggestions();
-      this.$buefy.toast.open({
-        message: `Excluded a publication`,
-      });
-    },
-
-    updateSuggestions: async function (maxSuggestions = 50) {
-      this.sessionStore.maxSuggestions = maxSuggestions;
-      this.startLoading();
-      let publicationsLoaded = 0;
-      this.updateLoadingToast(
-        `${publicationsLoaded}/${this.sessionStore.selectedPublicationsCount} selected publications loaded`,
-        "is-primary"
-      );
-      await Promise.all(
-        this.sessionStore.selectedPublications.map(async (publication) => {
-          await publication.fetchData();
-          publication.isSelected = true;
-          publicationsLoaded++;
-          this.updateLoadingToast(
-            `${publicationsLoaded}/${this.sessionStore.selectedPublicationsCount} selected publications loaded`,
-            "is-primary"
-          );
-        })
-      );
-      await this.sessionStore.computeSuggestions(this.updateLoadingToast);
-      this.$refs.network.plot(true);
-      this.endLoading();
+      await this.sessionStore.updateSuggestions();
+      this.interfaceStore.showMessage("Excluded a publication");
     },
 
     loadMoreSuggestions: function () {
-      this.updateSuggestions(this.sessionStore.maxSuggestions + 50);
-    },
-
-    startLoading: function () {
-      if (this.isLoading) return;
-      this.loadingComponent = this.$buefy.loading.open({
-        container: null,
-      });
-      this.isLoading = true;
-    },
-
-    endLoading: function () {
-      this.isLoading = false;
-      if (this.loadingToast) {
-        this.loadingToast.close();
-        this.loadingToast = null;
-      }
-      if (this.loadingComponent) {
-        this.loadingComponent.close();
-        this.loadingComponent = null;
-      }
-    },
-
-    updateLoadingToast: function (message, type) {
-      if (!this.loadingToast) {
-        this.loadingToast = this.$buefy.toast.open({
-          indefinite: true,
-        });
-      }
-      this.loadingToast.message = message;
-      this.loadingToast.type = type;
+      this.sessionStore.updateSuggestions(
+        this.sessionStore.maxSuggestions + 50
+      );
     },
 
     openSearch: function (query, message) {
       this.searchQuery = query;
       this.isSearchPanelShown = true;
-      if (message) {
-        this.$buefy.toast.open({
-          duration: 5000,
-          message: message,
-          type: "is-primary",
-        });
-      }
+      this.interfaceStore.showImportantMessage(message);
     },
 
     notifySearchEmpty: function () {
-      this.showErrorMessage("No matching publications found");
-      this.endLoading();
+      this.interfaceStore.showErrorMessage("No matching publications found");
+      this.interfaceStore.endLoading();
     },
 
     showAbstract: function (publication) {
       const _this = this;
       const onClose = function () {
-        _this.isOverlay = false;
+        _this.interfaceStore.isOverlay = false;
         _this.sessionStore.activatePublicationComponent(
           document.getElementById(publication.doi)
         );
       };
-      this.isOverlay = true;
+      this.interfaceStore.isOverlay = true;
       this.$buefy.dialog.alert({
         message: `<div><b>${publication.title}</b></div><div><i>${publication.abstract}</i></div>`,
         type: "is-dark",
@@ -280,38 +169,23 @@ export default {
           const session = JSON.parse(content);
           this.loadSession(session);
         } catch {
-          this.showErrorMessage(`Cannot read JSON from file.`);
+          this.interfaceStore.showErrorMessage(`Cannot read JSON from file.`);
         }
       };
       fileReader.readAsText(file);
     },
 
-    clearSession: function () {
-      this.isOverlay = true;
-      this.$buefy.dialog.confirm({
-        message:
-          "You are going to clear all selected and excluded articles and jump back to the initial state.",
-        onConfirm: () => {
-          this.sessionStore.reset();
-          this.updateSuggestions();
-          this.isOverlay = false;
-          this.isNetworkExpanded = false;
-        },
-        onCancel: () => {
-          this.isOverlay = false;
-        },
-      });
-    },
-
     clearCache: function () {
       clearCache();
-      this.clearSession();
+      this.sessionStore.clearSession();
     },
 
     loadSession: function (session) {
       console.log(`Loading session ${JSON.stringify(session)}`);
       if (!session || !session.selected) {
-        this.showErrorMessage("Cannot read session state from JSON.");
+        this.interfaceStore.showErrorMessage(
+          "Cannot read session state from JSON."
+        );
         return;
       }
       if (session.boost) {
@@ -320,7 +194,7 @@ export default {
       if (session.excluded) {
         this.sessionStore.excludedPublicationsDois = session.excluded;
       }
-      this.addPublicationsToSelection(session.selected);
+      this.sessionStore.addPublicationsToSelection(session.selected);
     },
 
     loadExample: function () {
@@ -334,43 +208,6 @@ export default {
       };
       this.loadSession(session);
     },
-
-    openFeedback: function () {
-      this.isOverlay = true;
-      this.$buefy.dialog.confirm({
-        message:
-          "<p><b>We are interested in your opinion!</b></p><p>&nbsp;</p><p>What you like and do not like, what features are missing, how you are using the tool, bugs, criticism, ... anything.</p><p>&nbsp;</p><p>We invite you to provide feedback publicly. Clicking 'OK' will open a GitHub discussion in another tab where you can post a comment (account required). Alternatively, you can always send a private message to <a href='mailto:fabian.beck@uni-bamberg.de'>fabian.beck@uni-bamberg.de</a>.</p>",
-        onConfirm: () => {
-          window.open(
-            "https://github.com/fabian-beck/pure-suggest/discussions/214"
-          );
-          this.isOverlay = false;
-        },
-        onCancel: () => {
-          this.isOverlay = false;
-        },
-      });
-    },
-
-    showFeedbackInvitation: function () {
-      this.feedbackInvitationShown = true;
-      this.$buefy.snackbar.open({
-        indefinite: true,
-        message:
-          "You have added the 10th publication to selected—we invite you to share your <b>feedback</b> on the tool!",
-        cancelText: "Maybe later",
-        onAction: this.openFeedback,
-      });
-    },
-
-    showErrorMessage: function (errorMessage) {
-      this.$buefy.toast.open({
-        duration: 5000,
-        message: errorMessage,
-        type: "is-danger",
-      });
-      console.error(errorMessage);
-    },
   },
 
   mounted() {
@@ -383,8 +220,8 @@ export default {
       ) {
         return;
       } else if (
-        this.isLoading ||
-        this.isOverlay ||
+        this.interfaceStore.isLoading ||
+        this.interfaceStore.isOverlay ||
         this.isSearchPanelShown &
           (document.activeElement.nodeName != "INPUT") ||
         this.isAboutPageShown ||
@@ -400,7 +237,7 @@ export default {
         }
       } else if (e.key === "c") {
         e.preventDefault();
-        this.clearSession();
+        this.sessionStore.clearSession();
       } else if (e.key === "Escape") {
         e.preventDefault();
         document.activeElement.blur();
@@ -416,6 +253,9 @@ export default {
         e.preventDefault();
         this.sessionStore.clearActivePublication("setting focus on text field");
         document.getElementsByClassName("input boost")[0].focus();
+      } else if (e.key === "u") {
+        e.preventDefault();
+        this.sessionStore.updateQueued();
       } else if (e.key === "m") {
         e.preventDefault();
         this.$refs.network.toggleMode();
@@ -446,7 +286,7 @@ export default {
           );
         } else if (e.key === "+") {
           e.preventDefault();
-          this.addPublicationsToSelection(
+          this.sessionStore.addPublicationsToSelection(
             this.sessionStore.activePublication.doi
           );
         } else if (e.key === "-") {
@@ -532,7 +372,7 @@ $box-padding: 1rem;
     gap: $block-spacing;
 
     &.network-expanded {
-      grid-template-rows: auto 65vh;
+      grid-template-rows: auto 60vh;
     }
 
     & #selected {
