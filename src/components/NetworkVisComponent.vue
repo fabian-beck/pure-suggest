@@ -22,15 +22,15 @@
             data-tippy-content="There are two display <span class='key'>m</span>odes:<br><br><b>Timeline:</b> The diagram places publications from left to right based on year, and vertically tries to group linked publications close to each other.<br><br><b>Clusters:</b> The diagram groups linked publications close to each other, irrespective of publication year."
             v-tippy
           >
-            <label class="mr-2" :class="{ 'has-text-grey-light': isClusters }"
+            <label class="mr-2" :class="{ 'has-text-grey-light': isNetworkClusters }"
               >Timeline</label
             >
             <b-switch
-              v-model="isClusters"
+              v-model="isNetworkClusters"
               type="is-dark"
               passive-type="is-dark"
             ></b-switch>
-            <label :class="{ 'has-text-grey-light': !isClusters }"
+            <label :class="{ 'has-text-grey-light': !isNetworkClusters }"
               >Clusters</label
             >
           </b-field>
@@ -64,6 +64,7 @@ import * as d3 from "d3";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
 import _ from "lodash";
+import { storeToRefs } from 'pinia'
 
 import { useSessionStore } from "./../stores/session.js";
 import { useInterfaceStore } from "./../stores/interface.js";
@@ -77,7 +78,8 @@ export default {
   setup() {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
-    return { sessionStore, interfaceStore };
+    const { isNetworkClusters } = storeToRefs(interfaceStore);
+    return { sessionStore, interfaceStore, isNetworkClusters };
   },
   data: function () {
     return {
@@ -91,11 +93,10 @@ export default {
       node: null,
       link: null,
       label: null,
-      isClusters: false,
     };
   },
   watch: {
-    isClusters: {
+    isNetworkClusters: {
       handler: function () {
         this.initForces();
         this.plot(true);
@@ -153,7 +154,7 @@ export default {
             .forceLink()
             .id((d) => d.id)
             .distance(50)
-            .strength(!that.isClusters ? 0.08 : 0.15)
+            .strength(!that.isNetworkClusters ? 0.08 : 0.15)
         )
         .force("charge", d3.forceManyBody().strength(-180))
         .force(
@@ -161,14 +162,14 @@ export default {
           d3
             .forceX()
             .x((d) => this.yearX(d.publication.year))
-            .strength(!that.isClusters ? 10 : 0)
+            .strength(!that.isNetworkClusters ? 10 : 0)
         )
         .force(
           "y",
           d3
             .forceY()
             .y(0.5 * (that.svgHeight - RECT_SIZE))
-            .strength(!that.isClusters ? 0.25 : 0.1)
+            .strength(!that.isNetworkClusters ? 0.25 : 0.1)
         )
         .on("tick", this.tick);
     },
@@ -324,7 +325,7 @@ export default {
         .attr("text-anchor", "middle")
         .attr(
           "visibility",
-          !this.sessionStore.isEmpty && !this.isClusters ? "visible" : "hidden"
+          !this.sessionStore.isEmpty && !this.isNetworkClusters ? "visible" : "hidden"
         )
         .text((d) => d)
         .attr("fill", "grey");
@@ -396,7 +397,7 @@ export default {
     },
 
     toggleMode() {
-      this.isClusters = !this.isClusters;
+      this.isNetworkClusters = !this.isNetworkClusters;
     },
   },
 };

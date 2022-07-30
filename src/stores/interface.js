@@ -11,6 +11,7 @@ export const useInterfaceStore = defineStore('interface', {
             loadingToast: undefined,
             isOverlay: false,
             isNetworkExpanded: false,
+            isNetworkClusters: true,
             feedbackInvitationShown: false,
         }
     },
@@ -21,6 +22,7 @@ export const useInterfaceStore = defineStore('interface', {
         clear() {
             this.isOverlay = false;
             this.isNetworkExpanded = false;
+            this.isNetworkClusters = true;
         },
 
         startLoading() {
