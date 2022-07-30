@@ -18,7 +18,7 @@
       <div class="level-right has-text-white" v-if="sessionStore.suggestion">
         <div class="level-item">
           <span>
-            {{ sessionStore.suggestedPublications.length }}
+            {{ sessionStore.suggestedPublicationsWithoutQueued.length }}
             <b-tag
               icon="bell"
               size="is-small"
@@ -28,7 +28,7 @@
               >{{ sessionStore.unreadSuggestionsCount }}</b-tag
             >
             of
-            {{ sessionStore.suggestion.totalSuggestions.toLocaleString("en") }} suggestions
+            {{ sessionStore.currentTotalSuggestions.toLocaleString("en") }} suggestions
           </span>
           <b-button
             class="level-item compact-button"
@@ -37,14 +37,14 @@
             v-tippy
             @click.stop="$emit('loadMore')"
             :disabled="
-              sessionStore.suggestedPublications.length === sessionStore.suggestion.totalSuggestions
+              sessionStore.suggestedPublicationsWithoutQueued.length === sessionStore.currentTotalSuggestions
             "
           ></b-button>
         </div>
       </div>
     </div>
     <PublicationListComponent
-      :publications="sessionStore.suggestion ? sessionStore.suggestedPublications : []"
+      :publications="sessionStore.suggestedPublicationsWithoutQueued"
       :suggestion="true"
       v-on:add="addPublication"
       v-on:remove="removePublication"
@@ -72,7 +72,7 @@ export default {
   },
   methods: {
     addPublication: function (doi) {
-      this.$emit("add", doi);
+      this.sessionStore.addPublicationToQueueForSelected(doi);
     },
     removePublication: function (doi) {
       this.$emit("remove", doi);

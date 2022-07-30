@@ -22,7 +22,9 @@
             data-tippy-content="There are two display <span class='key'>m</span>odes:<br><br><b>Timeline:</b> The diagram places publications from left to right based on year, and vertically tries to group linked publications close to each other.<br><br><b>Clusters:</b> The diagram groups linked publications close to each other, irrespective of publication year."
             v-tippy
           >
-            <label class="mr-2" :class="{ 'has-text-grey-light': isNetworkClusters }"
+            <label
+              class="mr-2"
+              :class="{ 'has-text-grey-light': isNetworkClusters }"
               >Timeline</label
             >
             <b-switch
@@ -64,7 +66,7 @@ import * as d3 from "d3";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
 import _ from "lodash";
-import { storeToRefs } from 'pinia'
+import { storeToRefs } from "pinia";
 
 import { useSessionStore } from "./../stores/session.js";
 import { useInterfaceStore } from "./../stores/interface.js";
@@ -133,7 +135,11 @@ export default {
 
     this.sessionStore.$onAction(({ name, after }) => {
       after(() => {
-        if (name === "updateSuggestions") this.plot(true);
+        if (
+          name === "updateSuggestions" ||
+          name === "addPublicationToQueueForSelected"
+        )
+          this.plot(true);
         else if (
           name === "setBoostKeywordString" ||
           name === "setActivePublication" ||
@@ -325,7 +331,9 @@ export default {
         .attr("text-anchor", "middle")
         .attr(
           "visibility",
-          !this.sessionStore.isEmpty && !this.isNetworkClusters ? "visible" : "hidden"
+          !this.sessionStore.isEmpty && !this.isNetworkClusters
+            ? "visible"
+            : "hidden"
         )
         .text((d) => d)
         .attr("fill", "grey");
