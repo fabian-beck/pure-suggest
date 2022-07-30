@@ -25,9 +25,10 @@ export const useSessionStore = defineStore('session', {
     suggestedPublications: (state) => state.suggestion ? state.suggestion.publications : [],
     suggestedPublicationsWithoutQueued: (state) => state.suggestedPublications.filter(publication => !state.selectedQueue.includes(publication.doi)),
     publications: (state) => state.selectedPublications.concat(state.suggestedPublications),
-    unreadSuggestionsCount: (state) => state.suggestedPublications.filter(
+    unreadSuggestionsCount: (state) => state.suggestedPublicationsWithoutQueued.filter(
       (publication) => !publication.isRead
     ).length,
+    currentTotalSuggestions: (state) => state.suggestion.totalSuggestions - state.selectedQueue.length,
     boostKeywords: (state) => state.boostKeywordString.toLowerCase().split(/,\s*/),
     isUpdatable: (state) => state.selectedQueue.length > 0,
     isEmpty: (state) =>
