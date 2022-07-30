@@ -120,10 +120,10 @@
         <div class="media-content has-text-centered mt-2">
           {{
             sessionStore.selectedQueue.length > 1
-              ? `${sessionStore.selectedQueue.length} publications are`
-              : "A publication is"
+              ? `${sessionStore.selectedQueue.length} publications`
+              : "One publication"
           }}
-          waiting to be added.
+          in <b>queue</b>.
         </div>
         <b-button
           @click="sessionStore.updateQueued"
