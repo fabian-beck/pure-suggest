@@ -113,11 +113,11 @@
     </form>
     <div>
       <div
-        class="notification has-background-primary-light level p-2"
+        class="notification has-background-primary-light media p-2"
         v-show="sessionStore.isUpdatable"
       >
-        <b-icon icon="tray-full" class="ml-2c"></b-icon>
-        <div class="has-text-centered">
+        <b-icon icon="tray-full" class="media-left ml-2 mt-2"></b-icon>
+        <div class="media-content has-text-centered mt-2">
           {{
             sessionStore.selectedQueue.length > 1
               ? `${sessionStore.selectedQueue.length} publications are`
@@ -127,7 +127,7 @@
         </div>
         <b-button
           @click="sessionStore.updateQueued"
-          class="button has-background-primary has-text-white ml-2"
+          class="button media-right has-background-primary has-text-white ml-2"
           icon-left="update"
           >Update</b-button
         >
