@@ -3,7 +3,6 @@
     <HeaderPanel
       id="header"
       :isMobile="isMobile"
-      v-on:clearSession="clearSession"
       v-on:openAbout="isAboutPageShown = true"
       v-on:openKeyboardControls="isKeyboardControlsShown = true"
       v-on:clearCache="clearCache"
@@ -176,25 +175,9 @@ export default {
       fileReader.readAsText(file);
     },
 
-    clearSession: function () {
-      this.interfaceStore.isOverlay = true;
-      this.$buefy.dialog.confirm({
-        message:
-          "You are going to clear all selected and excluded articles and jump back to the initial state.",
-        onConfirm: () => {
-          this.sessionStore.clear();
-          this.interfaceStore.isOverlay = false;
-          this.interfaceStore.isNetworkExpanded = false;
-        },
-        onCancel: () => {
-          this.interfaceStore.isOverlay = false;
-        },
-      });
-    },
-
     clearCache: function () {
       clearCache();
-      this.clearSession();
+      this.sessionStore.clearSession();
     },
 
     loadSession: function (session) {
@@ -254,7 +237,7 @@ export default {
         }
       } else if (e.key === "c") {
         e.preventDefault();
-        this.clearSession();
+        this.sessionStore.clearSession();
       } else if (e.key === "Escape") {
         e.preventDefault();
         document.activeElement.blur();

@@ -41,12 +41,13 @@ export const useSessionStore = defineStore('session', {
     clear() {
       this.selectedPublications = [];
       this.selectedQueue = [],
-      this.excludedPublicationsDois = [];
+        this.excludedPublicationsDois = [];
       this.suggestion = undefined;
       this.maxSuggestions = 50;
       this.boostKeywordString = "";
       this.activePublication = undefined;
       // do not reset read publications as the user might to carry this information to the next session
+      useInterfaceStore().clear();
     },
 
     removeFromExcludedPublicationByDoi(doi) {
@@ -288,6 +289,11 @@ export const useSessionStore = defineStore('session', {
       console.log(
         `Cleared any highlighted active publication, triggered by "${source}".`
       );
+    },
+
+    clearSession: function () {
+      useInterfaceStore().showConfirmDialog(
+        "You are going to clear all selected and excluded articles and jump back to the initial state.", this.clear);
     },
 
     exportSession: function () {

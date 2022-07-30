@@ -30,7 +30,7 @@
             <b-icon icon="export"></b-icon>
             <span class="ml-2">Export selected as BibTeX</span>
           </b-navbar-item>
-          <b-navbar-item @click="$emit('clearSession')" class="has-text-danger">
+          <b-navbar-item @click="sessionStore.clearSession" class="has-text-danger">
             <b-icon icon="delete"></b-icon
             ><span class="ml-2"><span class="key">C</span>lear session</span>
           </b-navbar-item>
