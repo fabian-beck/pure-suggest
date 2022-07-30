@@ -386,7 +386,7 @@ $box-padding: 1rem;
     gap: $block-spacing;
 
     &.network-expanded {
-      grid-template-rows: auto 65vh;
+      grid-template-rows: auto 60vh;
     }
 
     & #selected {
