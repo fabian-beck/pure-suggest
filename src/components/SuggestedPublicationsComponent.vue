@@ -14,6 +14,13 @@
             v-tippy
           ></b-icon>
         </div>
+        <div class="level-item" v-if="sessionStore.suggestion">
+          <b-field class="ml-6">
+            <b-switch v-model="isFilterPanelShown" type="is-black"><b-icon icon="filter" size="is-small"></b-icon>
+            Filter</b-switch>
+            
+          </b-field>
+        </div>
       </div>
       <div class="level-right has-text-white" v-if="sessionStore.suggestion">
         <div class="level-item">
@@ -33,7 +40,7 @@
           </span>
           <b-button
             class="level-item compact-button"
-            icon-right="playlist-plus"
+            icon-left="playlist-plus"
             data-tippy-content="Load more suggestions"
             v-tippy
             @click.stop="$emit('loadMore')"
@@ -45,12 +52,19 @@
         </div>
       </div>
     </div>
-    <div class="notification has-background-info-light level p-2">
-      <div> <b-icon icon="filter" class="ml-2"></b-icon> Filter </div>
-
+    <div
+      class="notification has-background-info-light level p-2"
+      v-show="isFilterPanelShown"
+    >
+      <div><b-icon icon="filter" class="ml-2"></b-icon> Filter</div>
       <b-field class="level">
         <span class="label">Tag</span>
-        <b-select placeholder="Select a tag" class="ml-2" @input="filterByTag">
+        <b-select
+          placeholder="Select a tag"
+          class="ml-2"
+          @input="updateFilter"
+          v-model="tag"
+        >
           <option value="">none</option>
           <option v-for="tag in TAGS" :value="tag.value" :key="tag.value">
             {{ tag.name }}
@@ -71,6 +85,7 @@
 <script>
 import { useSessionStore } from "./../stores/session.js";
 import Publication from "./../Publication.js";
+import Filter from "./../Filter.js";
 
 import PublicationListComponent from "./PublicationListComponent.vue";
 
@@ -89,7 +104,16 @@ export default {
   data() {
     return {
       TAGS: Publication.TAGS,
+      tag: "",
+      isFilterPanelShown: false,
     };
+  },
+  watch: {
+    isFilterPanelShown: {
+      handler: function () {
+        this.updateFilter();
+      },
+    },
   },
   methods: {
     addPublication: function (doi) {
@@ -101,9 +125,12 @@ export default {
     showAbstract: function (publication) {
       this.$emit("showAbstract", publication);
     },
-    filterByTag: function (value) {
-      this.sessionStore.filter.tag = value;
-      this.sessionStore.updateSuggestions();
+    updateFilter: function () {
+      if (this.isFilterPanelShown) {
+        this.sessionStore.filter.tag = this.tag;
+      } else {
+        this.sessionStore.filter = new Filter();
+      }
     },
   },
 };

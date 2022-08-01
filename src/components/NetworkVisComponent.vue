@@ -79,9 +79,10 @@ export default {
   name: "NetworkVisComponent",
   setup() {
     const sessionStore = useSessionStore();
+    const { filter } = storeToRefs(sessionStore);
     const interfaceStore = useInterfaceStore();
     const { isNetworkClusters } = storeToRefs(interfaceStore);
-    return { sessionStore, interfaceStore, isNetworkClusters };
+    return { sessionStore, filter, interfaceStore, isNetworkClusters };
   },
   data: function () {
     return {
@@ -101,6 +102,12 @@ export default {
     isNetworkClusters: {
       handler: function () {
         this.initForces();
+        this.plot(true);
+      },
+    },
+    filter: {
+      deep: true,
+      handler: function () {
         this.plot(true);
       },
     },

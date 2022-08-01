@@ -12,10 +12,10 @@ export const useSessionStore = defineStore('session', {
       selectedPublications: [],
       selectedQueue: [],
       excludedPublicationsDois: [],
-      suggestion: undefined,
+      suggestion: "",
       maxSuggestions: 50,
       boostKeywordString: "",
-      activePublication: undefined,
+      activePublication: "",
       readPublicationsDois: new Set(),
       filter: new Filter(),
     }
@@ -57,12 +57,12 @@ export const useSessionStore = defineStore('session', {
   actions: {
     clear() {
       this.selectedPublications = [];
-      this.selectedQueue = [],
-        this.excludedPublicationsDois = [];
-      this.suggestion = undefined;
+      this.selectedQueue = [];
+      this.excludedPublicationsDois = [];
+      this.suggestion = "";
       this.maxSuggestions = 50;
       this.boostKeywordString = "";
-      this.activePublication = undefined;
+      this.activePublication = "";
       this.filter = new Filter();
       // do not reset read publications as the user might to carry this information to the next session
       useInterfaceStore().clear();
