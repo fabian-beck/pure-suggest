@@ -28,7 +28,8 @@
               >{{ sessionStore.unreadSuggestionsCount }}</b-tag
             >
             of
-            {{ sessionStore.currentTotalSuggestions.toLocaleString("en") }} suggestions
+            {{ sessionStore.currentTotalSuggestions.toLocaleString("en") }}
+            suggestions
           </span>
           <b-button
             class="level-item compact-button"
@@ -37,11 +38,23 @@
             v-tippy
             @click.stop="$emit('loadMore')"
             :disabled="
-              sessionStore.suggestedPublicationsWithoutQueued.length === sessionStore.currentTotalSuggestions
+              sessionStore.suggestedPublicationsWithoutQueued.length ===
+              sessionStore.currentTotalSuggestions
             "
           ></b-button>
         </div>
       </div>
+    </div>
+    <div class="notification has-background-info-light level p-2">
+      Filter
+      <b-field label="Tag" class="level">
+        <b-select placeholder="Select a tag" class="ml-2" @input="filterByTag">
+          <option value="">none</option>
+          <option v-for="tag in TAGS" :value="tag.value" :key="tag.value">
+            {{ tag.name }}
+          </option>
+        </b-select>
+      </b-field>
     </div>
     <PublicationListComponent
       :publications="sessionStore.suggestedPublicationsWithoutQueued"
@@ -55,6 +68,7 @@
 
 <script>
 import { useSessionStore } from "./../stores/session.js";
+import Publication from "./../Publication.js";
 
 import PublicationListComponent from "./PublicationListComponent.vue";
 
@@ -70,6 +84,11 @@ export default {
   props: {
     title: String,
   },
+  data() {
+    return {
+      TAGS: Publication.TAGS,
+    };
+  },
   methods: {
     addPublication: function (doi) {
       this.sessionStore.addPublicationToQueueForSelected(doi);
@@ -79,6 +98,10 @@ export default {
     },
     showAbstract: function (publication) {
       this.$emit("showAbstract", publication);
+    },
+    filterByTag: function (value) {
+      this.sessionStore.filter.tag = value;
+      this.sessionStore.updateSuggestions();
     },
   },
 };

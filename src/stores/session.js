@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { useInterfaceStore } from "./interface.js";
 
 import Publication from "./../Publication.js";
+import Filter from '../Filter.js';
 import { shuffle, saveAsFile } from "./../Util.js"
 
 export const useSessionStore = defineStore('session', {
@@ -16,6 +17,7 @@ export const useSessionStore = defineStore('session', {
       boostKeywordString: "",
       activePublication: undefined,
       readPublicationsDois: new Set(),
+      filter: new Filter(),
     }
   },
   getters: {
@@ -23,7 +25,8 @@ export const useSessionStore = defineStore('session', {
     selectedPublicationsCount: (state) => state.selectedPublications.length,
     excludedPublicationsCount: (state) => state.excludedPublicationsDois.length,
     suggestedPublications: (state) => state.suggestion ? state.suggestion.publications : [],
-    suggestedPublicationsWithoutQueued: (state) => state.suggestedPublications.filter(publication => !state.selectedQueue.includes(publication.doi)),
+    suggestedPublicationsWithoutQueued: (state) =>
+      state.suggestedPublications.filter(publication => (!state.selectedQueue.includes(publication.doi) && state.filter.matches(publication))),
     publications: (state) => state.selectedPublications.concat(state.suggestedPublicationsWithoutQueued),
     unreadSuggestionsCount: (state) => state.suggestedPublicationsWithoutQueued.filter(
       (publication) => !publication.isRead
@@ -60,6 +63,7 @@ export const useSessionStore = defineStore('session', {
       this.maxSuggestions = 50;
       this.boostKeywordString = "";
       this.activePublication = undefined;
+      this.filter = new Filter();
       // do not reset read publications as the user might to carry this information to the next session
       useInterfaceStore().clear();
     },
