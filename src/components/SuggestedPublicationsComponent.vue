@@ -46,8 +46,10 @@
       </div>
     </div>
     <div class="notification has-background-info-light level p-2">
-      Filter
-      <b-field label="Tag" class="level">
+      <div> <b-icon icon="filter" class="ml-2"></b-icon> Filter </div>
+
+      <b-field class="level">
+        <span class="label">Tag</span>
         <b-select placeholder="Select a tag" class="ml-2" @input="filterByTag">
           <option value="">none</option>
           <option v-for="tag in TAGS" :value="tag.value" :key="tag.value">
@@ -121,6 +123,19 @@ export default {
     height: 1.2rem;
     background-color: $info-light;
     color: $info-dark;
+  }
+
+  & .notification {
+    margin-bottom: 0;
+    box-shadow: 0 0.05rem 0.25rem grey;
+    border-radius: 0;
+
+    & .label {
+      font-weight: normal;
+      height: 100%;
+      display: flex;
+      align-items: center;
+    }
   }
 }
 .publication-list {
