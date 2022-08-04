@@ -242,10 +242,17 @@ export default {
 .box {
   display: grid;
   grid-template-rows: max-content max-content max-content auto;
-}
-.publication-list {
-  max-height: 100%;
-  overflow-y: scroll;
-  border: 1px solid $border;
+
+  & .notification {
+    margin-bottom: 0;
+    box-shadow: 0 0.05rem 0.25rem grey;
+    border-radius: 0;
+  }
+
+  & .publication-list {
+    max-height: 100%;
+    overflow-y: scroll;
+    border: 1px solid $border;
+  }
 }
 </style>
