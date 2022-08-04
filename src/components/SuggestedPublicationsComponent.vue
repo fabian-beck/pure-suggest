@@ -66,7 +66,7 @@
       <div><b-icon icon="filter" class="ml-2"></b-icon></div>
       <b-field class="level">
         <b-select class="ml-2" @input="updateFilter" v-model="tag" icon="tag">
-          <option value="">[none/any]</option>
+          <option value="">* (no/any tag)</option>
           <option v-for="tag in TAGS" :value="tag.value" :key="tag.value">
             {{ tag.name }}
           </option>
