@@ -17,7 +17,8 @@
         <div class="level-item" v-if="sessionStore.suggestion">
           <b-field class="ml-6">
             <b-switch v-model="isFilterPanelShown" type="is-black"
-              ><b-icon icon="filter" size="is-small"></b-icon> Filter</b-switch
+              ><b-icon icon="filter" size="is-small"></b-icon>
+              <span class="key">F</span>ilter</b-switch
             >
           </b-field>
         </div>
@@ -65,7 +66,7 @@
         v-show="isFilterPanelShown"
       >
         <div><b-icon icon="filter" class="ml-2"></b-icon></div>
-        <b-field class="level">
+        <b-field class="level" >
           <b-select class="ml-2" @input="updateFilter" v-model="tag" icon="tag">
             <option value="">* (no/any tag)</option>
             <option v-for="tag in TAGS" :value="tag.value" :key="tag.value">
@@ -84,7 +85,10 @@
 </template>
 
 <script>
+import { storeToRefs } from "pinia";
+
 import { useSessionStore } from "./../stores/session.js";
+import { useInterfaceStore } from "./../stores/interface.js";
 import Publication from "./../Publication.js";
 import Filter from "./../Filter.js";
 
@@ -94,7 +98,9 @@ export default {
   name: "SuggestedPublicationsComponent",
   setup() {
     const sessionStore = useSessionStore();
-    return { sessionStore };
+    const interfaceStore = useInterfaceStore();
+    const { isFilterPanelShown } = storeToRefs(interfaceStore);
+    return { sessionStore, isFilterPanelShown };
   },
   components: {
     PublicationListComponent,
@@ -106,7 +112,6 @@ export default {
     return {
       TAGS: Publication.TAGS,
       tag: "",
-      isFilterPanelShown: false,
     };
   },
   watch: {

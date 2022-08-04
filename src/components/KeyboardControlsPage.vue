@@ -22,6 +22,9 @@
               waiting)
             </li>
             <li>
+              <b>f</b> &ndash; Open "Filter" panel
+            </li>
+            <li>
               <b>Arrow left</b> &ndash; Jump to first publication of "Selected"
             </li>
             <li>

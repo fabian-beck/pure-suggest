@@ -48,6 +48,9 @@ export function onKey(e) {
     } else if (e.key === "u") {
         e.preventDefault();
         sessionStore.updateQueued();
+    } else if (e.key === "f") {
+        e.preventDefault();
+        interfaceStore.isFilterPanelShown = !interfaceStore.isFilterPanelShown;
     } else if (e.key === "m") {
         e.preventDefault();
         interfaceStore.isNetworkClusters = !interfaceStore.isNetworkClusters;

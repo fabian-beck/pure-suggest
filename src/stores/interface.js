@@ -12,6 +12,7 @@ export const useInterfaceStore = defineStore('interface', {
             isOverlay: false,
             isNetworkExpanded: false,
             isNetworkClusters: true,
+            isFilterPanelShown: false,
             searchQuery: "",
             isSearchPanelShown: false,
             isAboutPageShown: false,
@@ -27,6 +28,7 @@ export const useInterfaceStore = defineStore('interface', {
             this.isOverlay = false;
             this.isNetworkExpanded = false;
             this.isNetworkClusters = true;
+            this.isFilterPanelShown = false;
         },
 
         startLoading() {
