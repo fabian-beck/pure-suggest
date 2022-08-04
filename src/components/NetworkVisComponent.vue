@@ -210,7 +210,7 @@ export default {
 
       const nodes = [];
       let i = 0;
-      this.sessionStore.publications.forEach((publication) => {
+      this.sessionStore.publicationsFiltered.forEach((publication) => {
         if (publication.year) {
           this.yearMin = Math.min(this.yearMin, publication.year);
           this.yearMax = Math.max(this.yearMax, publication.year);

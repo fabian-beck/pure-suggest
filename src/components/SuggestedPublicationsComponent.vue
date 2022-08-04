@@ -16,16 +16,21 @@
         </div>
         <div class="level-item" v-if="sessionStore.suggestion">
           <b-field class="ml-6">
-            <b-switch v-model="isFilterPanelShown" type="is-black"><b-icon icon="filter" size="is-small"></b-icon>
-            Filter</b-switch>
-            
+            <b-switch v-model="isFilterPanelShown" type="is-black"
+              ><b-icon icon="filter" size="is-small"></b-icon> Filter</b-switch
+            >
           </b-field>
         </div>
       </div>
       <div class="level-right has-text-white" v-if="sessionStore.suggestion">
         <div class="level-item">
-          <span>
-            {{ sessionStore.suggestedPublicationsWithoutQueued.length }}
+          <span
+            ><b-icon
+              icon="filter"
+              size="is-small"
+              v-show="isFilterPanelShown"
+            ></b-icon>
+            {{ sessionStore.suggestedPublicationsFiltered.length }}
             <b-tag
               icon="bell"
               size="is-small"
@@ -33,7 +38,9 @@
               data-tippy-content="The number of unread suggestions."
               v-tippy
               >{{ sessionStore.unreadSuggestionsCount }}</b-tag
-            >
+            ><span v-show="isFilterPanelShown">
+              ({{ sessionStore.suggestedPublicationsWithoutQueued.length }})
+            </span>
             of
             {{ sessionStore.currentTotalSuggestions.toLocaleString("en") }}
             suggestions
@@ -73,7 +80,7 @@
       </b-field>
     </div>
     <PublicationListComponent
-      :publications="sessionStore.suggestedPublicationsWithoutQueued"
+      :publications="sessionStore.suggestedPublicationsFiltered"
       :suggestion="true"
       v-on:add="addPublication"
       v-on:remove="removePublication"

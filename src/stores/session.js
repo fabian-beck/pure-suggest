@@ -26,9 +26,12 @@ export const useSessionStore = defineStore('session', {
     excludedPublicationsCount: (state) => state.excludedPublicationsDois.length,
     suggestedPublications: (state) => state.suggestion ? state.suggestion.publications : [],
     suggestedPublicationsWithoutQueued: (state) =>
-      state.suggestedPublications.filter(publication => (!state.selectedQueue.includes(publication.doi) && state.filter.matches(publication))),
+      state.suggestedPublications.filter(publication => !state.selectedQueue.includes(publication.doi)),
+    suggestedPublicationsFiltered: (state) =>
+      state.suggestedPublicationsWithoutQueued.filter(publication => state.filter.matches(publication)),
     publications: (state) => state.selectedPublications.concat(state.suggestedPublicationsWithoutQueued),
-    unreadSuggestionsCount: (state) => state.suggestedPublicationsWithoutQueued.filter(
+    publicationsFiltered: (state) => state.selectedPublications.concat(state.suggestedPublicationsFiltered),
+    unreadSuggestionsCount: (state) => state.suggestedPublicationsFiltered.filter(
       (publication) => !publication.isRead
     ).length,
     currentTotalSuggestions: (state) => state.suggestion.totalSuggestions - state.selectedQueue.length,
@@ -43,7 +46,7 @@ export const useSessionStore = defineStore('session', {
     getSelectedPublicationByDoi: (state) => (doi) => state.selectedPublications.filter(publication => publication.doi === doi)[0],
     nextSuggestedDoiAfter(state) {
       return (doi) => {
-        const suggestedDois = asDois(state.suggestedPublicationsWithoutQueued);
+        const suggestedDois = asDois(state.suggestedPublicationsFiltered);
         if (!suggestedDois.includes(doi)) return null;
         const index = suggestedDois.indexOf(doi)
         let nextIndex = index + 1;
