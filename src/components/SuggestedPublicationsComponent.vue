@@ -59,19 +59,21 @@
         </div>
       </div>
     </div>
-    <div
-      class="notification has-background-info-light level p-2"
-      v-show="isFilterPanelShown"
-    >
-      <div><b-icon icon="filter" class="ml-2"></b-icon></div>
-      <b-field class="level">
-        <b-select class="ml-2" @input="updateFilter" v-model="tag" icon="tag">
-          <option value="">* (no/any tag)</option>
-          <option v-for="tag in TAGS" :value="tag.value" :key="tag.value">
-            {{ tag.name }}
-          </option>
-        </b-select>
-      </b-field>
+    <div>
+      <div
+        class="notification has-background-info-light level p-2"
+        v-show="isFilterPanelShown"
+      >
+        <div><b-icon icon="filter" class="ml-2"></b-icon></div>
+        <b-field class="level">
+          <b-select class="ml-2" @input="updateFilter" v-model="tag" icon="tag">
+            <option value="">* (no/any tag)</option>
+            <option v-for="tag in TAGS" :value="tag.value" :key="tag.value">
+              {{ tag.name }}
+            </option>
+          </b-select>
+        </b-field>
+      </div>
     </div>
     <PublicationListComponent
       :publications="sessionStore.suggestedPublicationsFiltered"
@@ -133,7 +135,7 @@ export default {
 @import "~bulma/sass/utilities/_all";
 .box {
   display: grid;
-  grid-template-rows: max-content auto;
+  grid-template-rows: max-content max-content auto;
   position: relative;
 
   & .box-header .tag {
