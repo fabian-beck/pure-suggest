@@ -9,6 +9,7 @@ import { shuffle, saveAsFile } from "./../Util.js"
 export const useSessionStore = defineStore('session', {
   state: () => {
     return {
+      interfaceStore: useInterfaceStore(),
       selectedPublications: [],
       selectedQueue: [],
       excludedPublicationsDois: [],
@@ -68,7 +69,13 @@ export const useSessionStore = defineStore('session', {
       this.activePublication = "";
       this.filter = new Filter();
       // do not reset read publications as the user might to carry this information to the next session
-      useInterfaceStore().clear();
+      this.interfaceStore.clear();
+    },
+
+    removePublication: async function (doi) {
+      this.excludePublicationByDoi(doi);
+      await this.updateSuggestions();
+      this.interfaceStore.showMessage("Excluded a publication");
     },
 
     removeFromExcludedPublicationByDoi(doi) {
@@ -97,7 +104,6 @@ export const useSessionStore = defineStore('session', {
     },
 
     addPublicationsToSelection: async function (dois) {
-      const interfaceStore = useInterfaceStore();
       console.log(`Adding to selection publications with DOIs: ${dois}.`);
       document.activeElement.blur();
       if (typeof dois === "string") {
@@ -121,32 +127,31 @@ export const useSessionStore = defineStore('session', {
         if (addedPublicationsCount == 1) {
           this.activatePublicationComponentByDoi(addedDoi);
         }
-        interfaceStore.showMessage(
+        this.interfaceStore.showMessage(
           `Added ${addedPublicationsCount === 1
             ? "a publication"
             : addedPublicationsCount + " publications"
           } to selected`
         );
       } else {
-        interfaceStore.showMessage(
+        this.interfaceStore.showMessage(
           `Publication${dois.length > 1 ? "s" : ""} already in selected`
         );
-        interfaceStore.endLoading();
+        this.interfaceStore.endLoading();
       }
       if (
-        !interfaceStore.feedbackInvitationShown &&
+        !this.interfaceStore.feedbackInvitationShown &&
         this.selectedPublications.length >= 10
       ) {
-        interfaceStore.showFeedbackInvitation();
+        this.interfaceStore.showFeedbackInvitation();
       }
     },
 
     async updateSuggestions(maxSuggestions = 50) {
-      const interfaceStore = useInterfaceStore();
       this.maxSuggestions = maxSuggestions;
-      interfaceStore.startLoading();
+      this.interfaceStore.startLoading();
       let publicationsLoaded = 0;
-      interfaceStore.updateLoadingToast(
+      this.interfaceStore.updateLoadingToast(
         `${publicationsLoaded}/${this.selectedPublicationsCount} selected publications loaded`,
         "is-primary"
       );
@@ -155,14 +160,14 @@ export const useSessionStore = defineStore('session', {
           await publication.fetchData();
           publication.isSelected = true;
           publicationsLoaded++;
-          interfaceStore.updateLoadingToast(
+          this.interfaceStore.updateLoadingToast(
             `${publicationsLoaded}/${this.selectedPublicationsCount} selected publications loaded`,
             "is-primary"
           );
         })
       );
       await this.computeSuggestions();
-      interfaceStore.endLoading();
+      this.interfaceStore.endLoading();
     },
 
     async computeSuggestions() {
@@ -189,7 +194,6 @@ export const useSessionStore = defineStore('session', {
       }
 
       console.log(`Starting to compute new suggestions based on ${this.selectedPublicationsCount} selected (and ${this.excludedPublicationsCount} excluded).`);
-      const interfaceStore = useInterfaceStore();
       this.clearActivePublication("updating suggestions");
       const suggestedPublications = {};
       this.selectedPublications.forEach((publication) => {
@@ -228,11 +232,11 @@ export const useSessionStore = defineStore('session', {
       filteredSuggestions = filteredSuggestions.slice(0, this.maxSuggestions);
       console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`);
       let publicationsLoadedCount = 0;
-      interfaceStore.updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "is-info");
+      this.interfaceStore.updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "is-info");
       await Promise.all(filteredSuggestions.map(async (suggestedPublication) => {
         await suggestedPublication.fetchData()
         publicationsLoadedCount++;
-        interfaceStore.updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "is-info");
+        this.interfaceStore.updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "is-info");
       }));
       filteredSuggestions.forEach((publication) => {
         publication.isRead = this.readPublicationsDois.has(publication.doi);
@@ -292,14 +296,8 @@ export const useSessionStore = defineStore('session', {
 
     activatePublicationComponentByDoi: function (doi) {
       if (doi !== this.activePublication?.doi) {
-        this.activatePublicationComponent(document.getElementById(doi));
+        this.interfaceStore.activatePublicationComponent(document.getElementById(doi));
         this.setActivePublication(doi);
-      }
-    },
-
-    activatePublicationComponent: function (publicationComponent) {
-      if (publicationComponent) {
-        publicationComponent.focus();
       }
     },
 
@@ -315,7 +313,7 @@ export const useSessionStore = defineStore('session', {
     },
 
     clearSession: function () {
-      useInterfaceStore().showConfirmDialog(
+      this.interfaceStore.showConfirmDialog(
         "You are going to clear all selected and excluded articles and jump back to the initial state.", this.clear);
     },
 

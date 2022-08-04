@@ -169,8 +169,6 @@
     </div>
     <PublicationListComponent
       :publications="sessionStore.selectedPublications"
-      v-on:remove="removePublication"
-      v-on:showAbstract="showAbstract"
     />
   </div>
 </template>
@@ -219,12 +217,6 @@ export default {
         ambiguous ? "Several publications might match, please select..." : null
       );
       this.addQuery = "";
-    },
-    removePublication: function (doi) {
-      this.$emit("remove", doi);
-    },
-    showAbstract: function (publication) {
-      this.$emit("showAbstract", publication);
     },
     clearBoost: function () {
       this.sessionStore.setBoostKeywordString("");

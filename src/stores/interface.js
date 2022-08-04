@@ -12,6 +12,10 @@ export const useInterfaceStore = defineStore('interface', {
             isOverlay: false,
             isNetworkExpanded: false,
             isNetworkClusters: true,
+            searchQuery: "",
+            isSearchPanelShown: false,
+            isAboutPageShown: false,
+            isKeyboardControlsShown: false,
             feedbackInvitationShown: false,
         }
     },
@@ -37,7 +41,7 @@ export const useInterfaceStore = defineStore('interface', {
             }
         },
 
-        updateLoadingToast: function (message, type) {
+        updateLoadingToast(message, type) {
             if (!this.loadingToast) {
                 this.loadingToast = Toast.open({
                     indefinite: true,
@@ -45,6 +49,28 @@ export const useInterfaceStore = defineStore('interface', {
             }
             this.loadingToast.message = message;
             this.loadingToast.type = type;
+        },
+
+        showAbstract(publication) {
+            console.log(publication)
+            const _this = this;
+            const onClose = function () {
+                _this.isOverlay = false;
+                _this.activatePublicationComponent(
+                    document.getElementById(publication.doi)
+                );
+            };
+            this.isOverlay = true;
+            Dialog.alert({
+                message: `<div><b>${publication.title}</b></div><div><i>${publication.abstract}</i></div>`,
+                type: "is-dark",
+                hasIcon: true,
+                icon: "text",
+                confirmText: "Close",
+                canCancel: ["escape", "outside"],
+                onConfirm: onClose,
+                onCancel: onClose,
+            });
         },
 
         showMessage(message) {
@@ -108,6 +134,11 @@ export const useInterfaceStore = defineStore('interface', {
             });
         },
 
+        activatePublicationComponent: function (publicationComponent) {
+            if (publicationComponent) {
+                publicationComponent.focus();
+            }
+        },
 
     }
 })

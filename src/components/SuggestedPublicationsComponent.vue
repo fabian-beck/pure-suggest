@@ -77,8 +77,6 @@
       :publications="sessionStore.suggestedPublicationsFiltered"
       :suggestion="true"
       v-on:add="addPublication"
-      v-on:remove="removePublication"
-      v-on:showAbstract="showAbstract"
     />
   </div>
 </template>
@@ -119,12 +117,6 @@ export default {
   methods: {
     addPublication: function (doi) {
       this.sessionStore.addPublicationToQueueForSelected(doi);
-    },
-    removePublication: function (doi) {
-      this.$emit("remove", doi);
-    },
-    showAbstract: function (publication) {
-      this.$emit("showAbstract", publication);
     },
     updateFilter: function () {
       if (this.isFilterPanelShown) {
