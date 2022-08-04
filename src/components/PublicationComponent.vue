@@ -132,6 +132,7 @@
           >)
         </span>
         <b-taglist>
+          <b-icon icon="tag" size="is-small" class="mr-2" v-if="publication.hasTag()"></b-icon>
           <b-tag
             icon="star"
             class="is-dark"

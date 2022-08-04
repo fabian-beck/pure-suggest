@@ -9,8 +9,4 @@ export default class Filter {
         return publication[this.tag];
     }
 
-    static get TAGS() {
-        return ["Highly cited", "Literature survey", "New", "Unnoted"];
-    }
-
 }

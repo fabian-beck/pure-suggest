@@ -63,16 +63,10 @@
       class="notification has-background-info-light level p-2"
       v-show="isFilterPanelShown"
     >
-      <div><b-icon icon="filter" class="ml-2"></b-icon> Filter</div>
+      <div><b-icon icon="filter" class="ml-2"></b-icon></div>
       <b-field class="level">
-        <span class="label">Tag</span>
-        <b-select
-          placeholder="Select a tag"
-          class="ml-2"
-          @input="updateFilter"
-          v-model="tag"
-        >
-          <option value="">none</option>
+        <b-select class="ml-2" @input="updateFilter" v-model="tag" icon="tag">
+          <option value="">[none/any]</option>
           <option v-for="tag in TAGS" :value="tag.value" :key="tag.value">
             {{ tag.name }}
           </option>
@@ -163,13 +157,6 @@ export default {
     margin-bottom: 0;
     box-shadow: 0 0.05rem 0.25rem grey;
     border-radius: 0;
-
-    & .label {
-      font-weight: normal;
-      height: 100%;
-      display: flex;
-      align-items: center;
-    }
   }
 }
 .publication-list {

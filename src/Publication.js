@@ -238,6 +238,10 @@ export default class Publication {
 }`;
     }
 
+    hasTag() {
+        return Publication.TAGS.some(tag => this[tag.value]);
+    }
+
     static get TAGS() {
         return [{
             value: "isHighlyCited",
