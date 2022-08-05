@@ -132,6 +132,7 @@
           >)
         </span>
         <b-taglist>
+          <b-icon icon="tag" size="is-small" class="mr-2" v-if="publication.hasTag()"></b-icon>
           <b-tag
             icon="star"
             class="is-dark"
@@ -311,7 +312,7 @@
           class="is-small"
           icon-left="minus-thick"
           data-tippy-content="Remove publication from the list and exclude for suggestions."
-          @click.stop="$emit('remove', publication.doi)"
+          @click.stop="sessionStore.removePublication(publication.doi)"
           v-tippy
         >
         </b-button>
@@ -322,12 +323,14 @@
 
 <script>
 import { useSessionStore } from "./../stores/session.js";
+import { useInterfaceStore } from "./../stores/interface.js";
 
 export default {
   name: "PublicationComponent",
   setup() {
     const sessionStore = useSessionStore();
-    return { sessionStore };
+    const interfaceStore = useInterfaceStore();
+    return { sessionStore, interfaceStore };
   },
   props: {
     publication: Object,
@@ -374,7 +377,7 @@ export default {
     },
 
     showAbstract: function () {
-      this.$emit("showAbstract", this.publication);
+      this.interfaceStore.showAbstract(this.publication);
     },
 
     exportBibtex: function () {

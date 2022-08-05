@@ -3,8 +3,8 @@
     <HeaderPanel
       id="header"
       :isMobile="isMobile"
-      v-on:openAbout="isAboutPageShown = true"
-      v-on:openKeyboardControls="isKeyboardControlsShown = true"
+      v-on:openAbout="interfaceStore.isAboutPageShown = true"
+      v-on:openKeyboardControls="interfaceStore.isKeyboardControlsShown = true"
       v-on:clearCache="clearCache"
     />
     <div
@@ -19,16 +19,12 @@
         v-on:startSearching="startSearchingSelected"
         v-on:searchEndedWithoutResult="notifySearchEmpty"
         v-on:openSearch="openSearch"
-        v-on:remove="removePublication"
-        v-on:showAbstract="showAbstract"
         v-on:loadExample="loadExample"
         v-on:importSession="importSession"
       />
       <SuggestedPublicationsComponent
         id="suggested"
         ref="suggested"
-        v-on:remove="removePublication"
-        v-on:showAbstract="showAbstract"
         v-on:loadMore="loadMoreSuggestions"
       />
       <NetworkVisComponent
@@ -39,17 +35,17 @@
       />
     </div>
     <QuickAccessBar id="quick-access" class="is-hidden-desktop" />
-    <b-modal v-model="isSearchPanelShown">
+    <b-modal v-model="interfaceStore.isSearchPanelShown">
       <SearchPanel
-        :initialSearchQuery="searchQuery"
+        :initialSearchQuery="interfaceStore.searchQuery"
         v-on:add="sessionStore.addPublicationsToSelection"
         v-on:searchEmpty="notifySearchEmpty"
       />
     </b-modal>
-    <b-modal v-model="isAboutPageShown">
+    <b-modal v-model="interfaceStore.isAboutPageShown">
       <AboutPage />
     </b-modal>
-    <b-modal v-model="isKeyboardControlsShown">
+    <b-modal v-model="interfaceStore.isKeyboardControlsShown">
       <KeyboardControlsPage />
     </b-modal>
     <b-loading
@@ -76,6 +72,7 @@ import AboutPage from "./components/AboutPage.vue";
 import KeyboardControlsPage from "./components/KeyboardControlsPage.vue";
 
 import { clearCache } from "./Cache.js";
+import { onKey } from "./Keys.js";
 
 export default {
   name: "App",
@@ -96,10 +93,7 @@ export default {
   },
   data() {
     return {
-      searchQuery: "",
-      isSearchPanelShown: false,
-      isAboutPageShown: false,
-      isKeyboardControlsShown: false,
+      
     };
   },
   computed: {
@@ -116,12 +110,6 @@ export default {
       );
     },
 
-    removePublication: async function (doi) {
-      this.sessionStore.excludePublicationByDoi(doi);
-      await this.sessionStore.updateSuggestions();
-      this.interfaceStore.showMessage("Excluded a publication");
-    },
-
     loadMoreSuggestions: function () {
       this.sessionStore.updateSuggestions(
         this.sessionStore.maxSuggestions + 50
@@ -129,35 +117,14 @@ export default {
     },
 
     openSearch: function (query, message) {
-      this.searchQuery = query;
-      this.isSearchPanelShown = true;
+      this.interfaceStore.searchQuery = query;
+      this.interfaceStore.isSearchPanelShown = true;
       this.interfaceStore.showImportantMessage(message);
     },
 
     notifySearchEmpty: function () {
       this.interfaceStore.showErrorMessage("No matching publications found");
       this.interfaceStore.endLoading();
-    },
-
-    showAbstract: function (publication) {
-      const _this = this;
-      const onClose = function () {
-        _this.interfaceStore.isOverlay = false;
-        _this.sessionStore.activatePublicationComponent(
-          document.getElementById(publication.doi)
-        );
-      };
-      this.interfaceStore.isOverlay = true;
-      this.$buefy.dialog.alert({
-        message: `<div><b>${publication.title}</b></div><div><i>${publication.abstract}</i></div>`,
-        type: "is-dark",
-        hasIcon: true,
-        icon: "text",
-        confirmText: "Close",
-        canCancel: ["escape", "outside"],
-        onConfirm: onClose,
-        onCancel: onClose,
-      });
     },
 
     importSession: function (file) {
@@ -209,122 +176,11 @@ export default {
     },
   },
 
+  created() {
+    window.addEventListener("keydown", onKey);
+  },
+
   mounted() {
-    this._keyListener = function (e) {
-      if (
-        e.ctrlKey ||
-        e.shiftKey ||
-        e.metaKey ||
-        (e.repeat && !(e.key === "ArrowDown" || e.key === "ArrowUp"))
-      ) {
-        return;
-      } else if (
-        this.interfaceStore.isLoading ||
-        this.interfaceStore.isOverlay ||
-        this.isSearchPanelShown &
-          (document.activeElement.nodeName != "INPUT") ||
-        this.isAboutPageShown ||
-        this.isKeyboardControlsShown
-      ) {
-        e.preventDefault();
-        return;
-      } else if (document.activeElement.nodeName === "INPUT") {
-        if (e.key === "Escape") {
-          document.activeElement.blur();
-        } else {
-          return;
-        }
-      } else if (e.key === "c") {
-        e.preventDefault();
-        this.sessionStore.clearSession();
-      } else if (e.key === "Escape") {
-        e.preventDefault();
-        document.activeElement.blur();
-        this.sessionStore.clearActivePublication("escape key");
-      } else if (e.key === "a") {
-        e.preventDefault();
-        this.sessionStore.clearActivePublication("setting focus on text field");
-        document.getElementsByClassName("input add-publication")[0].focus();
-      } else if (e.key === "s") {
-        e.preventDefault();
-        this.isSearchPanelShown = true;
-      } else if (e.key === "b") {
-        e.preventDefault();
-        this.sessionStore.clearActivePublication("setting focus on text field");
-        document.getElementsByClassName("input boost")[0].focus();
-      } else if (e.key === "u") {
-        e.preventDefault();
-        this.sessionStore.updateQueued();
-      } else if (e.key === "m") {
-        e.preventDefault();
-        this.$refs.network.toggleMode();
-      } else if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        this.sessionStore.activatePublicationComponent(
-          document
-            .getElementById("selected")
-            .getElementsByClassName("publication-component")[0]
-        );
-      } else if (e.key === "ArrowRight") {
-        e.preventDefault();
-        this.sessionStore.activatePublicationComponent(
-          document
-            .getElementById("suggested")
-            .getElementsByClassName("publication-component")[0]
-        );
-      } else if (this.sessionStore.activePublication) {
-        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-          e.preventDefault();
-          const activePublicationComponent = document.getElementsByClassName(
-            "publication-component active"
-          )[0];
-          this.sessionStore.activatePublicationComponent(
-            e.key === "ArrowDown"
-              ? activePublicationComponent.nextSibling
-              : activePublicationComponent.previousSibling
-          );
-        } else if (e.key === "+") {
-          e.preventDefault();
-          if (this.sessionStore.activePublication.isSelected) return;
-          const doi = this.sessionStore.activePublication.doi;
-          const nextDoi = this.sessionStore.nextSuggestedDoiAfter(doi);
-          this.sessionStore.addPublicationToQueueForSelected(
-            this.sessionStore.activePublication.doi
-          );
-          if (nextDoi)
-            this.sessionStore.activatePublicationComponentByDoi(nextDoi);
-        } else if (e.key === "-") {
-          e.preventDefault();
-          this.removePublication(this.sessionStore.activePublication.doi);
-        } else if (e.key === "d") {
-          e.preventDefault();
-          window.open(this.sessionStore.activePublication.doiUrl);
-        } else if (
-          e.key === "t" &&
-          this.sessionStore.activePublication.abstract
-        ) {
-          e.preventDefault();
-          this.showAbstract(this.sessionStore.activePublication);
-        } else if (
-          e.key === "o" &&
-          this.sessionStore.activePublication.oaLink
-        ) {
-          e.preventDefault();
-          window.open(this.sessionStore.activePublication.oaLink);
-        } else if (e.key === "g") {
-          e.preventDefault();
-          window.open(this.sessionStore.activePublication.gsUrl);
-        } else if (e.key === "x") {
-          e.preventDefault();
-          this.sessionStore.exportSingleBibtex(
-            this.sessionStore.activePublication
-          );
-        }
-      }
-    };
-
-    document.addEventListener("keydown", this._keyListener.bind(this));
-
     // triggers a prompt before closing/reloading the page
     window.onbeforeunload = () => {
       if (!this.sessionStore.isEmpty) return "";
@@ -333,7 +189,7 @@ export default {
   },
 
   beforeDestroy() {
-    document.removeEventListener("keydown", this._keyListener);
+    document.removeEventListener("keydown", this.onKey);
   },
 };
 </script>

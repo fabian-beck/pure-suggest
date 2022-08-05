@@ -14,11 +14,24 @@
             v-tippy
           ></b-icon>
         </div>
+        <div class="level-item" v-if="sessionStore.suggestion">
+          <b-field class="ml-6">
+            <b-switch v-model="isFilterPanelShown" type="is-black"
+              ><b-icon icon="filter" size="is-small"></b-icon>
+              <span class="key">F</span>ilter</b-switch
+            >
+          </b-field>
+        </div>
       </div>
       <div class="level-right has-text-white" v-if="sessionStore.suggestion">
         <div class="level-item">
-          <span>
-            {{ sessionStore.suggestedPublicationsWithoutQueued.length }}
+          <span
+            ><b-icon
+              icon="filter"
+              size="is-small"
+              v-show="isFilterPanelShown"
+            ></b-icon>
+            {{ sessionStore.suggestedPublicationsFiltered.length }}
             <b-tag
               icon="bell"
               size="is-small"
@@ -26,35 +39,58 @@
               data-tippy-content="The number of unread suggestions."
               v-tippy
               >{{ sessionStore.unreadSuggestionsCount }}</b-tag
-            >
+            ><span v-show="isFilterPanelShown">
+              ({{ sessionStore.suggestedPublicationsWithoutQueued.length }})
+            </span>
             of
-            {{ sessionStore.currentTotalSuggestions.toLocaleString("en") }} suggestions
+            {{ sessionStore.currentTotalSuggestions.toLocaleString("en") }}
+            suggestions
           </span>
           <b-button
             class="level-item compact-button"
-            icon-right="playlist-plus"
+            icon-left="playlist-plus"
             data-tippy-content="Load more suggestions"
             v-tippy
             @click.stop="$emit('loadMore')"
             :disabled="
-              sessionStore.suggestedPublicationsWithoutQueued.length === sessionStore.currentTotalSuggestions
+              sessionStore.suggestedPublicationsWithoutQueued.length ===
+              sessionStore.currentTotalSuggestions
             "
           ></b-button>
         </div>
       </div>
     </div>
+    <div>
+      <div
+        class="notification has-background-info-light level p-2"
+        v-show="isFilterPanelShown"
+      >
+        <div><b-icon icon="filter" class="ml-2"></b-icon></div>
+        <b-field class="level" >
+          <b-select class="ml-2" @input="updateFilter" v-model="tag" icon="tag">
+            <option value="">* (no/any tag)</option>
+            <option v-for="tag in TAGS" :value="tag.value" :key="tag.value">
+              {{ tag.name }}
+            </option>
+          </b-select>
+        </b-field>
+      </div>
+    </div>
     <PublicationListComponent
-      :publications="sessionStore.suggestedPublicationsWithoutQueued"
+      :publications="sessionStore.suggestedPublicationsFiltered"
       :suggestion="true"
       v-on:add="addPublication"
-      v-on:remove="removePublication"
-      v-on:showAbstract="showAbstract"
     />
   </div>
 </template>
 
 <script>
+import { storeToRefs } from "pinia";
+
 import { useSessionStore } from "./../stores/session.js";
+import { useInterfaceStore } from "./../stores/interface.js";
+import Publication from "./../Publication.js";
+import Filter from "./../Filter.js";
 
 import PublicationListComponent from "./PublicationListComponent.vue";
 
@@ -62,7 +98,9 @@ export default {
   name: "SuggestedPublicationsComponent",
   setup() {
     const sessionStore = useSessionStore();
-    return { sessionStore };
+    const interfaceStore = useInterfaceStore();
+    const { isFilterPanelShown } = storeToRefs(interfaceStore);
+    return { sessionStore, isFilterPanelShown };
   },
   components: {
     PublicationListComponent,
@@ -70,15 +108,29 @@ export default {
   props: {
     title: String,
   },
+  data() {
+    return {
+      TAGS: Publication.TAGS,
+      tag: "",
+    };
+  },
+  watch: {
+    isFilterPanelShown: {
+      handler: function () {
+        this.updateFilter();
+      },
+    },
+  },
   methods: {
     addPublication: function (doi) {
       this.sessionStore.addPublicationToQueueForSelected(doi);
     },
-    removePublication: function (doi) {
-      this.$emit("remove", doi);
-    },
-    showAbstract: function (publication) {
-      this.$emit("showAbstract", publication);
+    updateFilter: function () {
+      if (this.isFilterPanelShown) {
+        this.sessionStore.filter.tag = this.tag;
+      } else {
+        this.sessionStore.filter = new Filter();
+      }
     },
   },
 };
@@ -88,7 +140,7 @@ export default {
 @import "~bulma/sass/utilities/_all";
 .box {
   display: grid;
-  grid-template-rows: max-content auto;
+  grid-template-rows: max-content max-content auto;
   position: relative;
 
   & .box-header .tag {
@@ -98,6 +150,12 @@ export default {
     height: 1.2rem;
     background-color: $info-light;
     color: $info-dark;
+  }
+
+  & .notification {
+    margin-bottom: 0;
+    box-shadow: 0 0.05rem 0.25rem grey;
+    border-radius: 0;
   }
 }
 .publication-list {

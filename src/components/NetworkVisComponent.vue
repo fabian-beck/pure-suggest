@@ -21,11 +21,11 @@
             class="level-item has-text-white mr-4 mb-0"
             data-tippy-content="There are two display <span class='key'>m</span>odes:<br><br><b>Timeline:</b> The diagram places publications from left to right based on year, and vertically tries to group linked publications close to each other.<br><br><b>Clusters:</b> The diagram groups linked publications close to each other, irrespective of publication year."
             v-tippy
-          >
+          > <label class="mr-2"><span class="key">M</span>ode:</label>
             <label
               class="mr-2"
               :class="{ 'has-text-grey-light': isNetworkClusters }"
-              >Timeline</label
+              > Timeline</label
             >
             <b-switch
               v-model="isNetworkClusters"
@@ -79,9 +79,10 @@ export default {
   name: "NetworkVisComponent",
   setup() {
     const sessionStore = useSessionStore();
+    const { filter } = storeToRefs(sessionStore);
     const interfaceStore = useInterfaceStore();
     const { isNetworkClusters } = storeToRefs(interfaceStore);
-    return { sessionStore, interfaceStore, isNetworkClusters };
+    return { sessionStore, filter, interfaceStore, isNetworkClusters };
   },
   data: function () {
     return {
@@ -101,6 +102,12 @@ export default {
     isNetworkClusters: {
       handler: function () {
         this.initForces();
+        this.plot(true);
+      },
+    },
+    filter: {
+      deep: true,
+      handler: function () {
         this.plot(true);
       },
     },
@@ -203,7 +210,7 @@ export default {
 
       const nodes = [];
       let i = 0;
-      this.sessionStore.publications.forEach((publication) => {
+      this.sessionStore.publicationsFiltered.forEach((publication) => {
         if (publication.year) {
           this.yearMin = Math.min(this.yearMin, publication.year);
           this.yearMax = Math.max(this.yearMax, publication.year);
@@ -400,7 +407,7 @@ export default {
     },
 
     activatePublication: function (event, d) {
-      this.sessionStore.activatePublicationComponentByDoi(d.publication.doi);
+      this.interfaceStore.activatePublicationComponentByDoi(d.publication.doi);
       event.stopPropagation();
     },
 

@@ -6,9 +6,7 @@
       :publication="publication"
       :suggestion="suggestion"
       v-on:add="addPublication"
-      v-on:remove="removePublication"
       v-on:activate="activatePublication"
-      v-on:showAbstract="showAbstract"
     ></PublicationComponent>
   </ul>
 </template>
@@ -44,14 +42,8 @@ export default {
     addPublication: function (doi) {
       this.$emit("add", doi);
     },
-    removePublication: function (doi) {
-      this.$emit("remove", doi);
-    },
     activatePublication: function () {
       this.onNextActivatedScroll = false;
-    },
-    showAbstract: function (publication) {
-      this.$emit("showAbstract", publication);
     },
     scrollToActivated() {
       if (this.onNextActivatedScroll) {

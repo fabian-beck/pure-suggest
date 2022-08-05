@@ -169,8 +169,6 @@
     </div>
     <PublicationListComponent
       :publications="sessionStore.selectedPublications"
-      v-on:remove="removePublication"
-      v-on:showAbstract="showAbstract"
     />
   </div>
 </template>
@@ -220,12 +218,6 @@ export default {
       );
       this.addQuery = "";
     },
-    removePublication: function (doi) {
-      this.$emit("remove", doi);
-    },
-    showAbstract: function (publication) {
-      this.$emit("showAbstract", publication);
-    },
     clearBoost: function () {
       this.sessionStore.setBoostKeywordString("");
     },
@@ -250,10 +242,17 @@ export default {
 .box {
   display: grid;
   grid-template-rows: max-content max-content max-content auto;
-}
-.publication-list {
-  max-height: 100%;
-  overflow-y: scroll;
-  border: 1px solid $border;
+
+  & .notification {
+    margin-bottom: 0;
+    box-shadow: 0 0.05rem 0.25rem grey;
+    border-radius: 0;
+  }
+
+  & .publication-list {
+    max-height: 100%;
+    overflow-y: scroll;
+    border: 1px solid $border;
+  }
 }
 </style>

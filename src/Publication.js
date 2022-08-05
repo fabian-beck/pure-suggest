@@ -29,8 +29,9 @@ export default class Publication {
         this.boostFactor = 1;
         this.score = 0;
         this.scoreColor = "#FFF";
-        this.isSurvey = false;
         this.citationsPerYear = 0;
+        // tags
+        this.isSurvey = false;
         this.isHighlyCited = false;
         this.isNew = false;
         this.isUnnoted = false;
@@ -235,6 +236,29 @@ export default class Publication {
         return `@${type}{${this.doi},${bibString}
     doi = {${this.doi}}
 }`;
+    }
+
+    hasTag() {
+        return Publication.TAGS.some(tag => this[tag.value]);
+    }
+
+    static get TAGS() {
+        return [{
+            value: "isHighlyCited",
+            name: "Highly cited"
+        },
+        {
+            value: "isSurvey",
+            name: "Literature survey"
+        },
+        {
+            value: "isNew",
+            name: "New"
+        },
+        {
+            value: "isUnnoted",
+            name: "Unnoted"
+        }];
     }
 
     static sortPublications(publicationList) {
