@@ -21,11 +21,13 @@
             class="level-item has-text-white mr-4 mb-0"
             data-tippy-content="There are two display <span class='key'>m</span>odes:<br><br><b>Timeline:</b> The diagram places publications from left to right based on year, and vertically tries to group linked publications close to each other.<br><br><b>Clusters:</b> The diagram groups linked publications close to each other, irrespective of publication year."
             v-tippy
-          > <label class="mr-2"><span class="key">M</span>ode:</label>
+          >
+            <label class="mr-2"><span class="key">M</span>ode:</label>
             <label
               class="mr-2"
               :class="{ 'has-text-grey-light': isNetworkClusters }"
-              > Timeline</label
+            >
+              Timeline</label
             >
             <b-switch
               v-model="isNetworkClusters"
@@ -149,10 +151,11 @@ export default {
         )
           this.plot(true);
         else if (
-          name === "setBoostKeywordString" ||
-          name === "setActivePublication" ||
-          name === "clearActivePublication" ||
-          name === "clear"
+          !this.interfaceStore.isLoading &&
+          (name === "setBoostKeywordString" ||
+            name === "setActivePublication" ||
+            name === "clearActivePublication" ||
+            name === "clear")
         )
           this.plot();
       });
