@@ -408,7 +408,7 @@ export default {
     },
 
     activatePublication: function (event, d) {
-      this.interfaceStore.activatePublicationComponentByDoi(d.publication.doi);
+      this.sessionStore.activatePublicationComponentByDoi(d.publication.doi);
       event.stopPropagation();
     },
 
