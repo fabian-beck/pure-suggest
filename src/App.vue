@@ -15,8 +15,6 @@
       <SelectedPublicationsComponent
         id="selected"
         ref="selected"
-        v-on:add="sessionStore.addPublicationsToSelection"
-        v-on:startSearching="startSearchingSelected"
         v-on:searchEndedWithoutResult="notifySearchEmpty"
         v-on:openSearch="openSearch"
         v-on:loadExample="loadExample"
@@ -38,7 +36,6 @@
     <b-modal v-model="interfaceStore.isSearchPanelShown">
       <SearchPanel
         :initialSearchQuery="interfaceStore.searchQuery"
-        v-on:add="sessionStore.addPublicationsToSelection"
         v-on:searchEmpty="notifySearchEmpty"
       />
     </b-modal>
@@ -102,13 +99,6 @@ export default {
     },
   },
   methods: {
-    startSearchingSelected: function () {
-      this.interfaceStore.startLoading();
-      this.interfaceStore.updateLoadingToast(
-        "Searching for publication with matching title",
-        "is-primary"
-      );
-    },
 
     loadMoreSuggestions: function () {
       this.sessionStore.updateSuggestions(
@@ -133,7 +123,7 @@ export default {
         try {
           const content = fileReader.result;
           const session = JSON.parse(content);
-          this.loadSession(session);
+          this.sessionStore.loadSession(session);
         } catch {
           this.interfaceStore.showErrorMessage(`Cannot read JSON from file.`);
         }
@@ -146,23 +136,6 @@ export default {
       this.sessionStore.clearSession();
     },
 
-    loadSession: function (session) {
-      console.log(`Loading session ${JSON.stringify(session)}`);
-      if (!session || !session.selected) {
-        this.interfaceStore.showErrorMessage(
-          "Cannot read session state from JSON."
-        );
-        return;
-      }
-      if (session.boost) {
-        this.sessionStore.setBoostKeywordString(session.boost);
-      }
-      if (session.excluded) {
-        this.sessionStore.excludedPublicationsDois = session.excluded;
-      }
-      this.sessionStore.addPublicationsToSelection(session.selected);
-    },
-
     loadExample: function () {
       const session = {
         selected: [
@@ -172,7 +145,7 @@ export default {
         ],
         boost: "cit, vis",
       };
-      this.loadSession(session);
+      this.sessionStore.loadSession(session);
     },
   },
 

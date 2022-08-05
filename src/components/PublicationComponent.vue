@@ -312,7 +312,7 @@
           class="is-small"
           icon-left="minus-thick"
           data-tippy-content="Remove publication from the list and exclude for suggestions."
-          @click.stop="sessionStore.removePublication(publication.doi)"
+          @click.stop="sessionStore.queueForExcluded(publication.doi)"
           v-tippy
         >
         </b-button>

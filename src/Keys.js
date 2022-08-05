@@ -84,14 +84,14 @@ export function onKey(e) {
             if (sessionStore.activePublication.isSelected) return;
             const doi = sessionStore.activePublication.doi;
             const nextDoi = sessionStore.nextSuggestedDoiAfter(doi);
-            sessionStore.addPublicationToQueueForSelected(
+            sessionStore.queueForSelected(
                 sessionStore.activePublication.doi
             );
             if (nextDoi)
                 sessionStore.activatePublicationComponentByDoi(nextDoi);
         } else if (e.key === "-") {
             e.preventDefault();
-            sessionStore.removePublication(sessionStore.activePublication.doi);
+            sessionStore.queueForExcluded(sessionStore.activePublication.doi);
         } else if (e.key === "d") {
             e.preventDefault();
             window.open(sessionStore.activePublication.doiUrl);

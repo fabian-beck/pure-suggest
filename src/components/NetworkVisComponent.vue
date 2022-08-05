@@ -144,7 +144,8 @@ export default {
       after(() => {
         if (
           name === "updateSuggestions" ||
-          name === "addPublicationToQueueForSelected"
+          name === "queueForSelected" ||
+          name === "queueForExcluded"
         )
           this.plot(true);
         else if (
