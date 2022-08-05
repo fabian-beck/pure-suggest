@@ -81,17 +81,14 @@ export function onKey(e) {
             );
         } else if (e.key === "+") {
             e.preventDefault();
-            if (sessionStore.activePublication.isSelected) return;
             const doi = sessionStore.activePublication.doi;
-            const nextDoi = sessionStore.nextSuggestedDoiAfter(doi);
-            sessionStore.queueForSelected(
-                sessionStore.activePublication.doi
-            );
-            if (nextDoi)
-                sessionStore.activatePublicationComponentByDoi(nextDoi);
+            sessionStore.activateNextPublication();
+            sessionStore.queueForSelected(doi);
         } else if (e.key === "-") {
             e.preventDefault();
-            sessionStore.queueForExcluded(sessionStore.activePublication.doi);
+            const doi = sessionStore.activePublication.doi;
+            sessionStore.activateNextPublication();
+            sessionStore.queueForExcluded(doi);
         } else if (e.key === "d") {
             e.preventDefault();
             window.open(sessionStore.activePublication.doiUrl);

@@ -90,7 +90,7 @@ export const useSessionStore = defineStore('session', {
       this.selectedQueue.push(doi);
     },
 
-    queueForExcluded: async function (doi) {
+    queueForExcluded(doi) {
       if (this.isExcluded(doi) || this.excludedQueue.includes(doi)) return
       if (this.isSelected(doi)) {
         this.selectedPublications = this.selectedPublications.filter(publication => publication.doi != doi);
@@ -244,7 +244,7 @@ export const useSessionStore = defineStore('session', {
       Publication.sortPublications(this.suggestedPublications);
     },
 
-    setActivePublication: function (doi) {
+    setActivePublication (doi) {
       this.selectedPublications.forEach((selectedPublication) => {
         selectedPublication.isActive = selectedPublication.doi === doi;
         if (selectedPublication.isActive) {
@@ -284,7 +284,15 @@ export const useSessionStore = defineStore('session', {
       }
     },
 
-    clearActivePublication: function (source) {
+    activateNextPublication: function () {
+      if (this.activePublication.isSelected) return;
+      const doi = this.activePublication.doi;
+      const nextDoi = this.nextSuggestedDoiAfter(doi);
+      if (nextDoi)
+        this.activatePublicationComponentByDoi(nextDoi);
+    },
+
+    clearActivePublication (source) {
       this.activePublication = undefined;
       this.publications.forEach((publication) => {
         publication.isActive = false;
@@ -295,7 +303,7 @@ export const useSessionStore = defineStore('session', {
       );
     },
 
-    loadSession: function (session) {
+    loadSession (session) {
       console.log(`Loading session ${JSON.stringify(session)}`);
       if (!session || !session.selected) {
         this.interfaceStore.showErrorMessage(
