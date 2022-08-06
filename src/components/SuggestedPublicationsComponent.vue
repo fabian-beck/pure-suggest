@@ -123,7 +123,7 @@ export default {
   },
   methods: {
     addPublication: function (doi) {
-      this.sessionStore.addPublicationToQueueForSelected(doi);
+      this.sessionStore.queueForSelected(doi);
     },
     updateFilter: function () {
       if (this.isFilterPanelShown) {

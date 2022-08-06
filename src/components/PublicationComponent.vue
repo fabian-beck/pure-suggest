@@ -5,7 +5,10 @@
       active: publication.isActive,
       selected: publication.isSelected,
       linkedToActive: publication.isLinkedToActive,
-      unread: !publication.isRead && !publication.isSelected,
+      unread:
+        !publication.isRead &&
+        !publication.isSelected &&
+        publication.wasFetched,
     }"
     :id="publication.doi"
     tabindex="0"
@@ -17,6 +20,7 @@
         <div
           class="media-left has-text-centered"
           v-bind:style="{ 'background-color': publication.scoreColor }"
+          v-show="publication.wasFetched"
         >
           <div class="tooltip-target">
             <div class="is-size-3 is-inline-block">{{ publication.score }}</div>
@@ -107,7 +111,7 @@
       </div>
     </tippy>
     <div class="media-content">
-      <div class="summary">
+      <div class="summary" v-show="publication.wasFetched">
         <span v-if="publication.title">
           <b
             ><span
@@ -132,7 +136,12 @@
           >)
         </span>
         <b-taglist>
-          <b-icon icon="tag" size="is-small" class="mr-2" v-if="publication.hasTag()"></b-icon>
+          <b-icon
+            icon="tag"
+            size="is-small"
+            class="mr-2"
+            v-if="publication.hasTag()"
+          ></b-icon>
           <b-tag
             icon="star"
             class="is-dark"
@@ -312,7 +321,7 @@
           class="is-small"
           icon-left="minus-thick"
           data-tippy-content="Remove publication from the list and exclude for suggestions."
-          @click.stop="sessionStore.removePublication(publication.doi)"
+          @click.stop="sessionStore.queueForExcluded(publication.doi)"
           v-tippy
         >
         </b-button>

@@ -21,11 +21,13 @@
             class="level-item has-text-white mr-4 mb-0"
             data-tippy-content="There are two display <span class='key'>m</span>odes:<br><br><b>Timeline:</b> The diagram places publications from left to right based on year, and vertically tries to group linked publications close to each other.<br><br><b>Clusters:</b> The diagram groups linked publications close to each other, irrespective of publication year."
             v-tippy
-          > <label class="mr-2"><span class="key">M</span>ode:</label>
+          >
+            <label class="mr-2"><span class="key">M</span>ode:</label>
             <label
               class="mr-2"
               :class="{ 'has-text-grey-light': isNetworkClusters }"
-              > Timeline</label
+            >
+              Timeline</label
             >
             <b-switch
               v-model="isNetworkClusters"
@@ -79,10 +81,10 @@ export default {
   name: "NetworkVisComponent",
   setup() {
     const sessionStore = useSessionStore();
-    const { filter } = storeToRefs(sessionStore);
+    const { filter, activePublication } = storeToRefs(sessionStore);
     const interfaceStore = useInterfaceStore();
     const { isNetworkClusters } = storeToRefs(interfaceStore);
-    return { sessionStore, filter, interfaceStore, isNetworkClusters };
+    return { sessionStore, filter, activePublication, interfaceStore, isNetworkClusters };
   },
   data: function () {
     return {
@@ -111,6 +113,12 @@ export default {
         this.plot(true);
       },
     },
+    activePublication: {
+      handler: function () {
+        if (this.interfaceStore.isLoading) return
+        this.plot();
+      }
+    }
   },
   mounted() {
     const that = this;
@@ -144,14 +152,14 @@ export default {
       after(() => {
         if (
           name === "updateSuggestions" ||
-          name === "addPublicationToQueueForSelected"
+          name === "queueForSelected" ||
+          name === "queueForExcluded"
         )
           this.plot(true);
         else if (
-          name === "setBoostKeywordString" ||
-          name === "setActivePublication" ||
-          name === "clearActivePublication" ||
-          name === "clear"
+          !this.interfaceStore.isLoading &&
+          (name === "setBoostKeywordString" ||
+            name === "clear")
         )
           this.plot();
       });
@@ -159,6 +167,7 @@ export default {
   },
   methods: {
     initForces: function () {
+      console.log("Initializing general forces for citation network.")
       const that = this;
       this.simulation
         .force(
@@ -188,6 +197,7 @@ export default {
     },
 
     plot: function (restart) {
+      console.log(`Plotting citation network ${restart?"with":"without"} restarting layout computation.`);
       function getRectSize(d) {
         return RECT_SIZE * (d.publication.isActive ? ENLARGE_FACTOR : 1);
       }
@@ -407,7 +417,7 @@ export default {
     },
 
     activatePublication: function (event, d) {
-      this.interfaceStore.activatePublicationComponentByDoi(d.publication.doi);
+      this.sessionStore.activatePublicationComponentByDoi(d.publication.doi);
       event.stopPropagation();
     },
 

@@ -118,12 +118,29 @@
       >
         <b-icon icon="tray-full" class="media-left ml-2 mt-2"></b-icon>
         <div class="media-content has-text-centered mt-2">
-          {{
-            sessionStore.selectedQueue.length > 1
-              ? `${sessionStore.selectedQueue.length} publications`
-              : "One publication"
-          }}
-          in <b>queue</b>.
+          <b>Queue:</b>
+          <span v-show="sessionStore.selectedQueue.length">
+            {{
+              sessionStore.selectedQueue.length > 1
+                ? `${sessionStore.selectedQueue.length} publications`
+                : "1 publication"
+            }}
+            to be added</span
+          ><span
+            v-show="
+              sessionStore.selectedQueue.length &&
+              sessionStore.excludedQueue.length
+            "
+          >
+            and </span
+          ><span v-show="sessionStore.excludedQueue.length">
+            {{
+              sessionStore.excludedQueue.length > 1
+                ? `${sessionStore.excludedQueue.length} publications`
+                : "1 publication"
+            }}
+            to be excluded</span
+          >.
         </div>
         <b-button
           @click="sessionStore.updateQueued"
@@ -175,6 +192,7 @@
 
 <script>
 import { useSessionStore } from "./../stores/session.js";
+import { useInterfaceStore } from "./../stores/interface.js";
 
 import PublicationListComponent from "./PublicationListComponent.vue";
 import PublicationQuery from "./../PublicationQuery.js";
@@ -183,7 +201,8 @@ export default {
   name: "SelectedPublicationsComponent",
   setup() {
     const sessionStore = useSessionStore();
-    return { sessionStore };
+    const interfaceStore = useInterfaceStore();
+    return { sessionStore, interfaceStore };
   },
   components: {
     PublicationListComponent,
@@ -195,7 +214,11 @@ export default {
   },
   methods: {
     add: async function () {
-      this.$emit("startSearching");
+      this.interfaceStore.startLoading();
+      this.interfaceStore.updateLoadingToast(
+        "Searching for publication with matching title",
+        "is-primary"
+      );
       const publicationQuery = new PublicationQuery(this.addQuery);
       const query = await publicationQuery.execute();
       if (query.dois.length > 0) {
@@ -203,8 +226,9 @@ export default {
           this.$emit("searchEndedWithoutResult");
           this.openSearch(true);
         } else {
-          this.$emit("add", query.dois);
+          query.dois.forEach((doi) => this.sessionStore.queueForSelected(doi));
           this.addQuery = "";
+          this.interfaceStore.endLoading();
         }
       } else {
         this.$emit("searchEndedWithoutResult");

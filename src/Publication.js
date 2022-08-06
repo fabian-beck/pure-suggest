@@ -40,10 +40,12 @@ export default class Publication {
         this.isLinkedToActive = false;
         this.isSelected = false;
         this.isRead = false;
+        // loading state
+        this.wasFetched = false;
     }
 
     async fetchData() {
-        if (this.title) return
+        if (this.wasFetched) return
         try {
             await cachedFetch(
                 `https://opencitations.net/index/coci/api/v1/metadata/${this.doi}`,
@@ -143,6 +145,7 @@ export default class Publication {
         } catch (error) {
             console.log(error);
         }
+        this.wasFetched = true;
     }
 
     updateScore(boostKeywords) {
