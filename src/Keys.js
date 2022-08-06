@@ -11,36 +11,43 @@ export function onKey(e) {
         (e.repeat && !(e.key === "ArrowDown" || e.key === "ArrowUp"))
     ) {
         return;
-    } else if (
+    }
+    if (
         interfaceStore.isLoading ||
         interfaceStore.isOverlay ||
-        interfaceStore.isSearchPanelShown &
-        (document.activeElement.nodeName != "INPUT") ||
+        (interfaceStore.isSearchPanelShown &&
+            document.activeElement.nodeName != "INPUT") ||
         interfaceStore.isAboutPageShown ||
         interfaceStore.isKeyboardControlsShown
     ) {
         e.preventDefault();
         return;
-    } else if (document.activeElement.nodeName === "INPUT") {
+    }
+    if (document.activeElement.nodeName === "INPUT" && document.activeElement.type === "text") {
         if (e.key === "Escape") {
             document.activeElement.blur();
-        } else {
-            return;
         }
-    } else if (e.key === "c") {
+        return;
+    }
+    if (e.key === "a") {
+        e.preventDefault();
+        sessionStore.clearActivePublication("setting focus on text field");
+        document.getElementsByClassName("input add-publication")[0].focus();
+        return;
+    }
+    if (e.key === "s") {
+        e.preventDefault();
+        interfaceStore.isSearchPanelShown = true;
+        return;
+    }
+    if (sessionStore.isEmpty) return;
+    if (e.key === "c") {
         e.preventDefault();
         sessionStore.clearSession();
     } else if (e.key === "Escape") {
         e.preventDefault();
         document.activeElement.blur();
         sessionStore.clearActivePublication("escape key");
-    } else if (e.key === "a") {
-        e.preventDefault();
-        sessionStore.clearActivePublication("setting focus on text field");
-        document.getElementsByClassName("input add-publication")[0].focus();
-    } else if (e.key === "s") {
-        e.preventDefault();
-        interfaceStore.isSearchPanelShown = true;
     } else if (e.key === "b") {
         e.preventDefault();
         sessionStore.clearActivePublication("setting focus on text field");
