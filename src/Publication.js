@@ -40,6 +40,8 @@ export default class Publication {
         this.isLinkedToActive = false;
         this.isSelected = false;
         this.isRead = false;
+        // loading state
+        this.wasFetched = false;
     }
 
     async fetchData() {
@@ -143,6 +145,7 @@ export default class Publication {
         } catch (error) {
             console.log(error);
         }
+        this.wasFetched = true;
     }
 
     updateScore(boostKeywords) {
