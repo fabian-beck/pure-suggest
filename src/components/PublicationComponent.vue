@@ -269,6 +269,7 @@
               v-if="publication.abstract"
               @click.stop="showAbstract"
               @click.middle.stop="showAbstract"
+              @keyup.enter ="showAbstract"
               data-tippy-content="Abs<span class='key'>t</span>ract"
               v-tippy
               ><b-icon icon="text"></b-icon
@@ -295,6 +296,7 @@
             <a
               @click.stop="exportBibtex"
               @click.middle.stop="exportBibtex"
+              @keyup.enter ="exportBibtex"
               class="ml-5"
               data-tippy-content="Export as BibTe<span class='key'>X</span> citation"
               v-tippy
