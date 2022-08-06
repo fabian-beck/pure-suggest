@@ -45,7 +45,7 @@ export default class Publication {
     }
 
     async fetchData() {
-        if (this.title) return
+        if (this.wasFetched) return
         try {
             await cachedFetch(
                 `https://opencitations.net/index/coci/api/v1/metadata/${this.doi}`,

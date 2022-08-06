@@ -81,10 +81,10 @@ export default {
   name: "NetworkVisComponent",
   setup() {
     const sessionStore = useSessionStore();
-    const { filter } = storeToRefs(sessionStore);
+    const { filter, activePublication } = storeToRefs(sessionStore);
     const interfaceStore = useInterfaceStore();
     const { isNetworkClusters } = storeToRefs(interfaceStore);
-    return { sessionStore, filter, interfaceStore, isNetworkClusters };
+    return { sessionStore, filter, activePublication, interfaceStore, isNetworkClusters };
   },
   data: function () {
     return {
@@ -113,6 +113,12 @@ export default {
         this.plot(true);
       },
     },
+    activePublication: {
+      handler: function () {
+        if (this.interfaceStore.isLoading) return
+        this.plot();
+      }
+    }
   },
   mounted() {
     const that = this;
@@ -153,8 +159,6 @@ export default {
         else if (
           !this.interfaceStore.isLoading &&
           (name === "setBoostKeywordString" ||
-            name === "setActivePublication" ||
-            name === "clearActivePublication" ||
             name === "clear")
         )
           this.plot();
@@ -163,6 +167,7 @@ export default {
   },
   methods: {
     initForces: function () {
+      console.log("Initializing general forces for citation network.")
       const that = this;
       this.simulation
         .force(
@@ -192,6 +197,7 @@ export default {
     },
 
     plot: function (restart) {
+      console.log(`Plotting citation network ${restart?"with":"without"} restarting layout computation.`);
       function getRectSize(d) {
         return RECT_SIZE * (d.publication.isActive ? ENLARGE_FACTOR : 1);
       }

@@ -293,6 +293,7 @@ export const useSessionStore = defineStore('session', {
     },
 
     clearActivePublication (source) {
+      if (!this.activePublication) return;
       this.activePublication = undefined;
       this.publications.forEach((publication) => {
         publication.isActive = false;
@@ -312,7 +313,7 @@ export const useSessionStore = defineStore('session', {
         return;
       }
       if (session.boost) {
-        this.setBoostKeywordString(session.boost);
+        this.boostKeywordString = session.boost;
       }
       if (session.excluded) {
         this.excludedPublicationsDois = session.excluded;
