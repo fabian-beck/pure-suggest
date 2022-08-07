@@ -41,7 +41,6 @@ export function onKey(e) {
         return;
     }
     if (sessionStore.isEmpty) return;
-    console.log(e);
     if (e.key === "c") {
         e.preventDefault();
         sessionStore.clearSession();

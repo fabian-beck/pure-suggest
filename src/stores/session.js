@@ -244,7 +244,7 @@ export const useSessionStore = defineStore('session', {
       Publication.sortPublications(this.suggestedPublications);
     },
 
-    setActivePublication (doi) {
+    setActivePublication(doi) {
       this.selectedPublications.forEach((selectedPublication) => {
         selectedPublication.isActive = selectedPublication.doi === doi;
         if (selectedPublication.isActive) {
@@ -290,9 +290,12 @@ export const useSessionStore = defineStore('session', {
       const nextDoi = this.nextSuggestedDoiAfter(doi);
       if (nextDoi)
         this.activatePublicationComponentByDoi(nextDoi);
+      else {
+        this.clearActivePublication()
+      }
     },
 
-    clearActivePublication (source) {
+    clearActivePublication(source) {
       if (!this.activePublication) return;
       this.activePublication = undefined;
       this.publications.forEach((publication) => {
@@ -304,7 +307,7 @@ export const useSessionStore = defineStore('session', {
       );
     },
 
-    loadSession (session) {
+    loadSession(session) {
       console.log(`Loading session ${JSON.stringify(session)}`);
       if (!session || !session.selected) {
         this.interfaceStore.showErrorMessage(
