@@ -65,9 +65,24 @@
         class="notification has-background-info-light level p-2"
         v-show="isFilterPanelShown"
       >
-        <div><b-icon icon="filter" class="ml-2"></b-icon></div>
-        <b-field class="level" >
-          <b-select class="ml-2" @input="updateFilter" v-model="tag" icon="tag">
+        <div><b-icon icon="filter" class="level-item ml-2"></b-icon></div>
+        <b-field class="level-item">
+          <b-field>
+            <b-input
+              v-model="filterString"
+              icon="card-search"
+              placeholder="Match text"
+              @input="updateFilter"
+            ></b-input>
+          </b-field>
+        </b-field>
+        <b-field class="level-item">
+          <b-select
+            class="ml-2"
+            @input="updateFilter"
+            v-model="filterTag"
+            icon="tag"
+          >
             <option value="">* (no/any tag)</option>
             <option v-for="tag in TAGS" :value="tag.value" :key="tag.value">
               {{ tag.name }}
@@ -111,7 +126,8 @@ export default {
   data() {
     return {
       TAGS: Publication.TAGS,
-      tag: "",
+      filterTag: "",
+      filterString: "",
     };
   },
   watch: {
@@ -127,7 +143,8 @@ export default {
     },
     updateFilter: function () {
       if (this.isFilterPanelShown) {
-        this.sessionStore.filter.tag = this.tag;
+        this.sessionStore.filter.tag = this.filterTag;
+        this.sessionStore.filter.string = this.filterString;
       } else {
         this.sessionStore.filter = new Filter();
       }

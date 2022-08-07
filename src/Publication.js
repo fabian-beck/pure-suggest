@@ -245,6 +245,14 @@ export default class Publication {
         return Publication.TAGS.some(tag => this[tag.value]);
     }
 
+    getMetaString() {
+        let string = ""
+        if (this.title) string += this.title + " ";
+        if (this.author) string += this.author + " ";
+        if (this.container) string += this.container + " ";
+        return string;
+    }
+
     static get TAGS() {
         return [{
             value: "isHighlyCited",
