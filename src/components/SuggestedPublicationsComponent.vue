@@ -15,7 +15,7 @@
           ></b-icon>
         </div>
         <div class="level-item" v-if="sessionStore.suggestion">
-          <b-field class="ml-6">
+          <b-field class="ml-4">
             <b-switch v-model="isFilterPanelShown" type="is-black"
               ><b-icon icon="filter" size="is-small"></b-icon>
               <span class="key">F</span>ilter</b-switch
@@ -44,7 +44,6 @@
             </span>
             of
             {{ sessionStore.currentTotalSuggestions.toLocaleString("en") }}
-            suggestions
           </span>
           <b-button
             class="level-item compact-button"
@@ -62,33 +61,42 @@
     </div>
     <div>
       <div
-        class="notification has-background-info-light level p-2"
+        class="notification has-background-info-light media p-2"
         v-show="isFilterPanelShown"
       >
-        <div><b-icon icon="filter" class="level-item ml-2"></b-icon></div>
-        <b-field class="level-item">
-          <b-field>
-            <b-input
-              v-model="filterString"
-              icon="card-search"
-              placeholder="Match text"
-              @input="updateFilter"
-            ></b-input>
-          </b-field>
-        </b-field>
-        <b-field class="level-item">
-          <b-select
-            class="ml-2"
-            @input="updateFilter"
-            v-model="filterTag"
-            icon="tag"
-          >
-            <option value="">* (no/any tag)</option>
-            <option v-for="tag in TAGS" :value="tag.value" :key="tag.value">
-              {{ tag.name }}
-            </option>
-          </b-select>
-        </b-field>
+        <div class="media-left">
+          <b-icon icon="filter" class="m-2"></b-icon>
+        </div>
+        <div class="media-content columns is-gapless">
+          <div class="column">
+            <b-field>
+              <b-input
+                v-model="filterString"
+                icon="card-search"
+                placeholder="Match text"
+                @input="updateFilter"
+                icon-right="close-circle"
+                icon-right-clickable
+                @icon-right-click="clearFilterString"
+              ></b-input>
+            </b-field>
+          </div>
+          <div class="column">
+            <b-field>
+              <b-select
+                @input="updateFilter"
+                v-model="filterTag"
+                icon="tag"
+                expanded
+              >
+                <option value="">* (no/any tag)</option>
+                <option v-for="tag in TAGS" :value="tag.value" :key="tag.value">
+                  {{ tag.name }}
+                </option>
+              </b-select>
+            </b-field>
+          </div>
+        </div>
       </div>
     </div>
     <PublicationListComponent
@@ -148,6 +156,10 @@ export default {
       } else {
         this.sessionStore.filter = new Filter();
       }
+    },
+    clearFilterString: function () {
+      this.filterString = "";
+      this.updateFilter();
     },
   },
 };
