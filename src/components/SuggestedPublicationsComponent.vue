@@ -57,24 +57,22 @@
             </div>
           </template>
           <div>
-            {{ sessionStore.suggestedPublicationsFiltered.length }} suggested
-            publication{{
+            <b>{{ sessionStore.suggestedPublicationsFiltered.length }}</b>
+            suggested publication{{
               sessionStore.suggestedPublicationsFiltered.length > 1 ? "s" : ""
             }}
-            {{
-              sessionStore.unreadSuggestionsCount > 0
-                ? `(${sessionStore.unreadSuggestionsCount} of them unread)`
-                : ""
-            }}
-            {{
-              isFilterPanelShown
-                ? `filtered from
-            ${sessionStore.suggestedPublicationsWithoutQueued.length}
-            loaded ones,`
-                : ""
-            }}
+            <span v-if="sessionStore.unreadSuggestionsCount > 0">
+              <b>({{ sessionStore.unreadSuggestionsCount }}</b> of them unread)
+            </span>
+            <span v-if="isFilterPanelShown">
+              filtered from
+              <b>{{ sessionStore.suggestedPublicationsWithoutQueued.length }}</b>
+              loaded ones,
+            </span>
             of in total
-            {{ sessionStore.currentTotalSuggestions.toLocaleString("en") }}
+            <b>
+              {{ sessionStore.currentTotalSuggestions.toLocaleString("en") }}</b
+            >
             cited/citing publication{{
               sessionStore.currentTotalSuggestions > 1 ? "s" : ""
             }}.
