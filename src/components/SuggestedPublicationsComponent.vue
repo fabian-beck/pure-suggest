@@ -24,39 +24,62 @@
         </div>
       </div>
       <div class="level-right has-text-white" v-if="sessionStore.suggestion">
-        <div class="level-item">
-          <span
-            ><b-icon
-              icon="filter"
-              size="is-small"
-              v-show="isFilterPanelShown"
-            ></b-icon>
-            {{ sessionStore.suggestedPublicationsFiltered.length }}
-            <b-tag
-              icon="bell"
-              size="is-small"
-              v-if="sessionStore.unreadSuggestionsCount > 0"
-              data-tippy-content="The number of unread suggestions."
-              v-tippy
-              >{{ sessionStore.unreadSuggestionsCount }}</b-tag
-            ><span v-show="isFilterPanelShown">
-              ({{ sessionStore.suggestedPublicationsWithoutQueued.length }})
-            </span>
-            of
+        <tippy>
+          <template v-slot:trigger>
+            <div class="level-item">
+              <span
+                ><b-icon
+                  icon="filter"
+                  size="is-small"
+                  v-show="isFilterPanelShown"
+                ></b-icon>
+                {{ sessionStore.suggestedPublicationsFiltered.length }}
+                <b-tag
+                  icon="bell"
+                  size="is-small"
+                  v-if="sessionStore.unreadSuggestionsCount > 0"
+                  >{{ sessionStore.unreadSuggestionsCount }}</b-tag
+                >
+                of
+                {{ sessionStore.currentTotalSuggestions.toLocaleString("en") }}
+              </span>
+              <b-button
+                class="level-item compact-button"
+                icon-left="playlist-plus"
+                data-tippy-content="Load more suggestions"
+                v-tippy
+                @click.stop="$emit('loadMore')"
+                :disabled="
+                  sessionStore.suggestedPublicationsWithoutQueued.length ===
+                  sessionStore.currentTotalSuggestions
+                "
+              ></b-button>
+            </div>
+          </template>
+          <div>
+            {{ sessionStore.suggestedPublicationsFiltered.length }} suggested
+            publication{{
+              sessionStore.suggestedPublicationsFiltered.length > 1 ? "s" : ""
+            }}
+            {{
+              sessionStore.unreadSuggestionsCount > 0
+                ? `(${sessionStore.unreadSuggestionsCount} of them unread)`
+                : ""
+            }}
+            {{
+              isFilterPanelShown
+                ? `filtered from
+            ${sessionStore.suggestedPublicationsWithoutQueued.length}
+            loaded ones,`
+                : ""
+            }}
+            of in total
             {{ sessionStore.currentTotalSuggestions.toLocaleString("en") }}
-          </span>
-          <b-button
-            class="level-item compact-button"
-            icon-left="playlist-plus"
-            data-tippy-content="Load more suggestions"
-            v-tippy
-            @click.stop="$emit('loadMore')"
-            :disabled="
-              sessionStore.suggestedPublicationsWithoutQueued.length ===
-              sessionStore.currentTotalSuggestions
-            "
-          ></b-button>
-        </div>
+            cited/citing publication{{
+              sessionStore.currentTotalSuggestions > 1 ? "s" : ""
+            }}.
+          </div>
+        </tippy>
       </div>
     </div>
     <div>
