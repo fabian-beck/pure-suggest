@@ -91,47 +91,59 @@
     </div>
     <div>
       <div
-        class="notification has-background-info-light media p-2"
+        class="notification has-background-info-light p-2 columns is-gapless"
         v-show="isFilterPanelShown"
       >
-        <div class="media-left">
-          <b-icon icon="filter" class="m-2"></b-icon>
+        <div class="column ml-2">
+          <b-field
+            data-tippy-content="Filter by search in title and meta-data such as authors and containing publication (e.g., journal name)."
+            v-tippy
+          >
+            <b-icon icon="card-search" class="m-2"></b-icon>
+            <b-input
+              v-model="filterString"
+              placeholder="Search in title and meta-data"
+              @input="updateFilter"
+              icon-right="close-circle"
+              icon-right-clickable
+              @icon-right-click="clearFilterString"
+              expanded
+            ></b-input>
+          </b-field>
         </div>
-        <div class="media-content columns is-gapless">
-          <div class="column">
-            <b-field
-              data-tippy-content="Filter by search in title and meta-data such as authors and containing publication (e.g., journal name)."
-              v-tippy
-            >
-              <b-input
-                v-model="filterString"
-                icon="card-search"
-                placeholder="Search in title and meta-data"
-                @input="updateFilter"
-                icon-right="close-circle"
-                icon-right-clickable
-                @icon-right-click="clearFilterString"
-              ></b-input>
-            </b-field>
-          </div>
-          <div class="column">
-            <b-field
-              data-tippy-content="Filter by automatically assigned tag."
-              v-tippy
-            >
-              <b-select
-                @input="updateFilter"
-                v-model="filterTag"
-                icon="tag"
-                expanded
-              >
-                <option value="">* (no/any tag)</option>
-                <option v-for="tag in TAGS" :value="tag.value" :key="tag.value">
-                  {{ tag.name }}
-                </option>
-              </b-select>
-            </b-field>
-          </div>
+        <div class="column ml-2">
+          <b-field
+            data-tippy-content="Filter by publication year (leave blank for unrestricted start/end year)."
+            v-tippy
+          >
+            <b-icon icon="calendar" class="m-2"></b-icon>
+            <b-input
+              v-model="filterYearStart"
+              placeholder="From year"
+              @input="updateFilter"
+              expanded
+            ></b-input>
+            <b-input
+              v-model="filterYearEnd"
+              placeholder="To year"
+              @input="updateFilter"
+              expanded
+            ></b-input>
+          </b-field>
+        </div>
+        <div class="column ml-2">
+          <b-field
+            data-tippy-content="Filter by automatically assigned tag."
+            v-tippy
+          >
+            <b-icon icon="tag" class="m-2"></b-icon>
+            <b-select @input="updateFilter" v-model="filterTag" expanded>
+              <option value="">* (no/any tag)</option>
+              <option v-for="tag in TAGS" :value="tag.value" :key="tag.value">
+                {{ tag.name }}
+              </option>
+            </b-select>
+          </b-field>
         </div>
       </div>
     </div>
@@ -170,8 +182,10 @@ export default {
   data() {
     return {
       TAGS: Publication.TAGS,
-      filterTag: "",
       filterString: "",
+      filterYearStart: "",
+      filterYearEnd: "",
+      filterTag: "",
     };
   },
   watch: {
