@@ -98,13 +98,21 @@
       >
         <div class="column ml-2">
           <b-field
-            data-tippy-content="Filter by search in title and meta-data such as authors and containing publication (e.g., journal name)."
+            data-tippy-content="Filter by <b>search in title and meta-data</b> such as authors and containing publication (e.g., journal name)."
             v-tippy
           >
-            <b-icon icon="card-search" class="m-2"></b-icon>
+            <p class="control">
+              <b-button
+                icon-left="card-search"
+                :class="{
+                  active: filterString,
+                }"
+                class="is-static"
+              ></b-button>
+            </p>
             <b-input
               v-model="filterString"
-              placeholder="Search in title and meta-data"
+              placeholder="Search"
               @input="updateFilter"
               icon-right="close-circle"
               icon-right-clickable
@@ -115,19 +123,27 @@
         </div>
         <div class="column ml-2">
           <b-field
-            data-tippy-content="Filter by publication year (leave blank for unrestricted start/end year)."
+            data-tippy-content="Filter by <b>publication year</b> (leave blank for unrestricted start/end year)."
             v-tippy
           >
-            <b-icon icon="calendar" class="m-2"></b-icon>
+            <p class="control">
+              <b-button
+                icon-left="calendar"
+                :class="{
+                  active: filterYearStart || filterYearEnd,
+                }"
+                class="is-static"
+              ></b-button>
+            </p>
             <b-input
               v-model="filterYearStart"
-              placeholder="From year"
+              placeholder="From"
               @input="updateFilter"
               expanded
             ></b-input>
             <b-input
               v-model="filterYearEnd"
-              placeholder="To year"
+              placeholder="To"
               @input="updateFilter"
               expanded
             ></b-input>
@@ -135,10 +151,18 @@
         </div>
         <div class="column ml-2">
           <b-field
-            data-tippy-content="Filter by automatically assigned tag."
+            data-tippy-content="Filter by automatically <b>assigned tag</b>."
             v-tippy
           >
-            <b-icon icon="tag" class="m-2"></b-icon>
+            <p class="control">
+              <b-button
+                icon-left="tag"
+                :class="{
+                  active: filterTag,
+                }"
+                class="is-static"
+              ></b-button>
+            </p>
             <b-select @input="updateFilter" v-model="filterTag" expanded>
               <option value="">* (no/any tag)</option>
               <option v-for="tag in TAGS" :value="tag.value" :key="tag.value">
@@ -239,6 +263,11 @@ export default {
     margin-bottom: 0;
     box-shadow: 0 0.05rem 0.25rem grey;
     border-radius: 0;
+
+    & .active {
+      background: $white;
+      color: black;
+    }
   }
 }
 .publication-list {
