@@ -15,7 +15,11 @@
           ></b-icon>
         </div>
         <div class="level-item" v-if="sessionStore.suggestion">
-          <b-field class="ml-4">
+          <b-field
+            class="ml-4"
+            data-tippy-content="Activate/deactivate <b>filter</b> to restrict suggested publications by different criteria."
+            v-tippy
+          >
             <b-switch v-model="isFilterPanelShown" type="is-black"
               ><b-icon icon="filter" size="is-small"></b-icon>
               <span class="key">F</span>ilter</b-switch
@@ -25,30 +29,60 @@
       </div>
       <div class="level-right has-text-white" v-if="sessionStore.suggestion">
         <div class="level-item">
-          <span
-            ><b-icon
-              icon="filter"
-              size="is-small"
-              v-show="isFilterPanelShown"
-            ></b-icon>
-            {{ sessionStore.suggestedPublicationsFiltered.length }}
-            <b-tag
-              icon="bell"
-              size="is-small"
-              v-if="sessionStore.unreadSuggestionsCount > 0"
-              data-tippy-content="The number of unread suggestions."
-              v-tippy
-              >{{ sessionStore.unreadSuggestionsCount }}</b-tag
-            ><span v-show="isFilterPanelShown">
-              ({{ sessionStore.suggestedPublicationsWithoutQueued.length }})
-            </span>
-            of
-            {{ sessionStore.currentTotalSuggestions.toLocaleString("en") }}
-          </span>
+          <tippy>
+            <template v-slot:trigger>
+              <div>
+                <span
+                  ><b-icon
+                    icon="filter"
+                    size="is-small"
+                    v-show="isFilterPanelShown"
+                  ></b-icon>
+                  {{ sessionStore.suggestedPublicationsFiltered.length }}
+                  <b-tag
+                    icon="bell"
+                    size="is-small"
+                    v-if="sessionStore.unreadSuggestionsCount > 0"
+                    >{{ sessionStore.unreadSuggestionsCount }}</b-tag
+                  >
+                  of
+                  {{
+                    sessionStore.currentTotalSuggestions.toLocaleString("en")
+                  }}
+                </span>
+              </div>
+            </template>
+            <div>
+              <b>{{ sessionStore.suggestedPublicationsFiltered.length }}</b>
+              suggested publication{{
+                sessionStore.suggestedPublicationsFiltered.length > 1 ? "s" : ""
+              }}
+              <span v-if="sessionStore.unreadSuggestionsCount > 0">
+                <b>({{ sessionStore.unreadSuggestionsCount }}</b> of them
+                unread)
+              </span>
+              <span v-if="isFilterPanelShown">
+                filtered from
+                <b>{{
+                  sessionStore.suggestedPublicationsWithoutQueued.length
+                }}</b>
+                loaded ones,
+              </span>
+              of in total
+              <b>
+                {{
+                  sessionStore.currentTotalSuggestions.toLocaleString("en")
+                }}</b
+              >
+              cited/citing publication{{
+                sessionStore.currentTotalSuggestions > 1 ? "s" : ""
+              }}.
+            </div>
+          </tippy>
           <b-button
-            class="level-item compact-button"
+            class="compact-button"
             icon-left="playlist-plus"
-            data-tippy-content="Load more suggestions"
+            data-tippy-content="Load more suggested publications."
             v-tippy
             @click.stop="$emit('loadMore')"
             :disabled="
@@ -69,11 +103,14 @@
         </div>
         <div class="media-content columns is-gapless">
           <div class="column">
-            <b-field>
+            <b-field
+              data-tippy-content="Filter by search in title and meta-data such as authors and containing publication (e.g., journal name)."
+              v-tippy
+            >
               <b-input
                 v-model="filterString"
                 icon="card-search"
-                placeholder="Match text"
+                placeholder="Search in title and meta-data"
                 @input="updateFilter"
                 icon-right="close-circle"
                 icon-right-clickable
@@ -82,7 +119,10 @@
             </b-field>
           </div>
           <div class="column">
-            <b-field>
+            <b-field
+              data-tippy-content="Filter by automatically assigned tag."
+              v-tippy
+            >
               <b-select
                 @input="updateFilter"
                 v-model="filterTag"
