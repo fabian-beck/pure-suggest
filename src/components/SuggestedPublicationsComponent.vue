@@ -203,8 +203,10 @@ export default {
     },
     updateFilter: function () {
       if (this.isFilterPanelShown) {
-        this.sessionStore.filter.tag = this.filterTag;
         this.sessionStore.filter.string = this.filterString;
+        this.sessionStore.filter.yearStart = this.filterYearStart;
+        this.sessionStore.filter.yearEnd = this.filterYearEnd;
+        this.sessionStore.filter.tag = this.filterTag;
       } else {
         this.sessionStore.filter = new Filter();
       }
