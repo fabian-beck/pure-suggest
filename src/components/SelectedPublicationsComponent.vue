@@ -2,17 +2,13 @@
   <div class="selected-publications box has-background-primary">
     <div class="level">
       <div class="level-left has-text-white">
-        <div class="level-item">
+        <div
+          class="level-item"
+          data-tippy-content="The <b>publications selected as seeds</b> for computing the suggestions, sorted by score."
+          v-tippy
+        >
           <b-icon icon="water-outline"></b-icon>
           <h2 class="is-size-5 ml-2">Selected</h2>
-          <b-icon
-            icon="information-outline"
-            size="is-small"
-            class="ml-2"
-            v-show="!sessionStore.isEmpty"
-            data-tippy-content="The <b>publications selected as seeds</b> for computing the suggestions, sorted by score."
-            v-tippy
-          ></b-icon>
         </div>
       </div>
       <div class="level-right" v-show="!sessionStore.isEmpty">

@@ -3,17 +3,13 @@
     <div class="box has-background-grey">
       <div class="level">
         <div class="level-left has-text-white">
-          <div class="level-item">
+          <div
+            class="level-item"
+            data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>selected</b>; <b class='has-text-info'>suggested</b>) with citations as links.<br><br>You can click a publication for details as well as zoom and pan the diagram."
+            v-tippy
+          >
             <b-icon icon="chart-bubble"></b-icon>
             <h2 class="is-size-5 ml-2">Citation network</h2>
-            <b-icon
-              icon="information-outline"
-              size="is-small"
-              class="ml-2"
-              v-show="!sessionStore.isEmpty"
-              data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>selected</b>; <b class='has-text-info'>suggested</b>) with citations as links.<br><br>You can click a publication for details as well as zoom and pan the diagram."
-              v-tippy
-            ></b-icon>
           </div>
         </div>
         <div class="level-right" v-show="!sessionStore.isEmpty">
@@ -84,7 +80,13 @@ export default {
     const { filter, activePublication } = storeToRefs(sessionStore);
     const interfaceStore = useInterfaceStore();
     const { isNetworkClusters } = storeToRefs(interfaceStore);
-    return { sessionStore, filter, activePublication, interfaceStore, isNetworkClusters };
+    return {
+      sessionStore,
+      filter,
+      activePublication,
+      interfaceStore,
+      isNetworkClusters,
+    };
   },
   data: function () {
     return {
@@ -115,10 +117,10 @@ export default {
     },
     activePublication: {
       handler: function () {
-        if (this.interfaceStore.isLoading) return
+        if (this.interfaceStore.isLoading) return;
         this.plot();
-      }
-    }
+      },
+    },
   },
   mounted() {
     const that = this;
@@ -158,8 +160,7 @@ export default {
           this.plot(true);
         else if (
           !this.interfaceStore.isLoading &&
-          (name === "setBoostKeywordString" ||
-            name === "clear")
+          (name === "setBoostKeywordString" || name === "clear")
         )
           this.plot();
       });
@@ -167,7 +168,7 @@ export default {
   },
   methods: {
     initForces: function () {
-      console.log("Initializing general forces for citation network.")
+      console.log("Initializing general forces for citation network.");
       const that = this;
       this.simulation
         .force(
@@ -197,7 +198,11 @@ export default {
     },
 
     plot: function (restart) {
-      console.log(`Plotting citation network ${restart?"with":"without"} restarting layout computation.`);
+      console.log(
+        `Plotting citation network ${
+          restart ? "with" : "without"
+        } restarting layout computation.`
+      );
       function getRectSize(d) {
         return RECT_SIZE * (d.publication.isActive ? ENLARGE_FACTOR : 1);
       }

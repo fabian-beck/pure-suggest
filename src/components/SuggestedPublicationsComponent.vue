@@ -2,21 +2,17 @@
   <div class="suggested-publications box has-background-info">
     <div class="level box-header">
       <div class="level-left has-text-white">
-        <div class="level-item">
+        <div
+          class="level-item"
+          data-tippy-content="The <b>suggested publications</b> based on references to and from the selected publications, sorted by score."
+          v-tippy
+        >
           <b-icon icon="water-plus-outline"></b-icon>
           <h2 class="is-size-5 ml-2">Suggested</h2>
-          <b-icon
-            icon="information-outline"
-            size="is-small"
-            class="ml-2"
-            v-show="sessionStore.suggestion"
-            data-tippy-content="The <b>suggested publications</b> based on references to and from the selected publications, sorted by score."
-            v-tippy
-          ></b-icon>
         </div>
         <div class="level-item" v-if="sessionStore.suggestion">
           <b-field
-            class="ml-4"
+            class="ml-5"
             data-tippy-content="Activate/deactivate <b>filter</b> to restrict suggested publications by different criteria."
             v-tippy
           >
