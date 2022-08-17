@@ -17,8 +17,10 @@
             v-tippy
           >
             <b-switch v-model="isFilterPanelShown" type="is-black"
-              ><b-icon icon="filter" size="is-small"></b-icon>
-              <span class="key">F</span>ilter</b-switch
+              ><b-icon icon="filter" size="is-small"></b-icon>&nbsp;<span
+                class="key"
+                >F</span
+              >ilter</b-switch
             >
           </b-field>
         </div>
