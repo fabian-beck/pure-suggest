@@ -13,13 +13,13 @@ export default class Filter {
     }
 
     matchesYearStart(publication) {
-        if (!this.yearStart) return true;
+        if (!this.yearStart || !Number(this.yearStart)) return true;
         if (!publication.year) return false;
         return Number(this.yearStart) <= Number(publication.year);
     }
 
     matchesYearEnd(publication) {
-        if (!this.yearEnd) return true;
+        if (!this.yearEnd || !Number(this.yearEnd) || Number(this.yearEnd) < 1000 ) return true;
         if (!publication.year) return false;
         return Number(this.yearEnd) >= Number(publication.year);
     }
