@@ -186,7 +186,15 @@
                 class="is-static"
               ></b-button>
             </p>
-            <b-select @input="updateFilter" v-model="filterTag" expanded>
+            <b-select
+              id="filter-tag"
+              @input="updateFilter"
+              v-model="filterTag"
+              :class="{
+                inactive: !filterTag,
+              }"
+              expanded
+            >
               <option value="">* (no/any)</option>
               <option v-for="tag in TAGS" :value="tag.value" :key="tag.value">
                 {{ tag.name }}
@@ -294,21 +302,12 @@ export default {
 
     & .active {
       background: $white;
-      color: black;
+      color: $info-dark;
     }
 
     & .is-expanded {
       width: 100%;
     }
-  }
-
-  #filter-year-start {
-    border-radius: 0;
-  }
-
-  #filter-year-end {
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
   }
 
   & .publication-list {
@@ -331,12 +330,16 @@ export default {
 }
 </style>
 <style lang="scss">
-  #filter-year-start {
-    border-radius: 0;
-  }
+#filter-year-start {
+  border-radius: 0;
+}
 
-  #filter-year-end {
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-  }
+#filter-year-end {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.inactive #filter-tag {
+  color: rgba(54, 54, 54, 0.3);
+}
 </style>
