@@ -141,28 +141,30 @@
               <b-button
                 icon-left="calendar"
                 :class="{
-                  active: filterYearStart || filterYearEnd,
+                  active: sessionStore.filter.isYearActive(),
                 }"
                 class="is-static"
               ></b-button>
             </p>
             <b-field expanded>
               <b-input
+                id="filter-year-start"
                 v-model="filterYearStart"
                 placeholder="From"
                 type="text"
                 pattern="\d\d\d\d"
-                validation-message="Please enter a four-digit year."
+                validation-message="Enter a four-digit year."
                 @input="updateFilter"
               ></b-input>
             </b-field>
             <b-field expanded>
               <b-input
+                id="filter-year-end"
                 v-model="filterYearEnd"
                 placeholder="To"
                 type="text"
                 pattern="\d\d\d\d"
-                validation-message="Please enter a four-digit year."
+                validation-message="Enter a four-digit year."
                 @input="updateFilter"
               ></b-input>
             </b-field>
@@ -266,6 +268,7 @@ export default {
 
 <style lang="scss" scoped>
 @import "~bulma/sass/utilities/_all";
+
 .box {
   display: grid;
   grid-template-rows: max-content max-content auto;
@@ -293,6 +296,19 @@ export default {
       background: $white;
       color: black;
     }
+
+    & .is-expanded {
+      width: 100%;
+    }
+  }
+
+  #filter-year-start {
+    border-radius: 0;
+  }
+
+  #filter-year-end {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
   }
 
   & .publication-list {
@@ -313,4 +329,14 @@ export default {
     }
   }
 }
+</style>
+<style lang="scss">
+  #filter-year-start {
+    border-radius: 0;
+  }
+
+  #filter-year-end {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
 </style>

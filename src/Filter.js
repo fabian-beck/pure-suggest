@@ -12,16 +12,29 @@ export default class Filter {
         return publication.getMetaString().toLowerCase().indexOf(this.string.toLowerCase()) >= 0;
     }
 
+    isSpecificYearActive(yearNumeric) {
+        return (yearNumeric && yearNumeric >= 1000 && yearNumeric < 10000);
+    }
+
+    isYearActive () {
+        return this.isSpecificYearActive(Number(this.yearStart)) || this.isSpecificYearActive(Number(this.yearEnd));
+    }
+
     matchesYearStart(publication) {
-        if (!this.yearStart || !Number(this.yearStart)) return true;
-        if (!publication.year) return false;
-        return Number(this.yearStart) <= Number(publication.year);
+        const yearStartNumeric = Number(this.yearStart);
+        if (!this.isSpecificYearActive(yearStartNumeric)) return true;
+        return yearStartNumeric <= Number(publication.year);
     }
 
     matchesYearEnd(publication) {
-        if (!this.yearEnd || !Number(this.yearEnd) || Number(this.yearEnd) < 1000 ) return true;
+        const yearEndNumeric = Number(this.yearEnd);
+        if (!this.isSpecificYearActive(yearEndNumeric)) return true;
+        return yearEndNumeric >= Number(publication.year);
+    }
+
+    matchesYear(publication) {
         if (!publication.year) return false;
-        return Number(this.yearEnd) >= Number(publication.year);
+        return this.matchesYearStart(publication) && this.matchesYearEnd(publication);
     }
 
     matchesTag(publication) {
@@ -32,8 +45,7 @@ export default class Filter {
     matches(publication) {
         return this.matchesString(publication)
             && this.matchesTag(publication)
-            && this.matchesYearStart(publication)
-            && this.matchesYearEnd(publication);
+            && this.matchesYear(publication);
     }
 
 }
