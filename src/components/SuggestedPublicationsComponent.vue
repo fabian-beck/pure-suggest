@@ -93,11 +93,20 @@
     </div>
     <div>
       <div
-        class="notification has-background-info-light p-2 columns is-gapless"
+        class="
+          notification
+          has-background-info-light
+          p-2
+          pt-3
+          columns
+          is-gapless
+        "
         v-show="isFilterPanelShown"
       >
-        <div class="column ml-2">
+        <div class="column">
           <b-field
+            label="Search"
+            label-position="on-border"
             data-tippy-content="Filter by <b>search in title and meta-data</b> such as authors and containing publication (e.g., journal name)."
             v-tippy
           >
@@ -112,7 +121,7 @@
             </p>
             <b-input
               v-model="filterString"
-              placeholder="Search"
+              placeholder="Text"
               @input="updateFilter"
               icon-right="close-circle"
               icon-right-clickable
@@ -121,8 +130,10 @@
             ></b-input>
           </b-field>
         </div>
-        <div class="column ml-2">
+        <div class="column">
           <b-field
+            label="Year"
+            label-position="on-border"
             data-tippy-content="Filter by <b>publication year</b> (leave blank for unrestricted start/end year)."
             v-tippy
           >
@@ -135,22 +146,32 @@
                 class="is-static"
               ></b-button>
             </p>
-            <b-input
-              v-model="filterYearStart"
-              placeholder="From"
-              @input="updateFilter"
-              expanded
-            ></b-input>
-            <b-input
-              v-model="filterYearEnd"
-              placeholder="To"
-              @input="updateFilter"
-              expanded
-            ></b-input>
+            <b-field expanded>
+              <b-input
+                v-model="filterYearStart"
+                placeholder="From"
+                type="text"
+                pattern="\d\d\d\d"
+                validation-message="Please enter a four-digit year."
+                @input="updateFilter"
+              ></b-input>
+            </b-field>
+            <b-field expanded>
+              <b-input
+                v-model="filterYearEnd"
+                placeholder="To"
+                type="text"
+                pattern="\d\d\d\d"
+                validation-message="Please enter a four-digit year."
+                @input="updateFilter"
+              ></b-input>
+            </b-field>
           </b-field>
         </div>
-        <div class="column ml-2">
+        <div class="column">
           <b-field
+            label="Tag"
+            label-position="on-border"
             data-tippy-content="Filter by automatically <b>assigned tag</b>."
             v-tippy
           >
@@ -164,7 +185,7 @@
               ></b-button>
             </p>
             <b-select @input="updateFilter" v-model="filterTag" expanded>
-              <option value="">* (no/any tag)</option>
+              <option value="">* (no/any)</option>
               <option v-for="tag in TAGS" :value="tag.value" :key="tag.value">
                 {{ tag.name }}
               </option>
@@ -264,15 +285,32 @@ export default {
     box-shadow: 0 0.05rem 0.25rem grey;
     border-radius: 0;
 
+    & .column:not(:first-child) {
+      margin-left: 0.25rem;
+    }
+
     & .active {
       background: $white;
       color: black;
     }
   }
+
+  & .publication-list {
+    max-height: 100%;
+    overflow-y: scroll;
+    border: 1px solid $border;
+  }
 }
-.publication-list {
-  max-height: 100%;
-  overflow-y: scroll;
-  border: 1px solid $border;
+
+@include mobile {
+  .box .notification {
+    & .column {
+      margin-left: 0 !important;
+    }
+
+    & .column:not(:first-child) {
+      margin-top: 0.75rem;
+    }
+  }
 }
 </style>
