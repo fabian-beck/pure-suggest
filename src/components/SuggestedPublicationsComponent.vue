@@ -17,8 +17,10 @@
             v-tippy
           >
             <b-switch v-model="isFilterPanelShown" type="is-black"
-              ><b-icon icon="filter" size="is-small"></b-icon>
-              <span class="key">F</span>ilter</b-switch
+              ><b-icon icon="filter" size="is-small"></b-icon>&nbsp;<span
+                class="key"
+                >F</span
+              >ilter</b-switch
             >
           </b-field>
         </div>
@@ -91,47 +93,106 @@
     </div>
     <div>
       <div
-        class="notification has-background-info-light media p-2"
+        class="
+          notification
+          has-background-info-light
+          p-2
+          pt-3
+          columns
+          is-gapless
+        "
         v-show="isFilterPanelShown"
       >
-        <div class="media-left">
-          <b-icon icon="filter" class="m-2"></b-icon>
+        <div class="column">
+          <b-field
+            label="Search"
+            label-position="on-border"
+            data-tippy-content="Filter by <b>search in title and meta-data</b> such as authors and containing publication (e.g., journal name)."
+            v-tippy
+          >
+            <p class="control">
+              <b-button
+                icon-left="card-search"
+                :class="{
+                  active: filterString,
+                }"
+                class="is-static"
+              ></b-button>
+            </p>
+            <b-input
+              v-model="filterString"
+              placeholder="Text"
+              @input="updateFilter"
+              icon-right="close-circle"
+              icon-right-clickable
+              @icon-right-click="clearFilterString"
+              expanded
+            ></b-input>
+          </b-field>
         </div>
-        <div class="media-content columns is-gapless">
-          <div class="column">
-            <b-field
-              data-tippy-content="Filter by search in title and meta-data such as authors and containing publication (e.g., journal name)."
-              v-tippy
-            >
+        <div class="column">
+          <b-field
+            label="Year"
+            label-position="on-border"
+            data-tippy-content="Filter by <b>publication year</b> (leave blank for unrestricted start/end year)."
+            v-tippy
+          >
+            <p class="control">
+              <b-button
+                icon-left="calendar"
+                :class="{
+                  active: sessionStore.filter.isYearActive(),
+                }"
+                class="is-static"
+              ></b-button>
+            </p>
+            <b-field expanded>
               <b-input
-                v-model="filterString"
-                icon="card-search"
-                placeholder="Search in title and meta-data"
+                id="filter-year-start"
+                v-model="filterYearStart"
+                placeholder="From"
+                type="text"
+                pattern="\d\d\d\d"
+                validation-message="Enter a four-digit year."
                 @input="updateFilter"
-                icon-right="close-circle"
-                icon-right-clickable
-                @icon-right-click="clearFilterString"
               ></b-input>
             </b-field>
-          </div>
-          <div class="column">
-            <b-field
-              data-tippy-content="Filter by automatically assigned tag."
-              v-tippy
-            >
-              <b-select
+            <b-field expanded>
+              <b-input
+                id="filter-year-end"
+                v-model="filterYearEnd"
+                placeholder="To"
+                type="text"
+                pattern="\d\d\d\d"
+                validation-message="Enter a four-digit year."
                 @input="updateFilter"
-                v-model="filterTag"
-                icon="tag"
-                expanded
-              >
-                <option value="">* (no/any tag)</option>
-                <option v-for="tag in TAGS" :value="tag.value" :key="tag.value">
-                  {{ tag.name }}
-                </option>
-              </b-select>
+              ></b-input>
             </b-field>
-          </div>
+          </b-field>
+        </div>
+        <div class="column">
+          <b-field
+            label="Tag"
+            label-position="on-border"
+            data-tippy-content="Filter by automatically <b>assigned tag</b>."
+            v-tippy
+          >
+            <p class="control">
+              <b-button
+                icon-left="tag"
+                :class="{
+                  active: filterTag,
+                }"
+                class="is-static"
+              ></b-button>
+            </p>
+            <b-select @input="updateFilter" v-model="filterTag" expanded>
+              <option value="">* (no/any)</option>
+              <option v-for="tag in TAGS" :value="tag.value" :key="tag.value">
+                {{ tag.name }}
+              </option>
+            </b-select>
+          </b-field>
         </div>
       </div>
     </div>
@@ -170,8 +231,10 @@ export default {
   data() {
     return {
       TAGS: Publication.TAGS,
-      filterTag: "",
       filterString: "",
+      filterYearStart: "",
+      filterYearEnd: "",
+      filterTag: "",
     };
   },
   watch: {
@@ -187,8 +250,10 @@ export default {
     },
     updateFilter: function () {
       if (this.isFilterPanelShown) {
-        this.sessionStore.filter.tag = this.filterTag;
         this.sessionStore.filter.string = this.filterString;
+        this.sessionStore.filter.yearStart = this.filterYearStart;
+        this.sessionStore.filter.yearEnd = this.filterYearEnd;
+        this.sessionStore.filter.tag = this.filterTag;
       } else {
         this.sessionStore.filter = new Filter();
       }
@@ -203,6 +268,7 @@ export default {
 
 <style lang="scss" scoped>
 @import "~bulma/sass/utilities/_all";
+
 .box {
   display: grid;
   grid-template-rows: max-content max-content auto;
@@ -221,11 +287,56 @@ export default {
     margin-bottom: 0;
     box-shadow: 0 0.05rem 0.25rem grey;
     border-radius: 0;
+
+    & .column:not(:first-child) {
+      margin-left: 0.25rem;
+    }
+
+    & .active {
+      background: $white;
+      color: black;
+    }
+
+    & .is-expanded {
+      width: 100%;
+    }
+  }
+
+  #filter-year-start {
+    border-radius: 0;
+  }
+
+  #filter-year-end {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  & .publication-list {
+    max-height: 100%;
+    overflow-y: scroll;
+    border: 1px solid $border;
   }
 }
-.publication-list {
-  max-height: 100%;
-  overflow-y: scroll;
-  border: 1px solid $border;
+
+@include mobile {
+  .box .notification {
+    & .column {
+      margin-left: 0 !important;
+    }
+
+    & .column:not(:first-child) {
+      margin-top: 0.75rem;
+    }
+  }
 }
+</style>
+<style lang="scss">
+  #filter-year-start {
+    border-radius: 0;
+  }
+
+  #filter-year-end {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
 </style>
