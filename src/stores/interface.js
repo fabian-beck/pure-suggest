@@ -21,7 +21,9 @@ export const useInterfaceStore = defineStore('interface', {
         }
     },
     getters: {
-
+        isMobile() {
+            return window.innerWidth <= 1023;
+        },
     },
     actions: {
         clear() {

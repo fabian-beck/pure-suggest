@@ -2,7 +2,6 @@
   <div id="app">
     <HeaderPanel
       id="header"
-      :isMobile="isMobile"
       v-on:openAbout="interfaceStore.isAboutPageShown = true"
       v-on:openKeyboardControls="interfaceStore.isKeyboardControlsShown = true"
       v-on:clearCache="clearCache"
@@ -88,15 +87,8 @@ export default {
     AboutPage,
     KeyboardControlsPage,
   },
-  data() {
-    return {
-      
-    };
-  },
   computed: {
-    isMobile: function () {
-      return window.innerWidth <= 1023;
-    },
+
   },
   methods: {
 

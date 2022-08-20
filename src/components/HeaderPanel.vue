@@ -1,6 +1,6 @@
 <template>
   <div class="box p-0 m-0 is-radiusless">
-    <b-navbar :fixed-top="isMobile" class="box p-0 m-0 is-radiusless">
+    <b-navbar :fixed-top="interfaceStore.isMobile" class="box p-0 m-0 is-radiusless">
       <template #brand>
         <b-navbar-item>
           <b-icon
