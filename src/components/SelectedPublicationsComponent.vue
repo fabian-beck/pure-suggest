@@ -163,7 +163,7 @@
             <b-button
               class="button has-background-primary-light"
               icon-left="file-document"
-              @click.stop="$emit('loadExample')"
+              @click.stop="sessionStore.loadExample()"
             >
               Load example
             </b-button>
@@ -229,7 +229,9 @@ export default {
       const query = await publicationQuery.execute();
       if (query.dois.length > 0) {
         if (query.ambiguousResult) {
-          this.interfaceStore.showErrorMessage("Multiple matching publications found, opening search instead ...");
+          this.interfaceStore.showErrorMessage(
+            "Multiple matching publications found, opening search instead ..."
+          );
           this.openSearch(true);
         } else {
           query.dois.forEach((doi) => this.sessionStore.queueForSelected(doi));
@@ -256,8 +258,7 @@ export default {
         message: `<label>Choose an exported session JSON file:&nbsp;</label>
             <input type="file" id="import-json-input" accept="application/JSON"/>`,
         onConfirm: () =>
-          this.$emit(
-            "importSession",
+          this.sessionStore.importSession(
             document.getElementById("import-json-input").files[0]
           ),
       });

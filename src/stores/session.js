@@ -346,6 +346,32 @@ export const useSessionStore = defineStore('session', {
       saveAsFile("session.json", "application/json", JSON.stringify(data));
     },
 
+    importSession: function (file) {
+      const fileReader = new FileReader();
+      fileReader.onload = () => {
+        try {
+          const content = fileReader.result;
+          const session = JSON.parse(content);
+          this.loadSession(session);
+        } catch {
+          this.interfaceStore.showErrorMessage(`Cannot read JSON from file.`);
+        }
+      };
+      fileReader.readAsText(file);
+    },
+
+    loadExample: function () {
+      const session = {
+        selected: [
+          "10.1109/tvcg.2015.2467757",
+          "10.1109/tvcg.2015.2467621",
+          "10.1002/asi.24171",
+        ],
+        boost: "cit, vis",
+      };
+      this.loadSession(session);
+    },
+
     exportAllBibtex: function () {
       this.exportBibtex(this.selectedPublications);
     },

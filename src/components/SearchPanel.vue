@@ -102,9 +102,6 @@ export default {
     const interfaceStore = useInterfaceStore();
     return { sessionStore, interfaceStore };
   },
-  props: {
-    initialSearchQuery: String,
-  },
   data() {
     return {
       searchQuery: "",
@@ -113,7 +110,7 @@ export default {
     };
   },
   mounted() {
-    this.searchQuery = this.initialSearchQuery;
+    this.searchQuery = this.interfaceStore.searchQuery;
     setTimeout(() => {
       this.$refs.searchInput.focus();
     }, 300);

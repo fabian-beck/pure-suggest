@@ -13,8 +13,6 @@
       <SelectedPublicationsComponent
         id="selected"
         ref="selected"
-        v-on:loadExample="loadExample"
-        v-on:importSession="importSession"
       />
       <SuggestedPublicationsComponent id="suggested" ref="suggested" />
       <NetworkVisComponent
@@ -26,9 +24,7 @@
     </div>
     <QuickAccessBar id="quick-access" class="is-hidden-desktop" />
     <b-modal v-model="interfaceStore.isSearchPanelShown">
-      <SearchPanel
-        :initialSearchQuery="interfaceStore.searchQuery"
-      />
+      <SearchPanel />
     </b-modal>
     <b-modal v-model="interfaceStore.isAboutPageShown">
       <AboutPage />
@@ -78,38 +74,9 @@ export default {
     AboutPage,
     KeyboardControlsPage,
   },
-  methods: {
-    importSession: function (file) {
-      const fileReader = new FileReader();
-      fileReader.onload = () => {
-        try {
-          const content = fileReader.result;
-          const session = JSON.parse(content);
-          this.sessionStore.loadSession(session);
-        } catch {
-          this.interfaceStore.showErrorMessage(`Cannot read JSON from file.`);
-        }
-      };
-      fileReader.readAsText(file);
-    },
-
-    loadExample: function () {
-      const session = {
-        selected: [
-          "10.1109/tvcg.2015.2467757",
-          "10.1109/tvcg.2015.2467621",
-          "10.1002/asi.24171",
-        ],
-        boost: "cit, vis",
-      };
-      this.sessionStore.loadSession(session);
-    },
-  },
-
   created() {
     window.addEventListener("keydown", onKey);
   },
-
   mounted() {
     // triggers a prompt before closing/reloading the page
     window.onbeforeunload = () => {
@@ -117,7 +84,6 @@ export default {
       return null;
     };
   },
-
   beforeDestroy() {
     document.removeEventListener("keydown", this.onKey);
   },
