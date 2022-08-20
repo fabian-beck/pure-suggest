@@ -115,17 +115,17 @@ $box-padding: 1rem;
 
   & #main {
     grid-area: main;
-    margin: 0.5rem;
+    margin: 0.5vw;
     display: grid;
     grid-template-areas:
       "selected suggested"
       "vis vis";
-    height: calc(100% - 1rem);
+    height: calc(100% - 1vw);
     overflow: auto;
 
     grid-template-columns: 50fr 50fr;
     grid-template-rows: auto 35vh;
-    gap: $block-spacing;
+    gap: 0.5vw;
 
     &.network-expanded {
       grid-template-rows: auto 60vh;
@@ -145,8 +145,9 @@ $box-padding: 1rem;
       grid-area: vis;
     }
 
-    & > div {
+    & .box {
       margin: 0;
+      padding: min(0.75vw, 1rem);
     }
   }
 
@@ -188,7 +189,7 @@ $box-padding: 1rem;
       overflow: scroll;
       height: auto;
 
-      & > div {
+      & .box {
         margin: 0.25rem;
         padding: 0.5rem;
       }

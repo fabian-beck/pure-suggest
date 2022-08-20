@@ -307,7 +307,7 @@ export default {
     border-radius: 0;
 
     & .column:not(:first-child) {
-      margin-left: 0.25rem;
+      margin-left: 0.5vw;
     }
 
     & .active {
