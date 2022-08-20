@@ -121,6 +121,12 @@ export const useInterfaceStore = defineStore('interface', {
             });
         },
 
+        openSearch(query, message) {
+            this.searchQuery = query;
+            this.isSearchPanelShown = true;
+            this.showImportantMessage(message);
+        },
+
         openFeedback() {
             this.isOverlay = true;
             Dialog.confirm({

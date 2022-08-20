@@ -13,16 +13,10 @@
       <SelectedPublicationsComponent
         id="selected"
         ref="selected"
-        v-on:searchEndedWithoutResult="notifySearchEmpty"
-        v-on:openSearch="openSearch"
         v-on:loadExample="loadExample"
         v-on:importSession="importSession"
       />
-      <SuggestedPublicationsComponent
-        id="suggested"
-        ref="suggested"
-        v-on:loadMore="loadMoreSuggestions"
-      />
+      <SuggestedPublicationsComponent id="suggested" ref="suggested" />
       <NetworkVisComponent
         id="network"
         ref="network"
@@ -34,7 +28,6 @@
     <b-modal v-model="interfaceStore.isSearchPanelShown">
       <SearchPanel
         :initialSearchQuery="interfaceStore.searchQuery"
-        v-on:searchEmpty="notifySearchEmpty"
       />
     </b-modal>
     <b-modal v-model="interfaceStore.isAboutPageShown">
@@ -86,23 +79,6 @@ export default {
     KeyboardControlsPage,
   },
   methods: {
-    loadMoreSuggestions: function () {
-      this.sessionStore.updateSuggestions(
-        this.sessionStore.maxSuggestions + 50
-      );
-    },
-
-    openSearch: function (query, message) {
-      this.interfaceStore.searchQuery = query;
-      this.interfaceStore.isSearchPanelShown = true;
-      this.interfaceStore.showImportantMessage(message);
-    },
-
-    notifySearchEmpty: function () {
-      this.interfaceStore.showErrorMessage("No matching publications found");
-      this.interfaceStore.endLoading();
-    },
-
     importSession: function (file) {
       const fileReader = new FileReader();
       fileReader.onload = () => {

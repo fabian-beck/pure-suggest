@@ -82,7 +82,7 @@
             icon-left="playlist-plus"
             data-tippy-content="Load more suggested publications."
             v-tippy
-            @click.stop="$emit('loadMore')"
+            @click.stop="sessionStore.loadMoreSuggestions()"
             :disabled="
               sessionStore.suggestedPublicationsWithoutQueued.length ===
               sessionStore.currentTotalSuggestions

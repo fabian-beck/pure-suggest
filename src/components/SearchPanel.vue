@@ -91,6 +91,7 @@
 
 <script>
 import { useSessionStore } from "./../stores/session.js";
+import { useInterfaceStore } from "./../stores/interface.js";
 
 import PublicationSearch from "./../PublicationSearch.js";
 
@@ -98,7 +99,8 @@ export default {
   name: "SearchPanel",
   setup() {
     const sessionStore = useSessionStore();
-    return { sessionStore };
+    const interfaceStore = useInterfaceStore();
+    return { sessionStore, interfaceStore };
   },
   props: {
     initialSearchQuery: String,
@@ -135,7 +137,7 @@ export default {
       const publicationSearch = new PublicationSearch(this.searchQuery);
       this.searchResults = await publicationSearch.execute();
       if (this.filteredSearchResults.length === 0) {
-        this.$emit("searchEmpty");
+        this.interfaceStore.showErrorMessage("No matching publications found");
       }
       this.isLoading = false;
     },

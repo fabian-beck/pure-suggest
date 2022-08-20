@@ -245,6 +245,12 @@ export const useSessionStore = defineStore('session', {
       Publication.sortPublications(this.suggestedPublications);
     },
 
+    loadMoreSuggestions() {
+      this.updateSuggestions(
+        this.maxSuggestions + 50
+      );
+    },
+
     setActivePublication(doi) {
       this.selectedPublications.forEach((selectedPublication) => {
         selectedPublication.isActive = selectedPublication.doi === doi;
@@ -326,7 +332,7 @@ export const useSessionStore = defineStore('session', {
       this.updateSuggestions();
     },
 
-    clearSession: function (after) {
+    clearSession: function () {
       this.interfaceStore.showConfirmDialog(
         "You are going to clear all selected and excluded articles and jump back to the initial state.", this.clear);
     },

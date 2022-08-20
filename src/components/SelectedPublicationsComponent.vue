@@ -229,20 +229,19 @@ export default {
       const query = await publicationQuery.execute();
       if (query.dois.length > 0) {
         if (query.ambiguousResult) {
-          this.$emit("searchEndedWithoutResult");
+          this.interfaceStore.showErrorMessage("Multiple matching publications found, opening search instead ...");
           this.openSearch(true);
         } else {
           query.dois.forEach((doi) => this.sessionStore.queueForSelected(doi));
           this.addQuery = "";
-          this.interfaceStore.endLoading();
         }
       } else {
-        this.$emit("searchEndedWithoutResult");
+        this.interfaceStore.showErrorMessage("No matching publication found");
       }
+      this.interfaceStore.endLoading();
     },
     openSearch: function (ambiguous = false) {
-      this.$emit(
-        "openSearch",
+      this.interfaceStore.openSearch(
         this.addQuery,
         ambiguous ? "Several publications might match, please select..." : null
       );
