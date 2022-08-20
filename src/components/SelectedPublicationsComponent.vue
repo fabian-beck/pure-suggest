@@ -181,6 +181,7 @@
       </div>
     </div>
     <PublicationListComponent
+      ref="publicationList"
       :publications="sessionStore.selectedPublications"
     />
   </div>
@@ -207,6 +208,15 @@ export default {
     return {
       addQuery: "",
     };
+  },
+  mounted() {
+    this.sessionStore.$onAction(({ name, after }) => {
+      after(() => {
+        if (name === "updateQueued") {
+          this.$refs.publicationList.$el.scrollTop = 0;
+        }
+      });
+    });
   },
   methods: {
     add: async function () {

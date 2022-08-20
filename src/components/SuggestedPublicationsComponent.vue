@@ -205,6 +205,7 @@
       </div>
     </div>
     <PublicationListComponent
+      ref="publicationList"
       :publications="sessionStore.suggestedPublicationsFiltered"
       :suggestion="true"
       v-on:add="addPublication"
@@ -251,6 +252,15 @@ export default {
         this.updateFilter();
       },
     },
+  },
+  mounted() {
+    this.sessionStore.$onAction(({ name, after }) => {
+      after(() => {
+        if (name === "updateQueued") {
+          this.$refs.publicationList.$el.scrollTop = 0;
+        }
+      });
+    });
   },
   methods: {
     addPublication: function (doi) {
