@@ -4,7 +4,6 @@
       id="header"
       v-on:openAbout="interfaceStore.isAboutPageShown = true"
       v-on:openKeyboardControls="interfaceStore.isKeyboardControlsShown = true"
-      v-on:clearCache="clearCache"
     />
     <div
       id="main"
@@ -67,7 +66,6 @@ import SearchPanel from "./components/SearchPanel.vue";
 import AboutPage from "./components/AboutPage.vue";
 import KeyboardControlsPage from "./components/KeyboardControlsPage.vue";
 
-import { clearCache } from "./Cache.js";
 import { onKey } from "./Keys.js";
 
 export default {
@@ -87,11 +85,7 @@ export default {
     AboutPage,
     KeyboardControlsPage,
   },
-  computed: {
-
-  },
   methods: {
-
     loadMoreSuggestions: function () {
       this.sessionStore.updateSuggestions(
         this.sessionStore.maxSuggestions + 50
@@ -121,11 +115,6 @@ export default {
         }
       };
       fileReader.readAsText(file);
-    },
-
-    clearCache: function () {
-      clearCache();
-      this.sessionStore.clearSession();
     },
 
     loadExample: function () {

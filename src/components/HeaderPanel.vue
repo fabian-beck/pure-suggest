@@ -66,7 +66,7 @@
             <b-icon icon="information-outline"></b-icon
             ><span class="ml-2">About</span>
           </b-navbar-item>
-          <b-navbar-item @click="$emit('clearCache')" class="has-text-danger">
+          <b-navbar-item @click="sessionStore.clearCache" class="has-text-danger">
             <b-icon icon="cached"></b-icon
             ><span class="ml-2">Clear cache (and session)</span>
           </b-navbar-item>

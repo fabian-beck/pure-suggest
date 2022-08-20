@@ -5,6 +5,7 @@ import { useInterfaceStore } from "./interface.js";
 import Publication from "./../Publication.js";
 import Filter from '../Filter.js';
 import { shuffle, saveAsFile } from "./../Util.js"
+import { clearCache } from "./../Cache.js";
 
 export const useSessionStore = defineStore('session', {
   state: () => {
@@ -325,7 +326,7 @@ export const useSessionStore = defineStore('session', {
       this.updateSuggestions();
     },
 
-    clearSession: function () {
+    clearSession: function (after) {
       this.interfaceStore.showConfirmDialog(
         "You are going to clear all selected and excluded articles and jump back to the initial state.", this.clear);
     },
@@ -353,6 +354,14 @@ export const useSessionStore = defineStore('session', {
         (publication) => (bib += publication.toBibtex() + "\n\n")
       );
       saveAsFile("publications.bib", "application/x-bibtex", bib);
+    },
+
+    clearCache: function () {
+      this.interfaceStore.showConfirmDialog(
+        "You are going to clear the cache, as well as all selected and excluded articles and jump back to the initial state.", () => {
+          this.clear();
+          clearCache();
+        });
     },
   }
 })
