@@ -10,20 +10,6 @@
           <b-icon icon="water-plus-outline"></b-icon>
           <h2 class="is-size-5 ml-2">Suggested</h2>
         </div>
-        <div class="level-item" v-if="sessionStore.suggestion">
-          <b-field
-            class="ml-5"
-            data-tippy-content="Activate/deactivate <b>filter</b> to restrict suggested publications by different criteria."
-            v-tippy
-          >
-            <b-switch v-model="isFilterPanelShown" type="is-black"
-              ><b-icon icon="filter" size="is-small"></b-icon>&nbsp;<span
-                class="key"
-                >F</span
-              >ilter</b-switch
-            >
-          </b-field>
-        </div>
       </div>
       <div class="level-right has-text-white" v-if="sessionStore.suggestion">
         <div class="level-item">
@@ -88,6 +74,20 @@
               sessionStore.currentTotalSuggestions
             "
           ></b-button>
+        </div>
+        <div class="level-item" v-if="sessionStore.suggestion">
+          <b-field
+            class="ml-5"
+            data-tippy-content="Activate/deactivate <b>filter</b> to restrict suggested publications by different criteria."
+            v-tippy
+          >
+            <b-switch v-model="isFilterPanelShown" type="is-black"
+              ><b-icon icon="filter" size="is-small"></b-icon>&nbsp;<span
+                class="key"
+                >F</span
+              >ilter</b-switch
+            >
+          </b-field>
         </div>
       </div>
     </div>
