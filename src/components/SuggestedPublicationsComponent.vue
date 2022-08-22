@@ -107,7 +107,7 @@
           <b-field
             label="Search"
             label-position="on-border"
-            data-tippy-content="Filter by <b>search in title and meta-data</b> such as authors and containing publication (e.g., journal name)."
+            data-tippy-content="Filter by <b>search in meta-data</b> such as title, authors, and journal name."
             v-tippy
           >
             <p class="control">
