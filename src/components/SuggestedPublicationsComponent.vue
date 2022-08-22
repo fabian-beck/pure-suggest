@@ -195,7 +195,7 @@
               }"
               expanded
             >
-              <option value="">* (no/any)</option>
+              <option value="">None/any</option>
               <option v-for="tag in TAGS" :value="tag.value" :key="tag.value">
                 {{ tag.name }}
               </option>
