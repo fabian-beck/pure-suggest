@@ -152,6 +152,7 @@ export default {
 
     this.sessionStore.$onAction(({ name, after }) => {
       after(() => {
+        console.log(name);
         if (
           name === "updateSuggestions" ||
           name === "queueForSelected" ||
@@ -160,7 +161,7 @@ export default {
           this.plot(true);
         else if (
           !this.interfaceStore.isLoading &&
-          (name === "setBoostKeywordString" || name === "clear")
+          (name === "updateScores" || name === "clear")
         )
           this.plot();
       });
