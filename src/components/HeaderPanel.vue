@@ -1,6 +1,9 @@
 <template>
   <div class="box p-0 m-0 is-radiusless">
-    <b-navbar :fixed-top="interfaceStore.isMobile" class="box p-0 m-0 is-radiusless">
+    <b-navbar
+      :fixed-top="interfaceStore.isMobile"
+      class="box p-0 m-0 is-radiusless"
+    >
       <template #brand>
         <b-navbar-item>
           <b-icon
@@ -30,7 +33,10 @@
             <b-icon icon="export"></b-icon>
             <span class="ml-2">Export selected as BibTeX</span>
           </b-navbar-item>
-          <b-navbar-item @click="sessionStore.clearSession" class="has-text-danger">
+          <b-navbar-item
+            @click="sessionStore.clearSession"
+            class="has-text-danger"
+          >
             <b-icon icon="delete"></b-icon
             ><span class="ml-2"><span class="key">C</span>lear session</span>
           </b-navbar-item>
@@ -56,17 +62,20 @@
             ><span class="ml-2">Feedback</span>
           </b-navbar-item>
           <b-navbar-item
-            @click="$emit('openKeyboardControls')"
+            @click="interfaceStore.isKeyboardControlsShown = true"
             class="is-hidden-touch"
           >
             <b-icon icon="keyboard-outline"></b-icon
             ><span class="ml-2">Keyboard controls</span>
           </b-navbar-item>
-          <b-navbar-item @click="$emit('openAbout')">
+          <b-navbar-item @click="interfaceStore.isAboutPageShown = true">
             <b-icon icon="information-outline"></b-icon
             ><span class="ml-2">About</span>
           </b-navbar-item>
-          <b-navbar-item @click="sessionStore.clearCache" class="has-text-danger">
+          <b-navbar-item
+            @click="sessionStore.clearCache"
+            class="has-text-danger"
+          >
             <b-icon icon="cached"></b-icon
             ><span class="ml-2">Clear cache (and session)</span>
           </b-navbar-item>

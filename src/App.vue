@@ -1,26 +1,14 @@
 <template>
   <div id="app">
-    <HeaderPanel
-      id="header"
-      v-on:openAbout="interfaceStore.isAboutPageShown = true"
-      v-on:openKeyboardControls="interfaceStore.isKeyboardControlsShown = true"
-    />
+    <HeaderPanel id="header" />
     <div
       id="main"
       @click="sessionStore.clearActivePublication('clicked anywhere')"
       :class="{ 'network-expanded': interfaceStore.isNetworkExpanded }"
     >
-      <SelectedPublicationsComponent
-        id="selected"
-        ref="selected"
-      />
-      <SuggestedPublicationsComponent id="suggested" ref="suggested" />
-      <NetworkVisComponent
-        id="network"
-        ref="network"
-        :svgWidth="1500"
-        :svgHeight="600"
-      />
+      <SelectedPublicationsComponent id="selected" />
+      <SuggestedPublicationsComponent id="suggested" />
+      <NetworkVisComponent id="network" :svgWidth="1500" :svgHeight="600" />
     </div>
     <QuickAccessBar id="quick-access" class="is-hidden-desktop" />
     <b-modal v-model="interfaceStore.isSearchPanelShown">
