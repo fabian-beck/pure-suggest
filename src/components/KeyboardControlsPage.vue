@@ -13,54 +13,82 @@
             application.
           </p>
           <h2>General</h2>
-          <ul>
-            <li><b>b</b> &ndash; Jump to "Boost" input field</li>
-            <li><b>a</b> &ndash; Jump to "Add" input field</li>
-            <li><b>s</b> &ndash; Open "Search" dialog</li>
+          <ul class="keys">
             <li>
-              <b>u</b> &ndash; Update selected publications (if publications are
-              waiting)
+              <b-icon icon="alpha-b-box-outline"></b-icon> Jump to "Boost" input
+              field
             </li>
             <li>
-              <b>f</b> &ndash; Open "Filter" panel
+              <b-icon icon="alpha-a-box-outline"></b-icon> Jump to "Add" input
+              field
             </li>
             <li>
-              <b>Arrow left</b> &ndash; Jump to first publication of "Selected"
+              <b-icon icon="alpha-s-box-outline"></b-icon> Open "Search" dialog
             </li>
             <li>
-              <b>Arrow right</b> &ndash; Jump to first publication of
-              "Suggested"
+              <b-icon icon="alpha-u-box-outline"></b-icon> Update selected
+              publications (if publications are waiting)
             </li>
             <li>
-              <b>Arrow down</b> &ndash; Move one publication down (if one is
-              active)
+              <b-icon icon="alpha-f-box-outline"></b-icon> Switch on/off
+              filtering of suggestions
             </li>
             <li>
-              <b>Arrow up</b> &ndash; Move one publication up (if one is active)
+              <b-icon icon="arrow-left-bold-box-outline"></b-icon> Jump to first
+              publication of "Selected"
             </li>
             <li>
-              <b>Escape</b> &ndash; Escape input field or active publication
+              <b-icon icon="arrow-right-bold-box-outline"></b-icon> Jump to
+              first publication of "Suggested"
             </li>
-            <li><b>c</b> &ndash; Clear session</li>
+            <li>
+              <b-icon icon="arrow-down-bold-box-outline"></b-icon> Move one
+              publication down (if one is active)
+            </li>
+            <li>
+              <b-icon icon="arrow-up-bold-box-outline"></b-icon> Move one
+              publication up (if one is active)
+            </li>
+            <li>
+              <b-icon icon="keyboard-esc"></b-icon> Escape input field or active
+              publication
+            </li>
+            <li><b-icon icon="alpha-c-box-outline"></b-icon> Clear session</li>
           </ul>
           <h2>Active Publication</h2>
           <p>If a publication is marked as active:</p>
-          <ul>
-            <li><b>+ (plus)</b> &ndash; Add publication to selection</li>
+          <ul class="keys">
             <li>
-              <b>- (minus)</b> &ndash; Exclude publication from
-              selection/suggestion
+              <b-icon icon="plus-box-outline"></b-icon> Add publication to
+              selection
             </li>
-            <li><b>d</b> &ndash; Open "DOI" link</li>
-            <li><b>o</b> &ndash; Open "Open access" link</li>
-            <li><b>g</b> &ndash; Open "Google Scholar" link</li>
-            <li><b>x</b> &ndash; Export as BibTeX citation</li>
+            <li>
+              <b-icon icon="minus-box-outline"></b-icon> Exclude publication
+              from selection/suggestion
+            </li>
+            <li>
+              <b-icon icon="alpha-d-box-outline"></b-icon> Open "DOI" link
+            </li>
+            <li><b-icon icon="alpha-t-box-outline"></b-icon> Show abstract</li>
+            <li>
+              <b-icon icon="alpha-o-box-outline"></b-icon> Open "Open access"
+              link
+            </li>
+            <li>
+              <b-icon icon="alpha-g-box-outline"></b-icon> Open "Google Scholar"
+              link
+            </li>
+            <li>
+              <b-icon icon="alpha-x-box-outline"></b-icon> Export as BibTeX
+              citation
+            </li>
           </ul>
           <h2>Citation Network</h2>
-          <ul>
+          <ul class="keys">
             <li>
-              <b>m</b> &ndash; Toggle mode of citation network visualization
-              between <em>timeline</em> and <em>clusters</em>
+              <b-icon icon="alpha-m-box-outline"></b-icon> Toggle mode of
+              citation network visualization between <em>timeline</em> and
+              <em>clusters</em>
             </li>
           </ul>
         </section>
@@ -81,6 +109,16 @@
 
     & h2 {
       font-size: $size-5 !important;
+    }
+
+    & ul.keys {
+      list-style-type: none;
+
+      & .icon {
+        position: relative;
+        top: 0.15rem;
+        margin-right: 0.5rem;
+      }
     }
   }
 }
