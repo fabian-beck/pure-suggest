@@ -49,8 +49,8 @@
           </p>
           <h2><b-icon icon="file-document" /> Scientific Publication</h2>
           <p>
-            If you want to cite the tool, you can refer to the following
-            publication:
+            If you want to read more or cite the tool, you can refer to the
+            following publication:
           </p>
           <ul>
             <li>
