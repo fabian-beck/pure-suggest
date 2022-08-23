@@ -110,7 +110,6 @@ $box-padding: 1rem;
       "vis vis";
     height: calc(100% - 1vw);
     overflow: auto;
-
     grid-template-columns: 50fr 50fr;
     grid-template-rows: auto 35vh;
     gap: 0.5vw;
@@ -217,6 +216,14 @@ $box-padding: 1rem;
   // placed outside the #app scope to apply to tooltips also
   .key {
     text-decoration: none;
+  }
+}
+
+@media screen and (min-width: 2400px) {
+  #app #main {
+    grid-template-areas: "selected suggested vis";
+    grid-template-columns: 50fr 50fr 100fr;
+    grid-template-rows: auto;
   }
 }
 </style>
