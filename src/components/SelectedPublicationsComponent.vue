@@ -62,6 +62,7 @@
             has-background-primary-light
             is-hidden-touch
           "
+          :class="{ 'disabled': !addQuery }"
           type="submit"
           icon-left="plus-thick"
           @click.stop="add"
@@ -88,6 +89,7 @@
             ml-1
             is-hidden-touch
           "
+          :class="{ 'disabled': !addQuery }"
           type="submit"
           icon-left="magnify"
           @click.stop="openSearch(false)"
@@ -220,6 +222,7 @@ export default {
   },
   methods: {
     add: async function () {
+      if (!this.addQuery) return;
       this.interfaceStore.startLoading();
       this.interfaceStore.updateLoadingToast(
         "Searching for publication with matching title",
@@ -272,6 +275,12 @@ export default {
 .box {
   display: grid;
   grid-template-rows: max-content max-content max-content auto;
+
+  & .button.disabled {
+    color: $grey;
+    background-color: $light !important;
+    cursor: default;
+  }
 
   & .notification {
     margin-bottom: 0;

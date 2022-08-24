@@ -215,6 +215,15 @@ $box-padding: 1rem;
   .key {
     text-decoration: none;
   }
+
+  .modal .modal-content {
+    max-height: calc(100vh - 90px);
+  }
+
+  .modal-close {
+    right: 5px;
+    top: 5px;
+  }
 }
 
 @media screen and (min-width: 2400px) {

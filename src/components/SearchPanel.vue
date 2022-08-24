@@ -240,7 +240,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 @import "~bulma/sass/utilities/_all";
 
 .card {
@@ -260,6 +260,33 @@ export default {
 
   & footer {
     padding: 1rem;
+  }
+}
+
+@include touch {
+  .card {
+    & .card-content {
+      padding: 0.5rem;
+
+      & form .control {
+        margin-bottom: 0;
+      }
+
+      & .publication-list {
+        height: calc(100vh - 320px);
+      }
+    }
+    & footer {
+      padding: 0.5rem;
+
+      & .level-left {
+        font-size: 0.8rem;
+      }
+
+      & .level-right {
+        margin-top: 0;
+      }
+    }
   }
 }
 </style>
