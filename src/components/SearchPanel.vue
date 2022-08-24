@@ -86,6 +86,12 @@
         </section>
       </div>
     </div>
+    <footer class="card-footer level">
+      <div class="level-left"></div>
+      <div class="level-right">
+        <b-button class="level-item" @click="interfaceStore.isSearchPanelShown = false">Close</b-button>
+      </div>
+    </footer>
   </div>
 </template>
 
@@ -167,17 +173,23 @@ export default {
 <style lang="scss" scoped>
 @import "~bulma/sass/utilities/_all";
 
-.publication-list {
-  padding: 0;
-  margin: 0;
-  list-style: none;
-  height: 50vh;
-  overflow-y: scroll;
-  border: 1px solid $border;
-}
+.card {
+  & .publication-list {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    height: 50vh;
+    overflow-y: scroll;
+    border: 1px solid $border;
 
-.publication-list li {
-  margin: 0 !important;
-  padding: 0.5rem;
+    & li {
+      margin: 0 !important;
+      padding: 0.5rem;
+    }
+  }
+
+  & footer {
+    padding: 0.5rem;
+  }
 }
 </style>
