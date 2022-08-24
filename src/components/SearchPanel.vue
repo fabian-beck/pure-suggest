@@ -74,8 +74,8 @@
                     class="is-primary is-small"
                     icon-left="plus-thick"
                     data-tippy-content="Queue publication to be added to selected publications."
-                    @click.stop="addPublication(item.DOI)"
                     v-tippy
+                    @click.stop="addPublication(item.DOI)"
                   >
                   </b-button>
                 </div>
@@ -89,7 +89,15 @@
     <footer class="card-footer level">
       <div class="level-left">
         <div class="level-item">
-          {{ addedPublications.length }} publications to be added
+          <span v-show="addedPublications.length === 0">No</span>
+          <span v-show="addedPublications.length > 0">{{
+            addedPublications.length
+          }}</span>
+          &nbsp;publication<span v-show="addedPublications.length > 1">s&nbsp;</span
+          ><span v-show="addedPublications.length === 0"
+            >&nbsp;yet marked&nbsp;
+          </span>
+          to be added
         </div>
       </div>
       <div class="level-right">
@@ -101,6 +109,8 @@
         <b-button
           class="level-item is-primary"
           @click="closeAndAdd"
+          :disabled="addedPublications.length === 0"
+          icon-left="plus-thick"
           >Add</b-button
         >
       </div>
@@ -189,7 +199,7 @@ export default {
 
     closeAndAdd() {
       this.addedPublications.forEach(this.sessionStore.queueForSelected);
-      this.interfaceStore.isSearchPanelShown = false
+      this.interfaceStore.isSearchPanelShown = false;
     },
   },
 };
@@ -214,7 +224,7 @@ export default {
   }
 
   & footer {
-    padding: 0.5rem;
+    padding: 1rem;
   }
 }
 </style>
