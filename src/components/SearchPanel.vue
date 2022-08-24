@@ -14,7 +14,7 @@
                 <input
                   class="input search-publication"
                   type="text"
-                  v-model="searchQuery"
+                  v-model="interfaceStore.searchQuery"
                   ref="searchInput"
                 />
               </p>
@@ -118,6 +118,8 @@
 </template>
 
 <script>
+import { storeToRefs } from "pinia";
+
 import { useSessionStore } from "./../stores/session.js";
 import { useInterfaceStore } from "./../stores/interface.js";
 
@@ -128,24 +130,15 @@ export default {
   setup() {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
-    return { sessionStore, interfaceStore };
+    const { isSearchPanelShown } = storeToRefs(interfaceStore);
+    return { sessionStore, interfaceStore, isSearchPanelShown };
   },
   data() {
     return {
-      searchQuery: "",
       searchResults: [],
       addedPublications: [],
       isLoading: false,
     };
-  },
-  mounted() {
-    this.searchQuery = this.interfaceStore.searchQuery;
-    setTimeout(() => {
-      this.$refs.searchInput.focus();
-    }, 300);
-    if (this.searchQuery) {
-      this.search();
-    }
   },
   computed: {
     filteredSearchResults: function () {
@@ -157,15 +150,29 @@ export default {
       );
     },
   },
-
+  watch: {
+    isSearchPanelShown: {
+      handler: function () {
+        if (!this.isSearchPanelShown) return;
+        setTimeout(() => {
+          this.$refs.searchInput.focus();
+        }, 300);
+        if (this.interfaceStore.searchQuery) {
+          this.search();
+        }
+      },
+    },
+  },
   methods: {
     search: async function () {
-      if (!this.searchQuery) {
+      if (!this.interfaceStore.searchQuery) {
         this.searchResults = [];
         return;
       }
       this.isLoading = true;
-      const publicationSearch = new PublicationSearch(this.searchQuery);
+      const publicationSearch = new PublicationSearch(
+        this.interfaceStore.searchQuery
+      );
       this.searchResults = await publicationSearch.execute();
       if (this.filteredSearchResults.length === 0) {
         this.interfaceStore.showErrorMessage("No matching publications found");
@@ -224,7 +231,7 @@ export default {
     },
 
     reset() {
-      this.searchQuery = "";
+      this.interfaceStore.searchQuery = "";
       this.searchResults = [];
       this.addedPublications = [];
       this.isLoading = false;
