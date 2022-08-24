@@ -93,7 +93,8 @@
           <span v-show="addedPublications.length > 0">{{
             addedPublications.length
           }}</span>
-          &nbsp;publication<span v-show="addedPublications.length > 1">s&nbsp;</span
+          &nbsp;publication<span v-show="addedPublications.length > 1"
+            >s&nbsp;</span
           ><span v-show="addedPublications.length === 0"
             >&nbsp;yet marked&nbsp;
           </span>
@@ -161,6 +162,10 @@ export default {
 
   methods: {
     search: async function () {
+      if (!this.searchQuery) {
+        this.searchResults = [];
+        return;
+      }
       this.isLoading = true;
       const publicationSearch = new PublicationSearch(this.searchQuery);
       this.searchResults = await publicationSearch.execute();
