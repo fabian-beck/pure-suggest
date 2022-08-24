@@ -152,7 +152,6 @@ export default {
 
     this.sessionStore.$onAction(({ name, after }) => {
       after(() => {
-        console.log(name);
         if (
           name === "updateSuggestions" ||
           name === "queueForSelected" ||
