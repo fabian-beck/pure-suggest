@@ -74,7 +74,7 @@
                     class="is-primary is-small"
                     icon-left="plus-thick"
                     data-tippy-content="Queue publication to be added to selected publications."
-                    @click.stop="sessionStore.queueForSelected(item.DOI)"
+                    @click.stop="addPublication(item.DOI)"
                     v-tippy
                   >
                   </b-button>
@@ -87,9 +87,22 @@
       </div>
     </div>
     <footer class="card-footer level">
-      <div class="level-left"></div>
+      <div class="level-left">
+        <div class="level-item">
+          {{ addedPublications.length }} publications to be added
+        </div>
+      </div>
       <div class="level-right">
-        <b-button class="level-item" @click="interfaceStore.isSearchPanelShown = false">Close</b-button>
+        <b-button
+          class="level-item"
+          @click="interfaceStore.isSearchPanelShown = false"
+          >Cancel</b-button
+        >
+        <b-button
+          class="level-item is-primary"
+          @click="closeAndAdd"
+          >Add</b-button
+        >
       </div>
     </footer>
   </div>
@@ -112,6 +125,7 @@ export default {
     return {
       searchQuery: "",
       searchResults: [],
+      addedPublications: [],
       isLoading: false,
     };
   },
@@ -129,7 +143,8 @@ export default {
       return this.searchResults.filter(
         (item) =>
           !this.sessionStore.selectedPublicationsDois.includes(item.DOI) &&
-          !this.sessionStore.selectedQueue.includes(item.DOI)
+          !this.sessionStore.selectedQueue.includes(item.DOI) &&
+          !this.addedPublications.includes(item.DOI)
       );
     },
   },
@@ -144,6 +159,7 @@ export default {
       }
       this.isLoading = false;
     },
+
     createShortReference: function (item) {
       const lastNames = item.author
         .filter((name) => name.family)
@@ -165,6 +181,15 @@ export default {
         return `(${authorShort}, ${year})`;
       }
       return `(${authorShort + year})`;
+    },
+
+    addPublication(doi) {
+      this.addedPublications.push(doi);
+    },
+
+    closeAndAdd() {
+      this.addedPublications.forEach(this.sessionStore.queueForSelected);
+      this.interfaceStore.isSearchPanelShown = false
     },
   },
 };
