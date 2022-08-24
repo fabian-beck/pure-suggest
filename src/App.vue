@@ -11,9 +11,7 @@
       <NetworkVisComponent id="network" :svgWidth="1500" :svgHeight="600" />
     </div>
     <QuickAccessBar id="quick-access" class="is-hidden-desktop" />
-    <b-modal v-model="interfaceStore.isSearchPanelShown">
-      <SearchPanel />
-    </b-modal>
+    <SearchPanel />
     <b-modal v-model="interfaceStore.isAboutPageShown">
       <AboutPage />
     </b-modal>

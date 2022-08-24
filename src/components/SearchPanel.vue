@@ -1,122 +1,120 @@
 <template>
-  <div class="card">
-    <header class="card-header has-background-primary">
-      <p class="card-header-title has-text-white">
-        <b-icon icon="magnify"></b-icon>&ensp;Search Publications
-      </p>
-    </header>
-    <div class="card-content">
-      <div class="content">
-        <section>
-          <form v-on:submit.prevent="search" class="field has-addons">
-            <p class="control is-expanded">
-              <input
-                class="input search-publication"
-                type="text"
-                v-model="searchQuery"
-                ref="searchInput"
-              />
-            </p>
-            <p class="control">
-              <b-button
-                class="button level-right has-background-primary-light"
-                type="submit"
-                icon-left="magnify"
-                @click.stop="search"
-              >
-              </b-button>
-            </p>
-          </form>
-          <ul class="publication-list">
-            <li
-              v-for="item in filteredSearchResults"
-              class="publication-component media"
-              :key="item.DOI"
-            >
-              <div class="media-content">
-                <b>
-                  {{
-                    item.title[0] +
-                    (item.subtitle && item.title[0] !== item.subtitle[0]
-                      ? " " + item.subtitle[0]
-                      : "")
-                  }} </b
-                ><span v-if="item.author">
-                  {{ createShortReference(item) }}</span
+  <b-modal :active="interfaceStore.isSearchPanelShown" @close="close">
+    <div class="card">
+      <header class="card-header has-background-primary">
+        <p class="card-header-title has-text-white">
+          <b-icon icon="magnify"></b-icon>&ensp;Search Publications
+        </p>
+      </header>
+      <div class="card-content">
+        <div class="content">
+          <section>
+            <form v-on:submit.prevent="search" class="field has-addons">
+              <p class="control is-expanded">
+                <input
+                  class="input search-publication"
+                  type="text"
+                  v-model="searchQuery"
+                  ref="searchInput"
+                />
+              </p>
+              <p class="control">
+                <b-button
+                  class="button level-right has-background-primary-light"
+                  type="submit"
+                  icon-left="magnify"
+                  @click.stop="search"
                 >
-                <span>
-                  DOI:
-                  <a :href="`https://doi.org/${item.DOI}`">{{ item.DOI }}</a>
-                </span>
-                <span>
-                  <a
-                    :href="`https://scholar.google.de/scholar?hl=en&q=${
-                      item.title
-                    } ${
-                      item.author
-                        ? item.author.map((name) => name.family).join(' ')
-                        : ''
-                    }`"
-                    class="ml-2"
+                </b-button>
+              </p>
+            </form>
+            <ul class="publication-list">
+              <li
+                v-for="item in filteredSearchResults"
+                class="publication-component media"
+                :key="item.DOI"
+              >
+                <div class="media-content">
+                  <b>
+                    {{
+                      item.title[0] +
+                      (item.subtitle && item.title[0] !== item.subtitle[0]
+                        ? " " + item.subtitle[0]
+                        : "")
+                    }} </b
+                  ><span v-if="item.author">
+                    {{ createShortReference(item) }}</span
                   >
-                    <b-icon
-                      icon="school"
-                      size="is-small"
-                      data-tippy-content="Google Scholar"
-                      v-tippy
-                    ></b-icon
-                  ></a>
-                </span>
-              </div>
-              <div class="media-right">
-                <div>
-                  <b-button
-                    class="is-primary is-small"
-                    icon-left="plus-thick"
-                    data-tippy-content="Queue publication to be added to selected publications."
-                    v-tippy
-                    @click.stop="addPublication(item.DOI)"
-                  >
-                  </b-button>
+                  <span>
+                    DOI:
+                    <a :href="`https://doi.org/${item.DOI}`">{{ item.DOI }}</a>
+                  </span>
+                  <span>
+                    <a
+                      :href="`https://scholar.google.de/scholar?hl=en&q=${
+                        item.title
+                      } ${
+                        item.author
+                          ? item.author.map((name) => name.family).join(' ')
+                          : ''
+                      }`"
+                      class="ml-2"
+                    >
+                      <b-icon
+                        icon="school"
+                        size="is-small"
+                        data-tippy-content="Google Scholar"
+                        v-tippy
+                      ></b-icon
+                    ></a>
+                  </span>
                 </div>
-              </div>
-            </li>
-            <b-loading v-model="isLoading"></b-loading>
-          </ul>
-        </section>
-      </div>
-    </div>
-    <footer class="card-footer level">
-      <div class="level-left">
-        <div class="level-item">
-          <span v-show="addedPublications.length === 0">No</span>
-          <span v-show="addedPublications.length > 0">{{
-            addedPublications.length
-          }}</span>
-          &nbsp;publication<span v-show="addedPublications.length > 1"
-            >s&nbsp;</span
-          ><span v-show="addedPublications.length === 0"
-            >&nbsp;yet marked&nbsp;
-          </span>
-          to be added
+                <div class="media-right">
+                  <div>
+                    <b-button
+                      class="is-primary is-small"
+                      icon-left="plus-thick"
+                      data-tippy-content="Queue publication to be added to selected publications."
+                      v-tippy
+                      @click.stop="addPublication(item.DOI)"
+                    >
+                    </b-button>
+                  </div>
+                </div>
+              </li>
+              <b-loading v-model="isLoading"></b-loading>
+            </ul>
+          </section>
         </div>
       </div>
-      <div class="level-right">
-        <b-button
-          class="level-item"
-          @click="interfaceStore.isSearchPanelShown = false"
-          >Cancel</b-button
-        >
-        <b-button
-          class="level-item is-primary"
-          @click="closeAndAdd"
-          :disabled="addedPublications.length === 0"
-          icon-left="plus-thick"
-          >Add</b-button
-        >
-      </div>
-    </footer>
-  </div>
+      <footer class="card-footer level">
+        <div class="level-left">
+          <div class="level-item">
+            <span v-show="addedPublications.length === 0">No</span>
+            <span v-show="addedPublications.length > 0">{{
+              addedPublications.length
+            }}</span>
+            &nbsp;publication<span v-show="addedPublications.length > 1"
+              >s&nbsp;</span
+            ><span v-show="addedPublications.length === 0"
+              >&nbsp;yet marked&nbsp;
+            </span>
+            to be added
+          </div>
+        </div>
+        <div class="level-right">
+          <b-button class="level-item" @click="cancel()">Cancel</b-button>
+          <b-button
+            class="level-item is-primary"
+            @click="closeAndAdd"
+            :disabled="addedPublications.length === 0"
+            icon-left="plus-thick"
+            >Add</b-button
+          >
+        </div>
+      </footer>
+    </div>
+  </b-modal>
 </template>
 
 <script>
@@ -204,7 +202,32 @@ export default {
 
     closeAndAdd() {
       this.addedPublications.forEach(this.sessionStore.queueForSelected);
+      this.cancel();
+    },
+
+    close() {
+      if (this.addedPublications.length === 0) {
+        this.cancel();
+        return;
+      }
+      this.interfaceStore.showConfirmDialog(
+        "Do you really want to discard the list of added publications?",
+        () => {
+          this.cancel();
+        }
+      );
+    },
+
+    cancel() {
       this.interfaceStore.isSearchPanelShown = false;
+      this.reset();
+    },
+
+    reset() {
+      this.searchQuery = "";
+      this.searchResults = [];
+      this.addedPublications = [];
+      this.isLoading = false;
     },
   },
 };
