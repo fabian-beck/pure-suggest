@@ -75,6 +75,7 @@
             has-background-primary-light
             is-hidden-desktop
           "
+          :class="{ 'disabled': !addQuery }"
           type="submit"
           icon-left="plus-thick"
           @click.stop="add"
@@ -89,7 +90,6 @@
             ml-1
             is-hidden-touch
           "
-          :class="{ 'disabled': !addQuery }"
           type="submit"
           icon-left="magnify"
           @click.stop="openSearch(false)"
