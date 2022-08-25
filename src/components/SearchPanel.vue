@@ -74,7 +74,7 @@
                     <b-button
                       class="is-primary is-small"
                       icon-left="plus-thick"
-                      data-tippy-content="Queue publication to be added to selected publications."
+                      data-tippy-content="Mark publication to be added to selected publications."
                       v-tippy
                       @click.stop="addPublication(item.DOI)"
                     >
@@ -90,16 +90,17 @@
       <footer class="card-footer level">
         <div class="level-left">
           <div class="level-item">
-            <span v-show="addedPublications.length === 0">No</span>
-            <span v-show="addedPublications.length > 0">{{
-              addedPublications.length
-            }}</span>
-            &nbsp;publication<span v-show="addedPublications.length > 1"
-              >s&nbsp;</span
-            ><span v-show="addedPublications.length === 0"
-              >&nbsp;yet marked&nbsp;
-            </span>
-            to be added
+            <p>
+              <span v-show="addedPublications.length === 0">No</span
+              ><span v-show="addedPublications.length > 0">{{
+                addedPublications.length
+              }}</span>
+              publication<span v-show="addedPublications.length > 1">s</span>
+              <span v-show="addedPublications.length === 0"
+                >&nbsp;yet marked</span
+              >
+              to be added
+            </p>
           </div>
         </div>
         <div class="level-right">
@@ -248,7 +249,7 @@ export default {
     padding: 0;
     margin: 0;
     list-style: none;
-    height: 50vh;
+    height: calc(100vh - 350px);
     overflow-y: scroll;
     border: 1px solid $border;
 
@@ -281,6 +282,7 @@ export default {
 
       & .level-left {
         font-size: 0.8rem;
+        width: calc(80vw - 50px);
       }
 
       & .level-right {
