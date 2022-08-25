@@ -1,5 +1,5 @@
 <template>
-  <b-modal :active="interfaceStore.isSearchPanelShown" @close="close">
+  <b-modal :active="interfaceStore.isSearchPanelShown" @close="cancel">
     <div class="card">
       <header class="card-header has-background-primary">
         <p class="card-header-title has-text-white">
@@ -107,7 +107,7 @@
           <b-button class="level-item" @click="cancel()">Cancel</b-button>
           <b-button
             class="level-item is-primary"
-            @click="closeAndAdd"
+            @click="addAndClose"
             :disabled="addedPublications.length === 0"
             icon-left="plus-thick"
             >Add</b-button
@@ -208,25 +208,25 @@ export default {
       this.addedPublications.push(doi);
     },
 
-    closeAndAdd() {
+    addAndClose() {
       this.addedPublications.forEach(this.sessionStore.queueForSelected);
-      this.cancel();
+      this.close();
     },
 
-    close() {
+    cancel() {
       if (this.addedPublications.length === 0) {
-        this.cancel();
+        this.close();
         return;
       }
       this.interfaceStore.showConfirmDialog(
         "Do you really want to discard the list of added publications?",
         () => {
-          this.cancel();
+          this.close();
         }
       );
     },
 
-    cancel() {
+    close() {
       this.interfaceStore.isSearchPanelShown = false;
       this.reset();
     },
