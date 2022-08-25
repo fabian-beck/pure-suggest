@@ -11,9 +11,7 @@
       <NetworkVisComponent id="network" :svgWidth="1500" :svgHeight="600" />
     </div>
     <QuickAccessBar id="quick-access" class="is-hidden-desktop" />
-    <b-modal v-model="interfaceStore.isSearchPanelShown">
-      <SearchPanel />
-    </b-modal>
+    <SearchPanel />
     <b-modal v-model="interfaceStore.isAboutPageShown">
       <AboutPage />
     </b-modal>
@@ -216,6 +214,15 @@ $box-padding: 1rem;
   // placed outside the #app scope to apply to tooltips also
   .key {
     text-decoration: none;
+  }
+
+  .modal .modal-content {
+    max-height: calc(100vh - 90px);
+  }
+
+  .modal-close {
+    right: 5px;
+    top: 5px;
   }
 }
 
