@@ -103,7 +103,10 @@ export const useInterfaceStore = defineStore('interface', {
             this.isOverlay = true;
             Dialog.confirm({
                 message: message,
-                onConfirm: confirm,
+                onConfirm: () => {
+                    confirm();
+                    this.isOverlay = false;
+                },
                 onCancel: () => {
                     this.isOverlay = false;
                 },
