@@ -103,11 +103,9 @@ export const useSessionStore = defineStore('session', {
       this.clearActivePublication();
       if (this.excludedQueue.length) {
         this.excludedPublicationsDois = this.excludedPublicationsDois.concat(this.excludedQueue);
-        this.excludedQueue = [];
       }
       if (this.selectedQueue.length) {
         this.addPublicationsToSelection(this.selectedQueue);
-        this.selectedQueue = [];
       }
       await this.updateSuggestions();
       if (
@@ -116,6 +114,8 @@ export const useSessionStore = defineStore('session', {
       ) {
         this.interfaceStore.showFeedbackInvitation();
       }
+      this.excludedQueue = [];
+      this.selectedQueue = [];
     },
 
     addPublicationsToSelection: async function (dois) {
