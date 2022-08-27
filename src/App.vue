@@ -198,7 +198,7 @@ $box-padding: 1rem;
       /* Empty space for quick access buttons; used "::after" instead of plain margin-bottom as workaround for Chrome */
       &::after {
         content: "";
-        min-height: 4rem;
+        min-height: 5rem;
         display: block;
       }
     }
