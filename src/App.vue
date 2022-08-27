@@ -64,8 +64,9 @@ export default {
     window.addEventListener("keydown", onKey);
   },
   mounted() {
-    // triggers a prompt before closing/reloading the page
     window.onbeforeunload = () => {
+      window.scrollTo(0, 0);
+      // triggers a prompt before closing/reloading the page
       if (!this.sessionStore.isEmpty) return "";
       return null;
     };
