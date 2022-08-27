@@ -31,6 +31,7 @@ export const useInterfaceStore = defineStore('interface', {
             this.isNetworkExpanded = false;
             this.isNetworkClusters = true;
             this.isFilterPanelShown = false;
+            window.scrollTo(0, 0);
         },
 
         startLoading() {
