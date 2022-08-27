@@ -2,6 +2,15 @@
   <div>
     <button
       class="button has-background-primary has-text-white"
+      @click="sessionStore.updateQueued"
+      v-show="sessionStore.isUpdatable"
+      id="quick-access-update"
+    >
+      <b-icon icon="update" size="is-small"></b-icon>
+      <div class="button-label">Update</div>
+    </button>
+    <button
+      class="button has-background-primary has-text-white"
       @click="scrollTo('selected')"
     >
       <b-icon icon="water-outline"></b-icon>
@@ -24,10 +33,16 @@
   </div>
 </template>
 <script>
+import { useSessionStore } from "./../stores/session.js";
+
 import { scrollToTargetAdjusted } from "./../Util.js";
 
 export default {
   name: "QuickAccessBar",
+  setup() {
+    const sessionStore = useSessionStore();
+    return { sessionStore };
+  },
   methods: {
     scrollTo(id) {
       scrollToTargetAdjusted(document.getElementById(id), 55);
@@ -59,6 +74,18 @@ button {
 
   & .button-label {
     font-size: 0.7rem;
+  }
+}
+
+#quick-access-update {
+  position: absolute;
+  bottom: 4rem;
+  filter: brightness(100%);
+  display: inline-flex;
+  height: auto;
+
+  & .icon {
+    margin-right: 0.2rem !important;
   }
 }
 </style>
