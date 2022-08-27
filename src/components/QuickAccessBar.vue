@@ -45,6 +45,13 @@ button {
   height: 3.5rem;
   display: inline;
   padding: 0.25rem;
+  filter: brightness(90%);
+
+  &:focus {
+    border-color: black;
+    filter: brightness(100%);
+    box-shadow: 0.1rem 0.1rem 0.5rem grey !important;
+  }
 
   & .icon {
     margin: 0 !important;
