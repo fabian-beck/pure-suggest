@@ -11,6 +11,9 @@
     </button>
     <button
       class="button has-background-primary has-text-white"
+      :class="{
+        active: isComponentActive.selected,
+      }"
       @click="scrollTo('selected')"
     >
       <b-icon icon="water-outline"></b-icon>
@@ -18,6 +21,9 @@
     </button>
     <button
       class="button has-background-info has-text-white"
+      :class="{
+        active: isComponentActive.suggested,
+      }"
       @click="scrollTo('suggested')"
     >
       <b-icon icon="water-plus-outline"></b-icon>
@@ -25,6 +31,9 @@
     </button>
     <button
       class="button has-background-grey has-text-white"
+      :class="{
+        active: isComponentActive.network,
+      }"
       @click="scrollTo('network')"
     >
       <b-icon icon="chart-bubble"></b-icon>
@@ -43,9 +52,40 @@ export default {
     const sessionStore = useSessionStore();
     return { sessionStore };
   },
+  mounted() {
+    document.addEventListener("scroll", this.updateActiveButton);
+  },
+  data() {
+    return {
+      isComponentActive: {
+        selected: true,
+        suggested: false,
+        network: false,
+      },
+    };
+  },
   methods: {
     scrollTo(id) {
       scrollToTargetAdjusted(document.getElementById(id), 55);
+    },
+
+    updateActiveButton() {
+      this.isComponentActive = {
+        selected: false,
+        suggested: false,
+        network: false,
+      };
+      const activationHeight = document.documentElement.clientHeight * 0.7;
+      for (const componentId of Object.keys(this.isComponentActive)) {
+        const component = document.getElementById(componentId);
+        const rect = component.getBoundingClientRect();
+        this.isComponentActive[componentId] =
+          (rect.top >= 0 && rect.top <= activationHeight) ||
+          (rect.top < 0 && rect.bottom > activationHeight);
+        if (this.isComponentActive[componentId]) {
+          break;
+        }
+      }
     },
   },
 };
@@ -53,16 +93,18 @@ export default {
 <style lang="scss" scoped>
 @import "~bulma/sass/utilities/_all";
 
-button {
+button,
+button:focus {
   margin: 0.5rem;
-  box-shadow: 0.25rem 0.25rem 0.75rem grey;
+  box-shadow: 0.25rem 0.25rem 0.75rem grey !important;
+  border-color: white;
   width: 4.5rem;
   height: 3.5rem;
   display: inline;
   padding: 0.25rem;
   filter: brightness(90%);
 
-  &:focus {
+  &.active {
     border-color: black;
     filter: brightness(100%);
     box-shadow: 0.1rem 0.1rem 0.5rem grey !important;
