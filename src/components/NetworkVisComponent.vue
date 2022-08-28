@@ -155,13 +155,11 @@ export default {
         if (
           name === "updateSuggestions" ||
           name === "queueForSelected" ||
-          name === "queueForExcluded"
+          name === "queueForExcluded" ||
+          name === "updateScores"
         )
           this.plot(true);
-        else if (
-          !this.interfaceStore.isLoading &&
-          (name === "updateScores" || name === "clear")
-        )
+        else if (!this.interfaceStore.isLoading && name === "clear")
           this.plot();
       });
     });
@@ -184,7 +182,7 @@ export default {
           "x",
           d3
             .forceX()
-            .x((d) => this.yearX(d.publication.year))
+            .x((d) => this.yearX(d.publication ? d.publication.year : 2025))
             .strength(!that.isNetworkClusters ? 10 : 0)
         )
         .force(
@@ -223,20 +221,28 @@ export default {
       this.yearMin = 3000;
       this.yearMax = 0;
 
-      const nodes = [];
+      const publicationNodes = [];
       let i = 0;
       this.sessionStore.publicationsFiltered.forEach((publication) => {
         if (publication.year) {
           this.yearMin = Math.min(this.yearMin, publication.year);
           this.yearMax = Math.max(this.yearMax, publication.year);
           doiToIndex[publication.doi] = i;
-          nodes.push({
+          publicationNodes.push({
             id: publication.doi,
             publication: publication,
           });
           i++;
         }
       });
+      const keywordNodes = [];
+      let uniqueKeywords = [...new Set(this.sessionStore.boostKeywords)];
+      uniqueKeywords.forEach((keyword) => {
+        keywordNodes.push({
+          id: keyword,
+        });
+      });
+      const nodes = publicationNodes.concat(keywordNodes);
 
       const links = [];
       this.sessionStore.selectedPublications.forEach((publication) => {
@@ -259,6 +265,16 @@ export default {
           });
         }
       });
+      uniqueKeywords.forEach((keyword) => {
+        this.sessionStore.publications.forEach((publication) => {
+          if (publication.boostKeywords.includes(keyword)) {
+            links.push({
+              source: keyword,
+              target: publication.doi,
+            });
+          }
+        });
+      });
 
       // https://observablehq.com/@d3/modifying-a-force-directed-graph
       const old = new Map(this.node.data().map((d) => [d.id, d]));
@@ -269,32 +285,35 @@ export default {
 
       this.node = this.node
         .data(this.graph.nodes, (d) => d.id)
-        .join((enter) => {
-          const g = enter
+        .join((enter) =>
+          enter
             .append("g")
-            .attr("class", "node-container")
             .attr(
-              "data-tippy-content",
+              "class",
               (d) =>
-                `${
-                  d.publication.title ? d.publication.title : "[unknown title]"
-                } (${
-                  d.publication.authorShort
-                    ? d.publication.authorShort + ", "
-                    : ""
-                }${d.publication.year ? d.publication.year : "[unknown year]"})`
-            );
-          g.append("rect");
-          g.append("text");
-          g.append("circle");
-          g.on("click", this.activatePublication);
-          tippy(g.nodes(), {
-            maxWidth: "min(400px,70vw)",
-          });
-          return g;
-        });
+                `node-container ${d.publication ? "publication" : "keyword"}`
+            )
+        );
 
-      this.node
+      this.publicationNodes = this.node.filter((d) => d.publication);
+
+      this.publicationNodes.attr(
+        "data-tippy-content",
+        (d) =>
+          `${d.publication.title ? d.publication.title : "[unknown title]"} (${
+            d.publication.authorShort ? d.publication.authorShort + ", " : ""
+          }${d.publication.year ? d.publication.year : "[unknown year]"})`
+      );
+      tippy(this.publicationNodes.nodes(), {
+        maxWidth: "min(400px,70vw)",
+      });
+
+      this.publicationNodes.append("rect");
+      this.publicationNodes.append("text");
+      this.publicationNodes.append("circle");
+      this.publicationNodes.on("click", this.activatePublication);
+
+      this.publicationNodes
         .select("rect")
         .attr(
           "class",
@@ -310,7 +329,7 @@ export default {
         .attr("stroke-width", (d) => (d.publication.isActive ? 4 : 3))
         .attr("fill", (d) => d.publication.scoreColor);
 
-      this.node
+      this.publicationNodes
         .select("text")
         .attr(
           "class",
@@ -323,7 +342,7 @@ export default {
         .attr("font-size", "0.8em")
         .text((d) => d.publication.score);
 
-      this.node
+      this.publicationNodes
         .select("circle")
         .attr("cx", (d) => getRectSize(d) / 2 - 1)
         .attr("cy", (d) => -getRectSize(d) / 2 + 1)
@@ -331,6 +350,14 @@ export default {
           d.publication.boostFactor > 1 ? getBoostIndicatorSize(d) / 6 : 0
         )
         .attr("stroke", "black");
+
+      this.keywordNodes = this.node.filter((d) => !d.publication);
+
+      this.keywordNodes
+        .append("text")
+        .attr("y", 1)
+        .attr("font-size", "0.8em")
+        .text((d) => d.id);
 
       this.link = this.link
         .data(this.graph.links, (d) => [d.source, d.target])
@@ -402,10 +429,14 @@ export default {
         .attr(
           "class",
           (d) =>
-            (d.source.publication.isActive || d.target.publication.isActive
+            ((d.source.publication && d.source.publication.isActive) ||
+            (d.target.publication && d.target.publication.isActive)
               ? "active"
               : "") +
-            (d.source.publication.isSelected && d.target.publication.isSelected
+            (d.source.publication &&
+            d.source.publication.isSelected &&
+            d.target.publication &&
+            d.target.publication.isSelected
               ? ""
               : " external")
         );
