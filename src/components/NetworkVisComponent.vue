@@ -426,14 +426,29 @@ export default {
     tick: function () {
       this.link
         .attr("d", (d) => {
+          const dx = d.target.x - d.source.x;
+          const dy = d.target.y - d.source.y;
+          // curved link for citations
           if (d.type === "citation") {
-            var dx = d.target.x - d.source.x,
-              dy = d.target.y - d.source.y,
-              dr = Math.pow(dx * dx + dy * dy, 0.6);
+            const dr = Math.pow(dx * dx + dy * dy, 0.6);
             return `M${d.target.x},${d.target.y}A${dr},${dr} 0 0,1 ${d.source.x},${d.source.y}`;
           }
-          // TODO: replace with triangle correctly computed from circle segment
-          return `M${d.source.x},${d.source.y}L${d.target.x},${d.target.y}L${d.source.x-5},${d.source.y}`;
+          // tapered links for keywords:
+          // drawing a triangle as part of a circle segment with its center at the target node
+          const r = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+          const alpha = Math.acos(dx / r);
+          const beta = 2 / r;
+          const x1 = r * Math.cos(alpha + beta);
+          let y1 = r * Math.sin(alpha + beta);
+          const x2 = r * Math.cos(alpha - beta);
+          let y2 = r * Math.sin(alpha - beta);
+          if (d.source.y > d.target.y) {
+            y1 = -y1;
+            y2 = -y2;
+          }
+          return `M${d.target.x - x1},${d.target.y - y1}
+            L${d.target.x},${d.target.y}
+            L${d.target.x - x2},${d.target.y - y2}`;
         })
         .attr("class", (d) => {
           const classes = [d.type];
