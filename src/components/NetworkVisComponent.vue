@@ -285,36 +285,40 @@ export default {
 
       this.node = this.node
         .data(this.graph.nodes, (d) => d.id)
-        .join((enter) =>
-          enter
+        .join((enter) => {
+          const g = enter
             .append("g")
             .attr(
               "class",
               (d) =>
                 `node-container ${d.publication ? "publication" : "keyword"}`
-            )
-        );
+            );
+          const publicationNodes = g.filter((d) => d.publication);
+          publicationNodes.append("rect");
+          publicationNodes.append("text");
+          publicationNodes.append("circle");
+          publicationNodes.on("click", this.activatePublication);
+          publicationNodes.attr(
+            "data-tippy-content",
+            (d) =>
+              `${
+                d.publication.title ? d.publication.title : "[unknown title]"
+              } (${
+                d.publication.authorShort
+                  ? d.publication.authorShort + ", "
+                  : ""
+              }${d.publication.year ? d.publication.year : "[unknown year]"})`
+          );
+          tippy(publicationNodes.nodes(), {
+            maxWidth: "min(400px,70vw)",
+          });
+          const keywordNodes = g.filter((d) => !d.publication);
+          keywordNodes.append("text");
+          return g;
+        });
 
-      this.publicationNodes = this.node.filter((d) => d.publication);
-
-      this.publicationNodes.attr(
-        "data-tippy-content",
-        (d) =>
-          `${d.publication.title ? d.publication.title : "[unknown title]"} (${
-            d.publication.authorShort ? d.publication.authorShort + ", " : ""
-          }${d.publication.year ? d.publication.year : "[unknown year]"})`
-      );
-      tippy(this.publicationNodes.nodes(), {
-        maxWidth: "min(400px,70vw)",
-      });
-
-      this.publicationNodes.append("rect");
-      this.publicationNodes.append("text");
-      this.publicationNodes.append("circle");
-      this.publicationNodes.on("click", this.activatePublication);
-
-      this.publicationNodes
-        .select("rect")
+      this.node
+        .select(".publication rect")
         .attr(
           "class",
           (d) =>
@@ -329,8 +333,8 @@ export default {
         .attr("stroke-width", (d) => (d.publication.isActive ? 4 : 3))
         .attr("fill", (d) => d.publication.scoreColor);
 
-      this.publicationNodes
-        .select("text")
+      this.node
+        .select(".publication text")
         .attr(
           "class",
           (d) =>
@@ -342,8 +346,8 @@ export default {
         .attr("font-size", "0.8em")
         .text((d) => d.publication.score);
 
-      this.publicationNodes
-        .select("circle")
+      this.node
+        .select(".publication circle")
         .attr("cx", (d) => getRectSize(d) / 2 - 1)
         .attr("cy", (d) => -getRectSize(d) / 2 + 1)
         .attr("r", (d) =>
@@ -351,10 +355,8 @@ export default {
         )
         .attr("stroke", "black");
 
-      this.keywordNodes = this.node.filter((d) => !d.publication);
-
-      this.keywordNodes
-        .append("text")
+      this.node
+        .select(".keyword text")
         .attr("y", 1)
         .attr("font-size", "0.8em")
         .text((d) => d.id);
