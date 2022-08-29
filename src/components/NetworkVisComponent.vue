@@ -251,6 +251,7 @@ export default {
       const nodes = publicationNodes.concat(keywordNodes);
 
       const links = [];
+
       this.sessionStore.selectedPublications.forEach((publication) => {
         if (publication.doi in doiToIndex) {
           publication.citationDois.forEach((citationDoi) => {
@@ -258,6 +259,7 @@ export default {
               links.push({
                 source: citationDoi,
                 target: publication.doi,
+                type: "citation",
               });
             }
           });
@@ -266,17 +268,20 @@ export default {
               links.push({
                 source: publication.doi,
                 target: referenceDoi,
+                type: "citation",
               });
             }
           });
         }
       });
+
       uniqueKeywords.forEach((keyword) => {
         this.sessionStore.publications.forEach((publication) => {
           if (publication.boostKeywords.includes(keyword)) {
             links.push({
               source: keyword,
               target: publication.doi,
+              type: "keyword",
             });
           }
         });
@@ -439,20 +444,21 @@ export default {
             d.source.y
           );
         })
-        .attr(
-          "class",
-          (d) =>
-            ((d.source.publication && d.source.publication.isActive) ||
-            (d.target.publication && d.target.publication.isActive)
-              ? "active"
-              : "") +
-            (d.source.publication &&
-            d.source.publication.isSelected &&
-            d.target.publication &&
-            d.target.publication.isSelected
-              ? ""
-              : " external")
-        );
+        .attr("class", (d) => {
+          const classes = [d.type];
+          if (d.type === "citation") {
+            if (d.source.publication.isActive || d.target.publication.isActive)
+              classes.push("active");
+            if (
+              !(
+                d.source.publication.isSelected &&
+                d.target.publication.isSelected
+              )
+            )
+              classes.push("external");
+          }
+          return classes.join(" ");
+        });
 
       this.node.attr("transform", (d) => `translate(${d.x}, ${d.y})`);
     },
@@ -528,7 +534,7 @@ export default {
       transform: scale(1.2);
     }
   }
-  & path {
+  & path.citation {
     fill: none;
     stroke-width: 2;
     stroke: #00000010;
@@ -545,6 +551,12 @@ export default {
         stroke: #00000066;
       }
     }
+  }
+  & path.keyword {
+    fill: none;
+    stroke-width: 4;
+    stroke: $warning;
+    opacity: 0.2;
   }
 }
 
