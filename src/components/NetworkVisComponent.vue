@@ -426,23 +426,14 @@ export default {
     tick: function () {
       this.link
         .attr("d", (d) => {
-          var dx = d.target.x - d.source.x,
-            dy = d.target.y - d.source.y,
-            dr = Math.pow(dx * dx + dy * dy, 0.6);
-          return (
-            "M" +
-            d.target.x +
-            "," +
-            d.target.y +
-            "A" +
-            dr +
-            "," +
-            dr +
-            " 0 0,1 " +
-            d.source.x +
-            "," +
-            d.source.y
-          );
+          if (d.type === "citation") {
+            var dx = d.target.x - d.source.x,
+              dy = d.target.y - d.source.y,
+              dr = Math.pow(dx * dx + dy * dy, 0.6);
+            return `M${d.target.x},${d.target.y}A${dr},${dr} 0 0,1 ${d.source.x},${d.source.y}`;
+          }
+          // TODO: replace with triangle correctly computed from circle segment
+          return `M${d.source.x},${d.source.y}L${d.target.x},${d.target.y}L${d.source.x-5},${d.source.y}`;
         })
         .attr("class", (d) => {
           const classes = [d.type];
@@ -553,9 +544,7 @@ export default {
     }
   }
   & path.keyword {
-    fill: none;
-    stroke-width: 4;
-    stroke: $warning;
+    fill: $warning;
     opacity: 0.2;
   }
 }
