@@ -235,13 +235,19 @@ export default {
           i++;
         }
       });
+
       const keywordNodes = [];
       let uniqueKeywords = [...new Set(this.sessionStore.boostKeywords)];
       uniqueKeywords.forEach((keyword) => {
+        const frequency = this.sessionStore.publications.filter((publication) =>
+          publication.boostKeywords.includes(keyword)
+        ).length;
         keywordNodes.push({
           id: keyword,
+          frequency: frequency,
         });
       });
+
       const nodes = publicationNodes.concat(keywordNodes);
 
       const links = [];
@@ -358,7 +364,12 @@ export default {
       this.node
         .select(".keyword text")
         .attr("y", 1)
-        .attr("font-size", "0.8em")
+        .attr("font-size", (d) => {
+          if (d.frequency >= 25) return "1.2em";
+          if (d.frequency >= 10) return "1.0em";
+          if (d.frequency >= 5) return "0.85em";
+          return "0.7em";
+        })
         .text((d) => d.id);
 
       this.link = this.link
