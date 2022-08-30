@@ -72,6 +72,7 @@ import { useInterfaceStore } from "./../stores/interface.js";
 const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;
 const margin = 20;
+const SIMULATION_ALPHA = 0.4;
 
 export default {
   name: "NetworkVisComponent",
@@ -325,6 +326,9 @@ export default {
           });
           const keywordNodes = g.filter((d) => !d.publication);
           keywordNodes.append("text");
+          keywordNodes
+            .call(this.keywordNodeDrag())
+            .on("click", this.keywordNodeClick);
           return g;
         });
 
@@ -418,7 +422,7 @@ export default {
       this.simulation.nodes(this.graph.nodes);
       this.simulation.force("link").links(this.graph.links);
       if (restart) {
-        this.simulation.alpha(0.4);
+        this.simulation.alpha(SIMULATION_ALPHA);
       }
       this.simulation.restart();
     },
@@ -469,6 +473,29 @@ export default {
       this.node.attr("transform", (d) => `translate(${d.x}, ${d.y})`);
     },
 
+    keywordNodeDrag: function () {
+      const that = this;
+      function dragStart() {
+        d3.select(this).classed("fixed", true);
+      }
+      function dragMove(event, d) {
+        d.fx = event.x;
+        d.fy = event.y;
+        that.simulation.alpha(SIMULATION_ALPHA).restart();
+      }
+      return d3
+        .drag()
+        .on("start", dragStart)
+        .on("drag", dragMove)
+    },
+
+    keywordNodeClick: function (event, d) {
+      delete d.fx;
+      delete d.fy;
+      d3.select(event.target.parentNode).classed("fixed", false);
+      this.simulation.alpha(SIMULATION_ALPHA).restart();
+    },
+
     yearX: function (year) {
       return (
         ((year - this.yearMin) / Math.sqrt(1 + this.yearMax - this.yearMin)) *
@@ -501,7 +528,7 @@ export default {
 #network-svg {
   background: white;
 
-  & g.node-container {
+  & g.publication.node-container {
     cursor: pointer;
 
     & rect {
@@ -538,6 +565,18 @@ export default {
 
     &:hover rect {
       transform: scale(1.2);
+    }
+  }
+  & g.keyword.node-container {
+    cursor: grab;
+
+    & text {
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+
+    &.fixed text {
+      font-weight: 650;
     }
   }
   & path.citation {
