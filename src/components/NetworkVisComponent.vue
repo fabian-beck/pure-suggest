@@ -276,7 +276,7 @@ export default {
       });
 
       uniqueKeywords.forEach((keyword) => {
-        this.sessionStore.publications.forEach((publication) => {
+        this.sessionStore.publicationsFiltered.forEach((publication) => {
           if (publication.boostKeywords.includes(keyword)) {
             links.push({
               source: keyword,
