@@ -381,6 +381,19 @@ export default {
         })
         .text((d) => d.id);
 
+      this.node.filter((d) => !d.publication)
+        .attr(
+          "data-tippy-content",
+          (d) =>
+            `Keyword "${d.id}" is matched in ${d.frequency} publication${
+              d.frequency > 1 ? "s" : ""
+            }.<br><br>Drag to reposition (sticky), click to detach.`
+        );
+      tippy(this.node.filter((d) => !d.publication).nodes(), {
+        maxWidth: "min(400px,70vw)",
+        allowHTML: true,
+      });
+
       this.link = this.link
         .data(this.graph.links, (d) => [d.source, d.target])
         .join("path");
@@ -483,10 +496,7 @@ export default {
         d.fy = event.y;
         that.simulation.alpha(SIMULATION_ALPHA).restart();
       }
-      return d3
-        .drag()
-        .on("start", dragStart)
-        .on("drag", dragMove)
+      return d3.drag().on("start", dragStart).on("drag", dragMove);
     },
 
     keywordNodeClick: function (event, d) {
