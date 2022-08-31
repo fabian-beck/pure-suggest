@@ -253,6 +253,18 @@ export default {
 
       const links = [];
 
+      uniqueKeywords.forEach((keyword) => {
+        this.sessionStore.publicationsFiltered.forEach((publication) => {
+          if (publication.boostKeywords.includes(keyword)) {
+            links.push({
+              source: keyword,
+              target: publication.doi,
+              type: "keyword",
+            });
+          }
+        });
+      });
+
       this.sessionStore.selectedPublications.forEach((publication) => {
         if (publication.doi in doiToIndex) {
           publication.citationDois.forEach((citationDoi) => {
@@ -274,18 +286,6 @@ export default {
             }
           });
         }
-      });
-
-      uniqueKeywords.forEach((keyword) => {
-        this.sessionStore.publicationsFiltered.forEach((publication) => {
-          if (publication.boostKeywords.includes(keyword)) {
-            links.push({
-              source: keyword,
-              target: publication.doi,
-              type: "keyword",
-            });
-          }
-        });
       });
 
       // https://observablehq.com/@d3/modifying-a-force-directed-graph
