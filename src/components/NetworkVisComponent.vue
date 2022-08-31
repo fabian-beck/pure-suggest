@@ -53,7 +53,7 @@
         </div>
       </div>
       <div id="network-svg-container">
-        <svg id="network-svg" width="100%" height="100%" />
+        <svg id="network-svg" width="100%" height="100%"></svg>
       </div>
     </div>
   </div>
