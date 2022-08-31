@@ -193,23 +193,27 @@ export default {
     },
 
     plot: function (restart) {
-      console.log(
-        `Plotting citation network ${
-          restart ? "with" : "without"
-        } restarting layout computation.`
-      );
+      try {
+        console.log(
+          `Plotting citation network ${
+            restart ? "with" : "without"
+          } restarting layout computation.`
+        );
 
-      initGraph.call(this);
-      updateNodes.call(this);
-      updateLinks.call(this);
-      updateYearLabels.call(this);
+        initGraph.call(this);
+        updateNodes.call(this);
+        updateLinks.call(this);
+        updateYearLabels.call(this);
 
-      this.simulation.nodes(this.graph.nodes);
-      this.simulation.force("link").links(this.graph.links);
-      if (restart) {
-        this.simulation.alpha(SIMULATION_ALPHA);
+        this.simulation.nodes(this.graph.nodes);
+        this.simulation.force("link").links(this.graph.links);
+        if (restart) {
+          this.simulation.alpha(SIMULATION_ALPHA);
+        }
+        this.simulation.restart();
+      } catch (error) {
+        console.error("Cannot plot network: " + error.message);
       }
-      this.simulation.restart();
 
       function initGraph() {
         this.doiToIndex = {};
@@ -418,6 +422,7 @@ export default {
       }
 
       function updateYearLabels() {
+        if (this.sessionStore.publicationsFiltered.length === 0) return;
         const yearRange = _.range(
           this.sessionStore.yearMin - 4,
           this.sessionStore.yearMax + 1

@@ -35,8 +35,8 @@ export const useSessionStore = defineStore('session', {
       state.suggestedPublicationsWithoutQueued.filter(publication => state.filter.matches(publication)),
     publications: (state) => state.selectedPublications.concat(state.suggestedPublicationsWithoutQueued),
     publicationsFiltered: (state) => state.selectedPublications.concat(state.suggestedPublicationsFiltered),
-    yearMax: (state) => Math.max(...state.publicationsFiltered.map(publication => Number(publication.year))),
-    yearMin: (state) => Math.min(...state.publicationsFiltered.map(publication => Number(publication.year))),
+    yearMax: (state) => Math.max(...state.publicationsFiltered.filter(publication => publication.year).map(publication => Number(publication.year))),
+    yearMin: (state) => Math.min(...state.publicationsFiltered.filter(publication => publication.year).map(publication => Number(publication.year))),
     unreadSuggestionsCount: (state) => state.suggestedPublicationsFiltered.filter(
       (publication) => !publication.isRead
     ).length,
@@ -89,9 +89,12 @@ export const useSessionStore = defineStore('session', {
       this.updateScores();
     },
 
-    queueForSelected(doi) {
-      if (this.isSelected(doi) || this.selectedQueue.includes(doi)) return;
-      this.selectedQueue.push(doi);
+    queueForSelected(dois) {
+      if (!Array.isArray(dois)) dois = [dois];
+      dois.forEach(doi => {
+        if (this.isSelected(doi) || this.selectedQueue.includes(doi)) return;
+        this.selectedQueue.push(doi);
+      });
     },
 
     queueForExcluded(doi) {
