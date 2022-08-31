@@ -96,8 +96,6 @@ export default {
       svg: null,
       svgHeight: Number,
       svgWidth: Number,
-      yearMin: Number,
-      yearMax: Number,
       node: null,
       link: null,
       label: null,
@@ -146,9 +144,7 @@ export default {
     this.initForces();
 
     this.label = this.svg.append("g").attr("class", "labels").selectAll("text");
-
     this.link = this.svg.append("g").attr("class", "links").selectAll("path");
-
     this.node = this.svg.append("g").attr("class", "nodes").selectAll("rect");
 
     this.sessionStore.$onAction(({ name, after }) => {
@@ -202,235 +198,11 @@ export default {
           restart ? "with" : "without"
         } restarting layout computation.`
       );
-      function getRectSize(d) {
-        return RECT_SIZE * (d.publication.isActive ? ENLARGE_FACTOR : 1);
-      }
 
-      function getBoostIndicatorSize(d) {
-        let factor = 1;
-        if (d.publication.boostFactor >= 8) {
-          factor = 2;
-        } else if (d.publication.boostFactor >= 4) {
-          factor = 1.6;
-        } else if (d.publication.boostFactor > 1) {
-          factor = 1.3;
-        }
-        return getRectSize(d) * factor * 0.8;
-      }
-
-      const doiToIndex = {};
-      this.yearMin = 3000;
-      this.yearMax = 0;
-
-      const publicationNodes = [];
-      let i = 0;
-      this.sessionStore.publicationsFiltered.forEach((publication) => {
-        if (publication.year) {
-          this.yearMin = Math.min(this.yearMin, publication.year);
-          this.yearMax = Math.max(this.yearMax, publication.year);
-          doiToIndex[publication.doi] = i;
-          publicationNodes.push({
-            id: publication.doi,
-            publication: publication,
-          });
-          i++;
-        }
-      });
-
-      const keywordNodes = [];
-      let uniqueKeywords = [...new Set(this.sessionStore.boostKeywords)];
-      uniqueKeywords.forEach((keyword) => {
-        const frequency = this.sessionStore.publications.filter((publication) =>
-          publication.boostKeywords.includes(keyword)
-        ).length;
-        keywordNodes.push({
-          id: keyword,
-          frequency: frequency,
-        });
-      });
-
-      const nodes = publicationNodes.concat(keywordNodes);
-
-      const links = [];
-
-      uniqueKeywords.forEach((keyword) => {
-        this.sessionStore.publicationsFiltered.forEach((publication) => {
-          if (publication.boostKeywords.includes(keyword)) {
-            links.push({
-              source: keyword,
-              target: publication.doi,
-              type: "keyword",
-            });
-          }
-        });
-      });
-
-      this.sessionStore.selectedPublications.forEach((publication) => {
-        if (publication.doi in doiToIndex) {
-          publication.citationDois.forEach((citationDoi) => {
-            if (citationDoi in doiToIndex) {
-              links.push({
-                source: citationDoi,
-                target: publication.doi,
-                type: "citation",
-              });
-            }
-          });
-          publication.referenceDois.forEach((referenceDoi) => {
-            if (referenceDoi in doiToIndex) {
-              links.push({
-                source: publication.doi,
-                target: referenceDoi,
-                type: "citation",
-              });
-            }
-          });
-        }
-      });
-
-      // https://observablehq.com/@d3/modifying-a-force-directed-graph
-      const old = new Map(this.node.data().map((d) => [d.id, d]));
-      this.graph.nodes = nodes.map((d) =>
-        Object.assign(old.get(d.id) || { x: this.svgWidth / 2, y: 0 }, d)
-      );
-      this.graph.links = links.map((d) => Object.assign({}, d));
-
-      this.node = this.node
-        .data(this.graph.nodes, (d) => d.id)
-        .join((enter) => {
-          const g = enter
-            .append("g")
-            .attr(
-              "class",
-              (d) =>
-                `node-container ${d.publication ? "publication" : "keyword"}`
-            );
-          const publicationNodes = g.filter((d) => d.publication);
-          publicationNodes.append("rect");
-          publicationNodes.append("text");
-          publicationNodes.append("circle");
-          publicationNodes.on("click", this.activatePublication);
-          publicationNodes.attr(
-            "data-tippy-content",
-            (d) =>
-              `${
-                d.publication.title ? d.publication.title : "[unknown title]"
-              } (${
-                d.publication.authorShort
-                  ? d.publication.authorShort + ", "
-                  : ""
-              }${d.publication.year ? d.publication.year : "[unknown year]"})`
-          );
-          tippy(publicationNodes.nodes(), {
-            maxWidth: "min(400px,70vw)",
-          });
-          const keywordNodes = g.filter((d) => !d.publication);
-          keywordNodes.append("text");
-          keywordNodes
-            .call(this.keywordNodeDrag())
-            .on("click", this.keywordNodeClick);
-          return g;
-        });
-
-      this.node
-        .select(".publication rect")
-        .attr(
-          "class",
-          (d) =>
-            (d.publication.isSelected ? "selected" : "suggested") +
-            (d.publication.isActive ? " active" : "") +
-            (d.publication.isLinkedToActive ? " linkedToActive" : "")
-        )
-        .attr("width", (d) => getRectSize(d))
-        .attr("height", (d) => getRectSize(d))
-        .attr("x", (d) => -getRectSize(d) / 2)
-        .attr("y", (d) => -getRectSize(d) / 2)
-        .attr("stroke-width", (d) => (d.publication.isActive ? 4 : 3))
-        .attr("fill", (d) => d.publication.scoreColor);
-
-      this.node
-        .select(".publication text")
-        .attr(
-          "class",
-          (d) =>
-            `${
-              !d.publication.isRead && !d.publication.isSelected ? "unread" : ""
-            }`
-        )
-        .attr("y", 1)
-        .attr("font-size", "0.8em")
-        .text((d) => d.publication.score);
-
-      this.node
-        .select(".publication circle")
-        .attr("cx", (d) => getRectSize(d) / 2 - 1)
-        .attr("cy", (d) => -getRectSize(d) / 2 + 1)
-        .attr("r", (d) =>
-          d.publication.boostFactor > 1 ? getBoostIndicatorSize(d) / 6 : 0
-        )
-        .attr("stroke", "black");
-
-      this.node
-        .select(".keyword text")
-        .attr("y", 1)
-        .attr("font-size", (d) => {
-          if (d.frequency >= 25) return "1.2em";
-          if (d.frequency >= 10) return "1.0em";
-          if (d.frequency >= 5) return "0.85em";
-          return "0.7em";
-        })
-        .text((d) => d.id);
-
-      this.node.filter((d) => !d.publication)
-        .attr(
-          "data-tippy-content",
-          (d) =>
-            `Keyword "${d.id}" is matched in ${d.frequency} publication${
-              d.frequency > 1 ? "s" : ""
-            }.<br><br>Drag to reposition (sticky), click to detach.`
-        );
-      tippy(this.node.filter((d) => !d.publication).nodes(), {
-        maxWidth: "min(400px,70vw)",
-        allowHTML: true,
-      });
-
-      this.link = this.link
-        .data(this.graph.links, (d) => [d.source, d.target])
-        .join("path");
-
-      const yearRange = _.range(this.yearMin - 4, this.yearMax + 1).filter(
-        (year) => year % 5 === 0
-      );
-      this.label = this.label
-        .data(yearRange, (d) => d)
-        .join((enter) => {
-          const g = enter.append("g");
-          g.append("text");
-          g.append("text");
-          return g;
-        });
-
-      this.label
-        .selectAll("text")
-        .attr("text-anchor", "middle")
-        .attr(
-          "visibility",
-          !this.sessionStore.isEmpty && !this.isNetworkClusters
-            ? "visible"
-            : "hidden"
-        )
-        .text((d) => d)
-        .attr("fill", "grey");
-
-      if (!this.sessionStore.isEmpty) {
-        this.label
-          .attr(
-            "transform",
-            (d) => `translate(${this.yearX(d)},${this.svgHeight - margin})`
-          )
-          .select("text")
-          .attr("y", -this.svgHeight + 2 * margin);
-      }
+      initGraph.call(this);
+      updateNodes.call(this);
+      updateLinks.call(this);
+      updateYearLabels.call(this);
 
       this.simulation.nodes(this.graph.nodes);
       this.simulation.force("link").links(this.graph.links);
@@ -438,6 +210,249 @@ export default {
         this.simulation.alpha(SIMULATION_ALPHA);
       }
       this.simulation.restart();
+
+      function initGraph() {
+        this.doiToIndex = {};
+        const nodes = initNodes.call(this);
+        const links = initLinks.call(this);
+        // https://observablehq.com/@d3/modifying-a-force-directed-graph
+        const old = new Map(this.node.data().map((d) => [d.id, d]));
+        this.graph.nodes = nodes.map((d) =>
+          Object.assign(old.get(d.id) || { x: this.svgWidth / 2, y: 0 }, d)
+        );
+        this.graph.links = links.map((d) => Object.assign({}, d));
+      }
+
+      function initNodes() {
+        const publicationNodes = [];
+        let i = 0;
+        this.sessionStore.publicationsFiltered.forEach((publication) => {
+          if (publication.year) {
+            this.doiToIndex[publication.doi] = i;
+            publicationNodes.push({
+              id: publication.doi,
+              publication: publication,
+            });
+            i++;
+          }
+        });
+
+        const keywordNodes = [];
+        this.sessionStore.uniqueBoostKeywords.forEach((keyword) => {
+          const frequency = this.sessionStore.publications.filter(
+            (publication) => publication.boostKeywords.includes(keyword)
+          ).length;
+          keywordNodes.push({
+            id: keyword,
+            frequency: frequency,
+          });
+        });
+
+        const nodes = publicationNodes.concat(keywordNodes);
+        return nodes;
+      }
+
+      function initLinks() {
+        const links = [];
+
+        this.sessionStore.uniqueBoostKeywords.forEach((keyword) => {
+          this.sessionStore.publicationsFiltered.forEach((publication) => {
+            if (publication.boostKeywords.includes(keyword)) {
+              links.push({
+                source: keyword,
+                target: publication.doi,
+                type: "keyword",
+              });
+            }
+          });
+        });
+
+        this.sessionStore.selectedPublications.forEach((publication) => {
+          if (publication.doi in this.doiToIndex) {
+            publication.citationDois.forEach((citationDoi) => {
+              if (citationDoi in this.doiToIndex) {
+                links.push({
+                  source: citationDoi,
+                  target: publication.doi,
+                  type: "citation",
+                });
+              }
+            });
+            publication.referenceDois.forEach((referenceDoi) => {
+              if (referenceDoi in this.doiToIndex) {
+                links.push({
+                  source: publication.doi,
+                  target: referenceDoi,
+                  type: "citation",
+                });
+              }
+            });
+          }
+        });
+        return links;
+      }
+
+      function updateNodes() {
+        this.node = this.node
+          .data(this.graph.nodes, (d) => d.id)
+          .join((enter) => {
+            const g = enter
+              .append("g")
+              .attr(
+                "class",
+                (d) =>
+                  `node-container ${d.publication ? "publication" : "keyword"}`
+              );
+            const publicationNodes = g.filter((d) => d.publication);
+            publicationNodes.append("rect");
+            publicationNodes.append("text");
+            publicationNodes.append("circle");
+            publicationNodes.on("click", this.activatePublication);
+            publicationNodes.attr(
+              "data-tippy-content",
+              (d) =>
+                `${
+                  d.publication.title ? d.publication.title : "[unknown title]"
+                } (${
+                  d.publication.authorShort
+                    ? d.publication.authorShort + ", "
+                    : ""
+                }${d.publication.year ? d.publication.year : "[unknown year]"})`
+            );
+            tippy(publicationNodes.nodes(), {
+              maxWidth: "min(400px,70vw)",
+            });
+            const keywordNodes = g.filter((d) => !d.publication);
+            keywordNodes.append("text");
+            keywordNodes
+              .call(this.keywordNodeDrag())
+              .on("click", this.keywordNodeClick);
+            return g;
+          });
+
+        this.node
+          .select(".publication rect")
+          .attr(
+            "class",
+            (d) =>
+              (d.publication.isSelected ? "selected" : "suggested") +
+              (d.publication.isActive ? " active" : "") +
+              (d.publication.isLinkedToActive ? " linkedToActive" : "")
+          )
+          .attr("width", (d) => getRectSize(d))
+          .attr("height", (d) => getRectSize(d))
+          .attr("x", (d) => -getRectSize(d) / 2)
+          .attr("y", (d) => -getRectSize(d) / 2)
+          .attr("stroke-width", (d) => (d.publication.isActive ? 4 : 3))
+          .attr("fill", (d) => d.publication.scoreColor);
+
+        this.node
+          .select(".publication text")
+          .attr(
+            "class",
+            (d) =>
+              `${
+                !d.publication.isRead && !d.publication.isSelected
+                  ? "unread"
+                  : ""
+              }`
+          )
+          .attr("y", 1)
+          .attr("font-size", "0.8em")
+          .text((d) => d.publication.score);
+
+        this.node
+          .select(".publication circle")
+          .attr("cx", (d) => getRectSize(d) / 2 - 1)
+          .attr("cy", (d) => -getRectSize(d) / 2 + 1)
+          .attr("r", (d) =>
+            d.publication.boostFactor > 1 ? getBoostIndicatorSize(d) / 6 : 0
+          )
+          .attr("stroke", "black");
+
+        this.node
+          .select(".keyword text")
+          .attr("y", 1)
+          .attr("font-size", (d) => {
+            if (d.frequency >= 25) return "1.2em";
+            if (d.frequency >= 10) return "1.0em";
+            if (d.frequency >= 5) return "0.85em";
+            return "0.7em";
+          })
+          .text((d) => d.id);
+
+        const keywordNodes = this.node.filter((d) => !d.publication);
+        keywordNodes.attr(
+          "data-tippy-content",
+          (d) =>
+            `Keyword "${d.id}" is matched in ${d.frequency} publication${
+              d.frequency > 1 ? "s" : ""
+            }.<br><br>Drag to reposition (sticky), click to detach.`
+        );
+        tippy(keywordNodes.nodes(), {
+          maxWidth: "min(400px,70vw)",
+          allowHTML: true,
+        });
+
+        function getRectSize(d) {
+          return RECT_SIZE * (d.publication.isActive ? ENLARGE_FACTOR : 1);
+        }
+
+        function getBoostIndicatorSize(d) {
+          let factor = 1;
+          if (d.publication.boostFactor >= 8) {
+            factor = 2;
+          } else if (d.publication.boostFactor >= 4) {
+            factor = 1.6;
+          } else if (d.publication.boostFactor > 1) {
+            factor = 1.3;
+          }
+          return getRectSize(d) * factor * 0.8;
+        }
+      }
+
+      function updateLinks() {
+        this.link = this.link
+          .data(this.graph.links, (d) => [d.source, d.target])
+          .join("path");
+      }
+
+      function updateYearLabels() {
+        const yearRange = _.range(
+          this.sessionStore.yearMin - 4,
+          this.sessionStore.yearMax + 1
+        ).filter((year) => year % 5 === 0);
+        this.label = this.label
+          .data(yearRange, (d) => d)
+          .join((enter) => {
+            const g = enter.append("g");
+            g.append("text");
+            g.append("text");
+            return g;
+          });
+
+        this.label
+          .selectAll("text")
+          .attr("text-anchor", "middle")
+          .attr(
+            "visibility",
+            !this.sessionStore.isEmpty && !this.isNetworkClusters
+              ? "visible"
+              : "hidden"
+          )
+          .text((d) => d)
+          .attr("fill", "grey");
+
+        if (!this.sessionStore.isEmpty) {
+          this.label
+            .attr(
+              "transform",
+              (d) => `translate(${this.yearX(d)},${this.svgHeight - margin})`
+            )
+            .select("text")
+            .attr("y", -this.svgHeight + 2 * margin);
+        }
+      }
     },
 
     tick: function () {
@@ -508,7 +523,10 @@ export default {
 
     yearX: function (year) {
       return (
-        ((year - this.yearMin) / Math.sqrt(1 + this.yearMax - this.yearMin)) *
+        ((year - this.sessionStore.yearMin) /
+          Math.sqrt(
+            1 + this.sessionStore.yearMax - this.sessionStore.yearMin
+          )) *
         this.svgWidth *
         0.15
       );
