@@ -171,16 +171,30 @@ export default {
           d3
             .forceLink()
             .id((d) => d.id)
-            .distance(50)
-            .strength(!that.isNetworkClusters ? 0.08 : 0.15)
+            .distance(d => {
+              if (d.type === "citation" && d.source.publication.isSelected && d.target.publication.isSelected) {
+               console.log(d);
+               return 100;
+              }
+              if (d.type === "keyword") return 0;
+              return 10
+            })
+            .strength(that.isNetworkClusters ? 0.15 : 0.08)
         )
-        .force("charge", d3.forceManyBody().strength(-180))
+        .force("charge", d3.forceManyBody().strength(-300))
         .force(
           "x",
           d3
             .forceX()
             .x((d) => this.yearX(d.publication ? d.publication.year : 2025))
             .strength(!that.isNetworkClusters ? 10 : 0)
+        )
+        .force(
+          "x",
+          d3
+            .forceX()
+            .x(0.5 * (that.svgWidth - RECT_SIZE))
+            .strength(!that.isNetworkClusters ? 2 : 0.0)
         )
         .force(
           "y",
