@@ -334,69 +334,77 @@ export default {
             return g;
           });
 
-        this.node
-          .select(".publication rect")
-          .attr(
-            "class",
+        updatePublicationNodes.call(this);
+        updateKeywordNodes.call(this);
+
+        function updatePublicationNodes() {
+          this.node
+            .select(".publication rect")
+            .attr(
+              "class",
+              (d) =>
+                (d.publication.isSelected ? "selected" : "suggested") +
+                (d.publication.isActive ? " active" : "") +
+                (d.publication.isLinkedToActive ? " linkedToActive" : "")
+            )
+            .attr("width", (d) => getRectSize(d))
+            .attr("height", (d) => getRectSize(d))
+            .attr("x", (d) => -getRectSize(d) / 2)
+            .attr("y", (d) => -getRectSize(d) / 2)
+            .attr("stroke-width", (d) => (d.publication.isActive ? 4 : 3))
+            .attr("fill", (d) => d.publication.scoreColor);
+
+          this.node
+            .select(".publication text")
+            .attr(
+              "class",
+              (d) =>
+                `${
+                  !d.publication.isRead && !d.publication.isSelected
+                    ? "unread"
+                    : ""
+                }`
+            )
+            .attr("y", 1)
+            .attr("font-size", "0.8em")
+            .text((d) => d.publication.score);
+
+          this.node
+            .select(".publication circle")
+            .attr("cx", (d) => getRectSize(d) / 2 - 1)
+            .attr("cy", (d) => -getRectSize(d) / 2 + 1)
+            .attr("r", (d) =>
+              d.publication.boostFactor > 1 ? getBoostIndicatorSize(d) / 6 : 0
+            )
+            .attr("stroke", "black");
+
+          this.node
+            .select(".keyword text")
+            .attr("y", 1)
+            .attr("font-size", (d) => {
+              if (d.frequency >= 25) return "1.2em";
+              if (d.frequency >= 10) return "1.0em";
+              if (d.frequency >= 5) return "0.85em";
+              return "0.7em";
+            })
+            .text((d) => d.id);
+        }
+
+        function updateKeywordNodes() {
+          const keywordNodes = this.node.filter((d) => !d.publication);
+          //console.log(this.sessionStore.activePublication);
+          keywordNodes.attr(
+            "data-tippy-content",
             (d) =>
-              (d.publication.isSelected ? "selected" : "suggested") +
-              (d.publication.isActive ? " active" : "") +
-              (d.publication.isLinkedToActive ? " linkedToActive" : "")
-          )
-          .attr("width", (d) => getRectSize(d))
-          .attr("height", (d) => getRectSize(d))
-          .attr("x", (d) => -getRectSize(d) / 2)
-          .attr("y", (d) => -getRectSize(d) / 2)
-          .attr("stroke-width", (d) => (d.publication.isActive ? 4 : 3))
-          .attr("fill", (d) => d.publication.scoreColor);
-
-        this.node
-          .select(".publication text")
-          .attr(
-            "class",
-            (d) =>
-              `${
-                !d.publication.isRead && !d.publication.isSelected
-                  ? "unread"
-                  : ""
-              }`
-          )
-          .attr("y", 1)
-          .attr("font-size", "0.8em")
-          .text((d) => d.publication.score);
-
-        this.node
-          .select(".publication circle")
-          .attr("cx", (d) => getRectSize(d) / 2 - 1)
-          .attr("cy", (d) => -getRectSize(d) / 2 + 1)
-          .attr("r", (d) =>
-            d.publication.boostFactor > 1 ? getBoostIndicatorSize(d) / 6 : 0
-          )
-          .attr("stroke", "black");
-
-        this.node
-          .select(".keyword text")
-          .attr("y", 1)
-          .attr("font-size", (d) => {
-            if (d.frequency >= 25) return "1.2em";
-            if (d.frequency >= 10) return "1.0em";
-            if (d.frequency >= 5) return "0.85em";
-            return "0.7em";
-          })
-          .text((d) => d.id);
-
-        const keywordNodes = this.node.filter((d) => !d.publication);
-        keywordNodes.attr(
-          "data-tippy-content",
-          (d) =>
-            `Keyword "${d.id}" is matched in ${d.frequency} publication${
-              d.frequency > 1 ? "s" : ""
-            }.<br><br>Drag to reposition (sticky), click to detach.`
-        );
-        tippy(keywordNodes.nodes(), {
-          maxWidth: "min(400px,70vw)",
-          allowHTML: true,
-        });
+              `Keyword "${d.id}" is matched in ${d.frequency} publication${
+                d.frequency > 1 ? "s" : ""
+              }.<br><br>Drag to reposition (sticky), click to detach.`
+          );
+          tippy(keywordNodes.nodes(), {
+            maxWidth: "min(400px,70vw)",
+            allowHTML: true,
+          });
+        }
 
         function getRectSize(d) {
           return RECT_SIZE * (d.publication.isActive ? ENLARGE_FACTOR : 1);
