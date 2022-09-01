@@ -393,18 +393,15 @@ export default {
         function updateKeywordNodes() {
           const keywordNodes = this.node.filter((d) => !d.publication);
           keywordNodes
-            .classed(
-              "linkedToActive",
-              (d) =>
-                this.sessionStore.activePublication &&
-                this.sessionStore.activePublication.boostKeywords.includes(d.id)
+            .classed("linkedToActive", (d) =>
+              this.sessionStore.isKeywordLinkedToActive(d.id)
             )
             .attr(
               "data-tippy-content",
               (d) =>
                 `Keyword "${d.id}" is matched in ${d.frequency} publication${
                   d.frequency > 1 ? "s" : ""
-                }.<br><br>Drag to reposition (sticky), click to detach.`
+                }${this.sessionStore.isKeywordLinkedToActive(d.id)?", and also linked to the currently active publication":""}.<br><br>Drag to reposition (sticky), click to detach.`
             );
           tippy(keywordNodes.nodes(), {
             maxWidth: "min(400px,70vw)",

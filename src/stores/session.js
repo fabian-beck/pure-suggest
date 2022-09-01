@@ -42,6 +42,7 @@ export const useSessionStore = defineStore('session', {
     ).length,
     currentTotalSuggestions: (state) => state.suggestion.totalSuggestions - state.selectedQueue.length - state.excludedQueue.length,
     boostKeywords: (state) => state.boostKeywordString.toLowerCase().split(/,\s*/),
+    isKeywordLinkedToActive: (state) => (keyword) => state.activePublication && state.activePublication.boostKeywords.includes(keyword),
     uniqueBoostKeywords: (state) => [...new Set(state.boostKeywords)],
     isUpdatable: (state) => state.selectedQueue.length > 0 || state.excludedQueue.length > 0,
     isEmpty: (state) =>
