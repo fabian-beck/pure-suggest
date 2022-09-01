@@ -392,14 +392,20 @@ export default {
 
         function updateKeywordNodes() {
           const keywordNodes = this.node.filter((d) => !d.publication);
-          //console.log(this.sessionStore.activePublication);
-          keywordNodes.attr(
-            "data-tippy-content",
-            (d) =>
-              `Keyword "${d.id}" is matched in ${d.frequency} publication${
-                d.frequency > 1 ? "s" : ""
-              }.<br><br>Drag to reposition (sticky), click to detach.`
-          );
+          keywordNodes
+            .classed(
+              "linkedToActive",
+              (d) =>
+                this.sessionStore.activePublication &&
+                this.sessionStore.activePublication.boostKeywords.includes(d.id)
+            )
+            .attr(
+              "data-tippy-content",
+              (d) =>
+                `Keyword "${d.id}" is matched in ${d.frequency} publication${
+                  d.frequency > 1 ? "s" : ""
+                }.<br><br>Drag to reposition (sticky), click to detach.`
+            );
           tippy(keywordNodes.nodes(), {
             maxWidth: "min(400px,70vw)",
             allowHTML: true,
@@ -613,11 +619,14 @@ export default {
 
     & text {
       text-anchor: middle;
-      dominant-baseline: middle;
     }
 
     &.fixed text {
       font-weight: 650;
+    }
+
+    &.linkedToActive text {
+      text-decoration-line: underline;
     }
   }
   & path.citation {
