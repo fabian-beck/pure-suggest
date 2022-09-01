@@ -53,7 +53,7 @@
         </div>
       </div>
       <div id="network-svg-container">
-        <svg id="network-svg" width="100%" height="100%" />
+        <svg id="network-svg" width="100%" height="100%"></svg>
       </div>
     </div>
   </div>
@@ -72,6 +72,7 @@ import { useInterfaceStore } from "./../stores/interface.js";
 const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;
 const margin = 20;
+const SIMULATION_ALPHA = 0.4;
 
 export default {
   name: "NetworkVisComponent",
@@ -95,8 +96,6 @@ export default {
       svg: null,
       svgHeight: Number,
       svgWidth: Number,
-      yearMin: Number,
-      yearMax: Number,
       node: null,
       link: null,
       label: null,
@@ -145,9 +144,7 @@ export default {
     this.initForces();
 
     this.label = this.svg.append("g").attr("class", "labels").selectAll("text");
-
     this.link = this.svg.append("g").attr("class", "links").selectAll("path");
-
     this.node = this.svg.append("g").attr("class", "nodes").selectAll("rect");
 
     this.sessionStore.$onAction(({ name, after }) => {
@@ -155,13 +152,11 @@ export default {
         if (
           name === "updateSuggestions" ||
           name === "queueForSelected" ||
-          name === "queueForExcluded"
+          name === "queueForExcluded" ||
+          name === "updateScores"
         )
           this.plot(true);
-        else if (
-          !this.interfaceStore.isLoading &&
-          (name === "updateScores" || name === "clear")
-        )
+        else if (!this.interfaceStore.isLoading && name === "clear")
           this.plot();
       });
     });
@@ -184,7 +179,7 @@ export default {
           "x",
           d3
             .forceX()
-            .x((d) => this.yearX(d.publication.year))
+            .x((d) => this.yearX(d.publication ? d.publication.year : 2025))
             .strength(!that.isNetworkClusters ? 10 : 0)
         )
         .force(
@@ -198,82 +193,126 @@ export default {
     },
 
     plot: function (restart) {
-      console.log(
-        `Plotting citation network ${
-          restart ? "with" : "without"
-        } restarting layout computation.`
-      );
-      function getRectSize(d) {
-        return RECT_SIZE * (d.publication.isActive ? ENLARGE_FACTOR : 1);
-      }
+      try {
+        console.log(
+          `Plotting citation network ${
+            restart ? "with" : "without"
+          } restarting layout computation.`
+        );
 
-      function getBoostIndicatorSize(d) {
-        let factor = 1;
-        if (d.publication.boostFactor >= 8) {
-          factor = 2;
-        } else if (d.publication.boostFactor >= 4) {
-          factor = 1.6;
-        } else if (d.publication.boostFactor > 1) {
-          factor = 1.3;
+        initGraph.call(this);
+        updateNodes.call(this);
+        updateLinks.call(this);
+        updateYearLabels.call(this);
+
+        this.simulation.nodes(this.graph.nodes);
+        this.simulation.force("link").links(this.graph.links);
+        if (restart) {
+          this.simulation.alpha(SIMULATION_ALPHA);
         }
-        return getRectSize(d) * factor * 0.8;
+        this.simulation.restart();
+      } catch (error) {
+        console.error("Cannot plot network: " + error.message);
       }
 
-      const doiToIndex = {};
-      this.yearMin = 3000;
-      this.yearMax = 0;
+      function initGraph() {
+        this.doiToIndex = {};
+        const nodes = initNodes.call(this);
+        const links = initLinks.call(this);
+        // https://observablehq.com/@d3/modifying-a-force-directed-graph
+        const old = new Map(this.node.data().map((d) => [d.id, d]));
+        this.graph.nodes = nodes.map((d) =>
+          Object.assign(old.get(d.id) || { x: this.svgWidth / 2, y: 0 }, d)
+        );
+        this.graph.links = links.map((d) => Object.assign({}, d));
+      }
 
-      const nodes = [];
-      let i = 0;
-      this.sessionStore.publicationsFiltered.forEach((publication) => {
-        if (publication.year) {
-          this.yearMin = Math.min(this.yearMin, publication.year);
-          this.yearMax = Math.max(this.yearMax, publication.year);
-          doiToIndex[publication.doi] = i;
-          nodes.push({
-            id: publication.doi,
-            publication: publication,
+      function initNodes() {
+        const publicationNodes = [];
+        let i = 0;
+        this.sessionStore.publicationsFiltered.forEach((publication) => {
+          if (publication.year) {
+            this.doiToIndex[publication.doi] = i;
+            publicationNodes.push({
+              id: publication.doi,
+              publication: publication,
+            });
+            i++;
+          }
+        });
+
+        const keywordNodes = [];
+        this.sessionStore.uniqueBoostKeywords.forEach((keyword) => {
+          const frequency = this.sessionStore.publications.filter(
+            (publication) => publication.boostKeywords.includes(keyword)
+          ).length;
+          keywordNodes.push({
+            id: keyword,
+            frequency: frequency,
           });
-          i++;
-        }
-      });
+        });
 
-      const links = [];
-      this.sessionStore.selectedPublications.forEach((publication) => {
-        if (publication.doi in doiToIndex) {
-          publication.citationDois.forEach((citationDoi) => {
-            if (citationDoi in doiToIndex) {
+        const nodes = publicationNodes.concat(keywordNodes);
+        return nodes;
+      }
+
+      function initLinks() {
+        const links = [];
+
+        this.sessionStore.uniqueBoostKeywords.forEach((keyword) => {
+          this.sessionStore.publicationsFiltered.forEach((publication) => {
+            if (publication.boostKeywords.includes(keyword)) {
               links.push({
-                source: citationDoi,
+                source: keyword,
                 target: publication.doi,
+                type: "keyword",
               });
             }
           });
-          publication.referenceDois.forEach((referenceDoi) => {
-            if (referenceDoi in doiToIndex) {
-              links.push({
-                source: publication.doi,
-                target: referenceDoi,
-              });
-            }
-          });
-        }
-      });
+        });
 
-      // https://observablehq.com/@d3/modifying-a-force-directed-graph
-      const old = new Map(this.node.data().map((d) => [d.id, d]));
-      this.graph.nodes = nodes.map((d) =>
-        Object.assign(old.get(d.id) || { x: this.svgWidth / 2, y: 0 }, d)
-      );
-      this.graph.links = links.map((d) => Object.assign({}, d));
+        this.sessionStore.selectedPublications.forEach((publication) => {
+          if (publication.doi in this.doiToIndex) {
+            publication.citationDois.forEach((citationDoi) => {
+              if (citationDoi in this.doiToIndex) {
+                links.push({
+                  source: citationDoi,
+                  target: publication.doi,
+                  type: "citation",
+                });
+              }
+            });
+            publication.referenceDois.forEach((referenceDoi) => {
+              if (referenceDoi in this.doiToIndex) {
+                links.push({
+                  source: publication.doi,
+                  target: referenceDoi,
+                  type: "citation",
+                });
+              }
+            });
+          }
+        });
+        return links;
+      }
 
-      this.node = this.node
-        .data(this.graph.nodes, (d) => d.id)
-        .join((enter) => {
-          const g = enter
-            .append("g")
-            .attr("class", "node-container")
-            .attr(
+      function updateNodes() {
+        this.node = this.node
+          .data(this.graph.nodes, (d) => d.id)
+          .join((enter) => {
+            const g = enter
+              .append("g")
+              .attr(
+                "class",
+                (d) =>
+                  `node-container ${d.publication ? "publication" : "keyword"}`
+              );
+            const publicationNodes = g.filter((d) => d.publication);
+            publicationNodes.append("rect");
+            publicationNodes.append("text");
+            publicationNodes.append("circle");
+            publicationNodes.on("click", this.activatePublication);
+            publicationNodes.attr(
               "data-tippy-content",
               (d) =>
                 `${
@@ -284,138 +323,226 @@ export default {
                     : ""
                 }${d.publication.year ? d.publication.year : "[unknown year]"})`
             );
-          g.append("rect");
-          g.append("text");
-          g.append("circle");
-          g.on("click", this.activatePublication);
-          tippy(g.nodes(), {
-            maxWidth: "min(400px,70vw)",
+            tippy(publicationNodes.nodes(), {
+              maxWidth: "min(400px,70vw)",
+            });
+            const keywordNodes = g.filter((d) => !d.publication);
+            keywordNodes.append("text");
+            keywordNodes
+              .call(this.keywordNodeDrag())
+              .on("click", this.keywordNodeClick);
+            return g;
           });
-          return g;
-        });
 
-      this.node
-        .select("rect")
-        .attr(
-          "class",
-          (d) =>
-            (d.publication.isSelected ? "selected" : "suggested") +
-            (d.publication.isActive ? " active" : "") +
-            (d.publication.isLinkedToActive ? " linkedToActive" : "")
-        )
-        .attr("width", (d) => getRectSize(d))
-        .attr("height", (d) => getRectSize(d))
-        .attr("x", (d) => -getRectSize(d) / 2)
-        .attr("y", (d) => -getRectSize(d) / 2)
-        .attr("stroke-width", (d) => (d.publication.isActive ? 4 : 3))
-        .attr("fill", (d) => d.publication.scoreColor);
+        updatePublicationNodes.call(this);
+        updateKeywordNodes.call(this);
 
-      this.node
-        .select("text")
-        .attr(
-          "class",
-          (d) =>
-            `${
-              !d.publication.isRead && !d.publication.isSelected ? "unread" : ""
-            }`
-        )
-        .attr("y", 1)
-        .attr("font-size", "0.8em")
-        .text((d) => d.publication.score);
+        function updatePublicationNodes() {
+          this.node
+            .select(".publication rect")
+            .attr(
+              "class",
+              (d) =>
+                (d.publication.isSelected ? "selected" : "suggested") +
+                (d.publication.isActive ? " active" : "") +
+                (d.publication.isLinkedToActive ? " linkedToActive" : "")
+            )
+            .attr("width", (d) => getRectSize(d))
+            .attr("height", (d) => getRectSize(d))
+            .attr("x", (d) => -getRectSize(d) / 2)
+            .attr("y", (d) => -getRectSize(d) / 2)
+            .attr("stroke-width", (d) => (d.publication.isActive ? 4 : 3))
+            .attr("fill", (d) => d.publication.scoreColor);
 
-      this.node
-        .select("circle")
-        .attr("cx", (d) => getRectSize(d) / 2 - 1)
-        .attr("cy", (d) => -getRectSize(d) / 2 + 1)
-        .attr("r", (d) =>
-          d.publication.boostFactor > 1 ? getBoostIndicatorSize(d) / 6 : 0
-        )
-        .attr("stroke", "black");
+          this.node
+            .select(".publication text")
+            .attr(
+              "class",
+              (d) =>
+                `${
+                  !d.publication.isRead && !d.publication.isSelected
+                    ? "unread"
+                    : ""
+                }`
+            )
+            .attr("y", 1)
+            .attr("font-size", "0.8em")
+            .text((d) => d.publication.score);
 
-      this.link = this.link
-        .data(this.graph.links, (d) => [d.source, d.target])
-        .join("path");
+          this.node
+            .select(".publication circle")
+            .attr("cx", (d) => getRectSize(d) / 2 - 1)
+            .attr("cy", (d) => -getRectSize(d) / 2 + 1)
+            .attr("r", (d) =>
+              d.publication.boostFactor > 1 ? getBoostIndicatorSize(d) / 6 : 0
+            )
+            .attr("stroke", "black");
 
-      const yearRange = _.range(this.yearMin - 4, this.yearMax + 1).filter(
-        (year) => year % 5 === 0
-      );
-      this.label = this.label
-        .data(yearRange, (d) => d)
-        .join((enter) => {
-          const g = enter.append("g");
-          g.append("text");
-          g.append("text");
-          return g;
-        });
+          this.node
+            .select(".keyword text")
+            .attr("y", 1)
+            .attr("font-size", (d) => {
+              if (d.frequency >= 25) return "1.2em";
+              if (d.frequency >= 10) return "1.0em";
+              if (d.frequency >= 5) return "0.85em";
+              return "0.7em";
+            })
+            .text((d) => d.id);
+        }
 
-      this.label
-        .selectAll("text")
-        .attr("text-anchor", "middle")
-        .attr(
-          "visibility",
-          !this.sessionStore.isEmpty && !this.isNetworkClusters
-            ? "visible"
-            : "hidden"
-        )
-        .text((d) => d)
-        .attr("fill", "grey");
+        function updateKeywordNodes() {
+          const keywordNodes = this.node.filter((d) => !d.publication);
+          keywordNodes
+            .classed("linkedToActive", (d) =>
+              this.sessionStore.isKeywordLinkedToActive(d.id)
+            )
+            .attr(
+              "data-tippy-content",
+              (d) =>
+                `Keyword "${d.id}" is matched in ${d.frequency} publication${
+                  d.frequency > 1 ? "s" : ""
+                }${this.sessionStore.isKeywordLinkedToActive(d.id)?", and also linked to the currently active publication":""}.<br><br>Drag to reposition (sticky), click to detach.`
+            );
+          tippy(keywordNodes.nodes(), {
+            maxWidth: "min(400px,70vw)",
+            allowHTML: true,
+          });
+        }
 
-      if (!this.sessionStore.isEmpty) {
+        function getRectSize(d) {
+          return RECT_SIZE * (d.publication.isActive ? ENLARGE_FACTOR : 1);
+        }
+
+        function getBoostIndicatorSize(d) {
+          let factor = 1;
+          if (d.publication.boostFactor >= 8) {
+            factor = 2;
+          } else if (d.publication.boostFactor >= 4) {
+            factor = 1.6;
+          } else if (d.publication.boostFactor > 1) {
+            factor = 1.3;
+          }
+          return getRectSize(d) * factor * 0.8;
+        }
+      }
+
+      function updateLinks() {
+        this.link = this.link
+          .data(this.graph.links, (d) => [d.source, d.target])
+          .join("path");
+      }
+
+      function updateYearLabels() {
+        if (this.sessionStore.publicationsFiltered.length === 0) return;
+        const yearRange = _.range(
+          this.sessionStore.yearMin - 4,
+          this.sessionStore.yearMax + 1
+        ).filter((year) => year % 5 === 0);
+        this.label = this.label
+          .data(yearRange, (d) => d)
+          .join((enter) => {
+            const g = enter.append("g");
+            g.append("text");
+            g.append("text");
+            return g;
+          });
+
         this.label
+          .selectAll("text")
+          .attr("text-anchor", "middle")
           .attr(
-            "transform",
-            (d) => `translate(${this.yearX(d)},${this.svgHeight - margin})`
+            "visibility",
+            !this.sessionStore.isEmpty && !this.isNetworkClusters
+              ? "visible"
+              : "hidden"
           )
-          .select("text")
-          .attr("y", -this.svgHeight + 2 * margin);
-      }
+          .text((d) => d)
+          .attr("fill", "grey");
 
-      this.simulation.nodes(this.graph.nodes);
-      this.simulation.force("link").links(this.graph.links);
-      if (restart) {
-        this.simulation.alpha(0.4);
+        if (!this.sessionStore.isEmpty) {
+          this.label
+            .attr(
+              "transform",
+              (d) => `translate(${this.yearX(d)},${this.svgHeight - margin})`
+            )
+            .select("text")
+            .attr("y", -this.svgHeight + 2 * margin);
+        }
       }
-      this.simulation.restart();
     },
 
     tick: function () {
       this.link
         .attr("d", (d) => {
-          var dx = d.target.x - d.source.x,
-            dy = d.target.y - d.source.y,
-            dr = Math.pow(dx * dx + dy * dy, 0.6);
-          return (
-            "M" +
-            d.target.x +
-            "," +
-            d.target.y +
-            "A" +
-            dr +
-            "," +
-            dr +
-            " 0 0,1 " +
-            d.source.x +
-            "," +
-            d.source.y
-          );
+          const dx = d.target.x - d.source.x;
+          const dy = d.target.y - d.source.y;
+          // curved link for citations
+          if (d.type === "citation") {
+            const dr = Math.pow(dx * dx + dy * dy, 0.6);
+            return `M${d.target.x},${d.target.y}A${dr},${dr} 0 0,1 ${d.source.x},${d.source.y}`;
+          }
+          // tapered links for keywords:
+          // drawing a triangle as part of a circle segment with its center at the target node
+          const r = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+          const alpha = Math.acos(dx / r);
+          const beta = 2 / r;
+          const x1 = r * Math.cos(alpha + beta);
+          let y1 = r * Math.sin(alpha + beta);
+          const x2 = r * Math.cos(alpha - beta);
+          let y2 = r * Math.sin(alpha - beta);
+          if (d.source.y > d.target.y) {
+            y1 = -y1;
+            y2 = -y2;
+          }
+          return `M${d.target.x - x1},${d.target.y - y1}
+            L${d.target.x},${d.target.y}
+            L${d.target.x - x2},${d.target.y - y2}`;
         })
-        .attr(
-          "class",
-          (d) =>
-            (d.source.publication.isActive || d.target.publication.isActive
-              ? "active"
-              : "") +
-            (d.source.publication.isSelected && d.target.publication.isSelected
-              ? ""
-              : " external")
-        );
+        .attr("class", (d) => {
+          const classes = [d.type];
+          if (d.type === "citation") {
+            if (d.source.publication.isActive || d.target.publication.isActive)
+              classes.push("active");
+            if (
+              !(
+                d.source.publication.isSelected &&
+                d.target.publication.isSelected
+              )
+            )
+              classes.push("external");
+          }
+          return classes.join(" ");
+        });
 
       this.node.attr("transform", (d) => `translate(${d.x}, ${d.y})`);
     },
 
+    keywordNodeDrag: function () {
+      const that = this;
+      function dragStart() {
+        d3.select(this).classed("fixed", true);
+      }
+      function dragMove(event, d) {
+        d.fx = event.x;
+        d.fy = event.y;
+        that.simulation.alpha(SIMULATION_ALPHA).restart();
+      }
+      return d3.drag().on("start", dragStart).on("drag", dragMove);
+    },
+
+    keywordNodeClick: function (event, d) {
+      delete d.fx;
+      delete d.fy;
+      d3.select(event.target.parentNode).classed("fixed", false);
+      this.simulation.alpha(SIMULATION_ALPHA).restart();
+    },
+
     yearX: function (year) {
       return (
-        ((year - this.yearMin) / Math.sqrt(1 + this.yearMax - this.yearMin)) *
+        ((year - this.sessionStore.yearMin) /
+          Math.sqrt(
+            1 + this.sessionStore.yearMax - this.sessionStore.yearMin
+          )) *
         this.svgWidth *
         0.15
       );
@@ -445,7 +572,7 @@ export default {
 #network-svg {
   background: white;
 
-  & g.node-container {
+  & g.publication.node-container {
     cursor: pointer;
 
     & rect {
@@ -484,7 +611,22 @@ export default {
       transform: scale(1.2);
     }
   }
-  & path {
+  & g.keyword.node-container {
+    cursor: grab;
+
+    & text {
+      text-anchor: middle;
+    }
+
+    &.fixed text {
+      font-weight: 650;
+    }
+
+    &.linkedToActive text {
+      text-decoration-line: underline;
+    }
+  }
+  & path.citation {
     fill: none;
     stroke-width: 2;
     stroke: #00000010;
@@ -501,6 +643,10 @@ export default {
         stroke: #00000066;
       }
     }
+  }
+  & path.keyword {
+    fill: $warning;
+    opacity: 0.2;
   }
 }
 

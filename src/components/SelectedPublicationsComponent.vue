@@ -237,7 +237,7 @@ export default {
           );
           this.openSearch(true);
         } else {
-          query.dois.forEach((doi) => this.sessionStore.queueForSelected(doi));
+          this.sessionStore.queueForSelected(query.dois);
           this.addQuery = "";
         }
       } else {

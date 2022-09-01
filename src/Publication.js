@@ -26,6 +26,7 @@ export default class Publication {
         this.citationCount = 0;
         this.referenceCount = 0;
         this.boostMatches = 0;
+        this.boostKeywords = []
         this.boostFactor = 1;
         this.score = 0;
         this.scoreColor = "#FFF";
@@ -170,6 +171,7 @@ export default class Publication {
                 if (index >= 0) {
                     // split matched title fragement
                     this.boostMatches += 1;
+                    this.boostKeywords.push(boostKeyword);
                     this.boostFactor = this.boostFactor * 2;
                     titleFragments[i] = [
                         titleFragment.substring(0, index),

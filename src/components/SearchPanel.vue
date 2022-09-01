@@ -209,7 +209,7 @@ export default {
     },
 
     addAndClose() {
-      this.addedPublications.forEach(this.sessionStore.queueForSelected);
+      this.sessionStore.queueForSelected(this.addedPublications);
       this.close();
     },
 
