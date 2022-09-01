@@ -173,7 +173,6 @@ export default {
             .id((d) => d.id)
             .distance(d => {
               if (d.type === "citation" && d.source.publication.isSelected && d.target.publication.isSelected) {
-               console.log(d);
                return 100;
               }
               if (d.type === "keyword") return 0;
@@ -630,6 +629,7 @@ export default {
 
     & text {
       text-anchor: middle;
+      transform: translate(0px,4px)
     }
 
     &.fixed text {
@@ -642,16 +642,17 @@ export default {
   }
   & path.citation {
     fill: none;
-    stroke-width: 2;
+    stroke-width: 3;
     stroke: #00000010;
 
     &.external {
       stroke: #00000006;
+      stroke-width: 2;
     }
 
     &.active {
       stroke: #000000aa;
-      stroke-dasharray: 5 5;
+      stroke-dasharray: 15 5;
 
       &.external {
         stroke: #00000066;
