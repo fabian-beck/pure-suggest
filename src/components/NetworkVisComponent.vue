@@ -171,12 +171,16 @@ export default {
           d3
             .forceLink()
             .id((d) => d.id)
-            .distance(d => {
-              if (d.type === "citation" && d.source.publication.isSelected && d.target.publication.isSelected) {
-               return 100;
+            .distance((d) => {
+              if (
+                d.type === "citation" &&
+                d.source.publication.isSelected &&
+                d.target.publication.isSelected
+              ) {
+                return 100;
               }
               if (d.type === "keyword") return 0;
-              return 10
+              return 10;
             })
             .strength(that.isNetworkClusters ? 0.15 : 0.08)
         )
@@ -185,22 +189,19 @@ export default {
           "x",
           d3
             .forceX()
-            .x((d) => this.yearX(d.publication ? d.publication.year : 2025))
-            .strength(!that.isNetworkClusters ? 10 : 0)
-        )
-        .force(
-          "x",
-          d3
-            .forceX()
-            .x(0.5 * (that.svgWidth - RECT_SIZE))
-            .strength(!that.isNetworkClusters ? 2 : 0.0)
+            .x((d) =>
+              that.isNetworkClusters
+                ? 0.5 * (that.svgWidth - RECT_SIZE)
+                : this.yearX(d.publication ? d.publication.year : 2025)
+            )
+            .strength(that.isNetworkClusters ? 0.05 : 10)
         )
         .force(
           "y",
           d3
             .forceY()
             .y(0.5 * (that.svgHeight - RECT_SIZE))
-            .strength(!that.isNetworkClusters ? 0.25 : 0.1)
+            .strength(that.isNetworkClusters ? 0.10 : 0.25)
         )
         .on("tick", this.tick);
     },
@@ -414,7 +415,11 @@ export default {
               (d) =>
                 `Keyword "${d.id}" is matched in ${d.frequency} publication${
                   d.frequency > 1 ? "s" : ""
-                }${this.sessionStore.isKeywordLinkedToActive(d.id)?", and also linked to the currently active publication":""}.<br><br>Drag to reposition (sticky), click to detach.`
+                }${
+                  this.sessionStore.isKeywordLinkedToActive(d.id)
+                    ? ", and also linked to the currently active publication"
+                    : ""
+                }.<br><br>Drag to reposition (sticky), click to detach.`
             );
           tippy(keywordNodes.nodes(), {
             maxWidth: "min(400px,70vw)",
@@ -629,7 +634,7 @@ export default {
 
     & text {
       text-anchor: middle;
-      transform: translate(0px,4px)
+      transform: translate(0px, 4px);
     }
 
     &.fixed text {
