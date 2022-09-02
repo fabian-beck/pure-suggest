@@ -171,23 +171,35 @@ export default {
           d3
             .forceLink()
             .id((d) => d.id)
-            .distance(50)
-            .strength(!that.isNetworkClusters ? 0.08 : 0.15)
+            .distance((d) => {
+              if (that.isNetworkClusters && d.internal) return 150;
+              if (d.type === "keyword") return 0;
+              return 10;
+            })
+            .strength((d) => {
+              const internalFactor = d.internal ? 1 : 0.5;
+              const clustersFactor = that.isNetworkClusters ? 1 : 0.5;
+              return 0.15 * clustersFactor * internalFactor;
+            })
         )
-        .force("charge", d3.forceManyBody().strength(-180))
+        .force("charge", d3.forceManyBody().strength(-250))
         .force(
           "x",
           d3
             .forceX()
-            .x((d) => this.yearX(d.publication ? d.publication.year : 2025))
-            .strength(!that.isNetworkClusters ? 10 : 0)
+            .x((d) =>
+              that.isNetworkClusters
+                ? 0.5 * (that.svgWidth - RECT_SIZE)
+                : this.yearX(d.publication ? d.publication.year : 2025)
+            )
+            .strength(that.isNetworkClusters ? 0.05 : 10)
         )
         .force(
           "y",
           d3
             .forceY()
             .y(0.5 * (that.svgHeight - RECT_SIZE))
-            .strength(!that.isNetworkClusters ? 0.25 : 0.1)
+            .strength(that.isNetworkClusters ? 0.1 : 0.25)
         )
         .on("tick", this.tick);
     },
@@ -279,6 +291,7 @@ export default {
                   source: citationDoi,
                   target: publication.doi,
                   type: "citation",
+                  internal: this.sessionStore.isSelected(citationDoi),
                 });
               }
             });
@@ -288,11 +301,13 @@ export default {
                   source: publication.doi,
                   target: referenceDoi,
                   type: "citation",
+                  internal: this.sessionStore.isSelected(referenceDoi),
                 });
               }
             });
           }
         });
+
         return links;
       }
 
@@ -401,7 +416,11 @@ export default {
               (d) =>
                 `Keyword "${d.id}" is matched in ${d.frequency} publication${
                   d.frequency > 1 ? "s" : ""
-                }${this.sessionStore.isKeywordLinkedToActive(d.id)?", and also linked to the currently active publication":""}.<br><br>Drag to reposition (sticky), click to detach.`
+                }${
+                  this.sessionStore.isKeywordLinkedToActive(d.id)
+                    ? ", and also linked to the currently active publication"
+                    : ""
+                }.<br><br>Drag to reposition (sticky), click to detach.`
             );
           tippy(keywordNodes.nodes(), {
             maxWidth: "min(400px,70vw)",
@@ -414,15 +433,15 @@ export default {
         }
 
         function getBoostIndicatorSize(d) {
-          let factor = 1;
+          let internalFactor = 1;
           if (d.publication.boostFactor >= 8) {
-            factor = 2;
+            internalFactor = 2;
           } else if (d.publication.boostFactor >= 4) {
-            factor = 1.6;
+            internalFactor = 1.6;
           } else if (d.publication.boostFactor > 1) {
-            factor = 1.3;
+            internalFactor = 1.3;
           }
-          return getRectSize(d) * factor * 0.8;
+          return getRectSize(d) * internalFactor * 0.8;
         }
       }
 
@@ -616,6 +635,7 @@ export default {
 
     & text {
       text-anchor: middle;
+      transform: translate(0px, 4px);
     }
 
     &.fixed text {
@@ -628,16 +648,17 @@ export default {
   }
   & path.citation {
     fill: none;
-    stroke-width: 2;
+    stroke-width: 3;
     stroke: #00000010;
 
     &.external {
       stroke: #00000006;
+      stroke-width: 2;
     }
 
     &.active {
       stroke: #000000aa;
-      stroke-dasharray: 5 5;
+      stroke-dasharray: 15 5;
 
       &.external {
         stroke: #00000066;
