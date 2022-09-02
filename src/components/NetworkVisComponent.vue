@@ -172,19 +172,17 @@ export default {
             .forceLink()
             .id((d) => d.id)
             .distance((d) => {
-              if (
-                d.type === "citation" &&
-                d.source.publication.isSelected &&
-                d.target.publication.isSelected
-              ) {
-                return 100;
-              }
+              if (that.isNetworkClusters && d.internal) return 150;
               if (d.type === "keyword") return 0;
               return 10;
             })
-            .strength(that.isNetworkClusters ? 0.15 : 0.08)
+            .strength((d) => {
+              const internalFactor = d.internal ? 1 : 0.5;
+              const clustersFactor = that.isNetworkClusters ? 1 : 0.5;
+              return 0.15 * clustersFactor * internalFactor;
+            })
         )
-        .force("charge", d3.forceManyBody().strength(-300))
+        .force("charge", d3.forceManyBody().strength(-250))
         .force(
           "x",
           d3
@@ -201,7 +199,7 @@ export default {
           d3
             .forceY()
             .y(0.5 * (that.svgHeight - RECT_SIZE))
-            .strength(that.isNetworkClusters ? 0.10 : 0.25)
+            .strength(that.isNetworkClusters ? 0.1 : 0.25)
         )
         .on("tick", this.tick);
     },
@@ -293,6 +291,7 @@ export default {
                   source: citationDoi,
                   target: publication.doi,
                   type: "citation",
+                  internal: this.sessionStore.isSelected(citationDoi),
                 });
               }
             });
@@ -302,11 +301,13 @@ export default {
                   source: publication.doi,
                   target: referenceDoi,
                   type: "citation",
+                  internal: this.sessionStore.isSelected(referenceDoi),
                 });
               }
             });
           }
         });
+
         return links;
       }
 
@@ -432,15 +433,15 @@ export default {
         }
 
         function getBoostIndicatorSize(d) {
-          let factor = 1;
+          let internalFactor = 1;
           if (d.publication.boostFactor >= 8) {
-            factor = 2;
+            internalFactor = 2;
           } else if (d.publication.boostFactor >= 4) {
-            factor = 1.6;
+            internalFactor = 1.6;
           } else if (d.publication.boostFactor > 1) {
-            factor = 1.3;
+            internalFactor = 1.3;
           }
-          return getRectSize(d) * factor * 0.8;
+          return getRectSize(d) * internalFactor * 0.8;
         }
       }
 
