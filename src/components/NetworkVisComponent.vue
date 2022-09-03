@@ -327,6 +327,9 @@ export default {
             publicationNodes.append("text");
             publicationNodes.append("circle");
             publicationNodes.on("click", this.activatePublication);
+            publicationNodes.classed("queuingForSelected", (d) =>
+              this.sessionStore.isQueuingForSelected(d.publication.doi)
+            )
             publicationNodes.attr(
               "data-tippy-content",
               (d) =>
@@ -628,6 +631,10 @@ export default {
 
     &:hover rect {
       transform: scale(1.2);
+    }
+
+    &.queuingForSelected {
+      opacity: 0.5;
     }
   }
   & g.keyword.node-container {
