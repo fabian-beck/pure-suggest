@@ -373,8 +373,9 @@ export const useSessionStore = defineStore('session', {
           "10.1109/tvcg.2015.2467757",
           "10.1109/tvcg.2015.2467621",
           "10.1002/asi.24171",
+          "10.2312/evp.20221110"
         ],
-        boost: "cit, vis",
+        boost: "cit, visual, map",
       };
       this.loadSession(session);
     },
