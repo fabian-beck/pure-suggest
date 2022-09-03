@@ -22,7 +22,7 @@
                     size="is-small"
                     v-show="isFilterPanelShown"
                   ></b-icon>
-                  {{ sessionStore.suggestedPublicationsFiltered.length }}
+                  {{ sessionStore.suggestedPublicationsWithoutQueuedFiltered.length }}
                   <b-tag
                     icon="bell"
                     size="is-small"
@@ -206,7 +206,7 @@
     </div>
     <PublicationListComponent
       ref="publicationList"
-      :publications="sessionStore.suggestedPublicationsFiltered"
+      :publications="sessionStore.suggestedPublicationsWithoutQueuedFiltered"
       :suggestion="true"
       v-on:add="addPublication"
     />

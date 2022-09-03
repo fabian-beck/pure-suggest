@@ -32,12 +32,14 @@ export const useSessionStore = defineStore('session', {
       state.suggestedPublications.filter(publication =>
         !state.selectedQueue.includes(publication.doi) && !state.excludedQueue.includes(publication.doi)),
     suggestedPublicationsFiltered: (state) =>
+      state.suggestedPublications.filter(publication => state.filter.matches(publication)),
+    suggestedPublicationsWithoutQueuedFiltered: (state) =>
       state.suggestedPublicationsWithoutQueued.filter(publication => state.filter.matches(publication)),
     publications: (state) => state.selectedPublications.concat(state.suggestedPublicationsWithoutQueued),
     publicationsFiltered: (state) => state.selectedPublications.concat(state.suggestedPublicationsFiltered),
     yearMax: (state) => Math.max(...state.publicationsFiltered.filter(publication => publication.year).map(publication => Number(publication.year))),
     yearMin: (state) => Math.min(...state.publicationsFiltered.filter(publication => publication.year).map(publication => Number(publication.year))),
-    unreadSuggestionsCount: (state) => state.suggestedPublicationsFiltered.filter(
+    unreadSuggestionsCount: (state) => state.suggestedPublicationsWithoutQueuedFiltered.filter(
       (publication) => !publication.isRead
     ).length,
     currentTotalSuggestions: (state) => state.suggestion.totalSuggestions - state.selectedQueue.length - state.excludedQueue.length,
