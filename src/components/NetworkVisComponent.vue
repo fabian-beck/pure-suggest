@@ -354,7 +354,7 @@ export default {
 
         function updatePublicationNodes() {
           const publicationNodes = this.node.filter((d) => d.publication);
-          
+
           publicationNodes.classed("queuingForSelected", (d) =>
             this.sessionStore.isQueuingForSelected(d.publication.doi)
           );
@@ -639,9 +639,12 @@ export default {
       transform: scale(1.2);
     }
 
-    &.queuingForSelected,
+    &.queuingForSelected {
+      opacity: 0.6;
+    }
+
     &.queuingForExcluded {
-      opacity: 0.5;
+      opacity: 0.3;
     }
   }
   & g.keyword.node-container {
