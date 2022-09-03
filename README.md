@@ -11,19 +11,18 @@ The tool is available at: https://fabian-beck.github.io/pure-suggest/
 * *Select* multiple publications and get suggestions based on citations of these
 * *Inspect* the suggestions ranked by a citation score
 * *Boost* the score with specific keywords of interest
-* *Visualize* citations in a network diagram on a timeline and as clusters
+* *Visualize* citations in a network diagram on a cluster map or timeline
 
 ## What is more
 
 * Add publications to selection by DOI, title, or search
 * Filter suggestions by different criteria
-* Track unread suggestions
-* Automatic tagging of special publication characteristics (e.g., highly cited)
+* Automatic tagging of publication characteristics (e.g., highly cited)
 * Quick access to publications through links (DOIs, open access versions, or Google Scholar)
 * Keyboard controls for an efficient workflow
 * Export/import search session
 * Export selected publications to BibTeX
-* Responsive design that allows working on your phone
+* Responsive design that supports screen sizes from phone up to ultra-wide displays
 
 ## Scientific publication
 
