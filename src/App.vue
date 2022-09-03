@@ -230,8 +230,13 @@ $box-padding: 1rem;
 @media screen and (min-width: 2400px) {
   #app #main {
     grid-template-areas: "selected suggested vis";
-    grid-template-columns: 50fr 50fr 100fr;
+    grid-template-columns: 50fr 50fr 75fr;
     grid-template-rows: auto;
+
+    &.network-expanded {
+      grid-template-columns: 50fr 50fr 125fr;
+      grid-template-rows: auto;
+    }
   }
 }
 </style>
