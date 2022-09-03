@@ -327,9 +327,6 @@ export default {
             publicationNodes.append("text");
             publicationNodes.append("circle");
             publicationNodes.on("click", this.activatePublication);
-            publicationNodes.classed("queuingForSelected", (d) =>
-              this.sessionStore.isQueuingForSelected(d.publication.doi)
-            )
             publicationNodes.attr(
               "data-tippy-content",
               (d) =>
@@ -356,6 +353,15 @@ export default {
         updateKeywordNodes.call(this);
 
         function updatePublicationNodes() {
+          const publicationNodes = this.node.filter((d) => d.publication);
+          
+          publicationNodes.classed("queuingForSelected", (d) =>
+            this.sessionStore.isQueuingForSelected(d.publication.doi)
+          );
+          publicationNodes.classed("queuingForExcluded", (d) =>
+            this.sessionStore.isQueuingForExcluded(d.publication.doi)
+          );
+
           this.node
             .select(".publication rect")
             .attr(
@@ -633,7 +639,8 @@ export default {
       transform: scale(1.2);
     }
 
-    &.queuingForSelected {
+    &.queuingForSelected,
+    &.queuingForExcluded {
       opacity: 0.5;
     }
   }

@@ -55,6 +55,7 @@ export const useSessionStore = defineStore('session', {
     isSelected: (state) => (doi) => state.selectedPublicationsDois.includes(doi),
     isExcluded: (state) => (doi) => state.excludedPublicationsDois.includes(doi),
     isQueuingForSelected: (state) => (doi) => state.selectedQueue.includes(doi),
+    isQueuingForExcluded: (state) => (doi) => state.excludedQueue.includes(doi),
     getSelectedPublicationByDoi: (state) => (doi) => state.selectedPublications.filter(publication => publication.doi === doi)[0],
     nextSuggestedDoiAfter(state) {
       return (doi) => {
