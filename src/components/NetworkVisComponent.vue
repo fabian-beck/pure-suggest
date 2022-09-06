@@ -153,7 +153,8 @@ export default {
           name === "updateSuggestions" ||
           name === "queueForSelected" ||
           name === "queueForExcluded" ||
-          name === "updateScores"
+          name === "updateScores" ||
+          name === "updateQueued"
         )
           this.plot(true);
         else if (!this.interfaceStore.isLoading && name === "clear")
