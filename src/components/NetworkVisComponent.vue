@@ -249,6 +249,12 @@ export default {
             publicationNodes.push({
               id: publication.doi,
               publication: publication,
+              isQueuingForSelected: this.sessionStore.isQueuingForSelected(
+                publication.doi
+              ),
+              isQueuingForExcluded: this.sessionStore.isQueuingForExcluded(
+                publication.doi
+              ),
             });
             i++;
           }
@@ -328,20 +334,6 @@ export default {
             publicationNodes.append("text");
             publicationNodes.append("circle");
             publicationNodes.on("click", this.activatePublication);
-            publicationNodes.attr(
-              "data-tippy-content",
-              (d) =>
-                `${
-                  d.publication.title ? d.publication.title : "[unknown title]"
-                } (${
-                  d.publication.authorShort
-                    ? d.publication.authorShort + ", "
-                    : ""
-                }${d.publication.year ? d.publication.year : "[unknown year]"})`
-            );
-            tippy(publicationNodes.nodes(), {
-              maxWidth: "min(400px,70vw)",
-            });
             const keywordNodes = g.filter((d) => !d.publication);
             keywordNodes.append("text");
             keywordNodes
@@ -350,18 +342,61 @@ export default {
             return g;
           });
 
-        updatePublicationNodes.call(this);
-        updateKeywordNodes.call(this);
+        try {
+          updatePublicationNodes.call(this);
+        } catch (error) {
+          throw new Error(
+            "Cannot update publication nodes in network: " + error.message
+          );
+        }
+
+        try {
+          updateKeywordNodes.call(this);
+        } catch (error) {
+          throw new Error(
+            "Cannot update keyword nodes in network: " + error.message
+          );
+        }
 
         function updatePublicationNodes() {
           const publicationNodes = this.node.filter((d) => d.publication);
 
-          publicationNodes.classed("queuingForSelected", (d) =>
-            this.sessionStore.isQueuingForSelected(d.publication.doi)
+          publicationNodes.classed(
+            "queuingForSelected",
+            (d) => d.isQueuingForSelected
           );
-          publicationNodes.classed("queuingForExcluded", (d) =>
-            this.sessionStore.isQueuingForExcluded(d.publication.doi)
+          publicationNodes.classed(
+            "queuingForExcluded",
+            (d) => d.isQueuingForExcluded
           );
+
+          if (this.publicationTooltips)
+            this.publicationTooltips.forEach((tooltip) => tooltip.destroy());
+          publicationNodes.attr(
+            "data-tippy-content",
+            (d) =>
+              `${
+                d.publication.title ? d.publication.title : "[unknown title]"
+              } (${
+                d.publication.authorShort
+                  ? d.publication.authorShort + ", "
+                  : ""
+              }${d.publication.year ? d.publication.year : "[unknown year]"})
+              ${
+                d.isQueuingForSelected
+                  ? "<br><br>Is to be added to selected publications."
+                  : ""
+              }
+              ${
+                d.isQueuingForExcluded
+                  ? "<br><br>Is to be added to excluded publications."
+                  : ""
+              }`
+          );
+          this.publicationTooltips = tippy(publicationNodes.nodes(), {
+            maxWidth: "min(400px,70vw)",
+            allowHTML: true,
+          });
 
           this.node
             .select(".publication rect")
@@ -417,24 +452,24 @@ export default {
 
         function updateKeywordNodes() {
           const keywordNodes = this.node.filter((d) => !d.publication);
-          keywordNodes
-            .classed("linkedToActive", (d) =>
-              this.sessionStore.isKeywordLinkedToActive(d.id)
-            )
-            .attr(
-              "data-tippy-content",
-              (d) =>
-                `Keyword "${d.id}" is matched in ${d.frequency} publication${
-                  d.frequency > 1 ? "s" : ""
-                }${
-                  this.sessionStore.isKeywordLinkedToActive(d.id)
-                    ? ", and also linked to the currently active publication"
-                    : ""
-                }.<br><br>Drag to reposition (sticky), click to detach.`
-            );
+
+          keywordNodes.classed("linkedToActive", (d) =>
+            this.sessionStore.isKeywordLinkedToActive(d.id)
+          );
+
           if (this.keywordTooltips)
             this.keywordTooltips.forEach((tooltip) => tooltip.destroy());
-          console.log(this.keywordTooltips);
+          keywordNodes.attr(
+            "data-tippy-content",
+            (d) =>
+              `Keyword "${d.id}" is matched in ${d.frequency} publication${
+                d.frequency > 1 ? "s" : ""
+              }${
+                this.sessionStore.isKeywordLinkedToActive(d.id)
+                  ? ", and also linked to the currently active publication"
+                  : ""
+              }.<br><br>Drag to reposition (sticky), click to detach.`
+          );
           this.keywordTooltips = tippy(keywordNodes.nodes(), {
             maxWidth: "min(400px,70vw)",
             allowHTML: true,
