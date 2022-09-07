@@ -375,23 +375,25 @@ export default {
           publicationNodes.attr(
             "data-tippy-content",
             (d) =>
-              `${
+              `<b>${
                 d.publication.title ? d.publication.title : "[unknown title]"
-              } (${
+              }</b> (${
                 d.publication.authorShort
                   ? d.publication.authorShort + ", "
                   : ""
               }${d.publication.year ? d.publication.year : "[unknown year]"})
-              ${
+              <br><br>
+              The publication is ${
+                d.publication.isSelected ? "selected" : "suggested"
+              }${
                 d.isQueuingForSelected
-                  ? "<br><br>Is to be added to selected publications."
+                  ? " and marked to be added to selected publications"
                   : ""
-              }
-              ${
+              }${
                 d.isQueuingForExcluded
-                  ? "<br><br>Is to be added to excluded publications."
+                  ? " and marked to be added to excluded publications"
                   : ""
-              }`
+              }.`
           );
           this.publicationTooltips = tippy(publicationNodes.nodes(), {
             maxWidth: "min(400px,70vw)",
