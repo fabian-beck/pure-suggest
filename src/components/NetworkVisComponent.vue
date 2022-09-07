@@ -432,7 +432,10 @@ export default {
                     : ""
                 }.<br><br>Drag to reposition (sticky), click to detach.`
             );
-          tippy(keywordNodes.nodes(), {
+          if (this.keywordTooltips)
+            this.keywordTooltips.forEach((tooltip) => tooltip.destroy());
+          console.log(this.keywordTooltips);
+          this.keywordTooltips = tippy(keywordNodes.nodes(), {
             maxWidth: "min(400px,70vw)",
             allowHTML: true,
           });
