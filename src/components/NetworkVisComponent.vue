@@ -226,6 +226,9 @@ export default {
         this.simulation.restart();
       } catch (error) {
         console.error("Cannot plot network: " + error.message);
+        this.interfaceStore.showErrorMessage(
+          "Sorry, an error occurred while plotting the citation network."
+        );
       }
 
       function initGraph() {
