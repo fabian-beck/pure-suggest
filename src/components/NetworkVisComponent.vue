@@ -185,7 +185,12 @@ export default {
           "charge",
           d3
             .forceManyBody()
-            .strength(Math.min(-200, -100 * Math.sqrt(that.sessionStore.selectedPublications.length)))
+            .strength(
+              Math.min(
+                -200,
+                -100 * Math.sqrt(that.sessionStore.selectedPublications.length)
+              )
+            )
         )
         .force(
           "x",
@@ -339,7 +344,13 @@ export default {
               );
             const publicationNodes = g.filter((d) => d.publication);
             publicationNodes.append("rect");
-            publicationNodes.append("text");
+            publicationNodes.append("text").classed("score", true);
+            publicationNodes
+              .append("text")
+              .classed("labelQueuingForSelected", true)
+              .attr("x", 15)
+              .attr("y", 15)
+              .text("+");
             publicationNodes.append("circle");
             publicationNodes.on("click", this.activatePublication);
             const keywordNodes = g.filter((d) => !d.publication);
@@ -425,15 +436,10 @@ export default {
             .attr("fill", (d) => d.publication.scoreColor);
 
           this.node
-            .select(".publication text")
-            .attr(
-              "class",
-              (d) =>
-                `${
-                  !d.publication.isRead && !d.publication.isSelected
-                    ? "unread"
-                    : ""
-                }`
+            .select(".publication text.score")
+            .classed(
+              "unread",
+              (d) => !d.publication.isRead && !d.publication.isSelected
             )
             .attr("y", 1)
             .attr("font-size", "0.8em")
@@ -677,11 +683,19 @@ export default {
     & text {
       text-anchor: middle;
       dominant-baseline: middle;
-    }
 
-    & text.unread {
-      fill: $info-dark;
-      font-weight: 1000;
+      &.score.unread {
+        fill: $info-dark;
+        font-weight: 1000;
+      }
+
+      &.labelQueuingForSelected {
+        visibility: hidden;
+        font-weight: 1000;
+        fill: $primary;
+        stroke: white;
+        stroke-width: 0.5;
+      }
     }
 
     &:hover rect {
@@ -690,6 +704,10 @@ export default {
 
     &.queuingForSelected {
       opacity: 0.6;
+
+      & text.labelQueuingForSelected {
+        visibility: visible;
+      }
     }
 
     &.queuingForExcluded {
