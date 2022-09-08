@@ -104,7 +104,6 @@ export default {
   watch: {
     isNetworkClusters: {
       handler: function () {
-        this.initForces();
         this.plot(true);
       },
     },
@@ -141,8 +140,6 @@ export default {
     this.simulation = d3.forceSimulation();
     this.simulation.alphaDecay(0.02);
 
-    this.initForces();
-
     this.label = this.svg.append("g").attr("class", "labels").selectAll("text");
     this.link = this.svg.append("g").attr("class", "links").selectAll("path");
     this.node = this.svg.append("g").attr("class", "nodes").selectAll("rect");
@@ -173,7 +170,8 @@ export default {
             .forceLink()
             .id((d) => d.id)
             .distance((d) => {
-              if (that.isNetworkClusters && d.internal) return 150;
+              if (that.isNetworkClusters && d.internal)
+                return 500 / that.sessionStore.selectedPublications.length;
               if (d.type === "keyword") return 0;
               return 10;
             })
@@ -183,7 +181,12 @@ export default {
               return 0.15 * clustersFactor * internalFactor;
             })
         )
-        .force("charge", d3.forceManyBody().strength(-250))
+        .force(
+          "charge",
+          d3
+            .forceManyBody()
+            .strength(Math.min(-200, -100 * Math.sqrt(that.sessionStore.selectedPublications.length)))
+        )
         .force(
           "x",
           d3
@@ -212,6 +215,8 @@ export default {
             restart ? "with" : "without"
           } restarting layout computation.`
         );
+
+        this.initForces();
 
         initGraph.call(this);
         updateNodes.call(this);
