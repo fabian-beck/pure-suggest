@@ -351,6 +351,12 @@ export default {
               .attr("x", 15)
               .attr("y", 15)
               .text("+");
+            publicationNodes
+              .append("text")
+              .classed("labelQueuingForExcluded", true)
+              .attr("x", 15)
+              .attr("y", 15)
+              .text("-");
             publicationNodes.append("circle");
             publicationNodes.on("click", this.activatePublication);
             const keywordNodes = g.filter((d) => !d.publication);
@@ -689,10 +695,10 @@ export default {
         font-weight: 1000;
       }
 
-      &.labelQueuingForSelected {
+      &.labelQueuingForSelected,
+      &.labelQueuingForExcluded {
         visibility: hidden;
         font-weight: 1000;
-        fill: $primary;
         stroke: white;
         stroke-width: 0.5;
       }
@@ -707,11 +713,16 @@ export default {
 
       & text.labelQueuingForSelected {
         visibility: visible;
+        fill: $primary;
       }
     }
 
     &.queuingForExcluded {
       opacity: 0.3;
+
+      & text.labelQueuingForExcluded {
+        visibility: visible;
+      }
     }
   }
   & g.keyword.node-container {
