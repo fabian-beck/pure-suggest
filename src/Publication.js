@@ -126,7 +126,6 @@ export default class Publication {
                     this.isUnnoted = this.citationsPerYear < 1 ? `less than 1 citation per year (${this.citationsPerYear.toFixed(1)})` : false;
                 }
                 , {
-                    mode: "no-cors",
                     headers: {
                         authorization: "aa9da96d-3c7b-49c1-a2d8-1c2d01ae10a5",
                     },
