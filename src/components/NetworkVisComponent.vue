@@ -602,6 +602,7 @@ export default {
     & rect {
       cursor: pointer;
       stroke-width: 2;
+      filter: drop-shadow( 1px 1px 2px rgba(0, 0, 0, .2));
 
       &.selected {
         stroke: $primary;
@@ -633,6 +634,7 @@ export default {
 
     &:hover rect {
       transform: scale(1.2);
+      filter: drop-shadow( 2px 2px 2px rgba(0, 0, 0, .2));
     }
   }
   & g.keyword.node-container {
@@ -644,6 +646,7 @@ export default {
       stroke: $warning;
       stroke-width: 0.5px;
       font-weight: 650;
+      filter: drop-shadow( 1.5px 1.5px 2px rgba(0, 0, 0, .2));
     }
 
     &.fixed text {
