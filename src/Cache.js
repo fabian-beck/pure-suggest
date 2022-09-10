@@ -1,13 +1,13 @@
 import LZString from 'lz-string';
 
-export async function cachedFetch(url, processData) {
+export async function cachedFetch(url, processData, fetchParameters = {}) {
   try {
     const data = JSON.parse(LZString.decompress(localStorage[url]));
     if (!data) throw new Error("Cached data is empty");
     processData(data);
   } catch (cannotLoadFromCacheError) {
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, fetchParameters);
       if (!response.ok) {
         throw new Error(`Received response with status ${response.status}`);
       }
@@ -32,6 +32,7 @@ export async function cachedFetch(url, processData) {
         }
       }
       console.log(`Successfully fetched data for "${url}"`);
+      
       processData(data);
     } catch (error3) {
       console.error(`Unable to fetch or process data for "${url}": ${error3}`)
