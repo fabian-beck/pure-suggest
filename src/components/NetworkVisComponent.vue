@@ -641,10 +641,13 @@ export default {
     & text {
       text-anchor: middle;
       transform: translate(0px, 4px);
+      stroke: $warning;
+      stroke-width: 0.5px;
+      font-weight: 650;
     }
 
     &.fixed text {
-      font-weight: 650;
+      font-weight: 850;
     }
 
     &.linkedToActive text {
