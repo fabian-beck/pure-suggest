@@ -595,6 +595,7 @@ export default {
 
 #network-svg {
   background: white;
+  box-shadow: 2px 2px 5px 5px inset rgba(0, 0, 0, 0.1);
 
   & g.publication.node-container {
     cursor: pointer;
