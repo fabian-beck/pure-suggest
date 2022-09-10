@@ -468,6 +468,7 @@ li.publication-component {
     border-width: 0.125rem;
     border-color: $info;
     border-style: solid;
+    box-shadow: 1px 1px 5px rgba($color: #000000, $alpha: 0.2);
   }
 
   &.selected .media-left {
