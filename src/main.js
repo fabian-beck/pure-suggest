@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import App from './App.vue'
-import {version} from './../package.json';
+import packageInfo from './../package.json';
 
 import { createPinia, PiniaVuePlugin } from 'pinia'
 Vue.use(PiniaVuePlugin)
@@ -22,7 +22,7 @@ Vue.config.productionTip = false;
 Vue.prototype.$appName = "PURE suggest";
 Vue.prototype.$appNameHtml = '<span class="has-text-primary">PURE&nbsp;</span><span class="has-text-info">suggest</span>';
 Vue.prototype.$appSubtitle = "Citation-based literature search"
-Vue.prototype.$version = version;
+Vue.prototype.$version = packageInfo.version;
 
 new Vue({
   render: h => h(App),
