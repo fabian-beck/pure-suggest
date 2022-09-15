@@ -51,7 +51,6 @@ export default class Publication {
             await cachedFetch(
                 `https://opencitations.net/index/coci/api/v1/metadata/${this.doi}`,
                 message => {
-                    console.log(message);
                     if (!message || message.length === 0) {
                         console.error(`Unable to process metadata for DOI "${this.doi}" because of empty message.`);
                         return;
