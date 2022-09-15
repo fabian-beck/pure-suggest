@@ -276,6 +276,10 @@ export default {
   display: grid;
   grid-template-rows: max-content max-content max-content auto;
 
+  & input.boost {
+    text-transform: uppercase;
+  }
+
   & .button.disabled {
     color: $grey;
     background-color: $light !important;
