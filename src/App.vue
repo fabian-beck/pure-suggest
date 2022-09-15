@@ -65,8 +65,12 @@ export default {
   },
   mounted() {
     if (this.$route.query.selected) {
-      this.sessionStore.addPublicationsToSelection(this.$route.query.selected.split(','));
-      this.sessionStore.updateSuggestions();
+      const session = {
+        selected: this.$route.query.selected.split(","),
+        excluded: this.$route.query.excluded.split(","),
+        boost: this.$route.query.boost,
+      };
+      this.sessionStore.loadSession(session);
     }
     window.onbeforeunload = () => {
       window.scrollTo(0, 0);
