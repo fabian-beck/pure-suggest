@@ -17,6 +17,10 @@ Vue.use(VueTippy, {
 // eslint-disable-next-line vue/multi-word-component-names
 Vue.component("tippy", TippyComponent);
 
+import VueRouter from 'vue-router'
+Vue.use(VueRouter);
+const router = new VueRouter({});
+
 Vue.config.productionTip = false;
 
 Vue.prototype.$appName = "PURE suggest";
@@ -27,4 +31,5 @@ Vue.prototype.$version = packageInfo.version;
 new Vue({
   render: h => h(App),
   pinia,
+  router,
 }).$mount('#app')
