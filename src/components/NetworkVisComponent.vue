@@ -402,9 +402,9 @@ export default {
             .select(".keyword text")
             .attr("y", 1)
             .attr("font-size", (d) => {
-              if (d.frequency >= 25) return "1.2em";
-              if (d.frequency >= 10) return "1.0em";
-              if (d.frequency >= 5) return "0.85em";
+              if (d.frequency >= 25) return "1.1em";
+              if (d.frequency >= 10) return "0.9em";
+              if (d.frequency >= 5) return "0.8em";
               return "0.7em";
             })
             .text((d) => d.id);
@@ -650,6 +650,7 @@ export default {
       stroke-width: 0.5px;
       font-weight: 650;
       filter: drop-shadow( 1.5px 1.5px 2px rgba(0, 0, 0, .2));
+      text-transform: uppercase;
     }
 
     &.fixed text {
