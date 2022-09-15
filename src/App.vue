@@ -64,6 +64,10 @@ export default {
     window.addEventListener("keydown", onKey);
   },
   mounted() {
+    if (this.$route.query.selected) {
+      this.sessionStore.addPublicationsToSelection(this.$route.query.selected.split(','));
+      this.sessionStore.updateSuggestions();
+    }
     window.onbeforeunload = () => {
       window.scrollTo(0, 0);
       // triggers a prompt before closing/reloading the page
