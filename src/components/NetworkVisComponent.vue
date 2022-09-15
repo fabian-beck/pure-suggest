@@ -184,7 +184,12 @@ export default {
           "charge",
           d3
             .forceManyBody()
-            .strength(Math.min(-200, -100 * Math.sqrt(that.sessionStore.selectedPublications.length)))
+            .strength(
+              Math.min(
+                -200,
+                -100 * Math.sqrt(that.sessionStore.selectedPublications.length)
+              )
+            )
         )
         .force(
           "x",
@@ -597,7 +602,7 @@ export default {
 
 #network-svg {
   background: white;
-  box-shadow: 2px 2px 5px 5px inset rgba(0, 0, 0, 0.1);
+  box-shadow: 1px 2px 3px 0px inset rgba(0, 0, 0, 0.2);
 
   & g.publication.node-container {
     cursor: pointer;
@@ -605,7 +610,7 @@ export default {
     & rect {
       cursor: pointer;
       stroke-width: 2;
-      filter: drop-shadow( 1px 1px 2px rgba(0, 0, 0, .2));
+      filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.2));
 
       &.selected {
         stroke: $primary;
@@ -637,7 +642,7 @@ export default {
 
     &:hover rect {
       transform: scale(1.2);
-      filter: drop-shadow( 2px 2px 2px rgba(0, 0, 0, .2));
+      filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.2));
     }
   }
   & g.keyword.node-container {
@@ -649,7 +654,7 @@ export default {
       stroke: $warning;
       stroke-width: 0.5px;
       font-weight: 650;
-      filter: drop-shadow( 1.5px 1.5px 2px rgba(0, 0, 0, .2));
+      filter: drop-shadow(1.5px 1.5px 2px rgba(0, 0, 0, 0.2));
       text-transform: uppercase;
     }
 

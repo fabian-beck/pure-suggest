@@ -288,14 +288,13 @@ export default {
 
   & .notification {
     margin-bottom: 0;
-    box-shadow: 0 0.05rem 0.25rem grey;
     border-radius: 0;
   }
 
   & .publication-list {
     max-height: 100%;
     overflow-y: scroll;
-    border: 1px solid $border;
+    box-shadow: 1px 2px 3px 0px inset rgba(0, 0, 0, 0.2);
   }
 }
 </style>
