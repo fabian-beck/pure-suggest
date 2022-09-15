@@ -429,7 +429,6 @@ export default {
             );
           if (this.keywordTooltips)
             this.keywordTooltips.forEach((tooltip) => tooltip.destroy());
-          console.log(this.keywordTooltips);
           this.keywordTooltips = tippy(keywordNodes.nodes(), {
             maxWidth: "min(400px,70vw)",
             allowHTML: true,
