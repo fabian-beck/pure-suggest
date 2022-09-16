@@ -652,15 +652,13 @@ export default {
     & text {
       text-anchor: middle;
       transform: translate(0px, 4px);
-      stroke: $warning;
-      stroke-width: 0.5px;
-      font-weight: 650;
-      filter: drop-shadow(1.5px 1.5px 2px rgba(0, 0, 0, 0.2));
+      filter: drop-shadow(0px 0px 2px $warning);
       text-transform: uppercase;
+      font-weight: 600;
     }
 
     &.fixed text {
-      font-weight: 850;
+      font-weight: 750;
     }
 
     &.linkedToActive text {
