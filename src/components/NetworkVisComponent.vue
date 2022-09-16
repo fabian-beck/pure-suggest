@@ -592,7 +592,6 @@ export default {
 </script>
 
 <style lang="scss">
-@import "~bulma/sass/utilities/_all";
 
 .network-of-references .box {
   height: 100%;

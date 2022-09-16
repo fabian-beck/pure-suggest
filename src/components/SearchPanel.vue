@@ -242,7 +242,6 @@ export default {
 </script>
 
 <style lang="scss">
-@import "~bulma/sass/utilities/_all";
 
 .card {
   & .publication-list {

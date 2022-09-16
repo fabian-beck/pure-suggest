@@ -285,7 +285,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "~bulma/sass/utilities/_all";
 
 .box {
   display: grid;
