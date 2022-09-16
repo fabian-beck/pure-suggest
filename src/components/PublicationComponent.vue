@@ -436,6 +436,7 @@ li.publication-component {
   min-height: 5rem;
   outline-offset: -0.25rem;
   z-index: -1;
+  text-shadow: 0 0 15px white;
 
   &:hover {
     background: rgba($color: #000000, $alpha: 0.03) !important;
@@ -455,7 +456,7 @@ li.publication-component {
 
     & .glyph {
       color: $info-dark;
-      text-shadow: 0 0 15px $grey-lighter;
+      
     }
   }
 

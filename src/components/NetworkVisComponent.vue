@@ -634,6 +634,7 @@ export default {
     & text {
       text-anchor: middle;
       dominant-baseline: middle;
+      filter: drop-shadow(0px 0px 1px white);
     }
 
     & text.unread {
