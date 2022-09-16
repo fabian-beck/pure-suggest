@@ -271,7 +271,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "~bulma/sass/utilities/_all";
+
 .box {
   display: grid;
   grid-template-rows: max-content max-content max-content auto;
@@ -288,14 +288,11 @@ export default {
 
   & .notification {
     margin-bottom: 0;
-    box-shadow: 0 0.05rem 0.25rem grey;
     border-radius: 0;
   }
 
   & .publication-list {
-    max-height: 100%;
-    overflow-y: scroll;
-    border: 1px solid $border;
+    @include scrollable-list;
   }
 }
 </style>

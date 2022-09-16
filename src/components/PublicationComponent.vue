@@ -404,7 +404,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "~bulma/sass/utilities/_all";
 
 .tooltip-target {
   position: relative;
@@ -438,18 +437,19 @@ li.publication-component {
   cursor: pointer;
   min-height: 5rem;
   outline-offset: -0.25rem;
+  z-index: -1;
 
   &:hover {
-    background: $white-ter;
+    background: rgba($color: #000000, $alpha: 0.05);
   }
 
   &.active {
-    background: $grey-lighter;
+    background: rgba($color: #000000, $alpha: 0.1);
     cursor: default;
   }
 
   &.unread {
-    background: $info-light;
+    background: rgba($color: $info, $alpha: 0.1);
 
     & .summary {
       color: $info-dark;

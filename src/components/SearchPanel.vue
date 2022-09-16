@@ -242,7 +242,6 @@ export default {
 </script>
 
 <style lang="scss">
-@import "~bulma/sass/utilities/_all";
 
 .card {
   & .publication-list {
@@ -250,8 +249,8 @@ export default {
     margin: 0;
     list-style: none;
     height: calc(100vh - 350px);
-    overflow-y: scroll;
     border: 1px solid $border;
+    @include scrollable-list;
 
     & li {
       margin: 0 !important;

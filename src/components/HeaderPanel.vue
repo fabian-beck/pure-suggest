@@ -123,7 +123,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "~bulma/sass/utilities/_all";
 
 .title {
   font-size: $size-4;
