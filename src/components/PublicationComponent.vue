@@ -440,11 +440,11 @@ li.publication-component {
   z-index: -1;
 
   &:hover {
-    background: rgba($color: #000000, $alpha: 0.05);
+    background: rgba($color: #000000, $alpha: 0.03) !important;
   }
 
   &.active {
-    background: rgba($color: #000000, $alpha: 0.1);
+    background: rgba($color: #000000, $alpha: 0.1) !important;
     cursor: default;
   }
 
