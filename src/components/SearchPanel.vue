@@ -249,9 +249,8 @@ export default {
     margin: 0;
     list-style: none;
     height: calc(100vh - 350px);
-    overflow-y: scroll;
     border: 1px solid $border;
-    box-shadow: 1px 2px 3px 0px inset rgba(0, 0, 0, 0.2);
+    @include scrollable-list;
 
     & li {
       margin: 0 !important;

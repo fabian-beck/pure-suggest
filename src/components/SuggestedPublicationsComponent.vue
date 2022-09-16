@@ -285,7 +285,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
 .box {
   display: grid;
   grid-template-rows: max-content max-content auto;
@@ -319,9 +318,7 @@ export default {
   }
 
   & .publication-list {
-    max-height: 100%;
-    overflow-y: scroll;
-    box-shadow: 1px 2px 3px 0px inset rgba(0, 0, 0, 0.2);
+    @include scrollable-list;
   }
 }
 

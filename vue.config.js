@@ -8,6 +8,7 @@ module.exports = {
             sass: {
                 prependData: `
                     @import "~bulma/sass/utilities/_all";
+                    @import "@/assets/_shared.scss";
                 `
             }
         }
