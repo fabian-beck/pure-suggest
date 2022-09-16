@@ -609,7 +609,7 @@ export default {
     & rect {
       cursor: pointer;
       stroke-width: 2;
-      filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.2));
+      @include light-shadow-svg;
 
       &.selected {
         stroke: $primary;
@@ -627,6 +627,8 @@ export default {
 
     & circle {
       fill: $warning;
+      stroke-width: 0.5;
+      @include light-shadow-svg;
     }
 
     & text {

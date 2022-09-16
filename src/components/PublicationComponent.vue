@@ -25,12 +25,7 @@
           <div class="tooltip-target">
             <div class="is-size-3 is-inline-block">{{ publication.score }}</div>
             <div
-              class="
-                boost-indicator
-                has-background-warning
-                is-size-5 is-inline-block
-                ml-1
-              "
+              class="boost-indicator"
               v-if="publication.boostFactor > 1"
               :style="boostIndicatorSize"
             >
@@ -269,7 +264,7 @@
               v-if="publication.abstract"
               @click.stop="showAbstract"
               @click.middle.stop="showAbstract"
-              @keyup.enter ="showAbstract"
+              @keyup.enter="showAbstract"
               data-tippy-content="Abs<span class='key'>t</span>ract"
               v-tippy
               ><b-icon icon="text"></b-icon
@@ -296,7 +291,7 @@
             <a
               @click.stop="exportBibtex"
               @click.middle.stop="exportBibtex"
-              @keyup.enter ="exportBibtex"
+              @keyup.enter="exportBibtex"
               class="ml-5"
               data-tippy-content="Export as BibTe<span class='key'>X</span> citation"
               v-tippy
@@ -372,11 +367,11 @@ export default {
 
     chevronOffset: function () {
       if (this.publication.boostFactor >= 8) {
-        return { position: "relative", top: "0rem" };
+        return { position: "relative", top: "-0.1rem" };
       } else if (this.publication.boostFactor >= 4) {
-        return { position: "relative", top: "-0.15rem" };
+        return { position: "relative", top: "-0.25rem" };
       } else if (this.publication.boostFactor > 1) {
-        return { position: "relative", top: "-0.3rem" };
+        return { position: "relative", top: "-0.35rem" };
       }
       return "";
     },
@@ -404,7 +399,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
 .tooltip-target {
   position: relative;
 }
@@ -424,7 +418,11 @@ export default {
   position: absolute;
   top: -7px;
   right: -7px;
-  // vertical-align: middle;
+  @include light-shadow;
+  background: $warning;
+  font-size: $size-5;
+  border: 1px solid $info;
+  padding: -10px;
 }
 
 *:focus {
@@ -468,11 +466,15 @@ li.publication-component {
     border-width: 0.125rem;
     border-color: $info;
     border-style: solid;
-    box-shadow: 1px 1px 5px rgba($color: #000000, $alpha: 0.2);
+    @include light-shadow;
   }
 
   &.selected .media-left {
     border-color: $primary;
+
+    & .boost-indicator {
+      border-color: $primary;
+    }
   }
 
   &.active .media-left {
