@@ -629,9 +629,12 @@ export default {
       font-weight: 1000;
     }
 
-    &:hover rect {
-      transform: scale(1.2);
-      filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.2));
+    &:hover {
+      & rect,
+      & circle {
+        transform: scale(1.1);
+        filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.2));
+      }
     }
 
     &.selected {
