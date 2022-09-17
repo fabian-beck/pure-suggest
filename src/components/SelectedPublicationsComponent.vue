@@ -277,7 +277,7 @@ export default {
   grid-template-rows: max-content max-content max-content auto;
 
   & input.boost {
-    text-transform: uppercase;
+    text-transform: lowercase;
   }
 
   & .button.disabled {
