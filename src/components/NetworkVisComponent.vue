@@ -655,6 +655,7 @@ export default {
       stroke-width: 4;
     }
   }
+
   & g.keyword.node-container {
     cursor: grab;
 
@@ -663,17 +664,21 @@ export default {
       transform: translate(0px, 4px);
       filter: drop-shadow(0px 0px 2px $warning);
       text-transform: uppercase;
-      font-weight: 600;
     }
 
     &.fixed text {
-      font-weight: 750;
+      font-weight: 700;
     }
 
     &.linkedToActive text {
       text-decoration-line: underline;
     }
+
+    &:hover text {
+      transform: translate(0px, 3.5px) scale(1.1);
+    }
   }
+
   & path.citation {
     fill: none;
     stroke-width: 3;
