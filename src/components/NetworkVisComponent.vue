@@ -29,6 +29,7 @@
               v-model="isNetworkClusters"
               type="is-dark"
               passive-type="is-dark"
+              @click.native.stop=""
             ></b-switch>
             <label :class="{ 'has-text-grey-light': !isNetworkClusters }"
               >Clusters</label
