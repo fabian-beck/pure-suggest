@@ -493,12 +493,8 @@ li.publication-component {
     }
   }
 
-  &.active .media-left {
-    border-width: 0.375rem;
-  }
-
-  &.linkedToActive .media-left {
-    border-width: 0.25rem;
+  &.active .media-left, &.linkedToActive .media-left {
+    border-width: 0.30rem;
   }
 
   & .glyph > div:focus > div {
