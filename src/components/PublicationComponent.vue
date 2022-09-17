@@ -386,73 +386,77 @@ li.publication-component {
   z-index: -1;
   text-shadow: 0 0 15px white;
 
-  & .glyph {
-    width: 5rem;
-    height: 5rem;
-    margin: 0.5rem;
-    border-width: 0.125rem;
-    border-color: $info;
-    border-style: solid;
-    @include light-shadow;
+  & .media-left {
+    margin: 0;
 
-    & .tooltip-target {
-      position: relative;
-    }
-
-    & .reference-counts {
-      .icon {
-        margin: -0.4em;
-      }
-
-      div {
-        width: 50%;
-      }
-    }
-
-    & .boost-indicator {
-      border-radius: 50%;
-      position: absolute;
-      top: -7px;
-      right: -7px;
+    & .glyph {
+      width: 5rem;
+      height: 5rem;
+      margin: 0.6rem;
+      border-width: 0.125rem;
+      border-color: $info;
+      border-style: solid;
       @include light-shadow;
-      background: $warning;
-      font-size: $size-5;
-      border: 1px solid $info;
 
-      & .icon {
+      & .tooltip-target {
         position: relative;
       }
 
-      &.chevron-up {
+      & .reference-counts {
+        .icon {
+          margin: -0.4em;
+        }
+
+        div {
+          width: 50%;
+        }
+      }
+
+      & .boost-indicator {
+        border-radius: 50%;
+        position: absolute;
         top: -7px;
         right: -7px;
-        width: 1.2rem;
-        height: 1.2rem;
+        @include light-shadow;
+        background: $warning;
+        font-size: $size-5;
+        border: 1px solid $info;
 
         & .icon {
-          top: -0.45rem;
+          position: relative;
         }
-      }
 
-      &.chevron-double-up {
-        top: -8px;
-        right: -8px;
-        width: 1.5rem;
-        height: 1.5rem;
+        &.chevron-up {
+          top: -7px;
+          right: -7px;
+          width: 1.2rem;
+          height: 1.2rem;
 
-        & .icon {
-          top: -0.35rem;
+          & .icon {
+            top: -0.45rem;
+          }
         }
-      }
 
-      &.chevron-triple-up {
-        top: -9px;
-        right: -9px;
-        width: 1.8rem;
-        height: 1.8rem;
+        &.chevron-double-up {
+          top: -8px;
+          right: -8px;
+          width: 1.5rem;
+          height: 1.5rem;
 
-        & .icon {
-          top: -0.2rem;
+          & .icon {
+            top: -0.35rem;
+          }
+        }
+
+        &.chevron-triple-up {
+          top: -9px;
+          right: -9px;
+          width: 1.8rem;
+          height: 1.8rem;
+
+          & .icon {
+            top: -0.2rem;
+          }
         }
       }
     }
