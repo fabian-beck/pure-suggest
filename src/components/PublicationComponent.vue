@@ -15,10 +15,10 @@
     v-on:focus="activate"
     @click.stop="activate"
   >
-    <tippy class="glyph">
+    <tippy class="media-left">
       <template v-slot:trigger>
         <div
-          class="media-left has-text-centered"
+          class="glyph has-text-centered"
           v-bind:style="{ 'background-color': publication.scoreColor }"
           v-show="publication.wasFetched"
         >
@@ -387,6 +387,14 @@ li.publication-component {
   text-shadow: 0 0 15px white;
 
   & .glyph {
+    width: 5rem;
+    height: 5rem;
+    margin: 0.5rem;
+    border-width: 0.125rem;
+    border-color: $info;
+    border-style: solid;
+    @include light-shadow;
+
     & .tooltip-target {
       position: relative;
     }
@@ -475,17 +483,7 @@ li.publication-component {
     }
   }
 
-  & .media-left {
-    width: 5rem;
-    height: 5rem;
-    margin: 0.5rem;
-    border-width: 0.125rem;
-    border-color: $info;
-    border-style: solid;
-    @include light-shadow;
-  }
-
-  &.selected .media-left {
+  &.selected .glyph {
     border-color: $primary;
 
     & .boost-indicator {
@@ -493,8 +491,9 @@ li.publication-component {
     }
   }
 
-  &.active .media-left, &.linkedToActive .media-left {
-    border-width: 0.30rem;
+  &.active .glyph,
+  &.linkedToActive .glyph {
+    border-width: 0.3rem;
   }
 
   & .glyph > div:focus > div {
