@@ -373,68 +373,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.tooltip-target {
-  position: relative;
-}
-
-.reference-counts {
-  .icon {
-    margin: -0.4em;
-  }
-
-  div {
-    width: 50%;
-  }
-}
-
-.boost-indicator {
-  border-radius: 50%;
-  position: absolute;
-  top: -7px;
-  right: -7px;
-  @include light-shadow;
-  background: $warning;
-  font-size: $size-5;
-  border: 1px solid $info;
-
-  & .icon {
-    position: relative;
-  }
-
-  &.chevron-up {
-    top: -7px;
-    right: -7px;
-    width: 1.2rem;
-    height: 1.2rem;
-
-    & .icon {
-      top: -0.45rem;
-    }
-  }
-
-  &.chevron-double-up {
-    top: -8px;
-    right: -8px;
-    width: 1.5rem;
-    height: 1.5rem;
-
-    & .icon {
-      top: -0.35rem;
-    }
-  }
-
-  &.chevron-triple-up {
-    top: -9px;
-    right: -9px;
-    width: 1.8rem;
-    height: 1.8rem;
-
-    & .icon {
-      top: -0.2rem;
-    }
-  }
-}
-
 *:focus {
   outline: 1px solid $dark;
 }
@@ -448,8 +386,76 @@ li.publication-component {
   z-index: -1;
   text-shadow: 0 0 15px white;
 
+  & .glyph {
+    & .tooltip-target {
+      position: relative;
+    }
+
+    & .reference-counts {
+      .icon {
+        margin: -0.4em;
+      }
+
+      div {
+        width: 50%;
+      }
+    }
+
+    & .boost-indicator {
+      border-radius: 50%;
+      position: absolute;
+      top: -7px;
+      right: -7px;
+      @include light-shadow;
+      background: $warning;
+      font-size: $size-5;
+      border: 1px solid $info;
+
+      & .icon {
+        position: relative;
+      }
+
+      &.chevron-up {
+        top: -7px;
+        right: -7px;
+        width: 1.2rem;
+        height: 1.2rem;
+
+        & .icon {
+          top: -0.45rem;
+        }
+      }
+
+      &.chevron-double-up {
+        top: -8px;
+        right: -8px;
+        width: 1.5rem;
+        height: 1.5rem;
+
+        & .icon {
+          top: -0.35rem;
+        }
+      }
+
+      &.chevron-triple-up {
+        top: -9px;
+        right: -9px;
+        width: 1.8rem;
+        height: 1.8rem;
+
+        & .icon {
+          top: -0.2rem;
+        }
+      }
+    }
+  }
+
   &:hover {
     background: rgba($color: #000000, $alpha: 0.03) !important;
+
+    & .glyph {
+      transform: scale(1.05);
+    }
   }
 
   &.active {
