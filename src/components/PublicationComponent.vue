@@ -373,7 +373,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-*:focus {
+*:focus, .active {
   outline: 1px solid $dark;
 }
 
