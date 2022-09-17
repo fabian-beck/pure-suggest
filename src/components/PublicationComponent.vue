@@ -26,14 +26,10 @@
             <div class="is-size-3 is-inline-block">{{ publication.score }}</div>
             <div
               class="boost-indicator"
+              :class="chevronType"
               v-if="publication.boostFactor > 1"
-              :style="boostIndicatorSize"
             >
-              <b-icon
-                :icon="chevronType"
-                size="is-small"
-                :style="chevronOffset"
-              />
+              <b-icon :icon="chevronType" size="is-small" />
             </div>
           </div>
           <div class="reference-counts is-size-6">
@@ -353,28 +349,6 @@ export default {
       }
       return "";
     },
-
-    boostIndicatorSize: function () {
-      if (this.publication.boostFactor >= 8) {
-        return { width: "2rem", height: "2rem" };
-      } else if (this.publication.boostFactor >= 4) {
-        return { width: "1.6rem", height: "1.6rem" };
-      } else if (this.publication.boostFactor > 1) {
-        return { width: "1.3rem", height: "1.3rem " };
-      }
-      return "";
-    },
-
-    chevronOffset: function () {
-      if (this.publication.boostFactor >= 8) {
-        return { position: "relative", top: "-0.1rem" };
-      } else if (this.publication.boostFactor >= 4) {
-        return { position: "relative", top: "-0.25rem" };
-      } else if (this.publication.boostFactor > 1) {
-        return { position: "relative", top: "-0.35rem" };
-      }
-      return "";
-    },
   },
   methods: {
     activate: function () {
@@ -422,7 +396,43 @@ export default {
   background: $warning;
   font-size: $size-5;
   border: 1px solid $info;
-  padding: -10px;
+
+  & .icon {
+    position: relative;
+  }
+
+  &.chevron-up {
+    top: -7px;
+    right: -7px;
+    width: 1.2rem;
+    height: 1.2rem;
+
+    & .icon {
+      top: -0.45rem;
+    }
+  }
+
+  &.chevron-double-up {
+    top: -8px;
+    right: -8px;
+    width: 1.5rem;
+    height: 1.5rem;
+
+    & .icon {
+      top: -0.35rem;
+    }
+  }
+
+  &.chevron-triple-up {
+    top: -9px;
+    right: -9px;
+    width: 1.8rem;
+    height: 1.8rem;
+
+    & .icon {
+      top: -0.2rem;
+    }
+  }
 }
 
 *:focus {
@@ -456,7 +466,6 @@ li.publication-component {
 
     & .glyph {
       color: $info-dark;
-      
     }
   }
 
