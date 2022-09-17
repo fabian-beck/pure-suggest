@@ -194,13 +194,13 @@ export default class Publication {
         this.score = (this.citationCount + this.referenceCount) * this.boostFactor;
         // update score color
         let lightness = 100;
-        if (this.score >= 20) {
-            lightness = 50;
-        } else if (this.score >= 10) {
-            lightness = 70;
-        } else if (this.score >= 5) {
+        if (this.score >= 32) {
+            lightness = 60;
+        } else if (this.score >= 16) {
+            lightness = 72;
+        } else if (this.score >= 8) {
             lightness = 80;
-        } else if (this.score >= 3) {
+        } else if (this.score >= 4) {
             lightness = 90;
         } else if (this.score >= 2) {
             lightness = 95;

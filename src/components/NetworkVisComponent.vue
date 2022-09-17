@@ -363,15 +363,16 @@ export default {
         updateKeywordNodes.call(this);
 
         function updatePublicationNodes() {
-          this.node
-            .select(".publication rect")
-            .attr(
-              "class",
-              (d) =>
-                (d.publication.isSelected ? "selected" : "suggested") +
-                (d.publication.isActive ? " active" : "") +
-                (d.publication.isLinkedToActive ? " linkedToActive" : "")
-            )
+          const publicationNodes = this.node.filter((d) => d.publication);
+
+          publicationNodes
+            .classed("selected", (d) => d.publication.isSelected)
+            .classed("suggested", (d) => !d.publication.isSelected)
+            .classed("active", (d) => d.publication.isActive)
+            .classed("linkedToActive", (d) => d.publication.isLinkedToActive);
+
+          publicationNodes
+            .select("rect")
             .attr("width", (d) => getRectSize(d))
             .attr("height", (d) => getRectSize(d))
             .attr("x", (d) => -getRectSize(d) / 2)
@@ -379,8 +380,8 @@ export default {
             .attr("stroke-width", (d) => (d.publication.isActive ? 4 : 3))
             .attr("fill", (d) => d.publication.scoreColor);
 
-          this.node
-            .select(".publication text")
+          publicationNodes
+            .select("text")
             .attr(
               "class",
               (d) =>
@@ -394,25 +395,14 @@ export default {
             .attr("font-size", "0.8em")
             .text((d) => d.publication.score);
 
-          this.node
-            .select(".publication circle")
+          publicationNodes
+            .select("circle")
             .attr("cx", (d) => getRectSize(d) / 2 - 1)
             .attr("cy", (d) => -getRectSize(d) / 2 + 1)
             .attr("r", (d) =>
               d.publication.boostFactor > 1 ? getBoostIndicatorSize(d) / 6 : 0
             )
             .attr("stroke", "black");
-
-          this.node
-            .select(".keyword text")
-            .attr("y", 1)
-            .attr("font-size", (d) => {
-              if (d.frequency >= 25) return "1.1em";
-              if (d.frequency >= 10) return "0.9em";
-              if (d.frequency >= 5) return "0.8em";
-              return "0.7em";
-            })
-            .text((d) => d.id);
         }
 
         function updateKeywordNodes() {
@@ -438,6 +428,17 @@ export default {
             maxWidth: "min(400px,70vw)",
             allowHTML: true,
           });
+
+          keywordNodes
+            .select("text")
+            .attr("y", 1)
+            .attr("font-size", (d) => {
+              if (d.frequency >= 25) return "1.1em";
+              if (d.frequency >= 10) return "0.9em";
+              if (d.frequency >= 5) return "0.8em";
+              return "0.7em";
+            })
+            .text((d) => d.id);
         }
 
         function getRectSize(d) {
@@ -447,11 +448,11 @@ export default {
         function getBoostIndicatorSize(d) {
           let internalFactor = 1;
           if (d.publication.boostFactor >= 8) {
-            internalFactor = 2;
+            internalFactor = 1.8;
           } else if (d.publication.boostFactor >= 4) {
-            internalFactor = 1.6;
+            internalFactor = 1.5;
           } else if (d.publication.boostFactor > 1) {
-            internalFactor = 1.3;
+            internalFactor = 1.2;
           }
           return getRectSize(d) * internalFactor * 0.8;
         }
@@ -592,7 +593,6 @@ export default {
 </script>
 
 <style lang="scss">
-
 .network-of-references .box {
   height: 100%;
   display: grid;
@@ -609,29 +609,19 @@ export default {
     & rect {
       cursor: pointer;
       stroke-width: 2;
-      filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.2));
-
-      &.selected {
-        stroke: $primary;
-      }
-      &.suggested {
-        stroke: $info;
-      }
-      &.active {
-        stroke-width: 6;
-      }
-      &.linkedToActive {
-        stroke-width: 4;
-      }
+      @include light-shadow-svg;
     }
 
     & circle {
       fill: $warning;
+      stroke-width: 1f;
+      @include light-shadow-svg;
     }
 
     & text {
       text-anchor: middle;
       dominant-baseline: middle;
+      filter: drop-shadow(0px 0px 1px white);
     }
 
     & text.unread {
@@ -639,32 +629,56 @@ export default {
       font-weight: 1000;
     }
 
-    &:hover rect {
-      transform: scale(1.2);
-      filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.2));
+    &:hover {
+      & rect,
+      & circle {
+        transform: scale(1.1);
+      }
+    }
+
+    &.selected {
+      & rect,
+      & circle {
+        stroke: $primary;
+      }
+    }
+    &.suggested {
+      & rect,
+      & circle {
+        stroke: $info;
+      }
+    }
+    &.active rect {
+      stroke-width: 6;
+    }
+    &.linkedToActive rect {
+      stroke-width: 4;
     }
   }
+
   & g.keyword.node-container {
     cursor: grab;
 
     & text {
       text-anchor: middle;
       transform: translate(0px, 4px);
-      stroke: $warning;
-      stroke-width: 0.5px;
-      font-weight: 650;
-      filter: drop-shadow(1.5px 1.5px 2px rgba(0, 0, 0, 0.2));
+      filter: drop-shadow(0px 0px 2px $warning);
       text-transform: uppercase;
     }
 
     &.fixed text {
-      font-weight: 850;
+      font-weight: 700;
     }
 
     &.linkedToActive text {
       text-decoration-line: underline;
     }
+
+    &:hover text {
+      transform: translate(0px, 3.5px) scale(1.1);
+    }
   }
+
   & path.citation {
     fill: none;
     stroke-width: 3;
