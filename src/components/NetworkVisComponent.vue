@@ -707,21 +707,19 @@ export default {
       stroke-width: 4;
     }
 
-    &.queuingForSelected {
-      opacity: 0.6;
-
-      & text.labelQueuingForSelected {
-        visibility: visible;
-        fill: $primary;
-      }
+    &.queuingForSelected,
+    &.queuingForExcluded {
+      opacity: 0.5;
+      filter: blur(0.5px);
     }
 
-    &.queuingForExcluded {
-      opacity: 0.3;
+    &.queuingForSelected text.labelQueuingForSelected {
+      visibility: visible;
+      fill: $primary;
+    }
 
-      & text.labelQueuingForExcluded {
-        visibility: visible;
-      }
+    &.queuingForExcluded text.labelQueuingForExcluded {
+      visibility: visible;
     }
   }
 
