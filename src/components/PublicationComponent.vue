@@ -9,6 +9,7 @@
         !publication.isRead &&
         !publication.isSelected &&
         publication.wasFetched,
+      disabled: sessionStore.isQueuingForSelected(publication.doi) || sessionStore.isQueuingForExcluded(publication.doi),    
     }"
     :id="publication.doi"
     tabindex="0"
@@ -573,6 +574,10 @@ li.publication-component {
     & .button {
       margin: 0.5rem 0;
     }
+  }
+
+  &.disabled {
+    filter: blur(1px) opacity(50%);
   }
 }
 
