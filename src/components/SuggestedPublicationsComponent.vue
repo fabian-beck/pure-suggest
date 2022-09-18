@@ -22,7 +22,7 @@
                     size="is-small"
                     v-show="isFilterPanelShown"
                   ></b-icon>
-                  {{ sessionStore.suggestedPublicationsWithoutQueuedFiltered.length }}
+                  {{ sessionStore.suggestedPublicationsFiltered.length }}
                   <b-tag
                     icon="bell"
                     size="is-small"
@@ -31,7 +31,7 @@
                   >
                   of
                   {{
-                    sessionStore.currentTotalSuggestions.toLocaleString("en")
+                    sessionStore.suggestion.totalSuggestions.toLocaleString("en")
                   }}
                 </span>
               </div>
@@ -48,18 +48,18 @@
               <span v-if="isFilterPanelShown">
                 filtered from
                 <b>{{
-                  sessionStore.suggestedPublicationsWithoutQueued.length
+                  sessionStore.suggestedPublications.length
                 }}</b>
                 loaded ones,
               </span>
               of in total
               <b>
                 {{
-                  sessionStore.currentTotalSuggestions.toLocaleString("en")
+                  sessionStore.suggestion.totalSuggestions.toLocaleString("en")
                 }}</b
               >
               cited/citing publication{{
-                sessionStore.currentTotalSuggestions > 1 ? "s" : ""
+                sessionStore.suggestion.totalSuggestions > 1 ? "s" : ""
               }}.
             </div>
           </tippy>
@@ -70,8 +70,8 @@
             v-tippy
             @click.stop="sessionStore.loadMoreSuggestions()"
             :disabled="
-              sessionStore.suggestedPublicationsWithoutQueued.length ===
-              sessionStore.currentTotalSuggestions
+              sessionStore.suggestedPublications.length ===
+              sessionStore.suggestion.totalSuggestions
             "
           ></b-button>
         </div>
@@ -206,7 +206,7 @@
     </div>
     <PublicationListComponent
       ref="publicationList"
-      :publications="sessionStore.suggestedPublicationsWithoutQueuedFiltered"
+      :publications="sessionStore.suggestedPublicationsFiltered"
       :suggestion="true"
       v-on:add="addPublication"
     />
