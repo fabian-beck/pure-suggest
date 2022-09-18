@@ -10,9 +10,8 @@
           !publication.isRead &&
           !publication.isSelected &&
           publication.wasFetched,
-        disabled:
-          sessionStore.isQueuingForSelected(publication.doi) ||
-          sessionStore.isQueuingForExcluded(publication.doi),
+        queuingForSelected: sessionStore.isQueuingForSelected(publication.doi),
+        queuingForExcluded: sessionStore.isQueuingForExcluded(publication.doi),
       }"
       :id="publication.doi"
       tabindex="0"
@@ -588,13 +587,13 @@ li {
       }
     }
 
-    &.disabled {
+    &.queuingForSelected,
+    &.queuingForExcluded {
       & > div {
         filter: blur(1px) opacity(50%);
       }
 
       &::before {
-        content: "Queuing ...";
         position: absolute;
         z-index: 1;
         background: white;
@@ -606,6 +605,14 @@ li {
         top: 50%;
         transform: translate(-50%, -50%);
       }
+    }
+
+    &.queuingForSelected::before {
+      content: "Queuing to be selected ...";
+    }
+
+    &.queuingForExcluded::before {
+      content: "Queuing to be excluded ...";
     }
   }
 }
