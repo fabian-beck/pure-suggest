@@ -32,15 +32,16 @@ export const useSessionStore = defineStore('session', {
       state.suggestedPublications.filter(publication =>
         !state.selectedQueue.includes(publication.doi) && !state.excludedQueue.includes(publication.doi)),
     suggestedPublicationsFiltered: (state) =>
+      state.suggestedPublications.filter(publication => state.filter.matches(publication)),
+    suggestedPublicationsWithoutQueuedFiltered: (state) =>
       state.suggestedPublicationsWithoutQueued.filter(publication => state.filter.matches(publication)),
     publications: (state) => state.selectedPublications.concat(state.suggestedPublicationsWithoutQueued),
     publicationsFiltered: (state) => state.selectedPublications.concat(state.suggestedPublicationsFiltered),
     yearMax: (state) => Math.max(...state.publicationsFiltered.filter(publication => publication.year).map(publication => Number(publication.year))),
     yearMin: (state) => Math.min(...state.publicationsFiltered.filter(publication => publication.year).map(publication => Number(publication.year))),
-    unreadSuggestionsCount: (state) => state.suggestedPublicationsFiltered.filter(
+    unreadSuggestionsCount: (state) => state.suggestedPublicationsWithoutQueuedFiltered.filter(
       (publication) => !publication.isRead
     ).length,
-    currentTotalSuggestions: (state) => state.suggestion.totalSuggestions - state.selectedQueue.length - state.excludedQueue.length,
     boostKeywords: (state) => state.boostKeywordString.toLowerCase().split(/,\s*/),
     isKeywordLinkedToActive: (state) => (keyword) => state.activePublication && state.activePublication.boostKeywords.includes(keyword),
     uniqueBoostKeywords: (state) => [...new Set(state.boostKeywords)],
@@ -52,19 +53,9 @@ export const useSessionStore = defineStore('session', {
       && !state.isUpdatable,
     isSelected: (state) => (doi) => state.selectedPublicationsDois.includes(doi),
     isExcluded: (state) => (doi) => state.excludedPublicationsDois.includes(doi),
+    isQueuingForSelected: (state) => (doi) => state.selectedQueue.includes(doi),
+    isQueuingForExcluded: (state) => (doi) => state.excludedQueue.includes(doi),
     getSelectedPublicationByDoi: (state) => (doi) => state.selectedPublications.filter(publication => publication.doi === doi)[0],
-    nextSuggestedDoiAfter(state) {
-      return (doi) => {
-        const suggestedDois = asDois(state.suggestedPublicationsFiltered);
-        if (!suggestedDois.includes(doi)) return null;
-        const index = suggestedDois.indexOf(doi)
-        let nextIndex = index + 1;
-        if (nextIndex >= suggestedDois.length) {
-          nextIndex = index - 1;
-        }
-        return suggestedDois[nextIndex];
-      }
-    }
   },
   actions: {
     clear() {
@@ -92,6 +83,7 @@ export const useSessionStore = defineStore('session', {
 
     queueForSelected(dois) {
       if (!Array.isArray(dois)) dois = [dois];
+      this.excludedQueue = this.excludedQueue.filter(excludedDoi => !dois.includes(excludedDoi));
       dois.forEach(doi => {
         if (this.isSelected(doi) || this.selectedQueue.includes(doi)) return;
         this.selectedQueue.push(doi);
@@ -100,9 +92,7 @@ export const useSessionStore = defineStore('session', {
 
     queueForExcluded(doi) {
       if (this.isExcluded(doi) || this.excludedQueue.includes(doi)) return
-      if (this.isSelected(doi)) {
-        this.selectedPublications = this.selectedPublications.filter(publication => publication.doi != doi);
-      }
+      this.selectedQueue = this.selectedQueue.filter(seletedDoi => doi != seletedDoi);
       this.excludedQueue.push(doi);
     },
 
@@ -111,6 +101,9 @@ export const useSessionStore = defineStore('session', {
       if (this.excludedQueue.length) {
         this.excludedPublicationsDois = this.excludedPublicationsDois.concat(this.excludedQueue);
       }
+      this.selectedPublications = this.selectedPublications.filter(
+        publication => !this.excludedQueue.includes(publication.doi)
+      );
       if (this.selectedQueue.length) {
         this.addPublicationsToSelection(this.selectedQueue);
       }
@@ -295,17 +288,6 @@ export const useSessionStore = defineStore('session', {
       if (doi !== this.activePublication?.doi) {
         this.interfaceStore.activatePublicationComponent(document.getElementById(doi));
         this.setActivePublication(doi);
-      }
-    },
-
-    activateNextPublication: function () {
-      if (this.activePublication.isSelected) return;
-      const doi = this.activePublication.doi;
-      const nextDoi = this.nextSuggestedDoiAfter(doi);
-      if (nextDoi)
-        this.activatePublicationComponentByDoi(nextDoi);
-      else {
-        this.clearActivePublication()
       }
     },
 

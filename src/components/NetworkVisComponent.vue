@@ -149,12 +149,15 @@ export default {
       after(() => {
         if (
           name === "updateSuggestions" ||
-          name === "queueForSelected" ||
-          name === "queueForExcluded" ||
-          name === "updateScores"
+          name === "updateScores" ||
+          name === "updateQueued"
         )
           this.plot(true);
-        else if (!this.interfaceStore.isLoading && name === "clear")
+        else if (
+          (!this.interfaceStore.isLoading && name === "clear") ||
+          name === "queueForSelected" ||
+          name === "queueForExcluded"
+        )
           this.plot();
       });
     });
@@ -236,6 +239,9 @@ export default {
         this.simulation.restart();
       } catch (error) {
         console.error("Cannot plot network: " + error.message);
+        this.interfaceStore.showErrorMessage(
+          "Sorry, an error occurred while plotting the citation network."
+        );
       }
 
       function initGraph() {
@@ -259,6 +265,12 @@ export default {
             publicationNodes.push({
               id: publication.doi,
               publication: publication,
+              isQueuingForSelected: this.sessionStore.isQueuingForSelected(
+                publication.doi
+              ),
+              isQueuingForExcluded: this.sessionStore.isQueuingForExcluded(
+                publication.doi
+              ),
             });
             i++;
           }
@@ -335,23 +347,21 @@ export default {
               );
             const publicationNodes = g.filter((d) => d.publication);
             publicationNodes.append("rect");
-            publicationNodes.append("text");
+            publicationNodes.append("text").classed("score", true);
+            publicationNodes
+              .append("text")
+              .classed("labelQueuingForSelected", true)
+              .attr("x", 15)
+              .attr("y", 15)
+              .text("+");
+            publicationNodes
+              .append("text")
+              .classed("labelQueuingForExcluded", true)
+              .attr("x", 15)
+              .attr("y", 15)
+              .text("-");
             publicationNodes.append("circle");
             publicationNodes.on("click", this.activatePublication);
-            publicationNodes.attr(
-              "data-tippy-content",
-              (d) =>
-                `${
-                  d.publication.title ? d.publication.title : "[unknown title]"
-                } (${
-                  d.publication.authorShort
-                    ? d.publication.authorShort + ", "
-                    : ""
-                }${d.publication.year ? d.publication.year : "[unknown year]"})`
-            );
-            tippy(publicationNodes.nodes(), {
-              maxWidth: "min(400px,70vw)",
-            });
             const keywordNodes = g.filter((d) => !d.publication);
             keywordNodes.append("text");
             keywordNodes
@@ -360,8 +370,21 @@ export default {
             return g;
           });
 
-        updatePublicationNodes.call(this);
-        updateKeywordNodes.call(this);
+        try {
+          updatePublicationNodes.call(this);
+        } catch (error) {
+          throw new Error(
+            "Cannot update publication nodes in network: " + error.message
+          );
+        }
+
+        try {
+          updateKeywordNodes.call(this);
+        } catch (error) {
+          throw new Error(
+            "Cannot update keyword nodes in network: " + error.message
+          );
+        }
 
         function updatePublicationNodes() {
           const publicationNodes = this.node.filter((d) => d.publication);
@@ -370,7 +393,39 @@ export default {
             .classed("selected", (d) => d.publication.isSelected)
             .classed("suggested", (d) => !d.publication.isSelected)
             .classed("active", (d) => d.publication.isActive)
-            .classed("linkedToActive", (d) => d.publication.isLinkedToActive);
+            .classed("linkedToActive", (d) => d.publication.isLinkedToActive)
+            .classed("queuingForSelected", (d) => d.isQueuingForSelected)
+            .classed("queuingForExcluded", (d) => d.isQueuingForExcluded);
+
+          if (this.publicationTooltips)
+            this.publicationTooltips.forEach((tooltip) => tooltip.destroy());
+          publicationNodes.attr(
+            "data-tippy-content",
+            (d) =>
+              `<b>${
+                d.publication.title ? d.publication.title : "[unknown title]"
+              }</b> (${
+                d.publication.authorShort
+                  ? d.publication.authorShort + ", "
+                  : ""
+              }${d.publication.year ? d.publication.year : "[unknown year]"})
+              <br><br>
+              The publication is ${
+                d.publication.isSelected ? "selected" : "suggested"
+              }${
+                d.isQueuingForSelected
+                  ? " and marked to be added to selected publications"
+                  : ""
+              }${
+                d.isQueuingForExcluded
+                  ? " and marked to be added to excluded publications"
+                  : ""
+              }.`
+          );
+          this.publicationTooltips = tippy(publicationNodes.nodes(), {
+            maxWidth: "min(400px,70vw)",
+            allowHTML: true,
+          });
 
           publicationNodes
             .select("rect")
@@ -382,15 +437,10 @@ export default {
             .attr("fill", (d) => d.publication.scoreColor);
 
           publicationNodes
-            .select("text")
-            .attr(
-              "class",
-              (d) =>
-                `${
-                  !d.publication.isRead && !d.publication.isSelected
-                    ? "unread"
-                    : ""
-                }`
+            .select(".publication text.score")
+            .classed(
+              "unread",
+              (d) => !d.publication.isRead && !d.publication.isSelected
             )
             .attr("y", 1)
             .attr("font-size", "0.8em")
@@ -408,23 +458,24 @@ export default {
 
         function updateKeywordNodes() {
           const keywordNodes = this.node.filter((d) => !d.publication);
-          keywordNodes
-            .classed("linkedToActive", (d) =>
-              this.sessionStore.isKeywordLinkedToActive(d.id)
-            )
-            .attr(
-              "data-tippy-content",
-              (d) =>
-                `Keyword "${d.id}" is matched in ${d.frequency} publication${
-                  d.frequency > 1 ? "s" : ""
-                }${
-                  this.sessionStore.isKeywordLinkedToActive(d.id)
-                    ? ", and also linked to the currently active publication"
-                    : ""
-                }.<br><br>Drag to reposition (sticky), click to detach.`
-            );
+
+          keywordNodes.classed("linkedToActive", (d) =>
+            this.sessionStore.isKeywordLinkedToActive(d.id)
+          );
+
           if (this.keywordTooltips)
             this.keywordTooltips.forEach((tooltip) => tooltip.destroy());
+          keywordNodes.attr(
+            "data-tippy-content",
+            (d) =>
+              `Keyword "${d.id}" is matched in ${d.frequency} publication${
+                d.frequency > 1 ? "s" : ""
+              }${
+                this.sessionStore.isKeywordLinkedToActive(d.id)
+                  ? ", and also linked to the currently active publication"
+                  : ""
+              }.<br><br>Drag to reposition (sticky), click to detach.`
+          );
           this.keywordTooltips = tippy(keywordNodes.nodes(), {
             maxWidth: "min(400px,70vw)",
             allowHTML: true,
@@ -623,11 +674,14 @@ export default {
       text-anchor: middle;
       dominant-baseline: middle;
       filter: drop-shadow(0px 0px 1px white);
-    }
 
-    & text.unread {
-      fill: $info-dark;
-      font-weight: 1000;
+      &.labelQueuingForSelected,
+      &.labelQueuingForExcluded {
+        visibility: hidden;
+        font-weight: 1000;
+        stroke: white;
+        stroke-width: 0.5;
+      }
     }
 
     &:hover {
@@ -654,6 +708,21 @@ export default {
     }
     &.linkedToActive rect {
       stroke-width: 4;
+    }
+
+    &.queuingForSelected,
+    &.queuingForExcluded {
+      opacity: 0.5;
+      filter: blur(0.5px);
+    }
+
+    &.queuingForSelected text.labelQueuingForSelected {
+      visibility: visible;
+      fill: $primary;
+    }
+
+    &.queuingForExcluded text.labelQueuingForExcluded {
+      visibility: visible;
     }
   }
 
