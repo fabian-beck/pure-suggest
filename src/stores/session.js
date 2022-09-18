@@ -56,18 +56,6 @@ export const useSessionStore = defineStore('session', {
     isQueuingForSelected: (state) => (doi) => state.selectedQueue.includes(doi),
     isQueuingForExcluded: (state) => (doi) => state.excludedQueue.includes(doi),
     getSelectedPublicationByDoi: (state) => (doi) => state.selectedPublications.filter(publication => publication.doi === doi)[0],
-    nextSuggestedDoiAfter(state) {
-      return (doi) => {
-        const suggestedDois = asDois(state.suggestedPublicationsFiltered);
-        if (!suggestedDois.includes(doi)) return null;
-        const index = suggestedDois.indexOf(doi)
-        let nextIndex = index + 1;
-        if (nextIndex >= suggestedDois.length) {
-          nextIndex = index - 1;
-        }
-        return suggestedDois[nextIndex];
-      }
-    }
   },
   actions: {
     clear() {
@@ -300,17 +288,6 @@ export const useSessionStore = defineStore('session', {
       if (doi !== this.activePublication?.doi) {
         this.interfaceStore.activatePublicationComponent(document.getElementById(doi));
         this.setActivePublication(doi);
-      }
-    },
-
-    activateNextPublication: function () {
-      if (this.activePublication.isSelected) return;
-      const doi = this.activePublication.doi;
-      const nextDoi = this.nextSuggestedDoiAfter(doi);
-      if (nextDoi)
-        this.activatePublicationComponentByDoi(nextDoi);
-      else {
-        this.clearActivePublication()
       }
     },
 

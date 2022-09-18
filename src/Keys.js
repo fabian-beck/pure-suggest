@@ -89,16 +89,10 @@ export function onKey(e) {
         } else if (e.key === "+") {
             e.preventDefault();
             const doi = sessionStore.activePublication.doi;
-            sessionStore.activateNextPublication();
             sessionStore.queueForSelected(doi);
         } else if (e.key === "-") {
             e.preventDefault();
             const doi = sessionStore.activePublication.doi;
-            if(!sessionStore.activePublication.isSelected) {
-                sessionStore.activateNextPublication();
-            } else {
-                sessionStore.clearActivePublication();
-            }
             sessionStore.queueForExcluded(doi);
         } else if (e.key === "d") {
             e.preventDefault();
