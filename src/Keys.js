@@ -81,11 +81,15 @@ export function onKey(e) {
             const activePublicationComponent = document.getElementsByClassName(
                 "publication-component active"
             )[0];
-            interfaceStore.activatePublicationComponent(
-                e.key === "ArrowDown"
-                    ? activePublicationComponent.nextSibling
-                    : activePublicationComponent.previousSibling
-            );
+            try {
+                interfaceStore.activatePublicationComponent(
+                    e.key === "ArrowDown"
+                        ? activePublicationComponent.parentNode.nextSibling.getElementsByClassName("publication-component")[0]
+                        : activePublicationComponent.parentNode.previousSibling.getElementsByClassName("publication-component")[0]
+                );
+            } catch (error) {
+                console.log("Could not activate next/previous publication.")
+            }
         } else if (e.key === "+") {
             e.preventDefault();
             const doi = sessionStore.activePublication.doi;
