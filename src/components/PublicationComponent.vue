@@ -15,30 +15,21 @@
     v-on:focus="activate"
     @click.stop="activate"
   >
-    <tippy class="glyph">
+    <tippy class="media-left">
       <template v-slot:trigger>
         <div
-          class="media-left has-text-centered"
+          class="glyph has-text-centered"
           v-bind:style="{ 'background-color': publication.scoreColor }"
           v-show="publication.wasFetched"
         >
           <div class="tooltip-target">
             <div class="is-size-3 is-inline-block">{{ publication.score }}</div>
             <div
-              class="
-                boost-indicator
-                has-background-warning
-                is-size-5 is-inline-block
-                ml-1
-              "
+              class="boost-indicator"
+              :class="chevronType"
               v-if="publication.boostFactor > 1"
-              :style="boostIndicatorSize"
             >
-              <b-icon
-                :icon="chevronType"
-                size="is-small"
-                :style="chevronOffset"
-              />
+              <b-icon :icon="chevronType" size="is-small" />
             </div>
           </div>
           <div class="reference-counts is-size-6">
@@ -269,7 +260,7 @@
               v-if="publication.abstract"
               @click.stop="showAbstract"
               @click.middle.stop="showAbstract"
-              @keyup.enter ="showAbstract"
+              @keyup.enter="showAbstract"
               data-tippy-content="Abs<span class='key'>t</span>ract"
               v-tippy
               ><b-icon icon="text"></b-icon
@@ -296,7 +287,7 @@
             <a
               @click.stop="exportBibtex"
               @click.middle.stop="exportBibtex"
-              @keyup.enter ="exportBibtex"
+              @keyup.enter="exportBibtex"
               class="ml-5"
               data-tippy-content="Export as BibTe<span class='key'>X</span> citation"
               v-tippy
@@ -358,28 +349,6 @@ export default {
       }
       return "";
     },
-
-    boostIndicatorSize: function () {
-      if (this.publication.boostFactor >= 8) {
-        return { width: "2rem", height: "2rem" };
-      } else if (this.publication.boostFactor >= 4) {
-        return { width: "1.6rem", height: "1.6rem" };
-      } else if (this.publication.boostFactor > 1) {
-        return { width: "1.3rem", height: "1.3rem " };
-      }
-      return "";
-    },
-
-    chevronOffset: function () {
-      if (this.publication.boostFactor >= 8) {
-        return { position: "relative", top: "0rem" };
-      } else if (this.publication.boostFactor >= 4) {
-        return { position: "relative", top: "-0.15rem" };
-      } else if (this.publication.boostFactor > 1) {
-        return { position: "relative", top: "-0.3rem" };
-      }
-      return "";
-    },
   },
   methods: {
     activate: function () {
@@ -404,30 +373,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "~bulma/sass/utilities/_all";
-
-.tooltip-target {
-  position: relative;
-}
-
-.reference-counts {
-  .icon {
-    margin: -0.4em;
-  }
-
-  div {
-    width: 50%;
-  }
-}
-
-.boost-indicator {
-  border-radius: 50%;
-  position: absolute;
-  top: -7px;
-  right: -7px;
-  // vertical-align: middle;
-}
-
 *:focus {
   outline: 1px solid $dark;
 }
@@ -438,18 +383,100 @@ li.publication-component {
   cursor: pointer;
   min-height: 5rem;
   outline-offset: -0.25rem;
+  z-index: -1;
+  text-shadow: 0 0 15px white;
+
+  & .media-left {
+    margin: 0;
+
+    & .glyph {
+      width: 5rem;
+      height: 5rem;
+      margin: 0.6rem;
+      border-width: 0.125rem;
+      border-color: $info;
+      border-style: solid;
+      @include light-shadow;
+
+      & .tooltip-target {
+        position: relative;
+      }
+
+      & .reference-counts {
+        .icon {
+          margin: -0.4em;
+        }
+
+        div {
+          width: 50%;
+        }
+      }
+
+      & .boost-indicator {
+        border-radius: 50%;
+        position: absolute;
+        top: -7px;
+        right: -7px;
+        @include light-shadow;
+        background: $warning;
+        font-size: $size-5;
+        border: 1px solid $info;
+
+        & .icon {
+          position: relative;
+        }
+
+        &.chevron-up {
+          top: -7px;
+          right: -7px;
+          width: 1.2rem;
+          height: 1.2rem;
+
+          & .icon {
+            top: -0.45rem;
+          }
+        }
+
+        &.chevron-double-up {
+          top: -8px;
+          right: -8px;
+          width: 1.5rem;
+          height: 1.5rem;
+
+          & .icon {
+            top: -0.35rem;
+          }
+        }
+
+        &.chevron-triple-up {
+          top: -9px;
+          right: -9px;
+          width: 1.8rem;
+          height: 1.8rem;
+
+          & .icon {
+            top: -0.2rem;
+          }
+        }
+      }
+    }
+  }
 
   &:hover {
-    background: $white-ter;
+    background: rgba($color: #000000, $alpha: 0.03) !important;
+
+    & .glyph {
+      transform: scale(1.05);
+    }
   }
 
   &.active {
-    background: $grey-lighter;
+    background: rgba($color: #000000, $alpha: 0.1) !important;
     cursor: default;
   }
 
   &.unread {
-    background: $info-light;
+    background: rgba($color: $info, $alpha: 0.1);
 
     & .summary {
       color: $info-dark;
@@ -457,29 +484,20 @@ li.publication-component {
 
     & .glyph {
       color: $info-dark;
-      text-shadow: 0 0 15px $grey-lighter;
     }
   }
 
-  & .media-left {
-    width: 5rem;
-    height: 5rem;
-    margin: 0.5rem;
-    border-width: 0.125rem;
-    border-color: $info;
-    border-style: solid;
-  }
-
-  &.selected .media-left {
+  &.selected .glyph {
     border-color: $primary;
+
+    & .boost-indicator {
+      border-color: $primary;
+    }
   }
 
-  &.active .media-left {
-    border-width: 0.375rem;
-  }
-
-  &.linkedToActive .media-left {
-    border-width: 0.25rem;
+  &.active .glyph,
+  &.linkedToActive .glyph {
+    border-width: 0.3rem;
   }
 
   & .glyph > div:focus > div {

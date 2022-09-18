@@ -80,7 +80,6 @@ export default {
 <!---------------------------------------------------------------------------------->
 
 <style lang="scss">
-@import "~bulma/sass/utilities/_all";
 
 $block-spacing: 0.5rem;
 $box-padding: 1rem;
@@ -133,7 +132,7 @@ $box-padding: 1rem;
 
     & .box {
       margin: 0;
-      padding: min(0.75vw, 1rem);
+      padding: min(0.5vw, 1rem);
     }
   }
 

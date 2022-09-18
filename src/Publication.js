@@ -124,7 +124,11 @@ export default class Publication {
                     this.isNew = (CURRENT_YEAR - this.year) < 2 ? "published within the last two calendar years" : false;
                     this.isUnnoted = this.citationsPerYear < 1 ? `less than 1 citation per year (${this.citationsPerYear.toFixed(1)})` : false;
                 }
-            );
+                , {
+                    headers: {
+                        authorization: "aa9da96d-3c7b-49c1-a2d8-1c2d01ae10a5",
+                    },
+                });
             await cachedFetch(`https://api.crossref.org/v1/works/${this.doi}?mailto=fabian.beck@uni-bamberg.de`, response => {
                 const message = response.message;
                 if (message.abstract) {
@@ -190,13 +194,13 @@ export default class Publication {
         this.score = (this.citationCount + this.referenceCount) * this.boostFactor;
         // update score color
         let lightness = 100;
-        if (this.score >= 20) {
-            lightness = 50;
-        } else if (this.score >= 10) {
-            lightness = 70;
-        } else if (this.score >= 5) {
+        if (this.score >= 32) {
+            lightness = 60;
+        } else if (this.score >= 16) {
+            lightness = 72;
+        } else if (this.score >= 8) {
             lightness = 80;
-        } else if (this.score >= 3) {
+        } else if (this.score >= 4) {
             lightness = 90;
         } else if (this.score >= 2) {
             lightness = 95;
