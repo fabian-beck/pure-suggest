@@ -148,13 +148,15 @@ export default {
       after(() => {
         if (
           name === "updateSuggestions" ||
-          name === "queueForSelected" ||
-          name === "queueForExcluded" ||
           name === "updateScores" ||
           name === "updateQueued"
         )
           this.plot(true);
-        else if (!this.interfaceStore.isLoading && name === "clear")
+        else if (
+          (!this.interfaceStore.isLoading && name === "clear") ||
+          name === "queueForSelected" ||
+          name === "queueForExcluded"
+        )
           this.plot();
       });
     });
