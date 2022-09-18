@@ -391,14 +391,8 @@ export default {
             .classed("suggested", (d) => !d.publication.isSelected)
             .classed("active", (d) => d.publication.isActive)
             .classed("linkedToActive", (d) => d.publication.isLinkedToActive)
-            .classed(
-            "queuingForSelected",
-            (d) => d.isQueuingForSelected
-          )
-          .classed(
-            "queuingForExcluded",
-            (d) => d.isQueuingForExcluded
-          );
+            .classed("queuingForSelected", (d) => d.isQueuingForSelected)
+            .classed("queuingForExcluded", (d) => d.isQueuingForExcluded);
 
           if (this.publicationTooltips)
             this.publicationTooltips.forEach((tooltip) => tooltip.destroy());
@@ -429,7 +423,7 @@ export default {
             maxWidth: "min(400px,70vw)",
             allowHTML: true,
           });
-          
+
           publicationNodes
             .select("rect")
             .attr("width", (d) => getRectSize(d))

@@ -104,9 +104,6 @@ export const useSessionStore = defineStore('session', {
 
     queueForExcluded(doi) {
       if (this.isExcluded(doi) || this.excludedQueue.includes(doi)) return
-      if (this.isSelected(doi)) {
-        this.selectedPublications = this.selectedPublications.filter(publication => publication.doi != doi);
-      }
       this.excludedQueue.push(doi);
     },
 
@@ -115,6 +112,9 @@ export const useSessionStore = defineStore('session', {
       if (this.excludedQueue.length) {
         this.excludedPublicationsDois = this.excludedPublicationsDois.concat(this.excludedQueue);
       }
+      this.selectedPublications = this.selectedPublications.filter(
+        publication => !this.excludedQueue.includes(publication.doi)
+      );
       if (this.selectedQueue.length) {
         this.addPublicationsToSelection(this.selectedQueue);
       }
