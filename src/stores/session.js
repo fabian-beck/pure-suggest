@@ -95,6 +95,7 @@ export const useSessionStore = defineStore('session', {
 
     queueForSelected(dois) {
       if (!Array.isArray(dois)) dois = [dois];
+      this.excludedQueue = this.excludedQueue.filter(excludedDoi => !dois.includes(excludedDoi));
       dois.forEach(doi => {
         if (this.isSelected(doi) || this.selectedQueue.includes(doi)) return;
         this.selectedQueue.push(doi);
@@ -103,6 +104,7 @@ export const useSessionStore = defineStore('session', {
 
     queueForExcluded(doi) {
       if (this.isExcluded(doi) || this.excludedQueue.includes(doi)) return
+      this.selectedQueue = this.selectedQueue.filter(seletedDoi => doi != seletedDoi);
       this.excludedQueue.push(doi);
     },
 
