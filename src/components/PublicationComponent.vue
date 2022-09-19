@@ -13,18 +13,25 @@
       has-icon
       icon="tray-full"
       icon-size="mdi-24px"
-      >Waiting to be
-      <span v-if="sessionStore.isQueuingForSelected(publication.doi)"
-        ><b>selected </b>
-        <b-icon
-          icon="plus-thick"
-          size="is-small"
-          class="has-text-primary"
-        ></b-icon
-      ></span>
-      <span v-else
-        ><b>excluded </b><b-icon icon="minus-thick" size="is-small"></b-icon
-      ></span>
+      ><div class="level is-mobile">
+        <div class="level-item">
+          To be&nbsp;
+          <span v-if="sessionStore.isQueuingForSelected(publication.doi)"
+            ><b>selected </b>
+            <b-icon
+              icon="plus-thick"
+              size="is-small"
+              class="has-text-primary"
+            ></b-icon
+          ></span>
+          <span v-else
+            ><b> excluded </b><b-icon icon="minus-thick" size="is-small"></b-icon
+          ></span>
+        </div>
+        <div class="level-right">
+          <button class="delete media-right"></button>
+        </div>
+      </div>
     </b-message>
     <div
       class="publication-component media"
@@ -630,9 +637,19 @@ li {
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
+    width: max(250px, 30%);
 
     & .message-body {
       padding: 0.5rem 0.5rem;
+
+      & .level-left {
+        text-align: center;
+      }
+
+      & button {
+        margin-left: 1rem;
+        margin-top: 0.15rem;
+      }
     }
   }
 }
