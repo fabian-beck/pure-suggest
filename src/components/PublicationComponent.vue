@@ -1,13 +1,19 @@
 <template>
   <li>
-    <div
+    <b-message
       class="waitingNotification"
+      :class="{
+        'is-primary': sessionStore.isQueuingForSelected(publication.doi),
+        'is-dark': sessionStore.isQueuingForExcluded(publication.doi),
+      }"
       v-if="
         sessionStore.isQueuingForSelected(publication.doi) ||
         sessionStore.isQueuingForExcluded(publication.doi)
       "
-    >
-      <b-icon icon="tray-full" size="is-small"></b-icon>&nbsp; Waiting to be
+      has-icon
+      icon="tray-full"
+      icon-size="mdi-24px"
+      >Waiting to be
       <span v-if="sessionStore.isQueuingForSelected(publication.doi)"
         ><b>selected </b>
         <b-icon
@@ -19,7 +25,7 @@
       <span v-else
         ><b>excluded </b><b-icon icon="minus-thick" size="is-small"></b-icon
       ></span>
-    </div>
+    </b-message>
     <div
       class="publication-component media"
       :class="{
@@ -402,12 +408,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-*:focus,
-.active {
-  outline: 1px solid $dark;
-}
-
+<style lang="scss">
 li {
   position: relative;
 
@@ -614,19 +615,25 @@ li {
         filter: blur(1px) opacity(50%);
       }
     }
+
+    &:focus,
+    &.active {
+      outline: 1px solid $dark;
+    }
   }
 
   & .waitingNotification {
     position: absolute;
     z-index: 1;
     background: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    border: 1px solid $border;
     @include light-shadow;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
+
+    & .message-body {
+      padding: 0.5rem 0.5rem;
+    }
   }
 }
 
