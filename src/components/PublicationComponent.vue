@@ -1,6 +1,26 @@
 <template>
   <li>
     <div
+      class="waitingNotification"
+      v-if="
+        sessionStore.isQueuingForSelected(publication.doi) ||
+        sessionStore.isQueuingForExcluded(publication.doi)
+      "
+    >
+      <b-icon icon="tray-full" size="is-small"></b-icon>&nbsp; Waiting to be
+      <span v-if="sessionStore.isQueuingForSelected(publication.doi)"
+        ><b>selected </b>
+        <b-icon
+          icon="plus-thick"
+          size="is-small"
+          class="has-text-primary"
+        ></b-icon
+      ></span>
+      <span v-else
+        ><b>excluded </b><b-icon icon="minus-thick" size="is-small"></b-icon
+      ></span>
+    </div>
+    <div
       class="publication-component media"
       :class="{
         active: publication.isActive,
@@ -10,8 +30,9 @@
           !publication.isRead &&
           !publication.isSelected &&
           publication.wasFetched,
-        queuingForSelected: sessionStore.isQueuingForSelected(publication.doi),
-        queuingForExcluded: sessionStore.isQueuingForExcluded(publication.doi),
+        queuing:
+          sessionStore.isQueuingForSelected(publication.doi) ||
+          sessionStore.isQueuingForExcluded(publication.doi),
       }"
       :id="publication.doi"
       tabindex="0"
@@ -382,7 +403,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-*:focus, .active {
+*:focus,
+.active {
   outline: 1px solid $dark;
 }
 
@@ -587,33 +609,24 @@ li {
       }
     }
 
-    &.queuingForSelected,
-    &.queuingForExcluded {
+    &.queuing {
       & > div {
         filter: blur(1px) opacity(50%);
       }
-
-      &::before {
-        position: absolute;
-        z-index: 1;
-        background: white;
-        padding: 0.25rem 0.5rem;
-        border-radius: 0.25rem;
-        border: 1px solid $border;
-        @include light-shadow;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-      }
     }
+  }
 
-    &.queuingForSelected::before {
-      content: "Queuing to be selected ...";
-    }
-
-    &.queuingForExcluded::before {
-      content: "Queuing to be excluded ...";
-    }
+  & .waitingNotification {
+    position: absolute;
+    z-index: 1;
+    background: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    border: 1px solid $border;
+    @include light-shadow;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
   }
 }
 
