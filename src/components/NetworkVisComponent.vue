@@ -676,6 +676,11 @@ export default {
       dominant-baseline: middle;
       filter: drop-shadow(0px 0px 1px white);
 
+      &.unread {
+        fill: $info;
+        font-weight: 1000;
+      }
+
       &.labelQueuingForSelected,
       &.labelQueuingForExcluded {
         visibility: hidden;
