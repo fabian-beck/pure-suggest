@@ -32,7 +32,7 @@
         <div class="level-right">
           <button
             class="delete media-right"
-            @click.stop="sessionStore.removeFromQueue(publication.doi)"
+            @click.stop="sessionStore.removeFromQueues(publication.doi)"
           ></button>
         </div>
       </div>

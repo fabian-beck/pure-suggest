@@ -157,7 +157,8 @@ export default {
           (!this.interfaceStore.isLoading && name === "clear") ||
           name === "queueForSelected" ||
           name === "queueForExcluded" ||
-          name === "removeFromQueue"
+          name === "removeFromQueues" ||
+          name === "clearQueues"
         )
           this.plot();
       });

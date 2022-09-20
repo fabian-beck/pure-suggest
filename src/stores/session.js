@@ -91,9 +91,14 @@ export const useSessionStore = defineStore('session', {
       this.excludedQueue.push(doi);
     },
 
-    removeFromQueue(doi) {
+    removeFromQueues(doi) {
       this.selectedQueue = this.selectedQueue.filter(seletedDoi => doi != seletedDoi);
       this.excludedQueue = this.excludedQueue.filter(excludedDoi => doi != excludedDoi);
+    },
+
+    clearQueues() {
+      this.excludedQueue = [];
+      this.selectedQueue = [];
     },
 
     async updateQueued() {
@@ -114,12 +119,11 @@ export const useSessionStore = defineStore('session', {
       ) {
         this.interfaceStore.showFeedbackInvitation();
       }
-      this.excludedQueue = [];
-      this.selectedQueue = [];
+      clearQueues()
     },
 
     async addPublicationsAndUpdate(dois) {
-      dois.forEach((doi) => this.removeFromQueue(doi));
+      dois.forEach((doi) => this.removeFromQueues(doi));
       this.addPublicationsToSelection(dois);
       this.updateSuggestions();
     },

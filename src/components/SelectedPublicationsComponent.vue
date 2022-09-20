@@ -139,13 +139,19 @@
             }}
             to be excluded</span
           >.
+          <button
+            class="delete ml-2 mt-1"
+            @click.stop="sessionStore.clearQueues()"
+          ></button>
         </div>
-        <b-button
-          @click="sessionStore.updateQueued"
-          class="button media-right has-background-primary has-text-white ml-2"
-          icon-left="update"
-          ><span class="key">U</span>pdate</b-button
-        >
+        <div class="media-right">
+          <b-button
+            @click="sessionStore.updateQueued"
+            class="button has-background-primary has-text-white ml-2"
+            icon-left="update"
+            ><span class="key">U</span>pdate</b-button
+          >
+        </div>
       </div>
       <div
         class="notification has-text-centered has-background-primary-light p-2"
