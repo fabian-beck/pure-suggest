@@ -21,7 +21,6 @@
             <b-icon
               icon="plus-thick"
               size="is-small"
-              class="has-text-primary"
             ></b-icon
           ></span>
           <span v-else

@@ -678,7 +678,7 @@ export default {
       filter: drop-shadow(0px 0px 1px white);
 
       &.unread {
-        fill: $info;
+        fill: $info-dark;
         font-weight: 1000;
       }
 
@@ -725,7 +725,7 @@ export default {
 
     &.queuingForSelected text.labelQueuingForSelected {
       visibility: visible;
-      fill: $primary;
+      fill: $primary-dark;
     }
 
     &.queuingForExcluded text.labelQueuingForExcluded {
