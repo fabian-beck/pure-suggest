@@ -28,18 +28,13 @@ export const useSessionStore = defineStore('session', {
     selectedPublicationsCount: (state) => state.selectedPublications.length,
     excludedPublicationsCount: (state) => state.excludedPublicationsDois.length,
     suggestedPublications: (state) => state.suggestion ? state.suggestion.publications : [],
-    suggestedPublicationsWithoutQueued: (state) =>
-      state.suggestedPublications.filter(publication =>
-        !state.selectedQueue.includes(publication.doi) && !state.excludedQueue.includes(publication.doi)),
     suggestedPublicationsFiltered: (state) =>
       state.suggestedPublications.filter(publication => state.filter.matches(publication)),
-    suggestedPublicationsWithoutQueuedFiltered: (state) =>
-      state.suggestedPublicationsWithoutQueued.filter(publication => state.filter.matches(publication)),
-    publications: (state) => state.selectedPublications.concat(state.suggestedPublicationsWithoutQueued),
+    publications: (state) => state.selectedPublications.concat(state.suggestedPublications),
     publicationsFiltered: (state) => state.selectedPublications.concat(state.suggestedPublicationsFiltered),
     yearMax: (state) => Math.max(...state.publicationsFiltered.filter(publication => publication.year).map(publication => Number(publication.year))),
     yearMin: (state) => Math.min(...state.publicationsFiltered.filter(publication => publication.year).map(publication => Number(publication.year))),
-    unreadSuggestionsCount: (state) => state.suggestedPublicationsWithoutQueuedFiltered.filter(
+    unreadSuggestionsCount: (state) => state.suggestedPublicationsFiltered.filter(
       (publication) => !publication.isRead
     ).length,
     boostKeywords: (state) => state.boostKeywordString.toLowerCase().split(/,\s*/),
@@ -96,6 +91,16 @@ export const useSessionStore = defineStore('session', {
       this.excludedQueue.push(doi);
     },
 
+    removeFromQueues(doi) {
+      this.selectedQueue = this.selectedQueue.filter(seletedDoi => doi != seletedDoi);
+      this.excludedQueue = this.excludedQueue.filter(excludedDoi => doi != excludedDoi);
+    },
+
+    clearQueues() {
+      this.excludedQueue = [];
+      this.selectedQueue = [];
+    },
+
     async updateQueued() {
       this.clearActivePublication();
       if (this.excludedQueue.length) {
@@ -114,11 +119,16 @@ export const useSessionStore = defineStore('session', {
       ) {
         this.interfaceStore.showFeedbackInvitation();
       }
-      this.excludedQueue = [];
-      this.selectedQueue = [];
+      this.clearQueues();
     },
 
-    addPublicationsToSelection: async function (dois) {
+    async addPublicationsAndUpdate(dois) {
+      dois.forEach((doi) => this.removeFromQueues(doi));
+      this.addPublicationsToSelection(dois);
+      this.updateSuggestions();
+    },
+
+    async addPublicationsToSelection(dois) {
       console.log(`Adding to selection publications with DOIs: ${dois}.`);
       dois.forEach((doi) => {
         doi = doi.toLowerCase();

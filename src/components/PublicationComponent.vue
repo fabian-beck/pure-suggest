@@ -1,5 +1,42 @@
 <template>
   <li>
+    <b-message
+      class="waitingNotification"
+      :class="{
+        'is-primary': sessionStore.isQueuingForSelected(publication.doi),
+        'is-dark': sessionStore.isQueuingForExcluded(publication.doi),
+      }"
+      v-if="
+        sessionStore.isQueuingForSelected(publication.doi) ||
+        sessionStore.isQueuingForExcluded(publication.doi)
+      "
+      has-icon
+      icon="tray-full"
+      icon-size="mdi-24px"
+      ><div class="level is-mobile">
+        <div class="level-item">
+          To be&nbsp;
+          <span v-if="sessionStore.isQueuingForSelected(publication.doi)"
+            ><b>selected </b>
+            <b-icon
+              icon="plus-thick"
+              size="is-small"
+              class="has-text-primary"
+            ></b-icon
+          ></span>
+          <span v-else
+            ><b> excluded </b
+            ><b-icon icon="minus-thick" size="is-small"></b-icon
+          ></span>
+        </div>
+        <div class="level-right">
+          <button
+            class="delete media-right"
+            @click.stop="sessionStore.removeFromQueues(publication.doi)"
+          ></button>
+        </div>
+      </div>
+    </b-message>
     <div
       class="publication-component media"
       :class="{
@@ -10,8 +47,9 @@
           !publication.isRead &&
           !publication.isSelected &&
           publication.wasFetched,
-        queuingForSelected: sessionStore.isQueuingForSelected(publication.doi),
-        queuingForExcluded: sessionStore.isQueuingForExcluded(publication.doi),
+        queuing:
+          sessionStore.isQueuingForSelected(publication.doi) ||
+          sessionStore.isQueuingForExcluded(publication.doi),
       }"
       :id="publication.doi"
       tabindex="0"
@@ -381,11 +419,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-*:focus, .active {
-  outline: 1px solid $dark;
-}
-
+<style lang="scss">
 li {
   position: relative;
 
@@ -587,32 +621,39 @@ li {
       }
     }
 
-    &.queuingForSelected,
-    &.queuingForExcluded {
+    &.queuing {
       & > div {
         filter: blur(1px) opacity(50%);
       }
+    }
 
-      &::before {
-        position: absolute;
-        z-index: 1;
-        background: white;
-        padding: 0.25rem 0.5rem;
-        border-radius: 0.25rem;
-        border: 1px solid $border;
-        @include light-shadow;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
+    &:focus,
+    &.active {
+      outline: 1px solid $dark;
+    }
+  }
+
+  & .waitingNotification {
+    position: absolute;
+    z-index: 1;
+    background: white;
+    @include light-shadow;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: max(240px, 30%);
+
+    & .message-body {
+      padding: 0.5rem 0.5rem;
+
+      & .level-left {
+        text-align: center;
       }
-    }
 
-    &.queuingForSelected::before {
-      content: "Queuing to be selected ...";
-    }
-
-    &.queuingForExcluded::before {
-      content: "Queuing to be excluded ...";
+      & button {
+        margin-left: 1rem;
+        margin-top: 0.15rem;
+      }
     }
   }
 }

@@ -62,7 +62,7 @@
             has-background-primary-light
             is-hidden-touch
           "
-          :class="{ 'disabled': !addQuery }"
+          :class="{ disabled: !addQuery }"
           type="submit"
           icon-left="plus-thick"
           @click.stop="add"
@@ -75,7 +75,7 @@
             has-background-primary-light
             is-hidden-desktop
           "
-          :class="{ 'disabled': !addQuery }"
+          :class="{ disabled: !addQuery }"
           type="submit"
           icon-left="plus-thick"
           @click.stop="add"
@@ -139,13 +139,19 @@
             }}
             to be excluded</span
           >.
+          <button
+            class="delete ml-2 mt-1"
+            @click.stop="sessionStore.clearQueues()"
+          ></button>
         </div>
-        <b-button
-          @click="sessionStore.updateQueued"
-          class="button media-right has-background-primary has-text-white ml-2"
-          icon-left="update"
-          ><span class="key">U</span>pdate</b-button
-        >
+        <div class="media-right">
+          <b-button
+            @click="sessionStore.updateQueued"
+            class="button has-background-primary has-text-white ml-2"
+            icon-left="update"
+            ><span class="key">U</span>pdate</b-button
+          >
+        </div>
       </div>
       <div
         class="notification has-text-centered has-background-primary-light p-2"
@@ -237,7 +243,7 @@ export default {
           );
           this.openSearch(true);
         } else {
-          this.sessionStore.queueForSelected(query.dois);
+          this.sessionStore.addPublicationsAndUpdate(query.dois);
           this.addQuery = "";
         }
       } else {
@@ -271,7 +277,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
 .box {
   display: grid;
   grid-template-rows: max-content max-content max-content auto;

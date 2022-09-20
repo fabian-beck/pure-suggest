@@ -156,7 +156,9 @@ export default {
         else if (
           (!this.interfaceStore.isLoading && name === "clear") ||
           name === "queueForSelected" ||
-          name === "queueForExcluded"
+          name === "queueForExcluded" ||
+          name === "removeFromQueues" ||
+          name === "clearQueues"
         )
           this.plot();
       });
@@ -674,6 +676,11 @@ export default {
       text-anchor: middle;
       dominant-baseline: middle;
       filter: drop-shadow(0px 0px 1px white);
+
+      &.unread {
+        fill: $info;
+        font-weight: 1000;
+      }
 
       &.labelQueuingForSelected,
       &.labelQueuingForExcluded {
