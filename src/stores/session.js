@@ -123,7 +123,13 @@ export const useSessionStore = defineStore('session', {
       this.selectedQueue = [];
     },
 
-    addPublicationsToSelection: async function (dois) {
+    async addPublicationsAndUpdate(dois) {
+      dois.forEach((doi) => this.removeFromQueue(doi));
+      this.addPublicationsToSelection(dois);
+      this.updateSuggestions();
+    },
+
+    async addPublicationsToSelection(dois) {
       console.log(`Adding to selection publications with DOIs: ${dois}.`);
       dois.forEach((doi) => {
         doi = doi.toLowerCase();

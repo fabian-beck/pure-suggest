@@ -62,7 +62,7 @@
             has-background-primary-light
             is-hidden-touch
           "
-          :class="{ 'disabled': !addQuery }"
+          :class="{ disabled: !addQuery }"
           type="submit"
           icon-left="plus-thick"
           @click.stop="add"
@@ -75,7 +75,7 @@
             has-background-primary-light
             is-hidden-desktop
           "
-          :class="{ 'disabled': !addQuery }"
+          :class="{ disabled: !addQuery }"
           type="submit"
           icon-left="plus-thick"
           @click.stop="add"
@@ -237,7 +237,7 @@ export default {
           );
           this.openSearch(true);
         } else {
-          this.sessionStore.queueForSelected(query.dois);
+          this.sessionStore.addPublicationsAndUpdate(query.dois);
           this.addQuery = "";
         }
       } else {
@@ -271,7 +271,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
 .box {
   display: grid;
   grid-template-rows: max-content max-content max-content auto;
