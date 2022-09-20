@@ -25,11 +25,15 @@
             ></b-icon
           ></span>
           <span v-else
-            ><b> excluded </b><b-icon icon="minus-thick" size="is-small"></b-icon
+            ><b> excluded </b
+            ><b-icon icon="minus-thick" size="is-small"></b-icon
           ></span>
         </div>
         <div class="level-right">
-          <button class="delete media-right"></button>
+          <button
+            class="delete media-right"
+            @click.stop="sessionStore.removeFromQueue(publication.doi)"
+          ></button>
         </div>
       </div>
     </b-message>

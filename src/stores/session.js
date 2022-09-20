@@ -96,6 +96,11 @@ export const useSessionStore = defineStore('session', {
       this.excludedQueue.push(doi);
     },
 
+    removeFromQueue(doi) {
+      this.selectedQueue = this.selectedQueue.filter(seletedDoi => doi != seletedDoi);
+      this.excludedQueue = this.excludedQueue.filter(excludedDoi => doi != excludedDoi);
+    },
+
     async updateQueued() {
       this.clearActivePublication();
       if (this.excludedQueue.length) {
