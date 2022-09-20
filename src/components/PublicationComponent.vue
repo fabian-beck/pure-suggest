@@ -641,7 +641,7 @@ li {
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    width: max(250px, 30%);
+    width: max(240px, 30%);
 
     & .message-body {
       padding: 0.5rem 0.5rem;

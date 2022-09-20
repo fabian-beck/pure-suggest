@@ -156,7 +156,8 @@ export default {
         else if (
           (!this.interfaceStore.isLoading && name === "clear") ||
           name === "queueForSelected" ||
-          name === "queueForExcluded"
+          name === "queueForExcluded" ||
+          name === "removeFromQueue"
         )
           this.plot();
       });
