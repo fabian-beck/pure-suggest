@@ -649,6 +649,10 @@ li {
     & .message-body {
       padding: 0.5rem 0.5rem;
 
+      & .media-left .icon {
+        margin-top: 0.25rem;
+      }
+
       & .level-left {
         text-align: center;
       }

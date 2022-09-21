@@ -114,7 +114,7 @@
         class="notification has-background-primary-light media p-2"
         v-show="sessionStore.isUpdatable"
       >
-        <b-icon icon="tray-full" class="media-left ml-2 mt-2"></b-icon>
+        <b-icon icon="tray-full" class="media-left ml-2 mt-2 is-hidden-mobile"></b-icon>
         <div class="media-content has-text-centered mt-2">
           <b>Queue:</b>
           <span v-show="sessionStore.selectedQueue.length">
@@ -139,16 +139,22 @@
             }}
             to be excluded</span
           >.
-          <button
-            class="delete ml-2 mt-1"
-            @click.stop="sessionStore.clearQueues()"
-          ></button>
         </div>
-        <div class="media-right">
+        <div class="media-right level">
           <b-button
-            @click="sessionStore.updateQueued"
-            class="button has-background-primary has-text-white ml-2"
+            class="button ml-2 level-item"
+            icon-left="undo"
+            data-tippy-content="Clear queue and discard update."
+            v-tippy
+            @click.stop="sessionStore.clearQueues()"
+            ></b-button
+          >
+          <b-button
+            class="button has-background-primary has-text-white ml-2 level-item"
             icon-left="update"
+            data-tippy-content="Update suggested and excluded publications with queue and compute new suggestions."
+            v-tippy
+            @click="sessionStore.updateQueued"
             ><span class="key">U</span>pdate</b-button
           >
         </div>

@@ -80,7 +80,6 @@ export default {
 <!---------------------------------------------------------------------------------->
 
 <style lang="scss">
-
 $block-spacing: 0.5rem;
 $box-padding: 1rem;
 
@@ -208,6 +207,7 @@ $box-padding: 1rem;
       bottom: 0.5rem;
       width: 100%;
       text-align: center;
+      z-index: 100;
     }
   }
 
