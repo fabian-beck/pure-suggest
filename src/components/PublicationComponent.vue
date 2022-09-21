@@ -29,10 +29,14 @@
           ></span>
         </div>
         <div class="level-right">
-          <button
-            class="delete media-right"
-            @click.stop="sessionStore.removeFromQueues(publication.doi)"
-          ></button>
+          <b-button
+            class="is-small"
+            icon-left="undo"
+            data-tippy-content="Remove publication from queue again."
+            v-tippy
+             @click.stop="sessionStore.removeFromQueues(publication.doi)"
+          >
+          </b-button>
         </div>
       </div>
     </b-message>
@@ -348,7 +352,7 @@
             v-if="suggestion"
             class="is-primary is-small"
             icon-left="plus-thick"
-            data-tippy-content="Queue publication to be added to selected publications."
+            data-tippy-content="Mark publication to be added to selected publications."
             @click.stop="$emit('add', publication.doi)"
             v-tippy
           >
@@ -358,7 +362,7 @@
           <b-button
             class="is-small"
             icon-left="minus-thick"
-            data-tippy-content="Remove publication from the list and exclude for suggestions."
+            data-tippy-content="Mark publication to be excluded for suggestions."
             @click.stop="sessionStore.queueForExcluded(publication.doi)"
             v-tippy
           >
