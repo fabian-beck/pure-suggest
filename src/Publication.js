@@ -100,8 +100,6 @@ export default class Publication {
                     this.issue = data.issue;
                     this.page = data.page;
                     this.oaLink = data.oa_link;
-                    this.gsUrl = `https://scholar.google.de/scholar?hl=en&q=${this.title
-                        } ${this.author ? this.author : ''}`
                     // references and citations
                     data.reference.split("; ").forEach(referenceDoi => {
                         if (referenceDoi) {
@@ -114,15 +112,6 @@ export default class Publication {
                         }
                     });
                     this.citationsPerYear = this.citationDois.length / (Math.max(1, CURRENT_YEAR - this.year));
-                    // tags
-                    if (this.referenceDois.length > 100) {
-                        this.isSurvey = `more than 100 references (${this.referenceDois.length})`;
-                    } else if (this.referenceDois.length >= 50 && /.*(survey|state|review|advances|future).*/i.test(this.title)) {
-                        this.isSurvey = `more than 50 references (${this.referenceDois.length}) and "${/(survey|state|review|advances|future)/i.exec(this.title)[0]}" in the title`;
-                    }
-                    this.isHighlyCited = this.citationsPerYear > 10 ? `more than 10 citations per year (${this.citationsPerYear.toFixed(1)})` : false;
-                    this.isNew = (CURRENT_YEAR - this.year) < 2 ? "published within the last two calendar years" : false;
-                    this.isUnnoted = this.citationsPerYear < 1 ? `less than 1 citation per year (${this.citationsPerYear.toFixed(1)})` : false;
                 }
                 , {
                     headers: {
@@ -147,6 +136,17 @@ export default class Publication {
                 }
             });
             this.title = cleanTitle(this.title);
+            this.gsUrl = `https://scholar.google.de/scholar?hl=en&q=${this.title
+                } ${this.author ? this.author : ''}`
+            // tags
+            if (this.referenceDois.length > 100) {
+                this.isSurvey = `more than 100 references (${this.referenceDois.length})`;
+            } else if (this.referenceDois.length >= 50 && /.*(survey|state|review|advances|future).*/i.test(this.title)) {
+                this.isSurvey = `more than 50 references (${this.referenceDois.length}) and "${/(survey|state|review|advances|future)/i.exec(this.title)[0]}" in the title`;
+            }
+            this.isHighlyCited = this.citationsPerYear > 10 ? `more than 10 citations per year (${this.citationsPerYear.toFixed(1)})` : false;
+            this.isNew = (CURRENT_YEAR - this.year) < 2 ? "published within the last two calendar years" : false;
+            this.isUnnoted = this.citationsPerYear < 1 ? `less than 1 citation per year (${this.citationsPerYear.toFixed(1)})` : false;
         } catch (error) {
             console.log(error);
         }
