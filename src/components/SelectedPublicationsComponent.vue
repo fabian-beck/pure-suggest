@@ -249,7 +249,7 @@ export default {
           );
           this.openSearch(true);
         } else {
-          this.sessionStore.addPublicationsAndUpdate(query.dois);
+          await this.sessionStore.addPublicationsAndUpdate(query.dois);
           this.addQuery = "";
         }
       } else {

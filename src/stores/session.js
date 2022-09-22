@@ -124,8 +124,8 @@ export const useSessionStore = defineStore('session', {
 
     async addPublicationsAndUpdate(dois) {
       dois.forEach((doi) => this.removeFromQueues(doi));
-      this.addPublicationsToSelection(dois);
-      this.updateSuggestions();
+      await this.addPublicationsToSelection(dois);
+      await this.updateSuggestions();
     },
 
     async addPublicationsToSelection(dois) {
