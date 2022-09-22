@@ -147,26 +147,22 @@ export default {
 
     this.sessionStore.$onAction(({ name, after }) => {
       after(() => {
-        if (
-          name === "updateSuggestions" ||
-          name === "updateScores" ||
-          name === "updateQueued"
-        )
+        if (name === "updateScores") {
           this.plot(true);
-        else if (
+        } else if (
           (!this.interfaceStore.isLoading && name === "clear") ||
           name === "queueForSelected" ||
           name === "queueForExcluded" ||
           name === "removeFromQueues" ||
           name === "clearQueues"
-        )
+        ) {
           this.plot();
+        }
       });
     });
   },
   methods: {
     initForces: function () {
-      console.log("Initializing general forces for citation network.");
       const that = this;
       this.simulation
         .force(
