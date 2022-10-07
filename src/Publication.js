@@ -1,4 +1,4 @@
-import _ from "lodash";
+import _, { includes } from "lodash";
 
 import { cachedFetch } from "./Cache.js";
 
@@ -213,11 +213,23 @@ export default class Publication {
     }
 
     toBibtex() {
+        function protectAcronyms(s) {
+            let s2 = s;
+            let detectedAcronyms = [];
+            s.split(/\W/).forEach(word => {
+                if (word.slice(1) != word.slice(1).toLowerCase() && !detectedAcronyms.includes(word)) {
+                    s2 = s2.replaceAll(word, `{${word}}`)
+                    detectedAcronyms.push(word);
+                }
+            });
+            return s2;
+        }
+        
         let type = "misc";
         let bibString = "";
         if (this.title) {
             bibString += `
-    title = {${this.title}},`;
+    title = {${protectAcronyms(this.title)}},`;
         }
         if (this.author) {
             bibString += `
