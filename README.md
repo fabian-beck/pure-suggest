@@ -30,6 +30,10 @@ If you want to read more or cite the tool, you can refer to the following public
 
 * Beck, F. and Krause, C., 2022. Visually Explaining Publication Ranks in Citation-based Literature Search with PURE suggest. In EuroVis 2022 - Posters. DOI: [10.2312/evp.20221110](https://diglib.eg.org/handle/10.2312/evp20221110). [[PDF](https://diglib.eg.org/bitstream/handle/10.2312/evp20221110/019-021.pdf)]
 
+You can find further background on the tool and its usage here:
+
+* Beck, F., 2022. Assessing Discussions of Related Work through Citation-based Recommendations and Network Visualization. https://doi.org/10.5281/zenodo.7123500
+
 ## Project setup
 ```
 npm install
