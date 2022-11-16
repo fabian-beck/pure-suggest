@@ -36,6 +36,7 @@ export default class Publication {
         this.isHighlyCited = false;
         this.isNew = false;
         this.isUnnoted = false;
+        this.isOpenAccess = false;
         // interface properties
         this.isActive = false;
         this.isLinkedToActive = false;
@@ -151,6 +152,7 @@ export default class Publication {
             this.isHighlyCited = this.citationsPerYear > 10 ? `more than 10 citations per year (${this.citationsPerYear.toFixed(1)})` : false;
             this.isNew = (CURRENT_YEAR - this.year) < 2 ? "published within the last two calendar years" : false;
             this.isUnnoted = this.citationsPerYear < 1 ? `less than 1 citation per year (${this.citationsPerYear.toFixed(1)})` : false;
+            this.isOpenAccess = this.oaLink ? true : false;
         } catch (error) {
             console.log(error);
         }
@@ -224,7 +226,7 @@ export default class Publication {
             });
             return s2;
         }
-        
+
         let type = "misc";
         let bibString = "";
         if (this.title) {
@@ -291,6 +293,10 @@ export default class Publication {
         {
             value: "isUnnoted",
             name: "Unnoted"
+        },
+        {
+            value: "isOpenAccess",
+            name: "Open access"
         }];
     }
 
