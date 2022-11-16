@@ -122,8 +122,7 @@ export const useSessionStore = defineStore('session', {
       ) {
         this.interfaceStore.showFeedbackInvitation();
       }
-      this.excludedQueue = [];
-      this.selectedQueue = [];
+      this.clearQueues();
     },
 
     async addPublicationsAndUpdate(dois) {
