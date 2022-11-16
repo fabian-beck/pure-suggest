@@ -17,11 +17,7 @@
         <div class="level-item">
           To be&nbsp;
           <span v-if="sessionStore.isQueuingForSelected(publication.doi)"
-            ><b>selected </b>
-            <b-icon
-              icon="plus-thick"
-              size="is-small"
-            ></b-icon
+            ><b>selected </b> <b-icon icon="plus-thick" size="is-small"></b-icon
           ></span>
           <span v-else
             ><b> excluded </b
@@ -34,7 +30,7 @@
             icon-left="undo"
             data-tippy-content="Remove publication from queue again."
             v-tippy
-             @click.stop="sessionStore.removeFromQueues(publication.doi)"
+            @click.stop="sessionStore.removeFromQueues(publication.doi)"
           >
           </b-button>
         </div>
@@ -217,6 +213,15 @@
               :data-tippy-content="`Identified as yet unnoted: ${publication.isUnnoted}.`"
               v-tippy
               >Unnoted</b-tag
+            >
+            <b-tag
+              icon="lock-open-check-outline"
+              class="is-dark"
+              size="is-small"
+              v-if="publication.isOpenAccess"
+              :data-tippy-content="`Identified as open access: open access link available.`"
+              v-tippy
+              >Open access</b-tag
             >
           </b-taglist>
         </div>
