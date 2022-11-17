@@ -260,7 +260,7 @@ export default class Publication {
             bibString += `
     pages = {${this.page}},`;
         }
-        return `@${type}{${this.doi},${bibString}
+        return `@${type}{${this.doi.replaceAll(/_/g, "")},${bibString}
     doi = {${this.doi}}
 }`;
     }
