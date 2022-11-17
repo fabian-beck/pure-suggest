@@ -88,7 +88,7 @@ export default class Publication {
                         this.container += (mappedWord ? mappedWord : word) + " ";
                     });
                     this.container = _.trim(this.container, '. ');
-                    this.container = this.container.charAt(0).toUpperCase() + this.container.slice(1); // make first character uppercase
+                    this.container = cleanTitle(this.container);
                     // bibString meta-data
                     this.year = data.year;
                     if (!this.year) {
@@ -349,5 +349,9 @@ function cleanTitle(title) {
     });
     cleanedTitle = cleanedTitle.charAt(0).toUpperCase() + cleanedTitle.slice(1); // make first character uppercase
     cleanedTitle = cleanedTitle.trim();
+    cleanedTitle = cleanedTitle.replaceAll(/--/g, "–"); // en dash 
+    cleanedTitle = cleanedTitle.replaceAll(/ - /g, " – "); // en dash
+    cleanedTitle = cleanedTitle.replaceAll(/---/g, "—"); // em dash 
+    cleanedTitle = cleanedTitle.replaceAll(/ ?— ?/g, "—"); // em dash 
     return cleanedTitle;
 }
