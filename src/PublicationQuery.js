@@ -13,8 +13,11 @@ export default class PublicationQuery {
     async execute() {
         let dois = [];
         let ambiguousResult = false;
-        this.query.split(/ |"|\{|\}|doi:|doi.org\//).forEach((doi) => {
-            doi = _.trim(doi, ".");
+        // splitting query by characters that must/should be encoded differently in DOIs or by typical prefixes
+        // see: https://www.doi.org/doi_handbook/2_Numbering.html
+        this.query.split(/ |"|\{|\}|%|#|\?|<|>|\[|\]|\\|\||`|\+|doi:|doi.org\//).forEach((doi) => {
+            // cutting characters that might be included in DOI, but very unlikely at the end
+            doi = _.trim(doi, ".,;");
             if (doi.indexOf("10.") === 0) {
                 dois.push(doi);
             }
