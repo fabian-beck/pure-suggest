@@ -4,6 +4,7 @@ import { useInterfaceStore } from "./interface.js";
 
 import Publication from "./../Publication.js";
 import Filter from '../Filter.js';
+import PublicationQuery from "./../PublicationQuery.js";
 import { shuffle, saveAsFile } from "./../Util.js"
 import { clearCache } from "./../Cache.js";
 
@@ -21,6 +22,7 @@ export const useSessionStore = defineStore('session', {
       activePublication: "",
       readPublicationsDois: new Set(),
       filter: new Filter(),
+      addQuery: "",
     }
   },
   getters: {
@@ -63,6 +65,7 @@ export const useSessionStore = defineStore('session', {
       this.boostKeywordString = "";
       this.activePublication = "";
       this.filter = new Filter();
+      this.addQuery = "";
       // do not reset read publications as the user might to carry this information to the next session
       this.interfaceStore.clear();
     },
@@ -123,6 +126,31 @@ export const useSessionStore = defineStore('session', {
         this.interfaceStore.showFeedbackInvitation();
       }
       this.clearQueues();
+    },
+
+    async addPublicationByQuery() {
+      if (!this.addQuery) return;
+      this.interfaceStore.startLoading();
+      this.interfaceStore.updateLoadingToast(
+        "Searching for publication with matching title",
+        "is-primary"
+      );
+      const publicationQuery = new PublicationQuery(this.addQuery);
+      const query = await publicationQuery.execute();
+      if (query.dois.length > 0) {
+        if (query.ambiguousResult) {
+          this.interfaceStore.showErrorMessage(
+            "Multiple matching publications found, opening search instead ..."
+          );
+          this.interfaceStore.openSearch(this.addQuery);
+        } else {
+          await this.addPublicationsAndUpdate(query.dois);
+          this.addQuery = "";
+        }
+      } else {
+        this.interfaceStore.showErrorMessage("No matching publication found");
+      }
+      this.interfaceStore.endLoading();
     },
 
     async addPublicationsAndUpdate(dois) {
