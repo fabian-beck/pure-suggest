@@ -42,13 +42,13 @@
         </div>
       </div>
     </div>
-    <form v-on:submit.prevent="add" class="field has-addons">
+    <form v-on:submit.prevent="sessionStore.addPublicationByQuery" class="field has-addons">
       <p class="control is-expanded">
         <input
           class="input add-publication"
           type="text"
           placeholder="DOI(s)/title or search"
-          v-model="addQuery"
+          v-model="sessionStore.addQuery"
           data-tippy-content="One or more <b>DOIs</b> (separated by different characters or included in a different format such as BibTeX).<br/>Alternatively, <b>paper title</b> or a unique part of it (only works for one publication)"
           v-tippy
         />
@@ -62,10 +62,10 @@
             has-background-primary-light
             is-hidden-touch
           "
-          :class="{ disabled: !addQuery }"
+          :class="{ disabled: !sessionStore.addQuery }"
           type="submit"
           icon-left="plus-thick"
-          @click.stop="add"
+          @click.stop="sessionStore.addPublicationByQuery"
           ><span class="key">A</span>dd
         </b-button>
         <b-button
@@ -75,10 +75,10 @@
             has-background-primary-light
             is-hidden-desktop
           "
-          :class="{ disabled: !addQuery }"
+          :class="{ disabled: !sessionStore.addQuery }"
           type="submit"
           icon-left="plus-thick"
-          @click.stop="add"
+          @click.stop="sessionStore.addPublicationByQuery"
         ></b-button>
       </p>
       <p class="control">
@@ -92,7 +92,7 @@
           "
           type="submit"
           icon-left="magnify"
-          @click.stop="openSearch(false)"
+          @click.stop="interfaceStore.openSearch()"
           ><span class="key">S</span>earch</b-button
         >
         <b-button
@@ -105,7 +105,7 @@
           "
           type="submit"
           icon-left="magnify"
-          @click.stop="openSearch(false)"
+          @click.stop="interfaceStore.openSearch()"
         ></b-button>
       </p>
     </form>
@@ -206,7 +206,6 @@ import { useSessionStore } from "./../stores/session.js";
 import { useInterfaceStore } from "./../stores/interface.js";
 
 import PublicationListComponent from "./PublicationListComponent.vue";
-import PublicationQuery from "./../PublicationQuery.js";
 
 export default {
   name: "SelectedPublicationsComponent",
@@ -218,11 +217,6 @@ export default {
   components: {
     PublicationListComponent,
   },
-  data() {
-    return {
-      addQuery: "",
-    };
-  },
   mounted() {
     this.sessionStore.$onAction(({ name, after }) => {
       after(() => {
@@ -233,37 +227,6 @@ export default {
     });
   },
   methods: {
-    add: async function () {
-      if (!this.addQuery) return;
-      this.interfaceStore.startLoading();
-      this.interfaceStore.updateLoadingToast(
-        "Searching for publication with matching title",
-        "is-primary"
-      );
-      const publicationQuery = new PublicationQuery(this.addQuery);
-      const query = await publicationQuery.execute();
-      if (query.dois.length > 0) {
-        if (query.ambiguousResult) {
-          this.interfaceStore.showErrorMessage(
-            "Multiple matching publications found, opening search instead ..."
-          );
-          this.openSearch(true);
-        } else {
-          await this.sessionStore.addPublicationsAndUpdate(query.dois);
-          this.addQuery = "";
-        }
-      } else {
-        this.interfaceStore.showErrorMessage("No matching publication found");
-      }
-      this.interfaceStore.endLoading();
-    },
-    openSearch: function (ambiguous = false) {
-      this.interfaceStore.openSearch(
-        this.addQuery,
-        ambiguous ? "Several publications might match, please select..." : null
-      );
-      this.addQuery = "";
-    },
     clearBoost: function () {
       this.sessionStore.setBoostKeywordString("");
     },

@@ -125,10 +125,9 @@ export const useInterfaceStore = defineStore('interface', {
             });
         },
 
-        openSearch(query, message) {
-            this.searchQuery = query;
+        openSearch(query) {
+            this.searchQuery = query?query:"";
             this.isSearchPanelShown = true;
-            this.showImportantMessage(message);
         },
 
         openFeedback() {
