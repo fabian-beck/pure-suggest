@@ -24,19 +24,21 @@ export default class PublicationSearch {
             }
         });
         if (dois.length) {
-            const simplifiedQuery = this.query.replace(/\W+/g, "+").toLowerCase();
-            console.log(`Searching for publications with title or similar to '${this.query}'.`)
-            await cachedFetch(
-                `https://api.crossref.org/works?query=${simplifiedQuery}&mailto=fabian.beck@uni-bamberg.de&filter=has-references:true`,
-                (data) => {
-                    data.message.items.filter(item => item.title).forEach((item) => {
-                        const publication = new Publication(item.DOI);
-                        publication.fetchData();
-                        results.push(publication);
-                    });
-                }
-            );
+            console.log(`Identified ${results.length} DOI(s) in input; do not perform search.`)
+            return results;
         }
+        const simplifiedQuery = this.query.replace(/\W+/g, "+").toLowerCase();
+        console.log(`Searching for publications matching '${this.query}'.`)
+        await cachedFetch(
+            `https://api.crossref.org/works?query=${simplifiedQuery}&mailto=fabian.beck@uni-bamberg.de&filter=has-references:true`,
+            (data) => {
+                data.message.items.filter(item => item.title).forEach((item) => {
+                    const publication = new Publication(item.DOI);
+                    publication.fetchData();
+                    results.push(publication);
+                });
+            }
+        );
         return results;
     }
 
