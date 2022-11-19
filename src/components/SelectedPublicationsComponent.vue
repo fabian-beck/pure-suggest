@@ -12,80 +12,18 @@
         </div>
       </div>
       <div class="level-right" v-show="!sessionStore.isEmpty">
-        <div class="level-item"></div>
+        <div class="level-item">
+          <b-button
+            class="compact-button"
+            icon-left="magnify"
+            data-tippy-content="<span class='key'>S</span>earch for publications to be added to selected."
+            v-tippy
+            @click.stop="interfaceStore.openSearch()"
+          ></b-button>
+        </div>
       </div>
     </div>
     <div>
-      <form
-        v-on:submit.prevent="sessionStore.addPublicationByQuery"
-        class="field has-addons"
-      >
-        <p class="control is-expanded">
-          <input
-            class="input add-publication"
-            type="text"
-            placeholder="DOI(s)/title or search"
-            v-model="sessionStore.addQuery"
-            data-tippy-content="One or more <b>DOIs</b> (separated by different characters or included in a different format such as BibTeX).<br/>Alternatively, <b>paper title</b> or a unique part of it (only works for one publication)"
-            v-tippy
-          />
-        </p>
-        <!-- copies of buttons necessary as just hiding text inside button leads to empty span tag inside buttons and layout issues -->
-        <p class="control">
-          <b-button
-            class="
-              button
-              level-right
-              has-background-primary-light
-              is-hidden-touch
-            "
-            :class="{ disabled: !sessionStore.addQuery }"
-            type="submit"
-            icon-left="plus-thick"
-            @click.stop="sessionStore.addPublicationByQuery"
-            ><span class="key">A</span>dd
-          </b-button>
-          <b-button
-            class="
-              button
-              level-right
-              has-background-primary-light
-              is-hidden-desktop
-            "
-            :class="{ disabled: !sessionStore.addQuery }"
-            type="submit"
-            icon-left="plus-thick"
-            @click.stop="sessionStore.addPublicationByQuery"
-          ></b-button>
-        </p>
-        <p class="control">
-          <b-button
-            class="
-              button
-              level-right
-              has-background-primary-light
-              ml-1
-              is-hidden-touch
-            "
-            type="submit"
-            icon-left="magnify"
-            @click.stop="interfaceStore.openSearch()"
-            ><span class="key">S</span>earch</b-button
-          >
-          <b-button
-            class="
-              button
-              level-right
-              has-background-primary-light
-              ml-1
-              is-hidden-desktop
-            "
-            type="submit"
-            icon-left="magnify"
-            @click.stop="interfaceStore.openSearch()"
-          ></b-button>
-        </p>
-      </form>
       <div
         class="notification has-background-warning-light p-2 pt-3 is-gapless"
         v-show="!sessionStore.isEmpty"
@@ -183,15 +121,20 @@
           v-show="sessionStore.isEmpty"
         >
           <p>
-            To start,
-            <b><b-icon icon="plus-thick" size="is-small"></b-icon> add</b>
-            publications through a <b>title</b> or
-            <a href="https://www.doi.org/"><b>DOI(s)</b></a
-            >, <br />
-            <b><b-icon icon="magnify" size="is-small"></b-icon> search</b> using
-            <b>keywords</b>, or:
+            To start, <b>add publications</b> to selected:
           </p>
           <div class="level mt-2">
+            <div class="level-item">
+            </div>
+            <div class="level-item">
+              <b-button
+                class="button has-background-primary-light"
+                icon-left="magnify"
+                @click.stop="interfaceStore.openSearch()"
+              >
+                Search
+              </b-button>
+            </div>
             <div class="level-item">
               <b-button
                 class="button has-background-primary-light"
