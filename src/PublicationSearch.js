@@ -23,7 +23,7 @@ export default class PublicationSearch {
                 results.push(publication);
             }
         });
-        if (dois.length === 0) {
+        if (dois.length) {
             const simplifiedQuery = this.query.replace(/\W+/g, "+").toLowerCase();
             console.log(`Searching for publications with title or similar to '${this.query}'.`)
             await cachedFetch(

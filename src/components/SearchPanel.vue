@@ -31,30 +31,30 @@
             </form>
             <ul class="publication-list">
               <li
-                v-for="item in filteredSearchResults"
+                v-for="publication in filteredSearchResults"
                 class="publication-component media"
-                :key="item.doi"
+                :key="publication.doi"
               >
                 <div class="media-content">
-                  <b> {{ item.title }} </b
-                  ><span v-if="item.author">
+                  <b> {{ publication.title }} </b
+                  ><span v-if="publication.author">
                     (<span>{{
-                      item.authorShort ? item.authorShort + ", " : ""
+                      publication.authorShort ? publication.authorShort + ", " : ""
                     }}</span
-                    ><span :class="item.year ? '' : 'unknown'">{{
-                      item.year ? item.year : "[unknown year]"
+                    ><span :class="publication.year ? '' : 'unknown'">{{
+                      publication.year ? publication.year : "[unknown year]"
                     }}</span
                     >)</span
                   >
                   <span>
                     DOI:
-                    <a :href="`https://doi.org/${item.doi}`">{{ item.doi }}</a>
+                    <a :href="`https://doi.org/${publication.doi}`">{{ publication.doi }}</a>
                   </span>
-                  <span v-show="item.title">
+                  <span v-show="publication.title">
                     <a
                       :href="`https://scholar.google.de/scholar?hl=en&q=${
-                        item.title
-                      } ${item.author ? item.author : ''}`"
+                        publication.title
+                      } ${publication.author ? publication.author : ''}`"
                       class="ml-2"
                     >
                       <b-icon
@@ -73,7 +73,7 @@
                       icon-left="plus-thick"
                       data-tippy-content="Mark publication to be added to selected publications."
                       v-tippy
-                      @click.stop="addPublication(item.doi)"
+                      @click.stop="addPublication(publication.doi)"
                     >
                     </b-button>
                   </div>
@@ -141,10 +141,10 @@ export default {
   computed: {
     filteredSearchResults: function () {
       return this.searchResults.filter(
-        (item) =>
-          !this.sessionStore.selectedPublicationsDois.includes(item.doi) &&
-          !this.sessionStore.selectedQueue.includes(item.doi) &&
-          !this.addedPublications.includes(item.doi)
+        (publication) =>
+          !this.sessionStore.selectedPublicationsDois.includes(publication.doi) &&
+          !this.sessionStore.selectedQueue.includes(publication.doi) &&
+          !this.addedPublications.includes(publication.doi)
       );
     },
   },
