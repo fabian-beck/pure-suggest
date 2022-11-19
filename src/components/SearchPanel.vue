@@ -13,6 +13,7 @@
               <p class="control is-expanded">
                 <input
                   class="input search-publication"
+                  placeholder="Search for keywords, names, etc. or provide DOI(s)"
                   type="text"
                   v-model="interfaceStore.searchQuery"
                   ref="searchInput"
@@ -32,32 +33,28 @@
               <li
                 v-for="item in filteredSearchResults"
                 class="publication-component media"
-                :key="item.DOI"
+                :key="item.doi"
               >
                 <div class="media-content">
-                  <b>
-                    {{
-                      item.title[0] +
-                      (item.subtitle && item.title[0] !== item.subtitle[0]
-                        ? " " + item.subtitle[0]
-                        : "")
-                    }} </b
+                  <b> {{ item.title }} </b
                   ><span v-if="item.author">
-                    {{ createShortReference(item) }}</span
+                    (<span>{{
+                      item.authorShort ? item.authorShort + ", " : ""
+                    }}</span
+                    ><span :class="item.year ? '' : 'unknown'">{{
+                      item.year ? item.year : "[unknown year]"
+                    }}</span
+                    >)</span
                   >
                   <span>
                     DOI:
-                    <a :href="`https://doi.org/${item.DOI}`">{{ item.DOI }}</a>
+                    <a :href="`https://doi.org/${item.doi}`">{{ item.doi }}</a>
                   </span>
-                  <span>
+                  <span v-show="item.title">
                     <a
                       :href="`https://scholar.google.de/scholar?hl=en&q=${
                         item.title
-                      } ${
-                        item.author
-                          ? item.author.map((name) => name.family).join(' ')
-                          : ''
-                      }`"
+                      } ${item.author ? item.author : ''}`"
                       class="ml-2"
                     >
                       <b-icon
@@ -76,7 +73,7 @@
                       icon-left="plus-thick"
                       data-tippy-content="Mark publication to be added to selected publications."
                       v-tippy
-                      @click.stop="addPublication(item.DOI)"
+                      @click.stop="addPublication(item.doi)"
                     >
                     </b-button>
                   </div>
@@ -145,9 +142,9 @@ export default {
     filteredSearchResults: function () {
       return this.searchResults.filter(
         (item) =>
-          !this.sessionStore.selectedPublicationsDois.includes(item.DOI) &&
-          !this.sessionStore.selectedQueue.includes(item.DOI) &&
-          !this.addedPublications.includes(item.DOI)
+          !this.sessionStore.selectedPublicationsDois.includes(item.doi) &&
+          !this.sessionStore.selectedQueue.includes(item.doi) &&
+          !this.addedPublications.includes(item.doi)
       );
     },
   },
@@ -179,29 +176,6 @@ export default {
         this.interfaceStore.showErrorMessage("No matching publications found");
       }
       this.isLoading = false;
-    },
-
-    createShortReference: function (item) {
-      const lastNames = item.author
-        .filter((name) => name.family)
-        .map((name) => name.family);
-      let authorShort = "";
-      if (lastNames.length > 0) {
-        authorShort = lastNames[0];
-        if (lastNames.length === 2) {
-          authorShort += " and " + lastNames[1];
-        } else {
-          authorShort += " et al.";
-        }
-      }
-      let year = "";
-      if (item.published) {
-        year = item.published["date-parts"][0][0];
-      }
-      if (authorShort && year) {
-        return `(${authorShort}, ${year})`;
-      }
-      return `(${authorShort + year})`;
     },
 
     addPublication(doi) {
@@ -242,7 +216,6 @@ export default {
 </script>
 
 <style lang="scss">
-
 .card {
   & .publication-list {
     padding: 0;
@@ -255,6 +228,7 @@ export default {
     & li {
       margin: 0 !important;
       padding: 0.5rem;
+      min-height: 4.1rem;
     }
   }
 
