@@ -3,14 +3,14 @@
     <div class="card">
       <header class="card-header has-background-primary">
         <p class="card-header-title has-text-white">
-          <b-icon icon="magnify"></b-icon>&ensp;Search Publications
+          <b-icon icon="magnify"></b-icon>&ensp;Search/import publications
         </p>
       </header>
       <div class="card-content">
         <div class="content">
           <section>
-            <form v-on:submit.prevent="search" class="field has-addons">
-              <p class="control is-expanded">
+            <form v-on:submit.prevent="search" class="field has-addons mb-2">
+              <p class="control is-expanded m-0">
                 <input
                   class="input search-publication"
                   type="text"
@@ -28,36 +28,71 @@
                 </b-button>
               </p>
             </form>
+            <p class="notification has-background-primary-light p-2 mb-2">
+              <span v-show="searchResults.type === 'empty'"
+                ><i
+                  ><b>Search</b> for keywords, names, etc. <b>or import</b> as
+                  <a href="https://www.doi.org/" class="href">DOI(s)</a> contained in any format.</i
+                ></span
+              >
+              <span v-show="['doi', 'search'].includes(searchResults.type)"
+                >Showing
+                <b
+                  >{{ filteredSearchResults.length }} publication{{
+                    filteredSearchResults.length != 1 ? "s" : ""
+                  }}</b
+                >
+                based on
+                <span v-show="searchResults.type === 'doi'"
+                  >detected <b>DOIs</b></span
+                ><span v-show="searchResults.type === 'search'"
+                  ><b>search</b></span
+                >.</span
+              ><b-button
+                class="compact-button ml-4 has-background-primary"
+                icon-left="plus-thick"
+                data-tippy-content="Mark publication to be added to selected publications."
+                v-tippy
+                @click.stop="addAllPublications"
+                v-show="searchResults.type === 'doi' && searchResults.results.length > 0"
+                >Add all</b-button
+              >
+            </p>
             <ul class="publication-list">
               <li
-                v-for="item in filteredSearchResults"
+                v-for="publication in filteredSearchResults"
                 class="publication-component media"
-                :key="item.DOI"
+                :key="publication.doi"
               >
                 <div class="media-content">
-                  <b>
-                    {{
-                      item.title[0] +
-                      (item.subtitle && item.title[0] !== item.subtitle[0]
-                        ? " " + item.subtitle[0]
-                        : "")
-                    }} </b
-                  ><span v-if="item.author">
-                    {{ createShortReference(item) }}</span
+                  <b
+                    v-if="publication.wasFetched && !publication.title"
+                    class="has-text-danger-dark"
+                    >[No metadata available]</b
+                  >
+                  <b> {{ publication.title }} </b
+                  ><span v-if="publication.author">
+                    (<span>{{
+                      publication.authorShort
+                        ? publication.authorShort + ", "
+                        : ""
+                    }}</span
+                    ><span :class="publication.year ? '' : 'unknown'">{{
+                      publication.year ? publication.year : "[unknown year]"
+                    }}</span
+                    >)</span
                   >
                   <span>
                     DOI:
-                    <a :href="`https://doi.org/${item.DOI}`">{{ item.DOI }}</a>
+                    <a :href="`https://doi.org/${publication.doi}`">{{
+                      publication.doi
+                    }}</a>
                   </span>
-                  <span>
+                  <span v-show="publication.title">
                     <a
                       :href="`https://scholar.google.de/scholar?hl=en&q=${
-                        item.title
-                      } ${
-                        item.author
-                          ? item.author.map((name) => name.family).join(' ')
-                          : ''
-                      }`"
+                        publication.title
+                      } ${publication.author ? publication.author : ''}`"
                       class="ml-2"
                     >
                       <b-icon
@@ -76,7 +111,7 @@
                       icon-left="plus-thick"
                       data-tippy-content="Mark publication to be added to selected publications."
                       v-tippy
-                      @click.stop="addPublication(item.DOI)"
+                      @click.stop="addPublication(publication.doi)"
                     >
                     </b-button>
                   </div>
@@ -91,15 +126,19 @@
         <div class="level-left">
           <div class="level-item">
             <p>
-              <span v-show="addedPublications.length === 0">No</span
-              ><span v-show="addedPublications.length > 0">{{
-                addedPublications.length
-              }}</span>
-              publication<span v-show="addedPublications.length > 1">s</span>
+              <b
+                ><span v-show="addedPublications.length === 0">No</span
+                ><span v-show="addedPublications.length > 0">{{
+                  addedPublications.length
+                }}</span>
+                publication<span v-show="addedPublications.length > 1"
+                  >s</span
+                ></b
+              >
               <span v-show="addedPublications.length === 0"
                 >&nbsp;yet marked</span
               >
-              to be added
+              to be added to selected.
             </p>
           </div>
         </div>
@@ -110,7 +149,7 @@
             @click="addAndClose"
             :disabled="addedPublications.length === 0"
             icon-left="plus-thick"
-            >Add</b-button
+            >Add and update</b-button
           >
         </div>
       </footer>
@@ -136,18 +175,20 @@ export default {
   },
   data() {
     return {
-      searchResults: [],
+      searchResults: { results: [], type: "empty" },
       addedPublications: [],
       isLoading: false,
     };
   },
   computed: {
     filteredSearchResults: function () {
-      return this.searchResults.filter(
-        (item) =>
-          !this.sessionStore.selectedPublicationsDois.includes(item.DOI) &&
-          !this.sessionStore.selectedQueue.includes(item.DOI) &&
-          !this.addedPublications.includes(item.DOI)
+      return this.searchResults.results.filter(
+        (publication) =>
+          !this.sessionStore.selectedPublicationsDois.includes(
+            publication.doi
+          ) &&
+          !this.sessionStore.selectedQueue.includes(publication.doi) &&
+          !this.addedPublications.includes(publication.doi)
       );
     },
   },
@@ -167,7 +208,7 @@ export default {
   methods: {
     search: async function () {
       if (!this.interfaceStore.searchQuery) {
-        this.searchResults = [];
+        this.searchResults = { results: [], type: "empty" };
         return;
       }
       this.isLoading = true;
@@ -181,31 +222,16 @@ export default {
       this.isLoading = false;
     },
 
-    createShortReference: function (item) {
-      const lastNames = item.author
-        .filter((name) => name.family)
-        .map((name) => name.family);
-      let authorShort = "";
-      if (lastNames.length > 0) {
-        authorShort = lastNames[0];
-        if (lastNames.length === 2) {
-          authorShort += " and " + lastNames[1];
-        } else {
-          authorShort += " et al.";
-        }
-      }
-      let year = "";
-      if (item.published) {
-        year = item.published["date-parts"][0][0];
-      }
-      if (authorShort && year) {
-        return `(${authorShort}, ${year})`;
-      }
-      return `(${authorShort + year})`;
-    },
-
     addPublication(doi) {
       this.addedPublications.push(doi);
+    },
+
+    addAllPublications() {
+      this.filteredSearchResults.forEach((publication) => {
+        this.addPublication(publication.doi);
+      });
+      this.searchResults = { results: [], type: "empty" };
+      this.interfaceStore.searchQuery = "";
     },
 
     addAndClose() {
@@ -232,8 +258,8 @@ export default {
     },
 
     reset() {
-      this.interfaceStore.searchQuery = "";
-      this.searchResults = [];
+      
+      this.searchResults = { results: [], type: "empty" };
       this.addedPublications = [];
       this.isLoading = false;
     },
@@ -242,19 +268,20 @@ export default {
 </script>
 
 <style lang="scss">
-
 .card {
   & .publication-list {
     padding: 0;
     margin: 0;
     list-style: none;
     height: calc(100vh - 350px);
+    min-height: 100px;
     border: 1px solid $border;
     @include scrollable-list;
 
     & li {
       margin: 0 !important;
       padding: 0.5rem;
+      min-height: 4.1rem;
     }
   }
 
@@ -273,7 +300,7 @@ export default {
       }
 
       & .publication-list {
-        height: calc(100vh - 320px);
+        height: calc(100vh - 380px);
       }
     }
     & footer {
@@ -281,7 +308,7 @@ export default {
 
       & .level-left {
         font-size: 0.8rem;
-        width: calc(80vw - 50px);
+        width: calc(80vw - 110px);
       }
 
       & .level-right {
