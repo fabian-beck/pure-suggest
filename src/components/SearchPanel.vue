@@ -57,6 +57,7 @@
                 :key="publication.doi"
               >
                 <div class="media-content">
+                  <b v-if="publication.wasFetched && !publication.title" class="has-text-danger-dark">[No metadata available]</b>
                   <b> {{ publication.title }} </b
                   ><span v-if="publication.author">
                     (<span>{{
