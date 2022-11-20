@@ -3,7 +3,7 @@
     <div class="card">
       <header class="card-header has-background-primary">
         <p class="card-header-title has-text-white">
-          <b-icon icon="magnify"></b-icon>&ensp;Search Publications
+          <b-icon icon="magnify"></b-icon>&ensp;Search/import publications
         </p>
       </header>
       <div class="card-content">
@@ -31,8 +31,8 @@
             <p class="notification has-background-primary-light p-2 mb-2">
               <span v-show="searchResults.type === 'empty'"
                 ><i
-                  ><b>Search</b> for keywords, names, etc. <b>or</b> provide
-                  <b>DOI(s)</b> in any format.</i
+                  ><b>Search</b> for keywords, names, etc. <b>or import</b> as
+                  <a href="https://www.doi.org/" class="href">DOI(s)</a> contained in any format.</i
                 ></span
               >
               <span v-show="['doi', 'search'].includes(searchResults.type)"
@@ -44,7 +44,7 @@
                 >
                 based on
                 <span v-show="searchResults.type === 'doi'"
-                  >matched <b>DOIs</b></span
+                  >detected <b>DOIs</b></span
                 ><span v-show="searchResults.type === 'search'"
                   ><b>search</b></span
                 >.</span

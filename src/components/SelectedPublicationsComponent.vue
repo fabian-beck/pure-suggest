@@ -16,7 +16,7 @@
           <b-button
             class="compact-button"
             icon-left="magnify"
-            data-tippy-content="<span class='key'>S</span>earch for publications to be added to selected."
+            data-tippy-content="<span class='key'>S</span>earch/import specific publications to be added to selected."
             v-tippy
             @click.stop="interfaceStore.openSearch()"
           ></b-button>
@@ -132,7 +132,16 @@
                 icon-left="magnify"
                 @click.stop="interfaceStore.openSearch()"
               >
-                Search
+                Search/import
+              </b-button>
+            </div>
+            <div class="level-item">
+              <b-button
+                class="button has-background-primary-light"
+                icon-left="import"
+                @click="importSession"
+              >
+                Import session
               </b-button>
             </div>
             <div class="level-item">
@@ -142,15 +151,6 @@
                 @click.stop="sessionStore.loadExample()"
               >
                 Load example
-              </b-button>
-            </div>
-            <div class="level-item">
-              <b-button
-                class="button has-background-primary-light"
-                icon-left="import"
-                @click="importSession"
-              >
-                Import session from JSON
               </b-button>
             </div>
           </div>
