@@ -138,6 +138,7 @@ $box-padding: 1rem;
   & .compact-button {
     background: transparent;
     color: $white;
+    border-color: $white;
     height: 1.5rem;
     margin-right: 0 !important;
     margin-left: 1rem;
@@ -145,6 +146,7 @@ $box-padding: 1rem;
 
     &:hover {
       color: $light;
+      border-color: $light;
     }
   }
 }

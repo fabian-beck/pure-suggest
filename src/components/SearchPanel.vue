@@ -48,6 +48,14 @@
                 ><span v-show="searchResults.type === 'search'"
                   ><b>search</b></span
                 >.</span
+              ><b-button
+                class="compact-button ml-4 has-background-primary"
+                icon-left="plus-thick"
+                data-tippy-content="Mark publication to be added to selected publications."
+                v-tippy
+                @click.stop="addAllPublications"
+                v-show="searchResults.type === 'doi' && searchResults.results.length > 0"
+                >Add all</b-button
               >
             </p>
             <ul class="publication-list">
@@ -57,7 +65,11 @@
                 :key="publication.doi"
               >
                 <div class="media-content">
-                  <b v-if="publication.wasFetched && !publication.title" class="has-text-danger-dark">[No metadata available]</b>
+                  <b
+                    v-if="publication.wasFetched && !publication.title"
+                    class="has-text-danger-dark"
+                    >[No metadata available]</b
+                  >
                   <b> {{ publication.title }} </b
                   ><span v-if="publication.author">
                     (<span>{{
@@ -137,7 +149,7 @@
             @click="addAndClose"
             :disabled="addedPublications.length === 0"
             icon-left="plus-thick"
-            >Add</b-button
+            >Add and update</b-button
           >
         </div>
       </footer>
@@ -214,6 +226,14 @@ export default {
       this.addedPublications.push(doi);
     },
 
+    addAllPublications() {
+      this.filteredSearchResults.forEach((publication) => {
+        this.addPublication(publication.doi);
+      });
+      this.searchResults = { results: [], type: "empty" };
+      this.interfaceStore.searchQuery = "";
+    },
+
     addAndClose() {
       this.sessionStore.addPublicationsAndUpdate(this.addedPublications);
       this.close();
@@ -238,7 +258,7 @@ export default {
     },
 
     reset() {
-      this.interfaceStore.searchQuery = "";
+      
       this.searchResults = { results: [], type: "empty" };
       this.addedPublications = [];
       this.isLoading = false;
@@ -279,10 +299,6 @@ export default {
         margin-bottom: 0;
       }
 
-      & .notification {
-        font-size: 0.8rem;
-      }
-
       & .publication-list {
         height: calc(100vh - 380px);
       }
@@ -292,7 +308,7 @@ export default {
 
       & .level-left {
         font-size: 0.8rem;
-        width: calc(80vw - 50px);
+        width: calc(80vw - 110px);
       }
 
       & .level-right {
