@@ -9,11 +9,10 @@
       <div class="card-content">
         <div class="content">
           <section>
-            <form v-on:submit.prevent="search" class="field has-addons">
-              <p class="control is-expanded">
+            <form v-on:submit.prevent="search" class="field has-addons mb-2">
+              <p class="control is-expanded m-0">
                 <input
                   class="input search-publication"
-                  placeholder="Search for keywords, names, etc. or provide DOI(s)"
                   type="text"
                   v-model="interfaceStore.searchQuery"
                   ref="searchInput"
@@ -29,6 +28,28 @@
                 </b-button>
               </p>
             </form>
+            <p class="notification has-background-primary-light p-2 mb-2">
+              <span v-show="searchResults.type === 'empty'"
+                ><i
+                  ><b>Search</b> for keywords, names, etc. <b>or</b> provide
+                  <b>DOI(s)</b> in any format.</i
+                ></span
+              >
+              <span v-show="['doi', 'search'].includes(searchResults.type)"
+                >Showing
+                <b
+                  >{{ filteredSearchResults.length }} publication{{
+                    filteredSearchResults.length != 1 ? "s" : ""
+                  }}</b
+                >
+                based on
+                <span v-show="searchResults.type === 'doi'"
+                  >matched <b>DOIs</b></span
+                ><span v-show="searchResults.type === 'search'"
+                  ><b>search</b></span
+                >.</span
+              >
+            </p>
             <ul class="publication-list">
               <li
                 v-for="publication in filteredSearchResults"
@@ -39,7 +60,9 @@
                   <b> {{ publication.title }} </b
                   ><span v-if="publication.author">
                     (<span>{{
-                      publication.authorShort ? publication.authorShort + ", " : ""
+                      publication.authorShort
+                        ? publication.authorShort + ", "
+                        : ""
                     }}</span
                     ><span :class="publication.year ? '' : 'unknown'">{{
                       publication.year ? publication.year : "[unknown year]"
@@ -48,7 +71,9 @@
                   >
                   <span>
                     DOI:
-                    <a :href="`https://doi.org/${publication.doi}`">{{ publication.doi }}</a>
+                    <a :href="`https://doi.org/${publication.doi}`">{{
+                      publication.doi
+                    }}</a>
                   </span>
                   <span v-show="publication.title">
                     <a
@@ -88,15 +113,19 @@
         <div class="level-left">
           <div class="level-item">
             <p>
-              <span v-show="addedPublications.length === 0">No</span
-              ><span v-show="addedPublications.length > 0">{{
-                addedPublications.length
-              }}</span>
-              publication<span v-show="addedPublications.length > 1">s</span>
+              <b
+                ><span v-show="addedPublications.length === 0">No</span
+                ><span v-show="addedPublications.length > 0">{{
+                  addedPublications.length
+                }}</span>
+                publication<span v-show="addedPublications.length > 1"
+                  >s</span
+                ></b
+              >
               <span v-show="addedPublications.length === 0"
                 >&nbsp;yet marked</span
               >
-              to be added
+              to be added to selected.
             </p>
           </div>
         </div>
@@ -133,16 +162,18 @@ export default {
   },
   data() {
     return {
-      searchResults: [],
+      searchResults: { results: [], type: "empty" },
       addedPublications: [],
       isLoading: false,
     };
   },
   computed: {
     filteredSearchResults: function () {
-      return this.searchResults.filter(
+      return this.searchResults.results.filter(
         (publication) =>
-          !this.sessionStore.selectedPublicationsDois.includes(publication.doi) &&
+          !this.sessionStore.selectedPublicationsDois.includes(
+            publication.doi
+          ) &&
           !this.sessionStore.selectedQueue.includes(publication.doi) &&
           !this.addedPublications.includes(publication.doi)
       );
@@ -164,7 +195,7 @@ export default {
   methods: {
     search: async function () {
       if (!this.interfaceStore.searchQuery) {
-        this.searchResults = [];
+        this.searchResults = { results: [], type: "empty" };
         return;
       }
       this.isLoading = true;
@@ -207,7 +238,7 @@ export default {
 
     reset() {
       this.interfaceStore.searchQuery = "";
-      this.searchResults = [];
+      this.searchResults = { results: [], type: "empty" };
       this.addedPublications = [];
       this.isLoading = false;
     },
@@ -222,6 +253,7 @@ export default {
     margin: 0;
     list-style: none;
     height: calc(100vh - 350px);
+    min-height: 100px;
     border: 1px solid $border;
     @include scrollable-list;
 
@@ -246,8 +278,12 @@ export default {
         margin-bottom: 0;
       }
 
+      & .notification {
+        font-size: 0.8rem;
+      }
+
       & .publication-list {
-        height: calc(100vh - 320px);
+        height: calc(100vh - 380px);
       }
     }
     & footer {

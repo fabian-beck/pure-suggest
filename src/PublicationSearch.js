@@ -25,7 +25,7 @@ export default class PublicationSearch {
         });
         if (dois.length) {
             console.log(`Identified ${results.length} DOI(s) in input; do not perform search.`)
-            return results;
+            return {results: results, type: "doi"};
         }
         const simplifiedQuery = this.query.replace(/\W+/g, "+").toLowerCase();
         console.log(`Searching for publications matching '${this.query}'.`)
@@ -39,7 +39,7 @@ export default class PublicationSearch {
                 });
             }
         );
-        return results;
+        return {results: results, type: "search"};
     }
 
     computeTitleSimilarity(query, title) {

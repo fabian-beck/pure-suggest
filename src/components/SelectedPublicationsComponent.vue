@@ -121,7 +121,7 @@
           v-show="sessionStore.isEmpty"
         >
           <p>
-            To start, <b>add publications</b> to selected:
+            <i>To start, <b>add publications</b> to selected:</i>
           </p>
           <div class="level mt-2">
             <div class="level-item">
