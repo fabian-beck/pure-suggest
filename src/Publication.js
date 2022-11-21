@@ -354,5 +354,8 @@ function cleanTitle(title) {
     cleanedTitle = cleanedTitle.replaceAll(/---/g, "—"); // em dash 
     cleanedTitle = cleanedTitle.replaceAll(/ ?— ?/g, "—"); // em dash 
     cleanedTitle = cleanedTitle.replaceAll(/&[A-Z]/g, match => match.toLowerCase()); // converting &-encoded charachters to lower case, e.g., "&Amp;" -> "&amp;"
+    if (cleanedTitle.length > 300) {
+        cleanedTitle = cleanedTitle.substring(0, 295) + "[...]";
+    }
     return cleanedTitle;
 }
