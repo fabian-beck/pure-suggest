@@ -32,7 +32,8 @@
               <span v-show="searchResults.type === 'empty'"
                 ><i
                   ><b>Search</b> for keywords, names, etc. <b>or import</b> as
-                  <a href="https://www.doi.org/" class="href">DOI(s)</a> contained in any format.</i
+                  <a href="https://www.doi.org/" class="href">DOI(s)</a>
+                  contained in any format.</i
                 ></span
               >
               <span v-show="['doi', 'search'].includes(searchResults.type)"
@@ -54,7 +55,10 @@
                 data-tippy-content="Mark publication to be added to selected publications."
                 v-tippy
                 @click.stop="addAllPublications"
-                v-show="searchResults.type === 'doi' && searchResults.results.length > 0"
+                v-show="
+                  searchResults.type === 'doi' &&
+                  searchResults.results.length > 0
+                "
                 >Add all</b-button
               >
             </p>
@@ -70,8 +74,8 @@
                     class="has-text-danger-dark"
                     >[No metadata available]</b
                   >
-                  <b> {{ publication.title }} </b
-                  ><span v-if="publication.author">
+                  <b v-html="publication.title" v-if="publication.wasFetched"></b>
+                  <span v-if="publication.author">
                     (<span>{{
                       publication.authorShort
                         ? publication.authorShort + ", "
@@ -258,7 +262,6 @@ export default {
     },
 
     reset() {
-      
       this.searchResults = { results: [], type: "empty" };
       this.addedPublications = [];
       this.isLoading = false;
