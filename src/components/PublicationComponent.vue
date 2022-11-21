@@ -237,9 +237,9 @@
               @click.middle.stop="refocus"
             ></span>
           </span>
-          <span v-if="publication.container"
-            ><em> {{ publication.container }}. </em></span
-          >
+          <span v-if="publication.container">
+            <em v-html="` ${publication.container}`"></em>.
+          </span>
           <label><span class="key">D</span>OI:</label>
           <a
             :href="publication.doiUrl"
