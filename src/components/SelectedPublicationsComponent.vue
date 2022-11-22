@@ -28,32 +28,7 @@
         class="notification has-background-warning-light p-2 pt-3 is-gapless"
         v-show="!sessionStore.isEmpty"
       >
-        <div class="field has-addons">
-          <p class="control has-icons-right is-expanded">
-            <input
-              class="input boost has-background-white"
-              type="text"
-              v-model="sessionStore.boostKeywordString"
-              placeholder="keyword(s)"
-              @keyup.enter="sessionStore.updateScores"
-              data-tippy-content="Boost by factors of 2 the score of publications that contain the following keyword(s) in their title.<br><br>Use commas to separate multiple keywords."
-              v-tippy
-            />
-            <span class="icon is-small is-right is-clickable">
-              <i class="delete" @click.stop="clearBoost"></i>
-            </span>
-          </p>
-          <p class="control">
-            <b-button
-              class="button has-background-warning"
-              type="submit"
-              icon-left="chevron-double-up"
-              v-on:click="sessionStore.updateScores"
-            >
-              <span><span class="key">B</span>oost</span>
-            </b-button>
-          </p>
-        </div>
+        <BoostKeywordsComponent />
       </div>
       <div>
         <div
@@ -124,8 +99,7 @@
             <i>To start, <b>add publications</b> to selected:</i>
           </p>
           <div class="level mt-2">
-            <div class="level-item">
-            </div>
+            <div class="level-item"></div>
             <div class="level-item">
               <b-button
                 class="button has-background-primary-light"
@@ -168,18 +142,23 @@
 import { useSessionStore } from "./../stores/session.js";
 import { useInterfaceStore } from "./../stores/interface.js";
 
+import BoostKeywordsComponent from "./BoostKeywordsComponent.vue";
 import PublicationListComponent from "./PublicationListComponent.vue";
 
 export default {
   name: "SelectedPublicationsComponent",
+
   setup() {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
     return { sessionStore, interfaceStore };
   },
+
   components: {
+    BoostKeywordsComponent,
     PublicationListComponent,
   },
+
   mounted() {
     this.sessionStore.$onAction(({ name, after }) => {
       after(() => {
@@ -189,10 +168,8 @@ export default {
       });
     });
   },
+
   methods: {
-    clearBoost: function () {
-      this.sessionStore.setBoostKeywordString("");
-    },
     importSession: function () {
       this.$buefy.dialog.confirm({
         title: "Import session",
@@ -212,10 +189,6 @@ export default {
 .box {
   display: grid;
   grid-template-rows: max-content max-content auto;
-
-  & input.boost {
-    text-transform: lowercase;
-  }
 
   & .button.disabled {
     color: $grey;
