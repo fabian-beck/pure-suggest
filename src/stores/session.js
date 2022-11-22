@@ -372,7 +372,7 @@ export const useSessionStore = defineStore('session', {
           "10.1002/asi.24171",
           "10.2312/evp.20221110"
         ],
-        boost: "cit, visual, map",
+        boost: "cit, visual, map, publi|literat",
       };
       this.loadSession(session);
     },
