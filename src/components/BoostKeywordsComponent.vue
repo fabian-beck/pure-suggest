@@ -36,7 +36,7 @@ import { useInterfaceStore } from "./../stores/interface.js";
 
 export default {
   name: "BoostKeywordsComponent",
-  
+
   setup() {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
