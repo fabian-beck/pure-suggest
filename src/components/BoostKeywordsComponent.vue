@@ -7,7 +7,7 @@
         v-model="sessionStore.boostKeywordString"
         placeholder="keyword(s)"
         @keyup.enter="sessionStore.updateScores"
-        data-tippy-content="Boost by factors of 2 the score of publications that contain the following keyword(s) in their title.<br><br>Use commas to separate multiple keywords."
+        data-tippy-content="Boost by factors of 2 the score of publications that contain the following keyword(s) in their title.<br><br>Use ',' to separate multiple keywords, use '|' to separate alternatives/synonyms of the same keywords."
         v-tippy
       />
       <span class="icon is-small is-right is-clickable">
