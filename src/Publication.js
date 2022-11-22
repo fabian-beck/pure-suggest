@@ -169,30 +169,37 @@ export default class Publication {
             if (!boostKeyword) {
                 return
             }
-            // iterate overa all title fragments
-            for (let i = 0; i < titleFragments.length; i++) {
-                const titleFragment = titleFragments[i];
-                // ignore already highlighted parts
-                if (titleFragment.indexOf("<") == 0) {
-                    continue
-                }
-                // search keyword in title fragement
-                const index = titleFragment.toLowerCase().indexOf(boostKeyword);
+            let index = -1;
+            boostKeyword.split("|").forEach(alternativeKeyword => {
                 if (index >= 0) {
-                    // split matched title fragement
-                    this.boostMatches += 1;
-                    this.boostKeywords.push(boostKeyword);
-                    this.boostFactor = this.boostFactor * 2;
-                    titleFragments[i] = [
-                        titleFragment.substring(0, index),
-                        "<u style='text-decoration-color: hsl(48, 100%, 67%); text-decoration-thickness: 0.25rem;'>" + titleFragment.substring(index, index + boostKeyword.length) + "</u>",
-                        titleFragment.substring(index + boostKeyword.length)
-                    ];
-                    break
+                    return;
                 }
-            }
-            // flatten the array for matching the next keyword
-            titleFragments = titleFragments.flat();
+                // iterate overa all title fragments
+                for (let i = 0; i < titleFragments.length; i++) {
+                    const titleFragment = titleFragments[i];
+                    // ignore already highlighted parts
+                    if (titleFragment.indexOf("<") == 0) {
+                        continue
+                    }
+                    // search keyword in title fragement
+                    index = titleFragment.toLowerCase().indexOf(alternativeKeyword);
+                    if (index >= 0) {
+                        // split matched title fragement
+                        this.boostMatches += 1;
+                        this.boostKeywords.push(boostKeyword);
+                        this.boostFactor = this.boostFactor * 2;
+                        titleFragments[i] = [
+                            titleFragment.substring(0, index),
+                            "<u style='text-decoration-color: hsl(48, 100%, 67%); text-decoration-thickness: 0.25rem;'>" + titleFragment.substring(index, index + alternativeKeyword.length) + "</u>",
+                            titleFragment.substring(index + alternativeKeyword.length)
+                        ];
+                        break
+                    }
+                }
+                // flatten the array for matching the next keyword
+                titleFragments = titleFragments.flat();
+            });
+
         });
         // join highlighted title
         this.titleHighlighted = titleFragments.join("");
