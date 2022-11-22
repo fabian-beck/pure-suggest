@@ -488,7 +488,12 @@ export default {
               if (d.frequency >= 5) return "0.8em";
               return "0.7em";
             })
-            .text((d) => d.id);
+            .text((d) => {
+              if (d.id.includes("|")) {
+                return d.id.split("|")[0] + "|..";
+              }
+              return d.id;
+            });
         }
 
         function getRectSize(d) {
