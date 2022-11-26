@@ -23,7 +23,13 @@ export function onKey(e) {
         e.preventDefault();
         return;
     }
-    if (document.activeElement.nodeName === "INPUT" && document.activeElement.type === "text") {
+    if ((document.activeElement.nodeName === "INPUT" && document.activeElement.type === "text")
+        || document.activeElement.className.includes("input") && document.activeElement.className.includes("boost")) {
+        if (e.key === "Enter" && document.activeElement.className.includes("boost")) {
+            sessionStore.updateScores();
+            e.preventDefault();
+            return;
+        }
         if (e.key === "Escape") {
             document.activeElement.blur();
         }
