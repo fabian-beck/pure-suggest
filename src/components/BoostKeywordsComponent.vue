@@ -1,10 +1,9 @@
 <template>
-  <div class="field has-addons is-floating-label">
+  <div class="field has-addons is-floating-label boost">
     <label class="label">Keywords</label>
     <p class="control has-icons-right is-expanded">
       <highlightable-input
         class="input boost"
-        highlight-style="background-color:yellow"
         :highlight="highlight"
         v-model="sessionStore.boostKeywordString"
         spellcheck="false"
@@ -75,21 +74,27 @@ export default {
 </script>
 
 <style lang="scss">
-.input.boost {
-  text-transform: lowercase;
-  text-overflow: clip;
-  overflow: hidden;
-  max-width: 800px;
-  display: inline-block;
-  white-space: nowrap;
+.boost {
+  .is-expanded {
+    width: 0;
+    
+    & .input {
+      text-transform: lowercase;
+      text-overflow: inherit;
+      overflow: hidden;
+      display: inline-block;
+      white-space: nowrap;
+      user-select: text;
 
-  & br {
-    display: none;
-  }
+      & br {
+        display: none;
+      }
 
-  & * {
-    display: inline-block;
-    white-space: nowrap;
+      & * {
+        display: inline;
+        white-space: nowrap;
+      }
+    }
   }
 }
 </style>

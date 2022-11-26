@@ -23,7 +23,7 @@
         </div>
       </div>
     </div>
-    <div>
+    <div class="header">
       <div
         class="notification has-background-warning-light p-2 pt-3 is-gapless"
         v-show="!sessionStore.isEmpty"
@@ -190,15 +190,12 @@ export default {
   display: grid;
   grid-template-rows: max-content max-content auto;
 
-  & .button.disabled {
-    color: $grey;
-    background-color: $light !important;
-    cursor: default;
-  }
+  & .header {
 
-  & .notification {
-    margin-bottom: 0;
-    border-radius: 0;
+    & .notification {
+      margin-bottom: 0;
+      border-radius: 0;
+    }
   }
 
   & .publication-list {
