@@ -63,7 +63,7 @@ export default {
           style: "color: #ccc; padding-left: 0.25rem; padding-right: 0.25rem;",
         },
         {
-          text: /[^,|]+/g,
+          text: /[^,|]+\b/g, // match any character except "," and "|"; last character should not be a whitespace
           style:
             "text-decoration: underline; text-decoration-color: hsl(48, 100%, 67%); text-decoration-thickness: 0.25rem;",
         },
