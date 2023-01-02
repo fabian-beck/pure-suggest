@@ -18,7 +18,7 @@
     "lz-string": "^1.4.4",
     "pinia": "^2.0.16",
     "sass": "^1.49.7",
-    "sass-loader": "^13.2.0",
+    "sass-loader": "^8.0.2",
     "tippy.js": "^6.3.7",
     "vue": "^2.6.14",
     "vue-highlightable-input": "^1.0.9",
