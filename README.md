@@ -15,7 +15,7 @@ The tool is available at: https://fabian-beck.github.io/pure-suggest/
 
 ## What is more
 
-* Add publications to selection by DOI, title, or search
+* Add publications to selection by DOIs or search
 * Filter suggestions by different criteria
 * Automatic tagging of publication characteristics (e.g., highly cited)
 * Quick access to publications through links (DOIs, open access versions, or Google Scholar)
