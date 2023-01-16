@@ -50,7 +50,7 @@ export default class Publication {
         if (this.wasFetched) return
         try {
             await cachedFetch(
-                `https://opencitations.net/index/coci/api/v1/metadata/${this.doi}`,
+                `https://doidata-cw3de4q5va-ew.a.run.app/?mode=opencitations&doi=${this.doi}`,
                 message => {
                     if (!message || message.length === 0) {
                         console.error(`Unable to process metadata for DOI "${this.doi}" because of empty message.`);
@@ -115,11 +115,11 @@ export default class Publication {
                     this.citationsPerYear = this.citationDois.length / (Math.max(1, CURRENT_YEAR - this.year));
                 }
                 , {
-                    headers: {
-                        authorization: "aa9da96d-3c7b-49c1-a2d8-1c2d01ae10a5",
-                    },
+                    // headers: {
+                    //     authorization: "aa9da96d-3c7b-49c1-a2d8-1c2d01ae10a5",
+                    // },
                 });
-            await cachedFetch(`https://api.crossref.org/v1/works/${this.doi}?mailto=fabian.beck@uni-bamberg.de`, response => {
+            await cachedFetch(`https://doidata-cw3de4q5va-ew.a.run.app/?mode=crossref&doi=${this.doi}`, response => {
                 const message = response.message;
                 if (message.abstract) {
                     this.abstract = message.abstract.replaceAll(/<jats:/gi, "<").replaceAll(/<\/jats:/gi, "</").replaceAll(/<.*?>abstract<.*?>/gi, "");
