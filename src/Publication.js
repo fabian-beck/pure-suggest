@@ -46,82 +46,123 @@ export default class Publication {
         this.wasFetched = false;
     }
 
-    async fetchData() {
+    async fetchData(dataService = false) {
         if (this.wasFetched) return
         try {
-            await cachedFetch(`https://pure-publications-cw3de4q5va-ew.a.run.app/?doi=${this.doi}`, data => {
-                // map each data property to the publication object
-                Object.keys(data).forEach(key => {
-                    this[key] = data[key];
+            if (dataService) {
+                // load data from data service
+                await cachedFetch(`https://pure-publications-cw3de4q5va-ew.a.run.app/?doi=${this.doi}`, data => {
+                    this.processData(data);
                 });
-                // title
-                const subtitle = data.subtitle;
-                if (subtitle?.length && this.title.toLowerCase().indexOf(subtitle.toLowerCase())) {
-                    // merging title and subtitle, while adding a colon only when title does not end with a non-alpha-numeric character (cleaning potential html tags first)
-                    const cleanedTitle = this.title.replaceAll(/<[^>]*>/g, "");
-                    this.title += `${cleanedTitle.match(/^.*\W$/) ? "" : ":"}  ${subtitle}`;
+            } else {
+                const data = {};
+                // load data from OpenCitations
+                let dataOpenCitations = null;
+                await cachedFetch(`https://opencitations.net/index/coci/api/v1/metadata/${this.doi}`, message => {
+                    dataOpenCitations = message[0];
+                }, {
+                    headers: {
+                        authorization: "aa9da96d-3c7b-49c1-a2d8-1c2d01ae10a5",
+                    }
                 }
-                this.title = cleanTitle(this.title);
-                // author
-                if (data.author) {
-                    const authorArray = data.author.split('; ');
-                    if (authorArray.length === 1) {
-                        this.authorShort = authorArray[0].split(', ')[0];
-                    } else if (authorArray.length === 2) {
-                        this.authorShort = `${authorArray[0].split(', ')[0]} and ${authorArray[1].split(', ')[0]}`;
-                    } else if (authorArray.length > 2) {
-                        this.authorShort = `${authorArray[0].split(', ')[0]} et al.`;
-                    }
-                    this.author = data.author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, "");
-                    this.authorOrcid = data.author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, " <a href='https://orcid.org/$2'><img alt='ORCID logo' src='https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png' width='14' height='14' /></a>");
-                }
-                // container
-                this.container = "";
-                data.container?.split(" ").forEach(word => {
-                    let mappedWord = "";
-                    if (/\(.+\)/.test(word)) { // acronyms in brackets
-                        mappedWord = word.toUpperCase();
-                    } else if (/\d+(st|nd|rd|th)/i.test(word)) { // 1st 2nd 3rd 4th etc.
-                        mappedWord = word.toLowerCase();
-                    } else if (/^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})(\.?)$/i.test(word)) { // roman numerals - see: https://regexpattern.com/roman-numerals/
-                        mappedWord = word.toUpperCase();
-                    } else {
-                        mappedWord = TITLE_WORD_MAP[word.toLowerCase()];
-                    }
-                    this.container += (mappedWord ? mappedWord : word) + " ";
+                );
+                // load data from Crossref
+                let dataCrossref = null;
+                await cachedFetch(`https://api.crossref.org/v1/works/${this.doi}?mailto=fabian.beck@uni-bamberg.de`, message => {
+                    dataCrossref = message;
                 });
-                this.container = _.trim(this.container, '. ');
-                this.container = cleanTitle(this.container);
-                // citations
-                data.reference?.split("; ").forEach(referenceDoi => {
-                    if (referenceDoi) {
-                        this.referenceDois.push(referenceDoi.toLowerCase());
-                    }
-                });
-                data.citation?.split("; ").forEach(citationDoi => {
-                    if (citationDoi) {
-                        this.citationDois.push(citationDoi.toLowerCase());
-                    }
-                });
-                this.citationsPerYear = this.citationDois.length / (Math.max(1, CURRENT_YEAR - this.year));
-                // Google Scholar
-                this.gsUrl = `https://scholar.google.de/scholar?hl=en&q=${this.title
-                    } ${this.author ? this.author : ''}`
-                // tags
-                if (this.referenceDois.length > 100) {
-                    this.isSurvey = `more than 100 references (${this.referenceDois.length})`;
-                } else if (this.referenceDois.length >= 50 && /.*(survey|state|review|advances|future).*/i.test(this.title)) {
-                    this.isSurvey = `more than 50 references (${this.referenceDois.length}) and "${/(survey|state|review|advances|future)/i.exec(this.title)[0]}" in the title`;
-                }
-                this.isHighlyCited = this.citationsPerYear > 10 ? `more than 10 citations per year (${this.citationsPerYear.toFixed(1)})` : false;
-                this.isNew = (CURRENT_YEAR - this.year) < 2 ? "published within the last two calendar years" : false;
-                this.isUnnoted = this.citationsPerYear < 1 ? `less than 1 citation per year (${this.citationsPerYear.toFixed(1)})` : false;
-                this.isOpenAccess = this.oaLink ? true : false;
-            });
+                // merge data
+                data.title = dataCrossref?.message?.title?.[0] || dataOpenCitations?.title;
+                data.subtitle = dataCrossref?.message?.subtitle?.[0];
+                data.year = dataOpenCitations?.year || dataCrossref?.message?.created?.['date-parts']?.[0]?.[0] || this.doi.match(/\.((19|20)\d\d)\./)?.[1];
+                data.author = dataOpenCitations?.author;
+                data.container = dataOpenCitations?.source_title;
+                data.volume = dataOpenCitations?.volume;
+                data.issue = dataOpenCitations?.issue;
+                data.page = dataOpenCitations?.page;
+                data.oaLink = dataOpenCitations?.oa_link;
+                data.reference = dataOpenCitations?.reference;
+                data.citation = dataOpenCitations?.citation;
+                data.abstract = dataCrossref?.message?.abstract;
+                // remove undefined/empty properties from data
+                Object.keys(data).forEach(key => (data[key] === undefined || data[key] === '') && delete data[key]);
+                // process data
+                this.processData(data);
+            }
         } catch (error) {
             console.log(error);
         }
         this.wasFetched = true;
+    }
+
+    processData(data) {
+        // map each data property to the publication object
+        Object.keys(data).forEach(key => {
+            this[key] = data[key];
+        });
+        // title
+        const subtitle = data.subtitle;
+        if (subtitle?.length && this.title.toLowerCase().indexOf(subtitle.toLowerCase())) {
+            // merging title and subtitle, while adding a colon only when title does not end with a non-alpha-numeric character (cleaning potential html tags first)
+            const cleanedTitle = this.title.replaceAll(/<[^>]*>/g, "");
+            this.title += `${cleanedTitle.match(/^.*\W$/) ? "" : ":"}  ${subtitle}`;
+        }
+        this.title = cleanTitle(this.title);
+        // author
+        if (data.author) {
+            const authorArray = data.author.split('; ');
+            if (authorArray.length === 1) {
+                this.authorShort = authorArray[0].split(', ')[0];
+            } else if (authorArray.length === 2) {
+                this.authorShort = `${authorArray[0].split(', ')[0]} and ${authorArray[1].split(', ')[0]}`;
+            } else if (authorArray.length > 2) {
+                this.authorShort = `${authorArray[0].split(', ')[0]} et al.`;
+            }
+            this.author = data.author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, "");
+            this.authorOrcid = data.author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, " <a href='https://orcid.org/$2'><img alt='ORCID logo' src='https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png' width='14' height='14' /></a>");
+        }
+        // container
+        this.container = "";
+        data.container?.split(" ").forEach(word => {
+            let mappedWord = "";
+            if (/\(.+\)/.test(word)) { // acronyms in brackets
+                mappedWord = word.toUpperCase();
+            } else if (/\d+(st|nd|rd|th)/i.test(word)) { // 1st 2nd 3rd 4th etc.
+                mappedWord = word.toLowerCase();
+            } else if (/^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})(\.?)$/i.test(word)) { // roman numerals - see: https://regexpattern.com/roman-numerals/
+                mappedWord = word.toUpperCase();
+            } else {
+                mappedWord = TITLE_WORD_MAP[word.toLowerCase()];
+            }
+            this.container += (mappedWord ? mappedWord : word) + " ";
+        });
+        this.container = _.trim(this.container, '. ');
+        this.container = cleanTitle(this.container);
+        // citations
+        data.reference?.split("; ").forEach(referenceDoi => {
+            if (referenceDoi) {
+                this.referenceDois.push(referenceDoi.toLowerCase());
+            }
+        });
+        data.citation?.split("; ").forEach(citationDoi => {
+            if (citationDoi) {
+                this.citationDois.push(citationDoi.toLowerCase());
+            }
+        });
+        this.citationsPerYear = this.citationDois.length / (Math.max(1, CURRENT_YEAR - this.year));
+        // Google Scholar
+        this.gsUrl = `https://scholar.google.de/scholar?hl=en&q=${this.title
+            } ${this.author ? this.author : ''}`
+        // tags
+        if (this.referenceDois.length > 100) {
+            this.isSurvey = `more than 100 references (${this.referenceDois.length})`;
+        } else if (this.referenceDois.length >= 50 && /.*(survey|state|review|advances|future).*/i.test(this.title)) {
+            this.isSurvey = `more than 50 references (${this.referenceDois.length}) and "${/(survey|state|review|advances|future)/i.exec(this.title)[0]}" in the title`;
+        }
+        this.isHighlyCited = this.citationsPerYear > 10 ? `more than 10 citations per year (${this.citationsPerYear.toFixed(1)})` : false;
+        this.isNew = (CURRENT_YEAR - this.year) < 2 ? "published within the last two calendar years" : false;
+        this.isUnnoted = this.citationsPerYear < 1 ? `less than 1 citation per year (${this.citationsPerYear.toFixed(1)})` : false;
+        this.isOpenAccess = this.oaLink ? true : false;
     }
 
     updateScore(boostKeywords) {
