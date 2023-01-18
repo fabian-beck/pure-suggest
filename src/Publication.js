@@ -56,10 +56,10 @@ export default class Publication {
                 });
                 // title
                 const subtitle = data.subtitle;
-                if (subtitle?.length && this.title.toLowerCase().indexOf(subtitle[0].toLowerCase())) {
+                if (subtitle?.length && this.title.toLowerCase().indexOf(subtitle.toLowerCase())) {
                     // merging title and subtitle, while adding a colon only when title does not end with a non-alpha-numeric character (cleaning potential html tags first)
                     const cleanedTitle = this.title.replaceAll(/<[^>]*>/g, "");
-                    this.title += `${cleanedTitle.match(/^.*\W$/) ? "" : ":"}  ${subtitle[0]}`;
+                    this.title += `${cleanedTitle.match(/^.*\W$/) ? "" : ":"}  ${subtitle}`;
                 }
                 this.title = cleanTitle(this.title);
                 // author
