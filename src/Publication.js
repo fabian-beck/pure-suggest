@@ -46,7 +46,7 @@ export default class Publication {
         this.wasFetched = false;
     }
 
-    async fetchData(dataService = false) {
+    async fetchData(dataService = true) {
         if (this.wasFetched) return
         try {
             if (dataService) {
@@ -69,12 +69,12 @@ export default class Publication {
                 // load data from Crossref
                 let dataCrossref = null;
                 await cachedFetch(`https://api.crossref.org/v1/works/${this.doi}?mailto=fabian.beck@uni-bamberg.de`, message => {
-                    dataCrossref = message;
+                    dataCrossref = message.message;
                 });
                 // merge data
-                data.title = dataCrossref?.message?.title?.[0] || dataOpenCitations?.title;
-                data.subtitle = dataCrossref?.message?.subtitle?.[0];
-                data.year = dataOpenCitations?.year || dataCrossref?.message?.created?.['date-parts']?.[0]?.[0] || this.doi.match(/\.((19|20)\d\d)\./)?.[1];
+                data.title = dataCrossref?.title?.[0] || dataOpenCitations?.title;
+                data.subtitle = dataCrossref?.subtitle?.[0];
+                data.year = dataOpenCitations?.year || dataCrossref?.created?.['date-parts']?.[0]?.[0] || this.doi.match(/\.((19|20)\d\d)\./)?.[1];
                 data.author = dataOpenCitations?.author;
                 data.container = dataOpenCitations?.source_title;
                 data.volume = dataOpenCitations?.volume;
@@ -83,7 +83,7 @@ export default class Publication {
                 data.oaLink = dataOpenCitations?.oa_link;
                 data.reference = dataOpenCitations?.reference;
                 data.citation = dataOpenCitations?.citation;
-                data.abstract = dataCrossref?.message?.abstract;
+                data.abstract = dataCrossref?.abstract;
                 // remove undefined/empty properties from data
                 Object.keys(data).forEach(key => (data[key] === undefined || data[key] === '') && delete data[key]);
                 // process data
