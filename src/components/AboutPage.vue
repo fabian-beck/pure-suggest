@@ -47,10 +47,14 @@
               (@pure_suggest) </a
             >.
           </p>
-          <h2><b-icon icon="file-document" /> Scientific Publication</h2>
+          <h2><b-icon icon="file-document" /> Read more</h2>
           <p>
-            If you want to read more or cite the tool, you can refer to the
-            following publication:
+            We publish news, tutorials, use cases, etc. as part of our <b>blog</b> on
+            <a href="https://medium.com/pure-suggest">medium.com</a>.
+          </p>
+          <p>
+            If you want to learn more on the background of the tool or cite it,
+            you can refer to the following <b>scientific publications</b>:
           </p>
           <ul>
             <li>
@@ -63,6 +67,13 @@
                 href="https://diglib.eg.org/bitstream/handle/10.2312/evp20221110/019-021.pdf"
                 >PDF</a
               >]
+            </li>
+            <li>
+              Beck, F., 2022. Assessing Discussions of Related Work through
+              Citation-based Recommendations and Network Visualization.
+              <a href="https://doi.org/10.5281/zenodo.7123500"
+                >https://doi.org/10.5281/zenodo.7123500</a
+              >
             </li>
           </ul>
           <h2><b-icon icon="database" /> Data Sources</h2>
