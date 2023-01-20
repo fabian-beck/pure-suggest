@@ -44,10 +44,13 @@
       </template>
       <template #end>
         <b-navbar-item tag="div" class="mr-6 ml-1">
-          <a href="https://twitter.com/pure_suggest">
+          <a href="https://twitter.com/pure_suggest" v-tippy title="Follow us on Twitter">
             <b-icon icon="twitter"></b-icon>
           </a>
-          <a href="https://github.com/fabian-beck/pure-suggest" class="ml-5">
+          <a href="https://medium.com/@pure_suggest" class="ml-5" v-tippy title="Read more on Medium">
+            <b-icon icon="post"></b-icon>
+          </a>
+          <a href="https://github.com/fabian-beck/pure-suggest" class="ml-5" v-tippy title="Contribute on GitHub">
             <b-icon icon="github"></b-icon>
           </a>
         </b-navbar-item>
