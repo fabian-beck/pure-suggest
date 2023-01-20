@@ -119,7 +119,7 @@ export const useSessionStore = defineStore('session', {
       }
       await this.updateSuggestions();
       if (
-        !this.interfaceStore.feedbackInvitationShown &&
+        !this.interfaceStore.isfeedbackInvitationShown &&
         this.selectedPublications.length >= 10
       ) {
         this.interfaceStore.showFeedbackInvitation();

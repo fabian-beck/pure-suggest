@@ -14,7 +14,7 @@ export function onKey(e) {
     }
     if (
         interfaceStore.isLoading ||
-        interfaceStore.isOverlay ||
+        interfaceStore.isDialogShown ||
         (interfaceStore.isSearchPanelShown &&
             document.activeElement.nodeName != "INPUT") ||
         interfaceStore.isAboutPageShown ||
