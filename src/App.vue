@@ -10,7 +10,12 @@
       <SuggestedPublicationsComponent id="suggested" />
       <NetworkVisComponent id="network" :svgWidth="1500" :svgHeight="600" />
     </div>
-    <QuickAccessBar id="quick-access" class="is-hidden-desktop" />
+    <QuickAccessBar
+      id="quick-access"
+      class="is-hidden-desktop"
+      v-if="!interfaceStore.isOverlayShown"
+    >
+    </QuickAccessBar>
     <SearchPanel />
     <b-modal v-model="interfaceStore.isAboutPageShown">
       <AboutPage />

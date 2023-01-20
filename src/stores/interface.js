@@ -9,25 +9,28 @@ export const useInterfaceStore = defineStore('interface', {
         return {
             isLoading: false,
             loadingToast: undefined,
-            isOverlay: false,
             isNetworkExpanded: false,
             isNetworkClusters: true,
-            isFilterPanelShown: false,
             searchQuery: "",
+            isFilterPanelShown: false,
+            isDialogShown: false,
             isSearchPanelShown: false,
             isAboutPageShown: false,
             isKeyboardControlsShown: false,
-            feedbackInvitationShown: false,
+            isfeedbackInvitationShown: false,
         }
     },
     getters: {
         isMobile() {
             return window.innerWidth <= 1023;
         },
+        isOverlayShown() {
+            return this.isDialogShown || this.isSearchPanelShown || this.isAboutPageShown || this.isKeyboardControlsShown || this.isfeedbackInvitationShown;
+        }
     },
     actions: {
         clear() {
-            this.isOverlay = false;
+            this.isDialogShown = false;
             this.isNetworkExpanded = false;
             this.isNetworkClusters = true;
             this.isFilterPanelShown = false;
@@ -60,12 +63,12 @@ export const useInterfaceStore = defineStore('interface', {
             console.log(publication)
             const _this = this;
             const onClose = function () {
-                _this.isOverlay = false;
+                _this.isDialogShown = false;
                 _this.activatePublicationComponent(
                     document.getElementById(publication.doi)
                 );
             };
-            this.isOverlay = true;
+            this.isDialogShown = true;
             Dialog.alert({
                 message: `<div><b>${publication.title}</b></div><div><i>${publication.abstract}</i></div>`,
                 type: "is-dark",
@@ -101,21 +104,21 @@ export const useInterfaceStore = defineStore('interface', {
         },
 
         showConfirmDialog(message, confirm) {
-            this.isOverlay = true;
+            this.isDialogShown = true;
             Dialog.confirm({
                 message: message,
                 onConfirm: () => {
                     confirm();
-                    this.isOverlay = false;
+                    this.isDialogShown = false;
                 },
                 onCancel: () => {
-                    this.isOverlay = false;
+                    this.isDialogShown = false;
                 },
             });
         },
 
         showFeedbackInvitation() {
-            this.feedbackInvitationShown = true;
+            this.isfeedbackInvitationShown = true;
             Snackbar.open({
                 indefinite: true,
                 message:
@@ -131,7 +134,7 @@ export const useInterfaceStore = defineStore('interface', {
         },
 
         openFeedback() {
-            this.isOverlay = true;
+            this.isDialogShown = true;
             Dialog.confirm({
                 message:
                     "<p><b>We are interested in your opinion!</b></p><p>&nbsp;</p><p>What you like and do not like, what features are missing, how you are using the tool, bugs, criticism, ... anything.</p><p>&nbsp;</p><p>We invite you to provide feedback publicly. Clicking 'OK' will open a GitHub discussion in another tab where you can post a comment (account required). Alternatively, you can always send a private message to <a href='mailto:fabian.beck@uni-bamberg.de'>fabian.beck@uni-bamberg.de</a>.</p>",
@@ -139,10 +142,10 @@ export const useInterfaceStore = defineStore('interface', {
                     window.open(
                         "https://github.com/fabian-beck/pure-suggest/discussions/214"
                     );
-                    this.isOverlay = false;
+                    this.isDialogShown = false;
                 },
                 onCancel: () => {
-                    this.isOverlay = false;
+                    this.isDialogShown = false;
                 },
             });
         },
