@@ -106,7 +106,7 @@
                 icon-left="magnify"
                 @click.stop="interfaceStore.openSearch()"
               >
-                Search/import
+                Search/add
               </b-button>
             </div>
             <div class="level-item">
