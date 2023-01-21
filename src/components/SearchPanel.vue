@@ -74,7 +74,10 @@
                     class="has-text-danger-dark"
                     >[No metadata available]</b
                   >
-                  <b v-html="publication.title" v-if="publication.wasFetched"></b>
+                  <b
+                    v-html="publication.title"
+                    v-if="publication.wasFetched"
+                  ></b>
                   <span v-if="publication.author">
                     (<span>{{
                       publication.authorShort
@@ -120,6 +123,11 @@
                     </b-button>
                   </div>
                 </div>
+                <b-loading
+                  :active="!publication.wasFetched"
+                  :is-full-page="false"
+                  ><b-icon icon="dots-horizontal"></b-icon
+                ></b-loading>
               </li>
               <b-loading v-model="isLoading"></b-loading>
             </ul>
