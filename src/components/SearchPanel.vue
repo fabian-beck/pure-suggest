@@ -158,10 +158,10 @@
           <b-button class="level-item" @click="cancel()">Cancel</b-button>
           <b-button
             class="level-item is-primary"
-            @click="addAndClose"
+            @click="updateAndClose"
             :disabled="addedPublications.length === 0"
-            icon-left="plus-thick"
-            >Add and update</b-button
+            icon-left="update"
+            >Update</b-button
           >
         </div>
       </footer>
@@ -246,7 +246,7 @@ export default {
       this.interfaceStore.searchQuery = "";
     },
 
-    addAndClose() {
+    updateAndClose() {
       this.sessionStore.addPublicationsAndUpdate(this.addedPublications);
       this.close();
     },
