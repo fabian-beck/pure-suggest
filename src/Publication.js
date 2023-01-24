@@ -150,9 +150,9 @@ export default class Publication {
             }
         });
         this.citationsPerYear = this.citationDois.length / (Math.max(1, CURRENT_YEAR - this.year));
-        // Google Scholar
-        this.gsUrl = `https://scholar.google.de/scholar?hl=en&q=${this.title
-            } ${this.author ? this.author : ''}`
+        // Google Scholar link (not listing year as potentially misleading)
+        const searchString = `${this.title} ${this.author?.split(',')[0]} ${this.container ?? ""}`;
+        this.gsUrl = `https://scholar.google.de/scholar?hl=en&q=${encodeURIComponent(searchString)}`
         // tags
         if (this.referenceDois.length > 100) {
             this.isSurvey = `more than 100 references (${this.referenceDois.length})`;
