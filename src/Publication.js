@@ -239,12 +239,25 @@ export default class Publication {
             });
             return s2;
         }
+        function translateSpecialCharaters(s) {
+            // &...; encoded characters
+            s = s.replaceAll("&amp;", "\\&")
+            s = s.replaceAll("&lt;", "<")
+            s = s.replaceAll("&gt;", ">")
+            s = s.replaceAll("&quot;", "\\\"")
+            s = s.replaceAll("&apos;", "'");
+            s = s.replaceAll("&nbsp;", " ");
+            // less and greater than
+            s = s.replaceAll("<", "{\\textless}")
+            s = s.replaceAll(">", "{\\textgreater}")
+            return s;
+        }
 
         let type = "misc";
         let bibString = "";
         if (this.title) {
             bibString += `
-    title = {${protectAcronyms(this.title)}},`;
+    title = {${translateSpecialCharaters(protectAcronyms(this.title))}},`;
         }
         if (this.author) {
             bibString += `
@@ -257,7 +270,7 @@ export default class Publication {
         if (this.volume) {
             type = "article"
             bibString += `
-    journal = {${this.container}},
+    journal = {${translateSpecialCharaters(this.container)}},
     volume = {${this.volume}},`;
             if (this.issue) {
                 bibString += `
@@ -267,7 +280,7 @@ export default class Publication {
             const container = this.container.toLowerCase();
             type = (container.indexOf("proceedings") >= 0 || container.indexOf("conference") >= 0 || container.indexOf("symposium") >= 0 || container.indexOf("workshop") >= 0) ? "inproceedings" : "incollection";
             bibString += `
-    booktitle = {${this.container}},`;
+    booktitle = {${translateSpecialCharaters(this.container)}},`;
         }
         if (this.page) {
             bibString += `
