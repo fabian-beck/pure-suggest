@@ -11,9 +11,10 @@ export default class PublicationSearch {
     async execute() {
         let dois = [];
         let results = [];
-        // splitting query by characters that must be encoded differently in DOIs or by typical prefixes
+        // splitting query by characters that must (or partly: should) be encoded differently in DOIs or by typical prefixes
         // see: https://www.doi.org/doi_handbook/2_Numbering.html
-        this.query.split(/ |"|%|#|\?|doi:|doi.org\//).forEach((doi) => {
+        // "\{|\}" necessary to read DOIs from BibTeX
+        this.query.split(/ |"|%|#|\?|\{|\}|doi:|doi.org\//).forEach((doi) => {
             // cutting characters that might be included in DOI, but very unlikely at the end
             doi = _.trim(doi, ".,;");
             if (doi.indexOf("10.") === 0 && !dois.includes(doi)) {
