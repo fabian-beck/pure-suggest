@@ -119,6 +119,7 @@
                       data-tippy-content="Mark publication to be added to selected publications."
                       v-tippy
                       @click.stop="addPublication(publication.doi)"
+                      v-show="publication.wasFetched"
                     >
                     </b-button>
                   </div>
@@ -126,7 +127,7 @@
                 <b-loading
                   :active="!publication.wasFetched"
                   :is-full-page="false"
-                  ><b-icon icon="dots-horizontal"></b-icon
+                  ><b-icon icon="progress-clock"></b-icon
                 ></b-loading>
               </li>
               <b-loading v-model="isLoading"></b-loading>
