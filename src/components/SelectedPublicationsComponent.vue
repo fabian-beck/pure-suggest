@@ -16,7 +16,7 @@
           <b-button
             class="compact-button"
             icon-left="magnify"
-            data-tippy-content="<span class='key'>S</span>earch/import specific publications to be added to selected."
+            data-tippy-content="<span class='key'>S</span>earch/add specific publications to be added to selected."
             v-tippy
             @click.stop="interfaceStore.openSearch()"
           ></b-button>
