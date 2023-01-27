@@ -13,7 +13,7 @@
     <QuickAccessBar
       id="quick-access"
       class="is-hidden-desktop"
-      v-if="!interfaceStore.isOverlayShown"
+      v-if="!interfaceStore.isAnyOverlayShown"
     >
     </QuickAccessBar>
     <SearchPanel />

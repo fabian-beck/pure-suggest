@@ -24,7 +24,7 @@ export const useInterfaceStore = defineStore('interface', {
         isMobile() {
             return window.innerWidth <= 1023;
         },
-        isOverlayShown() {
+        isAnyOverlayShown() {
             return this.isDialogShown || this.isSearchPanelShown || this.isAboutPageShown || this.isKeyboardControlsShown || this.isfeedbackInvitationShown;
         }
     },
