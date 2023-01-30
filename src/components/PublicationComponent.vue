@@ -250,10 +250,10 @@
         >
           No metadata could be retrieved for the publication from
           <a
-            :href="`https://opencitations.net/index/coci/api/v1/metadata/${publication.doi}`"
+            :href="`https://api.crossref.org/v1/works/${publication.doi}`"
             @click.stop="refocus"
             @click.middle.stop="refocus"
-            >Open Citations</a
+            >CrossRef</a
           >.
           <span v-if="publication.score === 0"
             >Also, it is not cited by another selected publication&mdash;<b
