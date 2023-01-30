@@ -62,7 +62,7 @@ export default class Publication {
                 data.title = dataCrossref?.title?.[0];
                 data.subtitle = dataCrossref?.subtitle?.[0];
                 data.year = dataCrossref?.created?.['date-parts']?.[0]?.[0] || this.doi.match(/\.((19|20)\d\d)\./)?.[1];
-                data.author = dataCrossref?.author.reduce((acc, author) => acc + author.family + ", " + author.given + "; ", "").slice(0, -2);
+                data.author = dataCrossref?.author?.reduce((acc, author) => acc + author.family + ", " + author.given + "; ", "").slice(0, -2);
                 data.container = dataCrossref?.["container-title"]?.[0];
                 data.volume = dataCrossref?.volume;
                 data.issue = dataCrossref?.issue;
