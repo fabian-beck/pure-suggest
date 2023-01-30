@@ -46,7 +46,7 @@ export default class Publication {
         this.wasFetched = false;
     }
 
-    async fetchData(dataService = true) {
+    async fetchData(dataService = false) {
         if (this.wasFetched) return
         try {
             if (dataService) {
@@ -56,34 +56,43 @@ export default class Publication {
                 });
             } else {
                 const data = {};
-                // load data from OpenCitations
-                let dataOpenCitations = null;
-                await cachedFetch(`https://opencitations.net/index/coci/api/v1/metadata/${this.doi}`, message => {
-                    dataOpenCitations = message[0];
-                }, {
-                    headers: {
-                        authorization: "aa9da96d-3c7b-49c1-a2d8-1c2d01ae10a5",
-                    }
-                }
-                );
-                // load data from Crossref
+                // load metadata from Crossref
                 let dataCrossref = null;
                 await cachedFetch(`https://api.crossref.org/v1/works/${this.doi}?mailto=fabian.beck@uni-bamberg.de`, message => {
                     dataCrossref = message.message;
                 });
-                // merge data
-                data.title = dataCrossref?.title?.[0] || dataOpenCitations?.title;
+                data.title = dataCrossref?.title?.[0];
                 data.subtitle = dataCrossref?.subtitle?.[0];
-                data.year = dataOpenCitations?.year || dataCrossref?.created?.['date-parts']?.[0]?.[0] || this.doi.match(/\.((19|20)\d\d)\./)?.[1];
-                data.author = dataOpenCitations?.author;
-                data.container = dataOpenCitations?.source_title;
-                data.volume = dataOpenCitations?.volume;
-                data.issue = dataOpenCitations?.issue;
-                data.page = dataOpenCitations?.page;
-                data.oaLink = dataOpenCitations?.oa_link;
-                data.reference = dataOpenCitations?.reference;
-                data.citation = dataOpenCitations?.citation;
+                data.year = dataCrossref?.created?.['date-parts']?.[0]?.[0] || this.doi.match(/\.((19|20)\d\d)\./)?.[1];
+                data.author = dataCrossref.author.reduce((acc, author) => acc + author.family + ", " + author.given + "; ", "").slice(0, -2);
+                data.container = dataCrossref?.["container-title"]?.[0];
+                data.volume = dataCrossref?.volume;
+                data.issue = dataCrossref?.issue;
+                data.page = dataCrossref?.page;
                 data.abstract = dataCrossref?.abstract;
+                
+                // load refernces/citations from OpenCitations
+                data.reference = "";
+                await cachedFetch(`https://opencitations.net/index/coci/api/v1/references/${this.doi}`, message => {
+                    message.forEach(refernce => {
+                        data.reference += refernce.cited + "; ";
+                    }, {
+                        headers: {
+                            authorization: "aa9da96d-3c7b-49c1-a2d8-1c2d01ae10a5",
+                        }
+                    });
+                });
+                data.citation = "";
+                await cachedFetch(`https://opencitations.net/index/coci/api/v1/citations/${this.doi}`, message => {
+                    message.forEach(refernce => {
+                        data.citation += refernce.citing + "; ";
+                    }, {
+                        headers: {
+                            authorization: "aa9da96d-3c7b-49c1-a2d8-1c2d01ae10a5",
+                        }
+                    });
+                });
+                
                 // remove undefined/empty properties from data
                 Object.keys(data).forEach(key => (data[key] === undefined || data[key] === '') && delete data[key]);
                 // process data
