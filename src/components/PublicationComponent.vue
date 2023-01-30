@@ -214,15 +214,6 @@
               v-tippy
               >Unnoted</b-tag
             >
-            <b-tag
-              icon="lock-open-check-outline"
-              class="is-dark"
-              size="is-small"
-              v-if="publication.isOpenAccess"
-              :data-tippy-content="`Identified as open access: open access link available.`"
-              v-tippy
-              >Open access</b-tag
-            >
           </b-taglist>
         </div>
         <div v-if="publication.isActive">
@@ -318,16 +309,6 @@
                 data-tippy-content="Abs<span class='key'>t</span>ract"
                 v-tippy
                 ><b-icon icon="text"></b-icon
-              ></a>
-              <a
-                v-if="publication.oaLink"
-                :href="publication.oaLink"
-                class="ml-5"
-                @click.stop="refocus"
-                @click.middle.stop="refocus"
-                data-tippy-content="<span class='key'>O</span>pen access"
-                v-tippy
-                ><b-icon icon="lock-open-check-outline"></b-icon
               ></a>
               <a
                 :href="publication.gsUrl"

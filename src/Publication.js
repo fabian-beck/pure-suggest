@@ -18,7 +18,6 @@ export default class Publication {
         this.volume = undefined;
         this.issue = undefined;
         this.page = undefined;
-        this.oaLink = undefined;
         this.abstract = undefined;
         // citation-related data
         this.citationDois = [];
@@ -36,7 +35,6 @@ export default class Publication {
         this.isHighlyCited = false;
         this.isNew = false;
         this.isUnnoted = false;
-        this.isOpenAccess = false;
         // interface properties
         this.isActive = false;
         this.isLinkedToActive = false;
@@ -70,7 +68,7 @@ export default class Publication {
                 data.issue = dataCrossref?.issue;
                 data.page = dataCrossref?.page;
                 data.abstract = dataCrossref?.abstract;
-                
+
                 // load refernces/citations from OpenCitations
                 data.reference = "";
                 await cachedFetch(`https://opencitations.net/index/coci/api/v1/references/${this.doi}`, message => {
@@ -92,7 +90,7 @@ export default class Publication {
                         }
                     });
                 });
-                
+
                 // remove undefined/empty properties from data
                 Object.keys(data).forEach(key => (data[key] === undefined || data[key] === '') && delete data[key]);
                 // process data
@@ -171,7 +169,6 @@ export default class Publication {
         this.isHighlyCited = this.citationsPerYear > 10 ? `more than 10 citations per year (${this.citationsPerYear.toFixed(1)})` : false;
         this.isNew = (CURRENT_YEAR - this.year) < 2 ? "published within the last two calendar years" : false;
         this.isUnnoted = this.citationsPerYear < 1 ? `less than 1 citation per year (${this.citationsPerYear.toFixed(1)})` : false;
-        this.isOpenAccess = this.oaLink ? true : false;
     }
 
     updateScore(boostKeywords) {
@@ -329,10 +326,7 @@ export default class Publication {
             value: "isUnnoted",
             name: "Unnoted"
         },
-        {
-            value: "isOpenAccess",
-            name: "Open access"
-        }];
+        ];
     }
 
     static sortPublications(publicationList) {
