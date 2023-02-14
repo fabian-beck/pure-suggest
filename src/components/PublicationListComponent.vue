@@ -4,7 +4,6 @@
       v-for="publication in publications"
       :key="publication.doi"
       :publication="publication"
-      :suggestion="suggestion"
       v-on:add="addPublication"
       v-on:activate="activatePublication"
     ></PublicationComponent>
@@ -17,13 +16,12 @@ import { scrollToTargetAdjusted } from "./../Util.js";
 import PublicationComponent from "./PublicationComponent.vue";
 
 export default {
-  name: "SelectedPublicationsComponent",
+  name: "PublicationListComponent",
   components: {
     PublicationComponent,
   },
   props: {
     publications: Array,
-    suggestion: Boolean,
   },
   watch: {
     publications: {

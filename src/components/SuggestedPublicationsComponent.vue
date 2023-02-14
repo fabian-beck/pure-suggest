@@ -207,7 +207,6 @@
     <PublicationListComponent
       ref="publicationList"
       :publications="sessionStore.suggestedPublicationsFiltered"
-      :suggestion="true"
       v-on:add="addPublication"
     />
   </div>
