@@ -6,8 +6,14 @@
       @click="sessionStore.clearActivePublication('clicked anywhere')"
       :class="{ 'network-expanded': interfaceStore.isNetworkExpanded }"
     >
-      <SelectedPublicationsComponent id="selected" />
-      <SuggestedPublicationsComponent id="suggested" />
+      <SelectedPublicationsComponent
+        id="selected"
+        v-show="!interfaceStore.isNetworkExpanded"
+      />
+      <SuggestedPublicationsComponent
+        id="suggested"
+        v-show="!interfaceStore.isNetworkExpanded"
+      />
       <NetworkVisComponent id="network" :svgWidth="1500" :svgHeight="600" />
     </div>
     <QuickAccessBar
@@ -117,7 +123,9 @@ $box-padding: 1rem;
     gap: 0.5vw;
 
     &.network-expanded {
-      grid-template-rows: auto 60vh;
+      grid-template-areas: "vis";
+      grid-template-rows: auto;
+      grid-template-columns: auto;
     }
 
     & #selected {
