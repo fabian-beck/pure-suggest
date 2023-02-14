@@ -15,7 +15,7 @@ export async function cachedFetch(url, processData, fetchParameters = {}) {
       try {
         localStorage[url] = LZString.compress(JSON.stringify(data));
       } catch (error) {
-        console.log("Cache full (#elements: ${Object.keys(localStorage).length})! Removing elements...")
+        console.log(`Cache full (#elements: ${Object.keys(localStorage).length})! Removing elements...`)
         try {
           // local storage cache full, delete random elements
           for (let i = 0; i < 100; i++) {
