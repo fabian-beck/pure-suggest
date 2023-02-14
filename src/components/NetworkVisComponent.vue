@@ -56,12 +56,13 @@
       <div id="network-svg-container">
         <svg id="network-svg" width="100%" height="100%"></svg>
       </div>
-      <PublicationComponent
-        v-if="activeAndExpanded"
-        class="has-background-white"
-        :publication="activePublication"
-        :is-active="true"
-      ></PublicationComponent>
+      <ul>
+        <PublicationComponent
+          v-if="activeAndExpanded"
+          :publication="activePublication"
+          :is-active="true"
+        ></PublicationComponent>
+      </ul>
     </div>
   </div>
 </template>
@@ -668,6 +669,15 @@ export default {
   height: 100%;
   display: grid;
   grid-template-rows: max-content auto;
+  position: relative;
+
+  & ul {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    width: 50%;
+    background: white;
+  }
 }
 
 #network-svg {
