@@ -56,6 +56,12 @@
       <div id="network-svg-container">
         <svg id="network-svg" width="100%" height="100%"></svg>
       </div>
+      <PublicationComponent
+        v-if="activeAndExpanded"
+        class="has-background-white"
+        :publication="activePublication"
+        :is-active="true"
+      ></PublicationComponent>
     </div>
   </div>
 </template>
@@ -66,6 +72,8 @@ import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
 import _ from "lodash";
 import { storeToRefs } from "pinia";
+
+import PublicationComponent from "./PublicationComponent.vue";
 
 import { useSessionStore } from "./../stores/session.js";
 import { useInterfaceStore } from "./../stores/interface.js";
@@ -89,6 +97,9 @@ export default {
       interfaceStore,
       isNetworkClusters,
     };
+  },
+  components: {
+    PublicationComponent,
   },
   data: function () {
     return {
@@ -119,6 +130,11 @@ export default {
         if (this.interfaceStore.isLoading) return;
         this.plot();
       },
+    },
+  },
+  computed: {
+    activeAndExpanded: function () {
+      return this.activePublication && this.interfaceStore.isNetworkExpanded;
     },
   },
   mounted() {
