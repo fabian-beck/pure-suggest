@@ -4,7 +4,6 @@
       v-for="publication in publications"
       :key="publication.doi"
       :publication="publication"
-      v-on:add="addPublication"
       v-on:activate="activatePublication"
     ></PublicationComponent>
   </ul>
@@ -37,9 +36,6 @@ export default {
     };
   },
   methods: {
-    addPublication: function (doi) {
-      this.$emit("add", doi);
-    },
     activatePublication: function () {
       this.onNextActivatedScroll = false;
     },
