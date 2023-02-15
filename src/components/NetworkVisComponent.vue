@@ -58,11 +58,22 @@
       </div>
       <ul class="publication-component-list">
         <PublicationComponent
-          v-if="activeAndExpanded"
+          v-if="activePublication && interfaceStore.isNetworkExpanded"
           :publication="activePublication"
           :is-active="true"
         ></PublicationComponent>
       </ul>
+      <div class="controls-footer">
+        <button
+          class="button has-background-primary has-text-white"
+          @click="sessionStore.updateQueued"
+          v-show="sessionStore.isUpdatable && interfaceStore.isNetworkExpanded"
+          id="quick-access-update"
+        >
+          <b-icon icon="update" size="is-small"></b-icon>
+          <div class="button-label">Update</div>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -131,11 +142,6 @@ export default {
         if (this.interfaceStore.isLoading) return;
         this.plot();
       },
-    },
-  },
-  computed: {
-    activeAndExpanded: function () {
-      return this.activePublication && this.interfaceStore.isNetworkExpanded;
     },
   },
   mounted() {
@@ -674,11 +680,17 @@ export default {
   & ul.publication-component-list {
     position: absolute;
     bottom: 1vw;
-    right: 1vw;
+    left: 1vw;
     width: 50%;
     max-width: 50rem;
     min-width: 40rem;
     background: white;
+  }
+
+  & .controls-footer {
+    position: absolute;
+    bottom: 1vw;
+    right: 1vw;
   }
 }
 
