@@ -246,11 +246,6 @@ $box-padding: 1rem;
     grid-template-areas: "selected suggested vis";
     grid-template-columns: 50fr 50fr 75fr;
     grid-template-rows: auto;
-
-    &.network-expanded {
-      grid-template-columns: 50fr 50fr 125fr;
-      grid-template-rows: auto;
-    }
   }
 }
 </style>

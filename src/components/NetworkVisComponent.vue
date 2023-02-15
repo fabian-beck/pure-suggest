@@ -56,7 +56,7 @@
       <div id="network-svg-container">
         <svg id="network-svg" width="100%" height="100%"></svg>
       </div>
-      <ul>
+      <ul class="publication-component-list">
         <PublicationComponent
           v-if="activeAndExpanded"
           :publication="activePublication"
@@ -671,11 +671,13 @@ export default {
   grid-template-rows: max-content auto;
   position: relative;
 
-  & ul {
+  & ul.publication-component-list {
     position: absolute;
-    bottom: 1rem;
-    right: 1rem;
+    bottom: 1vw;
+    right: 1vw;
     width: 50%;
+    max-width: 50rem;
+    min-width: 40rem;
     background: white;
   }
 }
