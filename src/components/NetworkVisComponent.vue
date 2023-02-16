@@ -387,7 +387,9 @@ export default {
             keywordNodes.append("text");
             keywordNodes
               .call(this.keywordNodeDrag())
-              .on("click", this.keywordNodeClick);
+              .on("click", this.keywordNodeClick)
+              .on("mouseover", this.keywordNodeMouseover)
+              .on("mouseout", this.keywordNodeMouseout);
             return g;
           });
 
@@ -455,7 +457,11 @@ export default {
             .attr("x", (d) => -getRectSize(d) / 2)
             .attr("y", (d) => -getRectSize(d) / 2)
             .attr("stroke-width", (d) => (d.publication.isActive ? 4 : 3))
-            .attr("fill", (d) => d.publication.scoreColor);
+            .attr("fill", (d) =>
+              d.publication.isKeywordHovered
+                ? "hsl(44, 100%, 77%)"
+                : d.publication.scoreColor
+            );
 
           publicationNodes
             .select(".publication text.score")
@@ -645,6 +651,22 @@ export default {
       delete d.fy;
       d3.select(event.target.parentNode).classed("fixed", false);
       this.simulation.alpha(SIMULATION_ALPHA).restart();
+    },
+
+    keywordNodeMouseover: function (event, d) {
+      this.sessionStore.publicationsFiltered.forEach((publication) => {
+        if (publication.boostKeywords.includes(d.id)) {
+          publication.isKeywordHovered = true;
+        }
+      });
+      this.plot();
+    },
+
+    keywordNodeMouseout: function () {
+      this.sessionStore.publicationsFiltered.forEach((publication) => {
+        publication.isKeywordHovered = false;
+      });
+      this.plot();
     },
 
     yearX: function (year) {

@@ -41,6 +41,7 @@ export default class Publication {
         this.isActive = false;
         this.isLinkedToActive = false;
         this.isSelected = false;
+        this.isKeywordHovered = false;
         this.isRead = false;
         // loading state
         this.wasFetched = false;
