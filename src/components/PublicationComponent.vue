@@ -59,6 +59,9 @@
         <template v-slot:trigger>
           <div
             class="glyph has-text-centered"
+            :class="{
+              'is-keyword-hovered': publication.isKeywordHovered,
+            }"
             v-bind:style="{ 'background-color': publication.scoreColor }"
             v-show="publication.wasFetched"
           >
@@ -450,6 +453,10 @@ li {
         border-color: $info;
         border-style: solid;
         @include light-shadow;
+
+        &.is-keyword-hovered{
+          box-shadow: 0 0 0.2rem 0.2rem $warning;
+        }
 
         & .tooltip-target {
           position: relative;
