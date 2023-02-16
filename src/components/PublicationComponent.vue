@@ -354,11 +354,11 @@
       <div class="media-right">
         <div>
           <b-button
-            v-if="suggestion"
+            v-if="!publication.isSelected"
             class="is-primary is-small"
             icon-left="plus-thick"
             data-tippy-content="Mark publication to be added to selected publications."
-            @click.stop="$emit('add', publication.doi)"
+            @click.stop="sessionStore.queueForSelected(publication.doi)"
             v-tippy
           >
           </b-button>
@@ -391,7 +391,6 @@ export default {
   },
   props: {
     publication: Object,
-    suggestion: Boolean,
   },
   computed: {
     chevronType: function () {

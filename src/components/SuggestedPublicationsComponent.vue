@@ -207,8 +207,6 @@
     <PublicationListComponent
       ref="publicationList"
       :publications="sessionStore.suggestedPublicationsFiltered"
-      :suggestion="true"
-      v-on:add="addPublication"
     />
   </div>
 </template>
@@ -263,9 +261,6 @@ export default {
     });
   },
   methods: {
-    addPublication: function (doi) {
-      this.sessionStore.queueForSelected(doi);
-    },
     updateFilter: function () {
       if (this.isFilterPanelShown) {
         this.sessionStore.filter.string = this.filterString;
