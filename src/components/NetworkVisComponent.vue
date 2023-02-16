@@ -387,7 +387,9 @@ export default {
             keywordNodes.append("text");
             keywordNodes
               .call(this.keywordNodeDrag())
-              .on("click", this.keywordNodeClick);
+              .on("click", this.keywordNodeClick)
+              .on("mouseover", this.keywordNodeMouseover)
+              .on("mouseout", this.keywordNodeMouseout);
             return g;
           });
 
@@ -416,7 +418,8 @@ export default {
             .classed("active", (d) => d.publication.isActive)
             .classed("linkedToActive", (d) => d.publication.isLinkedToActive)
             .classed("queuingForSelected", (d) => d.isQueuingForSelected)
-            .classed("queuingForExcluded", (d) => d.isQueuingForExcluded);
+            .classed("queuingForExcluded", (d) => d.isQueuingForExcluded)
+            .classed("isKeywordHovered", (d) => d.publication.isKeywordHovered);
 
           if (this.publicationTooltips)
             this.publicationTooltips.forEach((tooltip) => tooltip.destroy());
@@ -647,6 +650,22 @@ export default {
       this.simulation.alpha(SIMULATION_ALPHA).restart();
     },
 
+    keywordNodeMouseover: function (event, d) {
+      this.sessionStore.publicationsFiltered.forEach((publication) => {
+        if (publication.boostKeywords.includes(d.id)) {
+          publication.isKeywordHovered = true;
+        }
+      });
+      this.plot();
+    },
+
+    keywordNodeMouseout: function () {
+      this.sessionStore.publicationsFiltered.forEach((publication) => {
+        publication.isKeywordHovered = false;
+      });
+      this.plot();
+    },
+
     yearX: function (year) {
       return (
         ((year - this.sessionStore.yearMin) /
@@ -756,6 +775,10 @@ export default {
     }
     &.linkedToActive rect {
       stroke-width: 4;
+    }
+
+    &.isKeywordHovered rect {
+      @include warning-shadow-svg;
     }
 
     &.queuingForSelected,
