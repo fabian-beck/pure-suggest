@@ -455,7 +455,7 @@ li {
         @include light-shadow;
 
         &.is-keyword-hovered{
-          box-shadow: 0 0 0.2rem 0.2rem $warning;
+          @include warning-shadow;
         }
 
         & .tooltip-target {

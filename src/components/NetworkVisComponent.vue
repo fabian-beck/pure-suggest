@@ -418,7 +418,8 @@ export default {
             .classed("active", (d) => d.publication.isActive)
             .classed("linkedToActive", (d) => d.publication.isLinkedToActive)
             .classed("queuingForSelected", (d) => d.isQueuingForSelected)
-            .classed("queuingForExcluded", (d) => d.isQueuingForExcluded);
+            .classed("queuingForExcluded", (d) => d.isQueuingForExcluded)
+            .classed("isKeywordHovered", (d) => d.publication.isKeywordHovered);
 
           if (this.publicationTooltips)
             this.publicationTooltips.forEach((tooltip) => tooltip.destroy());
@@ -457,11 +458,7 @@ export default {
             .attr("x", (d) => -getRectSize(d) / 2)
             .attr("y", (d) => -getRectSize(d) / 2)
             .attr("stroke-width", (d) => (d.publication.isActive ? 4 : 3))
-            .attr("fill", (d) =>
-              d.publication.isKeywordHovered
-                ? "hsl(44, 100%, 77%)"
-                : d.publication.scoreColor
-            );
+            .attr("fill", (d) => d.publication.scoreColor);
 
           publicationNodes
             .select(".publication text.score")
@@ -778,6 +775,10 @@ export default {
     }
     &.linkedToActive rect {
       stroke-width: 4;
+    }
+
+    &.isKeywordHovered rect {
+      @include warning-shadow-svg;
     }
 
     &.queuingForSelected,
