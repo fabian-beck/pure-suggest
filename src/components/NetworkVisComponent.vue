@@ -168,6 +168,8 @@ export default {
     this.link = this.svg.append("g").attr("class", "links").selectAll("path");
     this.node = this.svg.append("g").attr("class", "nodes").selectAll("rect");
 
+    this.isDragging = false;
+
     this.sessionStore.$onAction(({ name, after }) => {
       after(() => {
         if (name === "updateScores") {
@@ -238,6 +240,8 @@ export default {
     },
 
     plot: function (restart) {
+      if (this.isDragging) return;
+
       try {
         console.log(
           `Plotting citation network ${
@@ -643,31 +647,38 @@ export default {
     },
 
     publicationNodeMouseover: function (event, d) {
-      console.log("publicationNodeMouseover", d.id);
       if (!d.publication.isHovered) {
-        console.log("publicationNodeMouseover2", d.id);
         d.publication.isHovered = true;
         this.plot();
       }
     },
 
     publicationNodeMouseout: function (event, d) {
-      console.log("publicationNodeMouseout", d.id);
-      d.publication.isHovered = false;
-      this.plot();
+      if (d.publication.isHovered) {
+        d.publication.isHovered = false;
+        this.plot();
+      }
     },
 
     keywordNodeDrag: function () {
       const that = this;
       function dragStart() {
         d3.select(this).classed("fixed", true);
+        that.isDragging = true;
       }
       function dragMove(event, d) {
         d.fx = event.x;
         d.fy = event.y;
         that.simulation.alpha(SIMULATION_ALPHA).restart();
       }
-      return d3.drag().on("start", dragStart).on("drag", dragMove);
+      function dragEnd() {
+        that.isDragging = false;
+      }
+      return d3
+        .drag()
+        .on("start", dragStart)
+        .on("drag", dragMove)
+        .on("end", dragEnd);
     },
 
     keywordNodeClick: function (event, d) {
