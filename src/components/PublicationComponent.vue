@@ -49,11 +49,14 @@
         queuing:
           sessionStore.isQueuingForSelected(publication.doi) ||
           sessionStore.isQueuingForExcluded(publication.doi),
+        'is-hovered': publication.isHovered,
       }"
       :id="publication.doi"
       tabindex="0"
       v-on:focus="activate"
       @click.stop="activate"
+      @mouseenter="publication.setHover(true)"
+      @mouseleave="publication.setHover(false)"
     >
       <tippy class="media-left">
         <template v-slot:trigger>
@@ -522,7 +525,7 @@ li {
       }
     }
 
-    &:hover {
+    &.is-hovered {
       background: rgba($color: #000000, $alpha: 0.03) !important;
 
       & .glyph {
