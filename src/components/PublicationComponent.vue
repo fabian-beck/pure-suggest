@@ -50,6 +50,7 @@
           sessionStore.isQueuingForSelected(publication.doi) ||
           sessionStore.isQueuingForExcluded(publication.doi),
         'is-hovered': publication.isHovered,
+        'is-keyword-hovered': publication.isKeywordHovered,
       }"
       :id="publication.doi"
       tabindex="0"
@@ -62,9 +63,6 @@
         <template v-slot:trigger>
           <div
             class="glyph has-text-centered"
-            :class="{
-              'is-keyword-hovered': publication.isKeywordHovered,
-            }"
             v-bind:style="{ 'background-color': publication.scoreColor }"
             v-show="publication.wasFetched"
           >
@@ -457,10 +455,6 @@ li {
         border-style: solid;
         @include light-shadow;
 
-        &.is-keyword-hovered{
-          @include warning-shadow;
-        }
-
         & .tooltip-target {
           position: relative;
         }
@@ -531,6 +525,10 @@ li {
       & .glyph {
         transform: scale(1.05);
       }
+    }
+
+    &.is-keyword-hovered .glyph {
+      @include warning-shadow;
     }
 
     &.active {
