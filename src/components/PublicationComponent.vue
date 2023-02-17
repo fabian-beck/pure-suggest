@@ -39,14 +39,14 @@
     <div
       class="publication-component media"
       :class="{
-        active: publication.isActive,
-        selected: publication.isSelected,
-        linkedToActive: publication.isLinkedToActive,
-        unread:
+        'is-active': publication.isActive,
+        'is-selected': publication.isSelected,
+        'is-linked-to-active': publication.isLinkedToActive,
+        'is-unread':
           !publication.isRead &&
           !publication.isSelected &&
           publication.wasFetched,
-        queuing:
+        'is-queuing':
           sessionStore.isQueuingForSelected(publication.doi) ||
           sessionStore.isQueuingForExcluded(publication.doi),
         'is-hovered': publication.isHovered,
@@ -531,12 +531,12 @@ li {
       @include warning-shadow;
     }
 
-    &.active {
+    &.is-active {
       background: rgba($color: #000000, $alpha: 0.1) !important;
       cursor: default;
     }
 
-    &.unread {
+    &.is-unread {
       background: rgba($color: $info, $alpha: 0.1);
 
       & .summary {
@@ -548,7 +548,7 @@ li {
       }
     }
 
-    &.selected .glyph {
+    &.is-selected .glyph {
       border-color: $primary;
 
       & .boost-indicator {
@@ -556,8 +556,8 @@ li {
       }
     }
 
-    &.active .glyph,
-    &.linkedToActive .glyph {
+    &.is-active .glyph,
+    &.is-linked-to-active .glyph {
       border-width: 0.3rem;
     }
 
@@ -636,14 +636,14 @@ li {
       }
     }
 
-    &.queuing {
+    &.is-queuing {
       & > div {
         filter: blur(1px) opacity(50%);
       }
     }
 
     &:focus,
-    &.active {
+    &.is-active {
       outline: 1px solid $dark;
     }
   }
