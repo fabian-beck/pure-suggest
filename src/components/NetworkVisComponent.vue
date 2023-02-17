@@ -368,25 +368,31 @@ export default {
               );
 
             const publicationNodes = g.filter((d) => d.publication);
-            publicationNodes.append("rect");
-            publicationNodes.append("text").classed("score", true);
+            publicationNodes
+              .append("rect")
+              .attr("pointer-events", "all")
+              .on("click", this.activatePublication)
+              .on("mouseover", this.publicationNodeMouseover)
+              .on("mouseout", this.publicationNodeMouseout);
+            publicationNodes
+              .append("text")
+              .classed("score", true)
+              .attr("pointer-events", "none");
             publicationNodes
               .append("text")
               .classed("labelQueuingForSelected", true)
+              .attr("pointer-events", "none")
               .attr("x", 15)
               .attr("y", 15)
               .text("+");
             publicationNodes
               .append("text")
               .classed("labelQueuingForExcluded", true)
+              .attr("pointer-events", "none")
               .attr("x", 15)
               .attr("y", 15)
               .text("-");
             publicationNodes.append("circle");
-            publicationNodes
-              .on("click", this.activatePublication)
-              .on("mouseover", this.publicationNodeMouseover)
-              .on("mouseout", this.publicationNodeMouseout);
 
             const keywordNodes = g.filter((d) => !d.publication);
             keywordNodes.append("text");
@@ -637,11 +643,16 @@ export default {
     },
 
     publicationNodeMouseover: function (event, d) {
-      d.publication.isHovered = true;
-      this.plot();
+      console.log("publicationNodeMouseover", d.id);
+      if (!d.publication.isHovered) {
+        console.log("publicationNodeMouseover2", d.id);
+        d.publication.isHovered = true;
+        this.plot();
+      }
     },
 
     publicationNodeMouseout: function (event, d) {
+      console.log("publicationNodeMouseout", d.id);
       d.publication.isHovered = false;
       this.plot();
     },
