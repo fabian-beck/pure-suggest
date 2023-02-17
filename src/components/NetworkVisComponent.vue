@@ -366,6 +366,7 @@ export default {
                 (d) =>
                   `node-container ${d.publication ? "publication" : "keyword"}`
               );
+
             const publicationNodes = g.filter((d) => d.publication);
             publicationNodes.append("rect");
             publicationNodes.append("text").classed("score", true);
@@ -382,7 +383,11 @@ export default {
               .attr("y", 15)
               .text("-");
             publicationNodes.append("circle");
-            publicationNodes.on("click", this.activatePublication);
+            publicationNodes
+              .on("click", this.activatePublication)
+              .on("mouseover", this.publicationNodeMouseover)
+              .on("mouseout", this.publicationNodeMouseout);
+
             const keywordNodes = g.filter((d) => !d.publication);
             keywordNodes.append("text");
             keywordNodes
@@ -419,6 +424,7 @@ export default {
             .classed("linkedToActive", (d) => d.publication.isLinkedToActive)
             .classed("queuingForSelected", (d) => d.isQueuingForSelected)
             .classed("queuingForExcluded", (d) => d.isQueuingForExcluded)
+            .classed("is-hovered", (d) => d.publication.isHovered)
             .classed("isKeywordHovered", (d) => d.publication.isKeywordHovered);
 
           if (this.publicationTooltips)
@@ -630,6 +636,16 @@ export default {
       this.node.attr("transform", (d) => `translate(${d.x}, ${d.y})`);
     },
 
+    publicationNodeMouseover: function (event, d) {
+      d.publication.isHovered = true;
+      this.plot();
+    },
+
+    publicationNodeMouseout: function (event, d) {
+      d.publication.isHovered = false;
+      this.plot();
+    },
+
     keywordNodeDrag: function () {
       const that = this;
       function dragStart() {
@@ -751,7 +767,7 @@ export default {
       }
     }
 
-    &:hover {
+    &.is-hovered {
       & rect,
       & circle {
         transform: scale(1.1);
