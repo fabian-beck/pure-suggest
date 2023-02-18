@@ -85,22 +85,26 @@ export const useSessionStore = defineStore('session', {
         if (this.isSelected(doi) || this.selectedQueue.includes(doi)) return;
         this.selectedQueue.push(doi);
       });
+      this.hasUpdated(`Queued ${dois.length} publication(s) for selection.`);
     },
 
     queueForExcluded(doi) {
       if (this.isExcluded(doi) || this.excludedQueue.includes(doi)) return
       this.selectedQueue = this.selectedQueue.filter(seletedDoi => doi != seletedDoi);
       this.excludedQueue.push(doi);
+      this.hasUpdated(`Queued ${doi} for exclusion.`);
     },
 
     removeFromQueues(doi) {
       this.selectedQueue = this.selectedQueue.filter(seletedDoi => doi != seletedDoi);
       this.excludedQueue = this.excludedQueue.filter(excludedDoi => doi != excludedDoi);
+      this.hasUpdated(`Removed ${doi} from queues.`);
     },
 
     clearQueues() {
       this.excludedQueue = [];
       this.selectedQueue = [];
+      this.hasUpdated(`Cleared queues.`);
     },
 
     async updateQueued() {

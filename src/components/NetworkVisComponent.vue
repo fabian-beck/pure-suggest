@@ -176,10 +176,6 @@ export default {
           this.plot(true);
         } else if (
           (!this.interfaceStore.isLoading && name === "clear") ||
-          name === "queueForSelected" ||
-          name === "queueForExcluded" ||
-          name === "removeFromQueues" ||
-          name === "clearQueues" ||
           name === "hasUpdated"
         ) {
           this.plot();
