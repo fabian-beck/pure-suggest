@@ -56,8 +56,8 @@
       tabindex="0"
       v-on:focus="activate"
       @click.stop="activate"
-      @mouseenter="publication.setHover(true)"
-      @mouseleave="publication.setHover(false)"
+      @mouseenter="sessionStore.hoverPublication(publication, true)"
+      @mouseleave="sessionStore.hoverPublication(publication, false)"
     >
       <tippy class="media-left">
         <template v-slot:trigger>

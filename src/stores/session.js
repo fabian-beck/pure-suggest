@@ -322,6 +322,18 @@ export const useSessionStore = defineStore('session', {
       );
     },
 
+    hoverPublication(publication, isHovered) {
+      if (publication.isHovered !== isHovered) {
+        publication.isHovered = isHovered;
+        this.hasUpdated(`Publication node with DOI ${publication.doi} was ${isHovered ? "hovered" : "unhovered"}.`);
+      }
+    },
+
+    // This method can be watched to manually trigger updates 
+    hasUpdated(message) {
+      console.log("Session has been updated: " + message);
+    },
+
     loadSession(session) {
       console.log(`Loading session ${JSON.stringify(session)}`);
       if (!session || !session.selected) {

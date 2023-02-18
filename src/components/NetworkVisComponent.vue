@@ -179,7 +179,8 @@ export default {
           name === "queueForSelected" ||
           name === "queueForExcluded" ||
           name === "removeFromQueues" ||
-          name === "clearQueues"
+          name === "clearQueues" ||
+          name === "hasUpdated"
         ) {
           this.plot();
         }
@@ -376,8 +377,8 @@ export default {
               .append("rect")
               .attr("pointer-events", "all")
               .on("click", this.activatePublication)
-              .on("mouseover", this.publicationNodeMouseover)
-              .on("mouseout", this.publicationNodeMouseout);
+              .on("mouseover", (event, d) => this.sessionStore.hoverPublication(d.publication, true))
+              .on("mouseout", (event, d) => this.sessionStore.hoverPublication(d.publication, false));
             publicationNodes
               .append("text")
               .classed("score", true)
@@ -644,20 +645,6 @@ export default {
         });
 
       this.node.attr("transform", (d) => `translate(${d.x}, ${d.y})`);
-    },
-
-    publicationNodeMouseover: function (event, d) {
-      if (!d.publication.isHovered) {
-        d.publication.isHovered = true;
-        this.plot();
-      }
-    },
-
-    publicationNodeMouseout: function (event, d) {
-      if (d.publication.isHovered) {
-        d.publication.isHovered = false;
-        this.plot();
-      }
     },
 
     keywordNodeDrag: function () {
