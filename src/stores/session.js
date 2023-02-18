@@ -85,22 +85,26 @@ export const useSessionStore = defineStore('session', {
         if (this.isSelected(doi) || this.selectedQueue.includes(doi)) return;
         this.selectedQueue.push(doi);
       });
+      this.hasUpdated(`Queued ${dois.length} publication(s) for selection.`);
     },
 
     queueForExcluded(doi) {
       if (this.isExcluded(doi) || this.excludedQueue.includes(doi)) return
       this.selectedQueue = this.selectedQueue.filter(seletedDoi => doi != seletedDoi);
       this.excludedQueue.push(doi);
+      this.hasUpdated(`Queued ${doi} for exclusion.`);
     },
 
     removeFromQueues(doi) {
       this.selectedQueue = this.selectedQueue.filter(seletedDoi => doi != seletedDoi);
       this.excludedQueue = this.excludedQueue.filter(excludedDoi => doi != excludedDoi);
+      this.hasUpdated(`Removed ${doi} from queues.`);
     },
 
     clearQueues() {
       this.excludedQueue = [];
       this.selectedQueue = [];
+      this.hasUpdated(`Cleared queues.`);
     },
 
     async updateQueued() {
@@ -320,6 +324,18 @@ export const useSessionStore = defineStore('session', {
       console.log(
         `Cleared any highlighted active publication, triggered by "${source}".`
       );
+    },
+
+    hoverPublication(publication, isHovered) {
+      if (publication.isHovered !== isHovered) {
+        publication.isHovered = isHovered;
+        this.hasUpdated(`Publication node with DOI ${publication.doi} was ${isHovered ? "hovered" : "unhovered"}.`);
+      }
+    },
+
+    // This method can be watched to manually trigger updates 
+    hasUpdated(message) {
+      console.log("Session has been updated: " + message);
     },
 
     loadSession(session) {

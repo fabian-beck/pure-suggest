@@ -168,16 +168,15 @@ export default {
     this.link = this.svg.append("g").attr("class", "links").selectAll("path");
     this.node = this.svg.append("g").attr("class", "nodes").selectAll("rect");
 
+    this.isDragging = false;
+
     this.sessionStore.$onAction(({ name, after }) => {
       after(() => {
         if (name === "updateScores") {
           this.plot(true);
         } else if (
           (!this.interfaceStore.isLoading && name === "clear") ||
-          name === "queueForSelected" ||
-          name === "queueForExcluded" ||
-          name === "removeFromQueues" ||
-          name === "clearQueues"
+          name === "hasUpdated"
         ) {
           this.plot();
         }
@@ -238,6 +237,8 @@ export default {
     },
 
     plot: function (restart) {
+      if (this.isDragging) return;
+
       try {
         console.log(
           `Plotting citation network ${
@@ -366,23 +367,34 @@ export default {
                 (d) =>
                   `node-container ${d.publication ? "publication" : "keyword"}`
               );
+
             const publicationNodes = g.filter((d) => d.publication);
-            publicationNodes.append("rect");
-            publicationNodes.append("text").classed("score", true);
+            publicationNodes
+              .append("rect")
+              .attr("pointer-events", "all")
+              .on("click", this.activatePublication)
+              .on("mouseover", (event, d) => this.sessionStore.hoverPublication(d.publication, true))
+              .on("mouseout", (event, d) => this.sessionStore.hoverPublication(d.publication, false));
+            publicationNodes
+              .append("text")
+              .classed("score", true)
+              .attr("pointer-events", "none");
             publicationNodes
               .append("text")
               .classed("labelQueuingForSelected", true)
+              .attr("pointer-events", "none")
               .attr("x", 15)
               .attr("y", 15)
               .text("+");
             publicationNodes
               .append("text")
               .classed("labelQueuingForExcluded", true)
+              .attr("pointer-events", "none")
               .attr("x", 15)
               .attr("y", 15)
               .text("-");
             publicationNodes.append("circle");
-            publicationNodes.on("click", this.activatePublication);
+
             const keywordNodes = g.filter((d) => !d.publication);
             keywordNodes.append("text");
             keywordNodes
@@ -419,6 +431,7 @@ export default {
             .classed("linkedToActive", (d) => d.publication.isLinkedToActive)
             .classed("queuingForSelected", (d) => d.isQueuingForSelected)
             .classed("queuingForExcluded", (d) => d.isQueuingForExcluded)
+            .classed("is-hovered", (d) => d.publication.isHovered)
             .classed("isKeywordHovered", (d) => d.publication.isKeywordHovered);
 
           if (this.publicationTooltips)
@@ -634,13 +647,21 @@ export default {
       const that = this;
       function dragStart() {
         d3.select(this).classed("fixed", true);
+        that.isDragging = true;
       }
       function dragMove(event, d) {
         d.fx = event.x;
         d.fy = event.y;
         that.simulation.alpha(SIMULATION_ALPHA).restart();
       }
-      return d3.drag().on("start", dragStart).on("drag", dragMove);
+      function dragEnd() {
+        that.isDragging = false;
+      }
+      return d3
+        .drag()
+        .on("start", dragStart)
+        .on("drag", dragMove)
+        .on("end", dragEnd);
     },
 
     keywordNodeClick: function (event, d) {
@@ -751,7 +772,7 @@ export default {
       }
     }
 
-    &:hover {
+    &.is-hovered {
       & rect,
       & circle {
         transform: scale(1.1);

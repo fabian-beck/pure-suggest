@@ -41,8 +41,9 @@ export default class Publication {
         this.isActive = false;
         this.isLinkedToActive = false;
         this.isSelected = false;
-        this.isKeywordHovered = false;
         this.isRead = false;
+        this.isHovered = false;
+        this.isKeywordHovered = false;
         // loading state
         this.wasFetched = false;
     }
@@ -302,6 +303,10 @@ export default class Publication {
         if (this.author) string += this.author + " ";
         if (this.container) string += this.container + " ";
         return string;
+    }
+
+    setHover(isHovered) {
+        this.isHovered = isHovered;
     }
 
     static get TAGS() {
