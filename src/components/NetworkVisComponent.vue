@@ -41,7 +41,7 @@
             data-tippy-content="Expand diagram"
             v-tippy
             v-show="!interfaceStore.isNetworkExpanded"
-            @click.stop="interfaceStore.isNetworkExpanded = true"
+            @click.stop="expandNetwork(true)"
           ></b-button>
           <b-button
             class="level-item compact-button is-hidden-touch"
@@ -49,7 +49,7 @@
             data-tippy-content="Collapse diagram"
             v-tippy
             v-show="interfaceStore.isNetworkExpanded"
-            @click.stop="interfaceStore.isNetworkExpanded = false"
+            @click.stop="expandNetwork(false)"
           ></b-button>
         </div>
       </div>
@@ -147,9 +147,7 @@ export default {
   mounted() {
     const that = this;
 
-    const container = document.getElementById("network-svg-container");
-    this.svgWidth = container.clientWidth;
-    this.svgHeight = container.clientHeight;
+    this.updateSvgSize();
 
     this.svg = d3
       .select("#network-svg")
@@ -238,6 +236,18 @@ export default {
 
     plot: function (restart) {
       if (this.isDragging) return;
+
+      const widthOld = this.svgWidth;
+      const heightOld = this.svgHeight;
+      this.updateSvgSize();
+      if (widthOld !== this.svgWidth || heightOld !== this.svgHeight) {
+        // maintain the same center point
+        const transform = d3.zoomTransform(this.svg.node());
+        transform.x += (this.svgWidth - widthOld) / 2;
+        transform.y += (this.svgHeight - heightOld) / 2;
+        // animated transform
+        this.svg.attr("transform", transform);
+      }
 
       try {
         console.log(
@@ -373,8 +383,12 @@ export default {
               .append("rect")
               .attr("pointer-events", "all")
               .on("click", this.activatePublication)
-              .on("mouseover", (event, d) => this.sessionStore.hoverPublication(d.publication, true))
-              .on("mouseout", (event, d) => this.sessionStore.hoverPublication(d.publication, false));
+              .on("mouseover", (event, d) =>
+                this.sessionStore.hoverPublication(d.publication, true)
+              )
+              .on("mouseout", (event, d) =>
+                this.sessionStore.hoverPublication(d.publication, false)
+              );
             publicationNodes
               .append("text")
               .classed("score", true)
@@ -705,6 +719,32 @@ export default {
 
     toggleMode() {
       this.isNetworkClusters = !this.isNetworkClusters;
+    },
+
+    updateSvgSize: function () {
+      const container = document.getElementById("network-svg-container");
+      this.svgWidth = container.clientWidth;
+      this.svgHeight = container.clientHeight;
+    },
+
+    expandNetwork(isNetworkExpanded) {
+      // blend out network
+      d3.select("#network-svg")
+        .transition()
+        .duration(200)
+        .style("opacity",0);
+      this.interfaceStore.isNetworkExpanded = isNetworkExpanded;
+      // wait to make sure the animation is finished
+      setTimeout(() => {
+        this.sessionStore.hasUpdated(
+          `Network expanded state changed to: ${isNetworkExpanded}.`
+        );
+        // blend in network
+        d3.select("#network-svg")
+          .transition()
+          .duration(200)
+          .style("opacity", 1);
+      }, 200);
     },
   },
 };
