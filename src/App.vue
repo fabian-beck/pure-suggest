@@ -124,8 +124,8 @@ $box-padding: 1rem;
 
     &.network-expanded {
       grid-template-areas: "vis";
-      grid-template-rows: auto;
       grid-template-columns: auto;
+      grid-template-rows: auto;
     }
 
     & #selected {

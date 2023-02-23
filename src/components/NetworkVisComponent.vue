@@ -169,7 +169,18 @@ export default {
   mounted() {
     const that = this;
 
-    this.updateSvgSize();
+    const container = document.getElementById("network-svg-container");
+    this.svgWidth = container.clientWidth;
+    // if not mobile set height to 1/5 of width to make assumption that aspect ratio is 5:1
+    this.svgHeight = this.interfaceStore.isMobile ? container.clientHeight : this.svgWidth/5;
+
+    // set viewbox to center
+    d3.select("#network-svg").attr(
+      "viewBox",
+      `${-this.svgWidth / 2} ${-this.svgHeight / 2} ${this.svgWidth} ${
+        this.svgHeight
+      }`
+    );
 
     this.svg = d3
       .select("#network-svg")
@@ -258,8 +269,6 @@ export default {
 
     plot: function (restart) {
       if (this.isDragging) return;
-
-      this.updateSvgSize();
 
       try {
         console.log(
@@ -615,7 +624,8 @@ export default {
           this.label
             .attr(
               "transform",
-              (d) => `translate(${this.yearX(d)},${this.svgHeight/2 - margin})`
+              (d) =>
+                `translate(${this.yearX(d)},${this.svgHeight / 2 - margin})`
             )
             .select("text")
             .attr("y", -this.svgHeight + 2 * margin);
@@ -719,8 +729,9 @@ export default {
           Math.sqrt(
             1 + this.sessionStore.yearMax - this.sessionStore.yearMin
           )) *
-        this.svgWidth *
-        0.15 - this.svgWidth / 2
+          this.svgWidth *
+          0.15 -
+        this.svgWidth / 2
       );
     },
 
@@ -733,34 +744,8 @@ export default {
       this.isNetworkClusters = !this.isNetworkClusters;
     },
 
-    updateSvgSize: function () {
-      const container = document.getElementById("network-svg-container");
-      this.svgWidth = container.clientWidth;
-      this.svgHeight = container.clientHeight * 0.99;
-      // set viewbox to center
-      d3.select("#network-svg").attr(
-        "viewBox",
-        `${-this.svgWidth / 2} ${-this.svgHeight / 2} ${this.svgWidth} ${
-          this.svgHeight
-        }`
-      );
-    },
-
     expandNetwork(isNetworkExpanded) {
-      // blend out network
-      d3.select("#network-svg").transition().duration(200).style("opacity", 0);
       this.interfaceStore.isNetworkExpanded = isNetworkExpanded;
-      // wait to make sure the animation is finished
-      setTimeout(() => {
-        this.sessionStore.hasUpdated(
-          `Network expanded state changed to: ${isNetworkExpanded}.`
-        );
-        // blend in network
-        d3.select("#network-svg")
-          .transition()
-          .duration(200)
-          .style("opacity", 1);
-      }, 200);
     },
   },
 };
@@ -796,6 +781,8 @@ export default {
 
 #network-svg {
   background: white;
+  width: 100%;
+  height: 100%;
   @include inset-shadow;
 
   & g.publication.node-container {
