@@ -54,7 +54,29 @@
         </div>
       </div>
       <div id="network-svg-container">
-        <svg id="network-svg" width="100%" height="100%"></svg>
+        <svg id="network-svg">
+          <g>
+            <rect
+              class="center-rect"
+              :width="svgWidth"
+              :height="svgHeight"
+              fill="white"
+              stroke="black"
+              stroke-width="1"
+              :x="-svgWidth / 2"
+              :y="-svgHeight / 2"
+            ></rect>
+            <circle
+              class="center-circle"
+              r="100"
+              fill="white"
+              stroke="black"
+              stroke-width="1"
+              cx="0"
+              cy="0"
+            ></circle>
+          </g>
+        </svg>
       </div>
       <ul class="publication-component-list">
         <PublicationComponent
@@ -118,8 +140,8 @@ export default {
       graph: { nodes: [], links: [] },
       simulation: null,
       svg: null,
-      svgHeight: Number,
       svgWidth: Number,
+      svgHeight: Number,
       node: null,
       link: null,
       label: null,
@@ -157,7 +179,7 @@ export default {
           that.svg.attr("transform", event.transform);
         })
       )
-      .append("g");
+      .select("g");
 
     this.simulation = d3.forceSimulation();
     this.simulation.alphaDecay(0.02);
@@ -219,7 +241,7 @@ export default {
             .forceX()
             .x((d) =>
               that.isNetworkClusters
-                ? 0.5 * (that.svgWidth - RECT_SIZE)
+                ? 0
                 : this.yearX(d.publication ? d.publication.year : 2025)
             )
             .strength(that.isNetworkClusters ? 0.05 : 10)
@@ -228,7 +250,7 @@ export default {
           "y",
           d3
             .forceY()
-            .y(0.5 * (that.svgHeight - RECT_SIZE))
+            .y(0)
             .strength(that.isNetworkClusters ? 0.1 : 0.25)
         )
         .on("tick", this.tick);
@@ -237,17 +259,7 @@ export default {
     plot: function (restart) {
       if (this.isDragging) return;
 
-      const widthOld = this.svgWidth;
-      const heightOld = this.svgHeight;
       this.updateSvgSize();
-      if (widthOld !== this.svgWidth || heightOld !== this.svgHeight) {
-        // maintain the same center point
-        const transform = d3.zoomTransform(this.svg.node());
-        transform.x += (this.svgWidth - widthOld) / 2;
-        transform.y += (this.svgHeight - heightOld) / 2;
-        // animated transform
-        this.svg.attr("transform", transform);
-      }
 
       try {
         console.log(
@@ -724,15 +736,19 @@ export default {
     updateSvgSize: function () {
       const container = document.getElementById("network-svg-container");
       this.svgWidth = container.clientWidth;
-      this.svgHeight = container.clientHeight;
+      this.svgHeight = container.clientHeight * 0.99;
+      // set viewbox to center
+      d3.select("#network-svg").attr(
+        "viewBox",
+        `${-this.svgWidth / 2} ${-this.svgHeight / 2} ${this.svgWidth} ${
+          this.svgHeight
+        }`
+      );
     },
 
     expandNetwork(isNetworkExpanded) {
       // blend out network
-      d3.select("#network-svg")
-        .transition()
-        .duration(200)
-        .style("opacity",0);
+      d3.select("#network-svg").transition().duration(200).style("opacity", 0);
       this.interfaceStore.isNetworkExpanded = isNetworkExpanded;
       // wait to make sure the animation is finished
       setTimeout(() => {
@@ -772,6 +788,10 @@ export default {
     bottom: 1vw;
     right: 1vw;
   }
+}
+
+#network-svg-container {
+  overflow: hidden;
 }
 
 #network-svg {
