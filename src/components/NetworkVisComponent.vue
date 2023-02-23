@@ -615,7 +615,7 @@ export default {
           this.label
             .attr(
               "transform",
-              (d) => `translate(${this.yearX(d)},${this.svgHeight - margin})`
+              (d) => `translate(${this.yearX(d)},${this.svgHeight/2 - margin})`
             )
             .select("text")
             .attr("y", -this.svgHeight + 2 * margin);
@@ -720,7 +720,7 @@ export default {
             1 + this.sessionStore.yearMax - this.sessionStore.yearMin
           )) *
         this.svgWidth *
-        0.15
+        0.15 - this.svgWidth / 2
       );
     },
 
