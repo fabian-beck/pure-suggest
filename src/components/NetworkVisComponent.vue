@@ -54,7 +54,9 @@
         </div>
       </div>
       <div id="network-svg-container">
-        <svg id="network-svg" width="100%" height="100%"></svg>
+        <svg id="network-svg">
+          <g></g>
+        </svg>
       </div>
       <ul class="publication-component-list">
         <PublicationComponent
@@ -118,8 +120,8 @@ export default {
       graph: { nodes: [], links: [] },
       simulation: null,
       svg: null,
-      svgHeight: Number,
       svgWidth: Number,
+      svgHeight: Number,
       node: null,
       link: null,
       label: null,
@@ -147,7 +149,20 @@ export default {
   mounted() {
     const that = this;
 
-    this.updateSvgSize();
+    const container = document.getElementById("network-svg-container");
+    this.svgWidth = container.clientWidth;
+    // if not mobile set height to 1/5 of width to make assumption that aspect ratio is 5:1
+    this.svgHeight = this.interfaceStore.isMobile
+      ? container.clientHeight
+      : this.svgWidth / 5;
+
+    // set viewbox to center
+    d3.select("#network-svg").attr(
+      "viewBox",
+      `${-this.svgWidth / 2} ${-this.svgHeight / 2} ${this.svgWidth} ${
+        this.svgHeight
+      }`
+    );
 
     this.svg = d3
       .select("#network-svg")
@@ -157,7 +172,7 @@ export default {
           that.svg.attr("transform", event.transform);
         })
       )
-      .append("g");
+      .select("g");
 
     this.simulation = d3.forceSimulation();
     this.simulation.alphaDecay(0.02);
@@ -219,7 +234,7 @@ export default {
             .forceX()
             .x((d) =>
               that.isNetworkClusters
-                ? 0.5 * (that.svgWidth - RECT_SIZE)
+                ? 0
                 : this.yearX(d.publication ? d.publication.year : 2025)
             )
             .strength(that.isNetworkClusters ? 0.05 : 10)
@@ -228,7 +243,7 @@ export default {
           "y",
           d3
             .forceY()
-            .y(0.5 * (that.svgHeight - RECT_SIZE))
+            .y(0)
             .strength(that.isNetworkClusters ? 0.1 : 0.25)
         )
         .on("tick", this.tick);
@@ -236,18 +251,6 @@ export default {
 
     plot: function (restart) {
       if (this.isDragging) return;
-
-      const widthOld = this.svgWidth;
-      const heightOld = this.svgHeight;
-      this.updateSvgSize();
-      if (widthOld !== this.svgWidth || heightOld !== this.svgHeight) {
-        // maintain the same center point
-        const transform = d3.zoomTransform(this.svg.node());
-        transform.x += (this.svgWidth - widthOld) / 2;
-        transform.y += (this.svgHeight - heightOld) / 2;
-        // animated transform
-        this.svg.attr("transform", transform);
-      }
 
       try {
         console.log(
@@ -603,7 +606,8 @@ export default {
           this.label
             .attr(
               "transform",
-              (d) => `translate(${this.yearX(d)},${this.svgHeight - margin})`
+              (d) =>
+                `translate(${this.yearX(d)},${this.svgHeight / 2 - margin})`
             )
             .select("text")
             .attr("y", -this.svgHeight + 2 * margin);
@@ -707,8 +711,9 @@ export default {
           Math.sqrt(
             1 + this.sessionStore.yearMax - this.sessionStore.yearMin
           )) *
-        this.svgWidth *
-        0.15
+          this.svgWidth *
+          0.15 -
+        this.svgWidth / 2
       );
     },
 
@@ -721,30 +726,8 @@ export default {
       this.isNetworkClusters = !this.isNetworkClusters;
     },
 
-    updateSvgSize: function () {
-      const container = document.getElementById("network-svg-container");
-      this.svgWidth = container.clientWidth;
-      this.svgHeight = container.clientHeight;
-    },
-
     expandNetwork(isNetworkExpanded) {
-      // blend out network
-      d3.select("#network-svg")
-        .transition()
-        .duration(200)
-        .style("opacity",0);
       this.interfaceStore.isNetworkExpanded = isNetworkExpanded;
-      // wait to make sure the animation is finished
-      setTimeout(() => {
-        this.sessionStore.hasUpdated(
-          `Network expanded state changed to: ${isNetworkExpanded}.`
-        );
-        // blend in network
-        d3.select("#network-svg")
-          .transition()
-          .duration(200)
-          .style("opacity", 1);
-      }, 200);
     },
   },
 };
@@ -774,8 +757,14 @@ export default {
   }
 }
 
+#network-svg-container {
+  overflow: hidden;
+}
+
 #network-svg {
   background: white;
+  width: 100%;
+  height: 100%;
   @include inset-shadow;
 
   & g.publication.node-container {
