@@ -55,27 +55,7 @@
       </div>
       <div id="network-svg-container">
         <svg id="network-svg">
-          <g>
-            <rect
-              class="center-rect"
-              :width="svgWidth"
-              :height="svgHeight"
-              fill="white"
-              stroke="black"
-              stroke-width="1"
-              :x="-svgWidth / 2"
-              :y="-svgHeight / 2"
-            ></rect>
-            <circle
-              class="center-circle"
-              r="100"
-              fill="white"
-              stroke="black"
-              stroke-width="1"
-              cx="0"
-              cy="0"
-            ></circle>
-          </g>
+          <g></g>
         </svg>
       </div>
       <ul class="publication-component-list">
@@ -172,7 +152,9 @@ export default {
     const container = document.getElementById("network-svg-container");
     this.svgWidth = container.clientWidth;
     // if not mobile set height to 1/5 of width to make assumption that aspect ratio is 5:1
-    this.svgHeight = this.interfaceStore.isMobile ? container.clientHeight : this.svgWidth/5;
+    this.svgHeight = this.interfaceStore.isMobile
+      ? container.clientHeight
+      : this.svgWidth / 5;
 
     // set viewbox to center
     d3.select("#network-svg").attr(
