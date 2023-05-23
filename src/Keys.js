@@ -85,8 +85,9 @@ export function onKey(e) {
         if (e.key === "ArrowDown" || e.key === "ArrowUp") {
             e.preventDefault();
             const activePublicationComponent = document.getElementsByClassName(
-                "publication-component active"
+                "publication-component is-active"
             )[0];
+            console.log(activePublicationComponent);
             try {
                 interfaceStore.activatePublicationComponent(
                     e.key === "ArrowDown"
