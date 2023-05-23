@@ -142,12 +142,12 @@ export default class Publication {
         this.container = cleanTitle(this.container);
         // citations
         data.reference?.split("; ").forEach(referenceDoi => {
-            if (referenceDoi) {
+            if (referenceDoi && !this.referenceDois.includes(referenceDoi.toLowerCase())) {
                 this.referenceDois.push(referenceDoi.toLowerCase());
             }
         });
         data.citation?.split("; ").forEach(citationDoi => {
-            if (citationDoi) {
+            if (citationDoi && !this.citationDois.includes(citationDoi.toLowerCase())) {
                 this.citationDois.push(citationDoi.toLowerCase());
             }
         });
