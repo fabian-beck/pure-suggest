@@ -783,8 +783,8 @@ export default {
 
   .zoom-buttons {
     position: absolute;
-    bottom: 1vw;
-    right: 1vw;
+    bottom: 1rem;
+    right: 1rem;
     z-index: 1;
   }
 }
