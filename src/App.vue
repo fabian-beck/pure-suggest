@@ -161,6 +161,18 @@ $box-padding: 1rem;
       color: $light;
       border-color: $light;
     }
+
+    &.is-dark {
+      color: $dark;
+      border-color: $dark;
+      background: $white;
+
+      &:hover {
+        color: $dark;
+        border-color: $dark;
+        background: $light;
+      }
+    }
   }
 }
 
