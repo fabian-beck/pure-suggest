@@ -13,6 +13,14 @@
       </div>
       <div class="level-right" v-show="!sessionStore.isEmpty">
         <div class="level-item">
+           <!-- print authors button -->
+           <b-button
+            class="compact-button"
+            icon-left="account-group"
+            data-tippy-content="<span class='key'>P</span>rint authors of selected publications."
+            v-tippy
+            @click.stop="printAuthors"
+          ></b-button>
           <b-button
             class="compact-button"
             icon-left="magnify"
@@ -73,12 +81,7 @@
               @click.stop="sessionStore.clearQueues()"
             ></b-button>
             <b-button
-              class="
-                button
-                has-background-primary has-text-white
-                ml-2
-                level-item
-              "
+              class="button has-background-primary has-text-white ml-2 level-item"
               icon-left="update"
               data-tippy-content="Update suggested and excluded publications with queue and compute new suggestions."
               v-tippy
@@ -88,11 +91,7 @@
           </div>
         </div>
         <div
-          class="
-            notification
-            has-text-centered has-background-primary-light
-            p-2
-          "
+          class="notification has-text-centered has-background-primary-light p-2"
           v-show="sessionStore.isEmpty"
         >
           <p>
@@ -181,6 +180,24 @@ export default {
           ),
       });
     },
+    printAuthors: function () {
+      const authors = {};
+      this.sessionStore.selectedPublications.forEach((publication) => {
+        publication.author.split("; ").forEach((author) => {
+          const [last, first] = author.split(", ");
+          const authorID = `${last}, ${first?.[0]}`;
+          if (!authors[authorID]) {
+            authors[authorID] = { count: 0, names: {}, id: authorID };
+          }
+          authors[authorID].count++;
+          authors[authorID].names[author] = true;
+        });
+      });
+      const sortedAuthors = Object.values(authors).sort(
+        (a, b) => b.count - a.count
+      );
+      console.log(sortedAuthors);
+    },
   },
 };
 </script>
@@ -191,7 +208,6 @@ export default {
   grid-template-rows: max-content max-content auto;
 
   & .header {
-
     & .notification {
       margin-bottom: 0;
       border-radius: 0;
