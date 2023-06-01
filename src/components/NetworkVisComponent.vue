@@ -54,10 +54,9 @@
         </div>
       </div>
       <div id="network-svg-container">
-        <!-- Zoom buttons -->
         <div class="zoom-buttons">
           <b-button
-            class="button is-small is-white"
+            class="compact-button is-dark"
             @click="zoomByFactor(1.2)"
             data-tippy-content="Zoom in"
             v-tippy
@@ -65,7 +64,7 @@
             <b-icon icon="plus"></b-icon>
           </b-button>
           <b-button
-            class="button is-small is-white"
+            class="compact-button is-dark"
             @click="zoomByFactor(0.8)"
             data-tippy-content="Zoom out"
             v-tippy
@@ -781,6 +780,13 @@ export default {
 
 #network-svg-container {
   overflow: hidden;
+
+  .zoom-buttons {
+    position: absolute;
+    bottom: 1vw;
+    right: 1vw;
+    z-index: 1;
+  }
 }
 
 #network-svg {
