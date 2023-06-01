@@ -54,7 +54,7 @@
         </div>
       </div>
       <div id="network-svg-container">
-        <div class="zoom-buttons">
+        <div class="zoom-buttons" v-show="!sessionStore.isEmpty">
           <b-button
             class="compact-button is-dark"
             @click="zoomByFactor(1.2)"
