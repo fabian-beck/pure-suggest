@@ -54,6 +54,24 @@
         </div>
       </div>
       <div id="network-svg-container">
+        <div class="zoom-buttons">
+          <b-button
+            class="compact-button is-dark"
+            @click="zoomByFactor(1.2)"
+            data-tippy-content="Zoom in"
+            v-tippy
+          >
+            <b-icon icon="plus"></b-icon>
+          </b-button>
+          <b-button
+            class="compact-button is-dark"
+            @click="zoomByFactor(0.8)"
+            data-tippy-content="Zoom out"
+            v-tippy
+          >
+            <b-icon icon="minus"></b-icon>
+          </b-button>
+        </div>
         <svg id="network-svg">
           <g></g>
         </svg>
@@ -125,6 +143,7 @@ export default {
       node: null,
       link: null,
       label: null,
+      zoom: null,
     };
   },
   watch: {
@@ -163,16 +182,12 @@ export default {
         this.svgHeight
       }`
     );
+    // eslint-disable-next-line no-unused-vars
+    this.zoom = d3.zoom().on("zoom", (event, d) => {
+      that.svg.attr("transform", event.transform);
+    });
 
-    this.svg = d3
-      .select("#network-svg")
-      .call(
-        // eslint-disable-next-line no-unused-vars
-        d3.zoom().on("zoom", (event, d) => {
-          that.svg.attr("transform", event.transform);
-        })
-      )
-      .select("g");
+    this.svg = d3.select("#network-svg").call(this.zoom).select("g");
 
     this.simulation = d3.forceSimulation();
     this.simulation.alphaDecay(0.02);
@@ -729,6 +744,12 @@ export default {
     expandNetwork(isNetworkExpanded) {
       this.interfaceStore.isNetworkExpanded = isNetworkExpanded;
     },
+
+    zoomByFactor(factor) {
+      const transform = d3.zoomTransform(this.svg.node());
+      transform.k = transform.k * factor;
+      this.svg.attr("transform", transform);
+    },
   },
 };
 </script>
@@ -759,6 +780,13 @@ export default {
 
 #network-svg-container {
   overflow: hidden;
+
+  .zoom-buttons {
+    position: absolute;
+    bottom: 1vw;
+    right: 1vw;
+    z-index: 1;
+  }
 }
 
 #network-svg {
