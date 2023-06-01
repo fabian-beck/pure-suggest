@@ -1,11 +1,15 @@
 import LZString from 'lz-string';
-import { get, set, keys, del } from 'idb-keyval';
+import { get, set, keys, del, clear } from 'idb-keyval';
 
 console.log(`Locally cached #elements: ${(await keys()).length}`)
 
 export async function cachedFetch(url, processData, fetchParameters = {}) {
   try {
-    const data = JSON.parse(LZString.decompress(await get(url)));
+    const cacheObject = await get(url);
+    if (cacheObject.timestamp < Date.now() - 1000 * 60 * 60 * 24 * 100) {
+      throw new Error("Cached data is too old");
+    }
+    const data = JSON.parse(LZString.decompress(cacheObject.data));
     if (!data) throw new Error("Cached data is empty");
     processData(data);
   } catch (cannotLoadFromCacheError) {
@@ -16,8 +20,9 @@ export async function cachedFetch(url, processData, fetchParameters = {}) {
       }
       const data = await response.json();
       const compressedData = LZString.compress(JSON.stringify(data));
+      const cacheObject = { data: compressedData, timestamp: Date.now() };
       try {
-        await set(url, compressedData)
+        await set(url, cacheObject)
       } catch (error) {
         const keysArray = await keys();
         console.log(`Cache full (#elements: ${keysArray.length})! Removing elements...`)
@@ -29,7 +34,7 @@ export async function cachedFetch(url, processData, fetchParameters = {}) {
             ];
             del(randomStoredUrl);
           }
-          await set(url, compressedData);
+          await set(url, cacheObject);
         } catch (error2) {
           console.error(
             `Unable to locally cache information for "${url}": ${error2}`
@@ -46,5 +51,5 @@ export async function cachedFetch(url, processData, fetchParameters = {}) {
 }
 
 export function clearCache() {
-  localStorage.clear();
+  clear();
 }
