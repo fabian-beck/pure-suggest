@@ -783,9 +783,13 @@ export default {
 
   .zoom-buttons {
     position: absolute;
-    bottom: 1rem;
+    top: 3.5rem;
     right: 1rem;
     z-index: 1;
+
+    & .compact-button {
+      margin-left: 0.25rem;
+    }
   }
 }
 
