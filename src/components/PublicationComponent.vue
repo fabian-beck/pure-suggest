@@ -528,7 +528,8 @@ li {
     }
 
     &.is-keyword-hovered .glyph {
-      @include warning-shadow;
+      box-shadow: 0 0 0.2rem 0.05rem $warning;
+      border-color: $warning-dark;
     }
 
     &.is-active {

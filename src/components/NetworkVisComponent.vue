@@ -856,7 +856,8 @@ export default {
     }
 
     &.isKeywordHovered rect {
-      @include warning-shadow-svg;
+      filter: drop-shadow(0px 0px 10px $warning);
+      stroke: $warning-dark;
     }
 
     &.queuingForSelected,
