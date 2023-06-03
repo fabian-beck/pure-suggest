@@ -113,7 +113,8 @@ import { useInterfaceStore } from "./../stores/interface.js";
 const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;
 const margin = 20;
-const SIMULATION_ALPHA = 0.4;
+const SIMULATION_ALPHA = 0.5;
+const CURRENT_YEAR = new Date().getFullYear();
 
 export default {
   name: "NetworkVisComponent",
@@ -190,7 +191,7 @@ export default {
     this.svg = d3.select("#network-svg").call(this.zoom).select("g");
 
     this.simulation = d3.forceSimulation();
-    this.simulation.alphaDecay(0.02);
+    this.simulation.alphaDecay(0.015).alphaMin(0.01);
 
     this.label = this.svg.append("g").attr("class", "labels").selectAll("text");
     this.link = this.svg.append("g").attr("class", "links").selectAll("path");
@@ -250,7 +251,9 @@ export default {
             .x((d) =>
               that.isNetworkClusters
                 ? 0
-                : this.yearX(d.publication ? d.publication.year : 2025)
+                : this.yearX(
+                    d.publication ? d.publication.year : CURRENT_YEAR + 2
+                  )
             )
             .strength(that.isNetworkClusters ? 0.05 : 10)
         )
@@ -268,12 +271,6 @@ export default {
       if (this.isDragging) return;
 
       try {
-        console.log(
-          `Plotting citation network ${
-            restart ? "with" : "without"
-          } restarting layout computation.`
-        );
-
         this.initForces();
 
         initGraph.call(this);
@@ -301,7 +298,7 @@ export default {
         // https://observablehq.com/@d3/modifying-a-force-directed-graph
         const old = new Map(this.node.data().map((d) => [d.id, d]));
         this.graph.nodes = nodes.map((d) =>
-          Object.assign(old.get(d.id) || { x: this.svgWidth / 2, y: 0 }, d)
+          Object.assign(old.get(d.id) || { x: 0, y: 0 }, d)
         );
         this.graph.links = links.map((d) => Object.assign({}, d));
       }
@@ -633,12 +630,14 @@ export default {
     tick: function () {
       this.link
         .attr("d", (d) => {
-          const dx = d.target.x - d.source.x;
+          const dx = this.nodeX(d.target) - this.nodeX(d.source);
           const dy = d.target.y - d.source.y;
           // curved link for citations
           if (d.type === "citation") {
             const dr = Math.pow(dx * dx + dy * dy, 0.6);
-            return `M${d.target.x},${d.target.y}A${dr},${dr} 0 0,1 ${d.source.x},${d.source.y}`;
+            return `M${this.nodeX(d.target)},${
+              d.target.y
+            }A${dr},${dr} 0 0,1 ${this.nodeX(d.source)},${d.source.y}`;
           }
           // tapered links for keywords:
           // drawing a triangle as part of a circle segment with its center at the target node
@@ -653,9 +652,9 @@ export default {
             y1 = -y1;
             y2 = -y2;
           }
-          return `M${d.target.x - x1},${d.target.y - y1}
-            L${d.target.x},${d.target.y}
-            L${d.target.x - x2},${d.target.y - y2}`;
+          return `M${this.nodeX(d.target) - x1},${d.target.y - y1}
+            L${this.nodeX(d.target)},${d.target.y}
+            L${this.nodeX(d.target) - x2},${d.target.y - y2}`;
         })
         .attr("class", (d) => {
           const classes = [d.type];
@@ -673,7 +672,7 @@ export default {
           return classes.join(" ");
         });
 
-      this.node.attr("transform", (d) => `translate(${d.x}, ${d.y})`);
+      this.node.attr("transform", (d) => `translate(${this.nodeX(d)}, ${d.y})`);
     },
 
     keywordNodeDrag: function () {
@@ -730,6 +729,12 @@ export default {
           0.15 -
         this.svgWidth / 2
       );
+    },
+
+    nodeX: function (d) {
+      return this.isNetworkClusters
+        ? d.x
+        : this.yearX(d.publication ? d.publication.year : CURRENT_YEAR + 2);
     },
 
     activatePublication: function (event, d) {
