@@ -113,7 +113,7 @@ import { useInterfaceStore } from "./../stores/interface.js";
 const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;
 const margin = 20;
-const SIMULATION_ALPHA = 0.4;
+const SIMULATION_ALPHA = 0.5;
 const CURRENT_YEAR = new Date().getFullYear();
 
 export default {
@@ -191,7 +191,7 @@ export default {
     this.svg = d3.select("#network-svg").call(this.zoom).select("g");
 
     this.simulation = d3.forceSimulation();
-    this.simulation.alphaDecay(0.02);
+    this.simulation.alphaDecay(0.015);
 
     this.label = this.svg.append("g").attr("class", "labels").selectAll("text");
     this.link = this.svg.append("g").attr("class", "links").selectAll("path");
