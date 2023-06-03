@@ -274,19 +274,19 @@ export default {
           } restarting layout computation.`
         );
 
-        if (restart) {
-          this.initForces();
-          initGraph.call(this);
-          updateYearLabels.call(this);
-        }
+        this.initForces();
+
+        initGraph.call(this);
         updateNodes.call(this);
         updateLinks.call(this);
+        updateYearLabels.call(this);
+
+        this.simulation.nodes(this.graph.nodes);
+        this.simulation.force("link").links(this.graph.links);
         if (restart) {
-          this.simulation.nodes(this.graph.nodes);
-          this.simulation.force("link").links(this.graph.links);
           this.simulation.alpha(SIMULATION_ALPHA);
         }
-        this.simulation.restart()
+        this.simulation.restart();
       } catch (error) {
         console.error("Cannot plot network: " + error.message);
         this.interfaceStore.showErrorMessage(
