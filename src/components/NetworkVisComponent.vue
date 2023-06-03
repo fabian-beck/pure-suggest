@@ -251,7 +251,9 @@ export default {
             .x((d) =>
               that.isNetworkClusters
                 ? 0
-                : this.yearX(d.publication ? d.publication.year : CURRENT_YEAR + 2)
+                : this.yearX(
+                    d.publication ? d.publication.year : CURRENT_YEAR + 2
+                  )
             )
             .strength(that.isNetworkClusters ? 0.05 : 10)
         )
@@ -269,12 +271,6 @@ export default {
       if (this.isDragging) return;
 
       try {
-        console.log(
-          `Plotting citation network ${
-            restart ? "with" : "without"
-          } restarting layout computation.`
-        );
-
         this.initForces();
 
         initGraph.call(this);
@@ -639,7 +635,9 @@ export default {
           // curved link for citations
           if (d.type === "citation") {
             const dr = Math.pow(dx * dx + dy * dy, 0.6);
-            return `M${this.nodeX(d.target)},${d.target.y}A${dr},${dr} 0 0,1 ${this.nodeX(d.source)},${d.source.y}`;
+            return `M${this.nodeX(d.target)},${
+              d.target.y
+            }A${dr},${dr} 0 0,1 ${this.nodeX(d.source)},${d.source.y}`;
           }
           // tapered links for keywords:
           // drawing a triangle as part of a circle segment with its center at the target node
