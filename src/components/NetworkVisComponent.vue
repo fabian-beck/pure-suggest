@@ -191,7 +191,7 @@ export default {
     this.svg = d3.select("#network-svg").call(this.zoom).select("g");
 
     this.simulation = d3.forceSimulation();
-    this.simulation.alphaDecay(0.015);
+    this.simulation.alphaDecay(0.015).alphaMin(0.01);
 
     this.label = this.svg.append("g").attr("class", "labels").selectAll("text");
     this.link = this.svg.append("g").attr("class", "links").selectAll("path");
@@ -298,7 +298,7 @@ export default {
         // https://observablehq.com/@d3/modifying-a-force-directed-graph
         const old = new Map(this.node.data().map((d) => [d.id, d]));
         this.graph.nodes = nodes.map((d) =>
-          Object.assign(old.get(d.id) || { x: this.svgWidth / 2, y: 0 }, d)
+          Object.assign(old.get(d.id) || { x: 0, y: 0 }, d)
         );
         this.graph.links = links.map((d) => Object.assign({}, d));
       }
