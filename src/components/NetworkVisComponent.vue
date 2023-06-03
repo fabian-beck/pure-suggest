@@ -114,6 +114,7 @@ const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;
 const margin = 20;
 const SIMULATION_ALPHA = 0.4;
+const CURRENT_YEAR = new Date().getFullYear();
 
 export default {
   name: "NetworkVisComponent",
@@ -250,7 +251,7 @@ export default {
             .x((d) =>
               that.isNetworkClusters
                 ? 0
-                : this.yearX(d.publication ? d.publication.year : 2025)
+                : this.yearX(d.publication ? d.publication.year : CURRENT_YEAR + 2)
             )
             .strength(that.isNetworkClusters ? 0.05 : 10)
         )
@@ -735,7 +736,7 @@ export default {
     nodeX: function (d) {
       return this.isNetworkClusters
         ? d.x
-        : this.yearX(d.publication ? d.publication.year : 2025);
+        : this.yearX(d.publication ? d.publication.year : CURRENT_YEAR + 2);
     },
 
     activatePublication: function (event, d) {
