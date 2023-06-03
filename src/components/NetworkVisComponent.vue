@@ -54,24 +54,6 @@
         </div>
       </div>
       <div id="network-svg-container">
-        <div class="zoom-buttons" v-show="!sessionStore.isEmpty">
-          <b-button
-            class="compact-button is-dark"
-            @click="zoomByFactor(1.2)"
-            data-tippy-content="Zoom in"
-            v-tippy
-          >
-            <b-icon icon="plus"></b-icon>
-          </b-button>
-          <b-button
-            class="compact-button is-dark"
-            @click="zoomByFactor(0.8)"
-            data-tippy-content="Zoom out"
-            v-tippy
-          >
-            <b-icon icon="minus"></b-icon>
-          </b-button>
-        </div>
         <svg id="network-svg">
           <g></g>
         </svg>
@@ -83,7 +65,7 @@
           :is-active="true"
         ></PublicationComponent>
       </ul>
-      <div class="controls-footer">
+      <div class="controls-header-left">
         <button
           class="button has-background-primary has-text-white"
           @click="sessionStore.updateQueued"
@@ -93,6 +75,24 @@
           <b-icon icon="update" size="is-small"></b-icon>
           <div class="button-label">Update</div>
         </button>
+      </div>
+      <div class="controls-footer-right" v-show="!sessionStore.isEmpty">
+        <b-button
+          class="compact-button is-dark"
+          @click="zoomByFactor(1.2)"
+          data-tippy-content="Zoom in"
+          v-tippy
+        >
+          <b-icon icon="plus"></b-icon>
+        </b-button>
+        <b-button
+          class="compact-button is-dark"
+          @click="zoomByFactor(0.8)"
+          data-tippy-content="Zoom out"
+          v-tippy
+        >
+          <b-icon icon="minus"></b-icon>
+        </b-button>
       </div>
     </div>
   </div>
@@ -776,26 +776,26 @@ export default {
     background: white;
   }
 
-  & .controls-footer {
+  & .controls-header-left {
     position: absolute;
-    bottom: 1vw;
-    right: 1vw;
+    top: calc(1vw + 2.5rem);
+    left: 1vw;
+  }
+
+  & .controls-footer-right {
+    position: absolute;
+    bottom: max(1vw, 1rem);
+    right: max(1vw, 1rem);
+    z-index: 1;
+
+    & .button {
+      margin-left: 0.25rem !important;
+    }
   }
 }
 
 #network-svg-container {
   overflow: hidden;
-
-  .zoom-buttons {
-    position: absolute;
-    top: 3.5rem;
-    right: 1rem;
-    z-index: 1;
-
-    & .compact-button {
-      margin-left: 0.25rem;
-    }
-  }
 }
 
 #network-svg {
