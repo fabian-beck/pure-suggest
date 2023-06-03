@@ -83,7 +83,7 @@
           :is-active="true"
         ></PublicationComponent>
       </ul>
-      <div class="controls-footer">
+      <div class="controls-header-left">
         <button
           class="button has-background-primary has-text-white"
           @click="sessionStore.updateQueued"
@@ -776,10 +776,10 @@ export default {
     background: white;
   }
 
-  & .controls-footer {
+  & .controls-header-left {
     position: absolute;
-    bottom: 1vw;
-    right: 1vw;
+    top: calc(1vw + 2.5rem);
+    left: 1vw;
   }
 }
 
