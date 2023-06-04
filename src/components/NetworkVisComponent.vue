@@ -112,7 +112,7 @@ import { useInterfaceStore } from "./../stores/interface.js";
 
 const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;
-const margin = 20;
+const MARGIN = 20;
 const SIMULATION_ALPHA = 0.5;
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -619,10 +619,10 @@ export default {
             .attr(
               "transform",
               (d) =>
-                `translate(${this.yearX(d)},${this.svgHeight / 2 - margin})`
+                `translate(${this.yearX(d)},${this.svgHeight / 2 - MARGIN})`
             )
             .select("text")
-            .attr("y", -this.svgHeight + 2 * margin);
+            .attr("y", -this.svgHeight + 2 * MARGIN);
         }
       }
     },
@@ -789,7 +789,7 @@ export default {
     z-index: 1;
 
     & .button {
-      margin-left: 0.25rem !important;
+      MARGIN-left: 0.25rem !important;
     }
   }
 }
