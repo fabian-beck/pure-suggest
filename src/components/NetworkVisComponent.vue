@@ -54,24 +54,6 @@
         </div>
       </div>
       <div id="network-svg-container">
-        <div class="zoom-buttons" v-show="!sessionStore.isEmpty">
-          <b-button
-            class="compact-button is-dark"
-            @click="zoomByFactor(1.2)"
-            data-tippy-content="Zoom in"
-            v-tippy
-          >
-            <b-icon icon="plus"></b-icon>
-          </b-button>
-          <b-button
-            class="compact-button is-dark"
-            @click="zoomByFactor(0.8)"
-            data-tippy-content="Zoom out"
-            v-tippy
-          >
-            <b-icon icon="minus"></b-icon>
-          </b-button>
-        </div>
         <svg id="network-svg">
           <g></g>
         </svg>
@@ -83,7 +65,7 @@
           :is-active="true"
         ></PublicationComponent>
       </ul>
-      <div class="controls-footer">
+      <div class="controls-header-left">
         <button
           class="button has-background-primary has-text-white"
           @click="sessionStore.updateQueued"
@@ -93,6 +75,24 @@
           <b-icon icon="update" size="is-small"></b-icon>
           <div class="button-label">Update</div>
         </button>
+      </div>
+      <div class="controls-footer-right" v-show="!sessionStore.isEmpty">
+        <b-button
+          class="compact-button is-dark"
+          @click="zoomByFactor(1.2)"
+          data-tippy-content="Zoom in"
+          v-tippy
+        >
+          <b-icon icon="plus"></b-icon>
+        </b-button>
+        <b-button
+          class="compact-button is-dark"
+          @click="zoomByFactor(0.8)"
+          data-tippy-content="Zoom out"
+          v-tippy
+        >
+          <b-icon icon="minus"></b-icon>
+        </b-button>
       </div>
     </div>
   </div>
@@ -112,8 +112,9 @@ import { useInterfaceStore } from "./../stores/interface.js";
 
 const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;
-const margin = 20;
-const SIMULATION_ALPHA = 0.4;
+const MARGIN = 20;
+const SIMULATION_ALPHA = 0.5;
+const CURRENT_YEAR = new Date().getFullYear();
 
 export default {
   name: "NetworkVisComponent",
@@ -190,7 +191,7 @@ export default {
     this.svg = d3.select("#network-svg").call(this.zoom).select("g");
 
     this.simulation = d3.forceSimulation();
-    this.simulation.alphaDecay(0.02);
+    this.simulation.alphaDecay(0.015).alphaMin(0.01);
 
     this.label = this.svg.append("g").attr("class", "labels").selectAll("text");
     this.link = this.svg.append("g").attr("class", "links").selectAll("path");
@@ -250,7 +251,9 @@ export default {
             .x((d) =>
               that.isNetworkClusters
                 ? 0
-                : this.yearX(d.publication ? d.publication.year : 2025)
+                : this.yearX(
+                    d.publication ? d.publication.year : CURRENT_YEAR + 2
+                  )
             )
             .strength(that.isNetworkClusters ? 0.05 : 10)
         )
@@ -268,12 +271,6 @@ export default {
       if (this.isDragging) return;
 
       try {
-        console.log(
-          `Plotting citation network ${
-            restart ? "with" : "without"
-          } restarting layout computation.`
-        );
-
         this.initForces();
 
         initGraph.call(this);
@@ -301,7 +298,7 @@ export default {
         // https://observablehq.com/@d3/modifying-a-force-directed-graph
         const old = new Map(this.node.data().map((d) => [d.id, d]));
         this.graph.nodes = nodes.map((d) =>
-          Object.assign(old.get(d.id) || { x: this.svgWidth / 2, y: 0 }, d)
+          Object.assign(old.get(d.id) || { x: 0, y: 0 }, d)
         );
         this.graph.links = links.map((d) => Object.assign({}, d));
       }
@@ -622,10 +619,10 @@ export default {
             .attr(
               "transform",
               (d) =>
-                `translate(${this.yearX(d)},${this.svgHeight / 2 - margin})`
+                `translate(${this.yearX(d)},${this.svgHeight / 2 - MARGIN})`
             )
             .select("text")
-            .attr("y", -this.svgHeight + 2 * margin);
+            .attr("y", -this.svgHeight + 2 * MARGIN);
         }
       }
     },
@@ -633,12 +630,14 @@ export default {
     tick: function () {
       this.link
         .attr("d", (d) => {
-          const dx = d.target.x - d.source.x;
+          const dx = this.nodeX(d.target) - this.nodeX(d.source);
           const dy = d.target.y - d.source.y;
           // curved link for citations
           if (d.type === "citation") {
             const dr = Math.pow(dx * dx + dy * dy, 0.6);
-            return `M${d.target.x},${d.target.y}A${dr},${dr} 0 0,1 ${d.source.x},${d.source.y}`;
+            return `M${this.nodeX(d.target)},${
+              d.target.y
+            }A${dr},${dr} 0 0,1 ${this.nodeX(d.source)},${d.source.y}`;
           }
           // tapered links for keywords:
           // drawing a triangle as part of a circle segment with its center at the target node
@@ -653,9 +652,9 @@ export default {
             y1 = -y1;
             y2 = -y2;
           }
-          return `M${d.target.x - x1},${d.target.y - y1}
-            L${d.target.x},${d.target.y}
-            L${d.target.x - x2},${d.target.y - y2}`;
+          return `M${this.nodeX(d.target) - x1},${d.target.y - y1}
+            L${this.nodeX(d.target)},${d.target.y}
+            L${this.nodeX(d.target) - x2},${d.target.y - y2}`;
         })
         .attr("class", (d) => {
           const classes = [d.type];
@@ -673,7 +672,7 @@ export default {
           return classes.join(" ");
         });
 
-      this.node.attr("transform", (d) => `translate(${d.x}, ${d.y})`);
+      this.node.attr("transform", (d) => `translate(${this.nodeX(d)}, ${d.y})`);
     },
 
     keywordNodeDrag: function () {
@@ -732,6 +731,12 @@ export default {
       );
     },
 
+    nodeX: function (d) {
+      return this.isNetworkClusters
+        ? d.x
+        : this.yearX(d.publication ? d.publication.year : CURRENT_YEAR + 2);
+    },
+
     activatePublication: function (event, d) {
       this.sessionStore.activatePublicationComponentByDoi(d.publication.doi);
       event.stopPropagation();
@@ -771,22 +776,26 @@ export default {
     background: white;
   }
 
-  & .controls-footer {
+  & .controls-header-left {
     position: absolute;
-    bottom: 1vw;
-    right: 1vw;
+    top: calc(1vw + 2.5rem);
+    left: 1vw;
+  }
+
+  & .controls-footer-right {
+    position: absolute;
+    bottom: max(1vw, 1rem);
+    right: max(1vw, 1rem);
+    z-index: 1;
+
+    & .button {
+      MARGIN-left: 0.25rem !important;
+    }
   }
 }
 
 #network-svg-container {
   overflow: hidden;
-
-  .zoom-buttons {
-    position: absolute;
-    bottom: 1rem;
-    right: 1rem;
-    z-index: 1;
-  }
 }
 
 #network-svg {
@@ -856,7 +865,8 @@ export default {
     }
 
     &.isKeywordHovered rect {
-      @include warning-shadow-svg;
+      filter: drop-shadow(0px 0px 10px $warning);
+      stroke: $warning-dark;
     }
 
     &.queuingForSelected,

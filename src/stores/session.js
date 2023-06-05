@@ -329,13 +329,12 @@ export const useSessionStore = defineStore('session', {
     hoverPublication(publication, isHovered) {
       if (publication.isHovered !== isHovered) {
         publication.isHovered = isHovered;
-        this.hasUpdated(`Publication node with DOI ${publication.doi} was ${isHovered ? "hovered" : "unhovered"}.`);
+        this.hasUpdated();
       }
     },
 
     // This method can be watched to manually trigger updates 
-    hasUpdated(message) {
-      console.log("Session has been updated: " + message);
+    hasUpdated() {
     },
 
     loadSession(session) {
