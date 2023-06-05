@@ -50,7 +50,7 @@
           <h2><b-icon icon="file-document" /> Read more</h2>
           <p>
             We publish news, tutorials, use cases, etc. as part of our <b>blog</b> on
-            <a href="https://medium.com/pure-suggest">medium.com</a>.
+            <a href="https://medium.com/@pure_suggest">medium.com</a>.
           </p>
           <p>
             If you want to learn more on the background of the tool or cite it,
