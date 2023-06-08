@@ -189,6 +189,17 @@ $box-padding: 1rem;
   max-width: 720px;
 }
 
+.modal {
+  & .card {
+    position: relative;
+  }
+
+  & .card-content {
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+  }
+}
+
 @include touch {
   #app {
     display: block;
@@ -243,8 +254,14 @@ $box-padding: 1rem;
     text-decoration: none;
   }
 
-  .modal .modal-content {
-    max-height: calc(100vh - 90px);
+  .modal {
+    & .modal-content {
+      max-height: 100%;
+    }
+
+    & .card-content {
+      max-height: calc(100vh - 140px);
+    }
   }
 
   .modal-close {
