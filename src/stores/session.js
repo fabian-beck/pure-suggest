@@ -171,7 +171,6 @@ export const useSessionStore = defineStore('session', {
         })
       );
       await this.computeSuggestions();
-      this.computeSelectedPublicationsAuthors();
       this.interfaceStore.endLoading();
     },
 
@@ -180,9 +179,15 @@ export const useSessionStore = defineStore('session', {
       this.selectedPublications.forEach((publication) => {
         publication.author.split("; ").forEach((author) => {
           if (!authors[author]) {
-            authors[author] = { count: 0, id: author };
+            authors[author] = { count: 0, id: author, keywords: [] };
           }
           authors[author].count++;
+          publication.boostKeywords.forEach((keyword) => {
+            if (!authors[author].keywords.includes(keyword)) {
+              authors[author].keywords.push(keyword);
+            }
+          }
+          );
         });
       });
       this.selectedPublicationsAuthors = Object.values(authors).sort(
@@ -283,6 +288,7 @@ export const useSessionStore = defineStore('session', {
       });
       Publication.sortPublications(this.selectedPublications);
       Publication.sortPublications(this.suggestedPublications);
+      this.computeSelectedPublicationsAuthors();
     },
 
     loadMoreSuggestions() {

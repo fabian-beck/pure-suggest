@@ -168,6 +168,7 @@ export default class Publication {
     }
 
     updateScore(boostKeywords) {
+        this.boostKeywords = [];
         this.boostMatches = 0;
         this.boostFactor = 1;
         // use an array to keep track of highlighted title fragements

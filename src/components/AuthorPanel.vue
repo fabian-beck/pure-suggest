@@ -26,7 +26,16 @@
                   <div class="content">
                     <strong>{{ author.id }}</strong>
                     <br />
-                    <small>{{ author.count }} publication{{ author.count > 1 ? "s" : "" }}</small>
+                    <small
+                      >{{ author.count }} publication{{
+                        author.count > 1 ? "s" : ""
+                      }}
+                      <b-tag
+                        v-for="keyword in author.keywords"
+                        :key="keyword"
+                        >{{ keyword }}</b-tag
+                      >
+                    </small>
                   </div>
                 </div>
               </li>
@@ -74,5 +83,9 @@ export default {
   list-style-type: none;
   padding: 0;
   margin: 0;
+
+  & .tag {
+    margin-left: 0.25rem;
+  }
 }
 </style>
