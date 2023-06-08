@@ -179,13 +179,10 @@ export const useSessionStore = defineStore('session', {
       const authors = {};
       this.selectedPublications.forEach((publication) => {
         publication.author.split("; ").forEach((author) => {
-          const [last, first] = author.split(", ");
-          const authorID = `${last}, ${first?.[0]}`;
-          if (!authors[authorID]) {
-            authors[authorID] = { count: 0, names: {}, id: authorID };
+          if (!authors[author]) {
+            authors[author] = { count: 0, id: author };
           }
-          authors[authorID].count++;
-          authors[authorID].names[author] = true;
+          authors[author].count++;
         });
       });
       this.selectedPublicationsAuthors = Object.values(authors).sort(

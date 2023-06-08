@@ -26,7 +26,7 @@
                   <div class="content">
                     <strong>{{ author.id }}</strong>
                     <br />
-                    <small>{{ author }}</small>
+                    <small>{{ author.count }} publication{{ author.count > 1 ? "s" : "" }}</small>
                   </div>
                 </div>
               </li>
