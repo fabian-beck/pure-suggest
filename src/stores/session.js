@@ -12,6 +12,7 @@ export const useSessionStore = defineStore('session', {
     return {
       interfaceStore: useInterfaceStore(),
       selectedPublications: [],
+      selectedPublicationsAuthors: [],
       selectedQueue: [],
       excludedPublicationsDois: [],
       excludedQueue: [],
@@ -170,7 +171,26 @@ export const useSessionStore = defineStore('session', {
         })
       );
       await this.computeSuggestions();
+      this.computeSelectedPublicationsAuthors();
       this.interfaceStore.endLoading();
+    },
+
+    computeSelectedPublicationsAuthors() {
+      const authors = {};
+      this.selectedPublications.forEach((publication) => {
+        publication.author.split("; ").forEach((author) => {
+          const [last, first] = author.split(", ");
+          const authorID = `${last}, ${first?.[0]}`;
+          if (!authors[authorID]) {
+            authors[authorID] = { count: 0, names: {}, id: authorID };
+          }
+          authors[authorID].count++;
+          authors[authorID].names[author] = true;
+        });
+      });
+      this.selectedPublicationsAuthors = Object.values(authors).sort(
+        (a, b) => b.count - a.count
+      );
     },
 
     async computeSuggestions() {

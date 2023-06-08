@@ -23,6 +23,7 @@
     >
     </QuickAccessBar>
     <SearchPanel />
+    <AuthorPanel />
     <b-modal v-model="interfaceStore.isAboutPageShown">
       <AboutPage />
     </b-modal>
@@ -49,6 +50,7 @@ import SuggestedPublicationsComponent from "./components/SuggestedPublicationsCo
 import NetworkVisComponent from "./components/NetworkVisComponent.vue";
 import QuickAccessBar from "./components/QuickAccessBar.vue";
 import SearchPanel from "./components/SearchPanel.vue";
+import AuthorPanel from "./components/AuthorPanel.vue";
 import AboutPage from "./components/AboutPage.vue";
 import KeyboardControlsPage from "./components/KeyboardControlsPage.vue";
 
@@ -68,6 +70,7 @@ export default {
     NetworkVisComponent,
     QuickAccessBar,
     SearchPanel,
+    AuthorPanel,
     AboutPage,
     KeyboardControlsPage,
   },
