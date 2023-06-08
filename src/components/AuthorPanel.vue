@@ -11,8 +11,24 @@
         <div class="content">
           <section>
             <ul>
-              <li v-for="author in sessionStore.selectedPublicationsAuthors" :key="author.id">
-                {{ author }}
+              <li
+                v-for="author in sessionStore.selectedPublicationsAuthors"
+                :key="author.id"
+                class="media"
+              >
+                <div class="media-left">
+                  <b-icon
+                    icon="account"
+                    :size="authorIconSize(author.count)"
+                  ></b-icon>
+                </div>
+                <div class="media-content">
+                  <div class="content">
+                    <strong>{{ author.id }}</strong>
+                    <br />
+                    <small>{{ author }}</small>
+                  </div>
+                </div>
               </li>
             </ul>
           </section>
@@ -34,9 +50,29 @@ export default {
     return { sessionStore, interfaceStore };
   },
   methods: {
+    authorIconSize(count) {
+      if (count > 5) {
+        return "is-large";
+      }
+      if (count > 2) {
+        return "is-medium";
+      }
+      if (count > 1) {
+        return null;
+      }
+      return "is-small";
+    },
     cancel() {
       this.interfaceStore.isAuthorPanelShown = false;
     },
   },
 };
 </script>
+
+<style scoped lang="scss">
+.content ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+</style>
