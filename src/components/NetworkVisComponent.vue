@@ -720,14 +720,10 @@ export default {
     },
 
     yearX: function (year) {
+      const width = Math.max(this.svgWidth, 2 * this.svgHeight);
       return (
-        ((year - this.sessionStore.yearMin) /
-          Math.sqrt(
-            1 + this.sessionStore.yearMax - this.sessionStore.yearMin
-          )) *
-          this.svgWidth *
-          0.15 -
-        this.svgWidth / 2
+        (year - CURRENT_YEAR ) * width * 0.03 +
+        width * (this.interfaceStore.isMobile ? 0.05 : 0.3)
       );
     },
 
@@ -789,7 +785,7 @@ export default {
     z-index: 1;
 
     & .button {
-      MARGIN-left: 0.25rem !important;
+      margin-left: 0.25rem !important;
     }
   }
 }
