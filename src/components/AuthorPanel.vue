@@ -3,8 +3,8 @@
     <div class="card">
       <header class="card-header has-background-primary">
         <p class="card-header-title has-text-white">
-          <b-icon icon="account-group"></b-icon>&ensp;Most frequent authors
-          among selected publications
+          <b-icon icon="account-group"></b-icon>&ensp;Authors of selected
+          publications
         </p>
       </header>
       <div class="card-content">
@@ -24,17 +24,26 @@
                 </div>
                 <div class="media-content">
                   <div class="content">
-                    <strong>{{ author.id }}</strong>
-                    <br />
+                    <div>
+                      <strong>{{ author.id }}</strong>
+                    </div>
                     <small
-                      >{{ author.count }} publication{{
-                        author.count > 1 ? "s" : ""
-                      }}
-                      <b-tag
-                        v-for="keyword in author.keywords"
-                        :key="keyword"
-                        >{{ keyword }}</b-tag
-                      >
+                      ><div class="level">
+                        <div class="level-left">
+                          <div class="level-item">
+                            <label>Selected publications:</label
+                            >&nbsp;<strong>{{ author.count }}</strong>
+                          </div>
+                          <div class="level-item ml-6">
+                            <label>Boost keywords:</label>
+                            <b-tag
+                              v-for="keyword in author.keywords"
+                              :key="keyword"
+                              >{{ keyword }}</b-tag
+                            >
+                          </div>
+                        </div>
+                      </div>
                     </small>
                   </div>
                 </div>
@@ -86,6 +95,9 @@ export default {
 
   & .tag {
     margin-left: 0.25rem;
+    text-decoration: underline;
+    text-decoration-color: hsl(48, 100%, 67%);
+    text-decoration-thickness: 0.2rem;
   }
 }
 </style>
