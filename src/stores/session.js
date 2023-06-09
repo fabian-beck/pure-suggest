@@ -176,6 +176,7 @@ export const useSessionStore = defineStore('session', {
 
     computeSelectedPublicationsAuthors() {
       const authors = {};
+      // assemble authors from selected publications
       this.selectedPublications.forEach((publication) => {
         publication.authorOrcid?.split("; ").forEach((author) => {
           const authorId = author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, "");
@@ -195,6 +196,23 @@ export const useSessionStore = defineStore('session', {
           );
         });
       });
+      // match authors with abbreviated names and merge them
+      const authorsWithoutAbbreviatedNames = Object.values(authors).filter((author) => !author.id.match(/^\w+,\s\w\.?(\s\w\.?)?$/));
+      Object.values(authors).forEach((author) => {
+        if (author.id.match(/^\w+,\s\w\.?(\s\w\.?)?$/)) {
+          const authorId = author.id.replace(/^(\w+,\s\w)\.?(\s\w\.?)?$/, "$1")
+          const authorMatches = authorsWithoutAbbreviatedNames.filter((author2) => author2.id.startsWith(authorId));
+          if (authorMatches.length === 1 && (!author.orcid || !authorMatches[0].orcid || author.orcid === authorMatches[0].orcid)) {
+            authorMatches[0].count += author.count;
+            authorMatches[0].keywords = [...new Set(authorMatches[0].keywords.concat(author.keywords))];
+            if (author.orcid && !authorMatches[0].orcid) {
+              authorMatches[0].orcid = author.orcid;
+            }
+            delete authors[author.id];
+          }
+        }
+      });
+      // sort by count
       this.selectedPublicationsAuthors = Object.values(authors).sort(
         (a, b) => b.count - a.count
       );
