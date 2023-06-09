@@ -196,6 +196,20 @@ export const useSessionStore = defineStore('session', {
           );
         });
       });
+      // merge author with same ORCID
+      const orcidAuthors = Object.values(authors).filter((author) => author.orcid);
+      orcidAuthors.forEach((author) => {
+        const authorMatches = orcidAuthors.filter((author2) => author2.orcid === author.orcid);
+        if (authorMatches.length > 1) {
+          authorMatches.forEach((author2) => {
+            if (author.id.length > author2.id.length) {
+              author.count += author2.count;
+              author.keywords = [...new Set(author.keywords.concat(author2.keywords))];
+              delete authors[author2.id];
+            }
+          });
+        }
+      });
       // match authors with abbreviated names and merge them
       const authorsWithoutAbbreviatedNames = Object.values(authors).filter((author) => !author.id.match(/^\w+,\s\w\.?(\s\w\.?)?$/));
       Object.values(authors).forEach((author) => {
