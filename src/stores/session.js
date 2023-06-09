@@ -177,14 +177,19 @@ export const useSessionStore = defineStore('session', {
     computeSelectedPublicationsAuthors() {
       const authors = {};
       this.selectedPublications.forEach((publication) => {
-        publication.author.split("; ").forEach((author) => {
-          if (!authors[author]) {
-            authors[author] = { count: 0, id: author, keywords: [] };
+        publication.authorOrcid?.split("; ").forEach((author) => {
+          const authorId = author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, "");
+          if (!authors[authorId]) {
+            authors[authorId] = { count: 0, id: authorId, keywords: [], orcid: "" };
           }
-          authors[author].count++;
+          authors[authorId].count++;
+          const orcid = author.match(/(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g);
+          if (orcid) {
+            authors[authorId].orcid = orcid[0];
+          }
           publication.boostKeywords.forEach((keyword) => {
-            if (!authors[author].keywords.includes(keyword)) {
-              authors[author].keywords.push(keyword);
+            if (!authors[authorId].keywords.includes(keyword)) {
+              authors[authorId].keywords.push(keyword);
             }
           }
           );

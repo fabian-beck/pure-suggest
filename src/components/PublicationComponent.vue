@@ -233,8 +233,8 @@
           <span>
             <span
               v-html="
-                publication.authorOrcid +
-                (publication.authorOrcid.endsWith('.') ? '' : '.')
+                publication.authorOrcidHtml +
+                (publication.authorOrcidHtml.endsWith('.') ? '' : '.')
               "
               v-if="publication.author"
               @click.stop="refocus"

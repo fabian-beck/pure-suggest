@@ -25,7 +25,16 @@
                 <div class="media-content">
                   <div class="content">
                     <div>
-                      <strong>{{ author.id }}</strong>
+                      <strong>{{ author.id }}</strong
+                      >&nbsp;<span v-if="author.orcid">
+                        <a :href="`https://orcid.org/${author.orcid}`"
+                          ><img
+                            alt="ORCID logo"
+                            src="https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png"
+                            width="14"
+                            height="14"
+                        /></a>
+                      </span>
                     </div>
                     <small
                       ><div class="level">
