@@ -35,6 +35,17 @@
                             height="14"
                         /></a>
                       </span>
+                      <small v-if="author.alternativeNames.length > 1">
+                        &ensp;also known as <b-tag
+                          v-for="alternativeName in author.alternativeNames.filter(
+                            (name) => name !== author.id
+                          )"
+                          :key="alternativeName"
+                          class="tag alternative-name"
+                        >
+                          {{ alternativeName }} </b-tag
+                        >
+                      </small>
                     </div>
                     <small
                       ><div class="level">
@@ -48,6 +59,7 @@
                             <b-tag
                               v-for="keyword in author.keywords"
                               :key="keyword"
+                              class="keyword"
                               >{{ keyword }}</b-tag
                             >
                           </div>
@@ -105,16 +117,19 @@ export default {
   & .media-left {
     min-width: 3rem;
     min-height: 3rem;
-    display: flex;  
+    display: flex;
     justify-content: center;
     align-items: center;
   }
 
   & .tag {
     margin-left: 0.25rem;
-    text-decoration: underline;
-    text-decoration-color: hsl(48, 100%, 67%);
-    text-decoration-thickness: 0.2rem;
+    margin-right: 0.25rem;
+    &.keyword {
+      text-decoration: underline;
+      text-decoration-color: hsl(48, 100%, 67%);
+      text-decoration-thickness: 0.2rem;
+    }
   }
 }
 </style>

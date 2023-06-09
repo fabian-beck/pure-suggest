@@ -181,7 +181,7 @@ export const useSessionStore = defineStore('session', {
         publication.authorOrcid?.split("; ").forEach((author) => {
           const authorId = author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, "");
           if (!authors[authorId]) {
-            authors[authorId] = { count: 0, id: authorId, keywords: [], orcid: "" };
+            authors[authorId] = { count: 0, id: authorId, keywords: [], orcid: "", alternativeNames: [authorId] };
           }
           authors[authorId].count++;
           const orcid = author.match(/(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g);
@@ -205,6 +205,7 @@ export const useSessionStore = defineStore('session', {
             if (author.id.length > author2.id.length) {
               author.count += author2.count;
               author.keywords = [...new Set(author.keywords.concat(author2.keywords))];
+              author.alternativeNames = [...new Set(author.alternativeNames.concat(author2.alternativeNames))];
               delete authors[author2.id];
             }
           });
@@ -222,6 +223,7 @@ export const useSessionStore = defineStore('session', {
             if (author.orcid && !authorMatches[0].orcid) {
               authorMatches[0].orcid = author.orcid;
             }
+            authorMatches[0].alternativeNames = [...new Set(author.alternativeNames.concat(authorMatches[0].alternativeNames))];
             delete authors[author.id];
           }
         }
