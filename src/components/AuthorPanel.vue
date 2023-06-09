@@ -102,6 +102,14 @@ export default {
   padding: 0;
   margin: 0;
 
+  & .media-left {
+    min-width: 3rem;
+    min-height: 3rem;
+    display: flex;  
+    justify-content: center;
+    align-items: center;
+  }
+
   & .tag {
     margin-left: 0.25rem;
     text-decoration: underline;
