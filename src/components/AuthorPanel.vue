@@ -36,36 +36,31 @@
                         /></a>
                       </span>
                       <small v-if="author.alternativeNames.length > 1">
-                        &ensp;also known as <b-tag
+                        &ensp;also listed as
+                        <b-tag
                           v-for="alternativeName in author.alternativeNames.filter(
                             (name) => name !== author.id
                           )"
                           :key="alternativeName"
                           class="tag alternative-name"
                         >
-                          {{ alternativeName }} </b-tag
-                        >
+                          {{ alternativeName }}
+                        </b-tag>
                       </small>
                     </div>
-                    <small
-                      ><div class="level">
-                        <div class="level-left">
-                          <div class="level-item">
-                            <label>Selected publications:</label
-                            >&nbsp;<strong>{{ author.count }}</strong>
-                          </div>
-                          <div class="level-item ml-6">
-                            <label>Boost keywords:</label>
-                            <b-tag
-                              v-for="keyword in author.keywords"
-                              :key="keyword"
-                              class="keyword"
-                              >{{ keyword }}</b-tag
-                            >
-                          </div>
-                        </div>
-                      </div>
-                    </small>
+
+                    <div>
+                        <strong>{{ author.count }}</strong> selected
+                        publication{{ author.count > 1 ? "s" : ""
+                        }}<span v-if="author.keywords.length > 0">
+                          &ndash; related to<b-tag
+                            v-for="keyword in author.keywords"
+                            :key="keyword"
+                            class="keyword"
+                            >{{ keyword }}</b-tag
+                          >
+                        </span>
+                    </div>
                   </div>
                 </div>
               </li>
