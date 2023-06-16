@@ -16,7 +16,7 @@ export default class PublicationSearch {
         // "\{|\}" necessary to read DOIs from BibTeX
         this.query.split(/ |"|%|#|\?|\{|\}|doi:|doi.org\//).forEach((doi) => {
             // cutting characters that might be included in DOI, but very unlikely at the end
-            doi = _.trim(doi, ".,;");
+            doi = _.trim(doi, ".,;").replace("\\_", "_");
             if (doi.indexOf("10.") === 0 && !dois.includes(doi)) {
                 dois.push(doi);
                 const publication = new Publication(doi);
