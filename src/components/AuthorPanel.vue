@@ -50,16 +50,19 @@
                     </div>
 
                     <div>
-                        <strong>{{ author.count }}</strong> selected
-                        publication{{ author.count > 1 ? "s" : ""
-                        }}<span v-if="author.keywords.length > 0">
-                          &ndash; related to<b-tag
-                            v-for="keyword in author.keywords"
-                            :key="keyword"
-                            class="keyword"
-                            >{{ keyword }}</b-tag
-                          >
-                        </span>
+                      <strong>{{ author.count }}</strong> selected publication{{
+                        author.count > 1 ? "s" : ""
+                      }}<span v-if="Object.keys(author.keywords).length > 0">
+                        &ndash; related to<b-tag
+                          v-for="keyword in sessionStore.boostKeywords.filter(
+                            (keyword) => author.keywords[keyword]
+                          )"
+                          :key="keyword"
+                          class="keyword"
+                          :style="keywordStyle(author.keywords[keyword])"
+                          >{{ keyword }} ({{ author.keywords[keyword] }})
+                        </b-tag>
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -96,6 +99,15 @@ export default {
       }
       return "is-small";
     },
+    keywordStyle(count) {
+      const hue = 48;
+      const saturation = 100;
+      const lightness = 67;
+      const alpha = 0.05 + Math.min(count / 20, 0.95);
+      return {
+        backgroundColor: `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`,
+      };
+    },
     cancel() {
       this.interfaceStore.isAuthorPanelShown = false;
     },
@@ -118,8 +130,7 @@ export default {
   }
 
   & .tag {
-    margin-left: 0.25rem;
-    margin-right: 0.25rem;
+    margin: 0.25rem;
     &.keyword {
       text-decoration: underline;
       text-decoration-color: hsl(48, 100%, 67%);

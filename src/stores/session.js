@@ -175,25 +175,35 @@ export const useSessionStore = defineStore('session', {
     },
 
     computeSelectedPublicationsAuthors() {
+      function mergeCounts(counts1, counts2) {
+        const counts = {};
+        Object.keys(counts1).forEach((key) => {
+          counts[key] = counts1[key];
+        });
+        Object.keys(counts2).forEach((key) => {
+          if (!counts[key]) {
+            counts[key] = 0;
+          }
+          counts[key] += counts2[key];
+        });
+        return counts;
+      }
+
       const authors = {};
       // assemble authors from selected publications
       this.selectedPublications.forEach((publication) => {
         publication.authorOrcid?.split("; ").forEach((author) => {
           const authorId = author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, "");
           if (!authors[authorId]) {
-            authors[authorId] = { count: 0, id: authorId, keywords: [], orcid: "", alternativeNames: [authorId] };
+            authors[authorId] = { count: 0, id: authorId, keywords: {}, orcid: "", alternativeNames: [authorId] };
           }
           authors[authorId].count++;
           const orcid = author.match(/(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g);
           if (orcid) {
             authors[authorId].orcid = orcid[0];
           }
-          publication.boostKeywords.forEach((keyword) => {
-            if (!authors[authorId].keywords.includes(keyword)) {
-              authors[authorId].keywords.push(keyword);
-            }
-          }
-          );
+          const keywordCounts = publication.boostKeywords.map(keyword => ({ [keyword]: 1 })).reduce((a, b) => Object.assign(a, b), {}); // convert array to object
+          authors[authorId].keywords = mergeCounts(authors[authorId].keywords, keywordCounts);
         });
       });
       // merge author with same ORCID
@@ -204,7 +214,7 @@ export const useSessionStore = defineStore('session', {
           authorMatches.forEach((author2) => {
             if (author.id.length > author2.id.length) {
               author.count += author2.count;
-              author.keywords = [...new Set(author.keywords.concat(author2.keywords))];
+              author.keywords = mergeCounts(author.keywords, author2.keywords);
               author.alternativeNames = [...new Set(author.alternativeNames.concat(author2.alternativeNames))];
               delete authors[author2.id];
             }
@@ -219,7 +229,7 @@ export const useSessionStore = defineStore('session', {
           const authorMatches = authorsWithoutAbbreviatedNames.filter((author2) => author2.id.startsWith(authorId));
           if (authorMatches.length === 1 && (!author.orcid || !authorMatches[0].orcid || author.orcid === authorMatches[0].orcid)) {
             authorMatches[0].count += author.count;
-            authorMatches[0].keywords = [...new Set(authorMatches[0].keywords.concat(author.keywords))];
+            authorMatches[0].keywords = mergeCounts(author.keywords, authorMatches[0].keywords);
             if (author.orcid && !authorMatches[0].orcid) {
               authorMatches[0].orcid = author.orcid;
             }
