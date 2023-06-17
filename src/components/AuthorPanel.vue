@@ -48,7 +48,6 @@
                         </b-tag>
                       </small>
                     </div>
-
                     <div>
                       <strong>{{ author.count }}</strong> selected publication{{
                         author.count > 1 ? "s" : ""
@@ -63,6 +62,20 @@
                           >{{ keyword }} ({{ author.keywords[keyword] }})
                         </b-tag>
                       </span>
+                    </div>
+                    <div>
+                      Co-author of
+                      <!-- list coauthors in descending order of coauthorship frequency -->
+                      <b-tag
+                        v-for="coauthor in Object.keys(author.coauthors).sort(
+                          (a, b) => author.coauthors[b] - author.coauthors[a]
+                        )"
+                        :key="coauthor"
+                        class="tag coauthor"
+                        :style="coauthorStyle(author.coauthors[coauthor])"
+                      >
+                        {{ coauthor }} ({{ author.coauthors[coauthor] }})
+                      </b-tag>
                     </div>
                   </div>
                 </div>
@@ -100,12 +113,13 @@ export default {
       return "is-small";
     },
     keywordStyle(count) {
-      const hue = 48;
-      const saturation = 100;
-      const lightness = 67;
-      const alpha = 0.05 + Math.min(count / 20, 0.95);
       return {
-        backgroundColor: `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`,
+        backgroundColor: `hsla(48, 100%, 67%, ${0.05 + Math.min(count / 20, 0.95)})`,
+      };
+    },
+    coauthorStyle(count) {
+      return {
+        backgroundColor: `hsla(0, 0%, 70%, ${0.05 + Math.min(count / 20, 0.95)})`,
       };
     },
     cancel() {

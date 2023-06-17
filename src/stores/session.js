@@ -189,13 +189,23 @@ export const useSessionStore = defineStore('session', {
         return counts;
       }
 
+      function deleteAuthor(authorId, newAuthorId) {
+        delete authors[authorId];
+        Object.values(authors).forEach((author) => {
+          if (author.coauthors[authorId]) {
+            author.coauthors[newAuthorId] = author.coauthors[newAuthorId] ? author.coauthors[newAuthorId] + author.coauthors[authorId] : author.coauthors[authorId];
+            delete author.coauthors[authorId];
+          }
+        });
+      }
+
       const authors = {};
       // assemble authors from selected publications
       this.selectedPublications.forEach((publication) => {
         publication.authorOrcid?.split("; ").forEach((author) => {
           const authorId = author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, "");
           if (!authors[authorId]) {
-            authors[authorId] = { count: 0, id: authorId, keywords: {}, orcid: "", alternativeNames: [authorId] };
+            authors[authorId] = { count: 0, id: authorId, keywords: {}, orcid: "", alternativeNames: [authorId], coauthors: {} };
           }
           authors[authorId].count++;
           const orcid = author.match(/(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g);
@@ -204,6 +214,8 @@ export const useSessionStore = defineStore('session', {
           }
           const keywordCounts = publication.boostKeywords.map(keyword => ({ [keyword]: 1 })).reduce((a, b) => Object.assign(a, b), {}); // convert array to object
           authors[authorId].keywords = mergeCounts(authors[authorId].keywords, keywordCounts);
+          const coauthorCounts = publication.author?.split("; ").filter(coauthor => coauthor !== authorId).map(coauthor => ({ [coauthor]: 1 })).reduce((a, b) => Object.assign(a, b), {}); // convert array to object
+          authors[authorId].coauthors = mergeCounts(authors[authorId].coauthors, coauthorCounts);
         });
       });
       // merge author with same ORCID
@@ -215,8 +227,9 @@ export const useSessionStore = defineStore('session', {
             if (author.id.length > author2.id.length) {
               author.count += author2.count;
               author.keywords = mergeCounts(author.keywords, author2.keywords);
+              author.coauthors = mergeCounts(author.coauthors, author2.coauthors);
               author.alternativeNames = [...new Set(author.alternativeNames.concat(author2.alternativeNames))];
-              delete authors[author2.id];
+              deleteAuthor(author2.id, author.id);
             }
           });
         }
@@ -230,11 +243,12 @@ export const useSessionStore = defineStore('session', {
           if (authorMatches.length === 1 && (!author.orcid || !authorMatches[0].orcid || author.orcid === authorMatches[0].orcid)) {
             authorMatches[0].count += author.count;
             authorMatches[0].keywords = mergeCounts(author.keywords, authorMatches[0].keywords);
+            authorMatches[0].coauthors = mergeCounts(author.coauthors, authorMatches[0].coauthors);
             if (author.orcid && !authorMatches[0].orcid) {
               authorMatches[0].orcid = author.orcid;
             }
             authorMatches[0].alternativeNames = [...new Set(author.alternativeNames.concat(authorMatches[0].alternativeNames))];
-            delete authors[author.id];
+            deleteAuthor(author.id, authorMatches[0].id);
           }
         }
       });
