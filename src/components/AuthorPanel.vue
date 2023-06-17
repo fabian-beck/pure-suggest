@@ -56,19 +56,21 @@
                       ><span v-else-if="author.yearMin"
                         >, {{ author.yearMin }}</span
                       >
-                      <span v-if="Object.keys(author.keywords).length > 0">
-                        &ndash; related to<b-tag
-                          v-for="keyword in sessionStore.boostKeywords.filter(
-                            (keyword) => author.keywords[keyword]
-                          )"
-                          :key="keyword"
-                          class="keyword"
-                          :style="keywordStyle(author.keywords[keyword])"
-                          >{{ keyword }} ({{ author.keywords[keyword] }})
-                        </b-tag>
-                      </span>
                     </div>
-                    <div>
+                    <div
+                      v-if="Object.keys(author.keywords).length > 0"
+                      class="is-size-7"
+                    >
+                      Related to<b-tag
+                        v-for="keyword in sessionStore.boostKeywords.filter(
+                          (keyword) => author.keywords[keyword]
+                        )"
+                        :key="keyword"
+                        :style="keywordStyle(author.keywords[keyword])"
+                        >{{ keyword }} ({{ author.keywords[keyword] }})
+                      </b-tag>
+                    </div>
+                    <div class="is-size-7">
                       Co-author of
                       <b-tag
                         v-for="coauthor in Object.keys(author.coauthors).sort(
