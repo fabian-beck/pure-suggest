@@ -12,6 +12,7 @@ export const useSessionStore = defineStore('session', {
     return {
       interfaceStore: useInterfaceStore(),
       selectedPublications: [],
+      selectedPublicationsAuthors: [],
       selectedQueue: [],
       excludedPublicationsDois: [],
       excludedQueue: [],
@@ -173,6 +174,101 @@ export const useSessionStore = defineStore('session', {
       this.interfaceStore.endLoading();
     },
 
+    computeSelectedPublicationsAuthors() {
+      function mergeCounts(counts1, counts2) {
+        const counts = {};
+        Object.keys(counts1).forEach((key) => {
+          counts[key] = counts1[key];
+        });
+        Object.keys(counts2).forEach((key) => {
+          if (!counts[key]) {
+            counts[key] = 0;
+          }
+          counts[key] += counts2[key];
+        });
+        return counts;
+      }
+
+      function deleteAuthor(authorId, newAuthorId) {
+        delete authors[authorId];
+        Object.values(authors).forEach((author) => {
+          if (author.coauthors[authorId]) {
+            author.coauthors[newAuthorId] = author.coauthors[newAuthorId] ? author.coauthors[newAuthorId] + author.coauthors[authorId] : author.coauthors[authorId];
+            delete author.coauthors[authorId];
+          }
+        });
+      }
+
+      const authors = {};
+      // assemble authors from selected publications
+      this.selectedPublications.forEach((publication) => {
+        publication.authorOrcid?.split("; ").forEach((author) => {
+          const authorId = author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, "");
+          if (!authors[authorId]) {
+            authors[authorId] = { count: 0, id: authorId, keywords: {}, orcid: "", alternativeNames: [authorId], coauthors: {}, yearMin: 9999, yearMax: 0 };
+          }
+          authors[authorId].count++;
+          const orcid = author.match(/(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g);
+          if (orcid) {
+            authors[authorId].orcid = orcid[0];
+          }
+          const keywordCounts = publication.boostKeywords.map(keyword => ({ [keyword]: 1 })).reduce((a, b) => Object.assign(a, b), {}); // convert array to object
+          authors[authorId].keywords = mergeCounts(authors[authorId].keywords, keywordCounts);
+          const coauthorCounts = publication.author?.split("; ").filter(coauthor => coauthor !== authorId).map(coauthor => ({ [coauthor]: 1 })).reduce((a, b) => Object.assign(a, b), {}); // convert array to object
+          authors[authorId].coauthors = mergeCounts(authors[authorId].coauthors, coauthorCounts);
+          authors[authorId].yearMin = Math.min(authors[authorId].yearMin, Number(publication.year));
+          authors[authorId].yearMax = Math.max(authors[authorId].yearMax, Number(publication.year));
+        });
+      });
+      // merge author with same ORCID
+      const orcidAuthors = Object.values(authors).filter((author) => author.orcid);
+      orcidAuthors.forEach((author) => {
+        const authorMatches = orcidAuthors.filter((author2) => author2.orcid === author.orcid);
+        if (authorMatches.length > 1) {
+          authorMatches.forEach((author2) => {
+            if (author.id.length > author2.id.length) {
+              author.count += author2.count;
+              author.keywords = mergeCounts(author.keywords, author2.keywords);
+              author.alternativeNames = [...new Set(author.alternativeNames.concat(author2.alternativeNames))];
+              author.coauthors = mergeCounts(author.coauthors, author2.coauthors);
+              author.yearMin = Math.min(author.yearMin, author2.yearMin);
+              author.yearMax = Math.max(author.yearMax, author2.yearMax);
+              deleteAuthor(author2.id, author.id);
+            }
+          });
+        }
+      });
+      // match authors with abbreviated names and merge them
+      let authorsWithAbbreviatedNames = Object.values(authors).filter((author) => author.id.match(/^\w+,\s\w\.?(\s\w\.?)?$/));
+      Object.values(authors).filter(author => !authorsWithAbbreviatedNames.includes(author)).forEach((author) => {
+        // check if author has version with additional first name
+        if (Object.values(authors).filter((author2) => author2.id.startsWith(author.id)).length > 1) {
+          authorsWithAbbreviatedNames.push(author);
+        }
+      });
+      const authorsWithoutAbbreviatedNames = Object.values(authors).filter((author) => !authorsWithAbbreviatedNames.includes(author));
+      authorsWithAbbreviatedNames.forEach((author) => {
+        const authorId = author.id.replace(/^(\w+,\s\w)\.?(\s\w\.?)?$/, "$1")
+        const authorMatches = authorsWithoutAbbreviatedNames.filter((author2) => author2.id.startsWith(authorId));
+        if (authorMatches.length === 1 && (!author.orcid || !authorMatches[0].orcid || author.orcid === authorMatches[0].orcid)) {
+          authorMatches[0].count += author.count;
+          authorMatches[0].keywords = mergeCounts(author.keywords, authorMatches[0].keywords);
+          authorMatches[0].coauthors = mergeCounts(author.coauthors, authorMatches[0].coauthors);
+          if (author.orcid && !authorMatches[0].orcid) {
+            authorMatches[0].orcid = author.orcid;
+          }
+          authorMatches[0].alternativeNames = [...new Set(author.alternativeNames.concat(authorMatches[0].alternativeNames))];
+          authorMatches[0].yearMin = Math.min(author.yearMin, authorMatches[0].yearMin);
+          authorMatches[0].yearMax = Math.max(author.yearMax, authorMatches[0].yearMax);
+          deleteAuthor(author.id, authorMatches[0].id);
+        }
+      });
+      // sort by count
+      this.selectedPublicationsAuthors = Object.values(authors).sort(
+        (a, b) => b.count - a.count
+      );
+    },
+
     async computeSuggestions() {
 
       function incrementSuggestedPublicationCounter(
@@ -266,6 +362,7 @@ export const useSessionStore = defineStore('session', {
       });
       Publication.sortPublications(this.selectedPublications);
       Publication.sortPublications(this.suggestedPublications);
+      this.computeSelectedPublicationsAuthors();
     },
 
     loadMoreSuggestions() {

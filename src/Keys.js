@@ -17,6 +17,7 @@ export function onKey(e) {
         interfaceStore.isDialogShown ||
         (interfaceStore.isSearchPanelShown &&
             document.activeElement.nodeName != "INPUT") ||
+        interfaceStore.isAuthorPanelShown ||
         interfaceStore.isAboutPageShown ||
         interfaceStore.isKeyboardControlsShown
     ) {
@@ -41,6 +42,11 @@ export function onKey(e) {
         return;
     }
     if (sessionStore.isEmpty) return;
+    if (e.key === "a") {
+        e.preventDefault();
+        interfaceStore.isAuthorPanelShown = true;
+        return;
+    }
     if (e.key === "c") {
         e.preventDefault();
         sessionStore.clearSession();

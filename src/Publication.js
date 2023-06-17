@@ -13,7 +13,7 @@ export default class Publication {
         this.year = undefined;
         this.author = undefined;
         this.authorShort = undefined;
-        this.authorOrcid = undefined;
+        this.authorOrcidHtml = undefined;
         this.container = undefined;
         this.volume = undefined;
         this.issue = undefined;
@@ -121,7 +121,8 @@ export default class Publication {
                 this.authorShort = `${authorArray[0].split(', ')[0]} et al.`;
             }
             this.author = data.author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, "");
-            this.authorOrcid = data.author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, " <a href='https://orcid.org/$2'><img alt='ORCID logo' src='https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png' width='14' height='14' /></a>");
+            this.authorOrcid = data.author;
+            this.authorOrcidHtml = data.author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, " <a href='https://orcid.org/$2'><img alt='ORCID logo' src='https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png' width='14' height='14' /></a>");
         }
         // container
         this.container = "";
@@ -168,6 +169,7 @@ export default class Publication {
     }
 
     updateScore(boostKeywords) {
+        this.boostKeywords = [];
         this.boostMatches = 0;
         this.boostFactor = 1;
         // use an array to keep track of highlighted title fragements

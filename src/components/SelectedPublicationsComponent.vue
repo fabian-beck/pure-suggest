@@ -13,12 +13,19 @@
       </div>
       <div class="level-right" v-show="!sessionStore.isEmpty">
         <div class="level-item">
+           <b-button
+            class="compact-button"
+            icon-left="account-group"
+            data-tippy-content="List <span class='key'>a</span>uthors of selected publications."
+            v-tippy
+            @click.stop="interfaceStore.openAuthorPanel()"
+          ></b-button>
           <b-button
             class="compact-button"
             icon-left="magnify"
             data-tippy-content="<span class='key'>S</span>earch/add specific publications to be added to selected."
             v-tippy
-            @click.stop="interfaceStore.openSearch()"
+            @click.stop="interfaceStore.openSearchPanel()"
           ></b-button>
         </div>
       </div>
@@ -73,12 +80,7 @@
               @click.stop="sessionStore.clearQueues()"
             ></b-button>
             <b-button
-              class="
-                button
-                has-background-primary has-text-white
-                ml-2
-                level-item
-              "
+              class="button has-background-primary has-text-white ml-2 level-item"
               icon-left="update"
               data-tippy-content="Update suggested and excluded publications with queue and compute new suggestions."
               v-tippy
@@ -88,11 +90,7 @@
           </div>
         </div>
         <div
-          class="
-            notification
-            has-text-centered has-background-primary-light
-            p-2
-          "
+          class="notification has-text-centered has-background-primary-light p-2"
           v-show="sessionStore.isEmpty"
         >
           <p>
@@ -104,7 +102,7 @@
               <b-button
                 class="button has-background-primary-light"
                 icon-left="magnify"
-                @click.stop="interfaceStore.openSearch()"
+                @click.stop="interfaceStore.openSearchPanel()"
               >
                 Search/add
               </b-button>
@@ -191,7 +189,6 @@ export default {
   grid-template-rows: max-content max-content auto;
 
   & .header {
-
     & .notification {
       margin-bottom: 0;
       border-radius: 0;
