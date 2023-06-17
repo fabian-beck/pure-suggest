@@ -51,7 +51,12 @@
                     <div>
                       <strong>{{ author.count }}</strong> selected publication{{
                         author.count > 1 ? "s" : ""
-                      }}<span v-if="Object.keys(author.keywords).length > 0">
+                      }}<span v-if="author.yearMin != author.yearMax"
+                        >, {{ author.yearMin }} to {{ author.yearMax }} </span
+                      ><span v-else-if="author.yearMin"
+                        >, {{ author.yearMin }}</span
+                      >
+                      <span v-if="Object.keys(author.keywords).length > 0">
                         &ndash; related to<b-tag
                           v-for="keyword in sessionStore.boostKeywords.filter(
                             (keyword) => author.keywords[keyword]
@@ -65,7 +70,6 @@
                     </div>
                     <div>
                       Co-author of
-                      <!-- list coauthors in descending order of coauthorship frequency -->
                       <b-tag
                         v-for="coauthor in Object.keys(author.coauthors).sort(
                           (a, b) => author.coauthors[b] - author.coauthors[a]
@@ -114,12 +118,16 @@ export default {
     },
     keywordStyle(count) {
       return {
-        backgroundColor: `hsla(48, 100%, 67%, ${0.05 + Math.min(count / 20, 0.95)})`,
+        backgroundColor: `hsla(48, 100%, 67%, ${
+          0.05 + Math.min(count / 20, 0.95)
+        })`,
       };
     },
     coauthorStyle(count) {
       return {
-        backgroundColor: `hsla(0, 0%, 70%, ${0.05 + Math.min(count / 20, 0.95)})`,
+        backgroundColor: `hsla(0, 0%, 70%, ${
+          0.05 + Math.min(count / 20, 0.95)
+        })`,
       };
     },
     cancel() {

@@ -205,7 +205,7 @@ export const useSessionStore = defineStore('session', {
         publication.authorOrcid?.split("; ").forEach((author) => {
           const authorId = author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, "");
           if (!authors[authorId]) {
-            authors[authorId] = { count: 0, id: authorId, keywords: {}, orcid: "", alternativeNames: [authorId], coauthors: {} };
+            authors[authorId] = { count: 0, id: authorId, keywords: {}, orcid: "", alternativeNames: [authorId], coauthors: {}, yearMin: 9999, yearMax: 0 };
           }
           authors[authorId].count++;
           const orcid = author.match(/(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g);
@@ -216,6 +216,8 @@ export const useSessionStore = defineStore('session', {
           authors[authorId].keywords = mergeCounts(authors[authorId].keywords, keywordCounts);
           const coauthorCounts = publication.author?.split("; ").filter(coauthor => coauthor !== authorId).map(coauthor => ({ [coauthor]: 1 })).reduce((a, b) => Object.assign(a, b), {}); // convert array to object
           authors[authorId].coauthors = mergeCounts(authors[authorId].coauthors, coauthorCounts);
+          authors[authorId].yearMin = Math.min(authors[authorId].yearMin, Number(publication.year));
+          authors[authorId].yearMax = Math.max(authors[authorId].yearMax, Number(publication.year));
         });
       });
       // merge author with same ORCID
@@ -227,8 +229,10 @@ export const useSessionStore = defineStore('session', {
             if (author.id.length > author2.id.length) {
               author.count += author2.count;
               author.keywords = mergeCounts(author.keywords, author2.keywords);
-              author.coauthors = mergeCounts(author.coauthors, author2.coauthors);
               author.alternativeNames = [...new Set(author.alternativeNames.concat(author2.alternativeNames))];
+              author.coauthors = mergeCounts(author.coauthors, author2.coauthors);
+              author.yearMin = Math.min(author.yearMin, author2.yearMin);
+              author.yearMax = Math.max(author.yearMax, author2.yearMax);
               deleteAuthor(author2.id, author.id);
             }
           });
@@ -248,6 +252,8 @@ export const useSessionStore = defineStore('session', {
               authorMatches[0].orcid = author.orcid;
             }
             authorMatches[0].alternativeNames = [...new Set(author.alternativeNames.concat(authorMatches[0].alternativeNames))];
+            authorMatches[0].yearMin = Math.min(author.yearMin, authorMatches[0].yearMin);
+            authorMatches[0].yearMax = Math.max(author.yearMax, authorMatches[0].yearMax);
             deleteAuthor(author.id, authorMatches[0].id);
           }
         }
