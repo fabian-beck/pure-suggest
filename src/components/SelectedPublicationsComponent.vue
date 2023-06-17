@@ -13,12 +13,10 @@
       </div>
       <div class="level-right" v-show="!sessionStore.isEmpty">
         <div class="level-item">
-           <!-- print authors button -->
-           <!-- TODO: implement key shortcut -->
            <b-button
             class="compact-button"
             icon-left="account-group"
-            data-tippy-content="<span class='key'>P</span>rint authors of selected publications."
+            data-tippy-content="List <span class='key'>a</span>uthors of selected publications."
             v-tippy
             @click.stop="interfaceStore.openAuthorPanel()"
           ></b-button>
