@@ -35,12 +35,6 @@ export function onKey(e) {
         }
         return;
     }
-    if (e.key === "a") {
-        e.preventDefault();
-        sessionStore.clearActivePublication("setting focus on text field");
-        document.getElementsByClassName("input add-publication")[0].focus();
-        return;
-    }
     if (e.key === "s") {
         e.preventDefault();
         interfaceStore.isSearchPanelShown = true;
