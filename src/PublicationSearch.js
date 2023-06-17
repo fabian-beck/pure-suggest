@@ -11,6 +11,8 @@ export default class PublicationSearch {
     async execute() {
         let dois = [];
         let results = [];
+        // removing whitespace (e.g., through line breaks) in DOIs
+        this.query = this.query.replace(/(10\.\d+\/)\s?(\S{0,12})\s([^[])/g, "$1$2$3");
         // splitting query by characters that must (or partly: should) be encoded differently in DOIs or by typical prefixes
         // see: https://www.doi.org/doi_handbook/2_Numbering.html
         // "\{|\}" necessary to read DOIs from BibTeX
