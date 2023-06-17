@@ -239,23 +239,28 @@ export const useSessionStore = defineStore('session', {
         }
       });
       // match authors with abbreviated names and merge them
-      const authorsWithoutAbbreviatedNames = Object.values(authors).filter((author) => !author.id.match(/^\w+,\s\w\.?(\s\w\.?)?$/));
-      Object.values(authors).forEach((author) => {
-        if (author.id.match(/^\w+,\s\w\.?(\s\w\.?)?$/)) {
-          const authorId = author.id.replace(/^(\w+,\s\w)\.?(\s\w\.?)?$/, "$1")
-          const authorMatches = authorsWithoutAbbreviatedNames.filter((author2) => author2.id.startsWith(authorId));
-          if (authorMatches.length === 1 && (!author.orcid || !authorMatches[0].orcid || author.orcid === authorMatches[0].orcid)) {
-            authorMatches[0].count += author.count;
-            authorMatches[0].keywords = mergeCounts(author.keywords, authorMatches[0].keywords);
-            authorMatches[0].coauthors = mergeCounts(author.coauthors, authorMatches[0].coauthors);
-            if (author.orcid && !authorMatches[0].orcid) {
-              authorMatches[0].orcid = author.orcid;
-            }
-            authorMatches[0].alternativeNames = [...new Set(author.alternativeNames.concat(authorMatches[0].alternativeNames))];
-            authorMatches[0].yearMin = Math.min(author.yearMin, authorMatches[0].yearMin);
-            authorMatches[0].yearMax = Math.max(author.yearMax, authorMatches[0].yearMax);
-            deleteAuthor(author.id, authorMatches[0].id);
+      let authorsWithAbbreviatedNames = Object.values(authors).filter((author) => author.id.match(/^\w+,\s\w\.?(\s\w\.?)?$/));
+      Object.values(authors).filter(author => !authorsWithAbbreviatedNames.includes(author)).forEach((author) => {
+        // check if author has version with additional first name
+        if (Object.values(authors).filter((author2) => author2.id.startsWith(author.id)).length > 1) {
+          authorsWithAbbreviatedNames.push(author);
+        }
+      });
+      const authorsWithoutAbbreviatedNames = Object.values(authors).filter((author) => !authorsWithAbbreviatedNames.includes(author));
+      authorsWithAbbreviatedNames.forEach((author) => {
+        const authorId = author.id.replace(/^(\w+,\s\w)\.?(\s\w\.?)?$/, "$1")
+        const authorMatches = authorsWithoutAbbreviatedNames.filter((author2) => author2.id.startsWith(authorId));
+        if (authorMatches.length === 1 && (!author.orcid || !authorMatches[0].orcid || author.orcid === authorMatches[0].orcid)) {
+          authorMatches[0].count += author.count;
+          authorMatches[0].keywords = mergeCounts(author.keywords, authorMatches[0].keywords);
+          authorMatches[0].coauthors = mergeCounts(author.coauthors, authorMatches[0].coauthors);
+          if (author.orcid && !authorMatches[0].orcid) {
+            authorMatches[0].orcid = author.orcid;
           }
+          authorMatches[0].alternativeNames = [...new Set(author.alternativeNames.concat(authorMatches[0].alternativeNames))];
+          authorMatches[0].yearMin = Math.min(author.yearMin, authorMatches[0].yearMin);
+          authorMatches[0].yearMax = Math.max(author.yearMax, authorMatches[0].yearMax);
+          deleteAuthor(author.id, authorMatches[0].id);
         }
       });
       // sort by count
