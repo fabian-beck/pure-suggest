@@ -431,6 +431,11 @@ export const useSessionStore = defineStore('session', {
     },
 
     async retryLoadingPublication(publication) {
+      this.interfaceStore.startLoading();
+      this.interfaceStore.updateLoadingToast(
+        "Retrying to load metadata",
+        "is-danger"
+      );
       await publication.fetchData(undefined, true);
       this.updateSuggestions();
     },
