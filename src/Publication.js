@@ -48,14 +48,14 @@ export default class Publication {
         this.wasFetched = false;
     }
 
-    async fetchData(dataService = true) {
-        if (this.wasFetched) return
+    async fetchData(dataService = true, noCache = false) {
+        if (this.wasFetched && !noCache) return;
         try {
             if (dataService) {
                 // load data from data service
-                await cachedFetch(`https://pure-publications-cw3de4q5va-ew.a.run.app/?doi=${this.doi}`, data => {
+                await cachedFetch(`https://pure-publications-cw3de4q5va-ew.a.run.app/?doi=${this.doi}${noCache ? "&noCache=true" : ""}`, data => {
                     this.processData(data);
-                });
+                }, undefined, noCache);
             } else {
                 const data = {};
                 // load data from OpenCitations

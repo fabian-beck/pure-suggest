@@ -261,18 +261,19 @@
             publication.isActive
           "
         >
-          No metadata could be retrieved for the publication from
-          <a
-            :href="`https://opencitations.net/index/coci/api/v1/metadata/${publication.doi}`"
-            @click.stop="refocus"
-            @click.middle.stop="refocus"
-            >Open Citations</a
-          >.
+          No metadata could be retrieved for the publication.
           <span v-if="publication.score === 0"
             >Also, it is not cited by another selected publication&mdash;<b
               >please check if the DOI is correct.</b
             >
           </span>
+          <!-- retry loading button -->
+          <b-button
+            class="is-small is-pulled-right"
+            icon-left="refresh"
+            data-tippy-content="Retry loading metadata."
+            v-tippy
+            @click.stop="sessionStore.retryLoadingPublication(publication)">Retry</b-button>
         </div>
         <div
           class="notification has-background-danger-light has-text-danger-dark"

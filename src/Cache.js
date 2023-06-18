@@ -3,9 +3,10 @@ import { get, set, keys, del, clear } from 'idb-keyval';
 
 console.log(`Locally cached #elements: ${(await keys()).length}`)
 
-export async function cachedFetch(url, processData, fetchParameters = {}) {
+export async function cachedFetch(url, processData, fetchParameters = {}, noCache = false) {
   try {
     const cacheObject = await get(url);
+    if (noCache) throw new Error("No cache");
     if (cacheObject.timestamp < Date.now() - 1000 * 60 * 60 * 24 * 100) {
       throw new Error("Cached data is too old");
     }

@@ -430,6 +430,11 @@ export const useSessionStore = defineStore('session', {
       }
     },
 
+    async retryLoadingPublication(publication) {
+      await publication.fetchData(undefined, true);
+      this.updateSuggestions();
+    },
+
     // This method can be watched to manually trigger updates 
     hasUpdated() {
     },
