@@ -437,7 +437,8 @@ export const useSessionStore = defineStore('session', {
         "is-danger"
       );
       await publication.fetchData(undefined, true);
-      this.updateSuggestions();
+      await this.updateSuggestions();
+      this.activatePublicationComponentByDoi(publication.doi);
     },
 
     // This method can be watched to manually trigger updates 
