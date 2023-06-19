@@ -430,6 +430,17 @@ export const useSessionStore = defineStore('session', {
       }
     },
 
+    async retryLoadingPublication(publication) {
+      this.interfaceStore.startLoading();
+      this.interfaceStore.updateLoadingToast(
+        "Retrying to load metadata",
+        "is-danger"
+      );
+      await publication.fetchData(undefined, true);
+      await this.updateSuggestions();
+      this.activatePublicationComponentByDoi(publication.doi);
+    },
+
     // This method can be watched to manually trigger updates 
     hasUpdated() {
     },

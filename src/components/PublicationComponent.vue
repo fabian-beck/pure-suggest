@@ -255,25 +255,35 @@
         <div
           class="notification has-background-danger-light has-text-danger-dark"
           v-if="
-            !publication.year &&
-            !publication.title & !publication.author &&
-            !publication.container &&
+            (!publication.year || !publication.title || !publication.author) &&
             publication.isActive
           "
         >
-          No metadata could be retrieved for the publication from
-          <a
-            :href="`https://opencitations.net/index/coci/api/v1/metadata/${publication.doi}`"
-            @click.stop="refocus"
-            @click.middle.stop="refocus"
-            >Open Citations</a
-          >.
-          <span v-if="publication.score === 0"
-            >Also, it is not cited by another selected publication&mdash;<b
+          <div class="level">
+            <div class="level-left">
+              <div class="level-item">
+                No or only partial metadata could be retrieved for the
+                publication.
+              </div>
+            </div>
+            <div class="level-right">
+              <b-button
+                class="is-small is-danger is-outlined level-item"
+                icon-left="refresh"
+                data-tippy-content="Retry loading metadata."
+                v-tippy
+                @click.stop="sessionStore.retryLoadingPublication(publication)"
+                >Retry</b-button
+              >
+            </div>
+          </div>
+          <div v-if="publication.score === 0">
+            Also, it is not cited by another selected publication&mdash;<b
               >please check if the DOI is correct.</b
             >
-          </span>
+          </div>
         </div>
+
         <div
           class="notification has-background-danger-light has-text-danger-dark"
           v-if="!publication.year && publication.isActive"
