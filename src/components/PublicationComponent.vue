@@ -253,27 +253,29 @@
           >
         </div>
         <div
-          class="notification has-background-danger-light has-text-danger-dark level"
+          class="notification has-background-danger-light has-text-danger-dark"
           v-if="
             (!publication.year || !publication.title || !publication.author) &&
             publication.isActive
           "
         >
-          <div class="level-left">
-            <div class="level-item">
-              No or only partial metadata could be retrieved for the
-              publication.
+          <div class="level">
+            <div class="level-left">
+              <div class="level-item">
+                No or only partial metadata could be retrieved for the
+                publication.
+              </div>
             </div>
-          </div>
-          <div class="level-right">
-            <b-button
-              class="is-small is-danger is-outlined level-item"
-              icon-left="refresh"
-              data-tippy-content="Retry loading metadata."
-              v-tippy
-              @click.stop="sessionStore.retryLoadingPublication(publication)"
-              >Retry</b-button
-            >
+            <div class="level-right">
+              <b-button
+                class="is-small is-danger is-outlined level-item"
+                icon-left="refresh"
+                data-tippy-content="Retry loading metadata."
+                v-tippy
+                @click.stop="sessionStore.retryLoadingPublication(publication)"
+                >Retry</b-button
+              >
+            </div>
           </div>
           <div v-if="publication.score === 0">
             Also, it is not cited by another selected publication&mdash;<b
