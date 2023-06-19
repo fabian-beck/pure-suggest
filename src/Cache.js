@@ -5,8 +5,8 @@ console.log(`Locally cached #elements: ${(await keys()).length}`)
 
 export async function cachedFetch(url, processData, fetchParameters = {}, noCache = false) {
   try {
-    const cacheObject = await get(url);
     if (noCache) throw new Error("No cache");
+    const cacheObject = await get(url);
     if (cacheObject.timestamp < Date.now() - 1000 * 60 * 60 * 24 * 100) {
       throw new Error("Cached data is too old");
     }
@@ -23,6 +23,9 @@ export async function cachedFetch(url, processData, fetchParameters = {}, noCach
       const compressedData = LZString.compress(JSON.stringify(data));
       const cacheObject = { data: compressedData, timestamp: Date.now() };
       try {
+        if (noCache) {
+          url = url.replace("&noCache=true", "");
+        }
         await set(url, cacheObject)
       } catch (error) {
         const keysArray = await keys();
