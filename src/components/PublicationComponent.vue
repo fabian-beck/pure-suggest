@@ -168,9 +168,11 @@
           </span>
           <span
             >(<span>{{
-              publication.authorShort ? publication.authorShort + ", " : ""
+              publication.authorShort ? publication.authorShort : ""
             }}</span
-            ><span :class="publication.year ? '' : 'unknown'">{{
+            ><span v-if="!publication.author" class="unknown"
+              >[unknown author]</span
+            >, <span :class="publication.year ? '' : 'unknown'">{{
               publication.year ? publication.year : "[unknown year]"
             }}</span
             >)
