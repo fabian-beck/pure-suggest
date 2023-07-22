@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "vite --open",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "build": "vite build --out-dir dist",
+    "lint": "eslint src"
   },
   "dependencies": {
     "@mdi/font": "^6.5.95",

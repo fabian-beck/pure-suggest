@@ -16,8 +16,9 @@ export default defineConfig({
         ]
     },
     build: {
-        chunkSizeWarningLimit: 600,
-        cssCodeSplit: false
+        chunkSizeWarningLimit: 1000,
+        cssCodeSplit: false,
+        target: 'esnext'
     },
     css: {
         preprocessorOptions: {
