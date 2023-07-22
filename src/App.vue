@@ -97,9 +97,6 @@ export default {
 $block-spacing: 0.5rem;
 $box-padding: 1rem;
 
-@import "~bulma";
-@import "~buefy/src/scss/buefy";
-
 #app {
   display: grid;
   grid-template-areas:
@@ -148,6 +145,10 @@ $box-padding: 1rem;
     & .box {
       margin: 0;
       padding: min(0.5vw, 1rem);
+
+      & > .level {
+        margin-bottom: 0.5rem;
+      }
     }
   }
 
