@@ -3,8 +3,8 @@
   "version": "0.8.0",
   "private": true,
   "scripts": {
-    "dev": "vite --open",
-    "build": "vite build --out-dir dist",
+    "dev": "vite",
+    "build": "vite build",
     "lint": "eslint src"
   },
   "dependencies": {
@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "eslint": "^8.9.0",
+    "eslint-plugin-vue": "^9.15.1",
     "vue-template-compiler": "^2.6.14"
   },
   "browserslist": [
