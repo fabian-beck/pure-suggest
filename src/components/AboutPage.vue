@@ -126,8 +126,6 @@
   </div>
 </template>
 <style lang="scss" scoped>
-@import "~bulma";
-@import "~buefy/src/scss/buefy";
 
 .card {
   .card-content {

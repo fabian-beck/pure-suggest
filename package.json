@@ -3,13 +3,13 @@
   "version": "0.8.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "dev": "vite --open",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@babel/compat-data": "^7.17.0",
     "@mdi/font": "^6.5.95",
+    "@vue/compiler-sfc": "^3.3.4",
     "buefy": "^0.9.14",
     "bulma": "^0.9.3",
     "core-js": "^3.21.0",
@@ -19,17 +19,15 @@
     "lz-string": "^1.4.4",
     "pinia": "^2.0.16",
     "sass": "^1.49.7",
-    "sass-loader": "^8.0.2",
     "tippy.js": "^6.3.7",
+    "vite": "^4.4.6",
+    "vite-plugin-vue2": "^2.0.3",
     "vue": "^2.6.14",
     "vue-highlightable-input": "^1.0.9",
     "vue-tippy": "^4.13.0"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "^5.0.8",
-    "@vue/cli-service": "^5.0.8",
     "eslint": "^8.9.0",
-    "eslint-plugin-vue": "^8.4.1",
     "vue-template-compiler": "^2.6.14"
   },
   "browserslist": [
