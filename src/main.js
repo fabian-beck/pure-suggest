@@ -6,6 +6,11 @@ import { createPinia, PiniaVuePlugin } from 'pinia'
 Vue.use(PiniaVuePlugin)
 const pinia = createPinia()
 
+import Vuetify from 'vuetify'
+Vue.use(Vuetify)
+const opts = {}
+const vuetify = new Vuetify(opts)
+
 import '@mdi/font/css/materialdesignicons.css'
 import Buefy from 'buefy'
 Vue.use(Buefy, { defaultIconPack: 'mdi' })
@@ -25,6 +30,7 @@ Vue.prototype.$appSubtitle = "Citation-based literature search"
 Vue.prototype.$version = packageInfo.version;
 
 new Vue({
-  render: h => h(App),
   pinia,
+  vuetify,
+  render: h => h(App),
 }).$mount('#app')
