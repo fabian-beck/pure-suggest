@@ -105,8 +105,6 @@ import "tippy.js/dist/tippy.css";
 import _ from "lodash";
 import { storeToRefs } from "pinia";
 
-import PublicationComponent from "./PublicationComponent.vue";
-
 import { useSessionStore } from "./../stores/session.js";
 import { useInterfaceStore } from "./../stores/interface.js";
 
@@ -130,9 +128,6 @@ export default {
       interfaceStore,
       isNetworkClusters,
     };
-  },
-  components: {
-    PublicationComponent,
   },
   data: function () {
     return {

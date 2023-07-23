@@ -88,9 +88,6 @@
 import { useSessionStore } from "./../stores/session.js";
 import { useInterfaceStore } from "./../stores/interface.js";
 
-import BoostKeywordsComponent from "./BoostKeywordsComponent.vue";
-import PublicationListComponent from "./PublicationListComponent.vue";
-
 export default {
   name: "SelectedPublicationsComponent",
 
@@ -98,11 +95,6 @@ export default {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
     return { sessionStore, interfaceStore };
-  },
-
-  components: {
-    BoostKeywordsComponent,
-    PublicationListComponent,
   },
 
   mounted() {

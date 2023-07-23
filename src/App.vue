@@ -44,16 +44,6 @@
 import { useSessionStore } from "./stores/session.js";
 import { useInterfaceStore } from "./stores/interface.js";
 
-import HeaderPanel from "./components/HeaderPanel.vue";
-import SelectedPublicationsComponent from "./components/SelectedPublicationsComponent.vue";
-import SuggestedPublicationsComponent from "./components/SuggestedPublicationsComponent.vue";
-import NetworkVisComponent from "./components/NetworkVisComponent.vue";
-import QuickAccessBar from "./components/QuickAccessBar.vue";
-import SearchPanel from "./components/SearchPanel.vue";
-import AuthorPanel from "./components/AuthorPanel.vue";
-import AboutPage from "./components/AboutPage.vue";
-import KeyboardControlsPage from "./components/KeyboardControlsPage.vue";
-
 import { onKey } from "./Keys.js";
 
 export default {
@@ -62,17 +52,6 @@ export default {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
     return { sessionStore, interfaceStore };
-  },
-  components: {
-    HeaderPanel,
-    SelectedPublicationsComponent,
-    SuggestedPublicationsComponent,
-    NetworkVisComponent,
-    QuickAccessBar,
-    SearchPanel,
-    AuthorPanel,
-    AboutPage,
-    KeyboardControlsPage,
   },
   created() {
     window.addEventListener("keydown", onKey);

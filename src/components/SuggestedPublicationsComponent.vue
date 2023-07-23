@@ -219,8 +219,6 @@ import { useInterfaceStore } from "./../stores/interface.js";
 import Publication from "./../Publication.js";
 import Filter from "./../Filter.js";
 
-import PublicationListComponent from "./PublicationListComponent.vue";
-
 export default {
   name: "SuggestedPublicationsComponent",
   setup() {
@@ -228,9 +226,6 @@ export default {
     const interfaceStore = useInterfaceStore();
     const { isFilterPanelShown } = storeToRefs(interfaceStore);
     return { sessionStore, isFilterPanelShown };
-  },
-  components: {
-    PublicationListComponent,
   },
   props: {
     title: String,

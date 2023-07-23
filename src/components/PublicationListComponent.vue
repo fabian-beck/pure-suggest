@@ -12,13 +12,8 @@
 <script>
 import { scrollToTargetAdjusted } from "./../Util.js";
 
-import PublicationComponent from "./PublicationComponent.vue";
-
 export default {
   name: "PublicationListComponent",
-  components: {
-    PublicationComponent,
-  },
   props: {
     publications: Array,
   },
