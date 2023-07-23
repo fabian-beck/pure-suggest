@@ -2,7 +2,7 @@
   <div id="keyboardControls" class="card">
     <header class="card-header has-background-light">
       <p class="card-header-title">
-        <b-icon icon="keyboard-outline"></b-icon>&ensp;Keyboard Controls
+        <v-icon>mdi-keyboard-outline</v-icon>&ensp;Keyboard Controls
       </p>
     </header>
     <div class="card-content">
@@ -15,78 +15,79 @@
           <h2>General</h2>
           <ul class="keys">
             <li>
-              <b-icon icon="alpha-b-box-outline"></b-icon> Jump to "Boost" input
-              field
+              <v-icon>mdi-alpha-b-box-outline</v-icon> Jump to "Boost" input
             </li>
             <li>
-              <b-icon icon="alpha-a-box-outline"></b-icon> Jump to "Add" input
-              field
+              <v-icon>mdi-alpha-a-box-outline</v-icon> Jump to "Add" input
             </li>
             <li>
-              <b-icon icon="alpha-s-box-outline"></b-icon> Open "Search" dialog
+              <v-icon>mdi-alpha-s-box-outline</v-icon> Open "Search" dialog
             </li>
             <li>
-              <b-icon icon="alpha-u-box-outline"></b-icon> Update selected
+              <v-icon>mdi-alpha-u-box-outline</v-icon> Update selected
               publications (if publications are waiting)
             </li>
             <li>
-              <b-icon icon="alpha-f-box-outline"></b-icon> Switch on/off
+              <v-icon>mdi-alpha-f-box-outline</v-icon> Switch on/off
               filtering of suggestions
             </li>
             <li>
-              <b-icon icon="arrow-left-bold-box-outline"></b-icon> Jump to first
+              <v-icon>mdi-arrow-left-bold-box-outline</v-icon> Jump to first
               publication of "Selected"
             </li>
             <li>
-              <b-icon icon="arrow-right-bold-box-outline"></b-icon> Jump to
+              <v-icon>mdi-arrow-right-bold-box-outline</v-icon> Jump to
               first publication of "Suggested"
             </li>
             <li>
-              <b-icon icon="arrow-down-bold-box-outline"></b-icon> Move one
+              <v-icon>mdi-arrow-down-bold-box-outline</v-icon> Move one
               publication down (if one is active)
             </li>
             <li>
-              <b-icon icon="arrow-up-bold-box-outline"></b-icon> Move one
+              <v-icon>mdi-arrow-up-bold-box-outline</v-icon> Move one
               publication up (if one is active)
             </li>
             <li>
-              <b-icon icon="keyboard-esc"></b-icon> Escape input field or active
-              publication
+              <v-icon>mdi-keyboard-esc</v-icon> Escape input field or active
             </li>
-            <li><b-icon icon="alpha-c-box-outline"></b-icon> Clear session</li>
+            <li>
+              <v-icon>mdi-alpha-c-box-outline</v-icon> Clear session
+            </li>
           </ul>
           <h2>Active Publication</h2>
           <p>If a publication is marked as active:</p>
           <ul class="keys">
             <li>
-              <b-icon icon="plus-box-outline"></b-icon> Add publication to
+              <v-icon>mdi-plus-box-outline</v-icon> Add publication to
               selection
             </li>
             <li>
-              <b-icon icon="minus-box-outline"></b-icon> Exclude publication
+              <v-icon>mdi-minus-box-outline</v-icon> Exclude publication
               from selection/suggestion
             </li>
             <li>
-              <b-icon icon="alpha-d-box-outline"></b-icon> Open "DOI" link
+              <v-icon>mdi-alpha-d-box-outline</v-icon> Open "DOI" link
             </li>
-            <li><b-icon icon="alpha-t-box-outline"></b-icon> Show abstract</li>
             <li>
-              <b-icon icon="alpha-o-box-outline"></b-icon> Open "Open access"
+              <v-icon>mdi-alpha-t-box-outline</v-icon> Show abstract
+            </li>
+            <li>
+              <v-icon>mdi-alpha-o-box-outline</v-icon> Open "Open access"
               link
             </li>
             <li>
-              <b-icon icon="alpha-g-box-outline"></b-icon> Open "Google Scholar"
+              <v-icon>mdi-alpha-g-box-outline</v-icon> Open "Google Scholar"
               link
             </li>
             <li>
-              <b-icon icon="alpha-x-box-outline"></b-icon> Export as BibTeX
+              <v-icon>mdi-alpha-x-box-outline</v-icon> Export as BibTeX
               citation
             </li>
           </ul>
           <h2>Citation Network</h2>
           <ul class="keys">
             <li>
-              <b-icon icon="alpha-m-box-outline"></b-icon> Toggle mode of
+              <v-icon>mdi-alpha-m-box-outline</v-icon> Toggle mode of
               citation network visualization between <em>timeline</em> and
               <em>clusters</em>
             </li>
@@ -111,10 +112,11 @@
     & ul.keys {
       list-style-type: none;
 
-      & .icon {
+      & .v-icon {
         position: relative;
-        top: 0.15rem;
-        margin-right: 0.5rem;
+        top: -0.10rem;
+        margin-right: 0.25rem;
+        color: black;
       }
     }
   }
