@@ -1,5 +1,5 @@
 <template>
-    <v-btn icon small @click.stop="$emit('click')" :disabled="disabled" plain><v-icon>{{ icon }}</v-icon></v-btn>
+    <v-btn icon small @click.stop="$emit('click')" :disabled="disabled"><v-icon>{{ icon }}</v-icon></v-btn>
 </template>
 
 <script>
@@ -14,4 +14,11 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped lang="scss">
+.v-btn {
+    background-color: rgba(0, 0, 0, 0.1);
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.2);
+    }
+}
+</style>

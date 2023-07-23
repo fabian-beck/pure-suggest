@@ -76,22 +76,18 @@
         </button>
       </div>
       <div class="controls-footer-right" v-show="!sessionStore.isEmpty">
-        <b-button
-          class="compact-button is-dark"
-          @click="zoomByFactor(1.2)"
+        <CompactButton
+          icon="mdi-plus"
           data-tippy-content="Zoom in"
           v-tippy
-        >
-          <b-icon icon="plus"></b-icon>
-        </b-button>
-        <b-button
-          class="compact-button is-dark"
-          @click="zoomByFactor(0.8)"
+          v-on:click="zoomByFactor(1.2)"
+        ></CompactButton>
+        <CompactButton
+          icon="mdi-minus"
           data-tippy-content="Zoom out"
           v-tippy
-        >
-          <b-icon icon="minus"></b-icon>
-        </b-button>
+          v-on:click="zoomByFactor(0.8)"
+        ></CompactButton>
       </div>
     </div>
   </div>
@@ -778,7 +774,7 @@ export default {
     right: max(1vw, 1rem);
     z-index: 1;
 
-    & .button {
+    & .v-btn {
       margin-left: 0.25rem !important;
     }
   }
