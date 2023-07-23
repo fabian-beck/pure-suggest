@@ -131,32 +131,6 @@ $box-padding: 1rem;
     }
   }
 
-  & .compact-button {
-    background: transparent;
-    color: $white;
-    border-color: $white;
-    height: 1.5rem;
-    margin-right: 0 !important;
-    margin-left: 1rem;
-    padding: 0.5rem;
-
-    &:hover {
-      color: $light;
-      border-color: $light;
-    }
-
-    &.is-dark {
-      color: $dark;
-      border-color: $dark;
-      background: $white;
-
-      &:hover {
-        color: $dark;
-        border-color: $dark;
-        background: $light;
-      }
-    }
-  }
 }
 
 // placed outside the #app scope to apply to tooltips also

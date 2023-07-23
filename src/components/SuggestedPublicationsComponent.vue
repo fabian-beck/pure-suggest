@@ -63,17 +63,6 @@
               }}.
             </div>
           </tippy>
-          <!-- <b-button
-            class="compact-button"
-            icon-left="playlist-plus"
-            data-tippy-content="Load more suggested publications."
-            v-tippy
-            @click.stop="sessionStore.loadMoreSuggestions()"
-            :disabled="
-              sessionStore.suggestedPublications.length ===
-              sessionStore.suggestion.totalSuggestions
-            "
-          ></b-button> -->
           <CompactButton
             icon="mdi-playlist-plus"
             class="ml-2"
