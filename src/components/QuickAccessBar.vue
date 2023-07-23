@@ -6,7 +6,7 @@
       v-show="sessionStore.isUpdatable"
       id="quick-access-update"
     >
-      <b-icon icon="update" size="is-small"></b-icon>
+      <v-icon class="has-text-white">mdi-update</v-icon>
       <div class="button-label">Update</div>
     </button>
     <button
@@ -16,7 +16,7 @@
       }"
       @click="scrollTo('selected')"
     >
-      <b-icon icon="water-outline"></b-icon>
+      <v-icon class="has-text-white">mdi-water-outline</v-icon>
       <div class="button-label">Selected</div>
     </button>
     <button
@@ -26,7 +26,7 @@
       }"
       @click="scrollTo('suggested')"
     >
-      <b-icon icon="water-plus-outline"></b-icon>
+      <v-icon class="has-text-white">mdi-water-plus-outline</v-icon>
       <div class="button-label">Suggested</div>
     </button>
     <button
@@ -36,7 +36,7 @@
       }"
       @click="scrollTo('network')"
     >
-      <b-icon icon="chart-bubble"></b-icon>
+      <v-icon class="has-text-white">mdi-chart-bubble</v-icon><br/>
       <div class="button-label">Network</div>
     </button>
   </div>
@@ -98,7 +98,7 @@ button:focus {
   box-shadow: 0.25rem 0.25rem 0.75rem grey !important;
   border-color: white;
   width: 4.5rem;
-  height: 3.5rem;
+  height: 3.5rem !important;
   display: inline;
   padding: 0.25rem;
   filter: brightness(90%);
