@@ -5,7 +5,7 @@
         <div class="level-item"
           data-tippy-content="The <b>publications selected as seeds</b> for computing the suggestions, sorted by score."
           v-tippy>
-          <b-icon icon="water-outline"></b-icon>
+          <v-icon class="has-text-white">mdi-water-outline</v-icon>
           <h2 class="is-size-5 ml-2">Selected</h2>
         </div>
       </div>

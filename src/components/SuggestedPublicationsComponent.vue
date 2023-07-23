@@ -7,7 +7,7 @@
           data-tippy-content="The <b>suggested publications</b> based on references to and from the selected publications, sorted by score."
           v-tippy
         >
-          <b-icon icon="water-plus-outline"></b-icon>
+          <v-icon class="has-text-white">mdi-water-plus-outline</v-icon>
           <h2 class="is-size-5 ml-2">Suggested</h2>
         </div>
       </div>

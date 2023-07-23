@@ -8,7 +8,7 @@
             data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>selected</b>; <b class='has-text-info'>suggested</b>) with citations as links.<br><br>You can click a publication for details as well as zoom and pan the diagram."
             v-tippy
           >
-            <b-icon icon="chart-bubble"></b-icon>
+            <v-icon class="has-text-white">mdi-chart-bubble</v-icon>
             <h2 class="is-size-5 ml-2">Citation network</h2>
           </div>
         </div>
