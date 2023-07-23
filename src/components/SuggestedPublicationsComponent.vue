@@ -63,7 +63,7 @@
               }}.
             </div>
           </tippy>
-          <b-button
+          <!-- <b-button
             class="compact-button"
             icon-left="playlist-plus"
             data-tippy-content="Load more suggested publications."
@@ -73,7 +73,18 @@
               sessionStore.suggestedPublications.length ===
               sessionStore.suggestion.totalSuggestions
             "
-          ></b-button>
+          ></b-button> -->
+          <CompactButton
+            icon="mdi-playlist-plus"
+            class="ml-2"
+            data-tippy-content="Load more suggested publications."
+            v-tippy
+            v-on:click="sessionStore.loadMoreSuggestions()"
+            :disabled="
+              sessionStore.suggestedPublications.length ===
+              sessionStore.suggestion.totalSuggestions
+            "
+          ></CompactButton>
         </div>
         <div class="level-item" v-if="sessionStore.suggestion">
           <b-field

@@ -11,12 +11,12 @@
       </div>
       <div class="level-right" v-show="!sessionStore.isEmpty">
         <div class="level-item">
-          <b-button class="compact-button" icon-left="account-group"
+          <CompactButton icon="mdi-account-group"
             data-tippy-content="List <span class='key'>a</span>uthors of selected publications." v-tippy
-            @click.stop="interfaceStore.openAuthorPanel()"></b-button>
-          <b-button class="compact-button" icon-left="magnify"
+            v-on:click="interfaceStore.openAuthorPanel()"></CompactButton>
+          <CompactButton icon="mdi-magnify" class="ml-2"
             data-tippy-content="<span class='key'>S</span>earch/add specific publications to be added to selected."
-            v-tippy @click.stop="interfaceStore.openSearchPanel()"></b-button>
+            v-tippy v-on:click="interfaceStore.openSearchPanel()"></CompactButton>
         </div>
       </div>
     </div>

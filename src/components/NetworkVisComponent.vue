@@ -35,22 +35,21 @@
               >Clusters</label
             >
           </b-field>
-          <b-button
-            class="level-item compact-button is-hidden-touch"
-            icon-right="arrow-expand"
+          <CompactButton
+            icon="mdi-arrow-expand"
             data-tippy-content="Expand diagram"
             v-tippy
             v-show="!interfaceStore.isNetworkExpanded"
-            @click.stop="expandNetwork(true)"
-          ></b-button>
-          <b-button
-            class="level-item compact-button is-hidden-touch"
-            icon-right="arrow-collapse"
+            v-on:click="expandNetwork(true)"
+            class="ml-4"
+          ></CompactButton>
+          <CompactButton
+            icon="mdi-arrow-collapse"
             data-tippy-content="Collapse diagram"
             v-tippy
             v-show="interfaceStore.isNetworkExpanded"
-            @click.stop="expandNetwork(false)"
-          ></b-button>
+            v-on:click="expandNetwork(false)"
+          ></CompactButton>
         </div>
       </div>
       <div id="network-svg-container">
