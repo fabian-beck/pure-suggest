@@ -2,7 +2,7 @@
   <div id="about" class="card">
     <header class="card-header has-background-light">
       <p class="card-header-title">
-        <b-icon icon="information-outline"></b-icon>&ensp;About
+        <v-icon>mdi-information-outline</v-icon>&ensp;About
       </p>
     </header>
     <div class="card-content">
@@ -47,7 +47,7 @@
               (@pure_suggest) </a
             >.
           </p>
-          <h2><b-icon icon="file-document" /> Read more</h2>
+          <h2><v-icon>mdi-file-document</v-icon>&ensp;Read more</h2>
           <p>
             We publish news, tutorials, use cases, etc. as part of our <b>blog</b> on
             <a href="https://medium.com/@pure_suggest">medium.com</a>.
@@ -76,7 +76,7 @@
               >
             </li>
           </ul>
-          <h2><b-icon icon="database" /> Data Sources</h2>
+          <h2><v-icon>mdi-database</v-icon>&ensp;Data Sources</h2>
           <p>
             APIs by the following projects are used to retrieve the literature
             meta-data and citation information.
@@ -85,7 +85,7 @@
             <li><a href="https://opencitations.net/">OpenCitations</a></li>
             <li><a href="https://www.crossref.org/">CrossRef</a></li>
           </ul>
-          <h2><b-icon icon="tools" /> Similar Tools</h2>
+          <h2><v-icon>mdi-tools</v-icon>&ensp;Similar Tools</h2>
           <p>
             <em>PURE suggest</em> is not the first of its kind, but other tools
             are available that also provide a visually supported literature
@@ -106,7 +106,7 @@
               <a href="https://www.researchrabbit.ai/">Research Rabbit</a>
             </li>
           </ul>
-          <h2><b-icon icon="card-account-mail" /> Contact</h2>
+          <h2><v-icon>mdi-card-account-mail</v-icon>&ensp;Contact</h2>
           <p><em>PURE suggest</em> has been created by:</p>
           <p>
             <a href="https://github.com/fabian-beck">Fabian Beck</a> <br />
@@ -135,6 +135,11 @@
 
     & h2 {
       font-size: $size-5 !important;
+
+      & .v-icon {
+        position: relative;
+        top: -0.15rem;
+      }
     }
   }
 }
