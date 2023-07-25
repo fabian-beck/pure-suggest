@@ -1,44 +1,30 @@
 <template>
   <div>
-    <button
-      class="button has-background-primary has-text-white"
-      @click="sessionStore.updateQueued"
-      v-show="sessionStore.isUpdatable"
-      id="quick-access-update"
-    >
+    <button class="button has-background-primary has-text-white" @click="sessionStore.updateQueued"
+      v-show="sessionStore.isUpdatable" id="quick-access-update">
       <v-icon class="has-text-white">mdi-update</v-icon>
       <div class="button-label">Update</div>
     </button>
-    <button
-      class="button has-background-primary has-text-white"
-      :class="{
+    <v-btn-toggle borderless>
+      <v-btn class="has-background-primary has-text-white" :class="{
         active: isComponentActive.selected,
-      }"
-      @click="scrollTo('selected')"
-    >
-      <v-icon class="has-text-white">mdi-water-outline</v-icon>
-      <div class="button-label">Selected</div>
-    </button>
-    <button
-      class="button has-background-info has-text-white"
-      :class="{
+      }" @click="scrollTo('selected')">
+        <v-icon class="has-text-white" top>mdi-water-outline</v-icon>
+        <div class="button-label">Selected</div>
+      </v-btn>
+      <v-btn class="has-background-info has-text-white" :class="{
         active: isComponentActive.suggested,
-      }"
-      @click="scrollTo('suggested')"
-    >
-      <v-icon class="has-text-white">mdi-water-plus-outline</v-icon>
-      <div class="button-label">Suggested</div>
-    </button>
-    <button
-      class="button has-background-grey has-text-white"
-      :class="{
+      }" @click="scrollTo('suggested')">
+        <v-icon class="has-text-white" top>mdi-water-plus-outline</v-icon>
+        <div class="button-label">Suggested</div>
+      </v-btn>
+      <v-btn class="has-background-grey has-text-white" :class="{
         active: isComponentActive.network,
-      }"
-      @click="scrollTo('network')"
-    >
-      <v-icon class="has-text-white">mdi-chart-bubble</v-icon><br/>
-      <div class="button-label">Network</div>
-    </button>
+      }" @click="scrollTo('network')">
+        <v-icon class="has-text-white" top>mdi-chart-bubble</v-icon>
+        <div class="button-label">Network</div>
+      </v-btn>
+    </v-btn-toggle>
   </div>
 </template>
 <script>
@@ -91,30 +77,28 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+.v-item-group {
+  @include shadow;
 
-button,
-button:focus {
-  margin: 0.5rem;
-  box-shadow: 0.25rem 0.25rem 0.75rem grey !important;
-  border-color: white;
-  width: 4.5rem;
-  height: 3.5rem !important;
-  display: inline;
-  padding: 0.25rem;
-  filter: brightness(90%);
+  & button,
+  & button:focus {
+    width: 5.0rem;
+    height: 3.0rem !important;
+    filter: opacity(0.5);
+    transition: filter 0.3s ease-in-out;
 
-  &.active {
-    border-color: black;
-    filter: brightness(100%);
-    box-shadow: 0.1rem 0.1rem 0.5rem grey !important;
-  }
+    &.active {
+      filter: opacity(1.0);
+      border: 1px solid black !important
+    }
 
-  & .icon {
-    margin: 0 !important;
-  }
+    & ::v-deep .v-btn__content {
+      display: block;
+    }
 
-  & .button-label {
-    font-size: 0.7rem;
+    & .button-label {
+      font-size: 0.7rem;
+    }
   }
 }
 
