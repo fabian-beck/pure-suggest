@@ -16,7 +16,7 @@ export default {
 
 <style scoped lang="scss">
 .v-btn {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: transparent;
     &:hover {
         background-color: rgba(0, 0, 0, 0.2);
     }

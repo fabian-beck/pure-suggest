@@ -47,11 +47,15 @@
               to be excluded</span>.
           </div>
           <div class="media-right level">
-            <b-button class="button ml-2 level-item" icon-left="undo" data-tippy-content="Clear queue and discard update."
-              v-tippy @click.stop="sessionStore.clearQueues()"></b-button>
-            <b-button class="button has-background-primary has-text-white ml-2 level-item" icon-left="update"
+            <CompactButton icon="mdi-undo" class="ml-2 level-item"
+              data-tippy-content="Remove all publications from queue again."
+              v-tippy v-on:click="sessionStore.clearQueues()"></CompactButton>
+            <v-btn class="has-background-primary has-text-white ml-2 level-item"
               data-tippy-content="Update suggested and excluded publications with queue and compute new suggestions."
-              v-tippy @click="sessionStore.updateQueued"><span class="key">U</span>pdate</b-button>
+              v-tippy @click="sessionStore.updateQueued">
+              <v-icon left>mdi-update</v-icon>
+              <span class="key">U</span>pdate
+            </v-btn>
           </div>
         </div>
         <div class="notification has-text-centered has-background-primary-light p-2" v-show="sessionStore.isEmpty">
