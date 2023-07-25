@@ -18,7 +18,7 @@ export default {
 .v-btn {
     background-color: transparent;
     &:hover {
-        background-color: rgba(0, 0, 0, 0.2);
+        background-color: rgba(0, 0, 0, 0.15);
     }
 }
 </style>

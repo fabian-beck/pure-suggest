@@ -25,14 +25,8 @@
           ></span>
         </div>
         <div class="level-right">
-          <b-button
-            class="is-small"
-            icon-left="undo"
-            data-tippy-content="Remove publication from queue again."
-            v-tippy
-            @click.stop="sessionStore.removeFromQueues(publication.doi)"
-          >
-          </b-button>
+          <CompactButton icon="mdi-undo" class="is-small" data-tippy-content="Remove publication from queue again."
+            v-tippy v-on:click="sessionStore.removeFromQueues(publication.doi)"></CompactButton>
         </div>
       </div>
     </b-message>
@@ -369,25 +363,22 @@
       </div>
       <div class="media-right">
         <div>
-          <b-button
+          <CompactButton
             v-if="!publication.isSelected"
-            class="is-primary is-small"
-            icon-left="plus-thick"
+            icon="mdi-plus-thick"
+            v-on:click="sessionStore.queueForSelected(publication.doi)"
+            class="has-text-primary"
             data-tippy-content="Mark publication to be added to selected publications."
-            @click.stop="sessionStore.queueForSelected(publication.doi)"
             v-tippy
-          >
-          </b-button>
+          ></CompactButton>
         </div>
         <div>
-          <b-button
-            class="is-small"
-            icon-left="minus-thick"
+          <CompactButton
+            icon="mdi-minus-thick"
+            v-on:click="sessionStore.queueForExcluded(publication.doi)"
             data-tippy-content="Mark publication to be excluded for suggestions."
-            @click.stop="sessionStore.queueForExcluded(publication.doi)"
             v-tippy
-          >
-          </b-button>
+          ></CompactButton>
         </div>
       </div>
     </div>
@@ -644,7 +635,7 @@ li {
     & .media-right {
       margin-right: 0.5rem;
 
-      & .button {
+      & button {
         margin: 0.5rem 0;
       }
     }
