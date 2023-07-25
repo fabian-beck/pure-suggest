@@ -171,59 +171,38 @@
             }}</span
             >)
           </span>
-          <b-taglist>
-            <b-icon
-              icon="tag"
-              size="is-small"
-              class="mr-2"
-              v-if="publication.hasTag()"
-            ></b-icon>
-            <b-tag
-              icon="star"
-              class="is-dark"
-              size="is-small"
+          <div>
+            <PublicationTag 
               v-if="publication.isHighlyCited"
+              icon="mdi-star"
               :data-tippy-content="`Identified as highly cited: ${publication.isHighlyCited}.`"
               v-tippy
-              >Highly cited</b-tag
-            >
-            <b-tag
-              icon="table"
-              class="is-dark"
-              size="is-small"
+              >Highly cited</PublicationTag>
+            <PublicationTag
               v-if="publication.isSurvey"
+              icon="mdi-table"
               :data-tippy-content="`Identified as literature survey: ${publication.isSurvey}.`"
               v-tippy
-              >Literature survey</b-tag
-            >
-            <b-tag
-              icon="alarm"
-              class="is-dark"
-              size="is-small"
+              >Literature survey</PublicationTag>
+            <PublicationTag
               v-if="publication.isNew"
+              icon="mdi-alarm"
               :data-tippy-content="`Identified as new: ${publication.isNew}.`"
               v-tippy
-              >New</b-tag
-            >
-            <b-tag
-              icon="alert-box-outline"
-              class="is-dark"
-              size="is-small"
+              >New</PublicationTag>
+            <PublicationTag 
               v-if="publication.isUnnoted"
+              icon="mdi-alert-box-outline"
               :data-tippy-content="`Identified as yet unnoted: ${publication.isUnnoted}.`"
               v-tippy
-              >Unnoted</b-tag
-            >
-            <b-tag
-              icon="lock-open-check-outline"
-              class="is-dark"
-              size="is-small"
+              >Unnoted</PublicationTag>
+            <PublicationTag
               v-if="publication.isOpenAccess"
+              icon="mdi-lock-open-check-outline"
               :data-tippy-content="`Identified as open access: open access link available.`"
               v-tippy
-              >Open access</b-tag
-            >
-          </b-taglist>
+              >Open access</PublicationTag>
+          </div>
         </div>
         <div v-if="publication.isActive">
           <span>
@@ -568,15 +547,6 @@ li {
 
       & div.summary {
         margin-bottom: 0.5rem;
-
-        & .tag {
-          margin-top: 0.25rem;
-          margin-bottom: 0.25rem;
-        }
-
-        & .tag:focus {
-          outline-offset: 0.1rem;
-        }
       }
 
       & label {
