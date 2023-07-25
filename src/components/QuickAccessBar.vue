@@ -1,10 +1,10 @@
 <template>
   <div>
-    <button class="button has-background-primary has-text-white" @click="sessionStore.updateQueued"
+    <v-btn class="has-background-primary has-text-white" @click="sessionStore.updateQueued"
       v-show="sessionStore.isUpdatable" id="quick-access-update">
-      <v-icon class="has-text-white">mdi-update</v-icon>
+      <v-icon class="has-text-white" left>mdi-update</v-icon>
       <div class="button-label">Update</div>
-    </button>
+    </v-btn>
     <v-btn-toggle borderless>
       <v-btn class="has-background-primary has-text-white" :class="{
         active: isComponentActive.selected,
@@ -27,6 +27,7 @@
     </v-btn-toggle>
   </div>
 </template>
+
 <script>
 import { useSessionStore } from "./../stores/session.js";
 
@@ -104,13 +105,8 @@ export default {
 
 #quick-access-update {
   position: absolute;
-  bottom: 4rem;
-  filter: brightness(100%);
+  bottom: 3.5rem;
   display: inline-flex;
-  height: auto;
-
-  & .icon {
-    margin-right: 0.2rem !important;
-  }
+  height: 2rem;
 }
 </style>
