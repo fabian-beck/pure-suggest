@@ -87,7 +87,6 @@ export function onKey(e) {
             const activePublicationComponent = document.getElementsByClassName(
                 "publication-component is-active"
             )[0];
-            console.log(activePublicationComponent);
             try {
                 interfaceStore.activatePublicationComponent(
                     e.key === "ArrowDown"

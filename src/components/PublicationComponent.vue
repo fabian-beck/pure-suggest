@@ -320,43 +320,36 @@
             v-if="publication.title && publication.isActive"
           >
             <div class="level-item">
-              <a
+              <CompactButton
+                icon="mdi-text"
+                class="ml-5"
                 v-if="publication.abstract"
-                @click.stop="showAbstract"
-                @click.middle.stop="showAbstract"
-                @keyup.enter="showAbstract"
+                v-on:click="showAbstract"
                 data-tippy-content="Abs<span class='key'>t</span>ract"
                 v-tippy
-                ><b-icon icon="text"></b-icon
-              ></a>
-              <a
+              ></CompactButton>
+              <CompactButton
+                icon="mdi-lock-open-check-outline"
+                class="ml-5"
                 v-if="publication.oaLink"
                 :href="publication.oaLink"
-                class="ml-5"
-                @click.stop="refocus"
-                @click.middle.stop="refocus"
                 data-tippy-content="<span class='key'>O</span>pen access"
                 v-tippy
-                ><b-icon icon="lock-open-check-outline"></b-icon
-              ></a>
-              <a
-                :href="publication.gsUrl"
+              ></CompactButton>
+              <CompactButton
+                icon="mdi-school"
                 class="ml-5"
-                @click.stop="refocus"
-                @click.middle.stop="refocus"
+                :href="publication.gsUrl"
                 data-tippy-content="<span class='key'>G</span>oogle Scholar"
                 v-tippy
-                ><b-icon icon="school"></b-icon
-              ></a>
-              <a
-                @click.stop="exportBibtex"
-                @click.middle.stop="exportBibtex"
-                @keyup.enter="exportBibtex"
+              ></CompactButton>
+              <CompactButton
+                icon="mdi-format-quote-close"
                 class="ml-5"
+                v-on:click="exportBibtex"
                 data-tippy-content="Export as BibTe<span class='key'>X</span> citation"
                 v-tippy
-                ><b-icon icon="format-quote-close"></b-icon
-              ></a>
+              ></CompactButton>
             </div>
           </div>
         </div>
@@ -390,46 +383,45 @@ import { useSessionStore } from "./../stores/session.js";
 import { useInterfaceStore } from "./../stores/interface.js";
 
 export default {
-  name: "PublicationComponent",
-  setup() {
-    const sessionStore = useSessionStore();
-    const interfaceStore = useInterfaceStore();
-    return { sessionStore, interfaceStore };
-  },
-  props: {
-    publication: Object,
-  },
-  computed: {
-    chevronType: function () {
-      if (this.publication.boostFactor >= 8) {
-        return "chevron-triple-up";
-      } else if (this.publication.boostFactor >= 4) {
-        return "chevron-double-up";
-      } else if (this.publication.boostFactor > 1) {
-        return "chevron-up";
-      }
-      return "";
+    name: "PublicationComponent",
+    setup() {
+        const sessionStore = useSessionStore();
+        const interfaceStore = useInterfaceStore();
+        return { sessionStore, interfaceStore };
     },
-  },
-  methods: {
-    activate: function () {
-      this.sessionStore.activatePublicationComponentByDoi(this.publication.doi);
-      this.$emit("activate", this.publication.doi);
+    props: {
+        publication: Object,
     },
-
-    showAbstract: function () {
-      this.interfaceStore.showAbstract(this.publication);
+    computed: {
+        chevronType: function () {
+            if (this.publication.boostFactor >= 8) {
+                return "chevron-triple-up";
+            }
+            else if (this.publication.boostFactor >= 4) {
+                return "chevron-double-up";
+            }
+            else if (this.publication.boostFactor > 1) {
+                return "chevron-up";
+            }
+            return "";
+        },
     },
-
-    exportBibtex: function () {
-      this.sessionStore.exportSingleBibtex(this.publication);
-      this.refocus();
+    methods: {
+        activate: function () {
+            this.sessionStore.activatePublicationComponentByDoi(this.publication.doi);
+            this.$emit("activate", this.publication.doi);
+        },
+        showAbstract: function () {
+            this.interfaceStore.showAbstract(this.publication);
+        },
+        exportBibtex: function () {
+            this.sessionStore.exportSingleBibtex(this.publication);
+            this.refocus();
+        },
+        refocus: function () {
+            document.getElementById(this.publication.doi).focus();
+        },
     },
-
-    refocus: function () {
-      document.getElementById(this.publication.doi).focus();
-    },
-  },
 };
 </script>
 
