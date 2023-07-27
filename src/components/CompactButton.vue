@@ -1,5 +1,5 @@
 <template>
-    <v-btn icon small @click.stop="performAction()" :disabled="disabled"><v-icon>{{ icon }}</v-icon></v-btn>
+    <v-btn icon small @click.stop="performAction()" :disabled="disabled" light><v-icon>{{ icon }}</v-icon></v-btn>
 </template>
 
 <script>
