@@ -26,11 +26,11 @@
                       </span>
                       <small v-if="author.alternativeNames.length > 1">
                         &ensp;also listed as
-                        <b-tag v-for="alternativeName in author.alternativeNames.filter(
+                        <v-chip v-for="alternativeName in author.alternativeNames.filter(
                           (name) => name !== author.id
                         )" :key="alternativeName" class="tag alternative-name">
                           {{ alternativeName }}
-                        </b-tag>
+                        </v-chip>
                       </small>
                     </div>
                     <div>
@@ -40,19 +40,19 @@
                       </span><span v-else-if="author.yearMin">, {{ author.yearMin }}</span>
                     </div>
                     <div v-if="Object.keys(author.keywords).length > 0" class="is-size-7">
-                      Related to<b-tag v-for="keyword in sessionStore.boostKeywords.filter(
+                      Related to
+                      <v-chip class="tag" v-for="keyword in sessionStore.boostKeywords.filter(
                         (keyword) => author.keywords[keyword]
                       )" :key="keyword" :style="keywordStyle(author.keywords[keyword])">{{ keyword }} ({{
-  author.keywords[keyword] }})
-                      </b-tag>
+  author.keywords[keyword] }})</v-chip>
                     </div>
                     <div class="is-size-7">
                       Co-author of
-                      <b-tag v-for="coauthor in Object.keys(author.coauthors).sort(
+                      <v-chip class="tag coauthor" v-for="coauthor in Object.keys(author.coauthors).sort(
                         (a, b) => author.coauthors[b] - author.coauthors[a]
-                      )" :key="coauthor" class="tag coauthor" :style="coauthorStyle(author.coauthors[coauthor])">
+                      )" :key="coauthor" :style="coauthorStyle(author.coauthors[coauthor])">
                         {{ coauthor }} ({{ author.coauthors[coauthor] }})
-                      </b-tag>
+                      </v-chip>
                     </div>
                   </div>
                 </div>
@@ -124,6 +124,8 @@ export default {
 
   & .tag {
     margin: 0.25rem;
+    position: relative;
+    top: -0.1rem;
 
     &.keyword {
       text-decoration: underline;
