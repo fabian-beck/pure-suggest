@@ -75,18 +75,21 @@
             <span v-if="publication.boostFactor != 1">(</span>{{ publication.citationCount }} + {{
               publication.referenceCount
             }}<span v-if="publication.boostFactor != 1">) &middot; {{ publication.boostFactor }}</span></b>,<br />
-          citing <b>{{ publication.citationCount }}</b> (<b-icon icon="arrow-bottom-left-thick" size="is-small"
-            :class="publication.referenceDois.length ? '' : 'unknown'"></b-icon><span
-            v-if="!publication.referenceDois.length" class="unknown">, citing data not available</span>) and cited by
-          <b>{{ publication.referenceCount }}</b> (<b-icon icon="arrow-top-left-thick" size="is-small"></b-icon>) selected
+          citing <b>{{ publication.citationCount }}</b> (
+          <InlineIcon icon="mdi-arrow-bottom-left-thick" :color="publication.referenceDois.length ? 'white' : 'danger'" />
+          <span v-if="!publication.referenceDois.length" class="unknown">, citing data not available</span>) and cited by
+          <b>{{ publication.referenceCount }}</b> (
+          <InlineIcon icon="mdi-arrow-top-left-thick" color="white" />) selected
           publications<span v-if="publication.boostFactor != 1">, multiplied by a boost factor of
             <b>{{ publication.boostFactor }} = 2<sup>{{
               publication.boostMatches
             }}</sup>
             </b>
-            (<b-icon :icon="chevronType" size="is-small"></b-icon>;
+            (
+            <InlineIcon :icon="`mdi-${chevronType}`" color="white" />;
             {{ publication.boostMatches }} keyword<span v-if="publication.boostMatches > 1">s</span>
-            matched)</span>.
+            matched)
+          </span>.
         </div>
         <div v-if="publication.isLinkedToActive">
           <br />
@@ -173,7 +176,10 @@
           <div class="level-left">
             <div :class="`level-item ${publication.referenceDois.length ? '' : 'unknown'
               }`">
-              <label><b-icon icon="arrow-bottom-left-thick" size="is-small"></b-icon>Citing:</label>
+              <label>
+                <InlineIcon icon="mdi-arrow-bottom-left-thick"
+                  :color="publication.referenceDois.length ? 'dark' : 'danger'" /> Citing:
+              </label>
               <b>{{
                 publication.referenceDois.length
                 ? publication.referenceDois.length.toLocaleString("en")
@@ -181,7 +187,9 @@
               }}</b>
             </div>
             <div class="level-item">
-              <label><b-icon icon="arrow-top-left-thick" size="is-small"></b-icon>Cited by:</label>
+              <label>
+                <InlineIcon icon="mdi-arrow-top-left-thick" color="dark" /> Cited by:
+              </label>
               <b>{{ publication.citationDois.length.toLocaleString("en") }}</b>
               <span v-if="publication.citationsPerYear > 0">
                 &nbsp;({{ publication.citationsPerYear.toFixed(1) }}/year)
@@ -513,5 +521,4 @@ li {
       margin-left: 0.5rem;
     }
   }
-}
-</style>
+}</style>
