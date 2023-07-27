@@ -8,7 +8,7 @@
         <div class="level-item">
           <span>
             <InlineIcon icon="mdi-tray-full" color="dark" />
-            To be&nbsp;
+            To be
             <span v-if="sessionStore.isQueuingForSelected(publication.doi)"><b>selected </b>
               <InlineIcon icon="mdi-plus-thick" color="primary-dark" />
             </span>
@@ -46,7 +46,7 @@
                 {{ publication.score }}
               </div>
               <div class="boost-indicator" :class="chevronType" v-if="publication.boostFactor > 1">
-                <b-icon :icon="chevronType" size="is-small" />
+                <v-icon>mdi-{{ chevronType }}</v-icon>
               </div>
             </div>
             <div class="reference-counts is-size-6">
@@ -54,7 +54,7 @@
                 <span v-if="publication.citationCount > 0 ||
                   publication.referenceDois.length === 0
                   " :class="publication.referenceDois.length ? '' : 'unknown'">
-                  <b-icon icon="arrow-bottom-left-thick" size="is-small"></b-icon>
+                  <InlineIcon icon="mdi-arrow-bottom-left-thick" :color="publication.referenceDois.length ? '' : 'danger'" />
                   {{
                     publication.citationCount ? publication.citationCount : "-"
                   }}
@@ -63,7 +63,7 @@
               <div class="is-pulled-right">
                 <span v-if="publication.referenceCount > 0">
                   {{ publication.referenceCount }}
-                  <b-icon icon="arrow-top-left-thick" size="is-small"></b-icon>
+                  <InlineIcon icon="mdi-arrow-top-left-thick" />
                 </span>
               </div>
             </div>
@@ -157,9 +157,11 @@
               </div>
             </div>
             <div class="level-right">
-              <b-button class="is-small is-danger is-outlined level-item" icon-left="refresh"
-                data-tippy-content="Retry loading metadata." v-tippy
-                @click.stop="sessionStore.retryLoadingPublication(publication)">Retry</b-button>
+              <v-btn data-tippy-content="Retry loading metadata." v-tippy
+                @click.stop="sessionStore.retryLoadingPublication(publication)" small>
+                <v-icon left>mdi-refresh</v-icon>
+                Retry
+              </v-btn>
             </div>
           </div>
           <div v-if="publication.score === 0">
@@ -303,7 +305,7 @@ li {
         }
 
         & .reference-counts {
-          .icon {
+          .v-icon {
             margin: -0.4em;
           }
 
@@ -322,7 +324,7 @@ li {
           font-size: $size-5;
           border: 1px solid $info;
 
-          & .icon {
+          & .v-icon {
             position: relative;
           }
 
@@ -332,8 +334,9 @@ li {
             width: 1.2rem;
             height: 1.2rem;
 
-            & .icon {
-              top: -0.45rem;
+            & .v-icon {
+              top: -0.6rem;
+              left: -0.17rem;
             }
           }
 
@@ -343,8 +346,9 @@ li {
             width: 1.5rem;
             height: 1.5rem;
 
-            & .icon {
-              top: -0.35rem;
+            & .v-icon {
+              top: -0.5rem;
+              left: -0.05rem;
             }
           }
 
@@ -354,8 +358,8 @@ li {
             width: 1.8rem;
             height: 1.8rem;
 
-            & .icon {
-              top: -0.2rem;
+            & .v-icon {
+              top: -0.3rem;
             }
           }
         }
@@ -521,4 +525,5 @@ li {
       margin-left: 0.5rem;
     }
   }
-}</style>
+}
+</style>
