@@ -41,7 +41,7 @@
             v-tippy
             v-show="!interfaceStore.isNetworkExpanded"
             v-on:click="expandNetwork(true)"
-            class="ml-4 is-hidden-touch"
+            class="ml-4 is-hidden-touch has-text-white"
           ></CompactButton>
           <CompactButton
             icon="mdi-arrow-collapse"
@@ -49,7 +49,7 @@
             v-tippy
             v-show="interfaceStore.isNetworkExpanded"
             v-on:click="expandNetwork(false)"
-            class="ml-4 is-hidden-touch"
+            class="ml-4 is-hidden-touch has-text-white"
           ></CompactButton>
         </div>
       </div>

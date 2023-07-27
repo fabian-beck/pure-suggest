@@ -64,7 +64,7 @@
             </div>
           </tippy>
           <CompactButton
-            icon="mdi-playlist-plus"
+            icon="mdi-playlist-plus has-text-white"
             class="ml-2"
             data-tippy-content="Load more suggested publications."
             v-tippy
