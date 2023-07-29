@@ -1,68 +1,57 @@
 <template>
-  <b-modal :active="interfaceStore.isAuthorPanelShown" @close="cancel">
-    <div class="card">
-      <header class="card-header has-background-primary">
-        <p class="card-header-title has-text-white">
-          <v-icon class="has-text-white">mdi-account-group</v-icon>
-          &ensp;Authors of selected
-          publications
-        </p>
-      </header>
-      <div class="card-content">
-        <div class="content">
-          <section>
-            <ul>
-              <li v-for="author in sessionStore.selectedPublicationsAuthors" :key="author.id" class="media">
-                <div class="media-left">
-                  <v-icon :size="authorIconSize(author.count)">mdi-account</v-icon>
+  <MainDialog headerColor="primary" title="Authors of selected publications" v-model="interfaceStore.isAuthorPanelShown">
+    <div class="content">
+      <section>
+        <ul>
+          <li v-for="author in sessionStore.selectedPublicationsAuthors" :key="author.id" class="media">
+            <div class="media-left">
+              <v-icon :size="authorIconSize(author.count)">mdi-account</v-icon>
+            </div>
+            <div class="media-content">
+              <div class="content">
+                <div>
+                  <strong>{{ author.id }}</strong>&nbsp;<span v-if="author.orcid">
+                    <a :href="`https://orcid.org/${author.orcid}`"><img alt="ORCID logo"
+                        src="https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png" width="14"
+                        height="14" /></a>
+                  </span>
+                  <small v-if="author.alternativeNames.length > 1">
+                    &ensp;also listed as
+                    <v-chip v-for="alternativeName in author.alternativeNames.filter(
+                      (name) => name !== author.id
+                    )" :key="alternativeName" class="tag alternative-name">
+                      {{ alternativeName }}
+                    </v-chip>
+                  </small>
                 </div>
-                <div class="media-content">
-                  <div class="content">
-                    <div>
-                      <strong>{{ author.id }}</strong>&nbsp;<span v-if="author.orcid">
-                        <a :href="`https://orcid.org/${author.orcid}`"><img alt="ORCID logo"
-                            src="https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png" width="14"
-                            height="14" /></a>
-                      </span>
-                      <small v-if="author.alternativeNames.length > 1">
-                        &ensp;also listed as
-                        <v-chip v-for="alternativeName in author.alternativeNames.filter(
-                          (name) => name !== author.id
-                        )" :key="alternativeName" class="tag alternative-name">
-                          {{ alternativeName }}
-                        </v-chip>
-                      </small>
-                    </div>
-                    <div>
-                      <strong>{{ author.count }}</strong> selected publication{{
-                        author.count > 1 ? "s" : ""
-                      }}<span v-if="author.yearMin != author.yearMax">, {{ author.yearMin }} to {{ author.yearMax }}
-                      </span><span v-else-if="author.yearMin">, {{ author.yearMin }}</span>
-                    </div>
-                    <div v-if="Object.keys(author.keywords).length > 0" class="is-size-7">
-                      Related to
-                      <v-chip class="tag" v-for="keyword in sessionStore.boostKeywords.filter(
-                        (keyword) => author.keywords[keyword]
-                      )" :key="keyword" :style="keywordStyle(author.keywords[keyword])">{{ keyword }} ({{
+                <div>
+                  <strong>{{ author.count }}</strong> selected publication{{
+                    author.count > 1 ? "s" : ""
+                  }}<span v-if="author.yearMin != author.yearMax">, {{ author.yearMin }} to {{ author.yearMax }}
+                  </span><span v-else-if="author.yearMin">, {{ author.yearMin }}</span>
+                </div>
+                <div v-if="Object.keys(author.keywords).length > 0" class="is-size-7">
+                  Related to
+                  <v-chip class="tag" v-for="keyword in sessionStore.boostKeywords.filter(
+                    (keyword) => author.keywords[keyword]
+                  )" :key="keyword" :style="keywordStyle(author.keywords[keyword])">{{ keyword }} ({{
   author.keywords[keyword] }})</v-chip>
-                    </div>
-                    <div class="is-size-7">
-                      Co-author of
-                      <v-chip class="tag coauthor" v-for="coauthor in Object.keys(author.coauthors).sort(
-                        (a, b) => author.coauthors[b] - author.coauthors[a]
-                      )" :key="coauthor" :style="coauthorStyle(author.coauthors[coauthor])">
-                        {{ coauthor }} ({{ author.coauthors[coauthor] }})
-                      </v-chip>
-                    </div>
-                  </div>
                 </div>
-              </li>
-            </ul>
-          </section>
-        </div>
-      </div>
+                <div class="is-size-7">
+                  Co-author of
+                  <v-chip class="tag coauthor" v-for="coauthor in Object.keys(author.coauthors).sort(
+                    (a, b) => author.coauthors[b] - author.coauthors[a]
+                  )" :key="coauthor" :style="coauthorStyle(author.coauthors[coauthor])">
+                    {{ coauthor }} ({{ author.coauthors[coauthor] }})
+                  </v-chip>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </section>
     </div>
-  </b-modal>
+  </MainDialog>
 </template>
 
 <script>

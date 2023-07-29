@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" data-app>
     <HeaderPanel id="header" />
     <div
       id="main"
