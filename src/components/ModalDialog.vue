@@ -1,16 +1,12 @@
 <template>
-    <v-dialog v-model="isDialogShown" scrollable>
+    <v-dialog v-model="isDialogShown" scrollable :fullscreen="$vuetify.breakpoint.smAndDown">
         <v-card>
             <v-card-title :class="`has-background-${headerColor} has-text-dark level`">
-                <div class="level-left">
-                    <v-icon class="has-text-dark">{{ icon }}</v-icon>
-                    &ensp;{{ title }}
+                <div class="header-left">
+                    <v-icon class="has-text-dark title-icon">{{ icon }}</v-icon>
+                    <span>{{ title }}</span>
                 </div>
-                <CompactButton
-                    icon="mdi-close"
-                    class="level-right"
-                    v-on:click="hideDialog"
-                ></CompactButton>
+                <CompactButton icon="mdi-close" class="header-right" v-on:click="hideDialog"></CompactButton>
             </v-card-title>
             <v-card-text>
                 <slot></slot>
@@ -54,14 +50,21 @@ export default {
 
 <style scoped lang="scss">
 ::v-deep .v-dialog {
-  max-width: 960px;
+    max-width: 960px;
 
-  & .v-card__title {
-    margin-bottom: 0;
-  }
+    & .v-card__title {
+        margin-bottom: 0;
+        padding: calc(min(1.0rem, 2vw));
 
-  & .v-card__text {
-    padding-top: 1rem;
-  }
+        & .title-icon {
+            margin-right: 0.5rem;
+            position: relative;
+            top: -0.15rem;
+        }
+    }
+
+    & .v-card__text {
+        padding-top: 1rem;
+    }
 }
 </style>
