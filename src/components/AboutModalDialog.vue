@@ -1,5 +1,5 @@
 <template>
-  <MainDialog v-model="interfaceStore.isAboutPageShown" headerColor="light" title="About" icon="mdi-information-outline">
+  <ModalDialog v-model="interfaceStore.isAboutModalDialogShown" headerColor="light" title="About" icon="mdi-information-outline">
     <div class="content">
       <section>
         <div class="level">
@@ -107,7 +107,7 @@
         </p>
       </section>
     </div>
-  </MainDialog>
+  </ModalDialog>
 </template>
 
 <script>

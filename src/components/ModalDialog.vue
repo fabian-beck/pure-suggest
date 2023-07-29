@@ -21,7 +21,7 @@
 
 <script>
 export default {
-    name: "MainDialog",
+    name: "ModalDialog",
     props: {
         value: Boolean,
         headerColor: String,

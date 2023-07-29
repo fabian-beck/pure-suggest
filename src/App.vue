@@ -23,8 +23,8 @@
     >
     </QuickAccessBar>
     <SearchPanel />
-    <AuthorPanel />
-    <AboutPage />
+    <AuthorModalDialog />
+    <AboutModalDialog />
     <b-modal v-model="interfaceStore.isKeyboardControlsShown">
       <KeyboardControlsPage />
     </b-modal>

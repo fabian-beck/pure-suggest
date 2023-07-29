@@ -71,7 +71,7 @@
             <b-icon icon="keyboard-outline"></b-icon
             ><span class="ml-2">Keyboard controls</span>
           </b-navbar-item>
-          <b-navbar-item @click="interfaceStore.isAboutPageShown = true">
+          <b-navbar-item @click="interfaceStore.isAboutModalDialogShown = true">
             <b-icon icon="information-outline"></b-icon
             ><span class="ml-2">About</span>
           </b-navbar-item>

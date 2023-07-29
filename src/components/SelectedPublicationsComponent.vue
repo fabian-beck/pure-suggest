@@ -13,7 +13,7 @@
         <div class="level-item">
           <CompactButton icon="mdi-account-group has-text-white"
             data-tippy-content="List <span class='key'>a</span>uthors of selected publications." v-tippy
-            v-on:click="interfaceStore.openAuthorPanel()"></CompactButton>
+            v-on:click="interfaceStore.openAuthorModalDialog()"></CompactButton>
           <CompactButton icon="mdi-magnify" class="ml-2 has-text-white"
             data-tippy-content="<span class='key'>S</span>earch/add specific publications to be added to selected."
             v-tippy v-on:click="interfaceStore.openSearchPanel()"></CompactButton>

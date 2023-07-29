@@ -15,8 +15,8 @@ export const useInterfaceStore = defineStore('interface', {
             isFilterPanelShown: false,
             isDialogShown: false,
             isSearchPanelShown: false,
-            isAuthorPanelShown: false,
-            isAboutPageShown: false,
+            isAuthorModalDialogShown: false,
+            isAboutModalDialogShown: false,
             isKeyboardControlsShown: false,
             isfeedbackInvitationShown: false,
         }
@@ -26,7 +26,7 @@ export const useInterfaceStore = defineStore('interface', {
             return window.innerWidth <= 1023;
         },
         isAnyOverlayShown() {
-            return this.isDialogShown || this.isSearchPanelShown || this.isAuthorPanelShown || this.isAboutPageShown || this.isKeyboardControlsShown || this.isfeedbackInvitationShown;
+            return this.isDialogShown || this.isSearchPanelShown || this.isAuthorModalDialogShown || this.isAboutModalDialogShown || this.isKeyboardControlsShown || this.isfeedbackInvitationShown;
         }
     },
     actions: {
@@ -134,8 +134,8 @@ export const useInterfaceStore = defineStore('interface', {
             this.isSearchPanelShown = true;
         },
 
-        openAuthorPanel() {
-            this.isAuthorPanelShown = true;
+        openAuthorModalDialog() {
+            this.isAuthorModalDialogShown = true;
         },
 
         openFeedback() {

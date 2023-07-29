@@ -1,5 +1,5 @@
 <template>
-  <MainDialog headerColor="primary" title="Authors of selected publications" icon="mdi-account-group" v-model="interfaceStore.isAuthorPanelShown">
+  <ModalDialog headerColor="primary" title="Authors of selected publications" icon="mdi-account-group" v-model="interfaceStore.isAuthorModalDialogShown">
     <div class="content">
       <section>
         <ul>
@@ -51,7 +51,7 @@
         </ul>
       </section>
     </div>
-  </MainDialog>
+  </ModalDialog>
 </template>
 
 <script>
@@ -59,7 +59,7 @@ import { useSessionStore } from "./../stores/session.js";
 import { useInterfaceStore } from "./../stores/interface.js";
 
 export default {
-  name: "AuthorPanel",
+  name: "AuthorModalDialog",
   setup() {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
@@ -91,7 +91,7 @@ export default {
       };
     },
     cancel() {
-      this.interfaceStore.isAuthorPanelShown = false;
+      this.interfaceStore.isAuthorModalDialogShown = false;
     },
   },
 };
