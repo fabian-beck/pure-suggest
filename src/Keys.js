@@ -19,7 +19,7 @@ export function onKey(e) {
             document.activeElement.nodeName != "INPUT") ||
         interfaceStore.isAuthorModalDialogShown ||
         interfaceStore.isAboutModalDialogShown ||
-        interfaceStore.isKeyboardControlsShown
+        interfaceStore.isKeyboardControlsModalDialogShown
     ) {
         e.preventDefault();
         return;

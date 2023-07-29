@@ -65,7 +65,7 @@
             ><span class="ml-2">Feedback</span>
           </b-navbar-item>
           <b-navbar-item
-            @click="interfaceStore.isKeyboardControlsShown = true"
+            @click="interfaceStore.isKeyboardControlsModalDialogShown = true"
             class="is-hidden-touch"
           >
             <b-icon icon="keyboard-outline"></b-icon

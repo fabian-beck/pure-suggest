@@ -1,38 +1,19 @@
 <template>
   <div id="app" data-app>
     <HeaderPanel id="header" />
-    <div
-      id="main"
-      @click="sessionStore.clearActivePublication('clicked anywhere')"
-      :class="{ 'network-expanded': interfaceStore.isNetworkExpanded }"
-    >
-      <SelectedPublicationsComponent
-        id="selected"
-        v-show="!interfaceStore.isNetworkExpanded"
-      />
-      <SuggestedPublicationsComponent
-        id="suggested"
-        v-show="!interfaceStore.isNetworkExpanded"
-      />
+    <div id="main" @click="sessionStore.clearActivePublication('clicked anywhere')"
+      :class="{ 'network-expanded': interfaceStore.isNetworkExpanded }">
+      <SelectedPublicationsComponent id="selected" v-show="!interfaceStore.isNetworkExpanded" />
+      <SuggestedPublicationsComponent id="suggested" v-show="!interfaceStore.isNetworkExpanded" />
       <NetworkVisComponent id="network" :svgWidth="1500" :svgHeight="600" />
     </div>
-    <QuickAccessBar
-      id="quick-access"
-      class="is-hidden-desktop"
-      v-if="!interfaceStore.isAnyOverlayShown"
-    >
+    <QuickAccessBar id="quick-access" class="is-hidden-desktop" v-if="!interfaceStore.isAnyOverlayShown">
     </QuickAccessBar>
     <SearchPanel />
     <AuthorModalDialog />
     <AboutModalDialog />
-    <b-modal v-model="interfaceStore.isKeyboardControlsShown">
-      <KeyboardControlsPage />
-    </b-modal>
-    <b-loading
-      :is-full-page="true"
-      v-model="interfaceStore.isLoading"
-      :can-cancel="false"
-    ></b-loading>
+    <KeyboardControlsModalDialog />
+    <b-loading :is-full-page="true" v-model="interfaceStore.isLoading" :can-cancel="false"></b-loading>
   </div>
 </template>
 
@@ -123,7 +104,7 @@ $box-padding: 1rem;
       margin: 0;
       padding: min(0.5vw, 1rem);
 
-      & > .level {
+      &>.level {
         margin-bottom: 0.5rem;
       }
     }
@@ -183,7 +164,7 @@ $box-padding: 1rem;
         min-height: 70vh;
       }
 
-      & .level-left + .level-right {
+      & .level-left+.level-right {
         margin-top: 0.5rem;
       }
 
