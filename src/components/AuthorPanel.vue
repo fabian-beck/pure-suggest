@@ -1,5 +1,5 @@
 <template>
-  <MainDialog headerColor="primary" title="Authors of selected publications" v-model="interfaceStore.isAuthorPanelShown">
+  <MainDialog headerColor="primary" title="Authors of selected publications" icon="mdi-account-group" v-model="interfaceStore.isAuthorPanelShown">
     <div class="content">
       <section>
         <ul>

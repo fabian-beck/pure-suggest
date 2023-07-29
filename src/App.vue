@@ -24,9 +24,7 @@
     </QuickAccessBar>
     <SearchPanel />
     <AuthorPanel />
-    <b-modal v-model="interfaceStore.isAboutPageShown">
-      <AboutPage />
-    </b-modal>
+    <AboutPage />
     <b-modal v-model="interfaceStore.isKeyboardControlsShown">
       <KeyboardControlsPage />
     </b-modal>

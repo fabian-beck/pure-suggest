@@ -1,9 +1,9 @@
 <template>
     <v-dialog v-model="isDialogShown" scrollable>
         <v-card>
-            <v-card-title :class="`has-background-${headerColor} has-text-white level`">
+            <v-card-title :class="`has-background-${headerColor} has-text-dark level`">
                 <div class="level-left">
-                    <v-icon class="has-text-white">mdi-account-group</v-icon>
+                    <v-icon class="has-text-dark">{{ icon }}</v-icon>
                     &ensp;{{ title }}
                 </div>
                 <CompactButton
@@ -26,6 +26,7 @@ export default {
         value: Boolean,
         headerColor: String,
         title: String,
+        icon: String,
     },
     data() {
         return {
@@ -57,6 +58,10 @@ export default {
 
   & .v-card__title {
     margin-bottom: 0;
+  }
+
+  & .v-card__text {
+    padding-top: 1rem;
   }
 }
 </style>
