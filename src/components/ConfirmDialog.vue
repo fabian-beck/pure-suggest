@@ -1,6 +1,9 @@
 <template>
     <v-dialog width="500" persistent v-model="isDialogShown">
         <v-card>
+            <v-card-title v-if="title">
+                {{ title }}
+            </v-card-title>
             <v-card-text><span v-html="message"></span>
             </v-card-text>
             <v-card-actions>
@@ -17,6 +20,7 @@ export default {
     name: "ConfirmDialog",
     props: {
         value: Boolean,
+        title: String,
         message: String,
         action: Function,
     },
@@ -48,7 +52,7 @@ export default {
 ::v-deep .v-dialog {
 
     & .v-card__text {
-        padding: 1rem;
+        padding: 0.5rem 1.5rem;
         font-size: 1.0rem;
     }
 }

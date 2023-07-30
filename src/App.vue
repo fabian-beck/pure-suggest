@@ -14,15 +14,9 @@
     <AboutModalDialog />
     <KeyboardControlsModalDialog />
     <ConfirmDialog :message="interfaceStore.confirmDialog.message" v-model="interfaceStore.confirmDialog.isShown"
-      :action="interfaceStore.confirmDialog.action"></ConfirmDialog>
-    <v-overlay
-      v-model="interfaceStore.isLoading"
-      location-strategy="static"
-    >
-      <v-progress-circular
-        indeterminate
-        size="64"
-      ></v-progress-circular>
+      :action="interfaceStore.confirmDialog.action" :title="interfaceStore.confirmDialog.title"></ConfirmDialog>
+    <v-overlay v-model="interfaceStore.isLoading" location-strategy="static">
+      <v-progress-circular indeterminate size="64"></v-progress-circular>
     </v-overlay>
   </div>
 </template>
