@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="isDialogShown" scrollable :fullscreen="$vuetify.breakpoint.smAndDown" hide-overlay :persistent="noCloseButton">
+    <v-dialog v-model="isDialogShown" scrollable :fullscreen="$vuetify.breakpoint.smAndDown" :persistent="noCloseButton">
         <v-card>
             <v-card-title :class="`has-background-${headerColor} has-text-dark level`">
                 <div class="header-left">
