@@ -4,8 +4,8 @@
     <div class="content">
       <section>
         <form v-on:submit.prevent="search" class="field has-addons mb-2">
-          <v-text-field clearable @keyup.enter="search" v-model="interfaceStore.searchQuery"
-            type="input" ref="searchInput">
+          <v-text-field clearable @keyup.enter="search" v-model="interfaceStore.searchQuery" type="input"
+            ref="searchInput">
             <v-icon slot="append" @click="search">mdi-magnify</v-icon>
           </v-text-field>
         </form>
@@ -21,10 +21,10 @@
             based on
             <span v-show="searchResults.type === 'doi'">detected <b>DOIs</b></span><span
               v-show="searchResults.type === 'search'"><b>search</b></span>.</span>
-          <b-button class="is-primary is-small ml-4" icon-left="plus-thick"
-            data-tippy-content="Mark all listed publications to be added to selected." v-tippy
-            v-on:click="addAllPublications" v-show="searchResults.type === 'doi' && searchResults.results.length > 0">Add
-            all</b-button>
+          <v-btn class="has-background-primary has-text-white ml-4" v-on:click="addAllPublications"
+            v-show="searchResults.type === 'doi' && filteredSearchResults.length > 0" small>
+            <v-icon left>mdi-plus-thick</v-icon> Add all
+          </v-btn>
         </p>
         <ul class="publication-list">
           <li v-for="publication in filteredSearchResults" class="publication-component media" :key="publication.doi">
@@ -47,17 +47,15 @@
                 }}</a>
               </span>
               <span v-show="publication.title">
-                <a :href="`https://scholar.google.de/scholar?hl=en&q=${publication.title
-                  } ${publication.author ? publication.author : ''}`" class="ml-2">
-                  <b-icon icon="school" size="is-small" data-tippy-content="Google Scholar" v-tippy></b-icon></a>
+                <CompactButton icon="mdi-school" data-tippy-content="Google Scholar" v-tippy :href="publication.gsUrl"
+                  class="ml-2"></CompactButton>
               </span>
             </div>
             <div class="media-right">
               <div>
-                <b-button class="is-primary is-small" icon-left="plus-thick"
+                <CompactButton icon="mdi-plus-thick"
                   data-tippy-content="Mark publication to be added to selected publications." v-tippy
-                  @click.stop="addPublication(publication.doi)" v-show="publication.wasFetched">
-                </b-button>
+                  @click="addPublication(publication.doi)"></CompactButton>
               </div>
             </div>
             <b-loading :active="!publication.wasFetched" :is-full-page="false"><b-icon
@@ -81,9 +79,10 @@
         </div>
       </div>
       <div class="level-right">
-        <b-button class="level-item" @click="cancel()">Cancel</b-button>
-        <b-button class="level-item is-primary" @click="updateAndClose" :disabled="addedPublications.length === 0"
-          icon-left="update">Update</b-button>
+        <v-btn class="level-item" @click="cancel()">Cancel</v-btn>
+        <v-btn class="level-item has-background-primary has-text-white" @click="updateAndClose"
+          :disabled="addedPublications.length === 0">
+          <v-icon left>mdi-update</v-icon>Update</v-btn>
       </div>
     </footer>
   </ModalDialog>
@@ -199,7 +198,7 @@ export default {
 </script>
 
 <style lang="scss">
-.card {
+.content {
   & .publication-list {
     padding: 0;
     margin: 0;
@@ -215,10 +214,10 @@ export default {
       min-height: 4.1rem;
     }
   }
+}
 
-  & footer {
-    padding: 1rem;
-  }
+footer {
+  padding: 1rem;
 }
 
 @include touch {
