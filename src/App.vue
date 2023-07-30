@@ -13,7 +13,15 @@
     <AuthorModalDialog />
     <AboutModalDialog />
     <KeyboardControlsModalDialog />
-    <b-loading :is-full-page="true" v-model="interfaceStore.isLoading" :can-cancel="false"></b-loading>
+    <v-overlay
+      v-model="interfaceStore.isLoading"
+      location-strategy="static"
+    >
+      <v-progress-circular
+        indeterminate
+        size="64"
+      ></v-progress-circular>
+    </v-overlay>
   </div>
 </template>
 
