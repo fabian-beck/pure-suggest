@@ -42,7 +42,7 @@
           <div class="glyph has-text-centered" v-bind:style="{ 'background-color': publication.scoreColor }"
             v-show="publication.wasFetched">
             <div class="tooltip-target">
-              <div class="is-size-3 is-inline-block">
+              <div class="is-size-3 is-inline-block score">
                 {{ publication.score }}
               </div>
               <div class="boost-indicator" :class="chevronType" v-if="publication.boostFactor > 1">
@@ -391,7 +391,7 @@ li {
         color: $info-dark;
       }
 
-      & .glyph {
+      & .glyph .score {
         color: $info-dark;
       }
     }
