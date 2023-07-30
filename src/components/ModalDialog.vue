@@ -1,12 +1,12 @@
 <template>
-    <v-dialog v-model="isDialogShown" scrollable :fullscreen="$vuetify.breakpoint.smAndDown">
+    <v-dialog v-model="isDialogShown" scrollable :fullscreen="$vuetify.breakpoint.smAndDown" hide-overlay :persistent="noCloseButton">
         <v-card>
             <v-card-title :class="`has-background-${headerColor} has-text-dark level`">
                 <div class="header-left">
                     <v-icon class="has-text-dark title-icon">{{ icon }}</v-icon>
                     <span>{{ title }}</span>
                 </div>
-                <CompactButton icon="mdi-close" class="header-right" v-on:click="hideDialog"></CompactButton>
+                <CompactButton icon="mdi-close" class="header-right" v-on:click="hideDialog" v-if="!noCloseButton"></CompactButton>
             </v-card-title>
             <v-card-text>
                 <slot></slot>
@@ -23,6 +23,7 @@ export default {
         headerColor: String,
         title: String,
         icon: String,
+        noCloseButton: Boolean,
     },
     data() {
         return {

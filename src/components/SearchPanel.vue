@@ -1,6 +1,6 @@
 <template>
   <ModalDialog v-model="isSearchPanelShown" @close="cancel" title="Search/add publications" icon="mdi-magnify"
-    headerColor="primary">
+    headerColor="primary" noCloseButton>
     <div class="content">
       <section>
         <form v-on:submit.prevent="search" class="field has-addons mb-2">
@@ -85,6 +85,8 @@
           <v-icon left>mdi-update</v-icon>Update</v-btn>
       </div>
     </footer>
+    <ConfirmDialog message="Do you really want to discard the list of added publications?" v-model="cancelDialogShown"
+      :action="close"></ConfirmDialog>
   </ModalDialog>
 </template>
 
@@ -109,6 +111,7 @@ export default {
       searchResults: { results: [], type: "empty" },
       addedPublications: [],
       isLoading: false,
+      cancelDialogShown: false,
     };
   },
   computed: {
@@ -175,12 +178,7 @@ export default {
         this.close();
         return;
       }
-      this.interfaceStore.showConfirmDialog(
-        "Do you really want to discard the list of added publications?",
-        () => {
-          this.close();
-        }
-      );
+      this.cancelDialogShown = true;
     },
 
     close() {
