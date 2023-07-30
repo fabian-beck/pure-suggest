@@ -1,105 +1,92 @@
 <template>
-  <b-modal :active="interfaceStore.isSearchPanelShown" @close="cancel">
-    <div class="card">
-      <header class="card-header has-background-primary">
-        <p class="card-header-title has-text-white">
-          <b-icon icon="magnify"></b-icon>&ensp;Search/add publications
+  <ModalDialog v-model="isSearchPanelShown" @close="cancel" title="Search/add publications" icon="mdi-magnify"
+    headerColor="primary">
+    <div class="content">
+      <section>
+        <form v-on:submit.prevent="search" class="field has-addons mb-2">
+          <v-text-field clearable @keyup.enter="search" v-model="interfaceStore.searchQuery"
+            type="input" ref="searchInput">
+            <v-icon slot="append" @click="search">mdi-magnify</v-icon>
+          </v-text-field>
+        </form>
+        <p class="notification has-background-primary-light p-2 mb-2">
+          <span v-show="searchResults.type === 'empty'"><i><b>Search</b> for keywords, names, etc. <b>or add </b> by
+              providing
+              <a href="https://www.doi.org/" class="href">DOI(s)</a> in any
+              format.</i></span>
+          <span v-show="['doi', 'search'].includes(searchResults.type)">Showing
+            <b>{{ filteredSearchResults.length }} publication{{
+              filteredSearchResults.length != 1 ? "s" : ""
+            }}</b>
+            based on
+            <span v-show="searchResults.type === 'doi'">detected <b>DOIs</b></span><span
+              v-show="searchResults.type === 'search'"><b>search</b></span>.</span>
+          <b-button class="is-primary is-small ml-4" icon-left="plus-thick"
+            data-tippy-content="Mark all listed publications to be added to selected." v-tippy
+            v-on:click="addAllPublications" v-show="searchResults.type === 'doi' && searchResults.results.length > 0">Add
+            all</b-button>
         </p>
-      </header>
-      <div class="card-content">
-        <div class="content">
-          <section>
-            <form v-on:submit.prevent="search" class="field has-addons mb-2">
-              <p class="control is-expanded m-0">
-                <input class="input search-publication" type="text" v-model="interfaceStore.searchQuery"
-                  ref="searchInput" />
-              </p>
-              <p class="control">
-                <b-button class="button level-right has-background-primary-light" type="submit" icon-left="magnify"
-                  @click.stop="search">
-                </b-button>
-              </p>
-            </form>
-            <p class="notification has-background-primary-light p-2 mb-2">
-              <span v-show="searchResults.type === 'empty'"><i><b>Search</b> for keywords, names, etc. <b>or add </b> by
-                  providing
-                  <a href="https://www.doi.org/" class="href">DOI(s)</a> in any
-                  format.</i></span>
-              <span v-show="['doi', 'search'].includes(searchResults.type)">Showing
-                <b>{{ filteredSearchResults.length }} publication{{
-                  filteredSearchResults.length != 1 ? "s" : ""
-                }}</b>
-                based on
-                <span v-show="searchResults.type === 'doi'">detected <b>DOIs</b></span><span
-                  v-show="searchResults.type === 'search'"><b>search</b></span>.</span>
-              <b-button class="is-primary is-small ml-4" icon-left="plus-thick"
-                data-tippy-content="Mark all listed publications to be added to selected." v-tippy
-                v-on:click="addAllPublications"
-                v-show="searchResults.type === 'doi' && searchResults.results.length > 0">Add all</b-button>
-            </p>
-            <ul class="publication-list">
-              <li v-for="publication in filteredSearchResults" class="publication-component media" :key="publication.doi">
-                <div class="media-content">
-                  <b v-if="publication.wasFetched && !publication.title" class="has-text-danger-dark">[No metadata
-                    available]</b>
-                  <b v-html="publication.title" v-if="publication.wasFetched"></b>
-                  <span v-if="publication.author">
-                    (<span>{{
-                      publication.authorShort
-                      ? publication.authorShort + ", "
-                      : ""
-                    }}</span><span :class="publication.year ? '' : 'unknown'">{{
+        <ul class="publication-list">
+          <li v-for="publication in filteredSearchResults" class="publication-component media" :key="publication.doi">
+            <div class="media-content">
+              <b v-if="publication.wasFetched && !publication.title" class="has-text-danger-dark">[No metadata
+                available]</b>
+              <b v-html="publication.title" v-if="publication.wasFetched"></b>
+              <span v-if="publication.author">
+                (<span>{{
+                  publication.authorShort
+                  ? publication.authorShort + ", "
+                  : ""
+                }}</span><span :class="publication.year ? '' : 'unknown'">{{
   publication.year ? publication.year : "[unknown year]"
 }}</span>)</span>
-                  <span>
-                    DOI:
-                    <a :href="`https://doi.org/${publication.doi}`">{{
-                      publication.doi
-                    }}</a>
-                  </span>
-                  <span v-show="publication.title">
-                    <a :href="`https://scholar.google.de/scholar?hl=en&q=${publication.title
-                      } ${publication.author ? publication.author : ''}`" class="ml-2">
-                      <b-icon icon="school" size="is-small" data-tippy-content="Google Scholar" v-tippy></b-icon></a>
-                  </span>
-                </div>
-                <div class="media-right">
-                  <div>
-                    <b-button class="is-primary is-small" icon-left="plus-thick"
-                      data-tippy-content="Mark publication to be added to selected publications." v-tippy
-                      @click.stop="addPublication(publication.doi)" v-show="publication.wasFetched">
-                    </b-button>
-                  </div>
-                </div>
-                <b-loading :active="!publication.wasFetched" :is-full-page="false"><b-icon
-                    icon="progress-clock"></b-icon></b-loading>
-              </li>
-              <b-loading v-model="isLoading"></b-loading>
-            </ul>
-          </section>
+              <span>
+                DOI:
+                <a :href="`https://doi.org/${publication.doi}`">{{
+                  publication.doi
+                }}</a>
+              </span>
+              <span v-show="publication.title">
+                <a :href="`https://scholar.google.de/scholar?hl=en&q=${publication.title
+                  } ${publication.author ? publication.author : ''}`" class="ml-2">
+                  <b-icon icon="school" size="is-small" data-tippy-content="Google Scholar" v-tippy></b-icon></a>
+              </span>
+            </div>
+            <div class="media-right">
+              <div>
+                <b-button class="is-primary is-small" icon-left="plus-thick"
+                  data-tippy-content="Mark publication to be added to selected publications." v-tippy
+                  @click.stop="addPublication(publication.doi)" v-show="publication.wasFetched">
+                </b-button>
+              </div>
+            </div>
+            <b-loading :active="!publication.wasFetched" :is-full-page="false"><b-icon
+                icon="progress-clock"></b-icon></b-loading>
+          </li>
+          <b-loading v-model="isLoading"></b-loading>
+        </ul>
+      </section>
+    </div>
+    <footer class="card-footer level">
+      <div class="level-left">
+        <div class="level-item">
+          <p>
+            <b><span v-show="addedPublications.length === 0">No</span><span v-show="addedPublications.length > 0">{{
+              addedPublications.length
+            }}</span>
+              publication<span v-show="addedPublications.length > 1">s</span></b>
+            <span v-show="addedPublications.length === 0">&nbsp;yet marked</span>
+            to be added to selected.
+          </p>
         </div>
       </div>
-      <footer class="card-footer level">
-        <div class="level-left">
-          <div class="level-item">
-            <p>
-              <b><span v-show="addedPublications.length === 0">No</span><span v-show="addedPublications.length > 0">{{
-                addedPublications.length
-              }}</span>
-                publication<span v-show="addedPublications.length > 1">s</span></b>
-              <span v-show="addedPublications.length === 0">&nbsp;yet marked</span>
-              to be added to selected.
-            </p>
-          </div>
-        </div>
-        <div class="level-right">
-          <b-button class="level-item" @click="cancel()">Cancel</b-button>
-          <b-button class="level-item is-primary" @click="updateAndClose" :disabled="addedPublications.length === 0"
-            icon-left="update">Update</b-button>
-        </div>
-      </footer>
-    </div>
-  </b-modal>
+      <div class="level-right">
+        <b-button class="level-item" @click="cancel()">Cancel</b-button>
+        <b-button class="level-item is-primary" @click="updateAndClose" :disabled="addedPublications.length === 0"
+          icon-left="update">Update</b-button>
+      </div>
+    </footer>
+  </ModalDialog>
 </template>
 
 <script>
