@@ -1,7 +1,8 @@
 <template>
     <v-dialog width="500" persistent v-model="isDialogShown">
         <v-card>
-            <v-card-text>{{ message }}</v-card-text>
+            <v-card-text><span v-html="message"></span>
+            </v-card-text>
             <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn text @click="hideDialog">Cancel</v-btn>

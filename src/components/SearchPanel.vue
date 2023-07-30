@@ -79,7 +79,7 @@
         </div>
       </div>
       <div class="level-right">
-        <v-btn class="level-item" @click="cancel()">Cancel</v-btn>
+        <v-btn class="level-item" @click="cancel()">Close</v-btn>
         <v-btn class="level-item has-background-primary has-text-white" @click="updateAndClose"
           :disabled="addedPublications.length === 0">
           <v-icon left>mdi-update</v-icon>Update</v-btn>

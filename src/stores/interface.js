@@ -138,20 +138,11 @@ export const useInterfaceStore = defineStore('interface', {
         },
 
         openFeedback() {
-            this.isDialogShown = true;
-            Dialog.confirm({
-                message:
-                    "<p><b>We are interested in your opinion!</b></p><p>&nbsp;</p><p>What you like and do not like, what features are missing, how you are using the tool, bugs, criticism, ... anything.</p><p>&nbsp;</p><p>We invite you to provide feedback publicly. Clicking 'OK' will open a GitHub discussion in another tab where you can post a comment (account required). Alternatively, you can always send a private message to <a href='mailto:fabian.beck@uni-bamberg.de'>fabian.beck@uni-bamberg.de</a>.</p>",
-                onConfirm: () => {
-                    window.open(
-                        "https://github.com/fabian-beck/pure-suggest/discussions/214"
-                    );
-                    this.isDialogShown = false;
-                },
-                onCancel: () => {
-                    this.isDialogShown = false;
-                },
-            });
+            this.showConfirmDialog("<p><b>We are interested in your opinion!</b></p><p>&nbsp;</p><p>What you like and do not like, what features are missing, how you are using the tool, bugs, criticism, ... anything.</p><p>&nbsp;</p><p>We invite you to provide feedback publicly. Clicking 'OK' will open a GitHub discussion in another tab where you can post a comment (account required). Alternatively, you can always send a private message to <a href='mailto:fabian.beck@uni-bamberg.de'>fabian.beck@uni-bamberg.de</a>.</p>", () => {
+                window.open(
+                    "https://github.com/fabian-beck/pure-suggest/discussions/214"
+                )
+            })
         },
 
         activatePublicationComponent: function (publicationComponent) {
