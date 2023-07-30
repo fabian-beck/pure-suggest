@@ -13,6 +13,8 @@
     <AuthorModalDialog />
     <AboutModalDialog />
     <KeyboardControlsModalDialog />
+    <ConfirmDialog :message="interfaceStore.confirmDialog.message" v-model="interfaceStore.confirmDialog.isShown"
+      :action="interfaceStore.confirmDialog.action"></ConfirmDialog>
     <v-overlay
       v-model="interfaceStore.isLoading"
       location-strategy="static"

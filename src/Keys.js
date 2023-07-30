@@ -13,13 +13,8 @@ export function onKey(e) {
         return;
     }
     if (
-        interfaceStore.isLoading ||
-        interfaceStore.isDialogShown ||
-        (interfaceStore.isSearchPanelShown &&
-            document.activeElement.nodeName != "INPUT") ||
-        interfaceStore.isAuthorModalDialogShown ||
-        interfaceStore.isAboutModalDialogShown ||
-        interfaceStore.isKeyboardControlsModalDialogShown
+        interfaceStore.isAnyOverlayShown &&
+        document.activeElement.nodeName != "INPUT"
     ) {
         e.preventDefault();
         return;

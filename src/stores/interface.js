@@ -19,6 +19,11 @@ export const useInterfaceStore = defineStore('interface', {
             isAboutModalDialogShown: false,
             isKeyboardControlsModalDialogShown: false,
             isfeedbackInvitationShown: false,
+            confirmDialog: {
+                message: "",
+                action: () => { },
+                isShown: false,
+            },
         }
     },
     getters: {
@@ -26,7 +31,7 @@ export const useInterfaceStore = defineStore('interface', {
             return window.innerWidth <= 1023;
         },
         isAnyOverlayShown() {
-            return this.isDialogShown || this.isSearchPanelShown || this.isAuthorModalDialogShown || this.isAboutModalDialogShown || this.isKeyboardControlsModalDialogShown || this.isfeedbackInvitationShown;
+            return this.isDialogShown || this.confirmDialog.isShown || this.isSearchPanelShown || this.isAuthorModalDialogShown || this.isAboutModalDialogShown || this.isKeyboardControlsModalDialogShown || this.isfeedbackInvitationShown;
         }
     },
     actions: {
@@ -105,17 +110,11 @@ export const useInterfaceStore = defineStore('interface', {
         },
 
         showConfirmDialog(message, confirm) {
-            this.isDialogShown = true;
-            Dialog.confirm({
+            this.confirmDialog = {
                 message: message,
-                onConfirm: () => {
-                    confirm();
-                    this.isDialogShown = false;
-                },
-                onCancel: () => {
-                    this.isDialogShown = false;
-                },
-            });
+                action: confirm,
+                isShown: true,
+            }
         },
 
         showFeedbackInvitation() {

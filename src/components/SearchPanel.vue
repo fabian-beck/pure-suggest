@@ -85,8 +85,6 @@
           <v-icon left>mdi-update</v-icon>Update</v-btn>
       </div>
     </footer>
-    <ConfirmDialog message="Do you really want to discard the list of added publications?" v-model="cancelDialogShown"
-      :action="close"></ConfirmDialog>
   </ModalDialog>
 </template>
 
@@ -111,7 +109,6 @@ export default {
       searchResults: { results: [], type: "empty" },
       addedPublications: [],
       isLoading: false,
-      cancelDialogShown: false,
     };
   },
   computed: {
@@ -178,7 +175,12 @@ export default {
         this.close();
         return;
       }
-      this.cancelDialogShown = true;
+      this.interfaceStore.showConfirmDialog(
+        "Do you really want to discard the list of added publications?",
+        () => {
+          this.close();
+        }
+      );
     },
 
     close() {
