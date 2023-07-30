@@ -48,8 +48,8 @@
           </div>
           <div class="media-right level">
             <CompactButton icon="mdi-undo" class="ml-2 level-item"
-              data-tippy-content="Remove all publications from queue again."
-              v-tippy v-on:click="sessionStore.clearQueues()"></CompactButton>
+              data-tippy-content="Remove all publications from queue again." v-tippy
+              v-on:click="sessionStore.clearQueues()"></CompactButton>
             <v-btn class="has-background-primary has-text-white ml-2 level-item"
               data-tippy-content="Update suggested and excluded publications with queue and compute new suggestions."
               v-tippy @click="sessionStore.updateQueued">
@@ -113,15 +113,14 @@ export default {
 
   methods: {
     importSession: function () {
-      this.$buefy.dialog.confirm({
-        title: "Import session",
-        message: `<label>Choose an exported session JSON file:&nbsp;</label>
-            <input type="file" id="import-json-input" accept="application/JSON"/>`,
-        onConfirm: () =>
+      this.interfaceStore.showConfirmDialog(`<label>Choose an exported session JSON file:&nbsp;</label>
+        <input type="file" id="import-json-input" accept="application/JSON"/>`,
+        () =>
           this.sessionStore.importSession(
             document.getElementById("import-json-input").files[0]
           ),
-      });
+        "Import session",
+      );
     },
   },
 };
