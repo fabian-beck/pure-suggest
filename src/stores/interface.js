@@ -67,7 +67,6 @@ export const useInterfaceStore = defineStore('interface', {
         },
 
         showAbstract(publication) {
-            console.log(publication)
             const _this = this;
             const onClose = function () {
                 _this.isDialogShown = false;

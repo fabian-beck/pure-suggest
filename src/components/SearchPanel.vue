@@ -65,7 +65,7 @@
         </ul>
       </section>
     </div>
-    <footer class="card-footer level">
+    <div class="level">
       <div class="level-left">
         <div class="level-item">
           <p>
@@ -84,7 +84,7 @@
           :disabled="addedPublications.length === 0">
           <v-icon left>mdi-update</v-icon>Update</v-btn>
       </div>
-    </footer>
+    </div>
   </ModalDialog>
 </template>
 
@@ -199,11 +199,15 @@ export default {
 
 <style lang="scss">
 .content {
+  & form {
+    margin-bottom: -0.5rem !important;
+  }
+
   & .publication-list {
     padding: 0;
     margin: 0;
     list-style: none;
-    height: calc(100vh - 350px);
+    height: calc(100vh - 370px);
     min-height: 100px;
     border: 1px solid $border;
     @include scrollable-list;
@@ -214,10 +218,6 @@ export default {
       min-height: 4.1rem;
     }
   }
-}
-
-footer {
-  padding: 1rem;
 }
 
 @include touch {
