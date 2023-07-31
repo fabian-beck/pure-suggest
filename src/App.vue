@@ -9,14 +9,17 @@
     </div>
     <QuickAccessBar id="quick-access" class="is-hidden-desktop" v-if="!interfaceStore.isAnyOverlayShown">
     </QuickAccessBar>
+    <!-- Modal dialogs -->
     <SearchPanel />
     <AuthorModalDialog />
     <AboutModalDialog />
     <KeyboardControlsModalDialog />
-    <ConfirmDialog />
+    <!-- Other dialogs and overlays -->
     <v-overlay v-model="interfaceStore.isLoading" location-strategy="static">
       <v-progress-circular indeterminate size="64"></v-progress-circular>
     </v-overlay>
+    <LoadingToast />
+    <ConfirmDialog />
   </div>
 </template>
 

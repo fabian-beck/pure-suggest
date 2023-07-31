@@ -157,7 +157,7 @@ export const useSessionStore = defineStore('session', {
       let publicationsLoaded = 0;
       this.interfaceStore.updateLoadingToast(
         `${publicationsLoaded}/${this.selectedPublicationsCount} selected publications loaded`,
-        "is-primary"
+        "primary"
       );
       await Promise.all(
         this.selectedPublications.map(async (publication) => {
@@ -166,7 +166,7 @@ export const useSessionStore = defineStore('session', {
           publicationsLoaded++;
           this.interfaceStore.updateLoadingToast(
             `${publicationsLoaded}/${this.selectedPublicationsCount} selected publications loaded`,
-            "is-primary"
+            "primary"
           );
         })
       );
@@ -331,11 +331,11 @@ export const useSessionStore = defineStore('session', {
       filteredSuggestions = filteredSuggestions.slice(0, this.maxSuggestions);
       console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`);
       let publicationsLoadedCount = 0;
-      this.interfaceStore.updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "is-info");
+      this.interfaceStore.updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "info");
       await Promise.all(filteredSuggestions.map(async (suggestedPublication) => {
         await suggestedPublication.fetchData()
         publicationsLoadedCount++;
-        this.interfaceStore.updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "is-info");
+        this.interfaceStore.updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "info");
       }));
       filteredSuggestions.forEach((publication) => {
         publication.isRead = this.readPublicationsDois.has(publication.doi);
@@ -434,7 +434,7 @@ export const useSessionStore = defineStore('session', {
       this.interfaceStore.startLoading();
       this.interfaceStore.updateLoadingToast(
         "Retrying to load metadata",
-        "is-danger"
+        "danger"
       );
       await publication.fetchData(undefined, true);
       await this.updateSuggestions();

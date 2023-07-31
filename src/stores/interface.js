@@ -8,7 +8,11 @@ export const useInterfaceStore = defineStore('interface', {
     state: () => {
         return {
             isLoading: false,
-            loadingToast: undefined,
+            loadingToast: {
+                message: "",
+                isShown: false,
+                type: "",
+            },
             isNetworkExpanded: false,
             isNetworkClusters: true,
             searchQuery: "",
@@ -51,19 +55,16 @@ export const useInterfaceStore = defineStore('interface', {
         endLoading() {
             this.isLoading = false;
             if (this.loadingToast) {
-                this.loadingToast.close();
-                this.loadingToast = null;
+                this.loadingToast.isShown = false;
             }
         },
 
         updateLoadingToast(message, type) {
-            if (!this.loadingToast) {
-                this.loadingToast = Toast.open({
-                    indefinite: true,
-                });
-            }
-            this.loadingToast.message = message;
-            this.loadingToast.type = type;
+            this.loadingToast = {
+                message: message,
+                isShown: true,
+                type: type,
+            };
         },
 
         showAbstract(publication) {
@@ -144,7 +145,7 @@ export const useInterfaceStore = defineStore('interface', {
                     "https://github.com/fabian-beck/pure-suggest/discussions/214"
                 )
             },
-            "We are interested in your opinion!")
+                "We are interested in your opinion!")
         },
 
         activatePublicationComponent: function (publicationComponent) {
