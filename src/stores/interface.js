@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 
-import { ToastProgrammatic as Toast } from 'buefy'
 import { SnackbarProgrammatic as Snackbar } from 'buefy'
 import { DialogProgrammatic as Dialog } from 'buefy'
 
@@ -12,6 +11,12 @@ export const useInterfaceStore = defineStore('interface', {
                 message: "",
                 isShown: false,
                 type: "",
+            },
+            errorToast: {
+                message: "",
+                isShown: false,
+                type: "",
+                duration: 0,
             },
             isNetworkExpanded: false,
             isNetworkClusters: true,
@@ -88,26 +93,12 @@ export const useInterfaceStore = defineStore('interface', {
             });
         },
 
-        showMessage(message) {
-            showToastMessage({
-                message: message,
-            });
-        },
-
-        showImportantMessage(message) {
-            ({
-                duration: 5000,
-                message: message,
-                type: "is-primary",
-            });
-        },
-
         showErrorMessage(errorMessage) {
-            showToastMessage({
-                duration: 5000,
+            console.error(errorMessage);
+            this.errorToast = {
+                isShown: true,
                 message: errorMessage,
-                type: "is-danger",
-            }, console.error);
+            };
         },
 
         showConfirmDialog(message, confirm, title = "Confirm") {
@@ -156,9 +147,3 @@ export const useInterfaceStore = defineStore('interface', {
 
     }
 })
-
-function showToastMessage(data, log = console.log) {
-    if (!data.message) return;
-    log(data.message);
-    Toast.open(data);
-}

@@ -1,12 +1,12 @@
 <template>
-    <v-snackbar v-model="interfaceStore.loadingToast.isShown" :class="`type-${interfaceStore.loadingToast.type}`"
-        timeout="-1">{{ interfaceStore.loadingToast.message }}</v-snackbar>
+    <v-snackbar v-model="interfaceStore.errorToast.isShown" :timeout="5000">{{ interfaceStore.errorToast.message
+    }}</v-snackbar>
 </template>
 
 <script>
 import { useInterfaceStore } from "../stores/interface.js";
 export default {
-    name: "LoadingToast",
+    name: "ErrorToast",
     setup: () => {
         const interfaceStore = useInterfaceStore();
         return { interfaceStore };
@@ -17,18 +17,11 @@ export default {
 <style scoped lang="scss">
 ::v-deep .v-snack__wrapper {
     border-radius: 1.5rem;
+    background-color: $danger !important;
 
     & .v-snack__content {
         text-align: center;
         font-size: 1rem;
     }
-}
-
-.type-primary ::v-deep .v-snack__wrapper {
-    background-color: $primary !important;
-}
-
-.type-info ::v-deep .v-snack__wrapper {
-    background-color: $info !important;
 }
 </style>

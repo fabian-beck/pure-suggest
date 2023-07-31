@@ -20,6 +20,7 @@
     </v-overlay>
     <LoadingToast />
     <ConfirmDialog />
+    <ErrorToast />
   </div>
 </template>
 
