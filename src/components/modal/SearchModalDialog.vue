@@ -4,7 +4,7 @@
     <div class="content">
       <section>
         <form v-on:submit.prevent="search" class="field has-addons mb-2">
-          <v-text-field clearable @keyup.enter="search" v-model="interfaceStore.searchQuery" type="input"
+          <v-text-field clearable v-model="interfaceStore.searchQuery" type="input"
             ref="searchInput">
             <v-icon slot="append" @click="search">mdi-magnify</v-icon>
           </v-text-field>
