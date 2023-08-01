@@ -26,8 +26,8 @@
       </div>
       <div>
         <div class="notification has-background-primary-light media p-2" v-show="sessionStore.isUpdatable">
-          <b-icon icon="tray-full" class="media-left ml-2 mt-2 is-hidden-mobile"></b-icon>
           <div class="media-content has-text-centered mt-2">
+            <InlineIcon icon="mdi-tray-full" class="mr-1"></InlineIcon>
             <b>Queue:</b>
             <span v-show="sessionStore.selectedQueue.length">
               {{
