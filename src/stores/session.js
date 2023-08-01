@@ -2,10 +2,10 @@ import { defineStore } from 'pinia'
 
 import { useInterfaceStore } from "./interface.js";
 
-import Publication from "./../Publication.js";
+import Publication from "@/Publication.js";
 import Filter from '../Filter.js';
-import { shuffle, saveAsFile } from "./../Util.js"
-import { clearCache } from "./../Cache.js";
+import { shuffle, saveAsFile } from "@/Util.js"
+import { clearCache } from "@/Cache.js";
 
 export const useSessionStore = defineStore('session', {
   state: () => {

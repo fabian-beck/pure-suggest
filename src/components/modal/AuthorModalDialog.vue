@@ -55,8 +55,8 @@
 </template>
 
 <script>
-import { useSessionStore } from "./../stores/session.js";
-import { useInterfaceStore } from "./../stores/interface.js";
+import { useSessionStore } from "@/stores/session.js";
+import { useInterfaceStore } from "@/stores/interface.js";
 
 export default {
   name: "AuthorModalDialog",

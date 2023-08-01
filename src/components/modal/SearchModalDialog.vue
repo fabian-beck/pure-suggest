@@ -1,5 +1,5 @@
 <template>
-  <ModalDialog v-model="isSearchPanelShown" @close="cancel" title="Search/add publications" icon="mdi-magnify"
+  <ModalDialog v-model="isSearchModalDialogShown" @close="cancel" title="Search/add publications" icon="mdi-magnify"
     headerColor="primary" noCloseButton>
     <div class="content">
       <section>
@@ -94,18 +94,18 @@
 <script>
 import { storeToRefs } from "pinia";
 
-import { useSessionStore } from "./../stores/session.js";
-import { useInterfaceStore } from "./../stores/interface.js";
+import { useSessionStore } from "@/stores/session.js";
+import { useInterfaceStore } from "@/stores/interface.js";
 
-import PublicationSearch from "./../PublicationSearch.js";
+import PublicationSearch from "@/PublicationSearch.js";
 
 export default {
-  name: "SearchPanel",
+  name: "SearchModalDialog",
   setup() {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
-    const { isSearchPanelShown } = storeToRefs(interfaceStore);
-    return { sessionStore, interfaceStore, isSearchPanelShown };
+    const { isSearchModalDialogShown } = storeToRefs(interfaceStore);
+    return { sessionStore, interfaceStore, isSearchModalDialogShown };
   },
   data() {
     return {
@@ -127,9 +127,9 @@ export default {
     },
   },
   watch: {
-    isSearchPanelShown: {
+    isSearchModalDialogShown: {
       handler: function () {
-        if (!this.isSearchPanelShown) return;
+        if (!this.isSearchModalDialogShown) return;
         setTimeout(() => {
           this.$refs.searchInput.focus();
         }, 300);
@@ -187,7 +187,7 @@ export default {
     },
 
     close() {
-      this.interfaceStore.isSearchPanelShown = false;
+      this.interfaceStore.isSearchModalDialogShown = false;
       this.reset();
     },
 

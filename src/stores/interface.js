@@ -23,7 +23,7 @@ export const useInterfaceStore = defineStore('interface', {
             searchQuery: "",
             isFilterPanelShown: false,
             isDialogShown: false,
-            isSearchPanelShown: false,
+            isSearchModalDialogShown: false,
             isAuthorModalDialogShown: false,
             isAboutModalDialogShown: false,
             isKeyboardControlsModalDialogShown: false,
@@ -41,7 +41,7 @@ export const useInterfaceStore = defineStore('interface', {
             return window.innerWidth <= 1023;
         },
         isAnyOverlayShown() {
-            return this.isDialogShown || this.confirmDialog.isShown || this.isSearchPanelShown || this.isAuthorModalDialogShown || this.isAboutModalDialogShown || this.isKeyboardControlsModalDialogShown || this.isfeedbackInvitationShown;
+            return this.isDialogShown || this.confirmDialog.isShown || this.isSearchModalDialogShown || this.isAuthorModalDialogShown || this.isAboutModalDialogShown || this.isKeyboardControlsModalDialogShown || this.isfeedbackInvitationShown;
         }
     },
     actions: {
@@ -121,9 +121,9 @@ export const useInterfaceStore = defineStore('interface', {
             });
         },
 
-        openSearchPanel(query) {
+        openSearchModalDialog(query) {
             this.searchQuery = query ? query : "";
-            this.isSearchPanelShown = true;
+            this.isSearchModalDialogShown = true;
         },
 
         openAuthorModalDialog() {

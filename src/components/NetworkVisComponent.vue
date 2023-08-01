@@ -101,8 +101,8 @@ import "tippy.js/dist/tippy.css";
 import _ from "lodash";
 import { storeToRefs } from "pinia";
 
-import { useSessionStore } from "./../stores/session.js";
-import { useInterfaceStore } from "./../stores/interface.js";
+import { useSessionStore } from "@/stores/session.js";
+import { useInterfaceStore } from "@/stores/interface.js";
 
 const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;

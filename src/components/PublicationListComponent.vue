@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import { scrollToTargetAdjusted } from "./../Util.js";
+import { scrollToTargetAdjusted } from "@/Util.js";
 
 export default {
   name: "PublicationListComponent",

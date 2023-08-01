@@ -33,7 +33,7 @@ export function onKey(e) {
     }
     if (e.key === "s") {
         e.preventDefault();
-        interfaceStore.isSearchPanelShown = true;
+        interfaceStore.isSearchModalDialogShown = true;
         return;
     }
     if (sessionStore.isEmpty) return;

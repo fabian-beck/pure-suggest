@@ -10,7 +10,7 @@
     <QuickAccessBar id="quick-access" class="is-hidden-desktop" v-if="!interfaceStore.isAnyOverlayShown">
     </QuickAccessBar>
     <!-- Modal dialogs -->
-    <SearchPanel />
+    <SearchModalDialog />
     <AuthorModalDialog />
     <AboutModalDialog />
     <KeyboardControlsModalDialog />

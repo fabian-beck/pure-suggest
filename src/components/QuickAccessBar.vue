@@ -29,9 +29,9 @@
 </template>
 
 <script>
-import { useSessionStore } from "./../stores/session.js";
+import { useSessionStore } from "@/stores/session.js";
 
-import { scrollToTargetAdjusted } from "./../Util.js";
+import { scrollToTargetAdjusted } from "@/Util.js";
 
 export default {
   name: "QuickAccessBar",

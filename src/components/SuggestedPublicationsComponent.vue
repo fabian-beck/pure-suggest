@@ -214,10 +214,10 @@
 <script>
 import { storeToRefs } from "pinia";
 
-import { useSessionStore } from "./../stores/session.js";
-import { useInterfaceStore } from "./../stores/interface.js";
-import Publication from "./../Publication.js";
-import Filter from "./../Filter.js";
+import { useSessionStore } from "@/stores/session.js";
+import { useInterfaceStore } from "@/stores/interface.js";
+import Publication from "@/Publication.js";
+import Filter from "@/Filter.js";
 
 export default {
   name: "SuggestedPublicationsComponent",

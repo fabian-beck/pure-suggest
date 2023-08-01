@@ -16,7 +16,7 @@
             v-on:click="interfaceStore.openAuthorModalDialog()"></CompactButton>
           <CompactButton icon="mdi-magnify" class="ml-2 has-text-white"
             data-tippy-content="<span class='key'>S</span>earch/add specific publications to be added to selected."
-            v-tippy v-on:click="interfaceStore.openSearchPanel()"></CompactButton>
+            v-tippy v-on:click="interfaceStore.openSearchModalDialog()"></CompactButton>
         </div>
       </div>
     </div>
@@ -65,7 +65,7 @@
           <div class="level mt-4 mb-2">
             <div class="level-item"></div>
             <div class="level-item">
-              <v-btn class="has-background-primary-light" @click.stop="interfaceStore.openSearchPanel()">
+              <v-btn class="has-background-primary-light" @click.stop="interfaceStore.openSearchModalDialog()">
                 <v-icon left>mdi-magnify</v-icon>
                 Search/add</v-btn>
             </div>
@@ -89,8 +89,8 @@
 </template>
 
 <script>
-import { useSessionStore } from "./../stores/session.js";
-import { useInterfaceStore } from "./../stores/interface.js";
+import { useSessionStore } from "@/stores/session.js";
+import { useInterfaceStore } from "@/stores/interface.js";
 
 export default {
   name: "SelectedPublicationsComponent",

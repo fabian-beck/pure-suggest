@@ -93,7 +93,7 @@
 </template>
 
 <script>
-import { useInterfaceStore } from "./../stores/interface.js";
+import { useInterfaceStore } from "@/stores/interface.js";
 export default {
   setup() {
     const interfaceStore = useInterfaceStore();
