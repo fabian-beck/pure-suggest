@@ -58,10 +58,13 @@
                   @click="addPublication(publication.doi)"></CompactButton>
               </div>
             </div>
-            <b-loading :active="!publication.wasFetched" :is-full-page="false"><b-icon
-                icon="progress-clock"></b-icon></b-loading>
+            <v-overlay :value="!publication.wasFetched" :absolute="true" opacity="0.1">
+              <v-icon class="has-text-grey-light">mdi-progress-clock</v-icon>
+            </v-overlay>
           </li>
-          <b-loading v-model="isLoading"></b-loading>
+          <v-overlay :value="isLoading">
+            <v-progress-circular indeterminate size="64"></v-progress-circular>
+          </v-overlay>
         </ul>
       </section>
     </div>
