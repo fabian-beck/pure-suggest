@@ -55,6 +55,7 @@
       :id="publication.doi"
       tabindex="0"
       v-on:focus="activate"
+      @click="sessionStore.logActivate(publication.doi,publication.isSelected ? 'selected' : 'suggested')"
       @click.stop="activate"
       @mouseenter="sessionStore.hoverPublication(publication, true)"
       @mouseleave="sessionStore.hoverPublication(publication, false)"
@@ -250,6 +251,7 @@
           <a
             :href="publication.doiUrl"
             @click.stop="refocus"
+            @click="logDoiClick(publication.doi, publication.isSelected)"
             @click.middle.stop="refocus"
             >{{ publication.doi }}</a
           >
@@ -350,6 +352,7 @@
                 class="ml-5"
                 @click.stop="refocus"
                 @click.middle.stop="refocus"
+                @click="logScholarClick(publication.doi, publication.isSelected)"
                 data-tippy-content="<span class='key'>G</span>oogle Scholar"
                 v-tippy
                 ><b-icon icon="school"></b-icon
@@ -375,6 +378,7 @@
             icon-left="plus-thick"
             data-tippy-content="Mark publication to be added to selected publications."
             @click.stop="sessionStore.queueForSelected(publication.doi)"
+            @click="logQd(publication.doi,publication.isSelected)"
             v-tippy
           >
           </b-button>
@@ -384,6 +388,7 @@
             class="is-small"
             icon-left="minus-thick"
             data-tippy-content="Mark publication to be excluded for suggestions."
+            @click="logExclude(publication.doi, publication.isSelected)"
             @click.stop="sessionStore.queueForExcluded(publication.doi)"
             v-tippy
           >
@@ -422,6 +427,7 @@ export default {
   },
   methods: {
     activate: function () {
+      //this.sessionStore.logActivate(this.publication.doi, this.publication.isSelected ? 'selected':'suggested')
       this.sessionStore.activatePublicationComponentByDoi(this.publication.doi);
       this.$emit("activate", this.publication.doi);
     },
@@ -437,6 +443,18 @@ export default {
 
     refocus: function () {
       document.getElementById(this.publication.doi).focus();
+    },
+    logDoiClick(doi, isSelected) {
+      this.sessionStore.logDoiClick(doi,this.interfaceStore.isNetworkExpanded ? 'network' :  isSelected ? 'selected':'suggested')
+    },
+    logScholarClick(doi, isSelected) {
+      this.sessionStore.logScholarClick(doi, this.interfaceStore.isNetworkExpanded ? 'network' :  isSelected ? 'selected':'suggested')
+    },
+    logQd(doi, isSelected){
+      this.sessionStore.logQd(doi, this.interfaceStore.isNetworkExpanded ? 'network' :  isSelected ? 'selected':'suggested')
+    },
+    logExclude(doi,isSelected){
+      this.sessionStore.logExclude(doi, this.interfaceStore.isNetworkExpanded ? 'network' :  isSelected ? 'selected':'suggested')
     },
   },
 };

@@ -216,6 +216,7 @@ import { storeToRefs } from "pinia";
 
 import { useSessionStore } from "./../stores/session.js";
 import { useInterfaceStore } from "./../stores/interface.js";
+import { logActionEvent } from "@/Logging";
 import Publication from "./../Publication.js";
 import Filter from "./../Filter.js";
 
@@ -263,12 +264,16 @@ export default {
   methods: {
     updateFilter: function () {
       if (this.isFilterPanelShown) {
+        logActionEvent("Filter updated","Filter: "+this.filterString + ", Year-Start: "+this.filterYearStart+", Year-End: "+this.filterYearEnd+", Tags: "+this.filterTag)
         this.sessionStore.filter.string = this.filterString;
         this.sessionStore.filter.yearStart = this.filterYearStart;
         this.sessionStore.filter.yearEnd = this.filterYearEnd;
         this.sessionStore.filter.tag = this.filterTag;
+        this.sessionStore.logPositionsFilterUpdate()
       } else {
+        logActionEvent("Filter removed","Filter: "+this.sessionStore.filter.string + ", Year-Start: "+        this.sessionStore.filter.yearStart+", Year-End: "+        this.sessionStore.filter.yearEnd+", Tags: "+        this.sessionStore.filter.tag)
         this.sessionStore.filter = new Filter();
+        this.sessionStore.logPositionsFilterRemoved()
       }
     },
     clearFilterString: function () {

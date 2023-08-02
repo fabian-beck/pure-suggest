@@ -41,6 +41,7 @@
             data-tippy-content="Expand diagram"
             v-tippy
             v-show="!interfaceStore.isNetworkExpanded"
+            @click="logExpandNetwork()"
             @click.stop="expandNetwork(true)"
           ></b-button>
           <b-button
@@ -49,6 +50,7 @@
             data-tippy-content="Collapse diagram"
             v-tippy
             v-show="interfaceStore.isNetworkExpanded"
+            @click="logCollapseNetwork()"
             @click.stop="expandNetwork(false)"
           ></b-button>
         </div>
@@ -109,6 +111,7 @@ import PublicationComponent from "./PublicationComponent.vue";
 
 import { useSessionStore } from "./../stores/session.js";
 import { useInterfaceStore } from "./../stores/interface.js";
+import { logActionEvent } from "../Logging";
 
 const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;
@@ -150,6 +153,10 @@ export default {
   watch: {
     isNetworkClusters: {
       handler: function () {
+        logActionEvent(
+          "Network mode changed",
+          this.isNetworkClusters ? "Clusters" : "Timeline"
+        );
         this.plot(true);
       },
     },
@@ -722,7 +729,7 @@ export default {
     yearX: function (year) {
       const width = Math.max(this.svgWidth, 2 * this.svgHeight);
       return (
-        (year - CURRENT_YEAR ) * width * 0.03 +
+        (year - CURRENT_YEAR) * width * 0.03 +
         width * (this.interfaceStore.isMobile ? 0.05 : 0.3)
       );
     },
@@ -734,6 +741,7 @@ export default {
     },
 
     activatePublication: function (event, d) {
+      this.sessionStore.logActivate(d.publication.doi,'network')
       this.sessionStore.activatePublicationComponentByDoi(d.publication.doi);
       event.stopPropagation();
     },
@@ -750,6 +758,12 @@ export default {
       const transform = d3.zoomTransform(this.svg.node());
       transform.k = transform.k * factor;
       this.svg.attr("transform", transform);
+    },
+    logCollapseNetwork() {
+      logActionEvent("Network collapsed");
+    },
+    logExpandNetwork() {
+      logActionEvent("Network expanded");
     },
   },
 };

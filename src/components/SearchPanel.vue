@@ -160,6 +160,7 @@
           <b-button
             class="level-item is-primary"
             @click="updateAndClose"
+            @click.stop="logAdd()"
             :disabled="addedPublications.length === 0"
             icon-left="update"
             >Update</b-button
@@ -275,6 +276,10 @@ export default {
       this.addedPublications = [];
       this.isLoading = false;
     },
+
+    logAdd(){
+      this.sessionStore.logAdd()
+    }
   },
 };
 </script>

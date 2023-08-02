@@ -24,6 +24,7 @@
         class="button has-background-warning"
         type="submit"
         icon-left="chevron-double-up"
+        @click="sessionStore.logKeywordUpdate"
         v-on:click="sessionStore.updateScores"
       >
         <span><span class="key">B</span>oost</span>

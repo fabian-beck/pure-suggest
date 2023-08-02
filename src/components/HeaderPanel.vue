@@ -43,6 +43,11 @@
         </b-navbar-dropdown>
       </template>
       <template #end>
+        <b-navbar-item>
+          <div>
+            <finish-study-button />
+          </div>
+        </b-navbar-item>
         <b-navbar-item tag="div" class="mr-6 ml-1">
           <a href="https://twitter.com/pure_suggest" v-tippy title="Follow us on Twitter">
             <b-icon icon="twitter"></b-icon>
@@ -111,9 +116,11 @@
 <script>
 import { useSessionStore } from "./../stores/session.js";
 import { useInterfaceStore } from "./../stores/interface.js";
+import FinishStudyButton from "./FinishStudyButton.vue";
 
 export default {
   name: "HeaderPanel",
+  components: { FinishStudyButton },
   setup() {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
