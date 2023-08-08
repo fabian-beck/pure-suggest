@@ -4,7 +4,7 @@
 </template>
 
 <script>
-import { useInterfaceStore } from "../stores/interface.js";
+import { useInterfaceStore } from "@/stores/interface.js";
 export default {
     name: "ErrorToast",
     setup: () => {
