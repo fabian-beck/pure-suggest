@@ -71,6 +71,10 @@ $box-padding: 1rem;
   grid-template-rows: max-content auto;
   font-family: BlinkMacSystemFont,-apple-system,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,Helvetica,Arial,sans-serif !important;
 
+  & p {
+    margin: 0;
+  };
+
   & #header {
     grid-area: header;
   }

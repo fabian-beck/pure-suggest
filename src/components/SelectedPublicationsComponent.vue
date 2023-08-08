@@ -21,7 +21,7 @@
       </div>
     </div>
     <div class="header">
-      <div class="notification has-background-warning-light p-2 pt-3 is-gapless" v-show="!sessionStore.isEmpty">
+      <div class="has-background-warning-light p-2 pt-3" v-show="!sessionStore.isEmpty">
         <BoostKeywordsComponent />
       </div>
       <div>
