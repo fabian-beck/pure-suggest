@@ -1,5 +1,5 @@
 <template>
-  <div id="app" data-app>
+  <v-app id="app" data-app>
     <HeaderPanel id="header" />
     <div id="main" @click="sessionStore.clearActivePublication('clicked anywhere')"
       :class="{ 'network-expanded': interfaceStore.isNetworkExpanded }">
@@ -21,7 +21,7 @@
     <LoadingToast />
     <ConfirmDialog />
     <ErrorToast />
-  </div>
+  </v-app>
 </template>
 
 <!---------------------------------------------------------------------------------->
@@ -62,13 +62,14 @@ export default {
 $block-spacing: 0.5rem;
 $box-padding: 1rem;
 
-#app {
+#app .v-application--wrap {
   display: grid;
   grid-template-areas:
     "header"
     "main";
   height: 100vh;
   grid-template-rows: max-content auto;
+  font-family: BlinkMacSystemFont,-apple-system,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,Helvetica,Arial,sans-serif !important;
 
   & #header {
     grid-area: header;

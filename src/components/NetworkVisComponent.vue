@@ -11,15 +11,15 @@
           </div>
         </div>
         <div class="level-right" v-show="!sessionStore.isEmpty">
-          <b-field class="level-item has-text-white mr-4 mb-0"
+          <div class="level-item has-text-white mr-4 mb-0"
             data-tippy-content="There are two display <span class='key'>m</span>odes:<br><br><b>Timeline:</b> The diagram places publications from left to right based on year, and vertically tries to group linked publications close to each other.<br><br><b>Clusters:</b> The diagram groups linked publications close to each other, irrespective of publication year."
             v-tippy>
             <label class="mr-2"><span class="key">M</span>ode:</label>
             <label class="mr-2" :class="{ 'has-text-grey-light': isNetworkClusters }">
               Timeline</label>
-            <b-switch v-model="isNetworkClusters" type="is-dark" passive-type="is-dark" @click.native.stop=""></b-switch>
+            <v-switch v-model="isNetworkClusters" hide-details color="gray"></v-switch>
             <label :class="{ 'has-text-grey-light': !isNetworkClusters }">Clusters</label>
-          </b-field>
+          </div>
           <CompactButton icon="mdi-arrow-expand" data-tippy-content="Expand diagram" v-tippy
             v-show="!interfaceStore.isNetworkExpanded" v-on:click="expandNetwork(true)"
             class="ml-4 is-hidden-touch has-text-white"></CompactButton>
@@ -698,36 +698,43 @@ export default {
 </script>
 
 <style lang="scss">
-.network-of-references .box {
-  height: 100%;
-  display: grid;
-  grid-template-rows: max-content auto;
-  position: relative;
+.network-of-references {
 
-  & ul.publication-component-list {
-    position: absolute;
-    bottom: 1vw;
-    left: 1vw;
-    width: 50%;
-    max-width: 50rem;
-    min-width: 40rem;
-    background: white;
+  & .level .v-input {
+    margin: 0;
   }
 
-  & .controls-header-left {
-    position: absolute;
-    top: calc(1vw + 2.5rem);
-    left: 1vw;
-  }
+  & .box {
+    height: 100%;
+    display: grid;
+    grid-template-rows: max-content auto;
+    position: relative;
 
-  & .controls-footer-right {
-    position: absolute;
-    bottom: max(1vw, 1rem);
-    right: max(1vw, 1rem);
-    z-index: 1;
+    & ul.publication-component-list {
+      position: absolute;
+      bottom: 1vw;
+      left: 1vw;
+      width: 50%;
+      max-width: 50rem;
+      min-width: 40rem;
+      background: white;
+    }
 
-    & .v-btn {
-      margin-left: 0.25rem !important;
+    & .controls-header-left {
+      position: absolute;
+      top: calc(1vw + 2.5rem);
+      left: 1vw;
+    }
+
+    & .controls-footer-right {
+      position: absolute;
+      bottom: max(1vw, 1rem);
+      right: max(1vw, 1rem);
+      z-index: 1;
+
+      & .v-btn {
+        margin-left: 0.25rem !important;
+      }
     }
   }
 }
