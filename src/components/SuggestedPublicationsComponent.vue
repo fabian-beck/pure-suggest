@@ -264,14 +264,16 @@ export default {
   methods: {
     updateFilter: function () {
       if (this.isFilterPanelShown) {
-        logActionEvent("Filter updated","Filter: "+this.filterString + ", Year-Start: "+this.filterYearStart+", Year-End: "+this.filterYearEnd+", Tags: "+this.filterTag)
+        //logActionEvent("Filter updated","Filter: "+this.filterString + "_ Year-Start: "+this.filterYearStart+"_ Year-End: "+this.filterYearEnd+"_ Tags: "+this.filterTag)
+        logActionEvent("Filter updated",this.filterString.replaceAll(",",";") + "_"+this.filterYearStart+"_"+this.filterYearEnd+"_"+this.filterTag)
         this.sessionStore.filter.string = this.filterString;
         this.sessionStore.filter.yearStart = this.filterYearStart;
         this.sessionStore.filter.yearEnd = this.filterYearEnd;
         this.sessionStore.filter.tag = this.filterTag;
         this.sessionStore.logPositionsFilterUpdate()
       } else {
-        logActionEvent("Filter removed","Filter: "+this.sessionStore.filter.string + ", Year-Start: "+        this.sessionStore.filter.yearStart+", Year-End: "+        this.sessionStore.filter.yearEnd+", Tags: "+        this.sessionStore.filter.tag)
+        //logActionEvent("Filter removed","Filter: "+this.sessionStore.filter.string + "_ Year-Start: "+        this.sessionStore.filter.yearStart+"_ Year-End: "+        this.sessionStore.filter.yearEnd+"_ Tags: "+        this.sessionStore.filter.tag)
+        logActionEvent("Filter removed",this.sessionStore.filter.string.replaceAll(",",";") + "_"+        this.sessionStore.filter.yearStart+"_"+        this.sessionStore.filter.yearEnd+"_"+        this.sessionStore.filter.tag)
         this.sessionStore.filter = new Filter();
         this.sessionStore.logPositionsFilterRemoved()
       }

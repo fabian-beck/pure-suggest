@@ -130,7 +130,6 @@ export const useSessionStore = defineStore("session", {
       );
       this.excludedQueue.push(doi);
       this.hasUpdated(`Queued ${doi} for exclusion.`);
-      //logPubEvent("Pub excluded", doi);
     },
 
     removeFromQueues(doi) {
@@ -532,6 +531,10 @@ export const useSessionStore = defineStore("session", {
     },
 
     setActivePublication(doi) {
+      if (this.activePublication && this.activePublication.doi != doi){
+        console.log(this.activePublication);
+        this.logDeactivate(this.activePublication.doi, "activated other pub")
+      }
       this.selectedPublications.forEach((selectedPublication) => {
         selectedPublication.isActive = selectedPublication.doi === doi;
         if (selectedPublication.isActive) {
@@ -575,6 +578,7 @@ export const useSessionStore = defineStore("session", {
 
     clearActivePublication(source) {
       if (!this.activePublication) return;
+      this.logDeactivate(this.activePublication.doi, source)
       this.activePublication = undefined;
       this.publications.forEach((publication) => {
         publication.isActive = false;
@@ -694,8 +698,11 @@ export const useSessionStore = defineStore("session", {
       );
     },
 
+
     logKeywordUpdate() {
-      logActionEvent("Keywords updated", this.boostKeywords);
+      let logKeywords = this.boostKeywordString.replaceAll(",","_")
+      console.log(logKeywords);
+      logActionEvent("Keywords updated", logKeywords);
     },
     logPositionsFilterUpdate() {
       this.suggestedPublicationsFiltered.forEach((pub) => {
@@ -728,6 +735,16 @@ export const useSessionStore = defineStore("session", {
             ) + 1
           );
         });
+    },
+    logDeactivate(doi, reason){
+      logPubEvent(
+        "Pub deactivated",
+        doi,
+        this.selectedPublicationsCount,
+        this.suggestedPublications.findIndex(
+          (publication) => publication.doi === doi
+        ) + 1,"",reason
+      );
     },
     logDoiClick(doi, component) {
       logPubEvent(

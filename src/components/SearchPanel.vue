@@ -119,6 +119,7 @@
                       data-tippy-content="Mark publication to be added to selected publications."
                       v-tippy
                       @click.stop="addPublication(publication.doi)"
+                      @click="logQd(publication.doi)"
                       v-show="publication.wasFetched"
                     >
                     </b-button>
@@ -239,10 +240,10 @@ export default {
     addPublication(doi) {
       this.addedPublications.push(doi);
     },
-
     addAllPublications() {
       this.filteredSearchResults.forEach((publication) => {
         this.addPublication(publication.doi);
+        this.logQd(publication.doi,publication.isSelected)
       });
       this.searchResults = { results: [], type: "empty" };
       this.interfaceStore.searchQuery = "";
@@ -276,10 +277,14 @@ export default {
       this.addedPublications = [];
       this.isLoading = false;
     },
-
     logAdd(){
       this.sessionStore.logAdd()
-    }
+    },
+    logQd(doi){
+      this.sessionStore.logQd(doi, 'import')
+    },
+    
+
   },
 };
 </script>
