@@ -14,9 +14,7 @@
           <tippy>
             <template v-slot:trigger>
               <div class="mr-2">
-                <v-icon size="18" color="white" class="mr-1"
-                v-show="isFilterPanelShown"
-                >mdi-filter</v-icon>
+                <v-icon size="18" color="white" class="mr-1" v-show="isFilterPanelShown">mdi-filter</v-icon>
                 <v-badge :content="sessionStore.unreadSuggestionsCount" color="black" class="mr-2" offset-y="7"
                   :value="sessionStore.unreadSuggestionsCount > 0" transition="scale-rotate-transition">
                   <b>{{ sessionStore.suggestedPublicationsFiltered.length }}</b>
@@ -62,12 +60,12 @@
               "></CompactButton>
         </div>
         <div class="level-item" v-if="sessionStore.suggestion">
-          <b-field class="ml-5"
+          <v-switch v-model="isFilterPanelShown" class="ml-5" hide-details color="white"
             data-tippy-content="Activate/deactivate <b>filter</b> to restrict suggested publications by different criteria."
             v-tippy>
-            <b-switch v-model="isFilterPanelShown" type="is-black"><b-icon icon="filter"
-                size="is-small"></b-icon>&nbsp;<span class="key">F</span>ilter</b-switch>
-          </b-field>
+          </v-switch>
+          <v-icon size="18" color="white" class="mr-1">mdi-filter</v-icon>
+          <span class="key">F</span>ilter
         </div>
       </div>
     </div>
@@ -203,13 +201,10 @@ export default {
   grid-template-rows: max-content max-content auto;
   position: relative;
 
-  & .box-header .tag {
-    position: relative;
-    top: -0.4rem;
-    padding: 0 0.2rem;
-    height: 1.2rem;
-    background-color: $info-light;
-    color: $info-dark;
+  & .box-header {
+    & .v-input {
+      margin: 0;
+    }
   }
 
   & .notification {
