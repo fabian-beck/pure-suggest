@@ -149,7 +149,7 @@ $box-padding: 1rem;
 }
 
 @include touch {
-  #app {
+  #app .v-application--wrap {
     display: block;
     margin-bottom: 5rem;
 
@@ -158,6 +158,7 @@ $box-padding: 1rem;
       margin: 0;
       overflow: scroll;
       height: auto;
+      margin-top: 52px;
 
       & .box {
         margin: 0.25rem;

@@ -1,22 +1,25 @@
 <template>
-  <v-app-bar color="white" dense :absolute="isMobile">
-    <v-icon class="mr-4" size="38">mdi-water-plus-outline</v-icon>
+  <v-app-bar color="white" dense :fixed="interfaceStore.isMobile">
+    <v-icon class="mr-1" size="38">mdi-water-plus-outline</v-icon>
     <v-toolbar-title>
       <span v-html="$appNameHtml"></span>
     </v-toolbar-title>
     <v-menu v-if="!sessionStore.isEmpty" bottom right offset-y>
       <template v-slot:activator="{ on, attrs }">
-        <v-btn v-bind="attrs" v-on="on" v-tippy title="Session" outlined class="ml-8">
-          <v-icon size="18" class="mr-2">mdi-text-box-multiple-outline</v-icon>
-          Session ({{ sessionStore.selectedPublicationsCount }} selected{{ sessionStore.excludedPublicationsCount
-            ? `; ${sessionStore.excludedPublicationsCount} excluded`
-            : "" }})
-          <v-icon class="ml-2">
-            mdi-menu-down
-          </v-icon>
+        <v-btn v-bind="attrs" v-on="on" :outlined="!interfaceStore.isMobile" :icon="interfaceStore.isMobile" class="ml-4">
+          <v-icon size="18">mdi-text-box-multiple-outline</v-icon>
+          <span class="is-hidden-touch ml-2">
+            {{ sessionStateString }}
+            <v-icon class="ml-2">
+              mdi-menu-down
+            </v-icon>
+          </span>
         </v-btn>
       </template>
       <v-list>
+        <v-list-item class="is-hidden-desktop">
+          {{ sessionStateString }}
+        </v-list-item>
         <v-list-item @click="sessionStore.exportSession">
           <v-list-item-icon>
             <v-icon>mdi-export</v-icon>
@@ -44,22 +47,17 @@
       </v-list>
     </v-menu>
     <v-spacer></v-spacer>
-    <v-btn icon href="https://twitter.com/pure_suggest" v-tippy title="Follow us on Twitter">
-      <v-icon>mdi-twitter</v-icon>
-    </v-btn>
-    <v-btn icon href="https://medium.com/@pure_suggest" v-tippy title="Read more on Medium">
-      <v-icon>mdi-post</v-icon>
-    </v-btn>
-    <v-btn icon href="https://github.com/fabian-beck/pure-suggest" v-tippy title="Contribute on GitHub">
-      <v-icon>mdi-github</v-icon>
-    </v-btn>
+    <HeaderExternalLinks class="is-hidden-touch mr-4" />
     <v-menu bottom left offset-y>
       <template v-slot:activator="{ on, attrs }">
-        <v-btn icon v-bind="attrs" v-on="on" class="ml-4 mr-1">
+        <v-btn icon v-bind="attrs" v-on="on" class="mr-1">
           <v-icon>mdi-dots-vertical</v-icon>
         </v-btn>
       </template>
       <v-list>
+        <v-list-item class="is-hidden-desktop">
+          <HeaderExternalLinks />
+        </v-list-item>
         <v-list-item @click="interfaceStore.openFeedback">
           <v-list-item-icon>
             <v-icon>mdi-comment-quote-outline</v-icon>
@@ -108,17 +106,23 @@ export default {
     const interfaceStore = useInterfaceStore();
     return { sessionStore, interfaceStore };
   },
-  props: {
-    isMobile: Boolean,
+  computed: {
+    sessionStateString() {
+      return `Session (${this.sessionStore.selectedPublicationsCount} selected${this.sessionStore.excludedPublicationsCount
+        ? `; ${this.sessionStore.excludedPublicationsCount} excluded`
+        : ""})`;
+    }
   },
 };
 </script>
 
 <style lang="scss" scoped>
 .v-toolbar {
+  z-index: 1000;
+
   & ::v-deep {
     & .v-toolbar__content {
-      padding: 0 0.5rem;
+      padding: 0 0.5vw;
 
       & .v-toolbar__title {
         font-size: 1.5rem;
