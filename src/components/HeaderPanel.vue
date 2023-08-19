@@ -139,7 +139,7 @@ export default {
 
 <style lang="scss" scoped>
 .v-toolbar {
-  z-index: 1000;
+  z-index: 100;
 
   & ::v-deep {
     & .v-toolbar__content {

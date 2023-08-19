@@ -202,7 +202,7 @@ export default {
 
 <style lang="scss">
 .content {
-  & form {
+  & form.field {
     margin-bottom: -0.5rem !important;
   }
 
