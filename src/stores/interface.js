@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 
 import { SnackbarProgrammatic as Snackbar } from 'buefy'
-import { DialogProgrammatic as Dialog } from 'buefy'
 
 export const useInterfaceStore = defineStore('interface', {
     state: () => {
@@ -22,7 +21,6 @@ export const useInterfaceStore = defineStore('interface', {
             isNetworkClusters: true,
             searchQuery: "",
             isFilterPanelShown: false,
-            isDialogShown: false,
             isSearchModalDialogShown: false,
             isAuthorModalDialogShown: false,
             isAboutModalDialogShown: false,
@@ -34,6 +32,11 @@ export const useInterfaceStore = defineStore('interface', {
                 isShown: false,
                 title: "",
             },
+            infoDialog: {
+                message: "",
+                isShown: false,
+                title: "",
+            },
         }
     },
     getters: {
@@ -41,12 +44,11 @@ export const useInterfaceStore = defineStore('interface', {
             return window.innerWidth <= 1023;
         },
         isAnyOverlayShown() {
-            return this.isDialogShown || this.confirmDialog.isShown || this.isSearchModalDialogShown || this.isAuthorModalDialogShown || this.isAboutModalDialogShown || this.isKeyboardControlsModalDialogShown || this.isfeedbackInvitationShown;
+            return this.confirmDialog.isShown || this.infoDialog.isShown|| this.isSearchModalDialogShown || this.isAuthorModalDialogShown || this.isAboutModalDialogShown || this.isKeyboardControlsModalDialogShown || this.isfeedbackInvitationShown;
         }
     },
     actions: {
         clear() {
-            this.isDialogShown = false;
             this.isNetworkExpanded = false;
             this.isNetworkClusters = true;
             this.isFilterPanelShown = false;
@@ -73,24 +75,11 @@ export const useInterfaceStore = defineStore('interface', {
         },
 
         showAbstract(publication) {
-            const _this = this;
-            const onClose = function () {
-                _this.isDialogShown = false;
-                _this.activatePublicationComponent(
-                    document.getElementById(publication.doi)
-                );
-            };
-            this.isDialogShown = true;
-            Dialog.alert({
-                message: `<div><b>${publication.title}</b></div><div><i>${publication.abstract}</i></div>`,
-                type: "is-dark",
-                hasIcon: true,
-                icon: "text",
-                confirmText: "Close",
-                canCancel: ["escape", "outside"],
-                onConfirm: onClose,
-                onCancel: onClose,
-            });
+            this.infoDialog = {
+                title: publication.title,
+                message: `<div><b>Abstract:</b> <i>${publication.abstract}</i></div>`,
+                isShown: true,
+            }
         },
 
         showErrorMessage(errorMessage) {
