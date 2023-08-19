@@ -5,7 +5,8 @@
       <v-toolbar-title>
         <span v-html="$appNameHtml"></span>
       </v-toolbar-title>
-      <v-menu v-if="!sessionStore.isEmpty" bottom right offset-y>
+      <v-spacer></v-spacer>
+      <v-menu v-if="!sessionStore.isEmpty" bottom right offset-y transition="slide-y-transition">
         <template v-slot:activator="{ on, attrs }">
           <v-btn v-bind="attrs" v-on="on" :outlined="!interfaceStore.isMobile" :icon="interfaceStore.isMobile"
             class="ml-4">
@@ -50,7 +51,7 @@
       </v-menu>
       <v-spacer></v-spacer>
       <HeaderExternalLinks class="is-hidden-touch mr-4" />
-      <v-menu bottom left offset-y>
+      <v-menu bottom left offset-y transition="slide-y-transition">
         <template v-slot:activator="{ on, attrs }">
           <v-btn icon v-bind="attrs" v-on="on" class="mr-1">
             <v-icon>mdi-dots-vertical</v-icon>
