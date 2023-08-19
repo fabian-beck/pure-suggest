@@ -8,7 +8,7 @@
       <v-spacer></v-spacer>
       <v-menu v-if="!sessionStore.isEmpty" bottom right offset-y transition="slide-y-transition">
         <template v-slot:activator="{ on, attrs }">
-          <v-btn v-bind="attrs" v-on="on" :outlined="!interfaceStore.isMobile" :icon="interfaceStore.isMobile"
+          <v-btn v-bind="attrs" v-on="on" outlined 
             class="ml-4">
             <v-icon size="18">mdi-text-box-multiple-outline</v-icon>
             <span class="is-hidden-touch ml-2">
