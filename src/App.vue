@@ -149,6 +149,11 @@ $box-padding: 1rem;
   }
 }
 
+// avoid floating labels being shown above header and overlay
+.field.is-floating-label .label{
+  z-index: 3 !important;
+}
+
 @include touch {
   #app .v-application--wrap {
     display: block;
