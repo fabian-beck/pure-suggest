@@ -37,7 +37,6 @@ export default defineConfig({
         preprocessorOptions: {
             scss: {
                 additionalData: `@import "node_modules/bulma/bulma";
-                @import "node_modules/buefy/src/scss/buefy"; 
                 @import "@/assets/_shared.scss";`
             }
         }

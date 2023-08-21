@@ -12,8 +12,6 @@ const opts = {}
 const vuetify = new Vuetify(opts)
 
 import '@mdi/font/css/materialdesignicons.css'
-import Buefy from 'buefy'
-Vue.use(Buefy, { defaultIconPack: 'mdi' })
 
 import VueTippy, { TippyComponent } from "vue-tippy";
 Vue.use(VueTippy, {
