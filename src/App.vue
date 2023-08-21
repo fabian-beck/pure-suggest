@@ -7,7 +7,8 @@
       <SuggestedPublicationsComponent id="suggested" v-show="!interfaceStore.isNetworkExpanded" />
       <NetworkVisComponent id="network" :svgWidth="1500" :svgHeight="600" />
     </div>
-    <QuickAccessBar id="quick-access" class="is-hidden-desktop" v-if="!interfaceStore.isAnyOverlayShown && !sessionStore.isEmpty">
+    <QuickAccessBar id="quick-access" class="is-hidden-desktop"
+      v-if="!interfaceStore.isAnyOverlayShown && !sessionStore.isEmpty">
     </QuickAccessBar>
     <!-- Modal dialogs -->
     <SearchModalDialog />
@@ -71,11 +72,13 @@ $box-padding: 1rem;
     "main";
   height: 100vh;
   grid-template-rows: max-content auto;
-  font-family: BlinkMacSystemFont,-apple-system,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,Helvetica,Arial,sans-serif !important;
+  font-family: BlinkMacSystemFont, -apple-system, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, Helvetica, Arial, sans-serif !important;
 
   & p {
     margin: 0;
-  };
+  }
+
+  ;
 
   & #header {
     grid-area: header;
@@ -150,9 +153,24 @@ $box-padding: 1rem;
   }
 }
 
-// avoid floating labels being shown above header and overlay
-.field.is-floating-label .label{
-  z-index: 3 !important;
+// floating labels of fields (inpired from Buefy)
+.field.is-floating-label {
+  position: relative;
+
+  & .label {
+    top: -.775em;
+    padding-left: .125em;
+    padding-right: .125em;
+    position: absolute;
+    left: 0.5em;
+    font-size: .75rem;
+    background-color: transparent;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: calc(100% - 2em);
+    overflow: hidden;
+    z-index: 3 !important;
+  }
 }
 
 @include touch {
