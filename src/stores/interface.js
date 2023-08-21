@@ -1,7 +1,5 @@
 import { defineStore } from 'pinia'
 
-import { SnackbarProgrammatic as Snackbar } from 'buefy'
-
 export const useInterfaceStore = defineStore('interface', {
     state: () => {
         return {
@@ -25,7 +23,7 @@ export const useInterfaceStore = defineStore('interface', {
             isAuthorModalDialogShown: false,
             isAboutModalDialogShown: false,
             isKeyboardControlsModalDialogShown: false,
-            isfeedbackInvitationShown: false,
+            isFeedbackSnackbarShown: false,
             confirmDialog: {
                 message: "",
                 action: () => { },
@@ -44,7 +42,13 @@ export const useInterfaceStore = defineStore('interface', {
             return window.innerWidth <= 1023;
         },
         isAnyOverlayShown() {
-            return this.confirmDialog.isShown || this.infoDialog.isShown|| this.isSearchModalDialogShown || this.isAuthorModalDialogShown || this.isAboutModalDialogShown || this.isKeyboardControlsModalDialogShown || this.isfeedbackInvitationShown;
+            return this.confirmDialog.isShown
+                || this.infoDialog.isShown 
+                || this.isSearchModalDialogShown 
+                || this.isAuthorModalDialogShown 
+                || this.isAboutModalDialogShown 
+                || this.isKeyboardControlsModalDialogShown 
+                || this.isFeedbackSnackbarShown;
         }
     },
     actions: {
@@ -100,14 +104,7 @@ export const useInterfaceStore = defineStore('interface', {
         },
 
         showFeedbackInvitation() {
-            this.isfeedbackInvitationShown = true;
-            Snackbar.open({
-                indefinite: true,
-                message:
-                    "You have added the 10th publication to selected—we invite you to share your <b>feedback</b> on the tool!",
-                cancelText: "Maybe later",
-                onAction: this.openFeedback,
-            });
+            this.isFeedbackSnackbarShown = true;
         },
 
         openSearchModalDialog(query) {

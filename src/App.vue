@@ -22,6 +22,7 @@
     <ConfirmDialog />
     <InfoDialog />
     <ErrorToast />
+    <FeedbackSnackbar />
   </v-app>
 </template>
 
