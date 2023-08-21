@@ -2,12 +2,10 @@
   <div class="suggested-publications box has-background-info">
     <div class="level box-header">
       <div class="level-left has-text-white">
-        <div
-          class="level-item"
+        <div class="level-item"
           data-tippy-content="The <b>suggested publications</b> based on references to and from the selected publications, sorted by score."
-          v-tippy
-        >
-          <b-icon icon="water-plus-outline"></b-icon>
+          v-tippy>
+          <v-icon class="has-text-white">mdi-water-plus-outline</v-icon>
           <h2 class="is-size-5 ml-2">Suggested</h2>
         </div>
       </div>
@@ -15,25 +13,18 @@
         <div class="level-item">
           <tippy>
             <template v-slot:trigger>
-              <div>
-                <span
-                  ><b-icon
-                    icon="filter"
-                    size="is-small"
-                    v-show="isFilterPanelShown"
-                  ></b-icon>
-                  {{ sessionStore.suggestedPublicationsFiltered.length }}
-                  <b-tag
-                    icon="bell"
-                    size="is-small"
-                    v-if="sessionStore.unreadSuggestionsCount > 0"
-                    >{{ sessionStore.unreadSuggestionsCount }}</b-tag
-                  >
-                  of
-                  {{
-                    sessionStore.suggestion.totalSuggestions.toLocaleString("en")
-                  }}
-                </span>
+              <div class="mr-2">
+                <v-icon size="18" color="white" class="mr-1" v-show="isFilterPanelShown">mdi-filter</v-icon>
+                <v-badge :content="sessionStore.unreadSuggestionsCount" color="black" class="mr-2" offset-y="7"
+                  :value="sessionStore.unreadSuggestionsCount > 0" transition="scale-rotate-transition">
+                  <b>{{ sessionStore.suggestedPublicationsFiltered.length }}</b>
+                </v-badge>
+                <span> of
+                  <b>
+                    {{
+                      sessionStore.suggestion.totalSuggestions.toLocaleString("en")
+                    }}
+                  </b></span>
               </div>
             </template>
             <div>
@@ -56,170 +47,91 @@
               <b>
                 {{
                   sessionStore.suggestion.totalSuggestions.toLocaleString("en")
-                }}</b
-              >
+                }}</b>
               cited/citing publication{{
                 sessionStore.suggestion.totalSuggestions > 1 ? "s" : ""
               }}.
             </div>
           </tippy>
-          <b-button
-            class="compact-button"
-            icon-left="playlist-plus"
-            data-tippy-content="Load more suggested publications."
-            v-tippy
-            @click.stop="sessionStore.loadMoreSuggestions()"
-            :disabled="
-              sessionStore.suggestedPublications.length ===
+          <CompactButton icon="mdi-playlist-plus has-text-white" class="ml-2"
+            data-tippy-content="Load more suggested publications." v-tippy v-on:click="sessionStore.loadMoreSuggestions()"
+            :disabled="sessionStore.suggestedPublications.length ===
               sessionStore.suggestion.totalSuggestions
-            "
-          ></b-button>
+              "></CompactButton>
         </div>
         <div class="level-item" v-if="sessionStore.suggestion">
-          <b-field
-            class="ml-5"
+          <v-switch v-model="isFilterPanelShown" class="ml-5" hide-details color="white"
             data-tippy-content="Activate/deactivate <b>filter</b> to restrict suggested publications by different criteria."
-            v-tippy
-          >
-            <b-switch v-model="isFilterPanelShown" type="is-black"
-              ><b-icon icon="filter" size="is-small"></b-icon>&nbsp;<span
-                class="key"
-                >F</span
-              >ilter</b-switch
-            >
-          </b-field>
+            v-tippy>
+          </v-switch>
+          <v-icon size="18" color="white" class="mr-1">mdi-filter</v-icon>
+          <span class="key">F</span>ilter
         </div>
       </div>
     </div>
     <div>
-      <div
-        class="
-          notification
-          has-background-info-light
-          p-2
-          pt-3
-          columns
-          is-gapless
-        "
-        v-show="isFilterPanelShown"
-      >
-        <div class="column">
-          <b-field
-            label="Search"
-            label-position="on-border"
-            data-tippy-content="Filter by <b>search in meta-data</b> such as title, authors, and journal name."
-            v-tippy
-          >
-            <p class="control">
-              <b-button
-                icon-left="card-search"
-                :class="{
-                  active: filterString,
-                }"
-                class="is-static"
-              ></b-button>
-            </p>
-            <b-input
-              v-model="filterString"
-              placeholder="Text"
-              @input="updateFilter"
-              icon-right="close-circle"
-              icon-right-clickable
-              @icon-right-click="clearFilterString"
-              expanded
-            ></b-input>
-          </b-field>
+      <v-expand-transition>>
+        <div class="
+            notification
+            has-background-info-light
+            p-2
+            pt-3
+            columns
+            is-gapless
+          " v-show="isFilterPanelShown">
+          <div class="column"
+            data-tippy-content="Filter by <b>search in meta-data</b> such as title, authors, and journal name." v-tippy>
+            <div class="field is-floating-label">
+              <label class="label">Keywords</label>
+              <div class="control">
+                <input type="text" v-model="filterString" placeholder="Text" @input="updateFilter" class="input" />
+              </div>
+            </div>
+          </div>
+          <div class="column"
+            data-tippy-content="Filter by <b>publication year</b> (four digit year; leave blank for unrestricted start/end year)."
+            v-tippy>
+            <div class="field is-floating-label">
+              <label class="label">Year</label>
+              <div class="control">
+                <input type="text" v-model="filterYearStart" placeholder="From" class="input" @input="updateFilter" />
+              </div>
+            </div>
+            <div class="field">
+              <div class="control">
+                <input type="text" v-model="filterYearEnd" placeholder="To" class="input" @input="updateFilter" />
+              </div>
+            </div>
+          </div>
+          <div class="column" data-tippy-content="Filter by automatically <b>assigned tag</b>." v-tippy>
+            <div class="field is-floating-label">
+              <label class="label">Tag</label>
+              <div class="control">
+                <div class="select is-fullwidth">
+                  <select id="filter-tag" @click="updateFilter" v-model="filterTag">
+                    <option value="">None/any</option>
+                    <option v-for="tag in TAGS" :value="tag.value" :key="tag.value">
+                      {{ tag.name }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="column">
-          <b-field
-            label="Year"
-            label-position="on-border"
-            data-tippy-content="Filter by <b>publication year</b> (leave blank for unrestricted start/end year)."
-            v-tippy
-          >
-            <p class="control">
-              <b-button
-                icon-left="calendar"
-                :class="{
-                  active: sessionStore.filter.isYearActive(),
-                }"
-                class="is-static"
-              ></b-button>
-            </p>
-            <b-field expanded>
-              <b-input
-                id="filter-year-start"
-                v-model="filterYearStart"
-                placeholder="From"
-                type="text"
-                pattern="\d\d\d\d"
-                validation-message="Enter a four-digit year."
-                @input="updateFilter"
-              ></b-input>
-            </b-field>
-            <b-field expanded>
-              <b-input
-                id="filter-year-end"
-                v-model="filterYearEnd"
-                placeholder="To"
-                type="text"
-                pattern="\d\d\d\d"
-                validation-message="Enter a four-digit year."
-                @input="updateFilter"
-              ></b-input>
-            </b-field>
-          </b-field>
-        </div>
-        <div class="column">
-          <b-field
-            label="Tag"
-            label-position="on-border"
-            data-tippy-content="Filter by automatically <b>assigned tag</b>."
-            v-tippy
-          >
-            <p class="control">
-              <b-button
-                icon-left="tag"
-                :class="{
-                  active: filterTag,
-                }"
-                class="is-static"
-              ></b-button>
-            </p>
-            <b-select
-              id="filter-tag"
-              @input="updateFilter"
-              v-model="filterTag"
-              :class="{
-                inactive: !filterTag,
-              }"
-              expanded
-            >
-              <option value="">None/any</option>
-              <option v-for="tag in TAGS" :value="tag.value" :key="tag.value">
-                {{ tag.name }}
-              </option>
-            </b-select>
-          </b-field>
-        </div>
-      </div>
+      </v-expand-transition>
     </div>
-    <PublicationListComponent
-      ref="publicationList"
-      :publications="sessionStore.suggestedPublicationsFiltered"
-    />
+    <PublicationListComponent ref="publicationList" :publications="sessionStore.suggestedPublicationsFiltered" />
   </div>
 </template>
 
 <script>
 import { storeToRefs } from "pinia";
 
-import { useSessionStore } from "./../stores/session.js";
-import { useInterfaceStore } from "./../stores/interface.js";
-import Publication from "./../Publication.js";
-import Filter from "./../Filter.js";
-
-import PublicationListComponent from "./PublicationListComponent.vue";
+import { useSessionStore } from "@/stores/session.js";
+import { useInterfaceStore } from "@/stores/interface.js";
+import Publication from "@/Publication.js";
+import Filter from "@/Filter.js";
 
 export default {
   name: "SuggestedPublicationsComponent",
@@ -228,9 +140,6 @@ export default {
     const interfaceStore = useInterfaceStore();
     const { isFilterPanelShown } = storeToRefs(interfaceStore);
     return { sessionStore, isFilterPanelShown };
-  },
-  components: {
-    PublicationListComponent,
   },
   props: {
     title: String,
@@ -285,13 +194,10 @@ export default {
   grid-template-rows: max-content max-content auto;
   position: relative;
 
-  & .box-header .tag {
-    position: relative;
-    top: -0.4rem;
-    padding: 0 0.2rem;
-    height: 1.2rem;
-    background-color: $info-light;
-    color: $info-dark;
+  & .box-header {
+    & .v-input {
+      margin: 0;
+    }
   }
 
   & .notification {

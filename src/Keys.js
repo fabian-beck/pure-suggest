@@ -13,13 +13,8 @@ export function onKey(e) {
         return;
     }
     if (
-        interfaceStore.isLoading ||
-        interfaceStore.isDialogShown ||
-        (interfaceStore.isSearchPanelShown &&
-            document.activeElement.nodeName != "INPUT") ||
-        interfaceStore.isAuthorPanelShown ||
-        interfaceStore.isAboutPageShown ||
-        interfaceStore.isKeyboardControlsShown
+        interfaceStore.isAnyOverlayShown &&
+        document.activeElement.nodeName != "INPUT"
     ) {
         e.preventDefault();
         return;
@@ -38,13 +33,13 @@ export function onKey(e) {
     }
     if (e.key === "s") {
         e.preventDefault();
-        interfaceStore.isSearchPanelShown = true;
+        interfaceStore.isSearchModalDialogShown = true;
         return;
     }
     if (sessionStore.isEmpty) return;
     if (e.key === "a") {
         e.preventDefault();
-        interfaceStore.isAuthorPanelShown = true;
+        interfaceStore.isAuthorModalDialogShown = true;
         return;
     }
     if (e.key === "c") {
@@ -87,7 +82,6 @@ export function onKey(e) {
             const activePublicationComponent = document.getElementsByClassName(
                 "publication-component is-active"
             )[0];
-            console.log(activePublicationComponent);
             try {
                 interfaceStore.activatePublicationComponent(
                     e.key === "ArrowDown"

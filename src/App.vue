@@ -1,41 +1,30 @@
 <template>
-  <div id="app">
+  <v-app id="app" data-app>
     <HeaderPanel id="header" />
-    <div
-      id="main"
-      @click="sessionStore.clearActivePublication('clicked anywhere')"
-      :class="{ 'network-expanded': interfaceStore.isNetworkExpanded }"
-    >
-      <SelectedPublicationsComponent
-        id="selected"
-        v-show="!interfaceStore.isNetworkExpanded"
-      />
-      <SuggestedPublicationsComponent
-        id="suggested"
-        v-show="!interfaceStore.isNetworkExpanded"
-      />
+    <div id="main" @click="sessionStore.clearActivePublication('clicked anywhere')"
+      :class="{ 'network-expanded': interfaceStore.isNetworkExpanded }">
+      <SelectedPublicationsComponent id="selected" v-show="!interfaceStore.isNetworkExpanded" />
+      <SuggestedPublicationsComponent id="suggested" v-show="!interfaceStore.isNetworkExpanded" />
       <NetworkVisComponent id="network" :svgWidth="1500" :svgHeight="600" />
     </div>
-    <QuickAccessBar
-      id="quick-access"
-      class="is-hidden-desktop"
-      v-if="!interfaceStore.isAnyOverlayShown"
-    >
+    <QuickAccessBar id="quick-access" class="is-hidden-desktop"
+      v-if="!interfaceStore.isAnyOverlayShown && !sessionStore.isEmpty">
     </QuickAccessBar>
-    <SearchPanel />
-    <AuthorPanel />
-    <b-modal v-model="interfaceStore.isAboutPageShown">
-      <AboutPage />
-    </b-modal>
-    <b-modal v-model="interfaceStore.isKeyboardControlsShown">
-      <KeyboardControlsPage />
-    </b-modal>
-    <b-loading
-      :is-full-page="true"
-      v-model="interfaceStore.isLoading"
-      :can-cancel="false"
-    ></b-loading>
-  </div>
+    <!-- Modal dialogs -->
+    <SearchModalDialog />
+    <AuthorModalDialog />
+    <AboutModalDialog />
+    <KeyboardControlsModalDialog />
+    <!-- Other dialogs and overlays -->
+    <v-overlay v-model="interfaceStore.isLoading" location-strategy="static">
+      <v-progress-circular indeterminate size="64"></v-progress-circular>
+    </v-overlay>
+    <LoadingToast />
+    <ConfirmDialog />
+    <InfoDialog />
+    <ErrorToast />
+    <FeedbackSnackbar />
+  </v-app>
 </template>
 
 <!---------------------------------------------------------------------------------->
@@ -43,16 +32,6 @@
 <script>
 import { useSessionStore } from "./stores/session.js";
 import { useInterfaceStore } from "./stores/interface.js";
-
-import HeaderPanel from "./components/HeaderPanel.vue";
-import SelectedPublicationsComponent from "./components/SelectedPublicationsComponent.vue";
-import SuggestedPublicationsComponent from "./components/SuggestedPublicationsComponent.vue";
-import NetworkVisComponent from "./components/NetworkVisComponent.vue";
-import QuickAccessBar from "./components/QuickAccessBar.vue";
-import SearchPanel from "./components/SearchPanel.vue";
-import AuthorPanel from "./components/AuthorPanel.vue";
-import AboutPage from "./components/AboutPage.vue";
-import KeyboardControlsPage from "./components/KeyboardControlsPage.vue";
 
 import { onKey } from "./Keys.js";
 
@@ -62,17 +41,6 @@ export default {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
     return { sessionStore, interfaceStore };
-  },
-  components: {
-    HeaderPanel,
-    SelectedPublicationsComponent,
-    SuggestedPublicationsComponent,
-    NetworkVisComponent,
-    QuickAccessBar,
-    SearchPanel,
-    AuthorPanel,
-    AboutPage,
-    KeyboardControlsPage,
   },
   created() {
     window.addEventListener("keydown", onKey);
@@ -97,13 +65,20 @@ export default {
 $block-spacing: 0.5rem;
 $box-padding: 1rem;
 
-#app {
+#app .v-application--wrap {
   display: grid;
   grid-template-areas:
     "header"
     "main";
   height: 100vh;
   grid-template-rows: max-content auto;
+  font-family: BlinkMacSystemFont, -apple-system, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, Helvetica, Arial, sans-serif !important;
+
+  & p {
+    margin: 0;
+  }
+
+  ;
 
   & #header {
     grid-area: header;
@@ -146,38 +121,12 @@ $box-padding: 1rem;
       margin: 0;
       padding: min(0.5vw, 1rem);
 
-      & > .level {
+      &>.level {
         margin-bottom: 0.5rem;
       }
     }
   }
 
-  & .compact-button {
-    background: transparent;
-    color: $white;
-    border-color: $white;
-    height: 1.5rem;
-    margin-right: 0 !important;
-    margin-left: 1rem;
-    padding: 0.5rem;
-
-    &:hover {
-      color: $light;
-      border-color: $light;
-    }
-
-    &.is-dark {
-      color: $dark;
-      border-color: $dark;
-      background: $white;
-
-      &:hover {
-        color: $dark;
-        border-color: $dark;
-        background: $light;
-      }
-    }
-  }
 }
 
 // placed outside the #app scope to apply to tooltips also
@@ -204,8 +153,28 @@ $box-padding: 1rem;
   }
 }
 
+// floating labels of fields (inpired from Buefy)
+.field.is-floating-label {
+  position: relative;
+
+  & .label {
+    top: -.775em;
+    padding-left: .125em;
+    padding-right: .125em;
+    position: absolute;
+    left: 0.5em;
+    font-size: .75rem;
+    background-color: transparent;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: calc(100% - 2em);
+    overflow: hidden;
+    z-index: 3 !important;
+  }
+}
+
 @include touch {
-  #app {
+  #app .v-application--wrap {
     display: block;
     margin-bottom: 5rem;
 
@@ -214,6 +183,7 @@ $box-padding: 1rem;
       margin: 0;
       overflow: scroll;
       height: auto;
+      margin-top: 52px;
 
       & .box {
         margin: 0.25rem;
@@ -232,14 +202,14 @@ $box-padding: 1rem;
         min-height: 70vh;
       }
 
-      & .level-left + .level-right {
+      & .level-left+.level-right {
         margin-top: 0.5rem;
       }
 
       /* Empty space for quick access buttons; used "::after" instead of plain margin-bottom as workaround for Chrome */
       &::after {
         content: "";
-        min-height: 5rem;
+        min-height: 4rem;
         display: block;
       }
     }
@@ -275,7 +245,7 @@ $box-padding: 1rem;
 }
 
 @media screen and (min-width: 2400px) {
-  #app #main {
+  #app .v-application--wrap #main {
     grid-template-areas: "selected suggested vis";
     grid-template-columns: 50fr 50fr 75fr;
     grid-template-rows: auto;

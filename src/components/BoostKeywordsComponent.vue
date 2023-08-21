@@ -20,21 +20,18 @@
       </span>
     </p>
     <p class="control">
-      <b-button
-        class="button has-background-warning"
-        type="submit"
-        icon-left="chevron-double-up"
-        v-on:click="sessionStore.updateScores"
-      >
-        <span><span class="key">B</span>oost</span>
-      </b-button>
+      <button class="button has-background-warning" type="submit" v-on:click="sessionStore.updateScores">
+        <span>
+          <InlineIcon icon="mdi-chevron-double-up" class="mr-1"></InlineIcon>
+          <span class="key">B</span>oost</span>
+      </button>
     </p>
   </div>
 </template>
 
 <script>
-import { useSessionStore } from "./../stores/session.js";
-import { useInterfaceStore } from "./../stores/interface.js";
+import { useSessionStore } from "@/stores/session.js";
+import { useInterfaceStore } from "@/stores/interface.js";
 
 import HighlightableInput from "vue-highlightable-input";
 

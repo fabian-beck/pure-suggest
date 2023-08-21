@@ -3,54 +3,29 @@
     <div class="box has-background-grey">
       <div class="level">
         <div class="level-left has-text-white">
-          <div
-            class="level-item"
+          <div class="level-item"
             data-tippy-content="Showing publications as nodes (<b class='has-text-primary'>selected</b>; <b class='has-text-info'>suggested</b>) with citations as links.<br><br>You can click a publication for details as well as zoom and pan the diagram."
-            v-tippy
-          >
-            <b-icon icon="chart-bubble"></b-icon>
+            v-tippy>
+            <v-icon class="has-text-white">mdi-chart-bubble</v-icon>
             <h2 class="is-size-5 ml-2">Citation network</h2>
           </div>
         </div>
         <div class="level-right" v-show="!sessionStore.isEmpty">
-          <b-field
-            class="level-item has-text-white mr-4 mb-0"
+          <div class="level-item has-text-white mr-4 mb-0"
             data-tippy-content="There are two display <span class='key'>m</span>odes:<br><br><b>Timeline:</b> The diagram places publications from left to right based on year, and vertically tries to group linked publications close to each other.<br><br><b>Clusters:</b> The diagram groups linked publications close to each other, irrespective of publication year."
-            v-tippy
-          >
+            v-tippy>
             <label class="mr-2"><span class="key">M</span>ode:</label>
-            <label
-              class="mr-2"
-              :class="{ 'has-text-grey-light': isNetworkClusters }"
-            >
-              Timeline</label
-            >
-            <b-switch
-              v-model="isNetworkClusters"
-              type="is-dark"
-              passive-type="is-dark"
-              @click.native.stop=""
-            ></b-switch>
-            <label :class="{ 'has-text-grey-light': !isNetworkClusters }"
-              >Clusters</label
-            >
-          </b-field>
-          <b-button
-            class="level-item compact-button is-hidden-touch"
-            icon-right="arrow-expand"
-            data-tippy-content="Expand diagram"
-            v-tippy
-            v-show="!interfaceStore.isNetworkExpanded"
-            @click.stop="expandNetwork(true)"
-          ></b-button>
-          <b-button
-            class="level-item compact-button is-hidden-touch"
-            icon-right="arrow-collapse"
-            data-tippy-content="Collapse diagram"
-            v-tippy
-            v-show="interfaceStore.isNetworkExpanded"
-            @click.stop="expandNetwork(false)"
-          ></b-button>
+            <label class="mr-2" :class="{ 'has-text-grey-light': isNetworkClusters }">
+              Timeline</label>
+            <v-switch v-model="isNetworkClusters" hide-details color="gray"></v-switch>
+            <label :class="{ 'has-text-grey-light': !isNetworkClusters }">Clusters</label>
+          </div>
+          <CompactButton icon="mdi-arrow-expand" data-tippy-content="Expand diagram" v-tippy
+            v-show="!interfaceStore.isNetworkExpanded" v-on:click="expandNetwork(true)"
+            class="ml-4 is-hidden-touch has-text-white"></CompactButton>
+          <CompactButton icon="mdi-arrow-collapse" data-tippy-content="Collapse diagram" v-tippy
+            v-show="interfaceStore.isNetworkExpanded" v-on:click="expandNetwork(false)"
+            class="ml-4 is-hidden-touch has-text-white"></CompactButton>
         </div>
       </div>
       <div id="network-svg-container">
@@ -59,40 +34,21 @@
         </svg>
       </div>
       <ul class="publication-component-list">
-        <PublicationComponent
-          v-if="activePublication && interfaceStore.isNetworkExpanded"
-          :publication="activePublication"
-          :is-active="true"
-        ></PublicationComponent>
+        <PublicationComponent v-if="activePublication && interfaceStore.isNetworkExpanded"
+          :publication="activePublication" :is-active="true"></PublicationComponent>
       </ul>
       <div class="controls-header-left">
-        <button
-          class="button has-background-primary has-text-white"
-          @click="sessionStore.updateQueued"
-          v-show="sessionStore.isUpdatable && interfaceStore.isNetworkExpanded"
-          id="quick-access-update"
-        >
-          <b-icon icon="update" size="is-small"></b-icon>
-          <div class="button-label">Update</div>
-        </button>
+        <v-btn class="has-background-primary has-text-white" @click="sessionStore.updateQueued"
+          v-show="sessionStore.isUpdatable && interfaceStore.isNetworkExpanded" id="quick-access-update">
+          <v-icon left>mdi-update</v-icon>
+          <span class="key">U</span>pdate
+        </v-btn>
       </div>
       <div class="controls-footer-right" v-show="!sessionStore.isEmpty">
-        <b-button
-          class="compact-button is-dark"
-          @click="zoomByFactor(1.2)"
-          data-tippy-content="Zoom in"
-          v-tippy
-        >
-          <b-icon icon="plus"></b-icon>
-        </b-button>
-        <b-button
-          class="compact-button is-dark"
-          @click="zoomByFactor(0.8)"
-          data-tippy-content="Zoom out"
-          v-tippy
-        >
-          <b-icon icon="minus"></b-icon>
-        </b-button>
+        <CompactButton icon="mdi-plus" data-tippy-content="Zoom in" v-tippy v-on:click="zoomByFactor(1.2)">
+        </CompactButton>
+        <CompactButton icon="mdi-minus" data-tippy-content="Zoom out" v-tippy v-on:click="zoomByFactor(0.8)">
+        </CompactButton>
       </div>
     </div>
   </div>
@@ -105,10 +61,8 @@ import "tippy.js/dist/tippy.css";
 import _ from "lodash";
 import { storeToRefs } from "pinia";
 
-import PublicationComponent from "./PublicationComponent.vue";
-
-import { useSessionStore } from "./../stores/session.js";
-import { useInterfaceStore } from "./../stores/interface.js";
+import { useSessionStore } from "@/stores/session.js";
+import { useInterfaceStore } from "@/stores/interface.js";
 
 const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;
@@ -130,9 +84,6 @@ export default {
       interfaceStore,
       isNetworkClusters,
     };
-  },
-  components: {
-    PublicationComponent,
   },
   data: function () {
     return {
@@ -179,8 +130,7 @@ export default {
     // set viewbox to center
     d3.select("#network-svg").attr(
       "viewBox",
-      `${-this.svgWidth / 2} ${-this.svgHeight / 2} ${this.svgWidth} ${
-        this.svgHeight
+      `${-this.svgWidth / 2} ${-this.svgHeight / 2} ${this.svgWidth} ${this.svgHeight
       }`
     );
     // eslint-disable-next-line no-unused-vars
@@ -252,8 +202,8 @@ export default {
               that.isNetworkClusters
                 ? 0
                 : this.yearX(
-                    d.publication ? d.publication.year : CURRENT_YEAR + 2
-                  )
+                  d.publication ? d.publication.year : CURRENT_YEAR + 2
+                )
             )
             .strength(that.isNetworkClusters ? 0.05 : 10)
         )
@@ -468,24 +418,19 @@ export default {
           publicationNodes.attr(
             "data-tippy-content",
             (d) =>
-              `<b>${
-                d.publication.title ? d.publication.title : "[unknown title]"
-              }</b> (${
-                d.publication.authorShort
-                  ? d.publication.authorShort + ", "
-                  : ""
+              `<b>${d.publication.title ? d.publication.title : "[unknown title]"
+              }</b> (${d.publication.authorShort
+                ? d.publication.authorShort + ", "
+                : ""
               }${d.publication.year ? d.publication.year : "[unknown year]"})
               <br><br>
-              The publication is ${
-                d.publication.isSelected ? "selected" : "suggested"
-              }${
-                d.isQueuingForSelected
-                  ? " and marked to be added to selected publications"
-                  : ""
-              }${
-                d.isQueuingForExcluded
-                  ? " and marked to be added to excluded publications"
-                  : ""
+              The publication is ${d.publication.isSelected ? "selected" : "suggested"
+              }${d.isQueuingForSelected
+                ? " and marked to be added to selected publications"
+                : ""
+              }${d.isQueuingForExcluded
+                ? " and marked to be added to excluded publications"
+                : ""
               }.`
           );
           this.publicationTooltips = tippy(publicationNodes.nodes(), {
@@ -534,12 +479,10 @@ export default {
           keywordNodes.attr(
             "data-tippy-content",
             (d) =>
-              `Keyword "${d.id}" is matched in ${d.frequency} publication${
-                d.frequency > 1 ? "s" : ""
-              }${
-                this.sessionStore.isKeywordLinkedToActive(d.id)
-                  ? ", and also linked to the currently active publication"
-                  : ""
+              `Keyword "${d.id}" is matched in ${d.frequency} publication${d.frequency > 1 ? "s" : ""
+              }${this.sessionStore.isKeywordLinkedToActive(d.id)
+                ? ", and also linked to the currently active publication"
+                : ""
               }.<br><br>Drag to reposition (sticky), click to detach.`
           );
           this.keywordTooltips = tippy(keywordNodes.nodes(), {
@@ -635,9 +578,8 @@ export default {
           // curved link for citations
           if (d.type === "citation") {
             const dr = Math.pow(dx * dx + dy * dy, 0.6);
-            return `M${this.nodeX(d.target)},${
-              d.target.y
-            }A${dr},${dr} 0 0,1 ${this.nodeX(d.source)},${d.source.y}`;
+            return `M${this.nodeX(d.target)},${d.target.y
+              }A${dr},${dr} 0 0,1 ${this.nodeX(d.source)},${d.source.y}`;
           }
           // tapered links for keywords:
           // drawing a triangle as part of a circle segment with its center at the target node
@@ -722,7 +664,7 @@ export default {
     yearX: function (year) {
       const width = Math.max(this.svgWidth, 2 * this.svgHeight);
       return (
-        (year - CURRENT_YEAR ) * width * 0.03 +
+        (year - CURRENT_YEAR) * width * 0.03 +
         width * (this.interfaceStore.isMobile ? 0.05 : 0.3)
       );
     },
@@ -756,36 +698,43 @@ export default {
 </script>
 
 <style lang="scss">
-.network-of-references .box {
-  height: 100%;
-  display: grid;
-  grid-template-rows: max-content auto;
-  position: relative;
+.network-of-references {
 
-  & ul.publication-component-list {
-    position: absolute;
-    bottom: 1vw;
-    left: 1vw;
-    width: 50%;
-    max-width: 50rem;
-    min-width: 40rem;
-    background: white;
+  & .level .v-input {
+    margin: 0;
   }
 
-  & .controls-header-left {
-    position: absolute;
-    top: calc(1vw + 2.5rem);
-    left: 1vw;
-  }
+  & .box {
+    height: 100%;
+    display: grid;
+    grid-template-rows: max-content auto;
+    position: relative;
 
-  & .controls-footer-right {
-    position: absolute;
-    bottom: max(1vw, 1rem);
-    right: max(1vw, 1rem);
-    z-index: 1;
+    & ul.publication-component-list {
+      position: absolute;
+      bottom: 1vw;
+      left: 1vw;
+      width: 50%;
+      max-width: 50rem;
+      min-width: 40rem;
+      background: white;
+    }
 
-    & .button {
-      margin-left: 0.25rem !important;
+    & .controls-header-left {
+      position: absolute;
+      top: calc(1vw + 2.5rem);
+      left: 1vw;
+    }
+
+    & .controls-footer-right {
+      position: absolute;
+      bottom: max(1vw, 1rem);
+      right: max(1vw, 1rem);
+      z-index: 1;
+
+      & .v-btn {
+        margin-left: 0.25rem !important;
+      }
     }
   }
 }
@@ -835,6 +784,7 @@ export default {
     }
 
     &.is-hovered {
+
       & rect,
       & circle {
         transform: scale(1.1);
@@ -842,20 +792,25 @@ export default {
     }
 
     &.selected {
+
       & rect,
       & circle {
         stroke: $primary;
       }
     }
+
     &.suggested {
+
       & rect,
       & circle {
         stroke: $info;
       }
     }
+
     &.active rect {
       stroke-width: 6;
     }
+
     &.linkedToActive rect {
       stroke-width: 4;
     }
@@ -923,6 +878,7 @@ export default {
       }
     }
   }
+
   & path.keyword {
     fill: $warning;
     opacity: 0.2;
@@ -933,8 +889,10 @@ export default {
   .network-of-references {
     padding: 0 !important;
   }
+
   .network-of-references .box {
     padding: 0.5rem;
   }
+
 }
 </style>

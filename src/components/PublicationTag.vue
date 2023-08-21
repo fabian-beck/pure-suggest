@@ -1,0 +1,25 @@
+<template>
+    <v-chip class="has-background-dark has-text-white" color="black">
+        <v-icon left small>{{ icon }}</v-icon>
+        <slot></slot>
+    </v-chip>
+</template>
+
+<script>
+export default {
+    name: "PublicationTag",
+    props: {
+        icon: String,
+    },
+};
+</script>
+
+<style scoped lang="scss">
+.v-chip {
+    margin-right: 0.5rem;
+    padding: 0 0.5rem;
+    height: 1.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.8rem;
+}
+</style>

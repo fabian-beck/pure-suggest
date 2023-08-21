@@ -10,15 +10,10 @@
 </template>
 
 <script>
-import { scrollToTargetAdjusted } from "./../Util.js";
-
-import PublicationComponent from "./PublicationComponent.vue";
+import { scrollToTargetAdjusted } from "@/Util.js";
 
 export default {
   name: "PublicationListComponent",
-  components: {
-    PublicationComponent,
-  },
   props: {
     publications: Array,
   },

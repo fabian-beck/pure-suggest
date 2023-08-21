@@ -1,96 +1,60 @@
 <template>
   <li>
-    <b-message
-      class="waitingNotification"
-      :class="{
-        'is-primary': sessionStore.isQueuingForSelected(publication.doi),
-        'is-dark': sessionStore.isQueuingForExcluded(publication.doi),
-      }"
-      v-if="
-        sessionStore.isQueuingForSelected(publication.doi) ||
-        sessionStore.isQueuingForExcluded(publication.doi)
-      "
-      has-icon
-      icon="tray-full"
-      icon-size="mdi-24px"
-      ><div class="level is-mobile">
+    <v-overlay v-if="sessionStore.isQueuingForSelected(publication.doi) ||
+      sessionStore.isQueuingForExcluded(publication.doi)" absolute>
+      <div class="level is-mobile" :class="{
+        'to-be-selected': sessionStore.isQueuingForSelected(publication.doi),
+      }">
         <div class="level-item">
-          To be&nbsp;
-          <span v-if="sessionStore.isQueuingForSelected(publication.doi)"
-            ><b>selected </b> <b-icon icon="plus-thick" size="is-small"></b-icon
-          ></span>
-          <span v-else
-            ><b> excluded </b
-            ><b-icon icon="minus-thick" size="is-small"></b-icon
-          ></span>
+          <span>
+            <InlineIcon icon="mdi-tray-full" color="dark" />
+            To be
+            <span v-if="sessionStore.isQueuingForSelected(publication.doi)"><b>selected </b>
+              <InlineIcon icon="mdi-plus-thick" color="primary-dark" />
+            </span>
+            <span v-else><b> excluded </b>
+              <InlineIcon icon="mdi-minus-thick" color="black" />
+            </span>
+          </span>
         </div>
-        <div class="level-right">
-          <b-button
-            class="is-small"
-            icon-left="undo"
-            data-tippy-content="Remove publication from queue again."
-            v-tippy
-            @click.stop="sessionStore.removeFromQueues(publication.doi)"
-          >
-          </b-button>
-        </div>
+        <CompactButton icon="mdi-undo" class="ml-4 level-right" data-tippy-content="Remove publication from queue again."
+          v-tippy v-on:click="sessionStore.removeFromQueues(publication.doi)" color="black"></CompactButton>
       </div>
-    </b-message>
-    <div
-      class="publication-component media"
-      :class="{
-        'is-active': publication.isActive,
-        'is-selected': publication.isSelected,
-        'is-linked-to-active': publication.isLinkedToActive,
-        'is-unread':
-          !publication.isRead &&
-          !publication.isSelected &&
-          publication.wasFetched,
-        'is-queuing':
-          sessionStore.isQueuingForSelected(publication.doi) ||
-          sessionStore.isQueuingForExcluded(publication.doi),
-        'is-hovered': publication.isHovered,
-        'is-keyword-hovered': publication.isKeywordHovered,
-      }"
-      :id="publication.doi"
-      tabindex="0"
-      v-on:focus="activate"
-      @click.stop="activate"
+    </v-overlay>
+    <div class="publication-component media" :class="{
+      'is-active': publication.isActive,
+      'is-selected': publication.isSelected,
+      'is-linked-to-active': publication.isLinkedToActive,
+      'is-unread':
+        !publication.isRead &&
+        !publication.isSelected &&
+        publication.wasFetched,
+      'is-queuing':
+        sessionStore.isQueuingForSelected(publication.doi) ||
+        sessionStore.isQueuingForExcluded(publication.doi),
+      'is-hovered': publication.isHovered,
+      'is-keyword-hovered': publication.isKeywordHovered,
+    }" :id="publication.doi" tabindex="0" v-on:focus="activate" @click.stop="activate"
       @mouseenter="sessionStore.hoverPublication(publication, true)"
-      @mouseleave="sessionStore.hoverPublication(publication, false)"
-    >
+      @mouseleave="sessionStore.hoverPublication(publication, false)">
       <tippy class="media-left">
         <template v-slot:trigger>
-          <div
-            class="glyph has-text-centered"
-            v-bind:style="{ 'background-color': publication.scoreColor }"
-            v-show="publication.wasFetched"
-          >
+          <div class="glyph has-text-centered" v-bind:style="{ 'background-color': publication.scoreColor }"
+            v-show="publication.wasFetched">
             <div class="tooltip-target">
-              <div class="is-size-3 is-inline-block">
+              <div class="is-size-3 is-inline-block score">
                 {{ publication.score }}
               </div>
-              <div
-                class="boost-indicator"
-                :class="chevronType"
-                v-if="publication.boostFactor > 1"
-              >
-                <b-icon :icon="chevronType" size="is-small" />
+              <div class="boost-indicator" :class="chevronType" v-if="publication.boostFactor > 1">
+                <v-icon>mdi-{{ chevronType }}</v-icon>
               </div>
             </div>
             <div class="reference-counts is-size-6">
               <div class="is-pulled-left">
-                <span
-                  v-if="
-                    publication.citationCount > 0 ||
-                    publication.referenceDois.length === 0
-                  "
-                  :class="publication.referenceDois.length ? '' : 'unknown'"
-                >
-                  <b-icon
-                    icon="arrow-bottom-left-thick"
-                    size="is-small"
-                  ></b-icon>
+                <span v-if="publication.citationCount > 0 ||
+                  publication.referenceDois.length === 0
+                  " :class="publication.referenceDois.length ? '' : 'unknown'">
+                  <InlineIcon icon="mdi-arrow-bottom-left-thick" :color="publication.referenceDois.length ? '' : 'danger'" />
                   {{
                     publication.citationCount ? publication.citationCount : "-"
                   }}
@@ -99,7 +63,7 @@
               <div class="is-pulled-right">
                 <span v-if="publication.referenceCount > 0">
                   {{ publication.referenceCount }}
-                  <b-icon icon="arrow-top-left-thick" size="is-small"></b-icon>
+                  <InlineIcon icon="mdi-arrow-top-left-thick" />
                 </span>
               </div>
             </div>
@@ -107,39 +71,25 @@
         </template>
         <div>
           Suggestion score of
-          <b
-            >{{ publication.score }} =
-            <span v-if="publication.boostFactor != 1">(</span
-            >{{ publication.citationCount }} + {{ publication.referenceCount
-            }}<span v-if="publication.boostFactor != 1"
-              >) &middot; {{ publication.boostFactor }}</span
-            ></b
-          >,<br />
-          citing <b>{{ publication.citationCount }}</b> (<b-icon
-            icon="arrow-bottom-left-thick"
-            size="is-small"
-            :class="publication.referenceDois.length ? '' : 'unknown'"
-          ></b-icon
-          ><span v-if="!publication.referenceDois.length" class="unknown"
-            >, citing data not available</span
-          >) and cited by <b>{{ publication.referenceCount }}</b> (<b-icon
-            icon="arrow-top-left-thick"
-            size="is-small"
-          ></b-icon
-          >) selected publications<span v-if="publication.boostFactor != 1"
-            >, multiplied by a boost factor of
-            <b
-              >{{ publication.boostFactor }} = 2<sup>{{
-                publication.boostMatches
-              }}</sup>
+          <b>{{ publication.score }} =
+            <span v-if="publication.boostFactor != 1">(</span>{{ publication.citationCount }} + {{
+              publication.referenceCount
+            }}<span v-if="publication.boostFactor != 1">) &middot; {{ publication.boostFactor }}</span></b>,<br />
+          citing <b>{{ publication.citationCount }}</b> (
+          <InlineIcon icon="mdi-arrow-bottom-left-thick" :color="publication.referenceDois.length ? 'white' : 'danger'" />
+          <span v-if="!publication.referenceDois.length" class="unknown">, citing data not available</span>) and cited by
+          <b>{{ publication.referenceCount }}</b> (
+          <InlineIcon icon="mdi-arrow-top-left-thick" color="white" />) selected
+          publications<span v-if="publication.boostFactor != 1">, multiplied by a boost factor of
+            <b>{{ publication.boostFactor }} = 2<sup>{{
+              publication.boostMatches
+            }}</sup>
             </b>
-            (<b-icon :icon="chevronType" size="is-small"></b-icon>;
-            {{ publication.boostMatches }} keyword<span
-              v-if="publication.boostMatches > 1"
-              >s</span
-            >
-            matched)</span
-          >.
+            (
+            <InlineIcon :icon="`mdi-${chevronType}`" color="white" />;
+            {{ publication.boostMatches }} keyword<span v-if="publication.boostMatches > 1">s</span>
+            matched)
+          </span>.
         </div>
         <div v-if="publication.isLinkedToActive">
           <br />
@@ -153,114 +103,52 @@
       <div class="media-content">
         <div class="summary" v-show="publication.wasFetched">
           <span v-if="publication.title">
-            <b
-              ><span
-                v-html="
-                  publication.titleHighlighted
-                    ? publication.titleHighlighted
-                    : publication.title
-                "
-              ></span></b
-            >&ensp;</span
-          >
+            <b><span v-html="publication.titleHighlighted
+              ? publication.titleHighlighted
+              : publication.title
+              "></span></b>&ensp;</span>
           <span v-if="!publication.title" class="unknown">
             <b>[unknown title] </b>
           </span>
-          <span
-            >(<span>{{
-              publication.authorShort ? publication.authorShort : ""
-            }}</span
-            ><span v-if="!publication.author" class="unknown"
-              >[unknown author]</span
-            >, <span :class="publication.year ? '' : 'unknown'">{{
-              publication.year ? publication.year : "[unknown year]"
-            }}</span
-            >)
+          <span>(<span>{{
+            publication.authorShort ? publication.authorShort : ""
+          }}</span><span v-if="!publication.author" class="unknown">[unknown author]</span>, <span
+              :class="publication.year ? '' : 'unknown'">{{
+                publication.year ? publication.year : "[unknown year]"
+              }}</span>)
           </span>
-          <b-taglist>
-            <b-icon
-              icon="tag"
-              size="is-small"
-              class="mr-2"
-              v-if="publication.hasTag()"
-            ></b-icon>
-            <b-tag
-              icon="star"
-              class="is-dark"
-              size="is-small"
-              v-if="publication.isHighlyCited"
-              :data-tippy-content="`Identified as highly cited: ${publication.isHighlyCited}.`"
-              v-tippy
-              >Highly cited</b-tag
-            >
-            <b-tag
-              icon="table"
-              class="is-dark"
-              size="is-small"
-              v-if="publication.isSurvey"
-              :data-tippy-content="`Identified as literature survey: ${publication.isSurvey}.`"
-              v-tippy
-              >Literature survey</b-tag
-            >
-            <b-tag
-              icon="alarm"
-              class="is-dark"
-              size="is-small"
-              v-if="publication.isNew"
-              :data-tippy-content="`Identified as new: ${publication.isNew}.`"
-              v-tippy
-              >New</b-tag
-            >
-            <b-tag
-              icon="alert-box-outline"
-              class="is-dark"
-              size="is-small"
-              v-if="publication.isUnnoted"
-              :data-tippy-content="`Identified as yet unnoted: ${publication.isUnnoted}.`"
-              v-tippy
-              >Unnoted</b-tag
-            >
-            <b-tag
-              icon="lock-open-check-outline"
-              class="is-dark"
-              size="is-small"
-              v-if="publication.isOpenAccess"
-              :data-tippy-content="`Identified as open access: open access link available.`"
-              v-tippy
-              >Open access</b-tag
-            >
-          </b-taglist>
+          <div>
+            <PublicationTag v-if="publication.isHighlyCited" icon="mdi-star"
+              :data-tippy-content="`Identified as highly cited: ${publication.isHighlyCited}.`" v-tippy>Highly cited
+            </PublicationTag>
+            <PublicationTag v-if="publication.isSurvey" icon="mdi-table"
+              :data-tippy-content="`Identified as literature survey: ${publication.isSurvey}.`" v-tippy>Literature survey
+            </PublicationTag>
+            <PublicationTag v-if="publication.isNew" icon="mdi-alarm"
+              :data-tippy-content="`Identified as new: ${publication.isNew}.`" v-tippy>New</PublicationTag>
+            <PublicationTag v-if="publication.isUnnoted" icon="mdi-alert-box-outline"
+              :data-tippy-content="`Identified as yet unnoted: ${publication.isUnnoted}.`" v-tippy>Unnoted
+            </PublicationTag>
+            <PublicationTag v-if="publication.isOpenAccess" icon="mdi-lock-open-check-outline"
+              :data-tippy-content="`Identified as open access: open access link available.`" v-tippy>Open access
+            </PublicationTag>
+          </div>
         </div>
         <div v-if="publication.isActive">
           <span>
-            <span
-              v-html="
-                publication.authorOrcidHtml +
-                (publication.authorOrcidHtml.endsWith('.') ? '' : '.')
-              "
-              v-if="publication.author"
-              @click.stop="refocus"
-              @click.middle.stop="refocus"
-            ></span>
+            <span v-html="publication.authorOrcidHtml +
+              (publication.authorOrcidHtml.endsWith('.') ? '' : '.')
+              " v-if="publication.author" @click.stop="refocus" @click.middle.stop="refocus"></span>
           </span>
           <span v-if="publication.container">
             <em v-html="` ${publication.container}`"></em>.
           </span>
           <label><span class="key">D</span>OI:</label>
-          <a
-            :href="publication.doiUrl"
-            @click.stop="refocus"
-            @click.middle.stop="refocus"
-            >{{ publication.doi }}</a
-          >
+          <a :href="publication.doiUrl" @click.stop="refocus" @click.middle.stop="refocus">{{ publication.doi }}</a>
         </div>
-        <div
-          class="notification has-background-danger-light has-text-danger-dark"
-          v-if="
-            (!publication.year || !publication.title || !publication.author) &&
-            publication.isActive
-          "
-        >
+        <div class="notification has-background-danger-light has-text-danger-dark" v-if="(!publication.year || !publication.title || !publication.author) &&
+          publication.isActive
+          ">
           <div class="level">
             <div class="level-left">
               <div class="level-item">
@@ -269,125 +157,71 @@
               </div>
             </div>
             <div class="level-right">
-              <b-button
-                class="is-small is-danger is-outlined level-item"
-                icon-left="refresh"
-                data-tippy-content="Retry loading metadata."
-                v-tippy
-                @click.stop="sessionStore.retryLoadingPublication(publication)"
-                >Retry</b-button
-              >
+              <v-btn data-tippy-content="Retry loading metadata." v-tippy
+                @click.stop="sessionStore.retryLoadingPublication(publication)" small>
+                <v-icon left>mdi-refresh</v-icon>
+                Retry
+              </v-btn>
             </div>
           </div>
           <div v-if="publication.score === 0">
-            Also, it is not cited by another selected publication&mdash;<b
-              >please check if the DOI is correct.</b
-            >
+            Also, it is not cited by another selected publication&mdash;<b>please check if the DOI is correct.</b>
           </div>
         </div>
 
-        <div
-          class="notification has-background-danger-light has-text-danger-dark"
-          v-if="!publication.year && publication.isActive"
-        >
+        <div class="notification has-background-danger-light has-text-danger-dark"
+          v-if="!publication.year && publication.isActive">
           The publication cannot be shown in the citation network visualization
           because of the unknown publication year.
         </div>
         <div v-if="publication.isActive" class="stats-and-links level">
           <div class="level-left">
-            <div
-              :class="`level-item ${
-                publication.referenceDois.length ? '' : 'unknown'
-              }`"
-            >
-              <label
-                ><b-icon icon="arrow-bottom-left-thick" size="is-small"></b-icon
-                >Citing:</label
-              >
+            <div :class="`level-item ${publication.referenceDois.length ? '' : 'unknown'
+              }`">
+              <label>
+                <InlineIcon icon="mdi-arrow-bottom-left-thick"
+                  :color="publication.referenceDois.length ? 'dark' : 'danger'" /> Citing:
+              </label>
               <b>{{
                 publication.referenceDois.length
-                  ? publication.referenceDois.length.toLocaleString("en")
-                  : "not available"
+                ? publication.referenceDois.length.toLocaleString("en")
+                : "not available"
               }}</b>
             </div>
             <div class="level-item">
-              <label
-                ><b-icon icon="arrow-top-left-thick" size="is-small"></b-icon
-                >Cited by:</label
-              >
+              <label>
+                <InlineIcon icon="mdi-arrow-top-left-thick" color="dark" /> Cited by:
+              </label>
               <b>{{ publication.citationDois.length.toLocaleString("en") }}</b>
               <span v-if="publication.citationsPerYear > 0">
                 &nbsp;({{ publication.citationsPerYear.toFixed(1) }}/year)
               </span>
             </div>
           </div>
-          <div
-            class="level-right"
-            v-if="publication.title && publication.isActive"
-          >
+          <div class="level-right" v-if="publication.title && publication.isActive">
             <div class="level-item">
-              <a
-                v-if="publication.abstract"
-                @click.stop="showAbstract"
-                @click.middle.stop="showAbstract"
-                @keyup.enter="showAbstract"
-                data-tippy-content="Abs<span class='key'>t</span>ract"
-                v-tippy
-                ><b-icon icon="text"></b-icon
-              ></a>
-              <a
-                v-if="publication.oaLink"
-                :href="publication.oaLink"
-                class="ml-5"
-                @click.stop="refocus"
-                @click.middle.stop="refocus"
-                data-tippy-content="<span class='key'>O</span>pen access"
-                v-tippy
-                ><b-icon icon="lock-open-check-outline"></b-icon
-              ></a>
-              <a
-                :href="publication.gsUrl"
-                class="ml-5"
-                @click.stop="refocus"
-                @click.middle.stop="refocus"
-                data-tippy-content="<span class='key'>G</span>oogle Scholar"
-                v-tippy
-                ><b-icon icon="school"></b-icon
-              ></a>
-              <a
-                @click.stop="exportBibtex"
-                @click.middle.stop="exportBibtex"
-                @keyup.enter="exportBibtex"
-                class="ml-5"
-                data-tippy-content="Export as BibTe<span class='key'>X</span> citation"
-                v-tippy
-                ><b-icon icon="format-quote-close"></b-icon
-              ></a>
+              <CompactButton icon="mdi-text" class="ml-5" v-if="publication.abstract" v-on:click="showAbstract"
+                data-tippy-content="Abs<span class='key'>t</span>ract" v-tippy></CompactButton>
+              <CompactButton icon="mdi-lock-open-check-outline" class="ml-5" v-if="publication.oaLink"
+                :href="publication.oaLink" data-tippy-content="<span class='key'>O</span>pen access" v-tippy>
+              </CompactButton>
+              <CompactButton icon="mdi-school" class="ml-5" :href="publication.gsUrl"
+                data-tippy-content="<span class='key'>G</span>oogle Scholar" v-tippy></CompactButton>
+              <CompactButton icon="mdi-format-quote-close" class="ml-5" v-on:click="exportBibtex"
+                data-tippy-content="Export as BibTe<span class='key'>X</span> citation" v-tippy></CompactButton>
             </div>
           </div>
         </div>
       </div>
       <div class="media-right">
         <div>
-          <b-button
-            v-if="!publication.isSelected"
-            class="is-primary is-small"
-            icon-left="plus-thick"
-            data-tippy-content="Mark publication to be added to selected publications."
-            @click.stop="sessionStore.queueForSelected(publication.doi)"
-            v-tippy
-          >
-          </b-button>
+          <CompactButton v-if="!publication.isSelected" icon="mdi-plus-thick"
+            v-on:click="sessionStore.queueForSelected(publication.doi)" class="has-text-primary"
+            data-tippy-content="Mark publication to be added to selected publications." v-tippy></CompactButton>
         </div>
         <div>
-          <b-button
-            class="is-small"
-            icon-left="minus-thick"
-            data-tippy-content="Mark publication to be excluded for suggestions."
-            @click.stop="sessionStore.queueForExcluded(publication.doi)"
-            v-tippy
-          >
-          </b-button>
+          <CompactButton icon="mdi-minus-thick" v-on:click="sessionStore.queueForExcluded(publication.doi)"
+            data-tippy-content="Mark publication to be excluded for suggestions." v-tippy></CompactButton>
         </div>
       </div>
     </div>
@@ -395,8 +229,8 @@
 </template>
 
 <script>
-import { useSessionStore } from "./../stores/session.js";
-import { useInterfaceStore } from "./../stores/interface.js";
+import { useSessionStore } from "@/stores/session.js";
+import { useInterfaceStore } from "@/stores/interface.js";
 
 export default {
   name: "PublicationComponent",
@@ -412,9 +246,11 @@ export default {
     chevronType: function () {
       if (this.publication.boostFactor >= 8) {
         return "chevron-triple-up";
-      } else if (this.publication.boostFactor >= 4) {
+      }
+      else if (this.publication.boostFactor >= 4) {
         return "chevron-double-up";
-      } else if (this.publication.boostFactor > 1) {
+      }
+      else if (this.publication.boostFactor > 1) {
         return "chevron-up";
       }
       return "";
@@ -425,16 +261,13 @@ export default {
       this.sessionStore.activatePublicationComponentByDoi(this.publication.doi);
       this.$emit("activate", this.publication.doi);
     },
-
     showAbstract: function () {
       this.interfaceStore.showAbstract(this.publication);
     },
-
     exportBibtex: function () {
       this.sessionStore.exportSingleBibtex(this.publication);
       this.refocus();
     },
-
     refocus: function () {
       document.getElementById(this.publication.doi).focus();
     },
@@ -472,7 +305,7 @@ li {
         }
 
         & .reference-counts {
-          .icon {
+          .v-icon {
             margin: -0.4em;
           }
 
@@ -491,7 +324,7 @@ li {
           font-size: $size-5;
           border: 1px solid $info;
 
-          & .icon {
+          & .v-icon {
             position: relative;
           }
 
@@ -501,8 +334,9 @@ li {
             width: 1.2rem;
             height: 1.2rem;
 
-            & .icon {
-              top: -0.45rem;
+            & .v-icon {
+              top: -0.6rem;
+              left: -0.17rem;
             }
           }
 
@@ -512,8 +346,9 @@ li {
             width: 1.5rem;
             height: 1.5rem;
 
-            & .icon {
-              top: -0.35rem;
+            & .v-icon {
+              top: -0.5rem;
+              left: -0.05rem;
             }
           }
 
@@ -523,8 +358,8 @@ li {
             width: 1.8rem;
             height: 1.8rem;
 
-            & .icon {
-              top: -0.2rem;
+            & .v-icon {
+              top: -0.3rem;
             }
           }
         }
@@ -556,7 +391,7 @@ li {
         color: $info-dark;
       }
 
-      & .glyph {
+      & .glyph .score {
         color: $info-dark;
       }
     }
@@ -574,7 +409,7 @@ li {
       border-width: 0.3rem;
     }
 
-    & .glyph > div:focus > div {
+    & .glyph>div:focus>div {
       outline: 1px solid $dark;
       outline-offset: 0.1rem;
     }
@@ -585,15 +420,6 @@ li {
 
       & div.summary {
         margin-bottom: 0.5rem;
-
-        & .tag {
-          margin-top: 0.25rem;
-          margin-bottom: 0.25rem;
-        }
-
-        & .tag:focus {
-          outline-offset: 0.1rem;
-        }
       }
 
       & label {
@@ -644,13 +470,13 @@ li {
     & .media-right {
       margin-right: 0.5rem;
 
-      & .button {
+      & button {
         margin: 0.5rem 0;
       }
     }
 
     &.is-queuing {
-      & > div {
+      &>div {
         filter: blur(1px) opacity(50%);
       }
     }
@@ -661,32 +487,20 @@ li {
     }
   }
 
-  & .waitingNotification {
-    position: absolute;
-    z-index: 1;
-    background: white;
-    @include light-shadow;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: max(240px, 30%);
+  & .v-overlay__content>div {
+    border-radius: 4px;
+    width: 250px;
+    color: $dark;
+    border-left: 4px solid $dark;
+    padding: 0.5rem;
+    background-color: white;
 
-    & .message-body {
-      padding: 0.5rem 0.5rem;
-
-      & .media-left .icon {
-        margin-top: 0.25rem;
-      }
-
-      & .level-left {
-        text-align: center;
-      }
-
-      & button {
-        margin-left: 1rem;
-        margin-top: 0.15rem;
-      }
+    &.to-be-selected {
+      border-color: $primary;
+      color: $primary-dark;
+      background-color: $primary-light;
     }
+
   }
 }
 
@@ -706,6 +520,7 @@ li {
         }
       }
     }
+
     & .media-right {
       margin-left: 0.5rem;
     }
