@@ -245,7 +245,7 @@ $box-padding: 1rem;
 }
 
 @media screen and (min-width: 2400px) {
-  #app #main {
+  #app .v-application--wrap #main {
     grid-template-areas: "selected suggested vis";
     grid-template-columns: 50fr 50fr 75fr;
     grid-template-rows: auto;
