@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@mdi/font": "^6.5.95",
+    "@vitejs/plugin-vue": "^4.3.3",
     "@vue/compiler-sfc": "^3.3.4",
     "bulma": "^0.9.3",
     "core-js": "^3.21.0",
@@ -17,21 +18,20 @@
     "idb-keyval": "^6.2.1",
     "lodash": "^4.17.21",
     "lz-string": "^1.4.4",
-    "pinia": "^2.0.16",
+    "pinia": "^2.1.6",
     "sass": "^1.49.7",
     "tippy.js": "^6.3.7",
     "vite": "^4.4.6",
-    "vite-plugin-vue2": "^2.0.3",
-    "vue": "^2.7",
+    "vue": "^3.3.4",
     "vue-highlightable-input": "^1.0.9",
-    "vue-tippy": "^4.13.0",
-    "vuetify": "^2.7.0"
+    "vue-tippy": "^6.3.1",
+    "vuetify": "^3.3.14"
   },
   "devDependencies": {
+    "@vue/compiler-sfc": "^3.1.0",
     "eslint": "^8.9.0",
     "eslint-plugin-vue": "^9.15.1",
-    "unplugin-vue-components": "^0.25.1",
-    "vue-template-compiler": "^2.6.14"
+    "unplugin-vue-components": "^0.25.1"
   },
   "browserslist": [
     "> 1%",

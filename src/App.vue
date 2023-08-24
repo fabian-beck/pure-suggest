@@ -1,6 +1,7 @@
 <template>
   <v-app id="app" data-app>
-    <HeaderPanel id="header" />
+    Test
+    <!-- <HeaderPanel id="header" />
     <div id="main" @click="sessionStore.clearActivePublication('clicked anywhere')"
       :class="{ 'network-expanded': interfaceStore.isNetworkExpanded }">
       <SelectedPublicationsComponent id="selected" v-show="!interfaceStore.isNetworkExpanded" />
@@ -9,21 +10,21 @@
     </div>
     <QuickAccessBar id="quick-access" class="is-hidden-desktop"
       v-if="!interfaceStore.isAnyOverlayShown && !sessionStore.isEmpty">
-    </QuickAccessBar>
+    </QuickAccessBar> -->
     <!-- Modal dialogs -->
-    <SearchModalDialog />
+    <!-- <SearchModalDialog />
     <AuthorModalDialog />
     <AboutModalDialog />
-    <KeyboardControlsModalDialog />
+    <KeyboardControlsModalDialog /> -->
     <!-- Other dialogs and overlays -->
-    <v-overlay v-model="interfaceStore.isLoading" location-strategy="static">
+    <!-- <v-overlay v-model="interfaceStore.isLoading" location-strategy="static">
       <v-progress-circular indeterminate size="64"></v-progress-circular>
     </v-overlay>
     <LoadingToast />
     <ConfirmDialog />
     <InfoDialog />
     <ErrorToast />
-    <FeedbackSnackbar />
+    <FeedbackSnackbar /> -->
   </v-app>
 </template>
 
