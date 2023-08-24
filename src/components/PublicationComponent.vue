@@ -45,7 +45,7 @@
               {{ publication.score }}
             </div>
             <div class="boost-indicator" :class="chevronType" v-if="publication.boostFactor > 1">
-              <v-icon>mdi-{{ chevronType }}</v-icon>
+              <v-icon size="small">mdi-{{ chevronType }}</v-icon>
             </div>
           </div>
           <div class="reference-counts is-size-6">

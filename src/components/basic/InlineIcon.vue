@@ -1,5 +1,5 @@
 <template>
-    <v-icon small :class="`has-text-${color}`">{{ icon }}</v-icon>
+    <v-icon size="x-small" :class="`has-text-${color}`">{{ icon }}</v-icon>
 </template>
 
 <script>
