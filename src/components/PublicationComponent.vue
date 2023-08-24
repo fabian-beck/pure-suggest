@@ -37,7 +37,7 @@
     }" :id="publication.doi" tabindex="0" v-on:focus="activate" @click.stop="activate"
       @mouseenter="sessionStore.hoverPublication(publication, true)"
       @mouseleave="sessionStore.hoverPublication(publication, false)">
-      <tippy class="media-left">
+      <!-- <tippy class="media-left">
         <template v-slot:trigger>
           <div class="glyph has-text-centered" v-bind:style="{ 'background-color': publication.scoreColor }"
             v-show="publication.wasFetched">
@@ -99,7 +99,7 @@
           <br />
           Currently active, with linked publications highlighted.
         </div>
-      </tippy>
+      </tippy> -->
       <div class="media-content">
         <div class="summary" v-show="publication.wasFetched">
           <span v-if="publication.title">

@@ -1,15 +1,15 @@
 <template>
   <v-app id="app" data-app>
     <HeaderPanel id="header" />
-    <!--div id="main" @click="sessionStore.clearActivePublication('clicked anywhere')"
+    <div id="main" @click="sessionStore.clearActivePublication('clicked anywhere')"
       :class="{ 'network-expanded': interfaceStore.isNetworkExpanded }">
       <SelectedPublicationsComponent id="selected" v-show="!interfaceStore.isNetworkExpanded" />
       <SuggestedPublicationsComponent id="suggested" v-show="!interfaceStore.isNetworkExpanded" />
       <NetworkVisComponent id="network" :svgWidth="1500" :svgHeight="600" />
-    </!--div>
+    </div>
     <QuickAccessBar id="quick-access" class="is-hidden-desktop"
       v-if="!interfaceStore.isAnyOverlayShown && !sessionStore.isEmpty">
-    </QuickAccessBar> -->
+    </QuickAccessBar>
     <!-- Modal dialogs -->
     <!-- <SearchModalDialog />
     <AuthorModalDialog />
@@ -65,7 +65,7 @@ export default {
 $block-spacing: 0.5rem;
 $box-padding: 1rem;
 
-#app .v-application--wrap {
+#app .v-application__wrap {
   display: grid;
   grid-template-areas:
     "header"
@@ -87,6 +87,7 @@ $box-padding: 1rem;
   & #main {
     grid-area: main;
     margin: 0.5vw;
+    padding-top: 52px;
     display: grid;
     grid-template-areas:
       "selected suggested"
@@ -174,7 +175,7 @@ $box-padding: 1rem;
 }
 
 @include touch {
-  #app .v-application--wrap {
+  #app .v-application__wrap {
     display: block;
     margin-bottom: 5rem;
 
@@ -183,7 +184,6 @@ $box-padding: 1rem;
       margin: 0;
       overflow: scroll;
       height: auto;
-      margin-top: 52px;
 
       & .box {
         margin: 0.25rem;
