@@ -33,6 +33,7 @@ import '@mdi/font/css/materialdesignicons.css'
 
 // VueTippy
 import VueTippy from "vue-tippy";
+import 'tippy.js/dist/tippy.css' 
 app.use(VueTippy, {
   maxWidth: 'min(400px,70vw)'
 });
