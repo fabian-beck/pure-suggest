@@ -3,7 +3,7 @@
     <v-app-bar color="white" dense :fixed="interfaceStore.isMobile">
       <v-icon class="mr-1" size="38">mdi-water-plus-outline</v-icon>
       <v-toolbar-title>
-        <span v-html="$appNameHtml"></span>
+        <span v-html="appMeta.nameHtml"></span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-menu v-if="!sessionStore.isEmpty" bottom right offset-y transition="slide-y-transition">
@@ -99,7 +99,7 @@
     <div class="columns" v-show="sessionStore.isEmpty">
       <div class="column">
         <div class="subtitle level-item mt-2">
-          {{ this.$appSubtitle }}
+          {{ this.appMeta.subtitle }}
         </div>
       </div>
       <div class="column is-two-thirds">
@@ -122,6 +122,7 @@ import { useInterfaceStore } from "@/stores/interface.js";
 
 export default {
   name: "HeaderPanel",
+  inject: ["appMeta"],
   setup() {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
