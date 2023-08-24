@@ -16,10 +16,10 @@
             The diagram places publications from left to right based on year, and vertically tries to group linked publications close to each other.<br><br>
             <b>Clusters:</b> The diagram groups linked publications close to each other, irrespective of publication year.`">
             <label class="mr-2"><span class="key">M</span>ode:</label>
-            <label class="mr-2" :class="{ 'has-text-grey-light': isNetworkClusters }">
+            <label class="mr-4" :class="{ 'has-text-grey-light': isNetworkClusters }">
               Timeline</label>
-            <v-switch v-model="isNetworkClusters" hide-details color="gray"></v-switch>
-            <label :class="{ 'has-text-grey-light': !isNetworkClusters }">Clusters</label>
+            <v-switch v-model="isNetworkClusters" hide-details density="compact"></v-switch>
+            <label :class="{ 'has-text-grey-light': !isNetworkClusters }" class="ml-4">Clusters</label>
           </div>
           <CompactButton icon="mdi-arrow-expand" v-tippy="'Expand diagram'" v-show="!interfaceStore.isNetworkExpanded"
             v-on:click="expandNetwork(true)" class="ml-4 is-hidden-touch has-text-white"></CompactButton>
@@ -698,10 +698,6 @@ export default {
 
 <style lang="scss">
 .network-of-references {
-
-  & .level .v-input {
-    margin: 0;
-  }
 
   & .box {
     height: 100%;

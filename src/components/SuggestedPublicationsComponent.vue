@@ -56,16 +56,16 @@
               "></CompactButton>
         </div>
         <div class="level-item" v-if="sessionStore.suggestion">
-          <v-switch v-model="isFilterPanelShown" class="ml-5" hide-details color="white"
+          <v-switch v-model="isFilterPanelShown" class="ml-5" hide-details density="compact"
             v-tippy="`Activate/deactivate <b>filter</b> to restrict suggested publications by different criteria.`">
           </v-switch>
-          <v-icon size="18" color="white" class="mr-1">mdi-filter</v-icon>
+          <v-icon size="18" color="white" class="mr-1 ml-4">mdi-filter</v-icon>
           <span class="key">F</span>ilter
         </div>
       </div>
     </div>
     <div>
-      <v-expand-transition>>
+      <v-expand-transition>
         <div class="
             notification
             has-background-info-light
@@ -186,12 +186,6 @@ export default {
   display: grid;
   grid-template-rows: max-content max-content auto;
   position: relative;
-
-  & .box-header {
-    & .v-input {
-      margin: 0;
-    }
-  }
 
   & .notification {
     margin-bottom: 0;
