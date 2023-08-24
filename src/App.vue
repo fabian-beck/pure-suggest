@@ -1,13 +1,12 @@
 <template>
   <v-app id="app" data-app>
-    Test
-    <!-- <HeaderPanel id="header" />
-    <div id="main" @click="sessionStore.clearActivePublication('clicked anywhere')"
+    <HeaderPanel id="header" />
+    <!--div id="main" @click="sessionStore.clearActivePublication('clicked anywhere')"
       :class="{ 'network-expanded': interfaceStore.isNetworkExpanded }">
       <SelectedPublicationsComponent id="selected" v-show="!interfaceStore.isNetworkExpanded" />
       <SuggestedPublicationsComponent id="suggested" v-show="!interfaceStore.isNetworkExpanded" />
       <NetworkVisComponent id="network" :svgWidth="1500" :svgHeight="600" />
-    </div>
+    </!--div>
     <QuickAccessBar id="quick-access" class="is-hidden-desktop"
       v-if="!interfaceStore.isAnyOverlayShown && !sessionStore.isEmpty">
     </QuickAccessBar> -->

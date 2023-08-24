@@ -4,17 +4,26 @@ import App from './App.vue'
 
 const app = createApp(App)
 
+// Pinia
 import { createPinia } from 'pinia'
 const pinia = createPinia()
 app.use(pinia);
 
-// import Vuetify from 'vuetify'
-// const opts = {}
-// const vuetify = new Vuetify(opts)
-// app.use(vuetify)
+// Vuetify
+import 'vuetify/styles'
+import { createVuetify } from 'vuetify'
+import * as components from 'vuetify/components'
+import * as directives from 'vuetify/directives'
+const vuetify = createVuetify({
+  components,
+  directives,
+});
+app.use(vuetify)
 
+// Icons
 import '@mdi/font/css/materialdesignicons.css'
 
+// VueTippy
 import VueTippy from "vue-tippy";
 app.use(VueTippy, {
   maxWidth: 'min(400px,70vw)'
