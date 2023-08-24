@@ -8,8 +8,8 @@
         v-model="sessionStore.boostKeywordString"
         spellcheck="false"
         type="text"
-        data-tippy-content="Boost by factors of 2 the score of publications that contain the following keyword(s) in their title.<br><br>Use ',' to separate multiple keywords, use '|' to separate alternatives/synonyms of the same keywords."
-        v-tippy
+        v-tippy="`Boost by factors of 2 the score of publications that contain the following keyword(s) in their title.<br><br>
+        Use ',' to separate multiple keywords, use '|' to separate alternatives/synonyms of the same keywords.`"
       />
       <span class="icon is-small is-right is-clickable">
         <i

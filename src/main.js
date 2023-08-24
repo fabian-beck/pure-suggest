@@ -32,10 +32,15 @@ app.use(vuetify)
 import '@mdi/font/css/materialdesignicons.css'
 
 // VueTippy
-import VueTippy from "vue-tippy";
-import 'tippy.js/dist/tippy.css' 
+import VueTippy from 'vue-tippy';
+import 'tippy.js/dist/tippy.css'
 app.use(VueTippy, {
-  maxWidth: 'min(400px,70vw)'
+  maxWidth: 'min(400px,70vw)',
+  directive: 'tippy', // => v-tippy
+  component: 'tippy', // => <tippy/>
+  defaultProps: {
+    allowHTML: true,
+  },
 });
 // eslint-disable-next-line vue/multi-word-component-names
 // Vue.component("tippy", TippyComponent);

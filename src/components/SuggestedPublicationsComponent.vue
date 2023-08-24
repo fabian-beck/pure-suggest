@@ -3,8 +3,7 @@
     <div class="level box-header">
       <div class="level-left has-text-white">
         <div class="level-item"
-          data-tippy-content="The <b>suggested publications</b> based on references to and from the selected publications, sorted by score."
-          v-tippy>
+          v-tippy="`The <b>suggested publications</b> based on references to and from the selected publications, sorted by score.`">
           <v-icon class="has-text-white">mdi-water-plus-outline</v-icon>
           <h2 class="is-size-5 ml-2">Suggested</h2>
         </div>
@@ -12,22 +11,20 @@
       <div class="level-right has-text-white" v-if="sessionStore.suggestion">
         <div class="level-item">
           <tippy>
-            <template v-slot:trigger>
-              <div class="mr-2">
-                <v-icon size="18" color="white" class="mr-1" v-show="isFilterPanelShown">mdi-filter</v-icon>
-                <v-badge :content="sessionStore.unreadSuggestionsCount" color="black" class="mr-2" offset-y="7"
-                  :value="sessionStore.unreadSuggestionsCount > 0" transition="scale-rotate-transition">
-                  <b>{{ sessionStore.suggestedPublicationsFiltered.length }}</b>
-                </v-badge>
-                <span> of
-                  <b>
-                    {{
-                      sessionStore.suggestion.totalSuggestions.toLocaleString("en")
-                    }}
-                  </b></span>
-              </div>
-            </template>
-            <div>
+            <div class="mr-2">
+              <v-icon size="18" color="white" class="mr-1" v-show="isFilterPanelShown">mdi-filter</v-icon>
+              <v-badge :content="sessionStore.unreadSuggestionsCount" color="black" class="mr-2" offset-y="7"
+                :value="sessionStore.unreadSuggestionsCount > 0" transition="scale-rotate-transition">
+                <b>{{ sessionStore.suggestedPublicationsFiltered.length }}</b>
+              </v-badge>
+              <span> of
+                <b>
+                  {{
+                    sessionStore.suggestion.totalSuggestions.toLocaleString("en")
+                  }}
+                </b></span>
+            </div>
+            <template #content>
               <b>{{ sessionStore.suggestedPublicationsFiltered.length }}</b>
               suggested publication{{
                 sessionStore.suggestedPublicationsFiltered.length > 1 ? "s" : ""
@@ -51,18 +48,16 @@
               cited/citing publication{{
                 sessionStore.suggestion.totalSuggestions > 1 ? "s" : ""
               }}.
-            </div>
+            </template>
           </tippy>
           <CompactButton icon="mdi-playlist-plus has-text-white" class="ml-2"
-            data-tippy-content="Load more suggested publications." v-tippy v-on:click="sessionStore.loadMoreSuggestions()"
-            :disabled="sessionStore.suggestedPublications.length ===
+            v-tippy="'Load more suggested publications.'" v-on:click="sessionStore.loadMoreSuggestions()" :disabled="sessionStore.suggestedPublications.length ===
               sessionStore.suggestion.totalSuggestions
               "></CompactButton>
         </div>
         <div class="level-item" v-if="sessionStore.suggestion">
           <v-switch v-model="isFilterPanelShown" class="ml-5" hide-details color="white"
-            data-tippy-content="Activate/deactivate <b>filter</b> to restrict suggested publications by different criteria."
-            v-tippy>
+            v-tippy="`Activate/deactivate <b>filter</b> to restrict suggested publications by different criteria.`">
           </v-switch>
           <v-icon size="18" color="white" class="mr-1">mdi-filter</v-icon>
           <span class="key">F</span>ilter
@@ -79,8 +74,7 @@
             columns
             is-gapless
           " v-show="isFilterPanelShown">
-          <div class="column"
-            data-tippy-content="Filter by <b>search in meta-data</b> such as title, authors, and journal name." v-tippy>
+          <div class="column" v-tippy="`Filter by <b>search in meta-data</b> such as title, authors, and journal name.`">
             <div class="field is-floating-label">
               <label class="label">Keywords</label>
               <div class="control">
@@ -89,8 +83,7 @@
             </div>
           </div>
           <div class="column"
-            data-tippy-content="Filter by <b>publication year</b> (four digit year; leave blank for unrestricted start/end year)."
-            v-tippy>
+            v-tippy="`Filter by <b>publication year</b> (four digit year; leave blank for unrestricted start/end year).`">
             <div class="field is-floating-label">
               <label class="label">Year</label>
               <div class="control">
@@ -103,7 +96,7 @@
               </div>
             </div>
           </div>
-          <div class="column" data-tippy-content="Filter by automatically <b>assigned tag</b>." v-tippy>
+          <div class="column" v-tippy="`Filter by automatically <b>assigned tag</b>.`">
             <div class="field is-floating-label">
               <label class="label">Tag</label>
               <div class="control">

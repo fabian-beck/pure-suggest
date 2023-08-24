@@ -4,8 +4,7 @@
     <div class="content">
       <section>
         <form v-on:submit.prevent="search" class="field has-addons mb-2">
-          <v-text-field clearable v-model="interfaceStore.searchQuery" type="input"
-            ref="searchInput">
+          <v-text-field clearable v-model="interfaceStore.searchQuery" type="input" ref="searchInput">
             <v-icon slot="append" @click="search">mdi-magnify</v-icon>
           </v-text-field>
         </form>
@@ -47,14 +46,13 @@
                 }}</a>
               </span>
               <span v-show="publication.title">
-                <CompactButton icon="mdi-school" data-tippy-content="Google Scholar" v-tippy :href="publication.gsUrl"
-                  class="ml-2"></CompactButton>
+                <CompactButton icon="mdi-school" v-tippy="'Google Scholar'" :href="publication.gsUrl" class="ml-2">
+                </CompactButton>
               </span>
             </div>
             <div class="media-right">
               <div>
-                <CompactButton icon="mdi-plus-thick"
-                  data-tippy-content="Mark publication to be added to selected publications." v-tippy
+                <CompactButton icon="mdi-plus-thick" v-tippy="'Mark publication to be added to selected publications.'"
                   @click="addPublication(publication.doi)"></CompactButton>
               </div>
             </div>

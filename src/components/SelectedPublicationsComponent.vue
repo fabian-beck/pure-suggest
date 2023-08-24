@@ -3,8 +3,7 @@
     <div class="level">
       <div class="level-left has-text-white">
         <div class="level-item"
-          data-tippy-content="The <b>publications selected as seeds</b> for computing the suggestions, sorted by score."
-          v-tippy>
+          v-tippy="`The <b>publications selected as seeds</b> for computing the suggestions, sorted by score.`">
           <v-icon class="has-text-white">mdi-water-outline</v-icon>
           <h2 class="is-size-5 ml-2">Selected</h2>
         </div>
@@ -12,11 +11,11 @@
       <div class="level-right" v-show="!sessionStore.isEmpty">
         <div class="level-item">
           <CompactButton icon="mdi-account-group has-text-white"
-            data-tippy-content="List <span class='key'>a</span>uthors of selected publications." v-tippy
+            v-tippy="`List <span class='key'>a</span>uthors of selected publications.`"
             v-on:click="interfaceStore.openAuthorModalDialog()"></CompactButton>
           <CompactButton icon="mdi-magnify" class="ml-2 has-text-white"
-            data-tippy-content="<span class='key'>S</span>earch/add specific publications to be added to selected."
-            v-tippy v-on:click="interfaceStore.openSearchModalDialog()"></CompactButton>
+            v-tippy="`<span class='key'>S</span>earch/add specific publications to be added to selected.`"
+            v-on:click="interfaceStore.openSearchModalDialog()"></CompactButton>
         </div>
       </div>
     </div>
@@ -47,12 +46,11 @@
               to be excluded</span>.
           </div>
           <div class="media-right level">
-            <CompactButton icon="mdi-undo" class="ml-2 level-item"
-              data-tippy-content="Remove all publications from queue again." v-tippy
+            <CompactButton icon="mdi-undo" class="ml-2 level-item" v-tippy="'Remove all publications from queue again.'"
               v-on:click="sessionStore.clearQueues()"></CompactButton>
             <v-btn class="has-background-primary has-text-white ml-2 level-item"
-              data-tippy-content="Update suggested and excluded publications with queue and compute new suggestions."
-              v-tippy @click="sessionStore.updateQueued">
+              v-tippy="'Update suggested and excluded publications with queue and compute new suggestions.'"
+              @click="sessionStore.updateQueued">
               <v-icon left>mdi-update</v-icon>
               <span class="key">U</span>pdate
             </v-btn>
