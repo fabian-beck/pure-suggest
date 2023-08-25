@@ -1,12 +1,13 @@
 <template>
-    <v-dialog v-model="isDialogShown" scrollable :fullscreen="$vuetify.breakpoint.smAndDown" :persistent="noCloseButton">
+    <v-dialog v-model="isDialogShown" scrollable :fullscreen="interfaceStore.isMobile" :persistent="noCloseButton">
         <v-card>
             <v-card-title :class="`has-background-${headerColor} has-text-dark level`">
                 <div class="header-left">
                     <v-icon class="has-text-dark title-icon">{{ icon }}</v-icon>
                     <span>{{ title }}</span>
                 </div>
-                <CompactButton icon="mdi-close" class="header-right" v-on:click="hideDialog" v-if="!noCloseButton"></CompactButton>
+                <CompactButton icon="mdi-close" class="header-right" v-on:click="hideDialog" v-if="!noCloseButton">
+                </CompactButton>
             </v-card-title>
             <v-card-text>
                 <slot></slot>
@@ -16,6 +17,8 @@
 </template>
 
 <script>
+import { useInterfaceStore } from "@/stores/interface.js";
+
 export default {
     name: "ModalDialog",
     props: {
@@ -29,6 +32,10 @@ export default {
         return {
             isDialogShown: this.value,
         };
+    },
+    setup: () => {
+        const interfaceStore = useInterfaceStore();
+        return { interfaceStore };
     },
     watch: {
         value() {
@@ -50,10 +57,10 @@ export default {
 </script>
 
 <style scoped lang="scss">
-::v-deep .v-dialog {
+:deep(.v-overlay__content) {
     max-width: 960px;
 
-    & .v-card__title {
+    & .v-card-title {
         margin-bottom: 0;
         padding: calc(min(1.0rem, 2vw));
 
@@ -64,8 +71,5 @@ export default {
         }
     }
 
-    & .v-card__text {
-        padding-top: 1rem;
-    }
 }
 </style>

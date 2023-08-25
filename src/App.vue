@@ -11,10 +11,10 @@
       v-if="!interfaceStore.isAnyOverlayShown && !sessionStore.isEmpty">
     </QuickAccessBar>
     <!-- Modal dialogs -->
-    <!-- <SearchModalDialog />
+    <SearchModalDialog />
     <AuthorModalDialog />
     <AboutModalDialog />
-    <KeyboardControlsModalDialog /> -->
+    <KeyboardControlsModalDialog />
     <!-- Other dialogs and overlays -->
     <v-overlay v-model="interfaceStore.isLoading" class="align-center justify-center">
       <v-progress-circular indeterminate size="64"></v-progress-circular>
