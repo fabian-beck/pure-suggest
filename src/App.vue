@@ -16,14 +16,14 @@
     <AboutModalDialog />
     <KeyboardControlsModalDialog /> -->
     <!-- Other dialogs and overlays -->
-    <!-- <v-overlay v-model="interfaceStore.isLoading" location-strategy="static">
+    <v-overlay v-model="interfaceStore.isLoading" class="align-center justify-center">
       <v-progress-circular indeterminate size="64"></v-progress-circular>
     </v-overlay>
     <LoadingToast />
     <ConfirmDialog />
     <InfoDialog />
     <ErrorToast />
-    <FeedbackSnackbar /> -->
+    <FeedbackSnackbar />
   </v-app>
 </template>
 
