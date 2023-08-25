@@ -22,7 +22,7 @@ import { useInterfaceStore } from "@/stores/interface.js";
 export default {
     name: "ModalDialog",
     props: {
-        value: Boolean,
+        modelValue: Boolean,
         headerColor: String,
         title: String,
         icon: String,
@@ -38,11 +38,11 @@ export default {
         return { interfaceStore };
     },
     watch: {
-        value() {
-            this.isDialogShown = this.value;
+        modelValue() {
+            this.isDialogShown = this.modelValue;
         },
         isDialogShown() {
-            this.$emit('input', this.isDialogShown);
+            this.$emit('update:modelValue', this.isDialogShown);
         },
     },
     methods: {
@@ -58,7 +58,7 @@ export default {
 
 <style scoped lang="scss">
 :deep(.v-overlay__content) {
-    max-width: 960px;
+    max-width: 960px !important;
 
     & .v-card-title {
         margin-bottom: 0;
