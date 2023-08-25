@@ -13,7 +13,7 @@
           <tippy>
             <div class="mr-2">
               <v-icon size="18" color="white" class="mr-1" v-show="isFilterPanelShown">mdi-filter</v-icon>
-              <v-badge :content="sessionStore.unreadSuggestionsCount" color="black" class="mr-2" offset-y="7"
+              <v-badge :content="sessionStore.unreadSuggestionsCount" color="black" class="mr-2" offset-y="-6" offset-x="-6"
                 :value="sessionStore.unreadSuggestionsCount > 0" transition="scale-rotate-transition">
                 <b>{{ sessionStore.suggestedPublicationsFiltered.length }}</b>
               </v-badge>
