@@ -1,7 +1,7 @@
 <template>
   <li>
-    <v-overlay v-if="sessionStore.isQueuingForSelected(publication.doi) ||
-      sessionStore.isQueuingForExcluded(publication.doi)" absolute>
+    <v-overlay :model-value="sessionStore.isQueuingForSelected(publication.doi) ||
+      sessionStore.isQueuingForExcluded(publication.doi)" contained persistent class="align-center justify-center">
       <div class="level is-mobile" :class="{
         'to-be-selected': sessionStore.isQueuingForSelected(publication.doi),
       }">
@@ -17,8 +17,10 @@
             </span>
           </span>
         </div>
-        <CompactButton icon="mdi-undo" class="ml-4 level-right" v-tippy="'Remove publication from queue again.'"
-          v-on:click="sessionStore.removeFromQueues(publication.doi)" color="black"></CompactButton>
+        <div class="level-right">
+          <CompactButton icon="mdi-undo" v-tippy="'Remove publication from queue again.'"
+            v-on:click="sessionStore.removeFromQueues(publication.doi)"></CompactButton>
+        </div>
       </div>
     </v-overlay>
     <div class="publication-component media" :class="{
@@ -476,9 +478,7 @@ li {
     }
 
     &.is-queuing {
-      &>div {
-        filter: blur(1px) opacity(50%);
-      }
+      filter: blur(1px) opacity(50%);
     }
 
     &:focus,
