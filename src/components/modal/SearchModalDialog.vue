@@ -53,14 +53,14 @@
             <div class="media-right">
               <div>
                 <CompactButton icon="mdi-plus-thick" v-tippy="'Mark publication to be added to selected publications.'"
-                  @click="addPublication(publication.doi)"></CompactButton>
+                  @click="addPublication(publication.doi)" v-if="publication.wasFetched"></CompactButton>
               </div>
             </div>
-            <v-overlay :value="!publication.wasFetched" :absolute="true" opacity="0.1">
+            <v-overlay :model-value="!publication.wasFetched" contained class="align-center justify-center" persistent theme="dark">
               <v-icon class="has-text-grey-light">mdi-progress-clock</v-icon>
             </v-overlay>
           </li>
-          <v-overlay :value="isLoading">
+          <v-overlay :model-value="isLoading" contained class="align-center justify-center" persistent theme="dark">
             <v-progress-circular indeterminate size="64"></v-progress-circular>
           </v-overlay>
         </ul>
