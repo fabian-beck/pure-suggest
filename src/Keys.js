@@ -20,12 +20,7 @@ export function onKey(e) {
         return;
     }
     if ((document.activeElement.nodeName === "INPUT" && document.activeElement.type === "text")
-        || document.activeElement.className.includes("input") && document.activeElement.className.includes("boost")) {
-        if (e.key === "Enter" && document.activeElement.className.includes("boost")) {
-            sessionStore.updateScores();
-            e.preventDefault();
-            return;
-        }
+        || document.activeElement.className.includes("input")) {
         if (e.key === "Escape") {
             document.activeElement.blur();
         }
@@ -52,7 +47,7 @@ export function onKey(e) {
     } else if (e.key === "b") {
         e.preventDefault();
         sessionStore.clearActivePublication("setting focus on text field");
-        document.getElementsByClassName("input boost")[0].focus();
+        document.getElementsByClassName("boost")[0].getElementsByTagName("input")[0].focus();
     } else if (e.key === "u") {
         e.preventDefault();
         sessionStore.updateQueued();

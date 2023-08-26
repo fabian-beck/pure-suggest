@@ -87,7 +87,7 @@ $box-padding: 1rem;
   & #main {
     grid-area: main;
     margin: 0.5vw;
-    padding-top: 52px;
+    padding-top: 48px;
     display: grid;
     grid-template-areas:
       "selected suggested"
