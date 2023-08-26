@@ -13,8 +13,8 @@
           <tippy>
             <div class="mr-2">
               <v-icon size="18" color="white" class="mr-1" v-show="isFilterPanelShown">mdi-filter</v-icon>
-              <v-badge :content="sessionStore.unreadSuggestionsCount" color="black" class="mr-2" offset-y="-6" offset-x="-6"
-                :value="sessionStore.unreadSuggestionsCount > 0" transition="scale-rotate-transition">
+              <v-badge :content="sessionStore.unreadSuggestionsCount" color="black" class="mr-3" offset-y="-4"
+                offset-x="-9" :value="sessionStore.unreadSuggestionsCount > 0" transition="scale-rotate-transition">
                 <b>{{ sessionStore.suggestedPublicationsFiltered.length }}</b>
               </v-badge>
               <span> of
@@ -56,9 +56,9 @@
               "></CompactButton>
         </div>
         <div class="level-item" v-if="sessionStore.suggestion">
-          <v-switch v-model="isFilterPanelShown" class="ml-5" hide-details density="compact"
+          <CompactSwitch v-model="isFilterPanelShown" class="ml-5" hide-details density="compact"
             v-tippy="`Activate/deactivate <b>filter</b> to restrict suggested publications by different criteria.`">
-          </v-switch>
+          </CompactSwitch>
           <v-icon size="18" color="white" class="mr-1 ml-4">mdi-filter</v-icon>
           <span class="key">F</span>ilter
         </div>
@@ -125,6 +125,7 @@ import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
 import Publication from "@/Publication.js";
 import Filter from "@/Filter.js";
+import CompactSwitch from "./basic/CompactSwitch.vue";
 
 export default {
   name: "SuggestedPublicationsComponent",
@@ -169,7 +170,8 @@ export default {
         this.sessionStore.filter.yearStart = this.filterYearStart;
         this.sessionStore.filter.yearEnd = this.filterYearEnd;
         this.sessionStore.filter.tag = this.filterTag;
-      } else {
+      }
+      else {
         this.sessionStore.filter = new Filter();
       }
     },
@@ -178,6 +180,7 @@ export default {
       this.updateFilter();
     },
   },
+  components: { CompactSwitch }
 };
 </script>
 

@@ -109,7 +109,7 @@ export default {
 }
 
 .columns {
-  margin-top: 52px;
+  margin-top: 48px;
 
   & .column {
     margin: $block-spacing;
