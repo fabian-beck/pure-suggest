@@ -123,7 +123,11 @@
               }}</span>)
           </span>
           <div>
+            <!-- Refactor: replace by for loop over Publication.TAGS -->
             <PublicationTag v-if="publication.isHighlyCited" icon="mdi-star"
+              v-tippy="`Identified as highly cited: ${publication.isHighlyCited}.`">Highly cited
+            </PublicationTag>
+            <PublicationTag v-if="publication.isSurvey" icon="mdi-table"
               v-tippy="`Identified as literature survey: ${publication.isSurvey}.`">Literature survey
             </PublicationTag>
             <PublicationTag v-if="publication.isNew" icon="mdi-alarm"

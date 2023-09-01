@@ -78,8 +78,6 @@ $box-padding: 1rem;
     margin: 0;
   }
 
-  ;
-
   & #header {
     grid-area: header;
   }
@@ -151,26 +149,6 @@ $box-padding: 1rem;
   & .card-content {
     max-height: calc(100vh - 100px);
     overflow-y: auto;
-  }
-}
-
-// floating labels of fields (inpired from Buefy)
-.field.is-floating-label {
-  position: relative;
-
-  & .label {
-    top: -.775em;
-    padding-left: .125em;
-    padding-right: .125em;
-    position: absolute;
-    left: 0.5em;
-    font-size: .75rem;
-    background-color: transparent;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    max-width: calc(100% - 2em);
-    overflow: hidden;
-    z-index: 3 !important;
   }
 }
 

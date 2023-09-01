@@ -66,7 +66,8 @@
     </div>
     <div>
       <v-expand-transition>
-        <div class="
+        <FilterPanel v-show="isFilterPanelShown"/>
+        <!-- <div class="
             notification
             has-background-info-light
             p-2
@@ -111,7 +112,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </div> -->
       </v-expand-transition>
     </div>
     <PublicationListComponent ref="publicationList" :publications="sessionStore.suggestedPublicationsFiltered" />
@@ -123,9 +124,6 @@ import { storeToRefs } from "pinia";
 
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
-import Publication from "@/Publication.js";
-import Filter from "@/Filter.js";
-import CompactSwitch from "./basic/CompactSwitch.vue";
 
 export default {
   name: "SuggestedPublicationsComponent",
@@ -138,22 +136,6 @@ export default {
   props: {
     title: String,
   },
-  data() {
-    return {
-      TAGS: Publication.TAGS,
-      filterString: "",
-      filterYearStart: "",
-      filterYearEnd: "",
-      filterTag: "",
-    };
-  },
-  watch: {
-    isFilterPanelShown: {
-      handler: function () {
-        this.updateFilter();
-      },
-    },
-  },
   mounted() {
     this.sessionStore.$onAction(({ name, after }) => {
       after(() => {
@@ -163,24 +145,6 @@ export default {
       });
     });
   },
-  methods: {
-    updateFilter: function () {
-      if (this.isFilterPanelShown) {
-        this.sessionStore.filter.string = this.filterString;
-        this.sessionStore.filter.yearStart = this.filterYearStart;
-        this.sessionStore.filter.yearEnd = this.filterYearEnd;
-        this.sessionStore.filter.tag = this.filterTag;
-      }
-      else {
-        this.sessionStore.filter = new Filter();
-      }
-    },
-    clearFilterString: function () {
-      this.filterString = "";
-      this.updateFilter();
-    },
-  },
-  components: { CompactSwitch }
 };
 </script>
 
@@ -193,49 +157,10 @@ export default {
   & .notification {
     margin-bottom: 0;
     border-radius: 0;
-
-    & .column:not(:first-child) {
-      margin-left: 0.5vw;
-    }
-
-    & .active {
-      background: $white;
-      color: $info-dark;
-    }
-
-    & .is-expanded {
-      width: 100%;
-    }
   }
 
   & .publication-list {
     @include scrollable-list;
   }
-}
-
-@include mobile {
-  .box .notification {
-    & .column {
-      margin-left: 0 !important;
-    }
-
-    & .column:not(:first-child) {
-      margin-top: 0.75rem;
-    }
-  }
-}
-</style>
-<style lang="scss">
-#filter-year-start {
-  border-radius: 0;
-}
-
-#filter-year-end {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-}
-
-.inactive #filter-tag {
-  color: rgba(54, 54, 54, 0.3);
 }
 </style>
