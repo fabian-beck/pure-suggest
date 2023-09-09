@@ -1,11 +1,11 @@
 <template>
   <div>
     <v-btn class="has-background-primary has-text-white" @click="sessionStore.updateQueued"
-      v-show="sessionStore.isUpdatable" id="quick-access-update">
+      v-show="sessionStore.isUpdatable" id="quick-access-update" elevation="6">
       <v-icon class="has-text-white" left>mdi-update</v-icon>
       <div class="button-label">Update</div>
     </v-btn>
-    <v-btn-toggle borderless>
+    <v-btn-toggle borderless elevation="6">
       <v-btn class="has-background-primary has-text-white" :class="{
         active: isComponentActive.selected,
       }" @click="scrollTo('selected')">
@@ -78,8 +78,8 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-.v-item-group {
-  @include shadow;
+.v-btn-group {
+  background-color: white;
 
   & button,
   & button:focus {
@@ -93,7 +93,7 @@ export default {
       border: 1px solid black !important
     }
 
-    & ::v-deep .v-btn__content {
+    & :deep(.v-btn__content) {
       display: block;
     }
 

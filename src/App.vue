@@ -197,7 +197,7 @@ $box-padding: 1rem;
       bottom: 0.5rem;
       width: 100%;
       text-align: center;
-      z-index: 100;
+      z-index: 3000;
     }
   }
 
