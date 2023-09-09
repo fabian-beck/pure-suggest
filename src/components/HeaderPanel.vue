@@ -5,10 +5,9 @@
       <v-app-bar-title>
         <span v-html="appMeta.nameHtml"></span>
       </v-app-bar-title>
-      <v-spacer></v-spacer>
-      <v-menu v-if="!sessionStore.isEmpty" location="bottom" transition="slide-y-transition">
+      <v-menu v-if="!sessionStore.isEmpty" location="bottom" transition="slide-y-transition" >
         <template v-slot:activator="{ props }">
-          <v-btn v-bind="props" outlined class="ml-4">
+          <v-btn v-bind="props" outlined class="ml-4" :icon="interfaceStore.isMobile">
             <v-icon size="18">mdi-text-box-multiple-outline</v-icon>
             <span class="is-hidden-touch ml-2">
               {{ sessionStateString }}
@@ -29,7 +28,7 @@
             title="Clear session" />
         </v-list>
       </v-menu>
-      <v-spacer></v-spacer>
+      <v-spacer class="is-hidden-touch"></v-spacer>
       <HeaderExternalLinks class="is-hidden-touch mr-4" />
       <v-menu bottom left offset-y transition="slide-y-transition">
         <template v-slot:activator="{ props }">
