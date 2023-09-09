@@ -16,59 +16,44 @@
 
 <script>
 import { useSessionStore } from "@/stores/session.js";
-import { useInterfaceStore } from "@/stores/interface.js";
 
 export default {
   name: "BoostKeywordsComponent",
 
   setup() {
     const sessionStore = useSessionStore();
-    const interfaceStore = useInterfaceStore();
-    return { sessionStore, interfaceStore };
+    return { sessionStore };
   },
 
-  data() {
-    return {
-      highlight: [
-        {
-          text: ",",
-          style: "color: #ccc; padding-left: 0.25rem; padding-right: 0.75rem;",
-        },
-        {
-          text: "|",
-          style: "color: #ccc; padding-left: 0.25rem; padding-right: 0.25rem;",
-        },
-        {
-          text: /[^,|]+\b/g, // match any character except "," and "|"; last character should not be a whitespace
-          style:
-            "text-decoration: underline; text-decoration-color: hsl(48, 100%, 67%); text-decoration-thickness: 0.25rem;",
-        },
-      ],
-    };
-  },
 };
 </script>
 
-<style lang="scss">
-.boost {
-  .is-expanded {
-    width: 0;
+<style lang="scss" scoped>
+.v-input {
+  position: relative;
 
-    & .input {
-      text-transform: lowercase;
-      text-overflow: inherit;
-      overflow: hidden;
-      display: inline-block;
-      white-space: nowrap;
-      user-select: text;
+  & :deep(input) {
+    text-transform: lowercase;
+  }
 
-      & br {
+  & :deep(.v-input__details) {
+    position: absolute;
+    min-height: 0;
+    z-index: 5;
+    padding-inline-start: 0;
+    padding-inline-end: 0;
+    padding: 0;
+    margin-top: 0.25rem;
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 3px 1px -2px, rgba(0, 0, 0, 0.14) 0px 2px 2px 0px, rgba(0, 0, 0, 0.12) 0px 1px 5px 0px;
+
+    &>div {
+      background-color: white;
+      padding: 0.5rem !important;
+      border-radius: 5px;
+      opacity: 1.0;
+
+      &:empty {
         display: none;
-      }
-
-      & * {
-        display: inline;
-        white-space: nowrap;
       }
     }
   }
