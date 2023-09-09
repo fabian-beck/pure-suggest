@@ -29,33 +29,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.v-input {
-  position: relative;
+@include v-input-details;
 
-  & :deep(input) {
-    text-transform: lowercase;
-  }
-
-  & :deep(.v-input__details) {
-    position: absolute;
-    min-height: 0;
-    z-index: 5;
-    padding-inline-start: 0;
-    padding-inline-end: 0;
-    padding: 0;
-    margin-top: 0.25rem;
-    box-shadow: rgba(0, 0, 0, 0.2) 0px 3px 1px -2px, rgba(0, 0, 0, 0.14) 0px 2px 2px 0px, rgba(0, 0, 0, 0.12) 0px 1px 5px 0px;
-
-    &>div {
-      background-color: white;
-      padding: 0.5rem !important;
-      border-radius: 5px;
-      opacity: 1.0;
-
-      &:empty {
-        display: none;
-      }
-    }
-  }
+:deep(input) {
+  text-transform: lowercase;
 }
 </style>
