@@ -1,13 +1,14 @@
 <template>
     <v-dialog v-model="isDialogShown" scrollable :fullscreen="interfaceStore.isMobile" :persistent="noCloseButton">
         <v-card>
-            <v-card-title :class="`has-background-${headerColor} has-text-dark level`">
-                <div class="header-left">
+            <v-card-title :class="`has-background-${headerColor} has-text-dark`">
+                <v-toolbar color="transparent" density="compact">
                     <v-icon class="has-text-dark title-icon">{{ icon }}</v-icon>
-                    <span>{{ title }}</span>
-                </div>
-                <CompactButton icon="mdi-close" class="header-right" v-on:click="hideDialog" v-if="!noCloseButton">
-                </CompactButton>
+                    <v-toolbar-title>{{ title }}</v-toolbar-title>
+                    <v-btn icon @click="hideDialog">
+                        <v-icon>mdi-close</v-icon>
+                    </v-btn>
+                </v-toolbar>
             </v-card-title>
             <v-card-text>
                 <slot></slot>
@@ -58,17 +59,23 @@ export default {
 
 <style scoped lang="scss">
 :deep(.v-overlay__content) {
-    max-width: 960px !important;
+    max-width: 1024px !important;
 
     & .v-card-title {
         margin-bottom: 0;
-        padding: calc(min(1.0rem, 2vw));
+        padding: 0.5rem;
 
-        & .title-icon {
-            margin-right: 0.5rem;
-            position: relative;
-            top: -0.15rem;
+        & .v-toolbar-title {
+            font-size: 1.2rem;
         }
+
+        & .v-btn {
+            margin-right: 0 !important;
+        }
+    }
+
+    & .v-card-text {
+        padding: calc(0.5rem + 1%) !important;
     }
 
 }

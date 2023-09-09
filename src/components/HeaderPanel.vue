@@ -1,11 +1,11 @@
 <template>
   <div>
-    <v-app-bar color="white" density="compact" :absolute="interfaceStore.isMobile">
-      <v-icon class="mr-1" size="38">mdi-water-plus-outline</v-icon>
+    <v-app-bar color="white" density="compact">
+      <v-icon class="mr-1" :size="interfaceStore.isMobile ? 30 : 32">mdi-water-plus-outline</v-icon>
       <v-app-bar-title>
         <span v-html="appMeta.nameHtml"></span>
       </v-app-bar-title>
-      <v-menu v-if="!sessionStore.isEmpty" location="bottom" transition="slide-y-transition" >
+      <v-menu v-if="!sessionStore.isEmpty" location="bottom" transition="slide-y-transition">
         <template v-slot:activator="{ props }">
           <v-btn v-bind="props" outlined class="ml-4" :icon="interfaceStore.isMobile">
             <v-icon size="18">mdi-text-box-multiple-outline</v-icon>
@@ -51,7 +51,7 @@
         </v-list>
       </v-menu>
     </v-app-bar>
-    <div class="columns" v-show="sessionStore.isEmpty">
+    <div class="columns intro-message" v-if="sessionStore.isEmpty">
       <div class="column">
         <div class="subtitle level-item mt-2">
           {{ this.appMeta.subtitle }}
@@ -68,6 +68,7 @@
         </div>
       </div>
     </div>
+    <div v-else class="intro-message-placeholder"></div>
   </div>
 </template>
 
@@ -103,15 +104,22 @@ export default {
     & .v-app-bar-title {
       font-size: 1.35rem;
       font-weight: 600;
+      margin-left: 0;
     }
   }
 }
 
-.columns {
+.intro-message, .intro-message-placeholder {
   margin-top: 48px;
 
   & .column {
     margin: $block-spacing;
+  }
+}
+
+@include touch {
+  :deep(.v-toolbar__content .v-app-bar-title) {
+    font-size: 1.2rem !important;
   }
 }
 </style>

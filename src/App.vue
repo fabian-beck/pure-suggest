@@ -8,7 +8,7 @@
       <NetworkVisComponent id="network" :svgWidth="1500" :svgHeight="600" />
     </div>
     <QuickAccessBar id="quick-access" class="is-hidden-desktop"
-      v-if="!interfaceStore.isAnyOverlayShown && !sessionStore.isEmpty">
+      v-if="!interfaceStore.isAnyOverlayShown">
     </QuickAccessBar>
     <!-- Modal dialogs -->
     <SearchModalDialog />
@@ -88,7 +88,6 @@ $box-padding: 1rem;
   & #main {
     grid-area: main;
     margin: 0.5vw;
-    padding-top: 48px;
     display: grid;
     grid-template-areas:
       "selected suggested"
@@ -168,7 +167,7 @@ $box-padding: 1rem;
 
       & .box {
         margin: 0.25rem;
-        padding: 0.5rem;
+        padding: 0.25rem;
       }
 
       & #selected {
