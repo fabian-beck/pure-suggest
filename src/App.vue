@@ -40,6 +40,9 @@ export default {
   setup() {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
+    // check if mobile 
+    interfaceStore.checkMobile();
+    window.addEventListener("resize", interfaceStore.checkMobile);
     return { sessionStore, interfaceStore };
   },
   created() {

@@ -35,12 +35,10 @@ export const useInterfaceStore = defineStore('interface', {
                 isShown: false,
                 title: "",
             },
+            isMobile: true,
         }
     },
     getters: {
-        isMobile() {
-            return window.innerWidth <= 1023;
-        },
         isAnyOverlayShown() {
             return this.confirmDialog.isShown
                 || this.infoDialog.isShown 
@@ -57,6 +55,10 @@ export const useInterfaceStore = defineStore('interface', {
             this.isNetworkClusters = true;
             this.isFilterPanelShown = false;
             window.scrollTo(0, 0);
+        },
+
+        checkMobile() {
+            this.isMobile = window.innerWidth < 1023;
         },
 
         startLoading() {
