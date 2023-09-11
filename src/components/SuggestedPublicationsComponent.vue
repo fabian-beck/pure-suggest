@@ -12,7 +12,7 @@
         <div class="level-item">
           <tippy>
             <div class="mr-2">
-              <v-icon size="18" color="white" class="mr-1" v-show="isFilterPanelShown">mdi-filter</v-icon>
+              <v-icon size="18" color="white" class="mr-1" v-show="interfaceStore.isFilterPanelShown">mdi-filter</v-icon>
               <v-badge :content="sessionStore.unreadSuggestionsCount" color="black" class="mr-3" offset-y="-4"
                 offset-x="-9" :value="sessionStore.unreadSuggestionsCount > 0" transition="scale-rotate-transition">
                 <b>{{ sessionStore.suggestedPublicationsFiltered.length }}</b>
@@ -33,7 +33,7 @@
                 <b>({{ sessionStore.unreadSuggestionsCount }}</b> of them
                 unread)
               </span>
-              <span v-if="isFilterPanelShown">
+              <span v-if="interfaceStore.isFilterPanelShown">
                 filtered from
                 <b>{{
                   sessionStore.suggestedPublications.length
@@ -56,7 +56,7 @@
               "></CompactButton>
         </div>
         <div class="level-item" v-if="sessionStore.suggestion">
-          <CompactSwitch v-model="isFilterPanelShown" class="ml-5" hide-details density="compact"
+          <CompactSwitch v-model="interfaceStore.isFilterPanelShown" class="ml-5" hide-details density="compact"
             v-tippy="`Activate/deactivate <b>filter</b> to restrict suggested publications by different criteria.`">
           </CompactSwitch>
           <v-icon size="18" color="white" class="mr-1 ml-4">mdi-filter</v-icon>
@@ -66,7 +66,7 @@
     </div>
     <div>
       <v-expand-transition>
-        <FilterPanel v-show="isFilterPanelShown"/>
+        <FilterPanel v-show="interfaceStore.isFilterPanelShown"/>
       </v-expand-transition>
     </div>
     <PublicationListComponent ref="publicationList" :publications="sessionStore.suggestedPublicationsFiltered" />
@@ -74,8 +74,6 @@
 </template>
 
 <script>
-import { storeToRefs } from "pinia";
-
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
 
@@ -84,8 +82,7 @@ export default {
   setup() {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
-    const { isFilterPanelShown } = storeToRefs(interfaceStore);
-    return { sessionStore, isFilterPanelShown };
+    return { sessionStore, interfaceStore };
   },
   props: {
     title: String,
