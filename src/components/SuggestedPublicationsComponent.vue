@@ -67,52 +67,6 @@
     <div>
       <v-expand-transition>
         <FilterPanel v-show="isFilterPanelShown"/>
-        <!-- <div class="
-            notification
-            has-background-info-light
-            p-2
-            pt-3
-            columns
-            is-gapless
-          " v-show="isFilterPanelShown">
-          <div class="column" v-tippy="`Filter by <b>search in meta-data</b> such as title, authors, and journal name.`">
-            <div class="field is-floating-label">
-              <label class="label">Keywords</label>
-              <div class="control">
-                <input type="text" v-model="filterString" placeholder="Text" @input="updateFilter" class="input" />
-              </div>
-            </div>
-          </div>
-          <div class="column"
-            v-tippy="`Filter by <b>publication year</b> (four digit year; leave blank for unrestricted start/end year).`">
-            <div class="field is-floating-label">
-              <label class="label">Year</label>
-              <div class="control">
-                <input type="text" v-model="filterYearStart" placeholder="From" class="input" @input="updateFilter" />
-              </div>
-            </div>
-            <div class="field">
-              <div class="control">
-                <input type="text" v-model="filterYearEnd" placeholder="To" class="input" @input="updateFilter" />
-              </div>
-            </div>
-          </div>
-          <div class="column" v-tippy="`Filter by automatically <b>assigned tag</b>.`">
-            <div class="field is-floating-label">
-              <label class="label">Tag</label>
-              <div class="control">
-                <div class="select is-fullwidth">
-                  <select id="filter-tag" @click="updateFilter" v-model="filterTag">
-                    <option value="">None/any</option>
-                    <option v-for="tag in TAGS" :value="tag.value" :key="tag.value">
-                      {{ tag.name }}
-                    </option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div> -->
       </v-expand-transition>
     </div>
     <PublicationListComponent ref="publicationList" :publications="sessionStore.suggestedPublicationsFiltered" />
