@@ -82,8 +82,8 @@ export const useInterfaceStore = defineStore('interface', {
 
         showAbstract(publication) {
             this.infoDialog = {
-                title: publication.title,
-                message: `<div><b>Abstract:</b> <i>${publication.abstract}</i></div>`,
+                title: "Abstract",
+                message: `<div><i>${publication.abstract}</i></div>`,
                 isShown: true,
             }
         },
