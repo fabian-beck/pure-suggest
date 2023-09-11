@@ -18,7 +18,7 @@
                             <v-text-field label="Year from" v-model="sessionStore.filter.yearStart" placeholder="YYYY"
                                 density="compact" prepend-inner-icon="mdi-calendar" clearable :rules="yearRules" />
                         </v-col>
-                        <v-col>
+                        <v-col cols="12" md="5">
                             <v-text-field label="to" v-model="sessionStore.filter.yearEnd" placeholder="YYYY"
                                 :rules="yearRules" density="compact" clearable />
                         </v-col>
