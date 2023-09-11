@@ -12,8 +12,9 @@ export default {
 
 <style scoped lang="scss">
 .v-input {
-    max-height: 30px !important;
     position: relative;
+    max-height: 30px !important;
+    max-width: 30px !important;	
     top: -4px;
 }
 </style>
