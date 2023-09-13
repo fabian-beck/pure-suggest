@@ -1,5 +1,5 @@
 <template>
-  <ModalDialog v-model="isSearchModalDialogShown" @close="cancel" title="Search/add publications" icon="mdi-magnify"
+  <ModalDialog v-model="isSearchModalDialogShown" title="Search/add publications" icon="mdi-magnify"
     headerColor="primary" noCloseButton>
     <template v-slot:sticky>
       <form v-on:submit.prevent="search" class="has-background-primary-light">
@@ -20,7 +20,6 @@
           to be added to selected.
         </p>
         <v-spacer></v-spacer>
-        <v-btn class="level-item" @click="cancel()">Close</v-btn>
         <v-btn class="level-item has-background-primary has-text-white" @click="updateAndClose"
           :disabled="addedPublications.length === 0">
           <v-icon left>mdi-update</v-icon>Update</v-btn>
@@ -152,6 +151,7 @@ export default {
     },
 
     addPublication(doi) {
+      if (this.addedPublications.includes(doi)) return;
       this.addedPublications.push(doi);
     },
 
@@ -166,19 +166,6 @@ export default {
     updateAndClose() {
       this.sessionStore.addPublicationsAndUpdate(this.addedPublications);
       this.close();
-    },
-
-    cancel() {
-      if (this.addedPublications.length === 0) {
-        this.close();
-        return;
-      }
-      this.interfaceStore.showConfirmDialog(
-        "Do you really want to discard the list of added publications?",
-        () => {
-          this.close();
-        }
-      );
     },
 
     close() {
