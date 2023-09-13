@@ -18,6 +18,7 @@ export default {
 <style scoped lang="scss">
 :deep(.v-snackbar__wrapper) {
     background-color: $danger !important;
+    min-width: 300px;
 
     & .v-snackbar__content {
         text-align: center;

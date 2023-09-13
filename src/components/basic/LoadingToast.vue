@@ -16,6 +16,8 @@ export default {
 
 <style scoped lang="scss">
 :deep(.v-snackbar__wrapper) {
+    min-width: 300px;
+
     & .v-snackbar__content {
         text-align: center;
         font-size: 1rem;
