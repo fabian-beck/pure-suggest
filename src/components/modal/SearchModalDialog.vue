@@ -4,15 +4,12 @@
     <div class="content">
       <section>
         <form v-on:submit.prevent="search" class="field has-addons mb-2">
-          <v-text-field clearable v-model="interfaceStore.searchQuery" type="input" ref="searchInput">
-            <v-icon slot="append" @click="search">mdi-magnify</v-icon>
+          <v-text-field clearable v-model="interfaceStore.searchQuery" type="input" ref="searchInput" variant="solo"
+            append-icon="mdi-magnify" @click:append="search" density="compact" hide-details
+            placeholder="Search for keywords, names, etc. or add by providing DOI(s) in any format">
           </v-text-field>
         </form>
-        <p class="notification has-background-primary-light p-2 mb-2">
-          <span v-show="searchResults.type === 'empty'"><i><b>Search</b> for keywords, names, etc. <b>or add </b> by
-              providing
-              <a href="https://www.doi.org/" class="href">DOI(s)</a> in any
-              format.</i></span>
+        <p class="notification has-background-white p-2 mb-2">
           <span v-show="['doi', 'search'].includes(searchResults.type)">Showing
             <b>{{ filteredSearchResults.length }} publication{{
               filteredSearchResults.length != 1 ? "s" : ""
@@ -56,7 +53,8 @@
                   @click="addPublication(publication.doi)" v-if="publication.wasFetched"></CompactButton>
               </div>
             </div>
-            <v-overlay :model-value="!publication.wasFetched" contained class="align-center justify-center" persistent theme="dark">
+            <v-overlay :model-value="!publication.wasFetched" contained class="align-center justify-center" persistent
+              theme="dark">
               <v-icon class="has-text-grey-light">mdi-progress-clock</v-icon>
             </v-overlay>
           </li>
@@ -200,8 +198,8 @@ export default {
 
 <style lang="scss">
 .content {
-  & form.field {
-    margin-bottom: -0.5rem !important;
+  & .notification {
+    min-height: 40px;
   }
 
   & .publication-list {
