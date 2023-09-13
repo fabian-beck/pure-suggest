@@ -16,7 +16,7 @@
     <AboutModalDialog />
     <KeyboardControlsModalDialog />
     <!-- Other dialogs and overlays -->
-    <v-overlay v-model="interfaceStore.isLoading" class="align-center justify-center">
+    <v-overlay v-model="interfaceStore.isLoading" class="align-center justify-center main-overlay" persistent>
       <v-progress-circular indeterminate size="64"></v-progress-circular>
     </v-overlay>
     <LoadingToast />
@@ -154,6 +154,10 @@ $box-padding: 1rem;
   }
 }
 
+.main-overlay {
+  z-index: 2005 !important;
+}
+
 @include touch {
   #app .v-application__wrap {
     display: block;
@@ -199,7 +203,7 @@ $box-padding: 1rem;
       bottom: 0.5rem;
       width: 100%;
       text-align: center;
-      z-index: 3000;
+      z-index: 2001;
     }
   }
 

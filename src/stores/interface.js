@@ -41,11 +41,11 @@ export const useInterfaceStore = defineStore('interface', {
     getters: {
         isAnyOverlayShown() {
             return this.confirmDialog.isShown
-                || this.infoDialog.isShown 
-                || this.isSearchModalDialogShown 
-                || this.isAuthorModalDialogShown 
-                || this.isAboutModalDialogShown 
-                || this.isKeyboardControlsModalDialogShown 
+                || this.infoDialog.isShown
+                || this.isSearchModalDialogShown
+                || this.isAuthorModalDialogShown
+                || this.isAboutModalDialogShown
+                || this.isKeyboardControlsModalDialogShown
                 || this.isFeedbackSnackbarShown;
         }
     },
