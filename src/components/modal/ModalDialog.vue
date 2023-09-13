@@ -10,9 +10,13 @@
                     </v-btn>
                 </v-toolbar>
             </v-card-title>
+            <div class="sticky">
+                <slot name="sticky"></slot>
+            </div>
             <v-card-text>
                 <slot></slot>
             </v-card-text>
+            <slot name="footer"></slot>
         </v-card>
     </v-dialog>
 </template>
@@ -72,6 +76,13 @@ export default {
         & .v-btn {
             margin-right: 0 !important;
         }
+    }
+
+    & .sticky {
+        position: sticky;
+        top: 0;
+        z-index: 3000;
+        background-color: white;
     }
 
     & .v-card-text {
