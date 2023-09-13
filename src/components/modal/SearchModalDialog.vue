@@ -5,8 +5,8 @@
       <section>
         <form v-on:submit.prevent="search" class="field has-addons mb-2">
           <v-text-field clearable v-model="interfaceStore.searchQuery" type="input" ref="searchInput" variant="solo"
-            append-icon="mdi-magnify" @click:append="search" density="compact" hide-details
-            placeholder="Search for keywords, names, etc. or add by providing DOI(s) in any format">
+            append-icon="mdi-magnify" @click:append="search" density="compact"
+            hint="Search for keywords, names, etc. or add by providing DOI(s) in any format">
           </v-text-field>
         </form>
         <p class="notification has-background-white p-2 mb-2">
@@ -196,7 +196,8 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+
 .content {
   & .notification {
     min-height: 40px;
