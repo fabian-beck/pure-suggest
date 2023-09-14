@@ -62,32 +62,37 @@ export default {
 </script>
 
 <style scoped lang="scss">
-:deep(.v-overlay__content) {
-    max-width: 1024px !important;
+.v-overlay {
+    z-index: 5000 !important;
 
-    & .v-card-title {
-        margin-bottom: 0;
-        padding: 0.5rem;
+    & :deep(.v-overlay__content) {
+        max-width: 1024px !important;
 
-        & .v-toolbar-title {
-            font-size: 1.2rem;
+
+        & .v-card-title {
+            margin-bottom: 0;
+            padding: 0.5rem;
+
+            & .v-toolbar-title {
+                font-size: 1.2rem;
+            }
+
+            & .v-btn {
+                margin-right: 0 !important;
+            }
         }
 
-        & .v-btn {
-            margin-right: 0 !important;
+        & .sticky {
+            position: sticky;
+            top: 0;
+            z-index: 3000;
+            background-color: white;
         }
-    }
 
-    & .sticky {
-        position: sticky;
-        top: 0;
-        z-index: 3000;
-        background-color: white;
-    }
+        & .v-card-text {
+            padding: calc(0.5rem + 1%) !important;
+        }
 
-    & .v-card-text {
-        padding: calc(0.5rem + 1%) !important;
     }
-
 }
 </style>

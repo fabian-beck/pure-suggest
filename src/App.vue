@@ -155,7 +155,7 @@ $box-padding: 1rem;
 }
 
 .main-overlay {
-  z-index: 2005 !important;
+  z-index: 6000 !important;
 }
 
 @include touch {
@@ -203,7 +203,7 @@ $box-padding: 1rem;
       bottom: 0.5rem;
       width: 100%;
       text-align: center;
-      z-index: 2001;
+      z-index: 3000;
     }
   }
 

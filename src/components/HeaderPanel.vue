@@ -96,7 +96,7 @@ export default {
 
 <style lang="scss" scoped>
 .v-toolbar {
-  z-index: 4;
+  z-index: 3000 !important;
 
   & :deep(.v-toolbar__content) {
     padding: 0 0.5vw;

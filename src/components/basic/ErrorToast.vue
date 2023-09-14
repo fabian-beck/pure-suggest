@@ -16,13 +16,17 @@ export default {
 </script>
 
 <style scoped lang="scss">
-:deep(.v-snackbar__wrapper) {
-    background-color: $danger !important;
-    min-width: 300px;
+.v-overlay {
+    z-index: 6001 !important;
 
-    & .v-snackbar__content {
-        text-align: center;
-        font-size: 1rem;
+    & :deep(.v-snackbar__wrapper) {
+        background-color: $danger !important;
+        min-width: 300px;
+
+        & .v-snackbar__content {
+            text-align: center;
+            font-size: 1rem;
+        }
     }
 }
 </style>
