@@ -5,14 +5,14 @@
         <div class="level">
           <div class="level-left">
             <div class="level-item">
-              <span v-html="this.$appNameHtml" class="title"></span>
+              <span v-html="appMeta.nameHtml" class="title"></span>
             </div>
-            <div class="level-item">
-              <span class="subtitle">{{ this.$appSubtitle }}</span>
+            <div class="level-item ml-8">
+              <span class="subtitle">{{ appMeta.subtitle }}</span>
             </div>
           </div>
           <div class="level-right">
-            <span class="is-size-7 level-item"><label>Version:&nbsp;</label>{{ this.$version }}</span>
+            <span class="is-size-7 level-item"><label>Version:&nbsp;</label>{{ appMeta.version }}</span>
           </div>
         </div>
         <p>
@@ -113,6 +113,7 @@
 <script>
 import { useInterfaceStore } from "@/stores/interface.js";
 export default {
+  inject: ["appMeta"],
   setup() {
     const interfaceStore = useInterfaceStore();
     return { interfaceStore };

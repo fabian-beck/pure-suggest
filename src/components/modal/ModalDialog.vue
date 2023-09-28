@@ -1,25 +1,33 @@
 <template>
-    <v-dialog v-model="isDialogShown" scrollable :fullscreen="$vuetify.breakpoint.smAndDown" :persistent="noCloseButton">
+    <v-dialog v-model="isDialogShown" scrollable :fullscreen="interfaceStore.isMobile" :persistent="noCloseButton">
         <v-card>
-            <v-card-title :class="`has-background-${headerColor} has-text-dark level`">
-                <div class="header-left">
+            <v-card-title :class="`has-background-${headerColor} has-text-dark`">
+                <v-toolbar color="transparent" density="compact">
                     <v-icon class="has-text-dark title-icon">{{ icon }}</v-icon>
-                    <span>{{ title }}</span>
-                </div>
-                <CompactButton icon="mdi-close" class="header-right" v-on:click="hideDialog" v-if="!noCloseButton"></CompactButton>
+                    <v-toolbar-title>{{ title }}</v-toolbar-title>
+                    <v-btn icon @click="hideDialog">
+                        <v-icon>mdi-close</v-icon>
+                    </v-btn>
+                </v-toolbar>
             </v-card-title>
+            <div class="sticky">
+                <slot name="sticky"></slot>
+            </div>
             <v-card-text>
                 <slot></slot>
             </v-card-text>
+            <slot name="footer"></slot>
         </v-card>
     </v-dialog>
 </template>
 
 <script>
+import { useInterfaceStore } from "@/stores/interface.js";
+
 export default {
     name: "ModalDialog",
     props: {
-        value: Boolean,
+        modelValue: Boolean,
         headerColor: String,
         title: String,
         icon: String,
@@ -30,12 +38,16 @@ export default {
             isDialogShown: this.value,
         };
     },
+    setup: () => {
+        const interfaceStore = useInterfaceStore();
+        return { interfaceStore };
+    },
     watch: {
-        value() {
-            this.isDialogShown = this.value;
+        modelValue() {
+            this.isDialogShown = this.modelValue;
         },
         isDialogShown() {
-            this.$emit('input', this.isDialogShown);
+            this.$emit('update:modelValue', this.isDialogShown);
         },
     },
     methods: {
@@ -50,22 +62,37 @@ export default {
 </script>
 
 <style scoped lang="scss">
-::v-deep .v-dialog {
-    max-width: 960px;
+.v-overlay {
+    z-index: 5000 !important;
 
-    & .v-card__title {
-        margin-bottom: 0;
-        padding: calc(min(1.0rem, 2vw));
+    & :deep(.v-overlay__content) {
+        max-width: 1024px !important;
 
-        & .title-icon {
-            margin-right: 0.5rem;
-            position: relative;
-            top: -0.15rem;
+
+        & .v-card-title {
+            margin-bottom: 0;
+            padding: 0.5rem;
+
+            & .v-toolbar-title {
+                font-size: 1.2rem;
+            }
+
+            & .v-btn {
+                margin-right: 0 !important;
+            }
         }
-    }
 
-    & .v-card__text {
-        padding-top: 1rem;
+        & .sticky {
+            position: sticky;
+            top: 0;
+            z-index: 3000;
+            background-color: white;
+        }
+
+        & .v-card-text {
+            padding: calc(0.5rem + 1%) !important;
+        }
+
     }
 }
 </style>

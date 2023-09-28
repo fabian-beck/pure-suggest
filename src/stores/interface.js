@@ -35,19 +35,17 @@ export const useInterfaceStore = defineStore('interface', {
                 isShown: false,
                 title: "",
             },
+            isMobile: true,
         }
     },
     getters: {
-        isMobile() {
-            return window.innerWidth <= 1023;
-        },
         isAnyOverlayShown() {
             return this.confirmDialog.isShown
-                || this.infoDialog.isShown 
-                || this.isSearchModalDialogShown 
-                || this.isAuthorModalDialogShown 
-                || this.isAboutModalDialogShown 
-                || this.isKeyboardControlsModalDialogShown 
+                || this.infoDialog.isShown
+                || this.isSearchModalDialogShown
+                || this.isAuthorModalDialogShown
+                || this.isAboutModalDialogShown
+                || this.isKeyboardControlsModalDialogShown
                 || this.isFeedbackSnackbarShown;
         }
     },
@@ -57,6 +55,10 @@ export const useInterfaceStore = defineStore('interface', {
             this.isNetworkClusters = true;
             this.isFilterPanelShown = false;
             window.scrollTo(0, 0);
+        },
+
+        checkMobile() {
+            this.isMobile = window.innerWidth < 1023;
         },
 
         startLoading() {
@@ -80,8 +82,8 @@ export const useInterfaceStore = defineStore('interface', {
 
         showAbstract(publication) {
             this.infoDialog = {
-                title: publication.title,
-                message: `<div><b>Abstract:</b> <i>${publication.abstract}</i></div>`,
+                title: "Abstract",
+                message: `<div><i>${publication.abstract}</i></div>`,
                 isShown: true,
             }
         },

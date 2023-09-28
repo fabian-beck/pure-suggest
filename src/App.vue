@@ -8,7 +8,7 @@
       <NetworkVisComponent id="network" :svgWidth="1500" :svgHeight="600" />
     </div>
     <QuickAccessBar id="quick-access" class="is-hidden-desktop"
-      v-if="!interfaceStore.isAnyOverlayShown && !sessionStore.isEmpty">
+      v-if="!interfaceStore.isAnyOverlayShown">
     </QuickAccessBar>
     <!-- Modal dialogs -->
     <SearchModalDialog />
@@ -16,7 +16,7 @@
     <AboutModalDialog />
     <KeyboardControlsModalDialog />
     <!-- Other dialogs and overlays -->
-    <v-overlay v-model="interfaceStore.isLoading" location-strategy="static">
+    <v-overlay v-model="interfaceStore.isLoading" class="align-center justify-center main-overlay" persistent>
       <v-progress-circular indeterminate size="64"></v-progress-circular>
     </v-overlay>
     <LoadingToast />
@@ -40,6 +40,9 @@ export default {
   setup() {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
+    // check if mobile 
+    interfaceStore.checkMobile();
+    window.addEventListener("resize", interfaceStore.checkMobile);
     return { sessionStore, interfaceStore };
   },
   created() {
@@ -65,7 +68,7 @@ export default {
 $block-spacing: 0.5rem;
 $box-padding: 1rem;
 
-#app .v-application--wrap {
+#app .v-application__wrap {
   display: grid;
   grid-template-areas:
     "header"
@@ -77,8 +80,6 @@ $box-padding: 1rem;
   & p {
     margin: 0;
   }
-
-  ;
 
   & #header {
     grid-area: header;
@@ -153,28 +154,12 @@ $box-padding: 1rem;
   }
 }
 
-// floating labels of fields (inpired from Buefy)
-.field.is-floating-label {
-  position: relative;
-
-  & .label {
-    top: -.775em;
-    padding-left: .125em;
-    padding-right: .125em;
-    position: absolute;
-    left: 0.5em;
-    font-size: .75rem;
-    background-color: transparent;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    max-width: calc(100% - 2em);
-    overflow: hidden;
-    z-index: 3 !important;
-  }
+.main-overlay {
+  z-index: 6000 !important;
 }
 
 @include touch {
-  #app .v-application--wrap {
+  #app .v-application__wrap {
     display: block;
     margin-bottom: 5rem;
 
@@ -183,11 +168,10 @@ $box-padding: 1rem;
       margin: 0;
       overflow: scroll;
       height: auto;
-      margin-top: 52px;
 
       & .box {
         margin: 0.25rem;
-        padding: 0.5rem;
+        padding: 0.25rem;
       }
 
       & #selected {
@@ -219,7 +203,7 @@ $box-padding: 1rem;
       bottom: 0.5rem;
       width: 100%;
       text-align: center;
-      z-index: 100;
+      z-index: 3000;
     }
   }
 

@@ -31,7 +31,8 @@ export const useSessionStore = defineStore('session', {
     excludedPublicationsCount: (state) => state.excludedPublicationsDois.length,
     suggestedPublications: (state) => state.suggestion ? state.suggestion.publications : [],
     suggestedPublicationsFiltered: (state) =>
-      state.suggestedPublications.filter(publication => state.filter.matches(publication)),
+      state.interfaceStore.isFilterPanelShown ?
+        state.suggestedPublications.filter(publication => state.filter.matches(publication)) : state.suggestedPublications,
     publications: (state) => state.selectedPublications.concat(state.suggestedPublications),
     publicationsFiltered: (state) => state.selectedPublications.concat(state.suggestedPublicationsFiltered),
     yearMax: (state) => Math.max(...state.publicationsFiltered.filter(publication => publication.year).map(publication => Number(publication.year))),

@@ -1,7 +1,7 @@
 <template>
   <li>
-    <v-overlay v-if="sessionStore.isQueuingForSelected(publication.doi) ||
-      sessionStore.isQueuingForExcluded(publication.doi)" absolute>
+    <v-overlay :model-value="sessionStore.isQueuingForSelected(publication.doi) ||
+      sessionStore.isQueuingForExcluded(publication.doi)" contained persistent class="align-center justify-center">
       <div class="level is-mobile" :class="{
         'to-be-selected': sessionStore.isQueuingForSelected(publication.doi),
       }">
@@ -17,8 +17,10 @@
             </span>
           </span>
         </div>
-        <CompactButton icon="mdi-undo" class="ml-4 level-right" data-tippy-content="Remove publication from queue again."
-          v-tippy v-on:click="sessionStore.removeFromQueues(publication.doi)" color="black"></CompactButton>
+        <div class="level-right">
+          <CompactButton icon="mdi-undo" v-tippy="'Remove publication from queue again.'"
+            v-on:click="sessionStore.removeFromQueues(publication.doi)"></CompactButton>
+        </div>
       </div>
     </v-overlay>
     <div class="publication-component media" :class="{
@@ -37,68 +39,71 @@
     }" :id="publication.doi" tabindex="0" v-on:focus="activate" @click.stop="activate"
       @mouseenter="sessionStore.hoverPublication(publication, true)"
       @mouseleave="sessionStore.hoverPublication(publication, false)">
-      <tippy class="media-left">
-        <template v-slot:trigger>
-          <div class="glyph has-text-centered" v-bind:style="{ 'background-color': publication.scoreColor }"
-            v-show="publication.wasFetched">
-            <div class="tooltip-target">
-              <div class="is-size-3 is-inline-block score">
-                {{ publication.score }}
-              </div>
-              <div class="boost-indicator" :class="chevronType" v-if="publication.boostFactor > 1">
-                <v-icon>mdi-{{ chevronType }}</v-icon>
-              </div>
+      <tippy class="media-left" placement="right">
+        <div class="glyph has-text-centered" v-bind:style="{ 'background-color': publication.scoreColor }"
+          v-show="publication.wasFetched">
+          <div class="tooltip-target">
+            <div class="is-size-3 is-inline-block score">
+              {{ publication.score }}
             </div>
-            <div class="reference-counts is-size-6">
-              <div class="is-pulled-left">
-                <span v-if="publication.citationCount > 0 ||
-                  publication.referenceDois.length === 0
-                  " :class="publication.referenceDois.length ? '' : 'unknown'">
-                  <InlineIcon icon="mdi-arrow-bottom-left-thick" :color="publication.referenceDois.length ? '' : 'danger'" />
-                  {{
-                    publication.citationCount ? publication.citationCount : "-"
-                  }}
-                </span>
-              </div>
-              <div class="is-pulled-right">
-                <span v-if="publication.referenceCount > 0">
-                  {{ publication.referenceCount }}
-                  <InlineIcon icon="mdi-arrow-top-left-thick" />
-                </span>
-              </div>
+            <div class="boost-indicator" :class="chevronType" v-if="publication.boostFactor > 1">
+              <v-icon size="small">mdi-{{ chevronType }}</v-icon>
             </div>
           </div>
+          <div class="reference-counts is-size-6">
+            <div class="is-pulled-left">
+              <span v-if="publication.citationCount > 0 ||
+                publication.referenceDois.length === 0
+                " :class="publication.referenceDois.length ? '' : 'unknown'">
+                <InlineIcon icon="mdi-arrow-bottom-left-thick"
+                  :color="publication.referenceDois.length ? '' : 'danger'" />
+                {{
+                  publication.citationCount ? publication.citationCount : "-"
+                }}
+              </span>
+            </div>
+            <div class="is-pulled-right">
+              <span v-if="publication.referenceCount > 0">
+                {{ publication.referenceCount }}
+                <InlineIcon icon="mdi-arrow-top-left-thick" />
+              </span>
+            </div>
+          </div>
+        </div>
+        <template #content>
+          <div>
+            Suggestion score of
+            <b>{{ publication.score }} =
+              <span v-if="publication.boostFactor != 1">(</span>{{ publication.citationCount }} + {{
+                publication.referenceCount
+              }}<span v-if="publication.boostFactor != 1">) &middot; {{ publication.boostFactor }}</span></b>,<br />
+            citing <b>{{ publication.citationCount }}</b> (
+            <InlineIcon icon="mdi-arrow-bottom-left-thick"
+              :color="publication.referenceDois.length ? 'white' : 'danger'" />
+            <span v-if="!publication.referenceDois.length" class="unknown">, citing data not available</span>) and cited
+            by
+            <b>{{ publication.referenceCount }}</b> (
+            <InlineIcon icon="mdi-arrow-top-left-thick" color="white" />) selected
+            publications<span v-if="publication.boostFactor != 1">, multiplied by a boost factor of
+              <b>{{ publication.boostFactor }} = 2<sup>{{
+                publication.boostMatches
+              }}</sup>
+              </b>
+              (
+              <InlineIcon :icon="`mdi-${chevronType}`" color="white" />;
+              {{ publication.boostMatches }} keyword<span v-if="publication.boostMatches > 1">s</span>
+              matched)
+            </span>.
+          </div>
+          <div v-if="publication.isLinkedToActive">
+            <br />
+            Marked as refered by or referencing currently active publication.
+          </div>
+          <div v-if="publication.isActive">
+            <br />
+            Currently active, with linked publications highlighted.
+          </div>
         </template>
-        <div>
-          Suggestion score of
-          <b>{{ publication.score }} =
-            <span v-if="publication.boostFactor != 1">(</span>{{ publication.citationCount }} + {{
-              publication.referenceCount
-            }}<span v-if="publication.boostFactor != 1">) &middot; {{ publication.boostFactor }}</span></b>,<br />
-          citing <b>{{ publication.citationCount }}</b> (
-          <InlineIcon icon="mdi-arrow-bottom-left-thick" :color="publication.referenceDois.length ? 'white' : 'danger'" />
-          <span v-if="!publication.referenceDois.length" class="unknown">, citing data not available</span>) and cited by
-          <b>{{ publication.referenceCount }}</b> (
-          <InlineIcon icon="mdi-arrow-top-left-thick" color="white" />) selected
-          publications<span v-if="publication.boostFactor != 1">, multiplied by a boost factor of
-            <b>{{ publication.boostFactor }} = 2<sup>{{
-              publication.boostMatches
-            }}</sup>
-            </b>
-            (
-            <InlineIcon :icon="`mdi-${chevronType}`" color="white" />;
-            {{ publication.boostMatches }} keyword<span v-if="publication.boostMatches > 1">s</span>
-            matched)
-          </span>.
-        </div>
-        <div v-if="publication.isLinkedToActive">
-          <br />
-          Marked as refered by or referencing currently active publication.
-        </div>
-        <div v-if="publication.isActive">
-          <br />
-          Currently active, with linked publications highlighted.
-        </div>
       </tippy>
       <div class="media-content">
         <div class="summary" v-show="publication.wasFetched">
@@ -118,19 +123,20 @@
               }}</span>)
           </span>
           <div>
+            <!-- Refactor: replace by for loop over Publication.TAGS -->
             <PublicationTag v-if="publication.isHighlyCited" icon="mdi-star"
-              :data-tippy-content="`Identified as highly cited: ${publication.isHighlyCited}.`" v-tippy>Highly cited
+              v-tippy="`Identified as highly cited: ${publication.isHighlyCited}.`">Highly cited
             </PublicationTag>
             <PublicationTag v-if="publication.isSurvey" icon="mdi-table"
-              :data-tippy-content="`Identified as literature survey: ${publication.isSurvey}.`" v-tippy>Literature survey
+              v-tippy="`Identified as literature survey: ${publication.isSurvey}.`">Literature survey
             </PublicationTag>
             <PublicationTag v-if="publication.isNew" icon="mdi-alarm"
-              :data-tippy-content="`Identified as new: ${publication.isNew}.`" v-tippy>New</PublicationTag>
+              v-tippy="`Identified as new: ${publication.isNew}.`">New</PublicationTag>
             <PublicationTag v-if="publication.isUnnoted" icon="mdi-alert-box-outline"
-              :data-tippy-content="`Identified as yet unnoted: ${publication.isUnnoted}.`" v-tippy>Unnoted
+              v-tippy="`Identified as yet unnoted: ${publication.isUnnoted}.`">Unnoted
             </PublicationTag>
             <PublicationTag v-if="publication.isOpenAccess" icon="mdi-lock-open-check-outline"
-              :data-tippy-content="`Identified as open access: open access link available.`" v-tippy>Open access
+              v-tippy="`Identified as open access: open access link available.`">Open access
             </PublicationTag>
           </div>
         </div>
@@ -157,8 +163,8 @@
               </div>
             </div>
             <div class="level-right">
-              <v-btn data-tippy-content="Retry loading metadata." v-tippy
-                @click.stop="sessionStore.retryLoadingPublication(publication)" small>
+              <v-btn v-tippy="'Retry loading metadata.'" @click.stop="sessionStore.retryLoadingPublication(publication)"
+                small>
                 <v-icon left>mdi-refresh</v-icon>
                 Retry
               </v-btn>
@@ -201,14 +207,14 @@
           <div class="level-right" v-if="publication.title && publication.isActive">
             <div class="level-item">
               <CompactButton icon="mdi-text" class="ml-5" v-if="publication.abstract" v-on:click="showAbstract"
-                data-tippy-content="Abs<span class='key'>t</span>ract" v-tippy></CompactButton>
+                v-tippy="`Abs<span class='key'>t</span>ract`"></CompactButton>
               <CompactButton icon="mdi-lock-open-check-outline" class="ml-5" v-if="publication.oaLink"
-                :href="publication.oaLink" data-tippy-content="<span class='key'>O</span>pen access" v-tippy>
+                :href="publication.oaLink" v-tippy="`<span class='key'>O</span>pen access`">
               </CompactButton>
               <CompactButton icon="mdi-school" class="ml-5" :href="publication.gsUrl"
-                data-tippy-content="<span class='key'>G</span>oogle Scholar" v-tippy></CompactButton>
+                v-tippy="`<span class='key'>G</span>oogle Scholar`"></CompactButton>
               <CompactButton icon="mdi-format-quote-close" class="ml-5" v-on:click="exportBibtex"
-                data-tippy-content="Export as BibTe<span class='key'>X</span> citation" v-tippy></CompactButton>
+                v-tippy="`Export as BibTe<span class='key'>X</span> citation`"></CompactButton>
             </div>
           </div>
         </div>
@@ -217,11 +223,11 @@
         <div>
           <CompactButton v-if="!publication.isSelected" icon="mdi-plus-thick"
             v-on:click="sessionStore.queueForSelected(publication.doi)" class="has-text-primary"
-            data-tippy-content="Mark publication to be added to selected publications." v-tippy></CompactButton>
+            v-tippy="'Mark publication to be added to selected publications.'"></CompactButton>
         </div>
         <div>
           <CompactButton icon="mdi-minus-thick" v-on:click="sessionStore.queueForExcluded(publication.doi)"
-            data-tippy-content="Mark publication to be excluded for suggestions." v-tippy></CompactButton>
+            v-tippy="'Mark publication to be excluded for suggestions.'"></CompactButton>
         </div>
       </div>
     </div>
@@ -476,9 +482,7 @@ li {
     }
 
     &.is-queuing {
-      &>div {
-        filter: blur(1px) opacity(50%);
-      }
+      filter: blur(1px) opacity(50%);
     }
 
     &:focus,

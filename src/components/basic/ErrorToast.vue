@@ -1,5 +1,6 @@
 <template>
-    <v-snackbar v-model="interfaceStore.errorToast.isShown" :timeout="5000">{{ interfaceStore.errorToast.message
+    <v-snackbar v-model="interfaceStore.errorToast.isShown" :timeout="5000" rounded="pill" location="top">{{
+        interfaceStore.errorToast.message
     }}</v-snackbar>
 </template>
 
@@ -15,13 +16,17 @@ export default {
 </script>
 
 <style scoped lang="scss">
-::v-deep .v-snack__wrapper {
-    border-radius: 1.5rem;
-    background-color: $danger !important;
+.v-overlay {
+    z-index: 6001 !important;
 
-    & .v-snack__content {
-        text-align: center;
-        font-size: 1rem;
+    & :deep(.v-snackbar__wrapper) {
+        background-color: $danger !important;
+        min-width: 300px;
+
+        & .v-snackbar__content {
+            text-align: center;
+            font-size: 1rem;
+        }
     }
 }
 </style>

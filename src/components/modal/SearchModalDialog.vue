@@ -1,19 +1,33 @@
 <template>
-  <ModalDialog v-model="isSearchModalDialogShown" @close="cancel" title="Search/add publications" icon="mdi-magnify"
+  <ModalDialog v-model="isSearchModalDialogShown" title="Search/add publications" icon="mdi-magnify"
     headerColor="primary" noCloseButton>
+    <template v-slot:sticky>
+      <form v-on:submit.prevent="search" class="has-background-primary-light">
+        <v-text-field clearable v-model="interfaceStore.searchQuery" type="input" ref="searchInput" variant="solo"
+          append-icon="mdi-magnify" @click:append="search" density="compact"
+          hint="Search for keywords, names, etc. or add by providing DOI(s) in any format">
+        </v-text-field>
+      </form>
+    </template>
+    <template v-slot:footer>
+      <v-card-actions :class="`has-background-primary-light`">
+        <p class="comment">
+          <b><span v-show="addedPublications.length === 0">No</span><span v-show="addedPublications.length > 0">{{
+            addedPublications.length
+          }}</span>
+            publication<span v-show="addedPublications.length > 1">s</span></b>
+          <span v-show="addedPublications.length === 0">&nbsp;yet marked</span>
+          to be added to selected.
+        </p>
+        <v-spacer></v-spacer>
+        <v-btn class="level-item has-background-primary has-text-white" @click="updateAndClose"
+          :disabled="addedPublications.length === 0">
+          <v-icon left>mdi-update</v-icon>Update</v-btn>
+      </v-card-actions>
+    </template>
     <div class="content">
       <section>
-        <form v-on:submit.prevent="search" class="field has-addons mb-2">
-          <v-text-field clearable v-model="interfaceStore.searchQuery" type="input"
-            ref="searchInput">
-            <v-icon slot="append" @click="search">mdi-magnify</v-icon>
-          </v-text-field>
-        </form>
-        <p class="notification has-background-primary-light p-2 mb-2">
-          <span v-show="searchResults.type === 'empty'"><i><b>Search</b> for keywords, names, etc. <b>or add </b> by
-              providing
-              <a href="https://www.doi.org/" class="href">DOI(s)</a> in any
-              format.</i></span>
+        <p class="comment">
           <span v-show="['doi', 'search'].includes(searchResults.type)">Showing
             <b>{{ filteredSearchResults.length }} publication{{
               filteredSearchResults.length != 1 ? "s" : ""
@@ -47,46 +61,26 @@
                 }}</a>
               </span>
               <span v-show="publication.title">
-                <CompactButton icon="mdi-school" data-tippy-content="Google Scholar" v-tippy :href="publication.gsUrl"
-                  class="ml-2"></CompactButton>
+                <CompactButton icon="mdi-school" v-tippy="'Google Scholar'" :href="publication.gsUrl" class="ml-2">
+                </CompactButton>
               </span>
             </div>
             <div class="media-right">
               <div>
-                <CompactButton icon="mdi-plus-thick"
-                  data-tippy-content="Mark publication to be added to selected publications." v-tippy
-                  @click="addPublication(publication.doi)"></CompactButton>
+                <CompactButton icon="mdi-plus-thick" v-tippy="'Mark publication to be added to selected publications.'"
+                  @click="addPublication(publication.doi)" v-if="publication.wasFetched"></CompactButton>
               </div>
             </div>
-            <v-overlay :value="!publication.wasFetched" :absolute="true" opacity="0.1">
+            <v-overlay :model-value="!publication.wasFetched" contained class="align-center justify-center" persistent
+              theme="dark">
               <v-icon class="has-text-grey-light">mdi-progress-clock</v-icon>
             </v-overlay>
           </li>
-          <v-overlay :value="isLoading">
+          <v-overlay :model-value="isLoading" contained class="align-center justify-center" persistent theme="dark">
             <v-progress-circular indeterminate size="64"></v-progress-circular>
           </v-overlay>
         </ul>
       </section>
-    </div>
-    <div class="level">
-      <div class="level-left">
-        <div class="level-item">
-          <p>
-            <b><span v-show="addedPublications.length === 0">No</span><span v-show="addedPublications.length > 0">{{
-              addedPublications.length
-            }}</span>
-              publication<span v-show="addedPublications.length > 1">s</span></b>
-            <span v-show="addedPublications.length === 0">&nbsp;yet marked</span>
-            to be added to selected.
-          </p>
-        </div>
-      </div>
-      <div class="level-right">
-        <v-btn class="level-item" @click="cancel()">Close</v-btn>
-        <v-btn class="level-item has-background-primary has-text-white" @click="updateAndClose"
-          :disabled="addedPublications.length === 0">
-          <v-icon left>mdi-update</v-icon>Update</v-btn>
-      </div>
     </div>
   </ModalDialog>
 </template>
@@ -157,6 +151,7 @@ export default {
     },
 
     addPublication(doi) {
+      if (this.addedPublications.includes(doi)) return;
       this.addedPublications.push(doi);
     },
 
@@ -173,19 +168,6 @@ export default {
       this.close();
     },
 
-    cancel() {
-      if (this.addedPublications.length === 0) {
-        this.close();
-        return;
-      }
-      this.interfaceStore.showConfirmDialog(
-        "Do you really want to discard the list of added publications?",
-        () => {
-          this.close();
-        }
-      );
-    },
-
     close() {
       this.interfaceStore.isSearchModalDialogShown = false;
       this.reset();
@@ -200,20 +182,19 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+form {
+  height: 5.5rem;
+  padding: 0.5rem;
+}
+
 .content {
-  & form.field {
-    margin-bottom: -0.5rem !important;
-  }
 
   & .publication-list {
     padding: 0;
     margin: 0;
     list-style: none;
-    height: calc(100vh - 370px);
-    min-height: 100px;
-    border: 1px solid $border;
-    @include scrollable-list;
+    min-height: 70vh;
 
     & li {
       margin: 0 !important;
@@ -223,32 +204,17 @@ export default {
   }
 }
 
-@include touch {
-  .card {
-    & .card-content {
-      padding: 0.5rem;
-
-      & form .control {
-        margin-bottom: 0;
-      }
-
-      & .publication-list {
-        height: calc(100vh - 380px);
-      }
-    }
-
-    & footer {
-      padding: 0.5rem;
-
-      & .level-left {
-        font-size: 0.8rem;
-        width: calc(80vw - 110px);
-      }
-
-      & .level-right {
-        margin-top: 0;
-      }
-    }
+.v-card-actions {
+  & button {
+    margin-bottom: 0 !important;
   }
 }
+
+.comment {
+    margin: 0;
+    padding: 0.5rem;
+    font-size: 0.8rem;
+    font-style: italic;
+    color: #888;
+  }
 </style>

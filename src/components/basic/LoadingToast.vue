@@ -1,6 +1,6 @@
 <template>
     <v-snackbar v-model="interfaceStore.loadingToast.isShown" :class="`type-${interfaceStore.loadingToast.type}`"
-        timeout="-1">{{ interfaceStore.loadingToast.message }}</v-snackbar>
+        timeout="-1" rounded="pill" location="top">{{ interfaceStore.loadingToast.message }}</v-snackbar>
 </template>
 
 <script>
@@ -15,20 +15,25 @@ export default {
 </script>
 
 <style scoped lang="scss">
-::v-deep .v-snack__wrapper {
-    border-radius: 1.5rem;
+.v-overlay {
+    z-index: 6001 !important;
 
-    & .v-snack__content {
-        text-align: center;
-        font-size: 1rem;
+    & :deep(.v-snackbar__wrapper) {
+        min-width: 300px;
+
+
+        & .v-snackbar__content {
+            text-align: center;
+            font-size: 1rem;
+        }
     }
 }
 
-.type-primary ::v-deep .v-snack__wrapper {
+.type-primary :deep(.v-snackbar__wrapper) {
     background-color: $primary !important;
 }
 
-.type-info ::v-deep .v-snack__wrapper {
+.type-info :deep(.v-snackbar__wrapper) {
     background-color: $info !important;
 }
 </style>

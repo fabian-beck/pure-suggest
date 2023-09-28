@@ -1,9 +1,8 @@
 <template>
-    <v-btn icon small @click.stop="performAction()" :disabled="disabled" light><v-icon>{{ icon }}</v-icon></v-btn>
+    <v-btn icon size="small" @click.stop="performAction()" :disabled="disabled" flat height="30" width="30"><v-icon>{{ icon }}</v-icon></v-btn>
 </template>
 
 <script>
-// button with properties: "icon"
 export default {
     name: "CompactButton",
     props: {

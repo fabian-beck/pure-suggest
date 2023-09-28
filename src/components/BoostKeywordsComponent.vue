@@ -1,97 +1,45 @@
 <template>
-  <div class="field has-addons is-floating-label boost">
-    <label class="label">Keywords</label>
-    <p class="control has-icons-right is-expanded">
-      <highlightable-input
-        class="input boost"
-        :highlight="highlight"
-        v-model="sessionStore.boostKeywordString"
-        spellcheck="false"
-        type="text"
-        data-tippy-content="Boost by factors of 2 the score of publications that contain the following keyword(s) in their title.<br><br>Use ',' to separate multiple keywords, use '|' to separate alternatives/synonyms of the same keywords."
-        v-tippy
-      />
-      <span class="icon is-small is-right is-clickable">
-        <i
-          class="delete"
-          v-show="sessionStore.boostKeywordString"
-          @click.stop="sessionStore.setBoostKeywordString('')"
-        ></i>
-      </span>
-    </p>
-    <p class="control">
-      <button class="button has-background-warning" type="submit" v-on:click="sessionStore.updateScores">
-        <span>
-          <InlineIcon icon="mdi-chevron-double-up" class="mr-1"></InlineIcon>
-          <span class="key">B</span>oost</span>
-      </button>
-    </p>
-  </div>
+  <form @submit.prevent="sessionStore.updateScores"
+    v-tippy="`Boost by factors of 2 the score of publications that contain the following keyword(s) in their title.`">
+    <v-text-field class="boost" density="compact" v-model="sessionStore.boostKeywordString" label="Boost keywords"
+      variant="solo" append-inner-icon="mdi-close" @click:append-inner="sessionStore.setBoostKeywordString('')"
+      hint="Use ',' to separate keywords, use '|' to discern alternatives/synonyms.">
+      <template v-slot:append>
+        <v-btn class="has-background-warning" @click="sessionStore.updateScores" height="47">
+          <v-icon>mdi-chevron-double-up</v-icon>
+        </v-btn>
+      </template>
+    </v-text-field>
+  </form>
 </template>
 
 <script>
 import { useSessionStore } from "@/stores/session.js";
-import { useInterfaceStore } from "@/stores/interface.js";
-
-import HighlightableInput from "vue-highlightable-input";
 
 export default {
   name: "BoostKeywordsComponent",
 
-  components: {
-    HighlightableInput,
-  },
-
   setup() {
     const sessionStore = useSessionStore();
-    const interfaceStore = useInterfaceStore();
-    return { sessionStore, interfaceStore };
+    return { sessionStore };
   },
 
-  data() {
-    return {
-      highlight: [
-        {
-          text: ",",
-          style: "color: #ccc; padding-left: 0.25rem; padding-right: 0.75rem;",
-        },
-        {
-          text: "|",
-          style: "color: #ccc; padding-left: 0.25rem; padding-right: 0.25rem;",
-        },
-        {
-          text: /[^,|]+\b/g, // match any character except "," and "|"; last character should not be a whitespace
-          style:
-            "text-decoration: underline; text-decoration-color: hsl(48, 100%, 67%); text-decoration-thickness: 0.25rem;",
-        },
-      ],
-    };
-  },
 };
 </script>
 
-<style lang="scss">
-.boost {
-  .is-expanded {
-    width: 0;
-    
-    & .input {
-      text-transform: lowercase;
-      text-overflow: inherit;
-      overflow: hidden;
-      display: inline-block;
-      white-space: nowrap;
-      user-select: text;
+<style lang="scss" scoped>
+@include v-input-details;
 
-      & br {
-        display: none;
-      }
+:deep(input) {
+  text-transform: lowercase;
+}
 
-      & * {
-        display: inline;
-        white-space: nowrap;
-      }
-    }
+:deep(.v-input__append) {
+  margin-inline-start: 0.5rem !important;
+
+  & button {
+    padding: 0 !important;
+    min-width: 2rem;
   }
 }
 </style>

@@ -30,13 +30,3 @@ export default {
     },
 };
 </script>
-
-<style scoped lang="scss">
-::v-deep .v-dialog {
-
-    & .v-card__text {
-        padding: 0.5rem 1.5rem;
-        font-size: 1.0rem;
-    }
-}
-</style>
