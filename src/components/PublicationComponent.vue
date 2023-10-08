@@ -143,7 +143,7 @@
         <div v-if="publication.isActive">
           <span>
             <span v-html="publication.authorOrcidHtml +
-              (publication.authorOrcidHtml.endsWith('.') ? '' : '.')
+              (publication.authorOrcidHtml.endsWith('.') ? ' ' : '. ')
               " v-if="publication.author" @click.stop="refocus" @click.middle.stop="refocus"></span>
           </span>
           <span v-if="publication.container">
