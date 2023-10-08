@@ -31,6 +31,7 @@ export default class Publication {
         this.score = 0;
         this.scoreColor = "#FFF";
         this.citationsPerYear = 0;
+        this.tooManyCitations = false;
         // tags
         this.isSurvey = false;
         this.isHighlyCited = false;
@@ -153,6 +154,7 @@ export default class Publication {
             }
         });
         this.citationsPerYear = this.citationDois.length / (Math.max(1, CURRENT_YEAR - this.year));
+        this.tooManyCitations = data.tooManyCitations;
         // Google Scholar link (not listing year as potentially misleading)
         const searchString = `${this.title} ${this.author?.split(',')[0]} ${this.container ?? ""}`;
         this.gsUrl = `https://scholar.google.de/scholar?hl=en&q=${encodeURIComponent(searchString)}`
@@ -162,9 +164,11 @@ export default class Publication {
         } else if (this.referenceDois.length >= 50 && /.*(survey|state|review|advances|future).*/i.test(this.title)) {
             this.isSurvey = `more than 50 references (${this.referenceDois.length}) and "${/(survey|state|review|advances|future)/i.exec(this.title)[0]}" in the title`;
         }
-        this.isHighlyCited = this.citationsPerYear > 10 ? `more than 10 citations per year (${this.citationsPerYear.toFixed(1)})` : false;
+        this.isHighlyCited = this.citationsPerYear > 10 || this.tooManyCitations
+            ? `more than 10 citations per year` : false;
         this.isNew = (CURRENT_YEAR - this.year) < 2 ? "published within the last two calendar years" : false;
-        this.isUnnoted = this.citationsPerYear < 1 ? `less than 1 citation per year (${this.citationsPerYear.toFixed(1)})` : false;
+        this.isUnnoted = this.citationsPerYear < 1 && !this.tooManyCitations
+            ? `less than 1 citation per year` : false;
         this.isOpenAccess = this.oaLink ? true : false;
     }
 

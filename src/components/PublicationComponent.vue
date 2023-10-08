@@ -198,9 +198,14 @@
               <label>
                 <InlineIcon icon="mdi-arrow-top-left-thick" color="dark" /> Cited by:
               </label>
-              <b>{{ publication.citationDois.length.toLocaleString("en") }}</b>
-              <span v-if="publication.citationsPerYear > 0">
+              <b v-if="!publication.tooManyCitations">{{ publication.citationDois.length.toLocaleString("en") }}</b>
+              <span v-if="publication.citationsPerYear > 0 && !publication.tooManyCitations">
                 &nbsp;({{ publication.citationsPerYear.toFixed(1) }}/year)
+              </span>
+              <span v-if="publication.tooManyCitations">
+                <span 
+                  v-tippy="'The citations of this publication are too numerous to be considered for suggestions.'"
+                ><b>&ge;1000 </b><InlineIcon icon="mdi-alert-box-outline" color="danger"/></span>
               </span>
             </div>
           </div>
@@ -237,47 +242,49 @@
 <script>
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
+import InlineIcon from "./basic/InlineIcon.vue";
 
 export default {
-  name: "PublicationComponent",
-  setup() {
-    const sessionStore = useSessionStore();
-    const interfaceStore = useInterfaceStore();
-    return { sessionStore, interfaceStore };
-  },
-  props: {
-    publication: Object,
-  },
-  computed: {
-    chevronType: function () {
-      if (this.publication.boostFactor >= 8) {
-        return "chevron-triple-up";
-      }
-      else if (this.publication.boostFactor >= 4) {
-        return "chevron-double-up";
-      }
-      else if (this.publication.boostFactor > 1) {
-        return "chevron-up";
-      }
-      return "";
+    name: "PublicationComponent",
+    setup() {
+        const sessionStore = useSessionStore();
+        const interfaceStore = useInterfaceStore();
+        return { sessionStore, interfaceStore };
     },
-  },
-  methods: {
-    activate: function () {
-      this.sessionStore.activatePublicationComponentByDoi(this.publication.doi);
-      this.$emit("activate", this.publication.doi);
+    props: {
+        publication: Object,
     },
-    showAbstract: function () {
-      this.interfaceStore.showAbstract(this.publication);
+    computed: {
+        chevronType: function () {
+            if (this.publication.boostFactor >= 8) {
+                return "chevron-triple-up";
+            }
+            else if (this.publication.boostFactor >= 4) {
+                return "chevron-double-up";
+            }
+            else if (this.publication.boostFactor > 1) {
+                return "chevron-up";
+            }
+            return "";
+        },
     },
-    exportBibtex: function () {
-      this.sessionStore.exportSingleBibtex(this.publication);
-      this.refocus();
+    methods: {
+        activate: function () {
+            this.sessionStore.activatePublicationComponentByDoi(this.publication.doi);
+            this.$emit("activate", this.publication.doi);
+        },
+        showAbstract: function () {
+            this.interfaceStore.showAbstract(this.publication);
+        },
+        exportBibtex: function () {
+            this.sessionStore.exportSingleBibtex(this.publication);
+            this.refocus();
+        },
+        refocus: function () {
+            document.getElementById(this.publication.doi).focus();
+        },
     },
-    refocus: function () {
-      document.getElementById(this.publication.doi).focus();
-    },
-  },
+    components: { InlineIcon }
 };
 </script>
 
