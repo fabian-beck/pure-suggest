@@ -279,7 +279,7 @@ export const useSessionStore = defineStore('session', {
       });
       // sort by score
       this.selectedPublicationsAuthors = Object.values(authors).sort(
-        (a, b) => b.score - a.score
+        (a, b) => b.score + b.count/1000 - (a.score + a.count/1000)
       );
     },
 
