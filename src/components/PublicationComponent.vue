@@ -72,11 +72,12 @@
         </div>
         <template #content>
           <div>
-            Suggestion score of
+            Score of
             <b>{{ publication.score }} =
               <span v-if="publication.boostFactor != 1">(</span>{{ publication.citationCount }} + {{
                 publication.referenceCount
-              }}<span v-if="publication.boostFactor != 1">) &middot; {{ publication.boostFactor }}</span></b>,<br />
+              }}<span v-if="publication.isSelected"> + 1</span><span v-if="publication.boostFactor != 1">) &middot; {{
+  publication.boostFactor }}</span></b>,<br />
             citing <b>{{ publication.citationCount }}</b> (
             <InlineIcon icon="mdi-arrow-bottom-left-thick"
               :color="publication.referenceDois.length ? 'white' : 'danger'" />
@@ -84,7 +85,8 @@
             by
             <b>{{ publication.referenceCount }}</b> (
             <InlineIcon icon="mdi-arrow-top-left-thick" color="white" />) selected
-            publications<span v-if="publication.boostFactor != 1">, multiplied by a boost factor of
+            publications<span v-if="publication.isSelected">, <b>1</b> as self-reference being selected itself</span><span
+              v-if="publication.boostFactor != 1">; multiplied by a boost factor of
               <b>{{ publication.boostFactor }} = 2<sup>{{
                 publication.boostMatches
               }}</sup>
@@ -203,9 +205,11 @@
                 &nbsp;({{ publication.citationsPerYear.toFixed(1) }}/year)
               </span>
               <span v-if="publication.tooManyCitations">
-                <span 
-                  v-tippy="'The citations of this publication are too numerous to be considered for suggestions.'"
-                ><b>&ge;1000 </b><InlineIcon icon="mdi-alert-box-outline" color="danger"/></span>
+                <span
+                  v-tippy="'The citations of this publication are too numerous to be considered for suggestions.'"><b>&ge;1000
+                  </b>
+                  <InlineIcon icon="mdi-alert-box-outline" color="danger" />
+                </span>
               </span>
             </div>
           </div>
@@ -245,46 +249,46 @@ import { useInterfaceStore } from "@/stores/interface.js";
 import InlineIcon from "./basic/InlineIcon.vue";
 
 export default {
-    name: "PublicationComponent",
-    setup() {
-        const sessionStore = useSessionStore();
-        const interfaceStore = useInterfaceStore();
-        return { sessionStore, interfaceStore };
+  name: "PublicationComponent",
+  setup() {
+    const sessionStore = useSessionStore();
+    const interfaceStore = useInterfaceStore();
+    return { sessionStore, interfaceStore };
+  },
+  props: {
+    publication: Object,
+  },
+  computed: {
+    chevronType: function () {
+      if (this.publication.boostFactor >= 8) {
+        return "chevron-triple-up";
+      }
+      else if (this.publication.boostFactor >= 4) {
+        return "chevron-double-up";
+      }
+      else if (this.publication.boostFactor > 1) {
+        return "chevron-up";
+      }
+      return "";
     },
-    props: {
-        publication: Object,
+  },
+  methods: {
+    activate: function () {
+      this.sessionStore.activatePublicationComponentByDoi(this.publication.doi);
+      this.$emit("activate", this.publication.doi);
     },
-    computed: {
-        chevronType: function () {
-            if (this.publication.boostFactor >= 8) {
-                return "chevron-triple-up";
-            }
-            else if (this.publication.boostFactor >= 4) {
-                return "chevron-double-up";
-            }
-            else if (this.publication.boostFactor > 1) {
-                return "chevron-up";
-            }
-            return "";
-        },
+    showAbstract: function () {
+      this.interfaceStore.showAbstract(this.publication);
     },
-    methods: {
-        activate: function () {
-            this.sessionStore.activatePublicationComponentByDoi(this.publication.doi);
-            this.$emit("activate", this.publication.doi);
-        },
-        showAbstract: function () {
-            this.interfaceStore.showAbstract(this.publication);
-        },
-        exportBibtex: function () {
-            this.sessionStore.exportSingleBibtex(this.publication);
-            this.refocus();
-        },
-        refocus: function () {
-            document.getElementById(this.publication.doi).focus();
-        },
+    exportBibtex: function () {
+      this.sessionStore.exportSingleBibtex(this.publication);
+      this.refocus();
     },
-    components: { InlineIcon }
+    refocus: function () {
+      document.getElementById(this.publication.doi).focus();
+    },
+  },
+  components: { InlineIcon }
 };
 </script>
 
@@ -536,5 +540,4 @@ li {
       margin-left: 0.5rem;
     }
   }
-}
-</style>
+}</style>
