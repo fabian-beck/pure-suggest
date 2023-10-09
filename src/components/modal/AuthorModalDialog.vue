@@ -1,5 +1,6 @@
 <template>
-  <ModalDialog headerColor="primary" title="Authors of selected" icon="mdi-account-group" v-model="interfaceStore.isAuthorModalDialogShown">
+  <ModalDialog headerColor="primary" title="Authors of selected" icon="mdi-account-group"
+    v-model="interfaceStore.isAuthorModalDialogShown">
     <div class="content">
       <section>
         <ul>
@@ -25,10 +26,11 @@
                   </small>
                 </div>
                 <div>
+                  Aggregated score of <strong>{{ author.score }}</strong> through
                   <strong>{{ author.count }}</strong> selected publication{{
                     author.count > 1 ? "s" : ""
-                  }}<span v-if="author.yearMin != author.yearMax">, {{ author.yearMin }} to {{ author.yearMax }}
-                  </span><span v-else-if="author.yearMin">, {{ author.yearMin }}</span>
+                  }}<span v-if="author.yearMin != author.yearMax">, <strong>{{ author.yearMin }}</strong> to <strong>{{ author.yearMax }}</strong>
+                  </span><span v-else-if="author.yearMin">, <strong>{{ author.yearMin }}</strong></span>.
                 </div>
                 <div v-if="Object.keys(author.keywords).length > 0" class="is-size-7">
                   Related to
