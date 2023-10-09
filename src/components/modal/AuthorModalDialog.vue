@@ -5,8 +5,12 @@
       <section>
         <ul>
           <li v-for="author in sessionStore.selectedPublicationsAuthors" :key="author.id" class="media">
-            <div class="media-left">
-              <v-icon :size="authorIconSize(author.count)">mdi-account</v-icon>
+            <div class="media-left d-flex flex-column">
+              <div class="text-body-2">{{ author.firstAuthorCount }} : {{ author.count }}</div>
+              <div>
+                <v-icon :size="authorIconSize(author.count)">mdi-account</v-icon>
+              </div>
+              <div><strong>{{ author.score }}</strong></div>
             </div>
             <div class="media-content">
               <div class="content">
@@ -30,7 +34,8 @@
                   <strong>{{ author.count }}</strong> selected publication{{
                     author.count > 1 ? "s" : ""
                   }}<span v-if="author.firstAuthorCount"> (<strong v-if="author.firstAuthorCount < author.count">{{
-  author.firstAuthorCount }}&nbsp;</strong><strong v-else-if="author.firstAuthorCount > 1">all </strong>as
+  author.firstAuthorCount }}&nbsp;</strong><strong v-else-if="author.firstAuthorCount > 1">all
+                    </strong>as
                     first
                     author)</span><span v-if="author.yearMin != author.yearMax">, <strong>{{ author.yearMin }}</strong> to
                     <strong>{{ author.yearMax }}</strong>
