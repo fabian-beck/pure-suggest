@@ -29,7 +29,11 @@
                   Aggregated score of <strong>{{ author.score }}</strong> through
                   <strong>{{ author.count }}</strong> selected publication{{
                     author.count > 1 ? "s" : ""
-                  }}<span v-if="author.yearMin != author.yearMax">, <strong>{{ author.yearMin }}</strong> to <strong>{{ author.yearMax }}</strong>
+                  }}<span v-if="author.firstAuthorCount"> (<strong v-if="author.firstAuthorCount < author.count">{{
+  author.firstAuthorCount }}&nbsp;</strong><strong v-else-if="author.firstAuthorCount > 1">all </strong>as
+                    first
+                    author)</span><span v-if="author.yearMin != author.yearMax">, <strong>{{ author.yearMin }}</strong> to
+                    <strong>{{ author.yearMax }}</strong>
                   </span><span v-else-if="author.yearMin">, <strong>{{ author.yearMin }}</strong></span>.
                 </div>
                 <div v-if="Object.keys(author.keywords).length > 0" class="is-size-7">
