@@ -218,7 +218,7 @@ export default class Publication {
         // join highlighted title
         this.titleHighlighted = titleFragments.join("");
         // update score
-        this.score = (this.citationCount + this.referenceCount) * this.boostFactor;
+        this.score = (this.citationCount + this.referenceCount + (this.isSelected ? 1 : 0)) * this.boostFactor;
         // update score color
         let lightness = 100;
         if (this.score >= 32) {
