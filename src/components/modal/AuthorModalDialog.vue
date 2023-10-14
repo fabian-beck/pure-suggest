@@ -8,7 +8,7 @@
             <tippy class="media-left d-flex flex-column">
               <div class="text-body-2">{{ author.firstAuthorCount }} : {{ author.count }}</div>
               <div>
-                <v-icon :size="authorIconSize(author.count)">mdi-account</v-icon>
+                <v-icon :size="authorIconSize(author.score)">mdi-account</v-icon>
               </div>
               <div><strong>{{ author.score }}</strong></div>
               <template #content>
@@ -77,14 +77,14 @@ export default {
     return { sessionStore, interfaceStore };
   },
   methods: {
-    authorIconSize(count) {
-      if (count > 5) {
+    authorIconSize(score) {
+      if (score > 64) {
         return "48";
       }
-      if (count > 2) {
+      if (score > 32) {
         return "32";
       }
-      if (count > 1) {
+      if (score > 16) {
         return "24";
       }
       return "18";
