@@ -91,6 +91,15 @@ export default {
 
         & .v-card-text {
             padding: calc(0.5rem + 1%) !important;
+
+            & h2 {
+                font-size: $size-5 !important;
+
+                & .v-icon {
+                    position: relative;
+                    top: -0.15rem;
+                }
+            }
         }
 
     }

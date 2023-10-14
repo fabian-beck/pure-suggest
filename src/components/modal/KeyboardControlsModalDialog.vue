@@ -109,19 +109,8 @@ export default {
       margin-top: 0.5rem;
     }
 
-    & h2 {
-      font-size: $size-5 !important;
-    }
-
     & ul.keys {
       list-style-type: none;
-
-      & .v-icon {
-        position: relative;
-        top: -0.10rem;
-        margin-right: 0.25rem;
-        color: black;
-      }
     }
   }
 }

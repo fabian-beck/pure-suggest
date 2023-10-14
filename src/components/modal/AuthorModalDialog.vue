@@ -1,16 +1,57 @@
 <template>
-  <ModalDialog headerColor="primary" title="Authors of selected" icon="mdi-account-group" v-model="interfaceStore.isAuthorModalDialogShown">
+  <ModalDialog headerColor="primary" title="Authors of selected" icon="mdi-account-group"
+    v-model="interfaceStore.isAuthorModalDialogShown">
     <div class="content">
       <section>
+        <h2 class="mb-2">
+          <v-icon icon="mdi-counter" class="mr-2" />
+          Author score settings
+        </h2>
+        <v-form class="mb-4">
+          <v-container>
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-checkbox v-model="sessionStore.isAuthorScoreEnabled" label="Consider publication score"
+                  @change="sessionStore.computeSelectedPublicationsAuthors" density="compact"
+                  hint="Otherwise, each publication counts as one" />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-checkbox v-model="sessionStore.isFirstAuthorBoostEnabled" label="Boost first authors"
+                  @change="sessionStore.computeSelectedPublicationsAuthors" density="compact" 
+                  hint="Counting first author publications twice"/>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-form>
+        <h2 class="mb-6">
+          <v-icon icon="mdi-view-list" class="mr-2"></v-icon>
+          Ranked author list
+        </h2>
         <ul>
           <li v-for="author in sessionStore.selectedPublicationsAuthors" :key="author.id" class="media">
-            <div class="media-left">
-              <v-icon :size="authorIconSize(author.count)">mdi-account</v-icon>
-            </div>
+            <tippy class="media-left d-flex flex-column">
+              <div class="text-body-2">{{ author.firstAuthorCount }} : {{ author.count }}</div>
+              <div>
+                <v-icon :size="authorIconSize(author.score)">mdi-account</v-icon>
+              </div>
+              <div><strong>{{ author.score }}</strong></div>
+              <template #content>
+                Aggregated score of <b>{{ author.score }}</b> through
+                <b>{{ author.count }}</b> selected publication{{
+                  author.count > 1 ? "s" : ""
+                }}<span v-if="author.firstAuthorCount"> (<b v-if="author.firstAuthorCount < author.count">{{
+  author.firstAuthorCount }}&nbsp;</b><b v-else-if="author.firstAuthorCount > 1">all
+                  </b>as
+                  first
+                  author)</span><span v-if="author.yearMin != author.yearMax">, <b>{{ author.yearMin }}</b> to
+                  <b>{{ author.yearMax }}</b>
+                </span><span v-else-if="author.yearMin">, <b>{{ author.yearMin }}</b></span>.
+              </template>
+            </tippy>
             <div class="media-content">
               <div class="content">
-                <div>
-                  <strong>{{ author.id }}</strong>&nbsp;<span v-if="author.orcid">
+                <div class="mb-3">
+                  <b>{{ author.id }}</b>&nbsp;<span v-if="author.orcid">
                     <a :href="`https://orcid.org/${author.orcid}`"><img alt="ORCID logo"
                         src="https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png" width="14"
                         height="14" /></a>
@@ -23,12 +64,6 @@
                       {{ alternativeName }}
                     </v-chip>
                   </small>
-                </div>
-                <div>
-                  <strong>{{ author.count }}</strong> selected publication{{
-                    author.count > 1 ? "s" : ""
-                  }}<span v-if="author.yearMin != author.yearMax">, {{ author.yearMin }} to {{ author.yearMax }}
-                  </span><span v-else-if="author.yearMin">, {{ author.yearMin }}</span>
                 </div>
                 <div v-if="Object.keys(author.keywords).length > 0" class="is-size-7">
                   Related to
@@ -66,14 +101,20 @@ export default {
     return { sessionStore, interfaceStore };
   },
   methods: {
-    authorIconSize(count) {
-      if (count > 5) {
+    authorIconSize(score) {
+      if (!this.sessionStore.isAuthorScoreEnabled) {
+        score = score * 20;
+      }
+      if (!this.sessionStore.isFirstAuthorBoostEnabled) {
+        score = score * 1.5;
+      }
+      if (score > 128) {
         return "48";
       }
-      if (count > 2) {
+      if (score > 64) {
         return "32";
       }
-      if (count > 1) {
+      if (score > 16) {
         return "24";
       }
       return "18";

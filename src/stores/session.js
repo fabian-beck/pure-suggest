@@ -23,6 +23,8 @@ export const useSessionStore = defineStore('session', {
       readPublicationsDois: new Set(),
       filter: new Filter(),
       addQuery: "",
+      isAuthorScoreEnabled: true,
+      isFirstAuthorBoostEnabled: true,
     }
   },
   getters: {
@@ -203,12 +205,26 @@ export const useSessionStore = defineStore('session', {
       const authors = {};
       // assemble authors from selected publications
       this.selectedPublications.forEach((publication) => {
-        publication.authorOrcid?.split("; ").forEach((author) => {
+        publication.authorOrcid?.split("; ").forEach((author, i) => {
           const authorId = author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, "");
           if (!authors[authorId]) {
-            authors[authorId] = { count: 0, id: authorId, keywords: {}, orcid: "", alternativeNames: [authorId], coauthors: {}, yearMin: 9999, yearMax: 0 };
+            authors[authorId] = {
+              id: authorId,
+              count: 0,
+              firstAuthorCount: 0,
+              score: 0,
+              keywords: {},
+              orcid: "",
+              alternativeNames: [authorId],
+              coauthors: {},
+              yearMin: 9999,
+              yearMax: 0
+            };
           }
           authors[authorId].count++;
+          authors[authorId].firstAuthorCount += i > 0 ? 0 : 1;
+          authors[authorId].score += (this.isAuthorScoreEnabled ? publication.score : 1)
+            * (this.isFirstAuthorBoostEnabled ? (i > 0 ? 1 : 2) : 1);
           const orcid = author.match(/(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g);
           if (orcid) {
             authors[authorId].orcid = orcid[0];
@@ -229,6 +245,8 @@ export const useSessionStore = defineStore('session', {
           authorMatches.forEach((author2) => {
             if (author.id.length > author2.id.length) {
               author.count += author2.count;
+              author.firstAuthorCount += author2.firstAuthorCount;
+              author.score += author2.score;
               author.keywords = mergeCounts(author.keywords, author2.keywords);
               author.alternativeNames = [...new Set(author.alternativeNames.concat(author2.alternativeNames))];
               author.coauthors = mergeCounts(author.coauthors, author2.coauthors);
@@ -253,6 +271,8 @@ export const useSessionStore = defineStore('session', {
         const authorMatches = authorsWithoutAbbreviatedNames.filter((author2) => author2.id.startsWith(authorId));
         if (authorMatches.length === 1 && (!author.orcid || !authorMatches[0].orcid || author.orcid === authorMatches[0].orcid)) {
           authorMatches[0].count += author.count;
+          authorMatches[0].firstAuthorCount += author.firstAuthorCount;
+          authorMatches[0].score += author.score;
           authorMatches[0].keywords = mergeCounts(author.keywords, authorMatches[0].keywords);
           authorMatches[0].coauthors = mergeCounts(author.coauthors, authorMatches[0].coauthors);
           if (author.orcid && !authorMatches[0].orcid) {
@@ -264,9 +284,9 @@ export const useSessionStore = defineStore('session', {
           deleteAuthor(author.id, authorMatches[0].id);
         }
       });
-      // sort by count
+      // sort by score
       this.selectedPublicationsAuthors = Object.values(authors).sort(
-        (a, b) => b.count - a.count
+        (a, b) => b.score + b.count / 1000 - (a.score + a.count / 1000)
       );
     },
 
