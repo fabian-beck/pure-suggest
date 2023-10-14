@@ -3,6 +3,12 @@
     v-model="interfaceStore.isAuthorModalDialogShown">
     <div class="content">
       <section>
+        <v-form class="mb-4">
+          <v-checkbox v-model="sessionStore.isAuthorScoreEnabled" label="Consider author score"
+            @change="sessionStore.computeSelectedPublicationsAuthors" />
+          <v-checkbox v-model="sessionStore.isFirstAuthorBoostEnabled" label="Boost first authors"
+            @change="sessionStore.computeSelectedPublicationsAuthors" />
+        </v-form>
         <ul>
           <li v-for="author in sessionStore.selectedPublicationsAuthors" :key="author.id" class="media">
             <tippy class="media-left d-flex flex-column">
@@ -78,10 +84,16 @@ export default {
   },
   methods: {
     authorIconSize(score) {
-      if (score > 64) {
+      if (!this.sessionStore.isAuthorScoreEnabled) {
+        score = score * 15;
+      }
+      if (!this.sessionStore.isFirstAuthorBoostEnabled) {
+        score = score * 1.5;
+      }
+      if (score > 128) {
         return "48";
       }
-      if (score > 32) {
+      if (score > 64) {
         return "32";
       }
       if (score > 16) {

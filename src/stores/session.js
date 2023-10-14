@@ -23,6 +23,8 @@ export const useSessionStore = defineStore('session', {
       readPublicationsDois: new Set(),
       filter: new Filter(),
       addQuery: "",
+      isAuthorScoreEnabled: true,
+      isFirstAuthorBoostEnabled: true,
     }
   },
   getters: {
@@ -207,21 +209,22 @@ export const useSessionStore = defineStore('session', {
           const authorId = author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, "");
           if (!authors[authorId]) {
             authors[authorId] = {
-              id: authorId, 
-              count: 0, 
+              id: authorId,
+              count: 0,
               firstAuthorCount: 0,
               score: 0,
-              keywords: {}, 
-              orcid: "", 
-              alternativeNames: [authorId], 
-              coauthors: {}, 
-              yearMin: 9999, 
+              keywords: {},
+              orcid: "",
+              alternativeNames: [authorId],
+              coauthors: {},
+              yearMin: 9999,
               yearMax: 0
             };
           }
           authors[authorId].count++;
           authors[authorId].firstAuthorCount += i > 0 ? 0 : 1;
-          authors[authorId].score += publication.score * (i > 0 ? 1: 2);
+          authors[authorId].score += (this.isAuthorScoreEnabled ? publication.score : 1)
+            * (this.isFirstAuthorBoostEnabled ? (i > 0 ? 1 : 2) : 1);
           const orcid = author.match(/(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g);
           if (orcid) {
             authors[authorId].orcid = orcid[0];
@@ -283,7 +286,7 @@ export const useSessionStore = defineStore('session', {
       });
       // sort by score
       this.selectedPublicationsAuthors = Object.values(authors).sort(
-        (a, b) => b.score + b.count/1000 - (a.score + a.count/1000)
+        (a, b) => b.score + b.count / 1000 - (a.score + a.count / 1000)
       );
     },
 
