@@ -5,17 +5,29 @@
       <section>
         <ul>
           <li v-for="author in sessionStore.selectedPublicationsAuthors" :key="author.id" class="media">
-            <div class="media-left d-flex flex-column">
+            <tippy class="media-left d-flex flex-column">
               <div class="text-body-2">{{ author.firstAuthorCount }} : {{ author.count }}</div>
               <div>
                 <v-icon :size="authorIconSize(author.count)">mdi-account</v-icon>
               </div>
               <div><strong>{{ author.score }}</strong></div>
-            </div>
+              <template #content>
+                Aggregated score of <b>{{ author.score }}</b> through
+                <b>{{ author.count }}</b> selected publication{{
+                  author.count > 1 ? "s" : ""
+                }}<span v-if="author.firstAuthorCount"> (<b v-if="author.firstAuthorCount < author.count">{{
+  author.firstAuthorCount }}&nbsp;</b><b v-else-if="author.firstAuthorCount > 1">all
+                  </b>as
+                  first
+                  author)</span><span v-if="author.yearMin != author.yearMax">, <b>{{ author.yearMin }}</b> to
+                  <b>{{ author.yearMax }}</b>
+                </span><span v-else-if="author.yearMin">, <b>{{ author.yearMin }}</b></span>.
+              </template>
+            </tippy>
             <div class="media-content">
               <div class="content">
                 <div>
-                  <strong>{{ author.id }}</strong>&nbsp;<span v-if="author.orcid">
+                  <b>{{ author.id }}</b>&nbsp;<span v-if="author.orcid">
                     <a :href="`https://orcid.org/${author.orcid}`"><img alt="ORCID logo"
                         src="https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png" width="14"
                         height="14" /></a>
@@ -28,18 +40,6 @@
                       {{ alternativeName }}
                     </v-chip>
                   </small>
-                </div>
-                <div>
-                  Aggregated score of <strong>{{ author.score }}</strong> through
-                  <strong>{{ author.count }}</strong> selected publication{{
-                    author.count > 1 ? "s" : ""
-                  }}<span v-if="author.firstAuthorCount"> (<strong v-if="author.firstAuthorCount < author.count">{{
-  author.firstAuthorCount }}&nbsp;</strong><strong v-else-if="author.firstAuthorCount > 1">all
-                    </strong>as
-                    first
-                    author)</span><span v-if="author.yearMin != author.yearMax">, <strong>{{ author.yearMin }}</strong> to
-                    <strong>{{ author.yearMax }}</strong>
-                  </span><span v-else-if="author.yearMin">, <strong>{{ author.yearMin }}</strong></span>.
                 </div>
                 <div v-if="Object.keys(author.keywords).length > 0" class="is-size-7">
                   Related to
