@@ -24,6 +24,7 @@ export const useInterfaceStore = defineStore('interface', {
             isAboutModalDialogShown: false,
             isKeyboardControlsModalDialogShown: false,
             isFeedbackSnackbarShown: false,
+            feebackInvitationWasShown: false,
             confirmDialog: {
                 message: "",
                 action: () => { },
@@ -107,6 +108,7 @@ export const useInterfaceStore = defineStore('interface', {
 
         showFeedbackInvitation() {
             this.isFeedbackSnackbarShown = true;
+            this.feebackInvitationWasShown = true;
         },
 
         openSearchModalDialog(query) {

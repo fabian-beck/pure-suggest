@@ -127,7 +127,8 @@ export const useSessionStore = defineStore('session', {
       }
       await this.updateSuggestions();
       if (
-        !this.interfaceStore.isfeedbackInvitationShown &&
+        !this.interfaceStore.isfeedbackInvitationShown && 
+        !this.interfaceStore.feebackInvitationWasShown &&
         this.selectedPublications.length >= 10
       ) {
         this.interfaceStore.showFeedbackInvitation();
