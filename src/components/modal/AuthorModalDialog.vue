@@ -23,7 +23,7 @@
             </v-row>
           </v-container>
         </v-form>
-        <h2 class="mb-4">
+        <h2 class="mb-6">
           <v-icon icon="mdi-view-list" class="mr-2"></v-icon>
           Ranked author list
         </h2>
@@ -50,7 +50,7 @@
             </tippy>
             <div class="media-content">
               <div class="content">
-                <div>
+                <div class="mb-3">
                   <b>{{ author.id }}</b>&nbsp;<span v-if="author.orcid">
                     <a :href="`https://orcid.org/${author.orcid}`"><img alt="ORCID logo"
                         src="https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png" width="14"
@@ -103,7 +103,7 @@ export default {
   methods: {
     authorIconSize(score) {
       if (!this.sessionStore.isAuthorScoreEnabled) {
-        score = score * 15;
+        score = score * 20;
       }
       if (!this.sessionStore.isFirstAuthorBoostEnabled) {
         score = score * 1.5;
