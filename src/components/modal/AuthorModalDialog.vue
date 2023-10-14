@@ -12,11 +12,13 @@
             <v-row>
               <v-col cols="12" md="6">
                 <v-checkbox v-model="sessionStore.isAuthorScoreEnabled" label="Consider publication score"
-                  @change="sessionStore.computeSelectedPublicationsAuthors" density="compact" />
+                  @change="sessionStore.computeSelectedPublicationsAuthors" density="compact"
+                  hint="Otherwise, each publication counts as one" />
               </v-col>
               <v-col cols="12" md="6">
                 <v-checkbox v-model="sessionStore.isFirstAuthorBoostEnabled" label="Boost first authors"
-                  @change="sessionStore.computeSelectedPublicationsAuthors" density="compact" />
+                  @change="sessionStore.computeSelectedPublicationsAuthors" density="compact" 
+                  hint="Counting first author publications twice"/>
               </v-col>
             </v-row>
           </v-container>
