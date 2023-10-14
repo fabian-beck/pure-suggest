@@ -1,5 +1,5 @@
 <template>
-    <v-btn icon size="small" @click.stop="performAction()" :disabled="disabled" flat height="30" width="30"><v-icon>{{ icon }}</v-icon></v-btn>
+    <v-btn icon size="small" @click="openLink()" :disabled="disabled" flat height="30" width="30"><v-icon>{{ icon }}</v-icon></v-btn>
 </template>
 
 <script>
@@ -12,8 +12,7 @@ export default {
         href: String,
     },
     methods: {
-        performAction() {
-            this.$emit('click')
+        openLink() {
             if (this.href) window.open(this.href, '_blank');
         },
     }

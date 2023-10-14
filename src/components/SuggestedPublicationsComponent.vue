@@ -51,7 +51,7 @@
             </template>
           </tippy>
           <CompactButton icon="mdi-playlist-plus has-text-white" class="ml-2"
-            v-tippy="'Load more suggested publications.'" v-on:click="sessionStore.loadMoreSuggestions()" :disabled="sessionStore.suggestedPublications.length ===
+            v-tippy="'Load more suggested publications.'" @click="sessionStore.loadMoreSuggestions()" :disabled="sessionStore.suggestedPublications.length ===
               sessionStore.suggestion.totalSuggestions
               "></CompactButton>
         </div>

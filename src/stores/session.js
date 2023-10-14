@@ -388,6 +388,7 @@ export const useSessionStore = defineStore('session', {
     },
 
     loadMoreSuggestions() {
+      console.log("Loading more suggestions.");
       this.updateSuggestions(
         this.maxSuggestions + 50
       );
