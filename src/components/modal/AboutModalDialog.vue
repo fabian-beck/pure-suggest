@@ -127,13 +127,5 @@ export default {
     margin-top: 0.5rem;
   }
 
-  & h2 {
-    font-size: $size-5 !important;
-
-    & .v-icon {
-      position: relative;
-      top: -0.15rem;
-    }
-  }
 }
 </style>

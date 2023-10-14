@@ -3,12 +3,28 @@
     v-model="interfaceStore.isAuthorModalDialogShown">
     <div class="content">
       <section>
+        <h2 class="mb-2">
+          <v-icon icon="mdi-counter" class="mr-2" />
+          Author score settings
+        </h2>
         <v-form class="mb-4">
-          <v-checkbox v-model="sessionStore.isAuthorScoreEnabled" label="Consider author score"
-            @change="sessionStore.computeSelectedPublicationsAuthors" />
-          <v-checkbox v-model="sessionStore.isFirstAuthorBoostEnabled" label="Boost first authors"
-            @change="sessionStore.computeSelectedPublicationsAuthors" />
+          <v-container>
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-checkbox v-model="sessionStore.isAuthorScoreEnabled" label="Consider publication score"
+                  @change="sessionStore.computeSelectedPublicationsAuthors" density="compact" />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-checkbox v-model="sessionStore.isFirstAuthorBoostEnabled" label="Boost first authors"
+                  @change="sessionStore.computeSelectedPublicationsAuthors" density="compact" />
+              </v-col>
+            </v-row>
+          </v-container>
         </v-form>
+        <h2 class="mb-4">
+          <v-icon icon="mdi-view-list" class="mr-2"></v-icon>
+          Ranked author list
+        </h2>
         <ul>
           <li v-for="author in sessionStore.selectedPublicationsAuthors" :key="author.id" class="media">
             <tippy class="media-left d-flex flex-column">
