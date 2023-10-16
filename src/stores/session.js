@@ -127,7 +127,7 @@ export const useSessionStore = defineStore('session', {
       }
       await this.updateSuggestions();
       if (
-        !this.interfaceStore.isfeedbackInvitationShown && 
+        !this.interfaceStore.isfeedbackInvitationShown &&
         !this.interfaceStore.feebackInvitationWasShown &&
         this.selectedPublications.length >= 10
       ) {
@@ -287,7 +287,7 @@ export const useSessionStore = defineStore('session', {
       });
       // sort by score
       this.selectedPublicationsAuthors = Object.values(authors).sort(
-        (a, b) => b.score + b.count / 1000 - (a.score + a.count / 1000)
+        (a, b) => b.score + b.firstAuthorCount / 100 + b.count / 1000 - (a.score + a.firstAuthorCount / 100 + a.count / 1000)
       );
     },
 
