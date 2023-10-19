@@ -27,7 +27,7 @@
         <div class="notification has-background-primary-light media p-2" v-show="sessionStore.isUpdatable">
           <div class="media-content has-text-centered mt-2">
             <InlineIcon icon="mdi-tray-full" class="mr-1"></InlineIcon>
-            <b>Queue:</b>
+            <b>Queue:&nbsp;</b>
             <span v-show="sessionStore.selectedQueue.length">
               {{
                 sessionStore.selectedQueue.length > 1
@@ -64,17 +64,18 @@
             <div class="level-item"></div>
             <div class="level-item">
               <v-btn class="has-background-primary-light" @click.stop="interfaceStore.openSearchModalDialog()">
-                <v-icon left>mdi-magnify</v-icon>
+                <v-icon left class="mr-2">mdi-magnify</v-icon>
                 Search/add</v-btn>
             </div>
             <div class="level-item">
-              <v-btn class="has-background-primary-light" @click.stop="importSession"> <v-icon left>mdi-import</v-icon>
+              <v-btn class="has-background-primary-light" @click.stop="importSession"> <v-icon left
+                  class="mr-2">mdi-import</v-icon>
                 Import session
               </v-btn>
             </div>
             <div class="level-item">
               <v-btn class="has-background-primary-light" @click.stop="sessionStore.loadExample()">
-                <v-icon left>mdi-file-document</v-icon>
+                <v-icon left class="mr-2">mdi-file-document</v-icon>
                 Load example
               </v-btn>
             </div>
