@@ -37,6 +37,10 @@
               <div class="text-body-2">{{ author.firstAuthorCount }} : {{ author.count }}</div>
               <div class="is-size-7"><span v-if="author.yearMax != author.yearMin">{{ author.yearMin }} - </span>{{
                 author.yearMax }}</div>
+              <!-- mark recent publications: yearMax at most 3 years back-->
+              <div v-if="author.yearMax >= (new Date()).getFullYear() - 3">
+                <InlineIcon icon="mdi-file-clock"></InlineIcon>
+              </div>
               <template #content>
                 Aggregated score of <b>{{ author.score }}</b> through
                 <b>{{ author.count }}</b> selected publication{{
@@ -45,9 +49,13 @@
   author.firstAuthorCount }}&nbsp;</b><b v-else-if="author.firstAuthorCount > 1">all
                   </b>as
                   first
-                  author)</span><span v-if="author.yearMin != author.yearMax">, published between <b>{{ author.yearMin }}</b> and
+                  author)</span><span v-if="author.yearMin != author.yearMax">, published between <b>{{ author.yearMin
+                  }}</b> and
                   <b>{{ author.yearMax }}</b>
-                </span><span v-else-if="author.yearMin">, published <b>{{ author.yearMin }}</b></span>.
+                </span><span v-else-if="author.yearMin">, published <b>{{ author.yearMin }}</b></span><span
+                  v-if="author.yearMax >= (new Date()).getFullYear() - 3">
+                  (<InlineIcon icon="mdi-file-clock"></InlineIcon> recent)
+                </span>.
               </template>
             </tippy>
             <div class="media-content">
