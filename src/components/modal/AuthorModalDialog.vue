@@ -17,8 +17,8 @@
               </v-col>
               <v-col cols="12" md="6">
                 <v-checkbox v-model="sessionStore.isFirstAuthorBoostEnabled" label="Boost first authors"
-                  @change="sessionStore.computeSelectedPublicationsAuthors" density="compact" 
-                  hint="Counting first author publications twice"/>
+                  @change="sessionStore.computeSelectedPublicationsAuthors" density="compact"
+                  hint="Counting first author publications twice" />
               </v-col>
             </v-row>
           </v-container>
@@ -30,11 +30,13 @@
         <ul>
           <li v-for="author in sessionStore.selectedPublicationsAuthors" :key="author.id" class="media">
             <tippy class="media-left d-flex flex-column">
-              <div class="text-body-2">{{ author.firstAuthorCount }} : {{ author.count }}</div>
+              <div><strong>{{ author.score }}</strong></div>
               <div>
                 <v-icon :size="authorIconSize(author.score)">mdi-account</v-icon>
               </div>
-              <div><strong>{{ author.score }}</strong></div>
+              <div class="text-body-2">{{ author.firstAuthorCount }} : {{ author.count }}</div>
+              <div class="is-size-7"><span v-if="author.yearMax != author.yearMin">{{ author.yearMin }} - </span>{{
+                author.yearMax }}</div>
               <template #content>
                 Aggregated score of <b>{{ author.score }}</b> through
                 <b>{{ author.count }}</b> selected publication{{
@@ -43,9 +45,9 @@
   author.firstAuthorCount }}&nbsp;</b><b v-else-if="author.firstAuthorCount > 1">all
                   </b>as
                   first
-                  author)</span><span v-if="author.yearMin != author.yearMax">, <b>{{ author.yearMin }}</b> to
+                  author)</span><span v-if="author.yearMin != author.yearMax">, published between <b>{{ author.yearMin }}</b> and
                   <b>{{ author.yearMax }}</b>
-                </span><span v-else-if="author.yearMin">, <b>{{ author.yearMin }}</b></span>.
+                </span><span v-else-if="author.yearMin">, published <b>{{ author.yearMin }}</b></span>.
               </template>
             </tippy>
             <div class="media-content">
@@ -145,7 +147,7 @@ export default {
   margin: 0;
 
   & .media-left {
-    min-width: 3rem;
+    min-width: 4.5rem;
     min-height: 3rem;
     display: flex;
     justify-content: center;
