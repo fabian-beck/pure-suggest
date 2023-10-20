@@ -25,6 +25,7 @@ export const useSessionStore = defineStore('session', {
       addQuery: "",
       isAuthorScoreEnabled: true,
       isFirstAuthorBoostEnabled: true,
+      isAuthorRecentBoostEnabled: true,
     }
   },
   getters: {
