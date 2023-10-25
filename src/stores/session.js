@@ -25,7 +25,7 @@ export const useSessionStore = defineStore('session', {
       addQuery: "",
       isAuthorScoreEnabled: true,
       isFirstAuthorBoostEnabled: true,
-      isAuthorRecentBoostEnabled: true,
+      isAuthorNewBoostEnabled: true,
     }
   },
   getters: {
@@ -225,8 +225,10 @@ export const useSessionStore = defineStore('session', {
           }
           authors[authorId].count++;
           authors[authorId].firstAuthorCount += i > 0 ? 0 : 1;
+          // updating score
           authors[authorId].score += (this.isAuthorScoreEnabled ? publication.score : 1)
-            * (this.isFirstAuthorBoostEnabled ? (i > 0 ? 1 : 2) : 1);
+            * (this.isFirstAuthorBoostEnabled ? (i > 0 ? 1 : 2) : 1)
+            * (this.isAuthorNewBoostEnabled? (publication.isNew? 2: 1): 1);
           const orcid = author.match(/(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g);
           if (orcid) {
             authors[authorId].orcid = orcid[0];

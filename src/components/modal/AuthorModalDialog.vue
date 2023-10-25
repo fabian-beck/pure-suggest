@@ -21,9 +21,9 @@
                   hint="Counting first author publications twice" />
               </v-col>
               <v-col cols="12" md="4">
-                <v-checkbox v-model="sessionStore.isAuthorRecentBoostEnabled" label="Boost recent publications"
+                <v-checkbox v-model="sessionStore.isAuthorNewBoostEnabled" label="Boost new publications"
                   @change="sessionStore.computeSelectedPublicationsAuthors" density="compact"
-                  :hint="`Counting publications since ${(new Date()).getFullYear() - 3} twice`" />
+                  :hint="`Counting publications tagged as 'new' twice`" />
               </v-col>
             </v-row>
           </v-container>
@@ -44,7 +44,7 @@
                 author.yearMax }}</div>
               <!-- mark recent publications: yearMax at most 3 years back-->
               <div v-if="author.yearMax >= (new Date()).getFullYear() - 3">
-                <InlineIcon icon="mdi-file-clock"></InlineIcon>
+                <InlineIcon icon="mdi-alarm"></InlineIcon>
               </div>
               <template #content>
                 Aggregated score of <b>{{ author.score }}</b> through
@@ -59,7 +59,7 @@
                   <b>{{ author.yearMax }}</b>
                 </span><span v-else-if="author.yearMin">, published <b>{{ author.yearMin }}</b></span><span
                   v-if="author.yearMax >= (new Date()).getFullYear() - 3">
-                  (<InlineIcon icon="mdi-file-clock"></InlineIcon> recent)
+                  (<InlineIcon icon="mdi-alarm"></InlineIcon> new)
                 </span>.
               </template>
             </tippy>
