@@ -1,6 +1,6 @@
 <template>
-  <ModalDialog v-model="isSearchModalDialogShown" title="Search/add publications" icon="mdi-magnify"
-    headerColor="primary" noCloseButton>
+  <ModalDialog v-model="isSearchModalDialogShown" title="Search/add publications" icon="mdi-magnify" headerColor="primary"
+    noCloseButton>
     <template v-slot:sticky>
       <form v-on:submit.prevent="search" class="has-background-primary-light">
         <v-text-field clearable v-model="interfaceStore.searchQuery" type="input" ref="searchInput" variant="solo"
@@ -41,41 +41,9 @@
           </v-btn>
         </p>
         <ul class="publication-list">
-          <li v-for="publication in filteredSearchResults" class="publication-component media" :key="publication.doi">
-            <div class="media-content">
-              <b v-if="publication.wasFetched && !publication.title" class="has-text-danger-dark">[No metadata
-                available]</b>
-              <b v-html="publication.title" v-if="publication.wasFetched"></b>
-              <span v-if="publication.author">
-                (<span>{{
-                  publication.authorShort
-                  ? publication.authorShort + ", "
-                  : ""
-                }}</span><span :class="publication.year ? '' : 'unknown'">{{
-  publication.year ? publication.year : "[unknown year]"
-}}</span>)</span>
-              <span>
-                DOI:
-                <a :href="`https://doi.org/${publication.doi}`">{{
-                  publication.doi
-                }}</a>
-              </span>
-              <span v-show="publication.title">
-                <CompactButton icon="mdi-school" v-tippy="'Google Scholar'" :href="publication.gsUrl" class="ml-2">
-                </CompactButton>
-              </span>
-            </div>
-            <div class="media-right">
-              <div>
-                <CompactButton icon="mdi-plus-thick" v-tippy="'Mark publication to be added to selected publications.'"
-                  @click="addPublication(publication.doi)" v-if="publication.wasFetched"></CompactButton>
-              </div>
-            </div>
-            <v-overlay :model-value="!publication.wasFetched" contained class="align-center justify-center" persistent
-              theme="dark">
-              <v-icon class="has-text-grey-light">mdi-progress-clock</v-icon>
-            </v-overlay>
-          </li>
+          <PublicationComponentSimple v-for="publication in filteredSearchResults" :key="publication.doi" :publication="publication"
+            v-on:activate="addPublication(publication.doi)">
+          </PublicationComponentSimple>
           <v-overlay :model-value="isLoading" contained class="align-center justify-center" persistent theme="dark">
             <v-progress-circular indeterminate size="64"></v-progress-circular>
           </v-overlay>
@@ -211,10 +179,10 @@ form {
 }
 
 .comment {
-    margin: 0;
-    padding: 0.5rem;
-    font-size: 0.8rem;
-    font-style: italic;
-    color: #888;
-  }
+  margin: 0;
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  font-style: italic;
+  color: #888;
+}
 </style>
