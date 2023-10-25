@@ -166,7 +166,7 @@ export default class Publication {
         }
         this.isHighlyCited = this.citationsPerYear > 10 || this.tooManyCitations
             ? `more than 10 citations per year` : false;
-        this.isNew = (CURRENT_YEAR - this.year) < 2 ? "published within the last two calendar years" : false;
+        this.isNew = (CURRENT_YEAR - this.year) <= 2 ? "published within this or the previous two calendar years" : false;
         this.isUnnoted = this.citationsPerYear < 1 && !this.tooManyCitations
             ? `less than 1 citation per year` : false;
         this.isOpenAccess = this.oaLink ? true : false;

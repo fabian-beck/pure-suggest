@@ -25,6 +25,7 @@ export const useSessionStore = defineStore('session', {
       addQuery: "",
       isAuthorScoreEnabled: true,
       isFirstAuthorBoostEnabled: true,
+      isAuthorNewBoostEnabled: true,
     }
   },
   getters: {
@@ -219,13 +220,16 @@ export const useSessionStore = defineStore('session', {
               alternativeNames: [authorId],
               coauthors: {},
               yearMin: 9999,
-              yearMax: 0
+              yearMax: 0,
+              newPublication: false,
             };
           }
           authors[authorId].count++;
           authors[authorId].firstAuthorCount += i > 0 ? 0 : 1;
+          // updating score
           authors[authorId].score += (this.isAuthorScoreEnabled ? publication.score : 1)
-            * (this.isFirstAuthorBoostEnabled ? (i > 0 ? 1 : 2) : 1);
+            * (this.isFirstAuthorBoostEnabled ? (i > 0 ? 1 : 2) : 1)
+            * (this.isAuthorNewBoostEnabled? (publication.isNew? 2: 1): 1);
           const orcid = author.match(/(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g);
           if (orcid) {
             authors[authorId].orcid = orcid[0];
@@ -236,6 +240,7 @@ export const useSessionStore = defineStore('session', {
           authors[authorId].coauthors = mergeCounts(authors[authorId].coauthors, coauthorCounts);
           authors[authorId].yearMin = Math.min(authors[authorId].yearMin, Number(publication.year));
           authors[authorId].yearMax = Math.max(authors[authorId].yearMax, Number(publication.year));
+          authors[authorId].newPublication = authors[authorId].newPublication || publication.isNew;
         });
       });
       // merge author with same ORCID
@@ -253,6 +258,7 @@ export const useSessionStore = defineStore('session', {
               author.coauthors = mergeCounts(author.coauthors, author2.coauthors);
               author.yearMin = Math.min(author.yearMin, author2.yearMin);
               author.yearMax = Math.max(author.yearMax, author2.yearMax);
+              author.newPublication = author.newPublication || author2.newPublication;
               deleteAuthor(author2.id, author.id);
             }
           });
@@ -282,6 +288,7 @@ export const useSessionStore = defineStore('session', {
           authorMatches[0].alternativeNames = [...new Set(author.alternativeNames.concat(authorMatches[0].alternativeNames))];
           authorMatches[0].yearMin = Math.min(author.yearMin, authorMatches[0].yearMin);
           authorMatches[0].yearMax = Math.max(author.yearMax, authorMatches[0].yearMax);
+          authorMatches[0].newPublication = author.newPublication || authorMatches[0].newPublication;
           deleteAuthor(author.id, authorMatches[0].id);
         }
       });
