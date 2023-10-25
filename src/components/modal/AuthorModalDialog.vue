@@ -42,8 +42,7 @@
               <div class="text-body-2">{{ author.firstAuthorCount }} : {{ author.count }}</div>
               <div class="is-size-7"><span v-if="author.yearMax != author.yearMin">{{ author.yearMin }} - </span>{{
                 author.yearMax }}</div>
-              <!-- mark recent publications: yearMax at most 3 years back-->
-              <div v-if="author.yearMax >= (new Date()).getFullYear() - 3">
+              <div v-if="author.newPublication">
                 <InlineIcon icon="mdi-alarm"></InlineIcon>
               </div>
               <template #content>
@@ -58,7 +57,7 @@
                   }}</b> and
                   <b>{{ author.yearMax }}</b>
                 </span><span v-else-if="author.yearMin">, published <b>{{ author.yearMin }}</b></span><span
-                  v-if="author.yearMax >= (new Date()).getFullYear() - 3">
+                  v-if="author.newPublication">
                   (<InlineIcon icon="mdi-alarm"></InlineIcon> new)
                 </span>.
               </template>
