@@ -208,7 +208,7 @@ export const useSessionStore = defineStore('session', {
       // assemble authors from selected publications
       this.selectedPublications.forEach((publication) => {
         publication.authorOrcid?.split("; ").forEach((author, i) => {
-          const authorId = author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, "");
+          const authorId = author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g, "");
           if (!authors[authorId]) {
             authors[authorId] = {
               id: authorId,
@@ -230,7 +230,7 @@ export const useSessionStore = defineStore('session', {
           authors[authorId].score += (this.isAuthorScoreEnabled ? publication.score : 1)
             * (this.isFirstAuthorBoostEnabled ? (i > 0 ? 1 : 2) : 1)
             * (this.isAuthorNewBoostEnabled? (publication.isNew? 2: 1): 1);
-          const orcid = author.match(/(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g);
+          const orcid = author.match(/(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g);
           if (orcid) {
             authors[authorId].orcid = orcid[0];
           }
