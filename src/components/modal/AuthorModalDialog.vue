@@ -94,6 +94,11 @@
                     {{ coauthor }} ({{ author.coauthors[coauthor] }})
                   </v-chip>
                 </div>
+                <div>
+                  <CompactButton icon="mdi-school" 
+                    :href="`https://scholar.google.com/scholar?q=${author.id}`"
+                    v-tippy="'Search author on Google Scholar'"></CompactButton>
+                </div>
               </div>
             </div>
           </li>
