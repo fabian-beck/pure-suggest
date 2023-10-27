@@ -41,7 +41,8 @@
           </v-btn>
         </p>
         <ul class="publication-list">
-          <PublicationComponentSimple v-for="publication in filteredSearchResults" :key="publication.doi" :publication="publication"
+          <PublicationComponentSimple v-for="publication in filteredSearchResults" :key="publication.doi"
+            :publication="publication" :searchQuery="interfaceStore.searchQuery"
             v-on:activate="addPublication(publication.doi)">
           </PublicationComponentSimple>
           <v-overlay :model-value="isLoading" contained class="align-center justify-center" persistent theme="dark">
