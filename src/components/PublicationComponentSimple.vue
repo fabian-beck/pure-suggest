@@ -3,8 +3,8 @@
         <div class="media-content">
             <b v-if="loaded && !publication.title" class="has-text-danger-dark">[No metadata
                 available]</b>
-            <b v-html="publication.title" v-if="loaded"></b>
-            <span v-if="publication.author">
+            <b v-html="publication.title"></b>
+            <span v-show="publication.author">
                 (<span>{{
                     publication.authorShort
                     ? publication.authorShort + ", "
@@ -26,7 +26,7 @@
         <div class="media-right">
             <div>
                 <CompactButton icon="mdi-plus-thick" v-tippy="'Mark publication to be added to selected publications.'"
-                    @click="$emit('activate', publication.doi)" v-if="loaded"></CompactButton>
+                    @click="$emit('activate', publication.doi)" v-show="loaded"></CompactButton>
             </div>
         </div>
         <v-overlay :model-value="!loaded" contained class="align-center justify-center" persistent theme="dark">
@@ -47,12 +47,15 @@ export default {
     },
     mounted() {
         // set a timer to check if the publication was fetched (ugly hack - somehow it doesn't work automatically)
-        setTimeout(() => {
+        function check() {
             if (this.publication.wasFetched) {
                 this.loaded = true;
                 return;
             }
-        }, 500);
+            setTimeout(check.bind(this), 200);
+        }
+        this.loaded = false;
+        check.bind(this)();
     },
 }
 </script>
