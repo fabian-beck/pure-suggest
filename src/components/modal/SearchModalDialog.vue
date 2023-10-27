@@ -42,7 +42,7 @@
         </p>
         <ul class="publication-list">
           <PublicationComponentSimple v-for="publication in filteredSearchResults" :key="publication.doi"
-            :publication="publication" :searchQuery="interfaceStore.searchQuery"
+            :publication="publication" :searchQuery="cleanedSearchQuery"
             v-on:activate="addPublication(publication.doi)">
           </PublicationComponentSimple>
           <v-overlay :model-value="isLoading" contained class="align-center justify-center" persistent theme="dark">
@@ -75,6 +75,7 @@ export default {
       searchResults: { results: [], type: "empty" },
       addedPublications: [],
       isLoading: false,
+      cleanedSearchQuery: "",
     };
   },
   computed: {
@@ -109,6 +110,7 @@ export default {
         return;
       }
       this.isLoading = true;
+      this.cleanedSearchQuery = this.interfaceStore.searchQuery.replace(/[^a-zA-Z0-9 ]/g, ' ');
       const publicationSearch = new PublicationSearch(
         this.interfaceStore.searchQuery
       );
