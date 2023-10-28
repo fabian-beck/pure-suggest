@@ -35,9 +35,12 @@
         <ul>
           <li v-for="author in sessionStore.selectedPublicationsAuthors" :key="author.id" class="media">
             <tippy class="media-left d-flex flex-column">
+
               <div><strong>{{ author.score }}</strong></div>
               <div>
-                <v-icon :size="authorIconSize(author.score)">mdi-account</v-icon>
+                <v-avatar color="black" :size="authorIconSize(author.score) * 2">
+                  {{ initials(author.id) }}
+                </v-avatar>
               </div>
               <div class="text-body-2">{{ author.firstAuthorCount }} : {{ author.count }}</div>
               <div class="is-size-7"><span v-if="author.yearMax != author.yearMin">{{ author.yearMin }} - </span>{{
@@ -95,8 +98,7 @@
                   </v-chip>
                 </div>
                 <div>
-                  <CompactButton icon="mdi-school" 
-                    :href="`https://scholar.google.com/scholar?q=${author.id}`"
+                  <CompactButton icon="mdi-school" :href="`https://scholar.google.com/scholar?q=${author.id}`"
                     v-tippy="'Search author on Google Scholar'"></CompactButton>
                 </div>
               </div>
@@ -120,6 +122,13 @@ export default {
     return { sessionStore, interfaceStore };
   },
   methods: {
+    initials(name) {
+      if (!name) return "";
+      return name
+        .split(" ")
+        .map((word) => word[0])
+        .join("");
+    },
     authorIconSize(score) {
       if (!this.sessionStore.isAuthorScoreEnabled) {
         score = score * 20;
@@ -128,13 +137,13 @@ export default {
         score = score * 1.5;
       }
       if (score > 128) {
-        return "48";
+        return "24";
       }
       if (score > 64) {
-        return "32";
+        return "22";
       }
       if (score > 16) {
-        return "24";
+        return "20";
       }
       return "18";
     },
