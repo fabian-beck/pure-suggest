@@ -43,10 +43,17 @@
         <ul class="publication-list">
           <PublicationComponentSearch v-for="publication in filteredSearchResults" :key="publication.doi"
             :publication="publication" :searchQuery="searchResults.type === 'search' ? cleanedSearchQuery : ''"
-            v-on:activate="addPublication(publication.doi)" class="pb-4 pt-4">
+            v-on:activate="addPublication(publication.doi)" class="pb-4 pt-4" v-show="!this.isLoading">
           </PublicationComponentSearch>
           <v-overlay :model-value="isLoading" contained class="align-center justify-center" persistent theme="dark">
-            <v-progress-circular indeterminate size="64"></v-progress-circular>
+            <div class="d-flex flex-column align-center justify-center">
+              <div>
+                <v-progress-circular indeterminate size="64"></v-progress-circular>
+              </div>
+              <div class="comment" v-if="this.searchResults.type === 'empty'">Searching</div>
+              <div class="comment" v-else>Loading {{ loaded }}/{{
+                filteredSearchResults.length }}</div>
+            </div>
           </v-overlay>
         </ul>
       </section>
@@ -75,6 +82,7 @@ export default {
       searchResults: { results: [], type: "empty" },
       addedPublications: [],
       isLoading: false,
+      loaded: 0,
       cleanedSearchQuery: "",
     };
   },
@@ -105,6 +113,7 @@ export default {
   },
   methods: {
     search: async function () {
+      this.loaded = 0;
       if (!this.interfaceStore.searchQuery) {
         this.searchResults = { results: [], type: "empty" };
         return;
@@ -117,8 +126,25 @@ export default {
       this.searchResults = await publicationSearch.execute();
       if (this.filteredSearchResults.length === 0) {
         this.interfaceStore.showErrorMessage("No matching publications found");
+        this.isLoading = false;
+        return;
       }
-      this.isLoading = false;
+      // set a timer to check if all publications were fetched already (ugly hack - somehow it doesn't work automatically)
+      const check = () => {
+        let loaded = 0;
+        this.filteredSearchResults.forEach((publication) => {
+          if (publication.wasFetched) {
+            loaded++;
+          }
+        });
+        this.loaded = loaded;
+        if (loaded === this.filteredSearchResults.length) {
+          this.isLoading = false;
+          return;
+        }
+        setTimeout(check.bind(this), 200);
+      };
+      check.bind(this)();
     },
 
     addPublication(doi) {
@@ -165,7 +191,7 @@ form {
     padding: 0;
     margin: 0;
     list-style: none;
-    min-height: 70vh;
+    min-height: 100vh;
 
     & li {
       margin: 0 !important;
