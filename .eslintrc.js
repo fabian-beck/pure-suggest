@@ -15,5 +15,6 @@ module.exports = {
         "vue"
     ],
     "rules": {
+        "vue/no-multiple-template-root": "off"
     }
 }
