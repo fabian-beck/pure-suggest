@@ -52,6 +52,15 @@
                     </v-chip>
                   </small>
                 </div>
+                <div class="mb-2 is-size-7">
+                  <b>{{ author.count }}</b> selected publication{{
+                    author.count > 1 ? "s" : ""
+                  }}<span v-if="author.yearMin != author.yearMax">, published between <b>{{ author.yearMin }}</b> and
+                    <b>{{ author.yearMax }}</b>
+                  </span><span v-else-if="author.yearMin">, published <b>{{ author.yearMin }}</b></span><span
+                    v-if="author.newPublication">
+                    (<InlineIcon icon="mdi-alarm"></InlineIcon> new)</span>.
+                </div>
                 <div v-if="Object.keys(author.keywords).length > 0" class="is-size-7">
                   Related to
                   <v-chip class="tag" v-for="keyword in sessionStore.boostKeywords.filter(
@@ -67,11 +76,11 @@
                     {{ coauthor }} ({{ author.coauthors[coauthor] }})
                   </v-chip>
                 </div>
-                <div>
-                  <CompactButton icon="mdi-school" :href="`https://scholar.google.com/scholar?q=${author.id}`"
-                    v-tippy="'Search author on Google Scholar'"></CompactButton>
-                </div>
               </div>
+            </div>
+            <div class="media-right">
+              <CompactButton icon="mdi-school" :href="`https://scholar.google.com/scholar?q=${author.id}`"
+                v-tippy="'Search author on Google Scholar'"></CompactButton>
             </div>
           </li>
         </ul>
@@ -86,28 +95,28 @@ import { useInterfaceStore } from "@/stores/interface.js";
 import AuthorGlyph from "../AuthorGlyph.vue";
 
 export default {
-    name: "AuthorModalDialog",
-    setup() {
-        const sessionStore = useSessionStore();
-        const interfaceStore = useInterfaceStore();
-        return { sessionStore, interfaceStore };
+  name: "AuthorModalDialog",
+  setup() {
+    const sessionStore = useSessionStore();
+    const interfaceStore = useInterfaceStore();
+    return { sessionStore, interfaceStore };
+  },
+  methods: {
+    keywordStyle(count) {
+      return {
+        backgroundColor: `hsla(48, 100%, 67%, ${0.05 + Math.min(count / 20, 0.95)})`,
+      };
     },
-    methods: {
-        keywordStyle(count) {
-            return {
-                backgroundColor: `hsla(48, 100%, 67%, ${0.05 + Math.min(count / 20, 0.95)})`,
-            };
-        },
-        coauthorStyle(count) {
-            return {
-                backgroundColor: `hsla(0, 0%, 70%, ${0.05 + Math.min(count / 20, 0.95)})`,
-            };
-        },
-        cancel() {
-            this.interfaceStore.isAuthorModalDialogShown = false;
-        },
+    coauthorStyle(count) {
+      return {
+        backgroundColor: `hsla(0, 0%, 70%, ${0.05 + Math.min(count / 20, 0.95)})`,
+      };
     },
-    components: { AuthorGlyph }
+    cancel() {
+      this.interfaceStore.isAuthorModalDialogShown = false;
+    },
+  },
+  components: { AuthorGlyph }
 };
 </script>
 
