@@ -11,6 +11,19 @@
     </template>
     <template v-slot:footer>
       <v-card-actions :class="`has-background-primary-light`">
+        <p class="comment is-hidden-mobile">
+          <span v-show="['doi', 'search'].includes(searchResults.type)">Showing
+            <b>{{ filteredSearchResults.length }} publication{{
+              filteredSearchResults.length != 1 ? "s" : ""
+            }}</b>
+            based on
+            <span v-show="searchResults.type === 'doi'">detected <b>DOIs</b></span><span
+              v-show="searchResults.type === 'search'"><b>search</b></span>.</span>
+        </p>
+        <v-btn class="has-background-primary has-text-white mr-2 is-hidden-mobile" v-on:click="addAllPublications"
+          v-show="searchResults.type === 'doi' && filteredSearchResults.length > 0" small>
+          <v-icon left>mdi-plus-thick</v-icon> Add all
+        </v-btn>
         <p class="comment">
           <b><span v-show="addedPublications.length === 0">No</span><span v-show="addedPublications.length > 0">{{
             addedPublications.length
@@ -27,23 +40,10 @@
     </template>
     <div class="content">
       <section>
-        <p class="comment">
-          <span v-show="['doi', 'search'].includes(searchResults.type)">Showing
-            <b>{{ filteredSearchResults.length }} publication{{
-              filteredSearchResults.length != 1 ? "s" : ""
-            }}</b>
-            based on
-            <span v-show="searchResults.type === 'doi'">detected <b>DOIs</b></span><span
-              v-show="searchResults.type === 'search'"><b>search</b></span>.</span>
-          <v-btn class="has-background-primary has-text-white ml-4" v-on:click="addAllPublications"
-            v-show="searchResults.type === 'doi' && filteredSearchResults.length > 0" small>
-            <v-icon left>mdi-plus-thick</v-icon> Add all
-          </v-btn>
-        </p>
         <ul class="publication-list">
           <PublicationComponentSearch v-for="publication in filteredSearchResults" :key="publication.doi"
             :publication="publication" :searchQuery="searchResults.type === 'search' ? cleanedSearchQuery : ''"
-            v-on:activate="addPublication(publication.doi)">
+            v-on:activate="addPublication(publication.doi)" class="pb-4 pt-4">
           </PublicationComponentSearch>
           <v-overlay :model-value="isLoading" contained class="align-center justify-center" persistent theme="dark">
             <v-progress-circular indeterminate size="64"></v-progress-circular>
@@ -185,7 +185,6 @@ form {
   margin: 0;
   padding: 0.5rem;
   font-size: 0.8rem;
-  font-style: italic;
   color: #888;
 }
 </style>
