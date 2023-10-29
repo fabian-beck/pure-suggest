@@ -34,37 +34,7 @@
         </h2>
         <ul>
           <li v-for="author in sessionStore.selectedPublicationsAuthors" :key="author.id" class="media">
-            <tippy class="media-left d-flex flex-column">
-
-              <div><strong>{{ author.score }}</strong></div>
-              <div>
-                <v-avatar color="black" :size="authorIconSize(author.score) * 2">
-                  {{ initials(author.id) }}
-                </v-avatar>
-              </div>
-              <div class="text-body-2">{{ author.firstAuthorCount }} : {{ author.count }}</div>
-              <div class="is-size-7"><span v-if="author.yearMax != author.yearMin">{{ author.yearMin }} - </span>{{
-                author.yearMax }}</div>
-              <div v-if="author.newPublication">
-                <InlineIcon icon="mdi-alarm"></InlineIcon>
-              </div>
-              <template #content>
-                Aggregated score of <b>{{ author.score }}</b> through
-                <b>{{ author.count }}</b> selected publication{{
-                  author.count > 1 ? "s" : ""
-                }}<span v-if="author.firstAuthorCount"> (<b v-if="author.firstAuthorCount < author.count">{{
-  author.firstAuthorCount }}&nbsp;</b><b v-else-if="author.firstAuthorCount > 1">all
-                  </b>as
-                  first
-                  author)</span><span v-if="author.yearMin != author.yearMax">, published between <b>{{ author.yearMin
-                  }}</b> and
-                  <b>{{ author.yearMax }}</b>
-                </span><span v-else-if="author.yearMin">, published <b>{{ author.yearMin }}</b></span><span
-                  v-if="author.newPublication">
-                  (<InlineIcon icon="mdi-alarm"></InlineIcon> new)
-                </span>.
-              </template>
-            </tippy>
+            <AuthorGlyph :author="author" class="media-left"></AuthorGlyph>
             <div class="media-content">
               <div class="content">
                 <div class="mb-3">
@@ -82,6 +52,15 @@
                     </v-chip>
                   </small>
                 </div>
+                <div class="mb-2 is-size-7">
+                  <b>{{ author.count }}</b> selected publication{{
+                    author.count > 1 ? "s" : ""
+                  }}<span v-if="author.yearMin != author.yearMax">, published between <b>{{ author.yearMin }}</b> and
+                    <b>{{ author.yearMax }}</b>
+                  </span><span v-else-if="author.yearMin">, published <b>{{ author.yearMin }}</b></span><span
+                    v-if="author.newPublication">
+                    (<InlineIcon icon="mdi-alarm"></InlineIcon> new)</span>.
+                </div>
                 <div v-if="Object.keys(author.keywords).length > 0" class="is-size-7">
                   Related to
                   <v-chip class="tag" v-for="keyword in sessionStore.boostKeywords.filter(
@@ -97,11 +76,11 @@
                     {{ coauthor }} ({{ author.coauthors[coauthor] }})
                   </v-chip>
                 </div>
-                <div>
-                  <CompactButton icon="mdi-school" :href="`https://scholar.google.com/scholar?q=${author.id}`"
-                    v-tippy="'Search author on Google Scholar'"></CompactButton>
-                </div>
               </div>
+            </div>
+            <div class="media-right">
+              <CompactButton icon="mdi-school" :href="`https://scholar.google.com/scholar?q=${author.id}`"
+                v-tippy="'Search author on Google Scholar'"></CompactButton>
             </div>
           </li>
         </ul>
@@ -113,6 +92,7 @@
 <script>
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
+import AuthorGlyph from "../AuthorGlyph.vue";
 
 export default {
   name: "AuthorModalDialog",
@@ -122,47 +102,21 @@ export default {
     return { sessionStore, interfaceStore };
   },
   methods: {
-    initials(name) {
-      if (!name) return "";
-      return name
-        .split(" ")
-        .map((word) => word[0])
-        .join("");
-    },
-    authorIconSize(score) {
-      if (!this.sessionStore.isAuthorScoreEnabled) {
-        score = score * 20;
-      }
-      if (!this.sessionStore.isFirstAuthorBoostEnabled) {
-        score = score * 1.5;
-      }
-      if (score > 128) {
-        return "24";
-      }
-      if (score > 64) {
-        return "22";
-      }
-      if (score > 16) {
-        return "20";
-      }
-      return "18";
-    },
     keywordStyle(count) {
       return {
-        backgroundColor: `hsla(48, 100%, 67%, ${0.05 + Math.min(count / 20, 0.95)
-          })`,
+        backgroundColor: `hsla(48, 100%, 67%, ${0.05 + Math.min(count / 20, 0.95)})`,
       };
     },
     coauthorStyle(count) {
       return {
-        backgroundColor: `hsla(0, 0%, 70%, ${0.05 + Math.min(count / 20, 0.95)
-          })`,
+        backgroundColor: `hsla(0, 0%, 70%, ${0.05 + Math.min(count / 20, 0.95)})`,
       };
     },
     cancel() {
       this.interfaceStore.isAuthorModalDialogShown = false;
     },
   },
+  components: { AuthorGlyph }
 };
 </script>
 
