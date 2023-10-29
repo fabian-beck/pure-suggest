@@ -41,10 +41,10 @@
           </v-btn>
         </p>
         <ul class="publication-list">
-          <PublicationComponentSimple v-for="publication in filteredSearchResults" :key="publication.doi"
-            :publication="publication" :searchQuery="cleanedSearchQuery"
+          <PublicationComponentSearch v-for="publication in filteredSearchResults" :key="publication.doi"
+            :publication="publication" :searchQuery="searchResults.type === 'search' ? cleanedSearchQuery : ''"
             v-on:activate="addPublication(publication.doi)">
-          </PublicationComponentSimple>
+          </PublicationComponentSearch>
           <v-overlay :model-value="isLoading" contained class="align-center justify-center" persistent theme="dark">
             <v-progress-circular indeterminate size="64"></v-progress-circular>
           </v-overlay>
