@@ -39,7 +39,8 @@
                     " v-if="publication.author" @click.stop="refocus" @click.middle.stop="refocus"></span>
             </span>
             <span v-if="publication.container">
-                <em v-html="` ${highlight(publication.container)}`"></em>.
+                <em v-html="` ${highlight(publication.container)}`"></em>, <span :class="publication.year ? '' : 'unknown'"
+                    v-html="publication.year ? highlight(String(publication.year)) : '[unknown year]'"></span>.
             </span>
             <label><span class="key">D</span>OI:</label>
             <a :href="publication.doiUrl" @click.stop="refocus" @click.middle.stop="refocus">{{ publication.doi }}</a>
