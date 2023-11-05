@@ -7,8 +7,7 @@
       <SuggestedPublicationsComponent id="suggested" v-show="!interfaceStore.isNetworkExpanded" />
       <NetworkVisComponent id="network" :svgWidth="1500" :svgHeight="600" />
     </div>
-    <QuickAccessBar id="quick-access" class="is-hidden-desktop"
-      v-if="!interfaceStore.isAnyOverlayShown">
+    <QuickAccessBar id="quick-access" class="is-hidden-desktop" v-if="!interfaceStore.isAnyOverlayShown">
     </QuickAccessBar>
     <!-- Modal dialogs -->
     <SearchModalDialog />
@@ -17,9 +16,13 @@
     <KeyboardControlsModalDialog />
     <!-- Other dialogs and overlays -->
     <v-overlay v-model="interfaceStore.isLoading" class="align-center justify-center main-overlay" persistent>
-      <v-progress-circular indeterminate size="64"></v-progress-circular>
+      <div class="d-flex flex-column align-center justify-center">
+        <div>
+          <v-progress-circular color="white" indeterminate size="64"></v-progress-circular>
+        </div>
+        <div class="has-text-white mt-4" v-if="interfaceStore.loadingMessage">{{ interfaceStore.loadingMessage }}</div>
+      </div>
     </v-overlay>
-    <LoadingToast />
     <ConfirmDialog />
     <InfoDialog />
     <ErrorToast />
