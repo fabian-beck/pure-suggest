@@ -4,11 +4,7 @@ export const useInterfaceStore = defineStore('interface', {
     state: () => {
         return {
             isLoading: false,
-            loadingToast: {
-                message: "",
-                isShown: false,
-                type: "",
-            },
+            loadingMessage: "",
             errorToast: {
                 message: "",
                 isShown: false,
@@ -68,17 +64,7 @@ export const useInterfaceStore = defineStore('interface', {
 
         endLoading() {
             this.isLoading = false;
-            if (this.loadingToast) {
-                this.loadingToast.isShown = false;
-            }
-        },
-
-        updateLoadingToast(message, type) {
-            this.loadingToast = {
-                message: message,
-                isShown: true,
-                type: type,
-            };
+            this.loadingMessage = "";
         },
 
         showAbstract(publication) {

@@ -160,19 +160,14 @@ export const useSessionStore = defineStore('session', {
       this.maxSuggestions = maxSuggestions;
       this.interfaceStore.startLoading();
       let publicationsLoaded = 0;
-      this.interfaceStore.updateLoadingToast(
-        `${publicationsLoaded}/${this.selectedPublicationsCount} selected publications loaded`,
-        "primary"
-      );
+      this.interfaceStore.loadingMessage =
+        `${publicationsLoaded}/${this.selectedPublicationsCount} selected publications loaded`;
       await Promise.all(
         this.selectedPublications.map(async (publication) => {
           await publication.fetchData();
           publication.isSelected = true;
           publicationsLoaded++;
-          this.interfaceStore.updateLoadingToast(
-            `${publicationsLoaded}/${this.selectedPublicationsCount} selected publications loaded`,
-            "primary"
-          );
+          this.interfaceStore.loadingMessage = `${publicationsLoaded}/${this.selectedPublicationsCount} selected publications loaded`;
         })
       );
       await this.computeSuggestions();
@@ -229,7 +224,7 @@ export const useSessionStore = defineStore('session', {
           // updating score
           authors[authorId].score += (this.isAuthorScoreEnabled ? publication.score : 1)
             * (this.isFirstAuthorBoostEnabled ? (i > 0 ? 1 : 2) : 1)
-            * (this.isAuthorNewBoostEnabled? (publication.isNew? 2: 1): 1);
+            * (this.isAuthorNewBoostEnabled ? (publication.isNew ? 2 : 1) : 1);
           const orcid = author.match(/(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g);
           if (orcid) {
             authors[authorId].orcid = orcid[0];
@@ -360,11 +355,11 @@ export const useSessionStore = defineStore('session', {
       filteredSuggestions = filteredSuggestions.slice(0, this.maxSuggestions);
       console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`);
       let publicationsLoadedCount = 0;
-      this.interfaceStore.updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "info");
+      this.interfaceStore.loadingMessage = `${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "info";
       await Promise.all(filteredSuggestions.map(async (suggestedPublication) => {
         await suggestedPublication.fetchData()
         publicationsLoadedCount++;
-        this.interfaceStore.updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "info");
+        this.interfaceStore.loadingMessage = `${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`;
       }));
       filteredSuggestions.forEach((publication) => {
         publication.isRead = this.readPublicationsDois.has(publication.doi);
@@ -462,10 +457,7 @@ export const useSessionStore = defineStore('session', {
 
     async retryLoadingPublication(publication) {
       this.interfaceStore.startLoading();
-      this.interfaceStore.updateLoadingToast(
-        "Retrying to load metadata",
-        "danger"
-      );
+      this.interfaceStore.loadingMessage = "Retrying to load metadata";
       await publication.fetchData(undefined, true);
       await this.updateSuggestions();
       this.activatePublicationComponentByDoi(publication.doi);
