@@ -29,6 +29,7 @@
         </v-list>
       </v-menu>
       <v-spacer class="is-hidden-touch"></v-spacer>
+      <FinishStudyButton />
       <HeaderExternalLinks class="is-hidden-touch mr-4" />
       <v-menu bottom left offset-y transition="slide-y-transition">
         <template v-slot:activator="{ props }">
@@ -75,9 +76,12 @@
 <script>
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
+import FinishStudyButton from "./FinishStudyButton.vue";
+
 
 export default {
   name: "HeaderPanel",
+  components: { FinishStudyButton },
   inject: ["appMeta"],
   setup() {
     const sessionStore = useSessionStore();

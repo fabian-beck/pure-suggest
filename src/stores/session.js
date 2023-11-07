@@ -6,6 +6,9 @@ import Publication from "@/Publication.js";
 import Filter from '@/Filter.js';
 import { shuffle, saveAsFile } from "@/Util.js"
 import { clearCache } from "@/Cache.js";
+import { logPubEvent } from "@/Logging";
+import { logActionEvent } from "@/Logging";
+
 
 export const useSessionStore = defineStore('session', {
   state: () => {
@@ -134,6 +137,7 @@ export const useSessionStore = defineStore('session', {
         this.interfaceStore.showFeedbackInvitation();
       }
       this.clearQueues();
+      logActionEvent("Update", this.selectedPublicationsCount);
     },
 
     async addPublicationsAndUpdate(dois) {
@@ -146,6 +150,7 @@ export const useSessionStore = defineStore('session', {
       console.log(`Adding to selection publications with DOIs: ${dois}.`);
       dois.forEach((doi) => {
         doi = doi.toLowerCase();
+        logPubEvent("Pub added", doi);
         if (this.isExcluded(doi)) {
           this.removeFromExcludedPublication(doi);
         }
@@ -384,17 +389,36 @@ export const useSessionStore = defineStore('session', {
       });
       Publication.sortPublications(this.selectedPublications);
       Publication.sortPublications(this.suggestedPublications);
+
+      this.suggestedPublications
+        .filter((pub) => !this.selectedQueue.includes(pub))
+        .forEach((pub) => {
+          logPubEvent(
+            "Pub suggested",
+            pub.doi,
+            this.selectedPublicationsCount,
+            this.suggestedPublications.findIndex(
+              (publication) => publication.doi === pub.doi
+            ) + 1
+          );
+        });
+
       this.computeSelectedPublicationsAuthors();
     },
 
     loadMoreSuggestions() {
       console.log("Loading more suggestions.");
+      logActionEvent("load more");
       this.updateSuggestions(
         this.maxSuggestions + 50
       );
     },
 
     setActivePublication(doi) {
+      if (this.activePublication && this.activePublication.doi != doi){
+        console.log(this.activePublication);
+        this.logDeactivate(this.activePublication.doi, "activated other pub")
+      }
       this.selectedPublications.forEach((selectedPublication) => {
         selectedPublication.isActive = selectedPublication.doi === doi;
         if (selectedPublication.isActive) {
@@ -436,6 +460,7 @@ export const useSessionStore = defineStore('session', {
 
     clearActivePublication(source) {
       if (!this.activePublication) return;
+      this.logDeactivate(this.activePublication.doi, source)
       this.activePublication = undefined;
       this.publications.forEach((publication) => {
         publication.isActive = false;
@@ -484,6 +509,7 @@ export const useSessionStore = defineStore('session', {
       }
       this.addPublicationsToSelection(session.selected);
       this.updateSuggestions();
+      logActionEvent("Update", this.selectedPublicationsCount);
     },
 
     clearSession: function () {
@@ -550,9 +576,132 @@ export const useSessionStore = defineStore('session', {
           clearCache();
         });
     },
+
+    logKeywordUpdate() {
+      let logKeywords = this.boostKeywordString.replaceAll(",","_")
+      console.log(logKeywords);
+      logActionEvent("Keywords updated", logKeywords);
+    },
+    
+
+    logPositionsFilterUpdate() {
+      this.suggestedPublicationsFiltered.forEach((pub) => {
+        logPubEvent(
+          "Pub filtered",
+          
+          pub.doi,
+          this.selectedPublicationsCount,
+          this.suggestedPublicationsFiltered.findIndex(
+            (publication) => publication.doi === pub.doi
+          ) + 1
+        );
+      });
+    },
+    logPositionsFilterRemoved() {
+      this.suggestedPublications
+        .filter((pub) => {
+          return (
+            !this.isQueuingForSelected(pub.doi) &&
+            !this.isQueuingForExcluded(pub.doi)
+          );
+        })
+        .forEach((pub) => {
+          logPubEvent(
+            "Pub suggested",
+            pub.doi,
+            this.selectedPublicationsCount,
+            this.suggestedPublications.findIndex(
+              (publication) => publication.doi === pub.doi
+            ) + 1
+          );
+        });
+    },
+    logFilterUpdate(){
+      let allFilters = "Filter updated" + this.filter.string.replaceAll(",",";") + "_"+this.filter.yearStart+"_"+this.filter.yearEnd+"_"+this.filter.tag
+      allFilters = allFilters.replaceAll("undefined","")
+      console.log("Filter updated",allFilters);
+      logActionEvent("Filter updated",allFilters)
+
+      //logActionEvent("Filter updated",this.filter.string.replaceAll(",",";") + "_"+this.filter.yearStart.replaceAll("undefined","")+"_"+this.filter.yearEnd.replaceAll("undefined","")+"_"+this.filter.tag.replaceAll("undefined",""))
+      this.logPositionsFilterUpdate()
+      },
+
+    logDeactivate(doi, reason){
+      logPubEvent(
+        "Pub deactivated",
+        doi,
+        this.selectedPublicationsCount,
+        this.suggestedPublications.findIndex(
+          (publication) => publication.doi === doi
+        ) + 1,"",reason
+      );
+    },
+    logDoiClick(doi, component) {
+      logPubEvent(
+        "Clicked doi",
+        doi,
+        this.selectedPublicationsCount,
+        this.suggestedPublications.findIndex(
+          (publication) => publication.doi === doi
+        ) + 1,
+        component
+      );
+    },
+    logScholarClick(doi, component) {
+      logPubEvent(
+        "Clicked scholar",
+        doi,
+        this.selectedPublicationsCount,
+        this.suggestedPublications.findIndex(
+          (publication) => publication.doi === doi
+        ) + 1,
+        component
+      );
+    },
+    logQd(doi, component) {
+      logPubEvent(
+        "Pub qd for selected",
+        doi,
+        this.selectedPublicationsCount,
+        this.suggestedPublications.findIndex(
+          (publication) => publication.doi === doi
+        ) + 1,
+        component
+      );
+    },
+    logActivate(doi, component) {
+      logPubEvent(
+        "Pub activated",
+        doi,
+        this.selectedPublicationsCount,
+        this.suggestedPublications.findIndex(
+          (publication) => publication.doi === doi
+        ) + 1,
+        component
+      );
+    },
+    logExclude(doi, component) {
+      logPubEvent("Pub excluded",
+        doi,
+        this.selectedPublicationsCount,
+        this.suggestedPublications.findIndex(
+          (publication) => publication.doi === doi
+        ) + 1,
+        component);
+    },
+    logAdd(){
+      logActionEvent("Update", this.selectedPublicationsCount);
+    }  
+
+
+
+
   }
 })
 
 function asDois(publications) {
   return publications.map((publication) => publication.doi);
 }
+
+
+

@@ -20,7 +20,7 @@
           to be added to selected.
         </p>
         <v-spacer></v-spacer>
-        <v-btn class="level-item has-background-primary has-text-white" @click="updateAndClose"
+        <v-btn class="level-item has-background-primary has-text-white" @click="updateAndClose" @click.stop="logAdd()"
           :disabled="addedPublications.length === 0">
           <v-icon left>mdi-update</v-icon>Update</v-btn>
       </v-card-actions>
@@ -68,7 +68,7 @@
             <div class="media-right">
               <div>
                 <CompactButton icon="mdi-plus-thick" v-tippy="'Mark publication to be added to selected publications.'"
-                  @click="addPublication(publication.doi)" v-if="publication.wasFetched"></CompactButton>
+                  @click="addPublication(publication.doi)" @click.stop="logQd(publication.doi)" v-if="publication.wasFetched"></CompactButton>
               </div>
             </div>
             <v-overlay :model-value="!publication.wasFetched" contained class="align-center justify-center" persistent
@@ -158,6 +158,7 @@ export default {
     addAllPublications() {
       this.filteredSearchResults.forEach((publication) => {
         this.addPublication(publication.doi);
+        this.logQd(publication.doi,publication.isSelected)
       });
       this.searchResults = { results: [], type: "empty" };
       this.interfaceStore.searchQuery = "";
@@ -177,6 +178,12 @@ export default {
       this.searchResults = { results: [], type: "empty" };
       this.addedPublications = [];
       this.isLoading = false;
+    },
+    logAdd(){
+      this.sessionStore.logAdd()
+    },
+    logQd(doi){
+      this.sessionStore.logQd(doi, 'import')
     },
   },
 };

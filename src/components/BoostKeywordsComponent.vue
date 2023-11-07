@@ -5,7 +5,8 @@
       variant="solo" append-inner-icon="mdi-close" @click:append-inner="sessionStore.setBoostKeywordString('')"
       hint="Use ',' to separate keywords, use '|' to discern alternatives/synonyms.">
       <template v-slot:append>
-        <v-btn class="has-background-warning" @click="sessionStore.updateScores" height="47">
+        <v-btn class="has-background-warning" @click="sessionStore.updateScores" v-on:click="sessionStore.logKeywordUpdate"
+ height="47">
           <v-icon>mdi-chevron-double-up</v-icon>
         </v-btn>
       </template>

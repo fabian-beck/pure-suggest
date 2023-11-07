@@ -36,7 +36,7 @@
         sessionStore.isQueuingForExcluded(publication.doi),
       'is-hovered': publication.isHovered,
       'is-keyword-hovered': publication.isKeywordHovered,
-    }" :id="publication.doi" tabindex="0" v-on:focus="activate" @click.stop="activate"
+    }" :id="publication.doi" tabindex="0" v-on:focus="activate" v-on:click="sessionStore.logActivate(publication.doi,publication.isSelected ? 'selected' : 'suggested')" @click.stop="activate"
       @mouseenter="sessionStore.hoverPublication(publication, true)"
       @mouseleave="sessionStore.hoverPublication(publication, false)">
       <tippy class="media-left" placement="right">
@@ -152,7 +152,7 @@
             <em v-html="` ${publication.container}`"></em>.
           </span>
           <label><span class="key">D</span>OI:</label>
-          <a :href="publication.doiUrl" @click.stop="refocus" @click.middle.stop="refocus">{{ publication.doi }}</a>
+          <a :href="publication.doiUrl" @click.stop="refocus" v-on:click="logDoiClick(publication.doi, publication.isSelected)" @click.middle.stop="refocus">{{ publication.doi }}</a>
         </div>
         <div class="notification has-background-danger-light has-text-danger-dark" v-if="(!publication.year || !publication.title || !publication.author) &&
           publication.isActive
@@ -220,9 +220,9 @@
               <CompactButton icon="mdi-lock-open-check-outline" class="ml-5" v-if="publication.oaLink"
                 :href="publication.oaLink" v-tippy="`<span class='key'>O</span>pen access`">
               </CompactButton>
-              <CompactButton icon="mdi-school" class="ml-5" :href="publication.gsUrl"
+              <CompactButton icon="mdi-school" class="ml-5" :href="publication.gsUrl" v-on:click="logScholarClick(publication.doi, publication.isSelected)" 
                 v-tippy="`<span class='key'>G</span>oogle Scholar`"></CompactButton>
-              <CompactButton icon="mdi-format-quote-close" class="ml-5" v-on:click="exportBibtex"
+              <CompactButton icon="mdi-format-quote-close" class="ml-5" v-on:click="exportBibtex" 
                 v-tippy="`Export as BibTe<span class='key'>X</span> citation`"></CompactButton>
             </div>
           </div>
@@ -231,11 +231,11 @@
       <div class="media-right">
         <div>
           <CompactButton v-if="!publication.isSelected" icon="mdi-plus-thick"
-            v-on:click="sessionStore.queueForSelected(publication.doi)" class="has-text-primary"
+            v-on:click="sessionStore.queueForSelected(publication.doi)" v-on:click.stop = "logQd(publication.doi,publication.isSelected)" class="has-text-primary"
             v-tippy="'Mark publication to be added to selected publications.'"></CompactButton>
         </div>
         <div>
-          <CompactButton icon="mdi-minus-thick" v-on:click="sessionStore.queueForExcluded(publication.doi)"
+          <CompactButton icon="mdi-minus-thick" v-on:click="sessionStore.queueForExcluded(publication.doi)" v-on:click.stop = "logExclude(publication.doi,publication.isSelected)"
             v-tippy="'Mark publication to be excluded for suggestions.'"></CompactButton>
         </div>
       </div>
@@ -286,6 +286,18 @@ export default {
     },
     refocus: function () {
       document.getElementById(this.publication.doi).focus();
+    },
+    logDoiClick(doi, isSelected) {
+      this.sessionStore.logDoiClick(doi,this.interfaceStore.isNetworkExpanded ? 'network' :  isSelected ? 'selected':'suggested')
+    },
+    logScholarClick(doi, isSelected) {
+      this.sessionStore.logScholarClick(doi, this.interfaceStore.isNetworkExpanded ? 'network' :  isSelected ? 'selected':'suggested')
+    },
+    logQd(doi, isSelected){
+      this.sessionStore.logQd(doi, this.interfaceStore.isNetworkExpanded ? 'network' :  isSelected ? 'selected':'suggested')
+    },
+    logExclude(doi,isSelected){
+      this.sessionStore.logExclude(doi, this.interfaceStore.isNetworkExpanded ? 'network' :  isSelected ? 'selected':'suggested')
     },
   },
   components: { InlineIcon }
