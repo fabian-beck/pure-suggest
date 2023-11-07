@@ -28,6 +28,7 @@ export const useSessionStore = defineStore('session', {
       addQuery: "",
       isAuthorScoreEnabled: true,
       isFirstAuthorBoostEnabled: true,
+      isAuthorNewBoostEnabled: true,
     }
   },
   getters: {
@@ -164,19 +165,14 @@ export const useSessionStore = defineStore('session', {
       this.maxSuggestions = maxSuggestions;
       this.interfaceStore.startLoading();
       let publicationsLoaded = 0;
-      this.interfaceStore.updateLoadingToast(
-        `${publicationsLoaded}/${this.selectedPublicationsCount} selected publications loaded`,
-        "primary"
-      );
+      this.interfaceStore.loadingMessage =
+        `${publicationsLoaded}/${this.selectedPublicationsCount} selected publications loaded`;
       await Promise.all(
         this.selectedPublications.map(async (publication) => {
           await publication.fetchData();
           publication.isSelected = true;
           publicationsLoaded++;
-          this.interfaceStore.updateLoadingToast(
-            `${publicationsLoaded}/${this.selectedPublicationsCount} selected publications loaded`,
-            "primary"
-          );
+          this.interfaceStore.loadingMessage = `${publicationsLoaded}/${this.selectedPublicationsCount} selected publications loaded`;
         })
       );
       await this.computeSuggestions();
@@ -212,7 +208,7 @@ export const useSessionStore = defineStore('session', {
       // assemble authors from selected publications
       this.selectedPublications.forEach((publication) => {
         publication.authorOrcid?.split("; ").forEach((author, i) => {
-          const authorId = author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, "");
+          const authorId = author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g, "");
           if (!authors[authorId]) {
             authors[authorId] = {
               id: authorId,
@@ -224,14 +220,17 @@ export const useSessionStore = defineStore('session', {
               alternativeNames: [authorId],
               coauthors: {},
               yearMin: 9999,
-              yearMax: 0
+              yearMax: 0,
+              newPublication: false,
             };
           }
           authors[authorId].count++;
           authors[authorId].firstAuthorCount += i > 0 ? 0 : 1;
+          // updating score
           authors[authorId].score += (this.isAuthorScoreEnabled ? publication.score : 1)
-            * (this.isFirstAuthorBoostEnabled ? (i > 0 ? 1 : 2) : 1);
-          const orcid = author.match(/(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g);
+            * (this.isFirstAuthorBoostEnabled ? (i > 0 ? 1 : 2) : 1)
+            * (this.isAuthorNewBoostEnabled ? (publication.isNew ? 2 : 1) : 1);
+          const orcid = author.match(/(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g);
           if (orcid) {
             authors[authorId].orcid = orcid[0];
           }
@@ -241,6 +240,7 @@ export const useSessionStore = defineStore('session', {
           authors[authorId].coauthors = mergeCounts(authors[authorId].coauthors, coauthorCounts);
           authors[authorId].yearMin = Math.min(authors[authorId].yearMin, Number(publication.year));
           authors[authorId].yearMax = Math.max(authors[authorId].yearMax, Number(publication.year));
+          authors[authorId].newPublication = authors[authorId].newPublication || publication.isNew;
         });
       });
       // merge author with same ORCID
@@ -258,6 +258,7 @@ export const useSessionStore = defineStore('session', {
               author.coauthors = mergeCounts(author.coauthors, author2.coauthors);
               author.yearMin = Math.min(author.yearMin, author2.yearMin);
               author.yearMax = Math.max(author.yearMax, author2.yearMax);
+              author.newPublication = author.newPublication || author2.newPublication;
               deleteAuthor(author2.id, author.id);
             }
           });
@@ -287,6 +288,7 @@ export const useSessionStore = defineStore('session', {
           authorMatches[0].alternativeNames = [...new Set(author.alternativeNames.concat(authorMatches[0].alternativeNames))];
           authorMatches[0].yearMin = Math.min(author.yearMin, authorMatches[0].yearMin);
           authorMatches[0].yearMax = Math.max(author.yearMax, authorMatches[0].yearMax);
+          authorMatches[0].newPublication = author.newPublication || authorMatches[0].newPublication;
           deleteAuthor(author.id, authorMatches[0].id);
         }
       });
@@ -358,11 +360,11 @@ export const useSessionStore = defineStore('session', {
       filteredSuggestions = filteredSuggestions.slice(0, this.maxSuggestions);
       console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`);
       let publicationsLoadedCount = 0;
-      this.interfaceStore.updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "info");
+      this.interfaceStore.loadingMessage = `${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "info";
       await Promise.all(filteredSuggestions.map(async (suggestedPublication) => {
         await suggestedPublication.fetchData()
         publicationsLoadedCount++;
-        this.interfaceStore.updateLoadingToast(`${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "info");
+        this.interfaceStore.loadingMessage = `${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`;
       }));
       filteredSuggestions.forEach((publication) => {
         publication.isRead = this.readPublicationsDois.has(publication.doi);
@@ -480,10 +482,7 @@ export const useSessionStore = defineStore('session', {
 
     async retryLoadingPublication(publication) {
       this.interfaceStore.startLoading();
-      this.interfaceStore.updateLoadingToast(
-        "Retrying to load metadata",
-        "danger"
-      );
+      this.interfaceStore.loadingMessage = "Retrying to load metadata";
       await publication.fetchData(undefined, true);
       await this.updateSuggestions();
       this.activatePublicationComponentByDoi(publication.doi);

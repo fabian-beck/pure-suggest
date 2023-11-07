@@ -1,6 +1,6 @@
 <template>
-  <ModalDialog v-model="isSearchModalDialogShown" title="Search/add publications" icon="mdi-magnify"
-    headerColor="primary" noCloseButton>
+  <ModalDialog v-model="isSearchModalDialogShown" title="Search/add publications" icon="mdi-magnify" headerColor="primary"
+    noCloseButton>
     <template v-slot:sticky>
       <form v-on:submit.prevent="search" class="has-background-primary-light">
         <v-text-field clearable v-model="interfaceStore.searchQuery" type="input" ref="searchInput" variant="solo"
@@ -11,6 +11,19 @@
     </template>
     <template v-slot:footer>
       <v-card-actions :class="`has-background-primary-light`">
+        <p class="comment is-hidden-mobile">
+          <span v-show="['doi', 'search'].includes(searchResults.type)">Showing
+            <b>{{ filteredSearchResults.length }} publication{{
+              filteredSearchResults.length != 1 ? "s" : ""
+            }}</b>
+            based on
+            <span v-show="searchResults.type === 'doi'">detected <b>DOIs</b></span><span
+              v-show="searchResults.type === 'search'"><b>search</b></span>.</span>
+        </p>
+        <v-btn class="has-background-primary has-text-white mr-2 is-hidden-mobile" v-on:click="addAllPublications"
+          v-show="searchResults.type === 'doi' && filteredSearchResults.length > 0" small>
+          <v-icon left>mdi-plus-thick</v-icon> Add all
+        </v-btn>
         <p class="comment">
           <b><span v-show="addedPublications.length === 0">No</span><span v-show="addedPublications.length > 0">{{
             addedPublications.length
@@ -27,57 +40,20 @@
     </template>
     <div class="content">
       <section>
-        <p class="comment">
-          <span v-show="['doi', 'search'].includes(searchResults.type)">Showing
-            <b>{{ filteredSearchResults.length }} publication{{
-              filteredSearchResults.length != 1 ? "s" : ""
-            }}</b>
-            based on
-            <span v-show="searchResults.type === 'doi'">detected <b>DOIs</b></span><span
-              v-show="searchResults.type === 'search'"><b>search</b></span>.</span>
-          <v-btn class="has-background-primary has-text-white ml-4" v-on:click="addAllPublications"
-            v-show="searchResults.type === 'doi' && filteredSearchResults.length > 0" small>
-            <v-icon left>mdi-plus-thick</v-icon> Add all
-          </v-btn>
-        </p>
         <ul class="publication-list">
-          <li v-for="publication in filteredSearchResults" class="publication-component media" :key="publication.doi">
-            <div class="media-content">
-              <b v-if="publication.wasFetched && !publication.title" class="has-text-danger-dark">[No metadata
-                available]</b>
-              <b v-html="publication.title" v-if="publication.wasFetched"></b>
-              <span v-if="publication.author">
-                (<span>{{
-                  publication.authorShort
-                  ? publication.authorShort + ", "
-                  : ""
-                }}</span><span :class="publication.year ? '' : 'unknown'">{{
-  publication.year ? publication.year : "[unknown year]"
-}}</span>)</span>
-              <span>
-                DOI:
-                <a :href="`https://doi.org/${publication.doi}`">{{
-                  publication.doi
-                }}</a>
-              </span>
-              <span v-show="publication.title">
-                <CompactButton icon="mdi-school" v-tippy="'Google Scholar'" :href="publication.gsUrl" class="ml-2">
-                </CompactButton>
-              </span>
-            </div>
-            <div class="media-right">
-              <div>
-                <CompactButton icon="mdi-plus-thick" v-tippy="'Mark publication to be added to selected publications.'"
-                  @click="addPublication(publication.doi)" @click.stop="logQd(publication.doi)" v-if="publication.wasFetched"></CompactButton>
-              </div>
-            </div>
-            <v-overlay :model-value="!publication.wasFetched" contained class="align-center justify-center" persistent
-              theme="dark">
-              <v-icon class="has-text-grey-light">mdi-progress-clock</v-icon>
-            </v-overlay>
-          </li>
+          <PublicationComponentSearch v-for="publication in filteredSearchResults" :key="publication.doi"
+            :publication="publication" :searchQuery="searchResults.type === 'search' ? cleanedSearchQuery : ''"
+            v-on:activate="addPublication(publication.doi)" class="pb-4 pt-4" v-show="!this.isLoading">
+          </PublicationComponentSearch>
           <v-overlay :model-value="isLoading" contained class="align-center justify-center" persistent theme="dark">
-            <v-progress-circular indeterminate size="64"></v-progress-circular>
+            <div class="d-flex flex-column align-center justify-center">
+              <div>
+                <v-progress-circular indeterminate size="64"></v-progress-circular>
+              </div>
+              <div class="comment" v-if="this.searchResults.type === 'empty'">Searching</div>
+              <div class="comment" v-else>Loading {{ loaded }}/{{
+                filteredSearchResults.length }}</div>
+            </div>
           </v-overlay>
         </ul>
       </section>
@@ -106,6 +82,8 @@ export default {
       searchResults: { results: [], type: "empty" },
       addedPublications: [],
       isLoading: false,
+      loaded: 0,
+      cleanedSearchQuery: "",
     };
   },
   computed: {
@@ -135,19 +113,38 @@ export default {
   },
   methods: {
     search: async function () {
+      this.loaded = 0;
       if (!this.interfaceStore.searchQuery) {
         this.searchResults = { results: [], type: "empty" };
         return;
       }
       this.isLoading = true;
+      this.cleanedSearchQuery = this.interfaceStore.searchQuery.replace(/[^a-zA-Z0-9 ]/g, ' ');
       const publicationSearch = new PublicationSearch(
         this.interfaceStore.searchQuery
       );
       this.searchResults = await publicationSearch.execute();
       if (this.filteredSearchResults.length === 0) {
         this.interfaceStore.showErrorMessage("No matching publications found");
+        this.isLoading = false;
+        return;
       }
-      this.isLoading = false;
+      // set a timer to check if all publications were fetched already (ugly hack - somehow it doesn't work automatically)
+      const check = () => {
+        let loaded = 0;
+        this.filteredSearchResults.forEach((publication) => {
+          if (publication.wasFetched) {
+            loaded++;
+          }
+        });
+        this.loaded = loaded;
+        if (loaded === this.filteredSearchResults.length) {
+          this.isLoading = false;
+          return;
+        }
+        setTimeout(check.bind(this), 200);
+      };
+      check.bind(this)();
     },
 
     addPublication(doi) {
@@ -201,7 +198,7 @@ form {
     padding: 0;
     margin: 0;
     list-style: none;
-    min-height: 70vh;
+    min-height: 100vh;
 
     & li {
       margin: 0 !important;
@@ -218,10 +215,9 @@ form {
 }
 
 .comment {
-    margin: 0;
-    padding: 0.5rem;
-    font-size: 0.8rem;
-    font-style: italic;
-    color: #888;
-  }
+  margin: 0;
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  color: #888;
+}
 </style>

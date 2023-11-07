@@ -2,6 +2,8 @@ import _ from "lodash";
 
 import { cachedFetch } from "./Cache.js";
 
+const ORCID_REGEX = /(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g;
+
 export default class Publication {
     constructor(doi) {
         // identifier
@@ -121,9 +123,9 @@ export default class Publication {
             } else if (authorArray.length > 2) {
                 this.authorShort = `${authorArray[0].split(', ')[0]} et al.`;
             }
-            this.author = data.author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, "");
+            this.author = data.author.replace(ORCID_REGEX, "");
             this.authorOrcid = data.author;
-            this.authorOrcidHtml = data.author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9X]{1})/g, " <a href='https://orcid.org/$2'><img alt='ORCID logo' src='https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png' width='14' height='14' /></a>");
+            this.authorOrcidHtml = data.author.replace(ORCID_REGEX, " <a href='https://orcid.org/$2'><img alt='ORCID logo' src='https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png' width='14' height='14' /></a>");
         }
         // container
         this.container = "";
@@ -166,7 +168,7 @@ export default class Publication {
         }
         this.isHighlyCited = this.citationsPerYear > 10 || this.tooManyCitations
             ? `more than 10 citations per year` : false;
-        this.isNew = (CURRENT_YEAR - this.year) < 2 ? "published within the last two calendar years" : false;
+        this.isNew = (CURRENT_YEAR - this.year) <= 2 ? "published within this or the previous two calendar years" : false;
         this.isUnnoted = this.citationsPerYear < 1 && !this.tooManyCitations
             ? `less than 1 citation per year` : false;
         this.isOpenAccess = this.oaLink ? true : false;

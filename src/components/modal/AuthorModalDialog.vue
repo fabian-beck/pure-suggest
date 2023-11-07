@@ -10,15 +10,20 @@
         <v-form class="mb-4">
           <v-container>
             <v-row>
-              <v-col cols="12" md="6">
+              <v-col cols="12" md="4">
                 <v-checkbox v-model="sessionStore.isAuthorScoreEnabled" label="Consider publication score"
                   @change="sessionStore.computeSelectedPublicationsAuthors" density="compact"
                   hint="Otherwise, each publication counts as one" />
               </v-col>
-              <v-col cols="12" md="6">
+              <v-col cols="12" md="4">
                 <v-checkbox v-model="sessionStore.isFirstAuthorBoostEnabled" label="Boost first authors"
-                  @change="sessionStore.computeSelectedPublicationsAuthors" density="compact" 
-                  hint="Counting first author publications twice"/>
+                  @change="sessionStore.computeSelectedPublicationsAuthors" density="compact"
+                  hint="Counting first author publications twice" />
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-checkbox v-model="sessionStore.isAuthorNewBoostEnabled" label="Boost new publications"
+                  @change="sessionStore.computeSelectedPublicationsAuthors" density="compact"
+                  :hint="`Counting publications tagged as 'new' twice`" />
               </v-col>
             </v-row>
           </v-container>
@@ -29,25 +34,7 @@
         </h2>
         <ul>
           <li v-for="author in sessionStore.selectedPublicationsAuthors" :key="author.id" class="media">
-            <tippy class="media-left d-flex flex-column">
-              <div class="text-body-2">{{ author.firstAuthorCount }} : {{ author.count }}</div>
-              <div>
-                <v-icon :size="authorIconSize(author.score)">mdi-account</v-icon>
-              </div>
-              <div><strong>{{ author.score }}</strong></div>
-              <template #content>
-                Aggregated score of <b>{{ author.score }}</b> through
-                <b>{{ author.count }}</b> selected publication{{
-                  author.count > 1 ? "s" : ""
-                }}<span v-if="author.firstAuthorCount"> (<b v-if="author.firstAuthorCount < author.count">{{
-  author.firstAuthorCount }}&nbsp;</b><b v-else-if="author.firstAuthorCount > 1">all
-                  </b>as
-                  first
-                  author)</span><span v-if="author.yearMin != author.yearMax">, <b>{{ author.yearMin }}</b> to
-                  <b>{{ author.yearMax }}</b>
-                </span><span v-else-if="author.yearMin">, <b>{{ author.yearMin }}</b></span>.
-              </template>
-            </tippy>
+            <AuthorGlyph :author="author" class="media-left"></AuthorGlyph>
             <div class="media-content">
               <div class="content">
                 <div class="mb-3">
@@ -64,6 +51,15 @@
                       {{ alternativeName }}
                     </v-chip>
                   </small>
+                </div>
+                <div class="mb-2 is-size-7">
+                  <b>{{ author.count }}</b> selected publication{{
+                    author.count > 1 ? "s" : ""
+                  }}<span v-if="author.yearMin != author.yearMax">, published between <b>{{ author.yearMin }}</b> and
+                    <b>{{ author.yearMax }}</b>
+                  </span><span v-else-if="author.yearMin">, published <b>{{ author.yearMin }}</b></span><span
+                    v-if="author.newPublication">
+                    (<InlineIcon icon="mdi-alarm"></InlineIcon> new)</span>.
                 </div>
                 <div v-if="Object.keys(author.keywords).length > 0" class="is-size-7">
                   Related to
@@ -82,6 +78,10 @@
                 </div>
               </div>
             </div>
+            <div class="media-right">
+              <CompactButton icon="mdi-school" :href="`https://scholar.google.com/scholar?q=${author.id}`"
+                v-tippy="'Search author on Google Scholar'"></CompactButton>
+            </div>
           </li>
         </ul>
       </section>
@@ -92,6 +92,7 @@
 <script>
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
+import AuthorGlyph from "../AuthorGlyph.vue";
 
 export default {
   name: "AuthorModalDialog",
@@ -101,40 +102,21 @@ export default {
     return { sessionStore, interfaceStore };
   },
   methods: {
-    authorIconSize(score) {
-      if (!this.sessionStore.isAuthorScoreEnabled) {
-        score = score * 20;
-      }
-      if (!this.sessionStore.isFirstAuthorBoostEnabled) {
-        score = score * 1.5;
-      }
-      if (score > 128) {
-        return "48";
-      }
-      if (score > 64) {
-        return "32";
-      }
-      if (score > 16) {
-        return "24";
-      }
-      return "18";
-    },
     keywordStyle(count) {
       return {
-        backgroundColor: `hsla(48, 100%, 67%, ${0.05 + Math.min(count / 20, 0.95)
-          })`,
+        backgroundColor: `hsla(48, 100%, 67%, ${0.05 + Math.min(count / 20, 0.95)})`,
       };
     },
     coauthorStyle(count) {
       return {
-        backgroundColor: `hsla(0, 0%, 70%, ${0.05 + Math.min(count / 20, 0.95)
-          })`,
+        backgroundColor: `hsla(0, 0%, 70%, ${0.05 + Math.min(count / 20, 0.95)})`,
       };
     },
     cancel() {
       this.interfaceStore.isAuthorModalDialogShown = false;
     },
   },
+  components: { AuthorGlyph }
 };
 </script>
 
@@ -145,7 +127,7 @@ export default {
   margin: 0;
 
   & .media-left {
-    min-width: 3rem;
+    min-width: 4.5rem;
     min-height: 3rem;
     display: flex;
     justify-content: center;
