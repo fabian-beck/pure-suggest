@@ -253,7 +253,7 @@ export default {
                 const links = [];
                 this.sessionStore.uniqueBoostKeywords.forEach((keyword) => {
                     this.sessionStore.publicationsFiltered.forEach((publication) => {
-                        if (publication.boostKeywords.includes(keyword)) {
+                        if (publication.doi in this.doiToIndex && publication.boostKeywords.includes(keyword)) {
                             links.push({
                                 source: keyword,
                                 target: publication.doi,
