@@ -576,7 +576,6 @@ export default {
             this.svg.attr("transform", transform);
         },
     },
-    components: { CompactSwitch }
 };
 </script>
 
