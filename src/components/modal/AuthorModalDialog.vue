@@ -116,7 +116,6 @@ export default {
       this.interfaceStore.isAuthorModalDialogShown = false;
     },
   },
-  components: { AuthorGlyph }
 };
 </script>
 

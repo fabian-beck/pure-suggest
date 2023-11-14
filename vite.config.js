@@ -3,19 +3,13 @@ import vue from '@vitejs/plugin-vue'
 import path from 'path';
 
 import Components from 'unplugin-vue-components/vite'
-// import {
-//     VuetifyResolver,
-// } from 'unplugin-vue-components/resolvers'
 
 
 export default defineConfig({
+    base:'./',
     plugins: [
         vue(),
-        Components({
-            // resolvers: [
-            //     VuetifyResolver(),
-            // ],
-        }),
+        Components({}),
     ],
     server: {
         port: 8080

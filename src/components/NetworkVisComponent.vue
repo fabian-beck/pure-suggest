@@ -14,6 +14,7 @@
             <v-icon class="has-text-white">mdi-chart-bubble</v-icon>
             <h2 class="is-size-5 ml-2">Citation network</h2>
           </div>
+          <div class="has-text-danger has-background-danger-light p-1" v-if="errorMessage">{{ errorMessage }}</div>
         </div>
         <div class="level-right" v-show="!sessionStore.isEmpty">
           <div
@@ -143,6 +144,8 @@ export default {
       link: null,
       label: null,
       zoom: null,
+            errorMessage: "",
+            errorTimer: null,
     };
   },
   watch: {
@@ -277,9 +280,15 @@ export default {
         this.simulation.restart();
       } catch (error) {
         console.error("Cannot plot network: " + error.message);
-        this.interfaceStore.showErrorMessage(
+        this.errorMessage = 
           "Sorry, an error occurred while plotting the citation network."
-        );
+        ;
+                if (this.errorTimer) {
+                    clearTimeout(this.errorTimer);
+                }
+                this.errorTimer = setTimeout(() => {
+                    this.errorMessage = "";
+                }, 10000);
       }
       function initGraph() {
         this.doiToIndex = {};
@@ -328,7 +337,7 @@ export default {
         const links = [];
         this.sessionStore.uniqueBoostKeywords.forEach((keyword) => {
           this.sessionStore.publicationsFiltered.forEach((publication) => {
-            if (publication.boostKeywords.includes(keyword)) {
+            if (publication.doi in this.doiToIndex && publication.boostKeywords.includes(keyword)) {
               links.push({
                 source: keyword,
                 target: publication.doi,
