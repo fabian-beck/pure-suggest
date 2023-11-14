@@ -149,13 +149,14 @@ export default {
 
     addPublication(doi) {
       if (this.addedPublications.includes(doi)) return;
+      this.sessionStore.logQd(doi,"import")
       this.addedPublications.push(doi);
     },
 
     addAllPublications() {
       this.filteredSearchResults.forEach((publication) => {
         this.addPublication(publication.doi);
-        this.logQd(publication.doi,publication.isSelected)
+        this.sessionStore.logQd(publication.doi,"import")
       });
       this.searchResults = { results: [], type: "empty" };
       this.interfaceStore.searchQuery = "";
@@ -178,9 +179,6 @@ export default {
     },
     logAdd(){
       this.sessionStore.logAdd()
-    },
-    logQd(doi){
-      this.sessionStore.logQd(doi, 'import')
     },
   },
 };

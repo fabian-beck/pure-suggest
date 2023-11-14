@@ -108,7 +108,7 @@
         </template>
       </tippy>
       <div class="media-content">
-        <PublicationDescription :publication="publication"></PublicationDescription>
+        <PublicationDescription :publication="publication" :activationSource="activationSource"></PublicationDescription>
         <div class="notification has-background-danger-light has-text-danger-dark" v-if="(!publication.year || !publication.title || !publication.author) &&
           publication.isActive
           ">
@@ -140,11 +140,12 @@
       <div class="media-right">
         <div>
           <CompactButton v-if="!publication.isSelected" icon="mdi-plus-thick"
-            v-on:click="sessionStore.queueForSelected(publication.doi)" v-on:click.stop = "logQd(publication.doi,publication.isSelected)" class="has-text-primary"
-            v-tippy="'Mark publication to be added to selected publications.'"></CompactButton>
+          v-on:click="sessionStore.queueForSelected(publication.doi); sessionStore.logQd(publication.doi, (activationSource == 'network' ? 'network' : 'suggested'))"
+          class="has-text-primary"
+              v-tippy="'Mark publication to be added to selected publications.'"></CompactButton>
         </div>
         <div>
-          <CompactButton icon="mdi-minus-thick" v-on:click="sessionStore.queueForExcluded(publication.doi)" v-on:click.stop = "logExclude(publication.doi,publication.isSelected)"
+          <CompactButton icon="mdi-minus-thick" v-on:click="sessionStore.queueForExcluded(publication.doi)" v-on:click.stop = "sessionStore.logExclude(publication.doi, (activationSource == 'network' ? 'network' : (publication.isSelected ? 'selected' :  'suggested')))"
             v-tippy="'Mark publication to be excluded for suggestions.'"></CompactButton>
         </div>
       </div>
@@ -165,6 +166,7 @@ export default {
   },
   props: {
     publication: Object,
+    activationSource: String
   },
   computed: {
     chevronType: function () {

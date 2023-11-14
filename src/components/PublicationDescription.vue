@@ -43,7 +43,7 @@
                     v-html="publication.year ? highlight(String(publication.year)) : '[unknown year]'"></span>.
             </span>
             <label><span class="key">D</span>OI:</label>
-            <a :href="publication.doiUrl" @click.stop="refocus" @click.middle.stop="refocus">{{ publication.doi }}</a>
+            <a :href="publication.doiUrl" v-on:click="sessionStore.logDoiClick(publication.doi, (activationSource == 'network' ? 'network' : (publication.isSelected ? 'selected' :  'suggested')))" @click.stop="refocus" @click.middle.stop="refocus">{{ publication.doi }}</a>
         </div>
         <div v-if="showDetails" class="stats-and-links level">
             <div class="level-left">
@@ -83,7 +83,7 @@
                     <CompactButton icon="mdi-lock-open-check-outline" class="ml-5" v-if="publication.oaLink"
                         :href="publication.oaLink" v-tippy="`<span class='key'>O</span>pen access`">
                     </CompactButton>
-                    <CompactButton icon="mdi-school" class="ml-5" :href="publication.gsUrl"
+                    <CompactButton icon="mdi-school" class="ml-5" :href="publication.gsUrl" v-on:click="sessionStore.logScholarClick(publication.doi, (activationSource == 'network' ? 'network' : (publication.isSelected ? 'selected' :  'suggested')))"
                         v-tippy="`<span class='key'>G</span>oogle Scholar`"></CompactButton>
                     <CompactButton icon="mdi-format-quote-close" class="ml-5" v-on:click="exportBibtex"
                         v-if="!alwaysShowDetails" v-tippy="`Export as BibTe<span class='key'>X</span> citation`">
@@ -108,6 +108,7 @@ export default {
         publication: Object,
         highlighted: String,
         alwaysShowDetails: Boolean,
+        activationSource: String
     },
     computed: {
         showDetails() {

@@ -502,6 +502,7 @@ export const useSessionStore = defineStore('session', {
       }
       if (session.boost) {
         this.boostKeywordString = session.boost;
+        this.logKeywordUpdate()
       }
       if (session.excluded) {
         this.excludedPublicationsDois = session.excluded;
@@ -616,7 +617,7 @@ export const useSessionStore = defineStore('session', {
         });
     },
     logFilterUpdate(){
-      let allFilters = "Filter updated" + this.filter.string.replaceAll(",",";") + "_"+this.filter.yearStart+"_"+this.filter.yearEnd+"_"+this.filter.tag
+      let allFilters = this.filter.string.replaceAll(",",";") + "_"+this.filter.yearStart+"_"+this.filter.yearEnd+"_"+this.filter.tag
       allFilters = allFilters.replaceAll("undefined","")
       console.log("Filter updated",allFilters);
       logActionEvent("Filter updated",allFilters)
@@ -657,7 +658,18 @@ export const useSessionStore = defineStore('session', {
         component
       );
     },
-    logQd(doi, component) {
+    logAbstractClick(doi, component) {
+      logPubEvent(
+        "Clicked Abstract",
+        doi,
+        this.selectedPublicationsCount,
+        this.suggestedPublications.findIndex(
+          (publication) => publication.doi === doi
+        ) + 1,
+        component
+      );
+    },
+    logQd(doi, activationSource) {
       logPubEvent(
         "Pub qd for selected",
         doi,
@@ -665,7 +677,7 @@ export const useSessionStore = defineStore('session', {
         this.suggestedPublications.findIndex(
           (publication) => publication.doi === doi
         ) + 1,
-        component
+        activationSource
       );
     },
     logActivate(doi, component) {

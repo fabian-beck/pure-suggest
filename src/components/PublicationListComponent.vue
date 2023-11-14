@@ -1,9 +1,11 @@
 <template>
   <ul class="publication-list has-background-white">
+    <!--Pass down activation source as prop to publication component for logging-->
     <PublicationComponent
       v-for="publication in publications"
       :key="publication.doi"
       :publication="publication"
+      :activationSource="'publicationList'" 
       v-on:activate="activatePublication"
     ></PublicationComponent>
   </ul>

@@ -62,10 +62,12 @@
         </svg>
       </div>
       <ul class="publication-component-list">
+        <!--Pass down activation source as prop to publication component for logging-->
         <PublicationComponent
           v-if="activePublication && interfaceStore.isNetworkExpanded"
           :publication="activePublication"
           :is-active="true"
+          :activationSource="'network'" 
         ></PublicationComponent>
       </ul>
       <div class="controls-header-left">
