@@ -12,17 +12,17 @@
             <v-row>
               <v-col cols="12" md="4">
                 <v-checkbox v-model="sessionStore.isAuthorScoreEnabled" label="Consider publication score"
-                  @change="sessionStore.computeSelectedPublicationsAuthors" density="compact"
+                  @change="() => { sessionStore.computeSelectedPublicationsAuthors(); sessionStore.logAuthorFilter('Consider pubscore'+(sessionStore.isAuthorScoreEnabled ? ' off' : ' on')) }" density="compact"
                   hint="Otherwise, each publication counts as one" />
               </v-col>
               <v-col cols="12" md="4">
                 <v-checkbox v-model="sessionStore.isFirstAuthorBoostEnabled" label="Boost first authors"
-                  @change="sessionStore.computeSelectedPublicationsAuthors" density="compact"
+                  @change="() => { sessionStore.computeSelectedPublicationsAuthors(); sessionStore.logAuthorFilter('Boost 1st authors'+(sessionStore.isFirstAuthorBoostEnabled ? ' off' : ' on')); }" density="compact"
                   hint="Counting first author publications twice" />
               </v-col>
               <v-col cols="12" md="4">
                 <v-checkbox v-model="sessionStore.isAuthorNewBoostEnabled" label="Boost new publications"
-                  @change="sessionStore.computeSelectedPublicationsAuthors" density="compact"
+                  @change="() => { sessionStore.computeSelectedPublicationsAuthors(); sessionStore.logAuthorFilter('Boost new pubs'+(sessionStore.isAuthorNewBoostEnabled ? ' off' : ' on')); }" density="compact"
                   :hint="`Counting publications tagged as 'new' twice`" />
               </v-col>
             </v-row>
@@ -80,7 +80,7 @@
             </div>
             <div class="media-right">
               <CompactButton icon="mdi-school" :href="`https://scholar.google.com/scholar?q=${author.id}`"
-                v-tippy="'Search author on Google Scholar'"></CompactButton>
+                v-tippy="'Search author on Google Scholar'" @click = "sessionStore.logAuthorScholarClick()"></CompactButton>
             </div>
           </li>
         </ul>

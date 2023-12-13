@@ -1,3 +1,7 @@
+
+import { saveAsFile } from "@/Util.js";
+
+
 const log = [];
 
 export function logEvent(event, doi, ...args) {
@@ -25,5 +29,7 @@ export function logPubEvent(event, doi, selectedPublicationsCount="", PosInSugge
 
 
 export function getEventLog() {
-  console.log("event,date,doi,selectedPublicationsCount,posInSuggestions,activationSourceComponent,actionDetails\n" + log.join("\n"));
+  let finalLog = "event,date,doi,selectedPublicationsCount,posInSuggestions,activationSourceComponent,actionDetails\n" + log.join("\n")
+  saveAsFile("sessionLog.csv", "application/logFiles", finalLog);
+  console.log(finalLog);
 }

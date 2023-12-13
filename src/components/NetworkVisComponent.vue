@@ -650,6 +650,7 @@ export default {
         d.fx = event.x;
         d.fy = event.y;
         that.simulation.alpha(SIMULATION_ALPHA).restart();
+
       }
       function dragEnd() {
         that.isDragging = false;
@@ -693,7 +694,7 @@ export default {
         : this.yearX(d.publication ? d.publication.year : CURRENT_YEAR + 2);
     },
     activatePublication: function (event, d) {
-          this.sessionStore.logActivate(d.publication.doi,'network')
+      this.sessionStore.logActivate(d.publication.doi,'network')
       this.sessionStore.activatePublicationComponentByDoi(d.publication.doi);
       event.stopPropagation();
     },

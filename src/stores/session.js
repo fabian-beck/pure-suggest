@@ -1,16 +1,15 @@
-import { defineStore } from 'pinia'
+import { defineStore } from "pinia";
 
 import { useInterfaceStore } from "./interface.js";
 
 import Publication from "@/Publication.js";
-import Filter from '@/Filter.js';
-import { shuffle, saveAsFile } from "@/Util.js"
+import Filter from "@/Filter.js";
+import { shuffle, saveAsFile } from "@/Util.js";
 import { clearCache } from "@/Cache.js";
 import { logPubEvent } from "@/Logging";
 import { logActionEvent } from "@/Logging";
 
-
-export const useSessionStore = defineStore('session', {
+export const useSessionStore = defineStore("session", {
   state: () => {
     return {
       interfaceStore: useInterfaceStore(),
@@ -29,37 +28,66 @@ export const useSessionStore = defineStore('session', {
       isAuthorScoreEnabled: true,
       isFirstAuthorBoostEnabled: true,
       isAuthorNewBoostEnabled: true,
-    }
+    };
   },
   getters: {
     selectedPublicationsDois: (state) => asDois(state.selectedPublications),
     selectedPublicationsCount: (state) => state.selectedPublications.length,
     excludedPublicationsCount: (state) => state.excludedPublicationsDois.length,
-    suggestedPublications: (state) => state.suggestion ? state.suggestion.publications : [],
+    suggestedPublications: (state) =>
+      state.suggestion ? state.suggestion.publications : [],
     suggestedPublicationsFiltered: (state) =>
-      state.interfaceStore.isFilterPanelShown ?
-        state.suggestedPublications.filter(publication => state.filter.matches(publication)) : state.suggestedPublications,
-    publications: (state) => state.selectedPublications.concat(state.suggestedPublications),
-    publicationsFiltered: (state) => state.selectedPublications.concat(state.suggestedPublicationsFiltered),
-    yearMax: (state) => Math.max(...state.publicationsFiltered.filter(publication => publication.year).map(publication => Number(publication.year))),
-    yearMin: (state) => Math.min(...state.publicationsFiltered.filter(publication => publication.year).map(publication => Number(publication.year))),
-    unreadSuggestionsCount: (state) => state.suggestedPublicationsFiltered.filter(
-      (publication) => !publication.isRead
-    ).length,
-    boostKeywords: (state) => state.boostKeywordString.toLowerCase().split(/,\s*/).map(keyword => keyword.trim()),
-    isKeywordLinkedToActive: (state) => (keyword) => state.activePublication && state.activePublication.boostKeywords.includes(keyword),
+      state.interfaceStore.isFilterPanelShown
+        ? state.suggestedPublications.filter((publication) =>
+            state.filter.matches(publication)
+          )
+        : state.suggestedPublications,
+    publications: (state) =>
+      state.selectedPublications.concat(state.suggestedPublications),
+    publicationsFiltered: (state) =>
+      state.selectedPublications.concat(state.suggestedPublicationsFiltered),
+    yearMax: (state) =>
+      Math.max(
+        ...state.publicationsFiltered
+          .filter((publication) => publication.year)
+          .map((publication) => Number(publication.year))
+      ),
+    yearMin: (state) =>
+      Math.min(
+        ...state.publicationsFiltered
+          .filter((publication) => publication.year)
+          .map((publication) => Number(publication.year))
+      ),
+    unreadSuggestionsCount: (state) =>
+      state.suggestedPublicationsFiltered.filter(
+        (publication) => !publication.isRead
+      ).length,
+    boostKeywords: (state) =>
+      state.boostKeywordString
+        .toLowerCase()
+        .split(/,\s*/)
+        .map((keyword) => keyword.trim()),
+    isKeywordLinkedToActive: (state) => (keyword) =>
+      state.activePublication &&
+      state.activePublication.boostKeywords.includes(keyword),
     uniqueBoostKeywords: (state) => [...new Set(state.boostKeywords)],
-    isUpdatable: (state) => state.selectedQueue.length > 0 || state.excludedQueue.length > 0,
+    isUpdatable: (state) =>
+      state.selectedQueue.length > 0 || state.excludedQueue.length > 0,
     isEmpty: (state) =>
-      state.selectedPublicationsCount === 0
-      && state.excludedPublicationsCount === 0
-      && state.selectedQueue.length === 0
-      && !state.isUpdatable,
-    isSelected: (state) => (doi) => state.selectedPublicationsDois.includes(doi),
-    isExcluded: (state) => (doi) => state.excludedPublicationsDois.includes(doi),
+      state.selectedPublicationsCount === 0 &&
+      state.excludedPublicationsCount === 0 &&
+      state.selectedQueue.length === 0 &&
+      !state.isUpdatable,
+    isSelected: (state) => (doi) =>
+      state.selectedPublicationsDois.includes(doi),
+    isExcluded: (state) => (doi) =>
+      state.excludedPublicationsDois.includes(doi),
     isQueuingForSelected: (state) => (doi) => state.selectedQueue.includes(doi),
     isQueuingForExcluded: (state) => (doi) => state.excludedQueue.includes(doi),
-    getSelectedPublicationByDoi: (state) => (doi) => state.selectedPublications.filter(publication => publication.doi === doi)[0],
+    getSelectedPublicationByDoi: (state) => (doi) =>
+      state.selectedPublications.filter(
+        (publication) => publication.doi === doi
+      )[0],
   },
   actions: {
     clear() {
@@ -78,7 +106,9 @@ export const useSessionStore = defineStore('session', {
     },
 
     removeFromExcludedPublication(doi) {
-      this.excludedPublicationsDois = this.excludedPublicationsDois.filter(excludedDoi => excludedDoi != doi)
+      this.excludedPublicationsDois = this.excludedPublicationsDois.filter(
+        (excludedDoi) => excludedDoi != doi
+      );
     },
 
     setBoostKeywordString(boostKeywordString) {
@@ -88,8 +118,10 @@ export const useSessionStore = defineStore('session', {
 
     queueForSelected(dois) {
       if (!Array.isArray(dois)) dois = [dois];
-      this.excludedQueue = this.excludedQueue.filter(excludedDoi => !dois.includes(excludedDoi));
-      dois.forEach(doi => {
+      this.excludedQueue = this.excludedQueue.filter(
+        (excludedDoi) => !dois.includes(excludedDoi)
+      );
+      dois.forEach((doi) => {
         if (this.isSelected(doi) || this.selectedQueue.includes(doi)) return;
         this.selectedQueue.push(doi);
       });
@@ -97,15 +129,21 @@ export const useSessionStore = defineStore('session', {
     },
 
     queueForExcluded(doi) {
-      if (this.isExcluded(doi) || this.excludedQueue.includes(doi)) return
-      this.selectedQueue = this.selectedQueue.filter(seletedDoi => doi != seletedDoi);
+      if (this.isExcluded(doi) || this.excludedQueue.includes(doi)) return;
+      this.selectedQueue = this.selectedQueue.filter(
+        (seletedDoi) => doi != seletedDoi
+      );
       this.excludedQueue.push(doi);
       this.hasUpdated(`Queued ${doi} for exclusion.`);
     },
 
     removeFromQueues(doi) {
-      this.selectedQueue = this.selectedQueue.filter(seletedDoi => doi != seletedDoi);
-      this.excludedQueue = this.excludedQueue.filter(excludedDoi => doi != excludedDoi);
+      this.selectedQueue = this.selectedQueue.filter(
+        (seletedDoi) => doi != seletedDoi
+      );
+      this.excludedQueue = this.excludedQueue.filter(
+        (excludedDoi) => doi != excludedDoi
+      );
       this.hasUpdated(`Removed ${doi} from queues.`);
     },
 
@@ -118,13 +156,17 @@ export const useSessionStore = defineStore('session', {
     async updateQueued() {
       this.clearActivePublication();
       if (this.excludedQueue.length) {
-        this.excludedPublicationsDois = this.excludedPublicationsDois.concat(this.excludedQueue);
+        this.excludedPublicationsDois = this.excludedPublicationsDois.concat(
+          this.excludedQueue
+        );
       }
       this.selectedPublications = this.selectedPublications.filter(
-        publication => !this.excludedQueue.includes(publication.doi)
+        (publication) => !this.excludedQueue.includes(publication.doi)
       );
       this.suggestion.publications = this.suggestion.publications.filter(
-        publication => (!this.selectedQueue.includes(publication.doi) && !this.excludedQueue.includes(publication.doi))
+        (publication) =>
+          !this.selectedQueue.includes(publication.doi) &&
+          !this.excludedQueue.includes(publication.doi)
       );
       if (this.selectedQueue.length) {
         this.addPublicationsToSelection(this.selectedQueue);
@@ -165,8 +207,7 @@ export const useSessionStore = defineStore('session', {
       this.maxSuggestions = maxSuggestions;
       this.interfaceStore.startLoading();
       let publicationsLoaded = 0;
-      this.interfaceStore.loadingMessage =
-        `${publicationsLoaded}/${this.selectedPublicationsCount} selected publications loaded`;
+      this.interfaceStore.loadingMessage = `${publicationsLoaded}/${this.selectedPublicationsCount} selected publications loaded`;
       await Promise.all(
         this.selectedPublications.map(async (publication) => {
           await publication.fetchData();
@@ -198,7 +239,9 @@ export const useSessionStore = defineStore('session', {
         delete authors[authorId];
         Object.values(authors).forEach((author) => {
           if (author.coauthors[authorId]) {
-            author.coauthors[newAuthorId] = author.coauthors[newAuthorId] ? author.coauthors[newAuthorId] + author.coauthors[authorId] : author.coauthors[authorId];
+            author.coauthors[newAuthorId] = author.coauthors[newAuthorId]
+              ? author.coauthors[newAuthorId] + author.coauthors[authorId]
+              : author.coauthors[authorId];
             delete author.coauthors[authorId];
           }
         });
@@ -208,7 +251,10 @@ export const useSessionStore = defineStore('session', {
       // assemble authors from selected publications
       this.selectedPublications.forEach((publication) => {
         publication.authorOrcid?.split("; ").forEach((author, i) => {
-          const authorId = author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g, "");
+          const authorId = author.replace(
+            /(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g,
+            ""
+          );
           if (!authors[authorId]) {
             authors[authorId] = {
               id: authorId,
@@ -227,26 +273,50 @@ export const useSessionStore = defineStore('session', {
           authors[authorId].count++;
           authors[authorId].firstAuthorCount += i > 0 ? 0 : 1;
           // updating score
-          authors[authorId].score += (this.isAuthorScoreEnabled ? publication.score : 1)
-            * (this.isFirstAuthorBoostEnabled ? (i > 0 ? 1 : 2) : 1)
-            * (this.isAuthorNewBoostEnabled ? (publication.isNew ? 2 : 1) : 1);
+          authors[authorId].score +=
+            (this.isAuthorScoreEnabled ? publication.score : 1) *
+            (this.isFirstAuthorBoostEnabled ? (i > 0 ? 1 : 2) : 1) *
+            (this.isAuthorNewBoostEnabled ? (publication.isNew ? 2 : 1) : 1);
           const orcid = author.match(/(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g);
           if (orcid) {
             authors[authorId].orcid = orcid[0];
           }
-          const keywordCounts = publication.boostKeywords.map(keyword => ({ [keyword]: 1 })).reduce((a, b) => Object.assign(a, b), {}); // convert array to object
-          authors[authorId].keywords = mergeCounts(authors[authorId].keywords, keywordCounts);
-          const coauthorCounts = publication.author?.split("; ").filter(coauthor => coauthor !== authorId).map(coauthor => ({ [coauthor]: 1 })).reduce((a, b) => Object.assign(a, b), {}); // convert array to object
-          authors[authorId].coauthors = mergeCounts(authors[authorId].coauthors, coauthorCounts);
-          authors[authorId].yearMin = Math.min(authors[authorId].yearMin, Number(publication.year));
-          authors[authorId].yearMax = Math.max(authors[authorId].yearMax, Number(publication.year));
-          authors[authorId].newPublication = authors[authorId].newPublication || publication.isNew;
+          const keywordCounts = publication.boostKeywords
+            .map((keyword) => ({ [keyword]: 1 }))
+            .reduce((a, b) => Object.assign(a, b), {}); // convert array to object
+          authors[authorId].keywords = mergeCounts(
+            authors[authorId].keywords,
+            keywordCounts
+          );
+          const coauthorCounts = publication.author
+            ?.split("; ")
+            .filter((coauthor) => coauthor !== authorId)
+            .map((coauthor) => ({ [coauthor]: 1 }))
+            .reduce((a, b) => Object.assign(a, b), {}); // convert array to object
+          authors[authorId].coauthors = mergeCounts(
+            authors[authorId].coauthors,
+            coauthorCounts
+          );
+          authors[authorId].yearMin = Math.min(
+            authors[authorId].yearMin,
+            Number(publication.year)
+          );
+          authors[authorId].yearMax = Math.max(
+            authors[authorId].yearMax,
+            Number(publication.year)
+          );
+          authors[authorId].newPublication =
+            authors[authorId].newPublication || publication.isNew;
         });
       });
       // merge author with same ORCID
-      const orcidAuthors = Object.values(authors).filter((author) => author.orcid);
+      const orcidAuthors = Object.values(authors).filter(
+        (author) => author.orcid
+      );
       orcidAuthors.forEach((author) => {
-        const authorMatches = orcidAuthors.filter((author2) => author2.orcid === author.orcid);
+        const authorMatches = orcidAuthors.filter(
+          (author2) => author2.orcid === author.orcid
+        );
         if (authorMatches.length > 1) {
           authorMatches.forEach((author2) => {
             if (author.id.length > author2.id.length) {
@@ -254,52 +324,97 @@ export const useSessionStore = defineStore('session', {
               author.firstAuthorCount += author2.firstAuthorCount;
               author.score += author2.score;
               author.keywords = mergeCounts(author.keywords, author2.keywords);
-              author.alternativeNames = [...new Set(author.alternativeNames.concat(author2.alternativeNames))];
-              author.coauthors = mergeCounts(author.coauthors, author2.coauthors);
+              author.alternativeNames = [
+                ...new Set(
+                  author.alternativeNames.concat(author2.alternativeNames)
+                ),
+              ];
+              author.coauthors = mergeCounts(
+                author.coauthors,
+                author2.coauthors
+              );
               author.yearMin = Math.min(author.yearMin, author2.yearMin);
               author.yearMax = Math.max(author.yearMax, author2.yearMax);
-              author.newPublication = author.newPublication || author2.newPublication;
+              author.newPublication =
+                author.newPublication || author2.newPublication;
               deleteAuthor(author2.id, author.id);
             }
           });
         }
       });
       // match authors with abbreviated names and merge them
-      let authorsWithAbbreviatedNames = Object.values(authors).filter((author) => author.id.match(/^\w+,\s\w\.?(\s\w\.?)?$/));
-      Object.values(authors).filter(author => !authorsWithAbbreviatedNames.includes(author)).forEach((author) => {
-        // check if author has version with additional first name
-        if (Object.values(authors).filter((author2) => author2.id.startsWith(author.id)).length > 1) {
-          authorsWithAbbreviatedNames.push(author);
-        }
-      });
-      const authorsWithoutAbbreviatedNames = Object.values(authors).filter((author) => !authorsWithAbbreviatedNames.includes(author));
+      let authorsWithAbbreviatedNames = Object.values(
+        authors
+      ).filter((author) => author.id.match(/^\w+,\s\w\.?(\s\w\.?)?$/));
+      Object.values(authors)
+        .filter((author) => !authorsWithAbbreviatedNames.includes(author))
+        .forEach((author) => {
+          // check if author has version with additional first name
+          if (
+            Object.values(authors).filter((author2) =>
+              author2.id.startsWith(author.id)
+            ).length > 1
+          ) {
+            authorsWithAbbreviatedNames.push(author);
+          }
+        });
+      const authorsWithoutAbbreviatedNames = Object.values(authors).filter(
+        (author) => !authorsWithAbbreviatedNames.includes(author)
+      );
       authorsWithAbbreviatedNames.forEach((author) => {
-        const authorId = author.id.replace(/^(\w+,\s\w)\.?(\s\w\.?)?$/, "$1")
-        const authorMatches = authorsWithoutAbbreviatedNames.filter((author2) => author2.id.startsWith(authorId));
-        if (authorMatches.length === 1 && (!author.orcid || !authorMatches[0].orcid || author.orcid === authorMatches[0].orcid)) {
+        const authorId = author.id.replace(/^(\w+,\s\w)\.?(\s\w\.?)?$/, "$1");
+        const authorMatches = authorsWithoutAbbreviatedNames.filter((author2) =>
+          author2.id.startsWith(authorId)
+        );
+        if (
+          authorMatches.length === 1 &&
+          (!author.orcid ||
+            !authorMatches[0].orcid ||
+            author.orcid === authorMatches[0].orcid)
+        ) {
           authorMatches[0].count += author.count;
           authorMatches[0].firstAuthorCount += author.firstAuthorCount;
           authorMatches[0].score += author.score;
-          authorMatches[0].keywords = mergeCounts(author.keywords, authorMatches[0].keywords);
-          authorMatches[0].coauthors = mergeCounts(author.coauthors, authorMatches[0].coauthors);
+          authorMatches[0].keywords = mergeCounts(
+            author.keywords,
+            authorMatches[0].keywords
+          );
+          authorMatches[0].coauthors = mergeCounts(
+            author.coauthors,
+            authorMatches[0].coauthors
+          );
           if (author.orcid && !authorMatches[0].orcid) {
             authorMatches[0].orcid = author.orcid;
           }
-          authorMatches[0].alternativeNames = [...new Set(author.alternativeNames.concat(authorMatches[0].alternativeNames))];
-          authorMatches[0].yearMin = Math.min(author.yearMin, authorMatches[0].yearMin);
-          authorMatches[0].yearMax = Math.max(author.yearMax, authorMatches[0].yearMax);
-          authorMatches[0].newPublication = author.newPublication || authorMatches[0].newPublication;
+          authorMatches[0].alternativeNames = [
+            ...new Set(
+              author.alternativeNames.concat(authorMatches[0].alternativeNames)
+            ),
+          ];
+          authorMatches[0].yearMin = Math.min(
+            author.yearMin,
+            authorMatches[0].yearMin
+          );
+          authorMatches[0].yearMax = Math.max(
+            author.yearMax,
+            authorMatches[0].yearMax
+          );
+          authorMatches[0].newPublication =
+            author.newPublication || authorMatches[0].newPublication;
           deleteAuthor(author.id, authorMatches[0].id);
         }
       });
       // sort by score
       this.selectedPublicationsAuthors = Object.values(authors).sort(
-        (a, b) => b.score + b.firstAuthorCount / 100 + b.count / 1000 - (a.score + a.firstAuthorCount / 100 + a.count / 1000)
+        (a, b) =>
+          b.score +
+          b.firstAuthorCount / 100 +
+          b.count / 1000 -
+          (a.score + a.firstAuthorCount / 100 + a.count / 1000)
       );
     },
 
     async computeSuggestions() {
-
       function incrementSuggestedPublicationCounter(
         _this,
         doi,
@@ -321,7 +436,9 @@ export const useSessionStore = defineStore('session', {
         }
       }
 
-      console.log(`Starting to compute new suggestions based on ${this.selectedPublicationsCount} selected (and ${this.excludedPublicationsCount} excluded).`);
+      console.log(
+        `Starting to compute new suggestions based on ${this.selectedPublicationsCount} selected (and ${this.excludedPublicationsCount} excluded).`
+      );
       this.clearActivePublication("updating suggestions");
       const suggestedPublications = {};
       this.selectedPublications.forEach((publication) => {
@@ -350,32 +467,44 @@ export const useSessionStore = defineStore('session', {
       });
       let filteredSuggestions = Object.values(suggestedPublications);
       filteredSuggestions = shuffle(filteredSuggestions, 0);
-      console.log(`Identified ${filteredSuggestions.length} publications as suggestions.`);
+      console.log(
+        `Identified ${filteredSuggestions.length} publications as suggestions.`
+      );
       // titles not yet fetched, that is why sorting can be only done on citations/references
       filteredSuggestions.sort(
         (a, b) =>
-          b.citationCount + b.referenceCount - (a.citationCount + a.referenceCount)
+          b.citationCount +
+          b.referenceCount -
+          (a.citationCount + a.referenceCount)
       );
-      const preloadSuggestions = filteredSuggestions.slice(this.maxSuggestions, this.maxSuggestions + 50);
+      const preloadSuggestions = filteredSuggestions.slice(
+        this.maxSuggestions,
+        this.maxSuggestions + 50
+      );
       filteredSuggestions = filteredSuggestions.slice(0, this.maxSuggestions);
-      console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`);
+      console.log(
+        `Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`
+      );
       let publicationsLoadedCount = 0;
-      this.interfaceStore.loadingMessage = `${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "info";
-      await Promise.all(filteredSuggestions.map(async (suggestedPublication) => {
-        await suggestedPublication.fetchData()
-        publicationsLoadedCount++;
-        this.interfaceStore.loadingMessage = `${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`;
-      }));
+      (this.interfaceStore.loadingMessage = `${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`),
+        "info";
+      await Promise.all(
+        filteredSuggestions.map(async (suggestedPublication) => {
+          await suggestedPublication.fetchData();
+          publicationsLoadedCount++;
+          this.interfaceStore.loadingMessage = `${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`;
+        })
+      );
       filteredSuggestions.forEach((publication) => {
         publication.isRead = this.readPublicationsDois.has(publication.doi);
       });
       console.log("Completed computing and loading of new suggestions.");
-      preloadSuggestions.forEach(publication => {
-        publication.fetchData()
+      preloadSuggestions.forEach((publication) => {
+        publication.fetchData();
       });
       this.suggestion = {
         publications: Object.values(filteredSuggestions),
-        totalSuggestions: Object.values(suggestedPublications).length
+        totalSuggestions: Object.values(suggestedPublications).length,
       };
       this.updateScores();
     },
@@ -383,9 +512,15 @@ export const useSessionStore = defineStore('session', {
     updateScores() {
       console.log("Updating scores of publications and reordering them.");
       // remove spaces before/after commas
-      this.boostKeywordString = this.boostKeywordString.replace(/\s*,\s*/g, ",");
+      this.boostKeywordString = this.boostKeywordString.replace(
+        /\s*,\s*/g,
+        ","
+      );
       // remove spaces before/after vertical line
-      this.boostKeywordString = this.boostKeywordString.replace(/\s*\|\s*/g, "|");
+      this.boostKeywordString = this.boostKeywordString.replace(
+        /\s*\|\s*/g,
+        "|"
+      );
       this.publications.forEach((publication) => {
         publication.updateScore(this.boostKeywords);
       });
@@ -411,15 +546,13 @@ export const useSessionStore = defineStore('session', {
     loadMoreSuggestions() {
       console.log("Loading more suggestions.");
       logActionEvent("load more");
-      this.updateSuggestions(
-        this.maxSuggestions + 50
-      );
+      this.updateSuggestions(this.maxSuggestions + 50);
     },
 
     setActivePublication(doi) {
-      if (this.activePublication && this.activePublication.doi != doi){
+      if (this.activePublication && this.activePublication.doi != doi) {
         console.log(this.activePublication);
-        this.logDeactivate(this.activePublication.doi, "activated other pub")
+        this.logDeactivate(this.activePublication.doi, "activated other pub");
       }
       this.selectedPublications.forEach((selectedPublication) => {
         selectedPublication.isActive = selectedPublication.doi === doi;
@@ -455,14 +588,16 @@ export const useSessionStore = defineStore('session', {
 
     activatePublicationComponentByDoi: function (doi) {
       if (doi !== this.activePublication?.doi) {
-        this.interfaceStore.activatePublicationComponent(document.getElementById(doi));
+        this.interfaceStore.activatePublicationComponent(
+          document.getElementById(doi)
+        );
         this.setActivePublication(doi);
       }
     },
 
     clearActivePublication(source) {
       if (!this.activePublication) return;
-      this.logDeactivate(this.activePublication.doi, source)
+      this.logDeactivate(this.activePublication.doi, source);
       this.activePublication = undefined;
       this.publications.forEach((publication) => {
         publication.isActive = false;
@@ -488,9 +623,8 @@ export const useSessionStore = defineStore('session', {
       this.activatePublicationComponentByDoi(publication.doi);
     },
 
-    // This method can be watched to manually trigger updates 
-    hasUpdated() {
-    },
+    // This method can be watched to manually trigger updates
+    hasUpdated() {},
 
     loadSession(session) {
       console.log(`Loading session ${JSON.stringify(session)}`);
@@ -502,7 +636,7 @@ export const useSessionStore = defineStore('session', {
       }
       if (session.boost) {
         this.boostKeywordString = session.boost;
-        this.logKeywordUpdate()
+        this.logKeywordUpdate();
       }
       if (session.excluded) {
         this.excludedPublicationsDois = session.excluded;
@@ -514,7 +648,9 @@ export const useSessionStore = defineStore('session', {
 
     clearSession: function () {
       this.interfaceStore.showConfirmDialog(
-        "You are going to clear all selected and excluded articles and jump back to the initial state.", this.clear);
+        "You are going to clear all selected and excluded articles and jump back to the initial state.",
+        this.clear
+      );
     },
 
     exportSession: function () {
@@ -546,7 +682,7 @@ export const useSessionStore = defineStore('session', {
           "10.1109/tvcg.2015.2467757",
           "10.1109/tvcg.2015.2467621",
           "10.1002/asi.24171",
-          "10.2312/evp.20221110"
+          "10.2312/evp.20221110",
         ],
         boost: "cit, visual, map, publi|literat",
       };
@@ -571,24 +707,21 @@ export const useSessionStore = defineStore('session', {
 
     clearCache: function () {
       this.interfaceStore.showConfirmDialog(
-        "You are going to clear the cache, as well as all selected and excluded articles and jump back to the initial state.", () => {
+        "You are going to clear the cache, as well as all selected and excluded articles and jump back to the initial state.",
+        () => {
           this.clear();
           clearCache();
-        });
+        }
+      );
     },
-
     logKeywordUpdate() {
-      let logKeywords = this.boostKeywordString.replaceAll(",","_")
-      console.log(logKeywords);
+      let logKeywords = this.boostKeywordString.replaceAll(",", "_");
       logActionEvent("Keywords updated", logKeywords);
     },
-    
-
     logPositionsFilterUpdate() {
       this.suggestedPublicationsFiltered.forEach((pub) => {
         logPubEvent(
           "Pub filtered",
-          
           pub.doi,
           this.selectedPublicationsCount,
           this.suggestedPublicationsFiltered.findIndex(
@@ -616,24 +749,34 @@ export const useSessionStore = defineStore('session', {
           );
         });
     },
-    logFilterUpdate(){
-      let allFilters = this.filter.string.replaceAll(",",";") + "_"+this.filter.yearStart+"_"+this.filter.yearEnd+"_"+this.filter.tag
-      allFilters = allFilters.replaceAll("undefined","")
-      console.log("Filter updated",allFilters);
-      logActionEvent("Filter updated",allFilters)
+    logFilterUpdate() {
+      let allFilters =
+        this.filter.string.replaceAll(",", ";") +
+        "_" +
+        this.filter.yearStart +
+        "_" +
+        this.filter.yearEnd +
+        "_" +
+        this.filter.tag;
+      allFilters = allFilters.replaceAll(/(undefined|null)/g, "");
+      if (allFilters.replaceAll("_","").length == 0){
+        logActionEvent("Filter removed", allFilters);
+      } else {
+      logActionEvent("Filter updated", allFilters);
+      }
+      this.logPositionsFilterUpdate();
+    },
 
-      //logActionEvent("Filter updated",this.filter.string.replaceAll(",",";") + "_"+this.filter.yearStart.replaceAll("undefined","")+"_"+this.filter.yearEnd.replaceAll("undefined","")+"_"+this.filter.tag.replaceAll("undefined",""))
-      this.logPositionsFilterUpdate()
-      },
-
-    logDeactivate(doi, reason){
+    logDeactivate(doi, reason) {
       logPubEvent(
         "Pub deactivated",
         doi,
         this.selectedPublicationsCount,
         this.suggestedPublications.findIndex(
           (publication) => publication.doi === doi
-        ) + 1,"",reason
+        ) + 1,
+        "",
+        reason
       );
     },
     logDoiClick(doi, component) {
@@ -692,27 +835,37 @@ export const useSessionStore = defineStore('session', {
       );
     },
     logExclude(doi, component) {
-      logPubEvent("Pub excluded",
+      logPubEvent(
+        "Pub excluded",
         doi,
         this.selectedPublicationsCount,
         this.suggestedPublications.findIndex(
           (publication) => publication.doi === doi
         ) + 1,
-        component);
+        component
+      );
     },
-    logAdd(){
+    logAdd() {
       logActionEvent("Update", this.selectedPublicationsCount);
-    }  
-
-
-
-
-  }
-})
+    },
+    logAuthorFilter(filtertype) {
+      logActionEvent("Refined authors", filtertype);
+    },
+    logModalAction(action, modal) {
+      //action = Opened/Closed
+      //modal = modal title
+      if (modal.toLowerCase() == "search/add publications") {
+        logActionEvent(action + "search");
+      } else if (modal.toLowerCase() == "authors of selected") {
+        logActionEvent(action + "authors");
+      }
+    },
+    logAuthorScholarClick() {
+      logActionEvent("Clicked author scholar");
+    },
+  },
+});
 
 function asDois(publications) {
   return publications.map((publication) => publication.doi);
 }
-
-
-

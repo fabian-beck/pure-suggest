@@ -121,5 +121,5 @@ export const useInterfaceStore = defineStore('interface', {
             }
         },
 
-    }
-})
+    },
+});

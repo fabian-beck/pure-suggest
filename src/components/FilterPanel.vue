@@ -26,9 +26,9 @@
                     </v-row>
                 </v-col>
                 <v-col cols="12" md="4">
-                    <v-select label="Tag" @change="sessionStore.logFilterUpdate()" v-model="sessionStore.filter.tag" :items="Publication.TAGS" item-title="name"
+                    <v-select label="Tag" v-model="sessionStore.filter.tag" :items="Publication.TAGS" item-title="name"
                         item-value="value" density="compact" variant="underlined" prepend-inner-icon="mdi-tag" clearable
-                        hide-details />
+                        hide-details  @update:modelValue="sessionStore.logFilterUpdate()" />
                 </v-col>
             </v-row>
         </form>

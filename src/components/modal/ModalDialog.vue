@@ -23,6 +23,7 @@
 
 <script>
 import { useInterfaceStore } from "@/stores/interface.js";
+import { useSessionStore } from "../../stores/session";
 
 export default {
     name: "ModalDialog",
@@ -40,7 +41,8 @@ export default {
     },
     setup: () => {
         const interfaceStore = useInterfaceStore();
-        return { interfaceStore };
+        const sessionStore = useSessionStore(); //for logging 
+        return { interfaceStore, sessionStore};
     },
     watch: {
         modelValue() {
@@ -48,9 +50,11 @@ export default {
         },
         isDialogShown() {
             this.$emit('update:modelValue', this.isDialogShown);
+            this.sessionStore.logModalAction(this.isDialogShown?"Opened ":"Closed ", this.title)
         },
     },
     methods: {
+
         showDialog() {
             this.isDialogShown = true
         },
