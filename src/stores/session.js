@@ -212,7 +212,6 @@ export const useSessionStore = defineStore('session', {
         publication.authorOrcid?.split("; ").forEach((author, i) => {
           const authorName = author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g, "");
           const authorId = toAuthorId(authorName);
-          console.log(authorId)
           if (!authors[authorId]) {
             authors[authorId] = {
               id: authorId,
@@ -241,7 +240,11 @@ export const useSessionStore = defineStore('session', {
           }
           const keywordCounts = publication.boostKeywords.map(keyword => ({ [keyword]: 1 })).reduce((a, b) => Object.assign(a, b), {}); // convert array to object
           authors[authorId].keywords = mergeCounts(authors[authorId].keywords, keywordCounts);
-          const coauthorCounts = publication.author?.split("; ").filter(coauthor => coauthor !== authorId).map(coauthor => ({ [coauthor]: 1 })).reduce((a, b) => Object.assign(a, b), {}); // convert array to object
+          const coauthorCounts = publication.author?.split("; ")
+            .map(coauthor => toAuthorId(coauthor))
+            .filter(coauthorId => coauthorId !== authorId)
+            .map(coauthorId => ({ [coauthorId]: 1 }))
+            .reduce((a, b) => Object.assign(a, b), {}); // convert array to object
           authors[authorId].coauthors = mergeCounts(authors[authorId].coauthors, coauthorCounts);
           authors[authorId].yearMin = Math.min(authors[authorId].yearMin, Number(publication.year));
           authors[authorId].yearMax = Math.max(authors[authorId].yearMax, Number(publication.year));
