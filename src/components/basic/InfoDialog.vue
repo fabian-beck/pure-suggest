@@ -30,3 +30,11 @@ export default {
     },
 };
 </script>
+
+<style scoped lang="scss">
+:deep(.v-overlay__content){
+    margin-top: 60px;
+    margin-bottom: 20px;
+    max-height: calc(100vh - 80px)
+}
+</style>
