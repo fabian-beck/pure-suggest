@@ -3,7 +3,7 @@
         <div>
             <v-avatar :color="authorColor" size="80" class="d-flex flex-column">
                 <div class="is-size-7"><b>{{ author.score }}</b></div>
-                <div class="is-size-4">{{ initials(author.id) }}</div>
+                <div class="is-size-4">{{ initials(author.name) }}</div>
                 <div class="is-size-7">{{ author.firstAuthorCount }} : {{ author.count }} <InlineIcon
                         v-if="author.newPublication" icon="mdi-alarm"></InlineIcon>
                 </div>

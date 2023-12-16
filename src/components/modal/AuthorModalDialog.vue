@@ -38,7 +38,7 @@
             <div class="media-content">
               <div class="content">
                 <div class="mb-3">
-                  <b>{{ author.id }}</b>&nbsp;<span v-if="author.orcid">
+                  <b>{{ author.name }}</b>&nbsp;<span v-if="author.orcid">
                     <a :href="`https://orcid.org/${author.orcid}`"><img alt="ORCID logo"
                         src="https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png" width="14"
                         height="14" /></a>
@@ -70,10 +70,10 @@
                 </div>
                 <div class="is-size-7">
                   Co-author of
-                  <v-chip class="tag coauthor" v-for="coauthor in Object.keys(author.coauthors).sort(
+                  <v-chip class="tag coauthor" v-for="coauthorId in Object.keys(author.coauthors).sort(
                     (a, b) => author.coauthors[b] - author.coauthors[a]
-                  )" :key="coauthor" :style="coauthorStyle(author.coauthors[coauthor])">
-                    {{ coauthor }} ({{ author.coauthors[coauthor] }})
+                  )" :key="coauthorId" :style="coauthorStyle(author.coauthors[coauthorId])">
+                    {{ sessionStore.selectedPublicationsAuthors.filter(author => author.id === coauthorId)[0].name }} ({{ author.coauthors[coauthorId] }})
                   </v-chip>
                 </div>
               </div>
@@ -92,7 +92,6 @@
 <script>
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
-import AuthorGlyph from "../AuthorGlyph.vue";
 
 export default {
   name: "AuthorModalDialog",
