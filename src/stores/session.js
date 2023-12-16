@@ -175,6 +175,13 @@ export const useSessionStore = defineStore('session', {
     },
 
     computeSelectedPublicationsAuthors() {
+      function toAuthorId(str) {
+        return str
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase();
+      }
+
       function mergeCounts(counts1, counts2) {
         const counts = {};
         Object.keys(counts1).forEach((key) => {
@@ -203,16 +210,19 @@ export const useSessionStore = defineStore('session', {
       // assemble authors from selected publications
       this.selectedPublications.forEach((publication) => {
         publication.authorOrcid?.split("; ").forEach((author, i) => {
-          const authorId = author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g, "");
+          const authorName = author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g, "");
+          const authorId = toAuthorId(authorName);
+          console.log(authorId)
           if (!authors[authorId]) {
             authors[authorId] = {
               id: authorId,
+              name: authorName,
               count: 0,
               firstAuthorCount: 0,
               score: 0,
               keywords: {},
               orcid: "",
-              alternativeNames: [authorId],
+              alternativeNames: [authorName],
               coauthors: {},
               yearMin: 9999,
               yearMax: 0,
