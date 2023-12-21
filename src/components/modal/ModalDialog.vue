@@ -1,9 +1,10 @@
 <template>
     <v-dialog v-model="isDialogShown" scrollable :fullscreen="interfaceStore.isMobile" :persistent="noCloseButton">
         <v-card>
-            <v-card-title :class="`has-background-${headerColor} has-text-dark`">
+            <v-card-title
+                :class="`has-background-${headerColor} ${headerColor.startsWith('light') ? 'has-text-dark' : 'has-text-light'}`">
                 <v-toolbar color="transparent" density="compact">
-                    <v-icon class="has-text-dark title-icon">{{ icon }}</v-icon>
+                    <v-icon class="title-icon ml-2">{{ icon }}</v-icon>
                     <v-toolbar-title>{{ title }}</v-toolbar-title>
                     <slot name="header-menu"></slot>
                     <v-btn icon @click="hideDialog">
@@ -65,12 +66,14 @@ export default {
 <style scoped lang="scss">
 :deep(.v-overlay__content) {
     margin-top: 48px !important;
+
     & .v-card-title {
         margin-bottom: 0;
         padding: 0.5rem;
 
         & .v-toolbar-title {
             font-size: 1.2rem;
+            font-weight: 600;
         }
 
         & .v-btn {
