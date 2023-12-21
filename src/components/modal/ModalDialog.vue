@@ -64,11 +64,7 @@ export default {
 
 <style scoped lang="scss">
 :deep(.v-overlay__content) {
-    max-width: 1024px !important;
-    margin-top: 60px !important;
-    margin-bottom: 20px !important;
-    max-height: calc(100vh - 80px) !important;
-
+    margin-top: 48px !important;
     & .v-card-title {
         margin-bottom: 0;
         padding: 0.5rem;
@@ -102,5 +98,14 @@ export default {
         }
     }
 
+}
+
+@include desktop {
+    :deep(.v-overlay__content) {
+        max-width: 1024px !important;
+        margin-top: 60px !important;
+        margin-bottom: 20px !important;
+        max-height: calc(100vh - 80px) !important;
+    }
 }
 </style>
