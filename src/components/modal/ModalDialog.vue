@@ -5,6 +5,7 @@
                 <v-toolbar color="transparent" density="compact">
                     <v-icon class="has-text-dark title-icon">{{ icon }}</v-icon>
                     <v-toolbar-title>{{ title }}</v-toolbar-title>
+                    <slot name="header-menu"></slot>
                     <v-btn icon @click="hideDialog">
                         <v-icon>mdi-close</v-icon>
                     </v-btn>

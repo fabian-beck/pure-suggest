@@ -1,37 +1,32 @@
 <template>
   <ModalDialog headerColor="primary" title="Authors of selected" icon="mdi-account-group"
     v-model="interfaceStore.isAuthorModalDialogShown">
+    <template v-slot:header-menu>
+      <v-menu :close-on-content-click="false">
+        <template v-slot:activator="{ props }">
+          <CompactButton icon="mdi-cog" v-bind="props" />
+        </template>
+        <v-list>
+          <v-list-item>
+            <v-checkbox v-model="sessionStore.isAuthorScoreEnabled" label="Consider publication score"
+              @change="sessionStore.computeSelectedPublicationsAuthors" density="compact"
+              hint="Otherwise, each publication counts as one" persistent-hint />
+          </v-list-item>
+          <v-list-item>
+            <v-checkbox v-model="sessionStore.isFirstAuthorBoostEnabled" label="Boost first authors"
+              @change="sessionStore.computeSelectedPublicationsAuthors" density="compact"
+              hint="Counting first author publications twice" persistent-hint />
+          </v-list-item>
+          <v-list-item>
+            <v-checkbox v-model="sessionStore.isAuthorNewBoostEnabled" label="Boost new publications"
+              @change="sessionStore.computeSelectedPublicationsAuthors" density="compact"
+              :hint="`Counting publications tagged as 'new' twice`" persistent-hint />
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </template>
     <div class="content">
       <section>
-        <h2 class="mb-2">
-          <v-icon icon="mdi-counter" class="mr-2" />
-          Author score settings
-        </h2>
-        <v-form class="mb-4">
-          <v-container>
-            <v-row>
-              <v-col cols="12" md="4">
-                <v-checkbox v-model="sessionStore.isAuthorScoreEnabled" label="Consider publication score"
-                  @change="sessionStore.computeSelectedPublicationsAuthors" density="compact"
-                  hint="Otherwise, each publication counts as one" />
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-checkbox v-model="sessionStore.isFirstAuthorBoostEnabled" label="Boost first authors"
-                  @change="sessionStore.computeSelectedPublicationsAuthors" density="compact"
-                  hint="Counting first author publications twice" />
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-checkbox v-model="sessionStore.isAuthorNewBoostEnabled" label="Boost new publications"
-                  @change="sessionStore.computeSelectedPublicationsAuthors" density="compact"
-                  :hint="`Counting publications tagged as 'new' twice`" />
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-form>
-        <h2 class="mb-6">
-          <v-icon icon="mdi-view-list" class="mr-2"></v-icon>
-          Ranked author list
-        </h2>
         <ul>
           <li v-for="author in sessionStore.selectedPublicationsAuthors" :key="author.id" class="media">
             <AuthorGlyph :author="author" class="media-left"></AuthorGlyph>
@@ -73,7 +68,8 @@
                   <v-chip class="tag coauthor" v-for="coauthorId in Object.keys(author.coauthors).sort(
                     (a, b) => author.coauthors[b] - author.coauthors[a]
                   )" :key="coauthorId" :style="coauthorStyle(author.coauthors[coauthorId])">
-                    {{ sessionStore.selectedPublicationsAuthors.filter(author => author.id === coauthorId)[0].name }} ({{ author.coauthors[coauthorId] }})
+                    {{ sessionStore.selectedPublicationsAuthors.filter(author => author.id === coauthorId)[0].name }} ({{
+                      author.coauthors[coauthorId] }})
                   </v-chip>
                 </div>
               </div>
@@ -92,6 +88,7 @@
 <script>
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
+import CompactButton from "../basic/CompactButton.vue";
 
 export default {
   name: "AuthorModalDialog",
@@ -115,6 +112,7 @@ export default {
       this.interfaceStore.isAuthorModalDialogShown = false;
     },
   },
+  components: { CompactButton }
 };
 </script>
 
