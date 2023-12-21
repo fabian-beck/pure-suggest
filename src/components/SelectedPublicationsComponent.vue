@@ -20,7 +20,7 @@
       </div>
     </div>
     <div class="header">
-      <div class="has-background-warning-light p-2 pt-3" v-show="!sessionStore.isEmpty">
+      <div class="has-background-warning-light p-2" v-show="!sessionStore.isEmpty">
         <BoostKeywordsComponent />
       </div>
       <div>

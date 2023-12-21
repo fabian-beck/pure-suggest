@@ -390,8 +390,8 @@ export const useSessionStore = defineStore('session', {
 
     updateScores() {
       console.log("Updating scores of publications and reordering them.");
-      // remove spaces before/after commas
-      this.boostKeywordString = this.boostKeywordString.replace(/\s*,\s*/g, ",");
+      // treat spaces before/after commas
+      this.boostKeywordString = this.boostKeywordString.replace(/\s*,\s*/g, ", ");
       // remove spaces before/after vertical line
       this.boostKeywordString = this.boostKeywordString.replace(/\s*\|\s*/g, "|");
       this.publications.forEach((publication) => {
