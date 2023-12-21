@@ -1,10 +1,10 @@
 <template>
   <form @submit.prevent="sessionStore.updateScores"
     v-tippy="`Boost by factors of 2 the score of publications that contain the following keyword(s) in their title.`">
-    <div class="boost"  @click="isEditing = true" v-if="!isEditing">
-      <label>Boost keywords</label>
-      <div v-html="boostKeywordStringHtml"></div>
-    </div>
+    <v-sheet class="boost-substitute p-1 pl-4" @click="isEditing = true" v-if="!isEditing" elevation="1" rounded>
+      <label class="label-substitute v-label v-field-label v-field-label--floating">Boost keywords</label>
+      <div v-html="boostKeywordStringHtml ? boostKeywordStringHtml : '&nbsp;'"></div>
+    </v-sheet>
     <v-text-field class="boost" density="compact" v-model="sessionStore.boostKeywordString" label="Boost keywords"
       variant="solo" append-inner-icon="mdi-close" @click:append-inner="sessionStore.setBoostKeywordString('')"
       hint="Use ',' to separate keywords, use '|' to discern alternatives/synonyms." v-if="isEditing"
@@ -52,8 +52,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@include v-input-details;
-
 :deep(input) {
   text-transform: lowercase;
 }
@@ -85,5 +83,11 @@ export default {
   margin-left: 0.2rem;
   margin-right: 0.3rem;
   font-weight: bold;
+}
+
+.label-substitute {
+  visibility: visible !important;
+  position: relative !important;
+  margin-bottom: -0.25rem !important;
 }
 </style>
