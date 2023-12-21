@@ -5,6 +5,7 @@
                 <v-toolbar color="transparent" density="compact">
                     <v-icon class="has-text-dark title-icon">{{ icon }}</v-icon>
                     <v-toolbar-title>{{ title }}</v-toolbar-title>
+                    <slot name="header-menu"></slot>
                     <v-btn icon @click="hideDialog">
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
@@ -62,46 +63,49 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.v-overlay {
-    z-index: 5000 !important;
+:deep(.v-overlay__content) {
+    margin-top: 48px !important;
+    & .v-card-title {
+        margin-bottom: 0;
+        padding: 0.5rem;
 
-    & :deep(.v-overlay__content) {
+        & .v-toolbar-title {
+            font-size: 1.2rem;
+        }
+
+        & .v-btn {
+            margin-right: 0 !important;
+        }
+    }
+
+    & .sticky {
+        position: sticky;
+        top: 0;
+        z-index: 3000;
+        background-color: white;
+    }
+
+    & .v-card-text {
+        padding: calc(0.5rem + 1%) !important;
+
+        & h2 {
+            font-size: $size-5 !important;
+
+            & .v-icon {
+                position: relative;
+                top: -0.15rem;
+            }
+        }
+    }
+
+}
+
+@include desktop {
+    :deep(.v-overlay__content) {
         max-width: 1024px !important;
-
-
-        & .v-card-title {
-            margin-bottom: 0;
-            padding: 0.5rem;
-
-            & .v-toolbar-title {
-                font-size: 1.2rem;
-            }
-
-            & .v-btn {
-                margin-right: 0 !important;
-            }
-        }
-
-        & .sticky {
-            position: sticky;
-            top: 0;
-            z-index: 3000;
-            background-color: white;
-        }
-
-        & .v-card-text {
-            padding: calc(0.5rem + 1%) !important;
-
-            & h2 {
-                font-size: $size-5 !important;
-
-                & .v-icon {
-                    position: relative;
-                    top: -0.15rem;
-                }
-            }
-        }
-
+        margin-top: 60px !important;
+        margin-bottom: 20px !important;
+        max-height: calc(100vh - 80px) !important;
     }
 }
 </style>

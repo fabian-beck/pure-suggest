@@ -33,8 +33,8 @@ export default {
 
 <style scoped lang="scss">
 :deep(.v-overlay__content){
-    margin-top: 60px;
-    margin-bottom: 20px;
-    max-height: calc(100vh - 80px)
+    margin-top: 60px !important;
+    margin-bottom: 20px !important;
+    max-height: calc(100vh - 80px) !important;
 }
 </style>
