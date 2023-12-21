@@ -1,11 +1,11 @@
 <template>
   <form @submit.prevent="sessionStore.updateScores"
     v-tippy="`Boost by factors of 2 the score of publications that contain the following keyword(s) in their title.`">
-    <v-sheet class="boost-substitute p-1 pl-4" @click="isEditing = true" v-if="!isEditing" elevation="1" rounded>
+    <v-sheet class="boost-substitute p-1 pl-4" @click="startEditing" v-if="!isEditing" elevation="1" rounded>
       <label class="label-substitute v-label v-field-label v-field-label--floating">Boost keywords</label>
       <div v-html="boostKeywordStringHtml ? boostKeywordStringHtml : '&nbsp;'"></div>
     </v-sheet>
-    <v-text-field class="boost" density="compact" v-model="sessionStore.boostKeywordString" label="Boost keywords"
+    <v-text-field ref="boost" class="boost" density="compact" v-model="sessionStore.boostKeywordString" label="Boost keywords"
       variant="solo" append-inner-icon="mdi-close" @click:append-inner="sessionStore.setBoostKeywordString('')"
       hint="Use ',' to separate keywords, use '|' to discern alternatives/synonyms." v-if="isEditing"
       @blur="isEditing = false">
@@ -45,6 +45,15 @@ export default {
       // wrap , in span.comma
       html = html.replace(/,/g, "<span class='comma'>,</span>");
       return html;
+    },
+  },
+
+  methods: {
+    startEditing() {
+      this.isEditing = true;
+      this.$nextTick(() => {
+        this.$refs.boost.focus();
+      });
     },
   },
 
