@@ -1,7 +1,7 @@
 <template>
   <v-menu v-if="!sessionStore.isEmpty" location="bottom" transition="slide-y-transition" :close-on-content-click="false">
     <template v-slot:activator="{ props }">
-      <v-btn class="boost-button p-1 pl-4" v-bind="props">
+      <v-btn class="boost-button p-1 pl-4" v-bind="props" :icon="interfaceStore.isMobile" @click="handleMenuInput(true)">
         <v-icon size="18">mdi-chevron-double-up</v-icon>
         <span class="is-hidden-touch ml-2">
           <span 
@@ -34,19 +34,15 @@
 
 <script>
 import { useSessionStore } from "@/stores/session.js";
+import { useInterfaceStore } from "@/stores/interface.js";
 
 export default {
   name: "BoostKeywordsComponent",
 
   setup() {
     const sessionStore = useSessionStore();
-    return { sessionStore };
-  },
-
-  data() {
-    return {
-      isEditing: false,
-    };
+    const interfaceStore = useInterfaceStore();
+    return { sessionStore, interfaceStore };
   },
 
   computed: {
@@ -63,11 +59,13 @@ export default {
   },
 
   methods: {
-    startEditing() {
-      this.isEditing = true;
-      this.$nextTick(() => {
-        this.$refs.boost.focus();
-      });
+    handleMenuInput(value) {
+      console.log("handleMenuInput", value);
+      if (value) {
+        this.$nextTick(() => {
+          this.$refs.boost.focus();
+        });
+      }
     },
   },
 
