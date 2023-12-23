@@ -1,57 +1,73 @@
 <template>
-  <div class="network-of-references">
-    <div class="box has-background-grey">
-      <div class="level">
-        <div class="level-left has-text-white">
-          <div class="level-item" v-tippy="`Showing publications as nodes (<b class='has-text-primary'>selected</b>; 
+    <div class="network-of-references">
+        <div class="box has-background-grey">
+            <div class="level">
+                <div class="level-left has-text-white">
+                    <div class="level-item" v-tippy="`Showing publications as nodes (<b class='has-text-primary'>selected</b>; 
             <b class='has-text-info'>suggested</b>) with citations as links.<br><br>
             You can click a publication for details as well as zoom and pan the diagram.`">
-            <v-icon class="has-text-white">mdi-chart-bubble</v-icon>
-            <h2 class="is-size-5 ml-2">Citation network</h2>
-          </div>
-          <div class="has-text-danger has-background-danger-light p-1" v-if="errorMessage">{{ errorMessage }}</div>
-        </div>
-        <div class="level-right" v-show="!sessionStore.isEmpty">
-          <div class="level-item has-text-white mr-4 mb-0"
-            v-tippy="`There are two display <span class='key'>m</span>odes:<br><br><b>Timeline:</b> 
+                        <v-icon class="has-text-white">mdi-chart-bubble</v-icon>
+                        <h2 class="is-size-5 ml-2">Citation network</h2>
+                    </div>
+                    <div class="has-text-danger has-background-danger-light p-1" v-if="errorMessage">{{ errorMessage }}
+                    </div>
+                </div>
+                <div class="level-right" v-show="!sessionStore.isEmpty">
+                    <div class="level-item has-text-white mr-4 mb-0"
+                        v-tippy="`There are two display <span class='key'>m</span>odes:<br><br><b>Timeline:</b> 
             The diagram places publications from left to right based on year, and vertically tries to group linked publications close to each other.<br><br>
             <b>Clusters:</b> The diagram groups linked publications close to each other, irrespective of publication year.`">
-            <label class="mr-2"><span class="key">M</span>ode:</label>
-            <label class="mr-4" :class="{ 'has-text-grey-light': isNetworkClusters }">
-              Timeline</label>
-            <CompactSwitch v-model="isNetworkClusters"></CompactSwitch>
-            <label :class="{ 'has-text-grey-light': !isNetworkClusters }" class="ml-4">Clusters</label>
-          </div>
-          <CompactButton icon="mdi-arrow-expand" v-tippy="'Expand diagram'" v-show="!interfaceStore.isNetworkExpanded"
-            v-on:click="expandNetwork(true)" class="ml-4 is-hidden-touch has-text-white"></CompactButton>
-          <CompactButton icon="mdi-arrow-collapse" v-tippy="'Collapse diagram'" v-show="interfaceStore.isNetworkExpanded"
-            v-on:click="expandNetwork(false)" class="ml-4 is-hidden-touch has-text-white"></CompactButton>
+                        <label class="mr-2"><span class="key">M</span>ode:</label>
+                        <label class="mr-4" :class="{ 'has-text-grey-light': isNetworkClusters }">
+                            Timeline</label>
+                        <CompactSwitch v-model="isNetworkClusters"></CompactSwitch>
+                        <label :class="{ 'has-text-grey-light': !isNetworkClusters }" class="ml-4">Clusters</label>
+                    </div>
+                    <CompactButton icon="mdi-arrow-expand" v-tippy="'Expand diagram'"
+                        v-show="!interfaceStore.isNetworkExpanded" v-on:click="expandNetwork(true)"
+                        class="ml-4 is-hidden-touch has-text-white"></CompactButton>
+                    <CompactButton icon="mdi-arrow-collapse" v-tippy="'Collapse diagram'"
+                        v-show="interfaceStore.isNetworkExpanded" v-on:click="expandNetwork(false)"
+                        class="ml-4 is-hidden-touch has-text-white"></CompactButton>
+                </div>
+            </div>
+            <div id="network-svg-container">
+                <svg id="network-svg">
+                    <g></g>
+                </svg>
+            </div>
+            <ul class="publication-component-list">
+                <PublicationComponent v-if="activePublication && interfaceStore.isNetworkExpanded"
+                    :publication="activePublication" :is-active="true"></PublicationComponent>
+            </ul>
+            <div class="controls-header-left">
+                <v-btn class="has-background-primary has-text-white" @click="sessionStore.updateQueued"
+                    v-show="sessionStore.isUpdatable && interfaceStore.isNetworkExpanded" id="quick-access-update">
+                    <v-icon left>mdi-update</v-icon>
+                    <span class="key">U</span>pdate
+                </v-btn>
+            </div>
+            <div class="controls-footer-right" v-show="!sessionStore.isEmpty">
+                <span class="mr-4">
+                    <CompactButton icon="mdi-plus" v-tippy="'Zoom in'" v-on:click="zoomByFactor(1.2)" elevation="1"
+                        class="mr-2" color="white">
+                    </CompactButton>
+                    <CompactButton icon="mdi-minus" v-tippy="'Zoom out'" v-on:click="zoomByFactor(0.8)" elevation="1"
+                        color="white">
+                    </CompactButton>
+                </span>
+                <v-btn-toggle v-model="showNodes" color="dark" multiple density="compact" elevation="1" @click="plot(true)">
+                    <v-btn icon="mdi-water-outline" v-tippy="'Show selected publications as nodes'" value="selected"
+                        class="has-text-primary"></v-btn>
+                    <v-btn icon="mdi-water-plus-outline" v-tippy="'Show suggested publications as nodes'" value="suggested"
+                        class="has-text-info">
+                    </v-btn>
+                    <v-btn icon="mdi-chevron-double-up" v-tippy="'Show boost keywords as nodes'" value="keyword"
+                        class="has-text-warning-dark"></v-btn>
+                </v-btn-toggle>
+            </div>
         </div>
-      </div>
-      <div id="network-svg-container">
-        <svg id="network-svg">
-          <g></g>
-        </svg>
-      </div>
-      <ul class="publication-component-list">
-        <PublicationComponent v-if="activePublication && interfaceStore.isNetworkExpanded"
-          :publication="activePublication" :is-active="true"></PublicationComponent>
-      </ul>
-      <div class="controls-header-left">
-        <v-btn class="has-background-primary has-text-white" @click="sessionStore.updateQueued"
-          v-show="sessionStore.isUpdatable && interfaceStore.isNetworkExpanded" id="quick-access-update">
-          <v-icon left>mdi-update</v-icon>
-          <span class="key">U</span>pdate
-        </v-btn>
-      </div>
-      <div class="controls-footer-right" v-show="!sessionStore.isEmpty">
-        <CompactButton icon="mdi-plus" v-tippy="'Zoom in'" v-on:click="zoomByFactor(1.2)">
-        </CompactButton>
-        <CompactButton icon="mdi-minus" v-tippy="'Zoom out'" v-on:click="zoomByFactor(0.8)">
-        </CompactButton>
-      </div>
     </div>
-  </div>
 </template>
 
 <script>
@@ -63,7 +79,6 @@ import { storeToRefs } from "pinia";
 
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
-import CompactSwitch from "./basic/CompactSwitch.vue";
 
 const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;
@@ -97,9 +112,21 @@ export default {
             link: null,
             label: null,
             zoom: null,
+            showNodes: ["selected", "suggested", "keyword"],
             errorMessage: "",
             errorTimer: null,
         };
+    },
+    computed: {
+        showSelectedNodes: function () {
+            return this.showNodes.includes("selected");
+        },
+        showSuggestedNodes: function () {
+            return this.showNodes.includes("suggested");
+        },
+        showKeywordNodes: function () {
+            return this.showNodes.includes("keyword");
+        },
     },
     watch: {
         isNetworkClusters: {
@@ -159,33 +186,33 @@ export default {
             const that = this;
             this.simulation
                 .force("link", d3
-                .forceLink()
-                .id((d) => d.id)
-                .distance((d) => {
-                if (that.isNetworkClusters && d.internal)
-                    return 500 / that.sessionStore.selectedPublications.length;
-                if (d.type === "keyword")
-                    return 0;
-                return 10;
-            })
-                .strength((d) => {
-                const internalFactor = d.internal ? 1 : 0.5;
-                const clustersFactor = that.isNetworkClusters ? 1 : 0.5;
-                return 0.15 * clustersFactor * internalFactor;
-            }))
+                    .forceLink()
+                    .id((d) => d.id)
+                    .distance((d) => {
+                        if (that.isNetworkClusters && d.internal)
+                            return 500 / that.sessionStore.selectedPublications.length;
+                        if (d.type === "keyword")
+                            return 0;
+                        return 10;
+                    })
+                    .strength((d) => {
+                        const internalFactor = d.internal ? 1 : 0.5;
+                        const clustersFactor = that.isNetworkClusters ? 1 : 0.5;
+                        return 0.15 * clustersFactor * internalFactor;
+                    }))
                 .force("charge", d3
-                .forceManyBody()
-                .strength(Math.min(-200, -100 * Math.sqrt(that.sessionStore.selectedPublications.length))))
+                    .forceManyBody()
+                    .strength(Math.min(-200, -100 * Math.sqrt(that.sessionStore.selectedPublications.length))))
                 .force("x", d3
-                .forceX()
-                .x((d) => that.isNetworkClusters
-                ? 0
-                : this.yearX(d.publication ? d.publication.year : CURRENT_YEAR + 2))
-                .strength(that.isNetworkClusters ? 0.05 : 10))
+                    .forceX()
+                    .x((d) => that.isNetworkClusters
+                        ? 0
+                        : this.yearX(d.publication ? d.publication.year : CURRENT_YEAR + 2))
+                    .strength(that.isNetworkClusters ? 0.05 : 10))
                 .force("y", d3
-                .forceY()
-                .y(0)
-                .strength(that.isNetworkClusters ? 0.1 : 0.25))
+                    .forceY()
+                    .y(0)
+                    .strength(that.isNetworkClusters ? 0.1 : 0.25))
                 .on("tick", this.tick);
         },
         plot: function (restart) {
@@ -226,7 +253,10 @@ export default {
             function initNodes() {
                 const publicationNodes = [];
                 let i = 0;
-                this.sessionStore.publicationsFiltered.forEach((publication) => {
+                const publications = this.showSelectedNodes ?
+                    (this.showSuggestedNodes ? this.sessionStore.publicationsFiltered : this.sessionStore.selectedPublications) :
+                    (this.showSuggestedNodes ? this.sessionStore.suggestedPublicationsFiltered : []);
+                publications.forEach((publication) => {
                     if (publication.year) {
                         this.doiToIndex[publication.doi] = i;
                         publicationNodes.push({
@@ -238,30 +268,34 @@ export default {
                         i++;
                     }
                 });
-                const keywordNodes = [];
-                this.sessionStore.uniqueBoostKeywords.forEach((keyword) => {
-                    const frequency = this.sessionStore.publications.filter((publication) => publication.boostKeywords.includes(keyword)).length;
-                    keywordNodes.push({
-                        id: keyword,
-                        frequency: frequency,
+                if (this.showKeywordNodes) {
+                    const keywordNodes = [];
+                    this.sessionStore.uniqueBoostKeywords.forEach((keyword) => {
+                        const frequency = this.sessionStore.publications.filter((publication) => publication.boostKeywords.includes(keyword)).length;
+                        keywordNodes.push({
+                            id: keyword,
+                            frequency: frequency,
+                        });
                     });
-                });
-                const nodes = publicationNodes.concat(keywordNodes);
-                return nodes;
+                    return publicationNodes.concat(keywordNodes);
+                }
+                return publicationNodes;
             }
             function initLinks() {
                 const links = [];
-                this.sessionStore.uniqueBoostKeywords.forEach((keyword) => {
-                    this.sessionStore.publicationsFiltered.forEach((publication) => {
-                        if (publication.doi in this.doiToIndex && publication.boostKeywords.includes(keyword)) {
-                            links.push({
-                                source: keyword,
-                                target: publication.doi,
-                                type: "keyword",
-                            });
-                        }
+                if (this.showKeywordNodes) {
+                    this.sessionStore.uniqueBoostKeywords.forEach((keyword) => {
+                        this.sessionStore.publicationsFiltered.forEach((publication) => {
+                            if (publication.doi in this.doiToIndex && publication.boostKeywords.includes(keyword)) {
+                                links.push({
+                                    source: keyword,
+                                    target: publication.doi,
+                                    type: "keyword",
+                                });
+                            }
+                        });
                     });
-                });
+                }
                 this.sessionStore.selectedPublications.forEach((publication) => {
                     if (publication.doi in this.doiToIndex) {
                         publication.citationDois.forEach((citationDoi) => {
@@ -292,44 +326,44 @@ export default {
                 this.node = this.node
                     .data(this.graph.nodes, (d) => d.id)
                     .join((enter) => {
-                    const g = enter
-                        .append("g")
-                        .attr("class", (d) => `node-container ${d.publication ? "publication" : "keyword"}`);
-                    const publicationNodes = g.filter((d) => d.publication);
-                    publicationNodes
-                        .append("rect")
-                        .attr("pointer-events", "all")
-                        .on("click", this.activatePublication)
-                        .on("mouseover", (event, d) => this.sessionStore.hoverPublication(d.publication, true))
-                        .on("mouseout", (event, d) => this.sessionStore.hoverPublication(d.publication, false));
-                    publicationNodes
-                        .append("text")
-                        .classed("score", true)
-                        .attr("pointer-events", "none");
-                    publicationNodes
-                        .append("text")
-                        .classed("labelQueuingForSelected", true)
-                        .attr("pointer-events", "none")
-                        .attr("x", 15)
-                        .attr("y", 15)
-                        .text("+");
-                    publicationNodes
-                        .append("text")
-                        .classed("labelQueuingForExcluded", true)
-                        .attr("pointer-events", "none")
-                        .attr("x", 15)
-                        .attr("y", 15)
-                        .text("-");
-                    publicationNodes.append("circle");
-                    const keywordNodes = g.filter((d) => !d.publication);
-                    keywordNodes.append("text");
-                    keywordNodes
-                        .call(this.keywordNodeDrag())
-                        .on("click", this.keywordNodeClick)
-                        .on("mouseover", this.keywordNodeMouseover)
-                        .on("mouseout", this.keywordNodeMouseout);
-                    return g;
-                });
+                        const g = enter
+                            .append("g")
+                            .attr("class", (d) => `node-container ${d.publication ? "publication" : "keyword"}`);
+                        const publicationNodes = g.filter((d) => d.publication);
+                        publicationNodes
+                            .append("rect")
+                            .attr("pointer-events", "all")
+                            .on("click", this.activatePublication)
+                            .on("mouseover", (event, d) => this.sessionStore.hoverPublication(d.publication, true))
+                            .on("mouseout", (event, d) => this.sessionStore.hoverPublication(d.publication, false));
+                        publicationNodes
+                            .append("text")
+                            .classed("score", true)
+                            .attr("pointer-events", "none");
+                        publicationNodes
+                            .append("text")
+                            .classed("labelQueuingForSelected", true)
+                            .attr("pointer-events", "none")
+                            .attr("x", 15)
+                            .attr("y", 15)
+                            .text("+");
+                        publicationNodes
+                            .append("text")
+                            .classed("labelQueuingForExcluded", true)
+                            .attr("pointer-events", "none")
+                            .attr("x", 15)
+                            .attr("y", 15)
+                            .text("-");
+                        publicationNodes.append("circle");
+                        const keywordNodes = g.filter((d) => !d.publication);
+                        keywordNodes.append("text");
+                        keywordNodes
+                            .call(this.keywordNodeDrag())
+                            .on("click", this.keywordNodeClick)
+                            .on("mouseover", this.keywordNodeMouseover)
+                            .on("mouseout", this.keywordNodeMouseout);
+                        return g;
+                    });
                 try {
                     updatePublicationNodes.call(this);
                 }
@@ -360,10 +394,10 @@ export default {
                         : ""}${d.publication.year ? d.publication.year : "[unknown year]"})
               <br><br>
               The publication is ${d.publication.isSelected ? "selected" : "suggested"}${d.isQueuingForSelected
-                        ? " and marked to be added to selected publications"
-                        : ""}${d.isQueuingForExcluded
-                        ? " and marked to be added to excluded publications"
-                        : ""}.`);
+                            ? " and marked to be added to selected publications"
+                            : ""}${d.isQueuingForExcluded
+                                ? " and marked to be added to excluded publications"
+                                : ""}.`);
                     this.publicationTooltips = tippy(publicationNodes.nodes(), {
                         maxWidth: "min(400px,70vw)",
                         allowHTML: true,
@@ -405,20 +439,20 @@ export default {
                         .select("text")
                         .attr("y", 1)
                         .attr("font-size", (d) => {
-                        if (d.frequency >= 25)
-                            return "1.1em";
-                        if (d.frequency >= 10)
-                            return "0.9em";
-                        if (d.frequency >= 5)
-                            return "0.8em";
-                        return "0.7em";
-                    })
+                            if (d.frequency >= 25)
+                                return "1.1em";
+                            if (d.frequency >= 10)
+                                return "0.9em";
+                            if (d.frequency >= 5)
+                                return "0.8em";
+                            return "0.7em";
+                        })
                         .text((d) => {
-                        if (d.id.includes("|")) {
-                            return d.id.split("|")[0] + "|..";
-                        }
-                        return d.id;
-                    });
+                            if (d.id.includes("|")) {
+                                return d.id.split("|")[0] + "|..";
+                            }
+                            return d.id;
+                        });
                 }
                 function getRectSize(d) {
                     return RECT_SIZE * (d.publication.isActive ? ENLARGE_FACTOR : 1);
@@ -449,17 +483,17 @@ export default {
                 this.label = this.label
                     .data(yearRange, (d) => d)
                     .join((enter) => {
-                    const g = enter.append("g");
-                    g.append("text");
-                    g.append("text");
-                    return g;
-                });
+                        const g = enter.append("g");
+                        g.append("text");
+                        g.append("text");
+                        return g;
+                    });
                 this.label
                     .selectAll("text")
                     .attr("text-anchor", "middle")
                     .attr("visibility", !this.sessionStore.isEmpty && !this.isNetworkClusters
-                    ? "visible"
-                    : "hidden")
+                        ? "visible"
+                        : "hidden")
                     .text((d) => d)
                     .attr("fill", "grey");
                 if (!this.sessionStore.isEmpty) {
@@ -473,41 +507,41 @@ export default {
         tick: function () {
             this.link
                 .attr("d", (d) => {
-                const dx = this.nodeX(d.target) - this.nodeX(d.source);
-                const dy = d.target.y - d.source.y;
-                // curved link for citations
-                if (d.type === "citation") {
-                    const dr = Math.pow(dx * dx + dy * dy, 0.6);
-                    return `M${this.nodeX(d.target)},${d.target.y}A${dr},${dr} 0 0,1 ${this.nodeX(d.source)},${d.source.y}`;
-                }
-                // tapered links for keywords:
-                // drawing a triangle as part of a circle segment with its center at the target node
-                const r = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
-                const alpha = Math.acos(dx / r);
-                const beta = 2 / r;
-                const x1 = r * Math.cos(alpha + beta);
-                let y1 = r * Math.sin(alpha + beta);
-                const x2 = r * Math.cos(alpha - beta);
-                let y2 = r * Math.sin(alpha - beta);
-                if (d.source.y > d.target.y) {
-                    y1 = -y1;
-                    y2 = -y2;
-                }
-                return `M${this.nodeX(d.target) - x1},${d.target.y - y1}
+                    const dx = this.nodeX(d.target) - this.nodeX(d.source);
+                    const dy = d.target.y - d.source.y;
+                    // curved link for citations
+                    if (d.type === "citation") {
+                        const dr = Math.pow(dx * dx + dy * dy, 0.6);
+                        return `M${this.nodeX(d.target)},${d.target.y}A${dr},${dr} 0 0,1 ${this.nodeX(d.source)},${d.source.y}`;
+                    }
+                    // tapered links for keywords:
+                    // drawing a triangle as part of a circle segment with its center at the target node
+                    const r = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+                    const alpha = Math.acos(dx / r);
+                    const beta = 2 / r;
+                    const x1 = r * Math.cos(alpha + beta);
+                    let y1 = r * Math.sin(alpha + beta);
+                    const x2 = r * Math.cos(alpha - beta);
+                    let y2 = r * Math.sin(alpha - beta);
+                    if (d.source.y > d.target.y) {
+                        y1 = -y1;
+                        y2 = -y2;
+                    }
+                    return `M${this.nodeX(d.target) - x1},${d.target.y - y1}
             L${this.nodeX(d.target)},${d.target.y}
             L${this.nodeX(d.target) - x2},${d.target.y - y2}`;
-            })
+                })
                 .attr("class", (d) => {
-                const classes = [d.type];
-                if (d.type === "citation") {
-                    if (d.source.publication.isActive || d.target.publication.isActive)
-                        classes.push("active");
-                    if (!(d.source.publication.isSelected &&
-                        d.target.publication.isSelected))
-                        classes.push("external");
-                }
-                return classes.join(" ");
-            });
+                    const classes = [d.type];
+                    if (d.type === "citation") {
+                        if (d.source.publication.isActive || d.target.publication.isActive)
+                            classes.push("active");
+                        if (!(d.source.publication.isSelected &&
+                            d.target.publication.isSelected))
+                            classes.push("external");
+                    }
+                    return classes.join(" ");
+                });
             this.node.attr("transform", (d) => `translate(${this.nodeX(d)}, ${d.y})`);
         },
         keywordNodeDrag: function () {
@@ -582,195 +616,191 @@ export default {
 <style lang="scss">
 .network-of-references {
 
-  & .box {
-    height: 100%;
-    display: grid;
-    grid-template-rows: max-content auto;
-    position: relative;
+    & .box {
+        height: 100%;
+        display: grid;
+        grid-template-rows: max-content auto;
+        position: relative;
 
-    & ul.publication-component-list {
-      position: absolute;
-      bottom: 1vw;
-      left: 1vw;
-      width: 50%;
-      max-width: 50rem;
-      min-width: 40rem;
-      background: white;
+        & ul.publication-component-list {
+            position: absolute;
+            bottom: 1vw;
+            left: 1vw;
+            width: 50%;
+            max-width: 50rem;
+            min-width: 40rem;
+            background: white;
+        }
+
+        & .controls-header-left {
+            position: absolute;
+            top: calc(1vw + 2.5rem);
+            left: 1vw;
+        }
+
+        & .controls-footer-right {
+            position: absolute;
+            bottom: max(1vw, 1rem);
+            right: max(1vw, 1rem);
+            z-index: 1;
+        }
     }
-
-    & .controls-header-left {
-      position: absolute;
-      top: calc(1vw + 2.5rem);
-      left: 1vw;
-    }
-
-    & .controls-footer-right {
-      position: absolute;
-      bottom: max(1vw, 1rem);
-      right: max(1vw, 1rem);
-      z-index: 1;
-
-      & .v-btn {
-        margin-left: 0.25rem !important;
-      }
-    }
-  }
 }
 
 #network-svg-container {
-  overflow: hidden;
+    overflow: hidden;
 }
 
 #network-svg {
-  background: white;
-  width: 100%;
-  height: 100%;
-  @include inset-shadow;
+    background: white;
+    width: 100%;
+    height: 100%;
+    @include inset-shadow;
 
-  & g.publication.node-container {
-    cursor: pointer;
+    & g.publication.node-container {
+        cursor: pointer;
 
-    & rect {
-      cursor: pointer;
-      stroke-width: 2;
-      @include light-shadow-svg;
+        & rect {
+            cursor: pointer;
+            stroke-width: 2;
+            @include light-shadow-svg;
+        }
+
+        & circle {
+            fill: $warning;
+            stroke-width: 1f;
+            @include light-shadow-svg;
+        }
+
+        & text {
+            text-anchor: middle;
+            dominant-baseline: middle;
+            filter: drop-shadow(0px 0px 1px white);
+
+            &.unread {
+                fill: $info-dark;
+                font-weight: 1000;
+            }
+
+            &.labelQueuingForSelected,
+            &.labelQueuingForExcluded {
+                visibility: hidden;
+                font-weight: 1000;
+                stroke: white;
+                stroke-width: 0.5;
+            }
+        }
+
+        &.is-hovered {
+
+            & rect,
+            & circle {
+                transform: scale(1.1);
+            }
+        }
+
+        &.selected {
+
+            & rect,
+            & circle {
+                stroke: $primary;
+            }
+        }
+
+        &.suggested {
+
+            & rect,
+            & circle {
+                stroke: $info;
+            }
+        }
+
+        &.active rect {
+            stroke-width: 6;
+        }
+
+        &.linkedToActive rect {
+            stroke-width: 4;
+        }
+
+        &.isKeywordHovered rect {
+            filter: drop-shadow(0px 0px 10px $warning);
+            stroke: $warning-dark;
+        }
+
+        &.queuingForSelected,
+        &.queuingForExcluded {
+            opacity: 0.5;
+            filter: blur(0.5px);
+        }
+
+        &.queuingForSelected text.labelQueuingForSelected {
+            visibility: visible;
+            fill: $primary-dark;
+        }
+
+        &.queuingForExcluded text.labelQueuingForExcluded {
+            visibility: visible;
+        }
     }
 
-    & circle {
-      fill: $warning;
-      stroke-width: 1f;
-      @include light-shadow-svg;
+    & g.keyword.node-container {
+        cursor: grab;
+
+        & text {
+            text-anchor: middle;
+            transform: translate(0px, 4px);
+            filter: drop-shadow(0px 0px 2px $warning);
+            text-transform: lowercase;
+        }
+
+        &.fixed text {
+            font-weight: 700;
+        }
+
+        &.linkedToActive text {
+            text-decoration-line: underline;
+        }
+
+        &:hover text {
+            transform: translate(0px, 3.5px) scale(1.1);
+        }
     }
 
-    & text {
-      text-anchor: middle;
-      dominant-baseline: middle;
-      filter: drop-shadow(0px 0px 1px white);
+    & path.citation {
+        fill: none;
+        stroke-width: 3;
+        stroke: #00000010;
 
-      &.unread {
-        fill: $info-dark;
-        font-weight: 1000;
-      }
+        &.external {
+            stroke: #00000006;
+            stroke-width: 2;
+        }
 
-      &.labelQueuingForSelected,
-      &.labelQueuingForExcluded {
-        visibility: hidden;
-        font-weight: 1000;
-        stroke: white;
-        stroke-width: 0.5;
-      }
+        &.active {
+            stroke: #000000aa;
+            stroke-dasharray: 15 5;
+
+            &.external {
+                stroke: #00000066;
+            }
+        }
     }
 
-    &.is-hovered {
-
-      & rect,
-      & circle {
-        transform: scale(1.1);
-      }
+    & path.keyword {
+        fill: $warning;
+        opacity: 0.2;
     }
-
-    &.selected {
-
-      & rect,
-      & circle {
-        stroke: $primary;
-      }
-    }
-
-    &.suggested {
-
-      & rect,
-      & circle {
-        stroke: $info;
-      }
-    }
-
-    &.active rect {
-      stroke-width: 6;
-    }
-
-    &.linkedToActive rect {
-      stroke-width: 4;
-    }
-
-    &.isKeywordHovered rect {
-      filter: drop-shadow(0px 0px 10px $warning);
-      stroke: $warning-dark;
-    }
-
-    &.queuingForSelected,
-    &.queuingForExcluded {
-      opacity: 0.5;
-      filter: blur(0.5px);
-    }
-
-    &.queuingForSelected text.labelQueuingForSelected {
-      visibility: visible;
-      fill: $primary-dark;
-    }
-
-    &.queuingForExcluded text.labelQueuingForExcluded {
-      visibility: visible;
-    }
-  }
-
-  & g.keyword.node-container {
-    cursor: grab;
-
-    & text {
-      text-anchor: middle;
-      transform: translate(0px, 4px);
-      filter: drop-shadow(0px 0px 2px $warning);
-      text-transform: lowercase;
-    }
-
-    &.fixed text {
-      font-weight: 700;
-    }
-
-    &.linkedToActive text {
-      text-decoration-line: underline;
-    }
-
-    &:hover text {
-      transform: translate(0px, 3.5px) scale(1.1);
-    }
-  }
-
-  & path.citation {
-    fill: none;
-    stroke-width: 3;
-    stroke: #00000010;
-
-    &.external {
-      stroke: #00000006;
-      stroke-width: 2;
-    }
-
-    &.active {
-      stroke: #000000aa;
-      stroke-dasharray: 15 5;
-
-      &.external {
-        stroke: #00000066;
-      }
-    }
-  }
-
-  & path.keyword {
-    fill: $warning;
-    opacity: 0.2;
-  }
 }
 
 @include touch {
-  .network-of-references {
-    padding: 0 !important;
-  }
+    .network-of-references {
+        padding: 0 !important;
+    }
 
-  .network-of-references .box {
-    padding: 0.5rem;
-  }
+    .network-of-references .box {
+        padding: 0.5rem;
+    }
 
 }
 </style>
