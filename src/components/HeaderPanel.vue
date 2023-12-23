@@ -6,7 +6,7 @@
         <span class="app-name" v-html="appMeta.nameHtml"></span>
         <v-menu v-if="!sessionStore.isEmpty" location="bottom" transition="slide-y-transition">
           <template v-slot:activator="{ props }">
-            <v-btn v-bind="props" class="ml-6 mr-2" :icon="interfaceStore.isMobile">
+            <v-btn v-bind="props" class="ml-6 mr-2" :icon="interfaceStore.isMobile" :density="interfaceStore.isMobile?'compact':'default'">
               <v-icon size="18">mdi-text-box-multiple-outline</v-icon>
               <span class="is-hidden-touch ml-2">
                 {{ sessionStateString }}
@@ -31,7 +31,7 @@
       </v-app-bar-title>
       <v-menu bottom left offset-y transition="slide-y-transition">
         <template v-slot:activator="{ props }">
-          <v-btn icon v-bind="props" class="mr-1">
+          <v-btn icon v-bind="props" class="mr-1" density="compact">
             <v-icon>mdi-dots-vertical</v-icon>
           </v-btn>
         </template>

@@ -1,13 +1,12 @@
 <template>
   <v-menu v-if="!sessionStore.isEmpty" location="bottom" transition="slide-y-transition" :close-on-content-click="false">
     <template v-slot:activator="{ props }">
-      <v-btn class="boost-button p-1 pl-4" v-bind="props" :icon="interfaceStore.isMobile" @click="handleMenuInput(true)">
+      <v-btn class="boost-button p-1 pl-4" v-bind="props" :icon="interfaceStore.isMobile" @click="handleMenuInput(true)"
+        :density="interfaceStore.isMobile ? 'compact' : 'default'">
         <v-icon size="18">mdi-chevron-double-up</v-icon>
         <span class="is-hidden-touch ml-2">
-          <span 
-          v-html="boostKeywordStringHtml ? boostKeywordStringHtml : '[Set boost keywords]'"
-          :class="{'has-text-warning-dark': !boostKeywordStringHtml}"
-          ></span>
+          <span v-html="boostKeywordStringHtml ? boostKeywordStringHtml : '[Set boost keywords]'"
+            :class="{ 'has-text-warning-dark': !boostKeywordStringHtml }"></span>
           <v-icon class="ml-2">
             mdi-menu-down
           </v-icon>
@@ -60,7 +59,6 @@ export default {
 
   methods: {
     handleMenuInput(value) {
-      console.log("handleMenuInput", value);
       if (value) {
         this.$nextTick(() => {
           this.$refs.boost.focus();
