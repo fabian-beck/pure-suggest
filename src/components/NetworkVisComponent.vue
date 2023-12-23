@@ -63,7 +63,6 @@ import { storeToRefs } from "pinia";
 
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
-import CompactSwitch from "./basic/CompactSwitch.vue";
 
 const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;
@@ -97,6 +96,7 @@ export default {
             link: null,
             label: null,
             zoom: null,
+            showSuggested: false,
             errorMessage: "",
             errorTimer: null,
         };
@@ -226,7 +226,8 @@ export default {
             function initNodes() {
                 const publicationNodes = [];
                 let i = 0;
-                this.sessionStore.publicationsFiltered.forEach((publication) => {
+                const publications = this.showSuggested?this.sessionStore.publicationsFiltered:this.sessionStore.selectedPublications;
+                publications.forEach((publication) => {
                     if (publication.year) {
                         this.doiToIndex[publication.doi] = i;
                         publicationNodes.push({
