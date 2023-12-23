@@ -49,7 +49,7 @@ export default {
     boostKeywordStringHtml() {
       let html = this.sessionStore.boostKeywordString;
       // wrap comma seperated words in span.word
-      html = html.replace(/([^,|]+)/g, "<span class='word'>$1</span>");
+      html = html.replace(/\s*([^,|]+)/g, "<span class='word'>$1</span>");
       // wrap | in span.alt
       html = html.replace(/\|/g, "<span class='alt'>|</span>");
       // wrap , in span.comma
