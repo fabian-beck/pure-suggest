@@ -3,33 +3,32 @@
     <v-app-bar color="white" density="compact">
       <v-icon class="mr-1" :size="interfaceStore.isMobile ? 30 : 32">mdi-water-plus-outline</v-icon>
       <v-app-bar-title>
-        <span v-html="appMeta.nameHtml"></span>
-      </v-app-bar-title>
-      <v-menu v-if="!sessionStore.isEmpty" location="bottom" transition="slide-y-transition">
-        <template v-slot:activator="{ props }">
-          <v-btn v-bind="props" outlined class="ml-4" :icon="interfaceStore.isMobile">
-            <v-icon size="18">mdi-text-box-multiple-outline</v-icon>
-            <span class="is-hidden-touch ml-2">
+        <span class="app-name" v-html="appMeta.nameHtml"></span>
+        <v-menu v-if="!sessionStore.isEmpty" location="bottom" transition="slide-y-transition">
+          <template v-slot:activator="{ props }">
+            <v-btn v-bind="props" class="ml-6 mr-2" :icon="interfaceStore.isMobile">
+              <v-icon size="18">mdi-text-box-multiple-outline</v-icon>
+              <span class="is-hidden-touch ml-2">
+                {{ sessionStateString }}
+                <v-icon class="ml-2">
+                  mdi-menu-down
+                </v-icon>
+              </span>
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item class="is-hidden-desktop">
               {{ sessionStateString }}
-              <v-icon class="ml-2">
-                mdi-menu-down
-              </v-icon>
-            </span>
-          </v-btn>
-        </template>
-        <v-list>
-          <v-list-item class="is-hidden-desktop">
-            {{ sessionStateString }}
-          </v-list-item>
-          <v-list-item prepend-icon="mdi-export" @click="sessionStore.exportSession" title="Export selected as JSON" />
-          <v-list-item prepend-icon="mdi-export" @click="sessionStore.exportAllBibtex"
-            title="Export selected as BibTeX" />
-          <v-list-item prepend-icon="mdi-delete" @click="sessionStore.clearSession" class="has-text-danger"
-            title="Clear session" />
-        </v-list>
-      </v-menu>
-      <BoostKeywordsComponent />
-      <v-spacer class="is-hidden-touch"></v-spacer>
+            </v-list-item>
+            <v-list-item prepend-icon="mdi-export" @click="sessionStore.exportSession" title="Export selected as JSON" />
+            <v-list-item prepend-icon="mdi-export" @click="sessionStore.exportAllBibtex"
+              title="Export selected as BibTeX" />
+            <v-list-item prepend-icon="mdi-delete" @click="sessionStore.clearSession" class="has-text-danger"
+              title="Clear session" />
+          </v-list>
+        </v-menu>
+        <BoostKeywordsComponent />
+      </v-app-bar-title>
       <HeaderExternalLinks class="is-hidden-touch mr-4" />
       <v-menu bottom left offset-y transition="slide-y-transition">
         <template v-slot:activator="{ props }">
@@ -103,9 +102,13 @@ export default {
     padding: 0 0.5vw;
 
     & .v-app-bar-title {
-      font-size: 1.35rem;
-      font-weight: 600;
       margin-left: 0;
+
+      & .app-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        vertical-align: middle;
+      }
     }
   }
 }

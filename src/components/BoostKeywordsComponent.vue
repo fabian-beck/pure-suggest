@@ -4,7 +4,10 @@
       <v-btn class="boost-button p-1 pl-4" v-bind="props">
         <v-icon size="18">mdi-chevron-double-up</v-icon>
         <span class="is-hidden-touch ml-2">
-          <span v-html="boostKeywordStringHtml ? boostKeywordStringHtml : '&nbsp;'"></span>
+          <span 
+          v-html="boostKeywordStringHtml ? boostKeywordStringHtml : '[Set boost keywords]'"
+          :class="{'has-text-warning-dark': !boostKeywordStringHtml}"
+          ></span>
           <v-icon class="ml-2">
             mdi-menu-down
           </v-icon>
