@@ -28,6 +28,7 @@
             title="Clear session" />
         </v-list>
       </v-menu>
+      <BoostKeywordsComponent />
       <v-spacer class="is-hidden-touch"></v-spacer>
       <HeaderExternalLinks class="is-hidden-touch mr-4" />
       <v-menu bottom left offset-y transition="slide-y-transition">
@@ -109,7 +110,8 @@ export default {
   }
 }
 
-.intro-message, .intro-message-placeholder {
+.intro-message,
+.intro-message-placeholder {
   margin-top: 48px;
 
   & .column {

@@ -20,9 +20,6 @@
       </div>
     </div>
     <div class="header">
-      <div class="has-background-warning-light p-2" v-show="!sessionStore.isEmpty">
-        <BoostKeywordsComponent />
-      </div>
       <div>
         <div class="notification has-background-primary-light media p-2" v-show="sessionStore.isUpdatable">
           <div class="media-content has-text-centered mt-2">
