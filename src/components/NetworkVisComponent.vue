@@ -49,16 +49,21 @@
             </div>
             <div class="controls-footer-right" v-show="!sessionStore.isEmpty">
                 <span class="mr-4">
-                    <CompactButton icon="mdi-plus" v-tippy="'Zoom in'" v-on:click="zoomByFactor(1.2)" elevation="1" class="mr-2" color="white">
+                    <CompactButton icon="mdi-plus" v-tippy="'Zoom in'" v-on:click="zoomByFactor(1.2)" elevation="1"
+                        class="mr-2" color="white">
                     </CompactButton>
-                    <CompactButton icon="mdi-minus" v-tippy="'Zoom out'" v-on:click="zoomByFactor(0.8)" elevation="1" color="white">
+                    <CompactButton icon="mdi-minus" v-tippy="'Zoom out'" v-on:click="zoomByFactor(0.8)" elevation="1"
+                        color="white">
                     </CompactButton>
                 </span>
-                <v-btn-toggle v-model="showNodes" color="dark" multiple density="compact" elevation="1">
-                    <v-btn icon="mdi-water-outline" v-tippy="'Show selected publications as nodes'" value="selected" class="has-text-primary"></v-btn>
-                    <v-btn icon="mdi-water-plus-outline" v-tippy="'Show suggested publications as nodes'" value="suggested" class="has-text-info">
+                <v-btn-toggle v-model="showNodes" color="dark" multiple density="compact" elevation="1" @click="plot(true)">
+                    <v-btn icon="mdi-water-outline" v-tippy="'Show selected publications as nodes'" value="selected"
+                        class="has-text-primary"></v-btn>
+                    <v-btn icon="mdi-water-plus-outline" v-tippy="'Show suggested publications as nodes'" value="suggested"
+                        class="has-text-info">
                     </v-btn>
-                    <v-btn icon="mdi-chevron-double-up" v-tippy="'Show boost keywords as nodes'" value="boost" class="has-text-warning-dark"></v-btn>
+                    <v-btn icon="mdi-chevron-double-up" v-tippy="'Show boost keywords as nodes'" value="keyword"
+                        class="has-text-warning-dark"></v-btn>
                 </v-btn-toggle>
             </div>
         </div>
@@ -107,11 +112,21 @@ export default {
             link: null,
             label: null,
             zoom: null,
-            showSuggested: false,
-            showNodes: [],
+            showNodes: ["selected", "suggested", "keyword"],
             errorMessage: "",
             errorTimer: null,
         };
+    },
+    computed: {
+        showSelectedNodes: function () {
+            return this.showNodes.includes("selected");
+        },
+        showSuggestedNodes: function () {
+            return this.showNodes.includes("suggested");
+        },
+        showKeywordNodes: function () {
+            return this.showNodes.includes("keyword");
+        },
     },
     watch: {
         isNetworkClusters: {
@@ -238,7 +253,9 @@ export default {
             function initNodes() {
                 const publicationNodes = [];
                 let i = 0;
-                const publications = this.showSuggested ? this.sessionStore.publicationsFiltered : this.sessionStore.selectedPublications;
+                const publications = this.showSelectedNodes ?
+                    (this.showSuggestedNodes ? this.sessionStore.publicationsFiltered : this.sessionStore.selectedPublications) :
+                    (this.showSuggestedNodes ? this.sessionStore.suggestedPublicationsFiltered : []);
                 publications.forEach((publication) => {
                     if (publication.year) {
                         this.doiToIndex[publication.doi] = i;
@@ -251,30 +268,34 @@ export default {
                         i++;
                     }
                 });
-                const keywordNodes = [];
-                this.sessionStore.uniqueBoostKeywords.forEach((keyword) => {
-                    const frequency = this.sessionStore.publications.filter((publication) => publication.boostKeywords.includes(keyword)).length;
-                    keywordNodes.push({
-                        id: keyword,
-                        frequency: frequency,
+                if (this.showKeywordNodes) {
+                    const keywordNodes = [];
+                    this.sessionStore.uniqueBoostKeywords.forEach((keyword) => {
+                        const frequency = this.sessionStore.publications.filter((publication) => publication.boostKeywords.includes(keyword)).length;
+                        keywordNodes.push({
+                            id: keyword,
+                            frequency: frequency,
+                        });
                     });
-                });
-                const nodes = publicationNodes.concat(keywordNodes);
-                return nodes;
+                    return publicationNodes.concat(keywordNodes);
+                }
+                return publicationNodes;
             }
             function initLinks() {
                 const links = [];
-                this.sessionStore.uniqueBoostKeywords.forEach((keyword) => {
-                    this.sessionStore.publicationsFiltered.forEach((publication) => {
-                        if (publication.doi in this.doiToIndex && publication.boostKeywords.includes(keyword)) {
-                            links.push({
-                                source: keyword,
-                                target: publication.doi,
-                                type: "keyword",
-                            });
-                        }
+                if (this.showKeywordNodes) {
+                    this.sessionStore.uniqueBoostKeywords.forEach((keyword) => {
+                        this.sessionStore.publicationsFiltered.forEach((publication) => {
+                            if (publication.doi in this.doiToIndex && publication.boostKeywords.includes(keyword)) {
+                                links.push({
+                                    source: keyword,
+                                    target: publication.doi,
+                                    type: "keyword",
+                                });
+                            }
+                        });
                     });
-                });
+                }
                 this.sessionStore.selectedPublications.forEach((publication) => {
                     if (publication.doi in this.doiToIndex) {
                         publication.citationDois.forEach((citationDoi) => {
