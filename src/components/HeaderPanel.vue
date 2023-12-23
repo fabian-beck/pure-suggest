@@ -86,9 +86,9 @@ export default {
   },
   computed: {
     sessionStateString() {
-      return `Session (${this.sessionStore.selectedPublicationsCount} selected${this.sessionStore.excludedPublicationsCount
+      return `${this.sessionStore.selectedPublicationsCount} selected${this.sessionStore.excludedPublicationsCount
         ? `; ${this.sessionStore.excludedPublicationsCount} excluded`
-        : ""})`;
+        : ""}`;
     }
   },
 };
