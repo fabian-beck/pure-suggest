@@ -29,7 +29,6 @@
         </v-menu>
         <BoostKeywordsComponent />
       </v-app-bar-title>
-      <HeaderExternalLinks class="is-hidden-touch mr-4" />
       <v-menu bottom left offset-y transition="slide-y-transition">
         <template v-slot:activator="{ props }">
           <v-btn icon v-bind="props" class="mr-1">
@@ -37,7 +36,7 @@
           </v-btn>
         </template>
         <v-list>
-          <v-list-item class="is-hidden-desktop">
+          <v-list-item>
             <HeaderExternalLinks />
           </v-list-item>
           <v-list-item prepend-icon="mdi-comment-quote-outline" @click="interfaceStore.openFeedback" title="Feedback" />
