@@ -664,8 +664,7 @@ export default {
     background: white;
     width: 100%;
     height: 100%;
-    @include inset-shadow;
-
+    
     & g.publication.node-container {
         cursor: pointer;
 
