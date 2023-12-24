@@ -72,7 +72,7 @@ export default {
 
 <style lang="scss" scoped>
 :deep(input) {
-  text-transform: lowercase;
+  text-transform: uppercase;
 }
 
 :deep(.v-input__append) {

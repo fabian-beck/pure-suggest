@@ -751,7 +751,6 @@ export default {
             text-anchor: middle;
             transform: translate(0px, 4px);
             filter: drop-shadow(0px 0px 2px $warning);
-            text-transform: lowercase;
         }
 
         &.fixed text {

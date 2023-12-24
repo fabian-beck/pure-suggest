@@ -43,9 +43,8 @@ export const useSessionStore = defineStore('session', {
     unreadSuggestionsCount: (state) => state.suggestedPublicationsFiltered.filter(
       (publication) => !publication.isRead
     ).length,
-    boostKeywords: (state) => state.boostKeywordString.toLowerCase().split(/,\s*/).map(keyword => keyword.trim()),
     isKeywordLinkedToActive: (state) => (keyword) => state.activePublication && state.activePublication.boostKeywords.includes(keyword),
-    uniqueBoostKeywords: (state) => [...new Set(state.boostKeywords)],
+    uniqueBoostKeywords: (state) => [...new Set(state.boostKeywordString.toUpperCase().split(/,\s*/).map(keyword => keyword.trim()))],
     isUpdatable: (state) => state.selectedQueue.length > 0 || state.excludedQueue.length > 0,
     isEmpty: (state) =>
       state.selectedPublicationsCount === 0
@@ -394,8 +393,10 @@ export const useSessionStore = defineStore('session', {
       this.boostKeywordString = this.boostKeywordString.replace(/\s*,\s*/g, ", ");
       // remove spaces before/after vertical line
       this.boostKeywordString = this.boostKeywordString.replace(/\s*\|\s*/g, "|");
+      // upper case
+      this.boostKeywordString = this.boostKeywordString.toUpperCase();
       this.publications.forEach((publication) => {
-        publication.updateScore(this.boostKeywords);
+        publication.updateScore(this.uniqueBoostKeywords);
       });
       Publication.sortPublications(this.selectedPublications);
       Publication.sortPublications(this.suggestedPublications);
@@ -489,7 +490,7 @@ export const useSessionStore = defineStore('session', {
         return;
       }
       if (session.boost) {
-        this.boostKeywordString = session.boost;
+        this.setBoostKeywordString(session.boost);
       }
       if (session.excluded) {
         this.excludedPublicationsDois = session.excluded;
@@ -507,7 +508,7 @@ export const useSessionStore = defineStore('session', {
       let data = {
         selected: this.selectedPublicationsDois,
         excluded: this.excludedPublicationsDois,
-        boost: this.boostKeywords.join(", "),
+        boost: this.uniqueBoostKeywords.join(", "),
       };
       saveAsFile("session.json", "application/json", JSON.stringify(data));
     },
