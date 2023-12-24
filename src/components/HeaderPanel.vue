@@ -1,43 +1,46 @@
 <template>
   <div>
     <v-app-bar color="white" density="compact">
-      <v-icon class="mr-1" :size="interfaceStore.isMobile ? 30 : 32">mdi-water-plus-outline</v-icon>
+      <v-icon class="mr-1" :size="interfaceStore.isMobile ? 24 : 32">mdi-water-plus-outline</v-icon>
       <v-app-bar-title>
-        <span v-html="appMeta.nameHtml"></span>
+        <div class="app-name" v-html="appMeta.nameHtml"></div>
+        <div class="session-state">
+          <v-menu v-if="!sessionStore.isEmpty" location="bottom" transition="slide-y-transition">
+            <template v-slot:activator="{ props }">
+              <v-btn v-bind="props" :icon="interfaceStore.isMobile"
+                :density="interfaceStore.isMobile ? 'compact' : 'default'">
+                <v-icon size="18">mdi-text-box-multiple-outline</v-icon>
+                <span class="is-hidden-touch ml-2">
+                  {{ sessionStateString }}
+                  <v-icon class="ml-2">
+                    mdi-menu-down
+                  </v-icon>
+                </span>
+              </v-btn>
+            </template>
+            <v-list>
+              <v-list-item class="is-hidden-desktop">
+                {{ sessionStateString }}
+              </v-list-item>
+              <v-list-item prepend-icon="mdi-export" @click="sessionStore.exportSession"
+                title="Export selected as JSON" />
+              <v-list-item prepend-icon="mdi-export" @click="sessionStore.exportAllBibtex"
+                title="Export selected as BibTeX" />
+              <v-list-item prepend-icon="mdi-delete" @click="sessionStore.clearSession" class="has-text-danger"
+                title="Clear session" />
+            </v-list>
+          </v-menu>
+          <BoostKeywordsComponent />
+        </div>
       </v-app-bar-title>
-      <v-menu v-if="!sessionStore.isEmpty" location="bottom" transition="slide-y-transition">
-        <template v-slot:activator="{ props }">
-          <v-btn v-bind="props" outlined class="ml-4" :icon="interfaceStore.isMobile">
-            <v-icon size="18">mdi-text-box-multiple-outline</v-icon>
-            <span class="is-hidden-touch ml-2">
-              {{ sessionStateString }}
-              <v-icon class="ml-2">
-                mdi-menu-down
-              </v-icon>
-            </span>
-          </v-btn>
-        </template>
-        <v-list>
-          <v-list-item class="is-hidden-desktop">
-            {{ sessionStateString }}
-          </v-list-item>
-          <v-list-item prepend-icon="mdi-export" @click="sessionStore.exportSession" title="Export selected as JSON" />
-          <v-list-item prepend-icon="mdi-export" @click="sessionStore.exportAllBibtex"
-            title="Export selected as BibTeX" />
-          <v-list-item prepend-icon="mdi-delete" @click="sessionStore.clearSession" class="has-text-danger"
-            title="Clear session" />
-        </v-list>
-      </v-menu>
-      <v-spacer class="is-hidden-touch"></v-spacer>
-      <HeaderExternalLinks class="is-hidden-touch mr-4" />
       <v-menu bottom left offset-y transition="slide-y-transition">
         <template v-slot:activator="{ props }">
-          <v-btn icon v-bind="props" class="mr-1">
+          <v-btn icon v-bind="props" class="mr-1" density="compact">
             <v-icon>mdi-dots-vertical</v-icon>
           </v-btn>
         </template>
         <v-list>
-          <v-list-item class="is-hidden-desktop">
+          <v-list-item>
             <HeaderExternalLinks />
           </v-list-item>
           <v-list-item prepend-icon="mdi-comment-quote-outline" @click="interfaceStore.openFeedback" title="Feedback" />
@@ -86,9 +89,9 @@ export default {
   },
   computed: {
     sessionStateString() {
-      return `Session (${this.sessionStore.selectedPublicationsCount} selected${this.sessionStore.excludedPublicationsCount
+      return `${this.sessionStore.selectedPublicationsCount} selected${this.sessionStore.excludedPublicationsCount
         ? `; ${this.sessionStore.excludedPublicationsCount} excluded`
-        : ""})`;
+        : ""}`;
     }
   },
 };
@@ -102,14 +105,33 @@ export default {
     padding: 0 0.5vw;
 
     & .v-app-bar-title {
-      font-size: 1.35rem;
-      font-weight: 600;
       margin-left: 0;
+
+      &>div {
+        height: 48px;
+        display: flex;
+
+        & .app-name {
+          font-size: 1.5rem;
+          font-weight: 600;
+          padding-top: 10px;
+        }
+
+        & .session-state {
+          margin-top: 6px;
+          margin-left: 1vw;
+
+          &>button {
+            margin-left: 1vw;
+          }
+        }
+      }
     }
   }
 }
 
-.intro-message, .intro-message-placeholder {
+.intro-message,
+.intro-message-placeholder {
   margin-top: 48px;
 
   & .column {
@@ -118,7 +140,7 @@ export default {
 }
 
 @include touch {
-  :deep(.v-toolbar__content .v-app-bar-title) {
+  :deep(.app-name) {
     font-size: 1.2rem !important;
   }
 }
