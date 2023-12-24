@@ -484,18 +484,27 @@ export default {
                     .data(yearRange, (d) => d)
                     .join((enter) => {
                         const g = enter.append("g");
+                        g.append("rect")
                         g.append("text");
                         g.append("text");
                         return g;
                     });
                 this.label
+                    .selectAll("rect")
+                    .attr("width", (d) => this.yearX(Math.min(d + 5, CURRENT_YEAR)) - this.yearX(d))
+                    .attr("height", 20000)
+                    .attr("fill", (d) => d % 10 === 0 ? "#fafafa" : "white")
+                    .attr("y", -10000);
+                this.label
                     .selectAll("text")
                     .attr("text-anchor", "middle")
+                    .text((d) => d)
+                    .attr("fill", "grey");
+                this.label
+                    .selectAll("text, rect")
                     .attr("visibility", !this.sessionStore.isEmpty && !this.isNetworkClusters
                         ? "visible"
                         : "hidden")
-                    .text((d) => d)
-                    .attr("fill", "grey");
                 if (!this.sessionStore.isEmpty) {
                     this.label
                         .attr("transform", (d) => `translate(${this.yearX(d)},${this.svgHeight / 2 - MARGIN})`)
