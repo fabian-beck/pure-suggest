@@ -58,7 +58,7 @@
                 </div>
                 <div v-if="Object.keys(author.keywords).length > 0" class="is-size-7">
                   Related to
-                  <v-chip class="tag" v-for="keyword in sessionStore.boostKeywords.filter(
+                  <v-chip class="tag" v-for="keyword in sessionStore.uniqueBoostKeywords.filter(
                     (keyword) => author.keywords[keyword]
                   )" :key="keyword" :style="keywordStyle(author.keywords[keyword])">{{ keyword }} ({{
   author.keywords[keyword] }})</v-chip>

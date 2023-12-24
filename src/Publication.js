@@ -162,7 +162,7 @@ export default class Publication {
                         continue
                     }
                     // search keyword in title fragement
-                    index = titleFragment.toLowerCase().indexOf(alternativeKeyword);
+                    index = titleFragment.toUpperCase().indexOf(alternativeKeyword);
                     if (index >= 0) {
                         // split matched title fragement
                         this.boostMatches += 1;
