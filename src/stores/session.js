@@ -36,8 +36,14 @@ export const useSessionStore = defineStore('session', {
     suggestedPublicationsFiltered: (state) =>
       state.interfaceStore.isFilterPanelShown ?
         state.suggestedPublications.filter(publication => state.filter.matches(publication)) : state.suggestedPublications,
-    suggestedPublicationsFilteredAndPrioritized: (state) =>
-      state.suggestedPublicationsFiltered.filter(publication => publication.score > 4),
+    suggestedPublicationsFilteredAndPrioritized: (state) => {
+      let cutoff = 0;
+      // score of tenth publication in suggested determines cutoff
+      if (state.suggestedPublicationsFiltered.length >= 10) {
+        cutoff = state.suggestedPublicationsFiltered[9].score;
+      }
+      return state.suggestedPublicationsFiltered.filter(publication => publication.score >= cutoff)
+    },
     publications: (state) => state.selectedPublications.concat(state.suggestedPublications),
     publicationsFiltered: (state) => state.selectedPublications.concat(state.suggestedPublicationsFiltered),
     publicationsFilteredAndPrioritized: (state) => state.selectedPublications.concat(state.suggestedPublicationsFilteredAndPrioritized),
