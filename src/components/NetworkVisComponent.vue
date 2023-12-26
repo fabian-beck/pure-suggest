@@ -56,7 +56,7 @@
                         color="white">
                     </CompactButton>
                 </span>
-                <v-btn-toggle v-model="showNodes" color="dark" multiple density="compact" elevation="1" @click="plot(true)">
+                <v-btn-toggle class="mr-4" v-model="showNodes" color="dark" multiple density="compact" elevation="1" @click="plot(true)">
                     <v-btn icon="mdi-water-outline" v-tippy="'Show selected publications as nodes'" value="selected"
                         class="has-text-primary"></v-btn>
                     <v-btn icon="mdi-water-plus-outline" v-tippy="'Show suggested publications as nodes'" value="suggested"
@@ -65,6 +65,21 @@
                     <v-btn icon="mdi-chevron-double-up" v-tippy="'Show boost keywords as nodes'" value="keyword"
                         class="has-text-warning-dark"></v-btn>
                 </v-btn-toggle>
+                <span>
+                    <v-menu :close-on-content-click="false">
+                        <template v-slot:activator="{ props }">
+                            <CompactButton icon="mdi-cog" v-tippy="'Visualization settings'" elevation="1" color="white"
+                                v-bind="props"></CompactButton>
+                        </template>
+                        <v-list>
+                            <v-list-item>
+                                <v-checkbox v-model="isFocusingSuggested" label="Focus on top-ranked suggested"
+                                    @change="plot(true)" density="compact"
+                                    hint="Cuts the shown number of suggested publications" persistent-hint />
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
+                </span>
             </div>
         </div>
     </div>
@@ -79,6 +94,7 @@ import { storeToRefs } from "pinia";
 
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
+import CompactButton from "./basic/CompactButton.vue";
 
 const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;
@@ -115,6 +131,7 @@ export default {
             showNodes: ["selected", "suggested", "keyword"],
             errorMessage: "",
             errorTimer: null,
+            isFocusingSuggested: true,
         };
     },
     computed: {
@@ -254,8 +271,12 @@ export default {
                 const publicationNodes = [];
                 let i = 0;
                 const publications = this.showSelectedNodes ?
-                    (this.showSuggestedNodes ? this.sessionStore.publicationsFilteredAndPrioritized : this.sessionStore.selectedPublications) :
-                    (this.showSuggestedNodes ? this.sessionStore.suggestedPublicationsFilteredAndPrioritized : []);
+                    (this.showSuggestedNodes ?
+                        (this.isFocusingSuggested ? this.sessionStore.publicationsFilteredandFocused : this.sessionStore.publicationsFiltered)
+                        : this.sessionStore.selectedPublications)
+                    : (this.showSuggestedNodes ?
+                        (this.isFocusingSuggested ? this.sessionStore.suggestedPublicationsFilteredandFocused : this.sessionStore.suggestedPublicationsFiltered)
+                        : []);
                 publications.forEach((publication) => {
                     if (publication.year) {
                         this.doiToIndex[publication.doi] = i;
@@ -484,7 +505,7 @@ export default {
                     .data(yearRange, (d) => d)
                     .join((enter) => {
                         const g = enter.append("g");
-                        g.append("rect")
+                        g.append("rect");
                         g.append("text");
                         g.append("text");
                         return g;
@@ -504,7 +525,7 @@ export default {
                     .selectAll("text, rect")
                     .attr("visibility", !this.sessionStore.isEmpty && !this.isNetworkClusters
                         ? "visible"
-                        : "hidden")
+                        : "hidden");
                 if (!this.sessionStore.isEmpty) {
                     this.label
                         .attr("transform", (d) => `translate(${this.yearX(d)},${this.svgHeight / 2 - MARGIN})`)
@@ -619,6 +640,7 @@ export default {
             this.svg.attr("transform", transform);
         },
     },
+    components: { CompactButton }
 };
 </script>
 
@@ -664,7 +686,7 @@ export default {
     background: white;
     width: 100%;
     height: 100%;
-    
+
     & g.publication.node-container {
         cursor: pointer;
 
