@@ -254,8 +254,8 @@ export default {
                 const publicationNodes = [];
                 let i = 0;
                 const publications = this.showSelectedNodes ?
-                    (this.showSuggestedNodes ? this.sessionStore.publicationsFiltered : this.sessionStore.selectedPublications) :
-                    (this.showSuggestedNodes ? this.sessionStore.suggestedPublicationsFiltered : []);
+                    (this.showSuggestedNodes ? this.sessionStore.publicationsFilteredAndPrioritized : this.sessionStore.selectedPublications) :
+                    (this.showSuggestedNodes ? this.sessionStore.suggestedPublicationsFilteredAndPrioritized : []);
                 publications.forEach((publication) => {
                     if (publication.year) {
                         this.doiToIndex[publication.doi] = i;
