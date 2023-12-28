@@ -4,6 +4,7 @@ import { useInterfaceStore } from "./interface.js";
 
 import Publication from "@/Publication.js";
 import Filter from '@/Filter.js';
+import Author from '@/Author.js';
 import { shuffle, saveAsFile } from "@/Util.js"
 import { clearCache } from "@/Cache.js";
 
@@ -183,12 +184,6 @@ export const useSessionStore = defineStore('session', {
     },
 
     computeSelectedPublicationsAuthors() {
-      function toAuthorId(str) {
-        return str
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "")
-          .toLowerCase();
-      }
 
       function mergeCounts(counts1, counts2) {
         const counts = {};
@@ -217,46 +212,17 @@ export const useSessionStore = defineStore('session', {
       const authors = {};
       // assemble authors from selected publications
       this.selectedPublications.forEach((publication) => {
-        publication.authorOrcid?.split("; ").forEach((author, i) => {
-          const authorName = author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g, "");
-          const authorId = toAuthorId(authorName);
-          if (!authors[authorId]) {
-            authors[authorId] = {
-              id: authorId,
-              name: authorName,
-              count: 0,
-              firstAuthorCount: 0,
-              score: 0,
-              keywords: {},
-              orcid: "",
-              alternativeNames: [authorName],
-              coauthors: {},
-              yearMin: 9999,
-              yearMax: 0,
-              newPublication: false,
-            };
+        publication.authorOrcid?.split("; ").forEach((authorString, i) => {
+          const author = new Author(authorString, i, publication,
+            this.isAuthorScoreEnabled,
+            this.isFirstAuthorBoostEnabled,
+            this.isAuthorNewBoostEnabled
+          );
+          if (!authors[author.id]) {
+            authors[author.id] = author;
+          } else {
+            authors[author.id].mergeWith(author);
           }
-          authors[authorId].count++;
-          authors[authorId].firstAuthorCount += i > 0 ? 0 : 1;
-          // updating score
-          authors[authorId].score += (this.isAuthorScoreEnabled ? publication.score : 1)
-            * (this.isFirstAuthorBoostEnabled ? (i > 0 ? 1 : 2) : 1)
-            * (this.isAuthorNewBoostEnabled ? (publication.isNew ? 2 : 1) : 1);
-          const orcid = author.match(/(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g);
-          if (orcid) {
-            authors[authorId].orcid = orcid[0];
-          }
-          const keywordCounts = publication.boostKeywords.map(keyword => ({ [keyword]: 1 })).reduce((a, b) => Object.assign(a, b), {}); // convert array to object
-          authors[authorId].keywords = mergeCounts(authors[authorId].keywords, keywordCounts);
-          const coauthorCounts = publication.author?.split("; ")
-            .map(coauthor => toAuthorId(coauthor))
-            .filter(coauthorId => coauthorId !== authorId)
-            .map(coauthorId => ({ [coauthorId]: 1 }))
-            .reduce((a, b) => Object.assign(a, b), {}); // convert array to object
-          authors[authorId].coauthors = mergeCounts(authors[authorId].coauthors, coauthorCounts);
-          authors[authorId].yearMin = Math.min(authors[authorId].yearMin, Number(publication.year));
-          authors[authorId].yearMax = Math.max(authors[authorId].yearMax, Number(publication.year));
-          authors[authorId].newPublication = authors[authorId].newPublication || publication.isNew;
         });
       });
       // merge author with same ORCID
@@ -309,7 +275,7 @@ export const useSessionStore = defineStore('session', {
         }
       });
       // set author initials
-      Object.values(authors).forEach((author) => {author.initials = author.name.split(" ").map((word) => word[0]).join("")});
+      Object.values(authors).forEach((author) => { author.initials = author.name.split(" ").map((word) => word[0]).join("") });
       // sort by score
       this.selectedPublicationsAuthors = Object.values(authors).sort(
         (a, b) => b.score + b.firstAuthorCount / 100 + b.count / 1000 - (a.score + a.firstAuthorCount / 100 + a.count / 1000)
