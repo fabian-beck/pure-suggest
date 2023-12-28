@@ -240,14 +240,18 @@ export default {
                         .forceLink()
                         .id((d) => d.id)
                         .distance((d) => {
-                            if (that.isNetworkClusters && d.internal)
-                                return 500 / that.sessionStore.selectedPublications.length;
+                            if (d.type === "citation")
+                                return (that.isNetworkClusters && d.internal) ? 500 / that.sessionStore.selectedPublications.length : 10;
                             if (d.type === "keyword")
+                                return 0;
+                            if (d.type === "author")
                                 return 0;
                             return 10;
                         })
                         .strength((d) => {
-                            const internalFactor = d.internal ? 1 : 0.5;
+                            const internalFactor = d.type === "citation" ? (d.internal ? 1 : 0.5)
+                                : (d.type === "keyword" ? 0.5
+                                    : 1.5); // author
                             const clustersFactor = that.isNetworkClusters ? 1 : 0.5;
                             return 0.15 * clustersFactor * internalFactor;
                         }))
@@ -258,7 +262,7 @@ export default {
                         .forceX()
                         .x((d) => that.isNetworkClusters
                             ? 0
-                            : this.yearX(d.publication ? d.publication.year : CURRENT_YEAR + 2))
+                            : this.yearX(d.type === "publication" ? d.publication.year : CURRENT_YEAR + 2))
                         .strength(that.isNetworkClusters ? 0.05 : 10))
                     .force("y", d3
                         .forceY()
