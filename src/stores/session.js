@@ -70,6 +70,7 @@ export const useSessionStore = defineStore('session', {
   actions: {
     clear() {
       this.selectedPublications = [];
+      this.selectedPublicationsAuthors = [];
       this.selectedQueue = [];
       this.excludedPublicationsDois = [];
       this.excludedQueue = [];
