@@ -272,7 +272,7 @@ export default {
                 this.graph.links = links.map((d) => Object.assign({}, d));
 
                 function initNodes() {
-                    const publicationNodes = [];
+                    let nodes = [];
                     let i = 0;
                     const publications = this.showSelectedNodes ?
                         (this.showSuggestedNodes ?
@@ -284,11 +284,12 @@ export default {
                     publications.forEach((publication) => {
                         if (publication.year) {
                             this.doiToIndex[publication.doi] = i;
-                            publicationNodes.push({
+                            nodes.push({
                                 id: publication.doi,
                                 publication: publication,
                                 isQueuingForSelected: this.sessionStore.isQueuingForSelected(publication.doi),
                                 isQueuingForExcluded: this.sessionStore.isQueuingForExcluded(publication.doi),
+                                type: "publication",
                             });
                             i++;
                         }
@@ -300,11 +301,18 @@ export default {
                             keywordNodes.push({
                                 id: keyword,
                                 frequency: frequency,
+                                type: "keyword"
                             });
                         });
-                        return publicationNodes.concat(keywordNodes);
+                        nodes = nodes.concat(keywordNodes);
                     }
-                    return publicationNodes;
+                    // push dummy author node
+                    nodes.push({
+                        id: "Smith, Anna",
+                        initials: "SA",
+                        type: "author",
+                    });
+                    return nodes;
                 }
 
                 function initLinks() {
@@ -357,8 +365,9 @@ export default {
                     .join((enter) => {
                         const g = enter
                             .append("g")
-                            .attr("class", (d) => `node-container ${d.publication ? "publication" : "keyword"}`);
-                        const publicationNodes = g.filter((d) => d.publication);
+                            .attr("class", (d) => `node-container ${d.type}`);
+
+                        const publicationNodes = g.filter((d) => d.type === "publication");
                         publicationNodes
                             .append("rect")
                             .attr("pointer-events", "all")
@@ -384,13 +393,21 @@ export default {
                             .attr("y", 15)
                             .text("-");
                         publicationNodes.append("circle");
-                        const keywordNodes = g.filter((d) => !d.publication);
+
+                        const keywordNodes = g.filter((d) => d.type === "keyword");
                         keywordNodes.append("text");
                         keywordNodes
                             .call(this.keywordNodeDrag())
                             .on("click", this.keywordNodeClick)
                             .on("mouseover", this.keywordNodeMouseover)
                             .on("mouseout", this.keywordNodeMouseout);
+
+                        const authorNodes = g.filter((d) => d.type === "author");
+                        authorNodes
+                            .append("circle")
+                            .attr("r", 12)
+                            .attr("fill", "black");
+                        authorNodes.append("text");
                         return g;
                     });
                 try {
@@ -405,8 +422,14 @@ export default {
                 catch (error) {
                     throw new Error("Cannot update keyword nodes in network: " + error.message);
                 }
+                try {
+                    updateAuthorNodes.call(this);
+                }
+                catch (error) {
+                    throw new Error("Cannot update author nodes in network: " + error.message);
+                }
                 function updatePublicationNodes() {
-                    const publicationNodes = this.node.filter((d) => d.publication);
+                    const publicationNodes = this.node.filter((d) => d.type === "publication");
                     publicationNodes
                         .classed("selected", (d) => d.publication.isSelected)
                         .classed("suggested", (d) => !d.publication.isSelected)
@@ -453,7 +476,7 @@ export default {
                         .attr("stroke", "black");
                 }
                 function updateKeywordNodes() {
-                    const keywordNodes = this.node.filter((d) => !d.publication);
+                    const keywordNodes = this.node.filter((d) => d.type === "keyword");
                     keywordNodes.classed("linkedToActive", (d) => this.sessionStore.isKeywordLinkedToActive(d.id));
                     if (this.keywordTooltips)
                         this.keywordTooltips.forEach((tooltip) => tooltip.destroy());
@@ -482,6 +505,12 @@ export default {
                             }
                             return d.id;
                         });
+                }
+                function updateAuthorNodes() {
+                    const authorNodes = this.node.filter((d) => d.type === "author");
+                    authorNodes
+                        .select("text")
+                        .text((d) => d.initials);
                 }
                 function getRectSize(d) {
                     return RECT_SIZE * (d.publication.isActive ? ENLARGE_FACTOR : 1);
@@ -803,6 +832,22 @@ export default {
 
         &:hover text {
             transform: translate(0px, 3.5px) scale(1.1);
+        }
+    }
+
+    & g.author.node-container {
+        cursor: pointer;
+
+        & circle {
+            fill: black;
+            @include light-shadow-svg;
+        }
+
+        & text {
+            text-anchor: middle;
+            dominant-baseline: middle;
+            fill: white;
+            font-size: 0.9rem;
         }
     }
 
