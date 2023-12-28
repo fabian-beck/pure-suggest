@@ -184,69 +184,8 @@ export const useSessionStore = defineStore('session', {
     },
 
     computeSelectedPublicationsAuthors() {
-
-      function deleteAuthor(authorId, newAuthorId) {
-        delete authors[authorId];
-        Object.values(authors).forEach((author) => {
-          if (author.coauthors[authorId]) {
-            author.coauthors[newAuthorId] = author.coauthors[newAuthorId] ? author.coauthors[newAuthorId] + author.coauthors[authorId] : author.coauthors[authorId];
-            delete author.coauthors[authorId];
-          }
-        });
-      }
-
-      const authors = {};
-      // assemble authors from selected publications
-      this.selectedPublications.forEach((publication) => {
-        publication.authorOrcid?.split("; ").forEach((authorString, i) => {
-          const author = new Author(authorString, i, publication,
-            this.isAuthorScoreEnabled,
-            this.isFirstAuthorBoostEnabled,
-            this.isAuthorNewBoostEnabled
-          );
-          if (!authors[author.id]) {
-            authors[author.id] = author;
-          } else {
-            authors[author.id].mergeWith(author);
-          }
-        });
-      });
-      // merge author with same ORCID
-      const orcidAuthors = Object.values(authors).filter((author) => author.orcid);
-      orcidAuthors.forEach((author) => {
-        const authorMatches = orcidAuthors.filter((author2) => author2.orcid === author.orcid);
-        if (authorMatches.length > 1) {
-          authorMatches.forEach((author2) => {
-            if (author.id.length > author2.id.length) {
-              author.mergeWith(author2);
-              deleteAuthor(author2.id, author.id);
-            }
-          });
-        }
-      });
-      // match authors with abbreviated names and merge them
-      let authorsWithAbbreviatedNames = Object.values(authors).filter((author) => author.id.match(/^\w+,\s\w\.?(\s\w\.?)?$/));
-      Object.values(authors).filter(author => !authorsWithAbbreviatedNames.includes(author)).forEach((author) => {
-        // check if author has version with additional first name
-        if (Object.values(authors).filter((author2) => author2.id.startsWith(author.id)).length > 1) {
-          authorsWithAbbreviatedNames.push(author);
-        }
-      });
-      const authorsWithoutAbbreviatedNames = Object.values(authors).filter((author) => !authorsWithAbbreviatedNames.includes(author));
-      authorsWithAbbreviatedNames.forEach((author) => {
-        const authorId = author.id.replace(/^(\w+,\s\w)\.?(\s\w\.?)?$/, "$1")
-        const authorMatches = authorsWithoutAbbreviatedNames.filter((author2) => author2.id.startsWith(authorId));
-        if (authorMatches.length === 1 && (!author.orcid || !authorMatches[0].orcid || author.orcid === authorMatches[0].orcid)) {
-          authorMatches[0].mergeWith(author);
-          deleteAuthor(author.id, authorMatches[0].id);
-        }
-      });
-      // set author initials
-      Object.values(authors).forEach((author) => { author.initials = author.name.split(" ").map((word) => word[0]).join("") });
-      // sort by score
-      this.selectedPublicationsAuthors = Object.values(authors).sort(
-        (a, b) => b.score + b.firstAuthorCount / 100 + b.count / 1000 - (a.score + a.firstAuthorCount / 100 + a.count / 1000)
-      );
+      this.selectedPublicationsAuthors = Author.computePublicationsAuthors(
+        this.selectedPublications, this.isAuthorScoreEnabled, this.isFirstAuthorBoostEnabled, this.isAuthorNewBoostEnabled);
     },
 
     async computeSuggestions() {
