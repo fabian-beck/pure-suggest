@@ -56,7 +56,8 @@
                         color="white">
                     </CompactButton>
                 </span>
-                <v-btn-toggle class="mr-4" v-model="showNodes" color="dark" multiple density="compact" elevation="1" @click="plot(true)">
+                <v-btn-toggle class="mr-4" v-model="showNodes" color="dark" multiple density="compact" elevation="1"
+                    @click="plot(true)">
                     <v-btn icon="mdi-water-outline" v-tippy="'Show selected publications as nodes'" value="selected"
                         class="has-text-primary"></v-btn>
                     <v-btn icon="mdi-water-plus-outline" v-tippy="'Show suggested publications as nodes'" value="suggested"
@@ -199,44 +200,12 @@ export default {
         });
     },
     methods: {
-        initForces: function () {
-            const that = this;
-            this.simulation
-                .force("link", d3
-                    .forceLink()
-                    .id((d) => d.id)
-                    .distance((d) => {
-                        if (that.isNetworkClusters && d.internal)
-                            return 500 / that.sessionStore.selectedPublications.length;
-                        if (d.type === "keyword")
-                            return 0;
-                        return 10;
-                    })
-                    .strength((d) => {
-                        const internalFactor = d.internal ? 1 : 0.5;
-                        const clustersFactor = that.isNetworkClusters ? 1 : 0.5;
-                        return 0.15 * clustersFactor * internalFactor;
-                    }))
-                .force("charge", d3
-                    .forceManyBody()
-                    .strength(Math.min(-200, -100 * Math.sqrt(that.sessionStore.selectedPublications.length))))
-                .force("x", d3
-                    .forceX()
-                    .x((d) => that.isNetworkClusters
-                        ? 0
-                        : this.yearX(d.publication ? d.publication.year : CURRENT_YEAR + 2))
-                    .strength(that.isNetworkClusters ? 0.05 : 10))
-                .force("y", d3
-                    .forceY()
-                    .y(0)
-                    .strength(that.isNetworkClusters ? 0.1 : 0.25))
-                .on("tick", this.tick);
-        },
         plot: function (restart) {
+
             if (this.isDragging)
                 return;
             try {
-                this.initForces();
+                initForces.call(this);
                 initGraph.call(this);
                 updateNodes.call(this);
                 updateLinks.call(this);
@@ -258,6 +227,41 @@ export default {
                     this.errorMessage = "";
                 }, 10000);
             }
+
+            function initForces() {
+                const that = this;
+                this.simulation
+                    .force("link", d3
+                        .forceLink()
+                        .id((d) => d.id)
+                        .distance((d) => {
+                            if (that.isNetworkClusters && d.internal)
+                                return 500 / that.sessionStore.selectedPublications.length;
+                            if (d.type === "keyword")
+                                return 0;
+                            return 10;
+                        })
+                        .strength((d) => {
+                            const internalFactor = d.internal ? 1 : 0.5;
+                            const clustersFactor = that.isNetworkClusters ? 1 : 0.5;
+                            return 0.15 * clustersFactor * internalFactor;
+                        }))
+                    .force("charge", d3
+                        .forceManyBody()
+                        .strength(Math.min(-200, -100 * Math.sqrt(that.sessionStore.selectedPublications.length))))
+                    .force("x", d3
+                        .forceX()
+                        .x((d) => that.isNetworkClusters
+                            ? 0
+                            : this.yearX(d.publication ? d.publication.year : CURRENT_YEAR + 2))
+                        .strength(that.isNetworkClusters ? 0.05 : 10))
+                    .force("y", d3
+                        .forceY()
+                        .y(0)
+                        .strength(that.isNetworkClusters ? 0.1 : 0.25))
+                    .on("tick", this.tick);
+            }
+
             function initGraph() {
                 this.doiToIndex = {};
                 const nodes = initNodes.call(this);
@@ -267,6 +271,7 @@ export default {
                 this.graph.nodes = nodes.map((d) => Object.assign(old.get(d.id) || { x: 0, y: 0 }, d));
                 this.graph.links = links.map((d) => Object.assign({}, d));
             }
+
             function initNodes() {
                 const publicationNodes = [];
                 let i = 0;
@@ -302,6 +307,7 @@ export default {
                 }
                 return publicationNodes;
             }
+
             function initLinks() {
                 const links = [];
                 if (this.showKeywordNodes) {
@@ -343,6 +349,7 @@ export default {
                 });
                 return links;
             }
+
             function updateNodes() {
                 this.node = this.node
                     .data(this.graph.nodes, (d) => d.id)
@@ -492,11 +499,13 @@ export default {
                     return getRectSize(d) * internalFactor * 0.8;
                 }
             }
+
             function updateLinks() {
                 this.link = this.link
                     .data(this.graph.links, (d) => [d.source, d.target])
                     .join("path");
             }
+
             function updateYearLabels() {
                 if (this.sessionStore.publicationsFiltered.length === 0)
                     return;
