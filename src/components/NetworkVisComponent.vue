@@ -270,84 +270,85 @@ export default {
                 const old = new Map(this.node.data().map((d) => [d.id, d]));
                 this.graph.nodes = nodes.map((d) => Object.assign(old.get(d.id) || { x: 0, y: 0 }, d));
                 this.graph.links = links.map((d) => Object.assign({}, d));
-            }
 
-            function initNodes() {
-                const publicationNodes = [];
-                let i = 0;
-                const publications = this.showSelectedNodes ?
-                    (this.showSuggestedNodes ?
-                        (this.isFocusingSuggested ? this.sessionStore.publicationsFilteredandFocused : this.sessionStore.publicationsFiltered)
-                        : this.sessionStore.selectedPublications)
-                    : (this.showSuggestedNodes ?
-                        (this.isFocusingSuggested ? this.sessionStore.suggestedPublicationsFilteredandFocused : this.sessionStore.suggestedPublicationsFiltered)
-                        : []);
-                publications.forEach((publication) => {
-                    if (publication.year) {
-                        this.doiToIndex[publication.doi] = i;
-                        publicationNodes.push({
-                            id: publication.doi,
-                            publication: publication,
-                            isQueuingForSelected: this.sessionStore.isQueuingForSelected(publication.doi),
-                            isQueuingForExcluded: this.sessionStore.isQueuingForExcluded(publication.doi),
+                function initNodes() {
+                    const publicationNodes = [];
+                    let i = 0;
+                    const publications = this.showSelectedNodes ?
+                        (this.showSuggestedNodes ?
+                            (this.isFocusingSuggested ? this.sessionStore.publicationsFilteredandFocused : this.sessionStore.publicationsFiltered)
+                            : this.sessionStore.selectedPublications)
+                        : (this.showSuggestedNodes ?
+                            (this.isFocusingSuggested ? this.sessionStore.suggestedPublicationsFilteredandFocused : this.sessionStore.suggestedPublicationsFiltered)
+                            : []);
+                    publications.forEach((publication) => {
+                        if (publication.year) {
+                            this.doiToIndex[publication.doi] = i;
+                            publicationNodes.push({
+                                id: publication.doi,
+                                publication: publication,
+                                isQueuingForSelected: this.sessionStore.isQueuingForSelected(publication.doi),
+                                isQueuingForExcluded: this.sessionStore.isQueuingForExcluded(publication.doi),
+                            });
+                            i++;
+                        }
+                    });
+                    if (this.showKeywordNodes) {
+                        const keywordNodes = [];
+                        this.sessionStore.uniqueBoostKeywords.forEach((keyword) => {
+                            const frequency = this.sessionStore.publications.filter((publication) => publication.boostKeywords.includes(keyword)).length;
+                            keywordNodes.push({
+                                id: keyword,
+                                frequency: frequency,
+                            });
                         });
-                        i++;
+                        return publicationNodes.concat(keywordNodes);
                     }
-                });
-                if (this.showKeywordNodes) {
-                    const keywordNodes = [];
-                    this.sessionStore.uniqueBoostKeywords.forEach((keyword) => {
-                        const frequency = this.sessionStore.publications.filter((publication) => publication.boostKeywords.includes(keyword)).length;
-                        keywordNodes.push({
-                            id: keyword,
-                            frequency: frequency,
-                        });
-                    });
-                    return publicationNodes.concat(keywordNodes);
+                    return publicationNodes;
                 }
-                return publicationNodes;
-            }
 
-            function initLinks() {
-                const links = [];
-                if (this.showKeywordNodes) {
-                    this.sessionStore.uniqueBoostKeywords.forEach((keyword) => {
-                        this.sessionStore.publicationsFiltered.forEach((publication) => {
-                            if (publication.doi in this.doiToIndex && publication.boostKeywords.includes(keyword)) {
-                                links.push({
-                                    source: keyword,
-                                    target: publication.doi,
-                                    type: "keyword",
-                                });
-                            }
-                        });
-                    });
-                }
-                this.sessionStore.selectedPublications.forEach((publication) => {
-                    if (publication.doi in this.doiToIndex) {
-                        publication.citationDois.forEach((citationDoi) => {
-                            if (citationDoi in this.doiToIndex) {
-                                links.push({
-                                    source: citationDoi,
-                                    target: publication.doi,
-                                    type: "citation",
-                                    internal: this.sessionStore.isSelected(citationDoi),
-                                });
-                            }
-                        });
-                        publication.referenceDois.forEach((referenceDoi) => {
-                            if (referenceDoi in this.doiToIndex) {
-                                links.push({
-                                    source: publication.doi,
-                                    target: referenceDoi,
-                                    type: "citation",
-                                    internal: this.sessionStore.isSelected(referenceDoi),
-                                });
-                            }
+                function initLinks() {
+                    const links = [];
+                    if (this.showKeywordNodes) {
+                        this.sessionStore.uniqueBoostKeywords.forEach((keyword) => {
+                            this.sessionStore.publicationsFiltered.forEach((publication) => {
+                                if (publication.doi in this.doiToIndex && publication.boostKeywords.includes(keyword)) {
+                                    links.push({
+                                        source: keyword,
+                                        target: publication.doi,
+                                        type: "keyword",
+                                    });
+                                }
+                            });
                         });
                     }
-                });
-                return links;
+                    this.sessionStore.selectedPublications.forEach((publication) => {
+                        if (publication.doi in this.doiToIndex) {
+                            publication.citationDois.forEach((citationDoi) => {
+                                if (citationDoi in this.doiToIndex) {
+                                    links.push({
+                                        source: citationDoi,
+                                        target: publication.doi,
+                                        type: "citation",
+                                        internal: this.sessionStore.isSelected(citationDoi),
+                                    });
+                                }
+                            });
+                            publication.referenceDois.forEach((referenceDoi) => {
+                                if (referenceDoi in this.doiToIndex) {
+                                    links.push({
+                                        source: publication.doi,
+                                        target: referenceDoi,
+                                        type: "citation",
+                                        internal: this.sessionStore.isSelected(referenceDoi),
+                                    });
+                                }
+                            });
+                        }
+                    });
+                    return links;
+                }
+
             }
 
             function updateNodes() {
