@@ -65,6 +65,8 @@
                     </v-btn>
                     <v-btn icon="mdi-chevron-double-up" v-tippy="'Show boost keywords as nodes'" value="keyword"
                         class="has-text-warning-dark"></v-btn>
+                    <v-btn icon="mdi-account" v-tippy="'Show authors as nodes'" value="author" class="has-text-grey-dark">
+                    </v-btn>
                 </v-btn-toggle>
                 <span>
                     <v-menu :close-on-content-click="false">
@@ -129,7 +131,7 @@ export default {
             link: null,
             label: null,
             zoom: null,
-            showNodes: ["selected", "suggested", "keyword"],
+            showNodes: ["selected", "suggested", "keyword", "author"],
             errorMessage: "",
             errorTimer: null,
             isFocusingSuggested: true,
@@ -144,6 +146,9 @@ export default {
         },
         showKeywordNodes: function () {
             return this.showNodes.includes("keyword");
+        },
+        showAuthorNodes: function () {
+            return this.showNodes.includes("author");
         },
     },
     watch: {
@@ -305,13 +310,15 @@ export default {
                             });
                         });
                     }
-                    this.filteredAuthors.forEach((author) => {
+                    if (this.showAuthorNodes) {
+                        this.filteredAuthors.forEach((author) => {
                             nodes.push({
                                 id: author.id,
                                 initials: author.initials,
                                 type: "author",
                             });
                         });
+                    }
                     return nodes;
                 }
 
@@ -354,7 +361,8 @@ export default {
                             });
                         }
                     });
-                    this.filteredAuthors.forEach((author) => {
+                    if (this.showAuthorNodes) {
+                        this.filteredAuthors.forEach((author) => {
                             author.publicationDois
                                 .forEach((publicationDoi) => {
                                     if (publicationDoi in this.doiToIndex) {
@@ -366,6 +374,7 @@ export default {
                                     }
                                 });
                         });
+                    }
                     return links;
                 }
 
