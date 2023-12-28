@@ -308,6 +308,8 @@ export const useSessionStore = defineStore('session', {
           deleteAuthor(author.id, authorMatches[0].id);
         }
       });
+      // set author initials
+      Object.values(authors).forEach((author) => {author.initials = author.name.split(" ").map((word) => word[0]).join("")});
       // sort by score
       this.selectedPublicationsAuthors = Object.values(authors).sort(
         (a, b) => b.score + b.firstAuthorCount / 100 + b.count / 1000 - (a.score + a.firstAuthorCount / 100 + a.count / 1000)

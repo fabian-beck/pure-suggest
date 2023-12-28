@@ -295,22 +295,21 @@ export default {
                         }
                     });
                     if (this.showKeywordNodes) {
-                        const keywordNodes = [];
                         this.sessionStore.uniqueBoostKeywords.forEach((keyword) => {
                             const frequency = this.sessionStore.publications.filter((publication) => publication.boostKeywords.includes(keyword)).length;
-                            keywordNodes.push({
+                            nodes.push({
                                 id: keyword,
                                 frequency: frequency,
                                 type: "keyword"
                             });
                         });
-                        nodes = nodes.concat(keywordNodes);
                     }
-                    // push dummy author node
-                    nodes.push({
-                        id: "Smith, Anna",
-                        initials: "SA",
-                        type: "author",
+                    this.sessionStore.selectedPublicationsAuthors.forEach((author) => {
+                        nodes.push({
+                            id: author.id,
+                            initials: author.initials,
+                            type: "author",
+                        });
                     });
                     return nodes;
                 }
@@ -847,7 +846,8 @@ export default {
             text-anchor: middle;
             dominant-baseline: middle;
             fill: white;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            font-weight: 600;
         }
     }
 
