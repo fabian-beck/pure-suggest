@@ -20,6 +20,7 @@ export default class Author {
         this.yearMin = publication.year;
         this.yearMax = publication.year;
         this.newPublication = publication.isNew;
+        this.publicationDois = [publication.doi];
     }
 
     mergeWith(author) {
@@ -47,6 +48,7 @@ export default class Author {
         this.yearMin = Math.min(this.yearMin, author.yearMin);
         this.yearMax = Math.max(this.yearMax, author.yearMax);
         this.newPublication = this.newPublication || author.newPublication;
+        this.publicationDois = [...new Set(this.publicationDois.concat(author.publicationDois))];
     }
 
     static nameToId(str) {

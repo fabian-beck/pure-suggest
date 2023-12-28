@@ -264,6 +264,7 @@ export default {
 
             function initGraph() {
                 this.doiToIndex = {};
+                this.filteredAuthors = this.sessionStore.selectedPublicationsAuthors.filter((author) => author.publicationDois?.length > 1);
                 const nodes = initNodes.call(this);
                 const links = initLinks.call(this);
                 // https://observablehq.com/@d3/modifying-a-force-directed-graph
@@ -304,13 +305,13 @@ export default {
                             });
                         });
                     }
-                    this.sessionStore.selectedPublicationsAuthors.forEach((author) => {
-                        nodes.push({
-                            id: author.id,
-                            initials: author.initials,
-                            type: "author",
+                    this.filteredAuthors.forEach((author) => {
+                            nodes.push({
+                                id: author.id,
+                                initials: author.initials,
+                                type: "author",
+                            });
                         });
-                    });
                     return nodes;
                 }
 
@@ -353,6 +354,18 @@ export default {
                             });
                         }
                     });
+                    this.filteredAuthors.forEach((author) => {
+                            author.publicationDois
+                                .forEach((publicationDoi) => {
+                                    if (publicationDoi in this.doiToIndex) {
+                                        links.push({
+                                            source: author.id,
+                                            target: publicationDoi,
+                                            type: "author",
+                                        });
+                                    }
+                                });
+                        });
                     return links;
                 }
 
