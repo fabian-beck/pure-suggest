@@ -889,26 +889,28 @@ export default {
     & path.citation {
         fill: none;
         stroke-width: 3;
-        stroke: #00000010;
+        stroke: $primary;
+        opacity: 0.15;
 
         &.external {
-            stroke: #00000006;
             stroke-width: 2;
+            stroke: $info;
+            opacity: 0.1;
         }
 
         &.active {
-            stroke: #000000aa;
+            opacity: 0.5;
             stroke-dasharray: 15 5;
-
-            &.external {
-                stroke: #00000066;
-            }
         }
     }
 
     & path.keyword {
         fill: $warning;
         opacity: 0.2;
+    }
+
+    & path.author {
+        opacity: 0.1;
     }
 }
 
