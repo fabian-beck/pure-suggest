@@ -544,7 +544,9 @@ export default {
                     });
                     authorNodes
                         .select("text")
-                        .text((d) => d.author.initials);
+                        .text((d) => d.author.initials)
+                        .classed("long", (d) => d.author.initials.length > 2)
+                        .classed("very-long", (d) => d.author.initials.length > 3);
                 }
                 function getRectSize(d) {
                     return RECT_SIZE * (d.publication.isActive ? ENLARGE_FACTOR : 1);
@@ -883,6 +885,15 @@ export default {
             fill: white;
             font-size: 0.85rem;
             font-weight: 600;
+            transform: translate(0px, 1px);
+
+            &.long {
+                font-size: 0.7rem;
+            }
+
+            &.very-long {
+                font-size: 0.6rem;
+            }
         }
     }
 
