@@ -41,6 +41,7 @@ export default class Author {
         this.firstAuthorCount += author.firstAuthorCount;
         this.score += author.score;
         this.keywords = mergeCounts(this.keywords, author.keywords);
+        this.orcid = this.orcid? this.orcid : author.orcid;
         this.alternativeNames = [...new Set(this.alternativeNames.concat(author.alternativeNames))];
         this.coauthors = mergeCounts(this.coauthors, author.coauthors);
         this.yearMin = Math.min(this.yearMin, author.yearMin);

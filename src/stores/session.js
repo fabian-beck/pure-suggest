@@ -185,20 +185,6 @@ export const useSessionStore = defineStore('session', {
 
     computeSelectedPublicationsAuthors() {
 
-      function mergeCounts(counts1, counts2) {
-        const counts = {};
-        Object.keys(counts1).forEach((key) => {
-          counts[key] = counts1[key];
-        });
-        Object.keys(counts2).forEach((key) => {
-          if (!counts[key]) {
-            counts[key] = 0;
-          }
-          counts[key] += counts2[key];
-        });
-        return counts;
-      }
-
       function deleteAuthor(authorId, newAuthorId) {
         delete authors[authorId];
         Object.values(authors).forEach((author) => {
@@ -232,15 +218,7 @@ export const useSessionStore = defineStore('session', {
         if (authorMatches.length > 1) {
           authorMatches.forEach((author2) => {
             if (author.id.length > author2.id.length) {
-              author.count += author2.count;
-              author.firstAuthorCount += author2.firstAuthorCount;
-              author.score += author2.score;
-              author.keywords = mergeCounts(author.keywords, author2.keywords);
-              author.alternativeNames = [...new Set(author.alternativeNames.concat(author2.alternativeNames))];
-              author.coauthors = mergeCounts(author.coauthors, author2.coauthors);
-              author.yearMin = Math.min(author.yearMin, author2.yearMin);
-              author.yearMax = Math.max(author.yearMax, author2.yearMax);
-              author.newPublication = author.newPublication || author2.newPublication;
+              author.mergeWith(author2);
               deleteAuthor(author2.id, author.id);
             }
           });
@@ -259,18 +237,7 @@ export const useSessionStore = defineStore('session', {
         const authorId = author.id.replace(/^(\w+,\s\w)\.?(\s\w\.?)?$/, "$1")
         const authorMatches = authorsWithoutAbbreviatedNames.filter((author2) => author2.id.startsWith(authorId));
         if (authorMatches.length === 1 && (!author.orcid || !authorMatches[0].orcid || author.orcid === authorMatches[0].orcid)) {
-          authorMatches[0].count += author.count;
-          authorMatches[0].firstAuthorCount += author.firstAuthorCount;
-          authorMatches[0].score += author.score;
-          authorMatches[0].keywords = mergeCounts(author.keywords, authorMatches[0].keywords);
-          authorMatches[0].coauthors = mergeCounts(author.coauthors, authorMatches[0].coauthors);
-          if (author.orcid && !authorMatches[0].orcid) {
-            authorMatches[0].orcid = author.orcid;
-          }
-          authorMatches[0].alternativeNames = [...new Set(author.alternativeNames.concat(authorMatches[0].alternativeNames))];
-          authorMatches[0].yearMin = Math.min(author.yearMin, authorMatches[0].yearMin);
-          authorMatches[0].yearMax = Math.max(author.yearMax, authorMatches[0].yearMax);
-          authorMatches[0].newPublication = author.newPublication || authorMatches[0].newPublication;
+          authorMatches[0].mergeWith(author);
           deleteAuthor(author.id, authorMatches[0].id);
         }
       });
