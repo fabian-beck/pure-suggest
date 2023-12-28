@@ -314,7 +314,7 @@ export default {
                         this.filteredAuthors.forEach((author) => {
                             nodes.push({
                                 id: author.id,
-                                initials: author.initials,
+                                author: author,
                                 type: "author",
                             });
                         });
@@ -529,9 +529,16 @@ export default {
                 }
                 function updateAuthorNodes() {
                     const authorNodes = this.node.filter((d) => d.type === "author");
+                    if (this.authorTooltips)
+                        this.authorTooltips.forEach((tooltip) => tooltip.destroy());
+                    authorNodes.attr("data-tippy-content", (d) => `Author "${d.author.name}" is linked to ${d.author.count} selected publication${d.author.count > 1 ? "s" : ""}.`);
+                    this.authorTooltips = tippy(authorNodes.nodes(), {
+                        maxWidth: "min(400px,70vw)",
+                        allowHTML: true,
+                    });
                     authorNodes
                         .select("text")
-                        .text((d) => d.initials);
+                        .text((d) => d.author.initials);
                 }
                 function getRectSize(d) {
                     return RECT_SIZE * (d.publication.isActive ? ENLARGE_FACTOR : 1);
