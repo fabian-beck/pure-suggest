@@ -241,7 +241,7 @@ export default {
                         .id((d) => d.id)
                         .distance((d) => {
                             if (d.type === "citation")
-                                return (that.isNetworkClusters && d.internal) ? 500 / that.sessionStore.selectedPublications.length : 10;
+                                return (that.isNetworkClusters && d.internal) ? 1500 / that.sessionStore.selectedPublications.length : 10;
                             if (d.type === "keyword")
                                 return 0;
                             if (d.type === "author")
@@ -249,11 +249,11 @@ export default {
                             return 10;
                         })
                         .strength((d) => {
-                            const internalFactor = d.type === "citation" ? (d.internal ? 1 : 0.5)
+                            const internalFactor = d.type === "citation" ? (d.internal ? 1 : 1.5)
                                 : (d.type === "keyword" ? 0.5
-                                    : 1.5); // author
+                                    : 2.5); // author
                             const clustersFactor = that.isNetworkClusters ? 1 : 0.5;
-                            return 0.15 * clustersFactor * internalFactor;
+                            return 0.05 * clustersFactor * internalFactor;
                         }))
                     .force("charge", d3
                         .forceManyBody()
