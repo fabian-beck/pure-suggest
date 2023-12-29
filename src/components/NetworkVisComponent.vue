@@ -462,6 +462,7 @@ export default {
                         .classed("suggested", (d) => !d.publication.isSelected)
                         .classed("active", (d) => d.publication.isActive)
                         .classed("linkedToActive", (d) => d.publication.isLinkedToActive)
+                        .classed("non-active", (d) => this.sessionStore.activePublication && !d.publication.isActive && !d.publication.isLinkedToActive)
                         .classed("queuingForSelected", (d) => d.isQueuingForSelected)
                         .classed("queuingForExcluded", (d) => d.isQueuingForExcluded)
                         .classed("is-hovered", (d) => d.publication.isHovered)
@@ -504,7 +505,9 @@ export default {
                 }
                 function updateKeywordNodes() {
                     const keywordNodes = this.node.filter((d) => d.type === "keyword");
-                    keywordNodes.classed("linkedToActive", (d) => this.sessionStore.isKeywordLinkedToActive(d.id));
+                    keywordNodes
+                        .classed("linkedToActive", (d) => this.sessionStore.isKeywordLinkedToActive(d.id))
+                        .classed("non-active", (d) => this.sessionStore.activePublication && !this.sessionStore.isKeywordLinkedToActive(d.id));
                     if (this.keywordTooltips)
                         this.keywordTooltips.forEach((tooltip) => tooltip.destroy());
                     keywordNodes.attr("data-tippy-content", (d) => `Keyword "${d.id}" is matched in ${d.frequency} publication${d.frequency > 1 ? "s" : ""}${this.sessionStore.isKeywordLinkedToActive(d.id)
@@ -535,6 +538,9 @@ export default {
                 }
                 function updateAuthorNodes() {
                     const authorNodes = this.node.filter((d) => d.type === "author");
+                    authorNodes
+                        .classed("linkedToActive", (d) => d.author.publicationDois.includes(this.sessionStore.activePublication?.doi))
+                        .classed("non-active", (d) => this.sessionStore.activePublication && !d.author.publicationDois.includes(this.sessionStore.activePublication?.doi));
                     if (this.authorTooltips)
                         this.authorTooltips.forEach((tooltip) => tooltip.destroy());
                     authorNodes.attr("data-tippy-content", (d) => `Author "${d.author.name}" is linked to ${d.author.count} selected publication${d.author.count > 1 ? "s" : ""}.`);
@@ -639,11 +645,32 @@ export default {
                 .attr("class", (d) => {
                     const classes = [d.type];
                     if (d.type === "citation") {
-                        if (d.source.publication.isActive || d.target.publication.isActive)
-                            classes.push("active");
+                        if (this.sessionStore.activePublication) {
+                            if (d.source.publication.isActive || d.target.publication.isActive)
+                                classes.push("active");
+                            else {
+                                classes.push("non-active");
+                            }
+                        }
                         if (!(d.source.publication.isSelected &&
                             d.target.publication.isSelected))
                             classes.push("external");
+                    } else if (d.type === "keyword") {
+                        if (this.sessionStore.activePublication) {
+                            if (d.target.publication.isActive)
+                                classes.push("active");
+                            else {
+                                classes.push("non-active");
+                            }
+                        }
+                    } else if (d.type === "author") {
+                        if (this.sessionStore.activePublication) {
+                            if (d.target.publication.isActive)
+                                classes.push("active");
+                            else {
+                                classes.push("non-active");
+                            }
+                        }
                     }
                     return classes.join(" ");
                 });
@@ -828,6 +855,10 @@ export default {
             stroke-width: 4;
         }
 
+        &.non-active {
+            opacity: 0.3;
+        }
+
         &.isKeywordHovered rect {
             filter: drop-shadow(0px 0px 10px $warning);
             stroke: $warning-dark;
@@ -866,6 +897,10 @@ export default {
             text-decoration-line: underline;
         }
 
+        &.non-active {
+            opacity: 0.3;
+        }
+
         &:hover text {
             transform: translate(0px, 3.5px) scale(1.1);
         }
@@ -895,6 +930,10 @@ export default {
                 font-size: 0.6rem;
             }
         }
+
+        &.non-active {
+            opacity: 0.3;
+        }
     }
 
     & path.citation {
@@ -911,17 +950,36 @@ export default {
 
         &.active {
             opacity: 0.5;
-            stroke-dasharray: 15 5;
+        }
+
+        &.non-active {
+            opacity: 0.05;
         }
     }
 
     & path.keyword {
         fill: $warning;
         opacity: 0.2;
+
+        &.active {
+            opacity: 0.5;
+        }
+
+        &.non-active {
+            opacity: 0.05;
+        }
     }
 
     & path.author {
-        opacity: 0.1;
+        opacity: 0.2;
+
+        &.active {
+            opacity: 0.5;
+        }
+
+        &.non-active {
+            opacity: 0.05;
+        }
     }
 }
 
