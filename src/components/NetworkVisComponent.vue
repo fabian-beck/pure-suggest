@@ -101,7 +101,7 @@ import CompactButton from "./basic/CompactButton.vue";
 
 const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;
-const MARGIN = 20;
+const MARGIN = 50;
 const SIMULATION_ALPHA = 0.5;
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -613,6 +613,7 @@ export default {
                     .attr("width", (d) => this.yearX(Math.min(d + 5, CURRENT_YEAR)) - this.yearX(d))
                     .attr("height", 20000)
                     .attr("fill", (d) => d % 10 === 0 ? "#fafafa" : "white")
+                    .attr("x", -24)
                     .attr("y", -10000);
                 this.label
                     .selectAll("text")
