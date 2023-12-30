@@ -554,7 +554,13 @@ export default {
                         .classed("non-active", (d) => this.sessionStore.activePublication && !d.author.publicationDois.includes(this.sessionStore.activePublication?.doi));
                     if (this.authorTooltips)
                         this.authorTooltips.forEach((tooltip) => tooltip.destroy());
-                    authorNodes.attr("data-tippy-content", (d) => `Author "${d.author.name}" is linked to ${d.author.count} selected publication${d.author.count > 1 ? "s" : ""}.`);
+                    authorNodes.attr("data-tippy-content", (d) => `<b>${d.author.name}</b> is linked 
+                        to <b>${d.author.count}</b> selected publication${d.author.count > 1 ? "s" : ""}, 
+                        published ${d.author.yearMin === d.author.yearMax
+                            ? `in <b>${d.author.yearMin}</b>`
+                            : `between <b>${d.author.yearMin}</b> and <b>${d.author.yearMax}</b>`},
+                        with an aggregated, weighted score of <b>${d.author.score}</b>.               
+                    `);
                     this.authorTooltips = tippy(authorNodes.nodes(), {
                         maxWidth: "min(400px,70vw)",
                         allowHTML: true,
