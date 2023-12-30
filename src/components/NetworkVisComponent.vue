@@ -240,13 +240,14 @@ export default {
                         .forceLink()
                         .id((d) => d.id)
                         .distance((d) => {
-                            if (d.type === "citation")
-                                return (that.isNetworkClusters && d.internal) ? 1500 / that.sessionStore.selectedPublications.length : 10;
-                            if (d.type === "keyword")
-                                return 0;
-                            if (d.type === "author")
-                                return 0;
-                            return 10;
+                            switch (d.type) {
+                                case "citation":
+                                    return (that.isNetworkClusters && d.internal) ? 1500 / that.sessionStore.selectedPublications.length : 10;
+                                case "keyword":
+                                    return 0;
+                                case "author":
+                                    return 0;
+                            }
                         })
                         .strength((d) => {
                             const internalFactor = d.type === "citation" ? (d.internal ? 1 : 1.5)
