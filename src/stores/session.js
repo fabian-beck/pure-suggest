@@ -295,6 +295,10 @@ export const useSessionStore = defineStore('session', {
     },
 
     setActivePublication(doi) {
+      this.publications.forEach((publication) => {
+        publication.isActive = false;
+        publication.isLinkedToActive = false;
+      });
       this.selectedPublications.forEach((selectedPublication) => {
         selectedPublication.isActive = selectedPublication.doi === doi;
         if (selectedPublication.isActive) {
