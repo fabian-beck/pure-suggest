@@ -484,7 +484,7 @@ export default {
                         ? d.publication.authorShort + ", "
                         : ""}${d.publication.year ? d.publication.year : "[unknown year]"})
               <br><br>
-              The publication is ${d.publication.isSelected ? "selected" : "suggested"}${d.isQueuingForSelected
+              The publication is <b>${d.publication.isSelected ? "selected" : "suggested"}</b>${d.isQueuingForSelected
                             ? " and marked to be added to selected publications"
                             : ""}${d.isQueuingForExcluded
                                 ? " and marked to be added to excluded publications"
@@ -521,9 +521,9 @@ export default {
                         .classed("non-active", (d) => this.sessionStore.activePublication && !this.sessionStore.isKeywordLinkedToActive(d.id));
                     if (this.keywordTooltips)
                         this.keywordTooltips.forEach((tooltip) => tooltip.destroy());
-                    keywordNodes.attr("data-tippy-content", (d) => `Keyword "${d.id}" is matched in ${d.frequency} publication${d.frequency > 1 ? "s" : ""}${this.sessionStore.isKeywordLinkedToActive(d.id)
+                    keywordNodes.attr("data-tippy-content", (d) => `Keyword <b>${d.id}</b> is matched in <b>${d.frequency}</b> publication${d.frequency > 1 ? "s" : ""}${this.sessionStore.isKeywordLinkedToActive(d.id)
                         ? ", and also linked to the currently active publication"
-                        : ""}.<br><br>Drag to reposition (sticky), click to detach.`);
+                        : ""}.<br><br><i>Drag to reposition (sticky), click to detach.</i>`);
                     this.keywordTooltips = tippy(keywordNodes.nodes(), {
                         maxWidth: "min(400px,70vw)",
                         allowHTML: true,
