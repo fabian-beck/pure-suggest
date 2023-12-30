@@ -260,10 +260,20 @@ export default {
                         .strength(Math.min(-200, -100 * Math.sqrt(that.sessionStore.selectedPublications.length))))
                     .force("x", d3
                         .forceX()
-                        .x((d) => that.isNetworkClusters
-                            ? 0
-                            : this.yearX(d.type === "publication" ? d.publication.year : CURRENT_YEAR + 2))
-                        .strength(that.isNetworkClusters ? 0.05 : 10))
+                        .x((d) => {
+                            if (that.isNetworkClusters) {
+                                return 0;
+                            }
+                            switch (d.type) {
+                                case "publication":
+                                    return this.yearX(d.publication.year);
+                                case "keyword":
+                                    return this.yearX(CURRENT_YEAR + 2);
+                                default:
+                                    return this.yearX((d.author.yearMax + d.author.yearMin) / 2);
+                            }
+                        })
+                        .strength((d) => that.isNetworkClusters ? 0.05 : (d.type === "author" ? 0.2 : 10)))
                     .force("y", d3
                         .forceY()
                         .y(0)
@@ -722,9 +732,18 @@ export default {
                 width * (this.interfaceStore.isMobile ? 0.05 : 0.3));
         },
         nodeX: function (d) {
-            return this.isNetworkClusters
-                ? d.x
-                : this.yearX(d.publication ? d.publication.year : CURRENT_YEAR + 2);
+            if (this.isNetworkClusters) {
+                return d.x;
+            } else {
+                switch (d.type) {
+                    case "publication":
+                        return this.yearX(d.publication.year);
+                    case "keyword":
+                        return this.yearX(CURRENT_YEAR + 2);
+                    default:
+                        return d.x;
+                }
+            }
         },
         activatePublication: function (event, d) {
             this.sessionStore.activatePublicationComponentByDoi(d.publication.doi);
