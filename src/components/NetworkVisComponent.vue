@@ -481,7 +481,7 @@ export default {
                         .classed("queuingForSelected", (d) => d.isQueuingForSelected)
                         .classed("queuingForExcluded", (d) => d.isQueuingForExcluded)
                         .classed("is-hovered", (d) => d.publication.isHovered)
-                        .classed("isKeywordHovered", (d) => d.publication.isKeywordHovered)
+                        .classed("is-keyword-hovered", (d) => d.publication.isKeywordHovered)
                         .classed("is-author-hovered", (d) => d.publication.isAuthorHovered);
                     if (this.publicationTooltips)
                         this.publicationTooltips.forEach((tooltip) => tooltip.destroy());
@@ -905,7 +905,7 @@ export default {
             opacity: 0.3;
         }
 
-        &.isKeywordHovered rect {
+        &.is-keyword-hovered rect {
             filter: drop-shadow(0px 0px 10px $warning);
             stroke: $warning-dark;
         }
@@ -958,7 +958,7 @@ export default {
     }
 
     & g.author.node-container {
-        cursor: pointer;
+        cursor: default;
 
         & circle {
             fill: black;
