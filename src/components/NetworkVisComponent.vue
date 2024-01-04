@@ -446,6 +446,10 @@ export default {
                             .attr("r", 12)
                             .attr("fill", "black");
                         authorNodes.append("text");
+                        authorNodes
+                            .on("mouseover", this.authorNodeMouseover)
+                            .on("mouseout", this.authorNodeMouseout);
+
                         return g;
                     });
                 try {
@@ -477,7 +481,8 @@ export default {
                         .classed("queuingForSelected", (d) => d.isQueuingForSelected)
                         .classed("queuingForExcluded", (d) => d.isQueuingForExcluded)
                         .classed("is-hovered", (d) => d.publication.isHovered)
-                        .classed("isKeywordHovered", (d) => d.publication.isKeywordHovered);
+                        .classed("isKeywordHovered", (d) => d.publication.isKeywordHovered)
+                        .classed("is-author-hovered", (d) => d.publication.isAuthorHovered);
                     if (this.publicationTooltips)
                         this.publicationTooltips.forEach((tooltip) => tooltip.destroy());
                     publicationNodes.attr("data-tippy-content", (d) => `<b>${d.publication.title ? d.publication.title : "[unknown title]"}</b> (${d.publication.authorShort
@@ -734,6 +739,20 @@ export default {
             });
             this.plot();
         },
+        authorNodeMouseover: function(event, d) {
+            this.sessionStore.publicationsFiltered.forEach((publication) => {
+                if (d.author.publicationDois.includes(publication.doi)) {
+                    publication.isAuthorHovered = true;
+                }
+            });
+            this.plot();
+        },
+        authorNodeMouseout: function() {
+            this.sessionStore.publicationsFiltered.forEach((publication) => {
+                publication.isAuthorHovered = false;
+            });
+            this.plot();
+        },
         yearX: function (year) {
             const width = Math.max(this.svgWidth, 2 * this.svgHeight);
             return ((year - CURRENT_YEAR) * width * 0.03 +
@@ -891,6 +910,11 @@ export default {
             stroke: $warning-dark;
         }
 
+        &.is-author-hovered rect {
+            filter: drop-shadow(0px 0px 10px black);
+            stroke: black;
+        }
+
         &.queuingForSelected,
         &.queuingForExcluded {
             opacity: 0.5;
@@ -960,6 +984,12 @@ export default {
 
         &.non-active {
             opacity: 0.3;
+        }
+
+        &:hover {
+            & circle {
+                transform: scale(1.1);
+            }
         }
     }
 
