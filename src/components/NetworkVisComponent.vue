@@ -56,7 +56,8 @@
                         color="white">
                     </CompactButton>
                 </span>
-                <v-btn-toggle class="mr-4" v-model="showNodes" color="dark" multiple density="compact" elevation="1" @click="plot(true)">
+                <v-btn-toggle class="mr-4" v-model="showNodes" color="dark" multiple density="compact" elevation="1"
+                    @click="plot(true)">
                     <v-btn icon="mdi-water-outline" v-tippy="'Show selected publications as nodes'" value="selected"
                         class="has-text-primary"></v-btn>
                     <v-btn icon="mdi-water-plus-outline" v-tippy="'Show suggested publications as nodes'" value="suggested"
@@ -64,6 +65,8 @@
                     </v-btn>
                     <v-btn icon="mdi-chevron-double-up" v-tippy="'Show boost keywords as nodes'" value="keyword"
                         class="has-text-warning-dark"></v-btn>
+                    <v-btn icon="mdi-account" v-tippy="'Show authors as nodes'" value="author" class="has-text-grey-dark">
+                    </v-btn>
                 </v-btn-toggle>
                 <span>
                     <v-menu :close-on-content-click="false">
@@ -98,7 +101,7 @@ import CompactButton from "./basic/CompactButton.vue";
 
 const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;
-const MARGIN = 20;
+const MARGIN = 50;
 const SIMULATION_ALPHA = 0.5;
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -128,7 +131,7 @@ export default {
             link: null,
             label: null,
             zoom: null,
-            showNodes: ["selected", "suggested", "keyword"],
+            showNodes: ["selected", "suggested", "keyword", "author"],
             errorMessage: "",
             errorTimer: null,
             isFocusingSuggested: true,
@@ -143,6 +146,9 @@ export default {
         },
         showKeywordNodes: function () {
             return this.showNodes.includes("keyword");
+        },
+        showAuthorNodes: function () {
+            return this.showNodes.includes("author");
         },
     },
     watch: {
@@ -199,44 +205,12 @@ export default {
         });
     },
     methods: {
-        initForces: function () {
-            const that = this;
-            this.simulation
-                .force("link", d3
-                    .forceLink()
-                    .id((d) => d.id)
-                    .distance((d) => {
-                        if (that.isNetworkClusters && d.internal)
-                            return 500 / that.sessionStore.selectedPublications.length;
-                        if (d.type === "keyword")
-                            return 0;
-                        return 10;
-                    })
-                    .strength((d) => {
-                        const internalFactor = d.internal ? 1 : 0.5;
-                        const clustersFactor = that.isNetworkClusters ? 1 : 0.5;
-                        return 0.15 * clustersFactor * internalFactor;
-                    }))
-                .force("charge", d3
-                    .forceManyBody()
-                    .strength(Math.min(-200, -100 * Math.sqrt(that.sessionStore.selectedPublications.length))))
-                .force("x", d3
-                    .forceX()
-                    .x((d) => that.isNetworkClusters
-                        ? 0
-                        : this.yearX(d.publication ? d.publication.year : CURRENT_YEAR + 2))
-                    .strength(that.isNetworkClusters ? 0.05 : 10))
-                .force("y", d3
-                    .forceY()
-                    .y(0)
-                    .strength(that.isNetworkClusters ? 0.1 : 0.25))
-                .on("tick", this.tick);
-        },
         plot: function (restart) {
+
             if (this.isDragging)
                 return;
             try {
-                this.initForces();
+                initForces.call(this);
                 initGraph.call(this);
                 updateNodes.call(this);
                 updateLinks.call(this);
@@ -258,99 +232,180 @@ export default {
                     this.errorMessage = "";
                 }, 10000);
             }
+
+            function initForces() {
+                const that = this;
+                this.simulation
+                    .force("link", d3
+                        .forceLink()
+                        .id((d) => d.id)
+                        .distance((d) => {
+                            switch (d.type) {
+                                case "citation":
+                                    return (that.isNetworkClusters && d.internal) ? 1500 / that.sessionStore.selectedPublications.length : 10;
+                                case "keyword":
+                                    return 0;
+                                case "author":
+                                    return 0;
+                            }
+                        })
+                        .strength((d) => {
+                            const internalFactor = d.type === "citation" ? (d.internal ? 1 : 1.5)
+                                : (d.type === "keyword" ? 0.5
+                                    : 2.5); // author
+                            const clustersFactor = that.isNetworkClusters ? 1 : 0.5;
+                            return 0.05 * clustersFactor * internalFactor;
+                        }))
+                    .force("charge", d3
+                        .forceManyBody()
+                        .strength(Math.min(-200, -100 * Math.sqrt(that.sessionStore.selectedPublications.length))))
+                    .force("x", d3
+                        .forceX()
+                        .x((d) => {
+                            if (that.isNetworkClusters) {
+                                return 0;
+                            }
+                            switch (d.type) {
+                                case "publication":
+                                    return this.yearX(d.publication.year);
+                                case "keyword":
+                                    return this.yearX(CURRENT_YEAR + 2);
+                                default:
+                                    return this.yearX((d.author.yearMax + d.author.yearMin) / 2);
+                            }
+                        })
+                        .strength((d) => that.isNetworkClusters ? 0.05 : (d.type === "author" ? 0.2 : 10)))
+                    .force("y", d3
+                        .forceY()
+                        .y(0)
+                        .strength(that.isNetworkClusters ? 0.1 : 0.25))
+                    .on("tick", this.tick);
+            }
+
             function initGraph() {
                 this.doiToIndex = {};
+                this.filteredAuthors = this.sessionStore.selectedPublicationsAuthors
+                    .filter((author) => author.publicationDois?.length > 1)
+                    .slice(0, 10);
                 const nodes = initNodes.call(this);
                 const links = initLinks.call(this);
                 // https://observablehq.com/@d3/modifying-a-force-directed-graph
                 const old = new Map(this.node.data().map((d) => [d.id, d]));
                 this.graph.nodes = nodes.map((d) => Object.assign(old.get(d.id) || { x: 0, y: 0 }, d));
                 this.graph.links = links.map((d) => Object.assign({}, d));
-            }
-            function initNodes() {
-                const publicationNodes = [];
-                let i = 0;
-                const publications = this.showSelectedNodes ?
-                    (this.showSuggestedNodes ?
-                        (this.isFocusingSuggested ? this.sessionStore.publicationsFilteredandFocused : this.sessionStore.publicationsFiltered)
-                        : this.sessionStore.selectedPublications)
-                    : (this.showSuggestedNodes ?
-                        (this.isFocusingSuggested ? this.sessionStore.suggestedPublicationsFilteredandFocused : this.sessionStore.suggestedPublicationsFiltered)
-                        : []);
-                publications.forEach((publication) => {
-                    if (publication.year) {
-                        this.doiToIndex[publication.doi] = i;
-                        publicationNodes.push({
-                            id: publication.doi,
-                            publication: publication,
-                            isQueuingForSelected: this.sessionStore.isQueuingForSelected(publication.doi),
-                            isQueuingForExcluded: this.sessionStore.isQueuingForExcluded(publication.doi),
-                        });
-                        i++;
-                    }
-                });
-                if (this.showKeywordNodes) {
-                    const keywordNodes = [];
-                    this.sessionStore.uniqueBoostKeywords.forEach((keyword) => {
-                        const frequency = this.sessionStore.publications.filter((publication) => publication.boostKeywords.includes(keyword)).length;
-                        keywordNodes.push({
-                            id: keyword,
-                            frequency: frequency,
-                        });
+
+                function initNodes() {
+                    let nodes = [];
+                    let i = 0;
+                    const publications = this.showSelectedNodes ?
+                        (this.showSuggestedNodes ?
+                            (this.isFocusingSuggested ? this.sessionStore.publicationsFilteredandFocused : this.sessionStore.publicationsFiltered)
+                            : this.sessionStore.selectedPublications)
+                        : (this.showSuggestedNodes ?
+                            (this.isFocusingSuggested ? this.sessionStore.suggestedPublicationsFilteredandFocused : this.sessionStore.suggestedPublicationsFiltered)
+                            : []);
+                    publications.forEach((publication) => {
+                        if (publication.year) {
+                            this.doiToIndex[publication.doi] = i;
+                            nodes.push({
+                                id: publication.doi,
+                                publication: publication,
+                                isQueuingForSelected: this.sessionStore.isQueuingForSelected(publication.doi),
+                                isQueuingForExcluded: this.sessionStore.isQueuingForExcluded(publication.doi),
+                                type: "publication",
+                            });
+                            i++;
+                        }
                     });
-                    return publicationNodes.concat(keywordNodes);
-                }
-                return publicationNodes;
-            }
-            function initLinks() {
-                const links = [];
-                if (this.showKeywordNodes) {
-                    this.sessionStore.uniqueBoostKeywords.forEach((keyword) => {
-                        this.sessionStore.publicationsFiltered.forEach((publication) => {
-                            if (publication.doi in this.doiToIndex && publication.boostKeywords.includes(keyword)) {
-                                links.push({
-                                    source: keyword,
-                                    target: publication.doi,
-                                    type: "keyword",
-                                });
-                            }
-                        });
-                    });
-                }
-                this.sessionStore.selectedPublications.forEach((publication) => {
-                    if (publication.doi in this.doiToIndex) {
-                        publication.citationDois.forEach((citationDoi) => {
-                            if (citationDoi in this.doiToIndex) {
-                                links.push({
-                                    source: citationDoi,
-                                    target: publication.doi,
-                                    type: "citation",
-                                    internal: this.sessionStore.isSelected(citationDoi),
-                                });
-                            }
-                        });
-                        publication.referenceDois.forEach((referenceDoi) => {
-                            if (referenceDoi in this.doiToIndex) {
-                                links.push({
-                                    source: publication.doi,
-                                    target: referenceDoi,
-                                    type: "citation",
-                                    internal: this.sessionStore.isSelected(referenceDoi),
-                                });
-                            }
+                    if (this.showKeywordNodes) {
+                        this.sessionStore.uniqueBoostKeywords.forEach((keyword) => {
+                            const frequency = this.sessionStore.publications.filter((publication) => publication.boostKeywords.includes(keyword)).length;
+                            nodes.push({
+                                id: keyword,
+                                frequency: frequency,
+                                type: "keyword"
+                            });
                         });
                     }
-                });
-                return links;
+                    if (this.showAuthorNodes) {
+                        this.filteredAuthors.forEach((author) => {
+                            nodes.push({
+                                id: author.id,
+                                author: author,
+                                type: "author",
+                            });
+                        });
+                    }
+                    return nodes;
+                }
+
+                function initLinks() {
+                    const links = [];
+                    if (this.showKeywordNodes) {
+                        this.sessionStore.uniqueBoostKeywords.forEach((keyword) => {
+                            this.sessionStore.publicationsFiltered.forEach((publication) => {
+                                if (publication.doi in this.doiToIndex && publication.boostKeywords.includes(keyword)) {
+                                    links.push({
+                                        source: keyword,
+                                        target: publication.doi,
+                                        type: "keyword",
+                                    });
+                                }
+                            });
+                        });
+                    }
+                    this.sessionStore.selectedPublications.forEach((publication) => {
+                        if (publication.doi in this.doiToIndex) {
+                            publication.citationDois.forEach((citationDoi) => {
+                                if (citationDoi in this.doiToIndex) {
+                                    links.push({
+                                        source: citationDoi,
+                                        target: publication.doi,
+                                        type: "citation",
+                                        internal: this.sessionStore.isSelected(citationDoi),
+                                    });
+                                }
+                            });
+                            publication.referenceDois.forEach((referenceDoi) => {
+                                if (referenceDoi in this.doiToIndex) {
+                                    links.push({
+                                        source: publication.doi,
+                                        target: referenceDoi,
+                                        type: "citation",
+                                        internal: this.sessionStore.isSelected(referenceDoi),
+                                    });
+                                }
+                            });
+                        }
+                    });
+                    if (this.showAuthorNodes) {
+                        this.filteredAuthors.forEach((author) => {
+                            author.publicationDois
+                                .forEach((publicationDoi) => {
+                                    if (publicationDoi in this.doiToIndex) {
+                                        links.push({
+                                            source: author.id,
+                                            target: publicationDoi,
+                                            type: "author",
+                                        });
+                                    }
+                                });
+                        });
+                    }
+                    return links;
+                }
+
             }
+
             function updateNodes() {
                 this.node = this.node
                     .data(this.graph.nodes, (d) => d.id)
                     .join((enter) => {
                         const g = enter
                             .append("g")
-                            .attr("class", (d) => `node-container ${d.publication ? "publication" : "keyword"}`);
-                        const publicationNodes = g.filter((d) => d.publication);
+                            .attr("class", (d) => `node-container ${d.type}`);
+
+                        const publicationNodes = g.filter((d) => d.type === "publication");
                         publicationNodes
                             .append("rect")
                             .attr("pointer-events", "all")
@@ -376,13 +431,25 @@ export default {
                             .attr("y", 15)
                             .text("-");
                         publicationNodes.append("circle");
-                        const keywordNodes = g.filter((d) => !d.publication);
+
+                        const keywordNodes = g.filter((d) => d.type === "keyword");
                         keywordNodes.append("text");
                         keywordNodes
                             .call(this.keywordNodeDrag())
                             .on("click", this.keywordNodeClick)
                             .on("mouseover", this.keywordNodeMouseover)
                             .on("mouseout", this.keywordNodeMouseout);
+
+                        const authorNodes = g.filter((d) => d.type === "author");
+                        authorNodes
+                            .append("circle")
+                            .attr("r", 12)
+                            .attr("fill", "black");
+                        authorNodes.append("text");
+                        authorNodes
+                            .on("mouseover", this.authorNodeMouseover)
+                            .on("mouseout", this.authorNodeMouseout);
+
                         return g;
                     });
                 try {
@@ -397,24 +464,32 @@ export default {
                 catch (error) {
                     throw new Error("Cannot update keyword nodes in network: " + error.message);
                 }
+                try {
+                    updateAuthorNodes.call(this);
+                }
+                catch (error) {
+                    throw new Error("Cannot update author nodes in network: " + error.message);
+                }
                 function updatePublicationNodes() {
-                    const publicationNodes = this.node.filter((d) => d.publication);
+                    const publicationNodes = this.node.filter((d) => d.type === "publication");
                     publicationNodes
                         .classed("selected", (d) => d.publication.isSelected)
                         .classed("suggested", (d) => !d.publication.isSelected)
                         .classed("active", (d) => d.publication.isActive)
                         .classed("linkedToActive", (d) => d.publication.isLinkedToActive)
+                        .classed("non-active", (d) => this.sessionStore.activePublication && !d.publication.isActive && !d.publication.isLinkedToActive)
                         .classed("queuingForSelected", (d) => d.isQueuingForSelected)
                         .classed("queuingForExcluded", (d) => d.isQueuingForExcluded)
                         .classed("is-hovered", (d) => d.publication.isHovered)
-                        .classed("isKeywordHovered", (d) => d.publication.isKeywordHovered);
+                        .classed("is-keyword-hovered", (d) => d.publication.isKeywordHovered)
+                        .classed("is-author-hovered", (d) => d.publication.isAuthorHovered);
                     if (this.publicationTooltips)
                         this.publicationTooltips.forEach((tooltip) => tooltip.destroy());
                     publicationNodes.attr("data-tippy-content", (d) => `<b>${d.publication.title ? d.publication.title : "[unknown title]"}</b> (${d.publication.authorShort
                         ? d.publication.authorShort + ", "
                         : ""}${d.publication.year ? d.publication.year : "[unknown year]"})
               <br><br>
-              The publication is ${d.publication.isSelected ? "selected" : "suggested"}${d.isQueuingForSelected
+              The publication is <b>${d.publication.isSelected ? "selected" : "suggested"}</b>${d.isQueuingForSelected
                             ? " and marked to be added to selected publications"
                             : ""}${d.isQueuingForExcluded
                                 ? " and marked to be added to excluded publications"
@@ -445,13 +520,15 @@ export default {
                         .attr("stroke", "black");
                 }
                 function updateKeywordNodes() {
-                    const keywordNodes = this.node.filter((d) => !d.publication);
-                    keywordNodes.classed("linkedToActive", (d) => this.sessionStore.isKeywordLinkedToActive(d.id));
+                    const keywordNodes = this.node.filter((d) => d.type === "keyword");
+                    keywordNodes
+                        .classed("linkedToActive", (d) => this.sessionStore.isKeywordLinkedToActive(d.id))
+                        .classed("non-active", (d) => this.sessionStore.activePublication && !this.sessionStore.isKeywordLinkedToActive(d.id));
                     if (this.keywordTooltips)
                         this.keywordTooltips.forEach((tooltip) => tooltip.destroy());
-                    keywordNodes.attr("data-tippy-content", (d) => `Keyword "${d.id}" is matched in ${d.frequency} publication${d.frequency > 1 ? "s" : ""}${this.sessionStore.isKeywordLinkedToActive(d.id)
+                    keywordNodes.attr("data-tippy-content", (d) => `Keyword <b>${d.id}</b> is matched in <b>${d.frequency}</b> publication${d.frequency > 1 ? "s" : ""}${this.sessionStore.isKeywordLinkedToActive(d.id)
                         ? ", and also linked to the currently active publication"
-                        : ""}.<br><br>Drag to reposition (sticky), click to detach.`);
+                        : ""}.<br><br><i>Drag to reposition (sticky), click to detach.</i>`);
                     this.keywordTooltips = tippy(keywordNodes.nodes(), {
                         maxWidth: "min(400px,70vw)",
                         allowHTML: true,
@@ -475,6 +552,30 @@ export default {
                             return d.id;
                         });
                 }
+                function updateAuthorNodes() {
+                    const authorNodes = this.node.filter((d) => d.type === "author");
+                    authorNodes
+                        .classed("linkedToActive", (d) => d.author.publicationDois.includes(this.sessionStore.activePublication?.doi))
+                        .classed("non-active", (d) => this.sessionStore.activePublication && !d.author.publicationDois.includes(this.sessionStore.activePublication?.doi));
+                    if (this.authorTooltips)
+                        this.authorTooltips.forEach((tooltip) => tooltip.destroy());
+                    authorNodes.attr("data-tippy-content", (d) => `<b>${d.author.name}</b> is linked 
+                        to <b>${d.author.count}</b> selected publication${d.author.count > 1 ? "s" : ""}, 
+                        published ${d.author.yearMin === d.author.yearMax
+                            ? `in <b>${d.author.yearMin}</b>`
+                            : `between <b>${d.author.yearMin}</b> and <b>${d.author.yearMax}</b>`},
+                        with an aggregated, weighted score of <b>${d.author.score}</b>.               
+                    `);
+                    this.authorTooltips = tippy(authorNodes.nodes(), {
+                        maxWidth: "min(400px,70vw)",
+                        allowHTML: true,
+                    });
+                    authorNodes
+                        .select("text")
+                        .text((d) => d.author.initials)
+                        .classed("long", (d) => d.author.initials.length > 2)
+                        .classed("very-long", (d) => d.author.initials.length > 3);
+                }
                 function getRectSize(d) {
                     return RECT_SIZE * (d.publication.isActive ? ENLARGE_FACTOR : 1);
                 }
@@ -492,11 +593,13 @@ export default {
                     return getRectSize(d) * internalFactor * 0.8;
                 }
             }
+
             function updateLinks() {
                 this.link = this.link
                     .data(this.graph.links, (d) => [d.source, d.target])
                     .join("path");
             }
+
             function updateYearLabels() {
                 if (this.sessionStore.publicationsFiltered.length === 0)
                     return;
@@ -515,6 +618,7 @@ export default {
                     .attr("width", (d) => this.yearX(Math.min(d + 5, CURRENT_YEAR)) - this.yearX(d))
                     .attr("height", 20000)
                     .attr("fill", (d) => d % 10 === 0 ? "#fafafa" : "white")
+                    .attr("x", -24)
                     .attr("y", -10000);
                 this.label
                     .selectAll("text")
@@ -564,11 +668,32 @@ export default {
                 .attr("class", (d) => {
                     const classes = [d.type];
                     if (d.type === "citation") {
-                        if (d.source.publication.isActive || d.target.publication.isActive)
-                            classes.push("active");
+                        if (this.sessionStore.activePublication) {
+                            if (d.source.publication.isActive || d.target.publication.isActive)
+                                classes.push("active");
+                            else {
+                                classes.push("non-active");
+                            }
+                        }
                         if (!(d.source.publication.isSelected &&
                             d.target.publication.isSelected))
                             classes.push("external");
+                    } else if (d.type === "keyword") {
+                        if (this.sessionStore.activePublication) {
+                            if (d.target.publication.isActive)
+                                classes.push("active");
+                            else {
+                                classes.push("non-active");
+                            }
+                        }
+                    } else if (d.type === "author") {
+                        if (this.sessionStore.activePublication) {
+                            if (d.target.publication.isActive)
+                                classes.push("active");
+                            else {
+                                classes.push("non-active");
+                            }
+                        }
                     }
                     return classes.join(" ");
                 });
@@ -614,15 +739,38 @@ export default {
             });
             this.plot();
         },
+        authorNodeMouseover: function(event, d) {
+            this.sessionStore.publicationsFiltered.forEach((publication) => {
+                if (d.author.publicationDois.includes(publication.doi)) {
+                    publication.isAuthorHovered = true;
+                }
+            });
+            this.plot();
+        },
+        authorNodeMouseout: function() {
+            this.sessionStore.publicationsFiltered.forEach((publication) => {
+                publication.isAuthorHovered = false;
+            });
+            this.plot();
+        },
         yearX: function (year) {
             const width = Math.max(this.svgWidth, 2 * this.svgHeight);
             return ((year - CURRENT_YEAR) * width * 0.03 +
                 width * (this.interfaceStore.isMobile ? 0.05 : 0.3));
         },
         nodeX: function (d) {
-            return this.isNetworkClusters
-                ? d.x
-                : this.yearX(d.publication ? d.publication.year : CURRENT_YEAR + 2);
+            if (this.isNetworkClusters) {
+                return d.x;
+            } else {
+                switch (d.type) {
+                    case "publication":
+                        return this.yearX(d.publication.year);
+                    case "keyword":
+                        return this.yearX(CURRENT_YEAR + 2);
+                    default:
+                        return d.x;
+                }
+            }
         },
         activatePublication: function (event, d) {
             this.sessionStore.activatePublicationComponentByDoi(d.publication.doi);
@@ -753,9 +901,18 @@ export default {
             stroke-width: 4;
         }
 
-        &.isKeywordHovered rect {
+        &.non-active {
+            opacity: 0.3;
+        }
+
+        &.is-keyword-hovered rect {
             filter: drop-shadow(0px 0px 10px $warning);
             stroke: $warning-dark;
+        }
+
+        &.is-author-hovered rect {
+            filter: drop-shadow(0px 0px 10px black);
+            stroke: black;
         }
 
         &.queuingForSelected,
@@ -791,34 +948,95 @@ export default {
             text-decoration-line: underline;
         }
 
+        &.non-active {
+            opacity: 0.3;
+        }
+
         &:hover text {
             transform: translate(0px, 3.5px) scale(1.1);
+        }
+    }
+
+    & g.author.node-container {
+        cursor: default;
+
+        & circle {
+            fill: black;
+            @include light-shadow-svg;
+        }
+
+        & text {
+            text-anchor: middle;
+            dominant-baseline: middle;
+            fill: white;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transform: translate(0px, 1px);
+
+            &.long {
+                font-size: 0.7rem;
+            }
+
+            &.very-long {
+                font-size: 0.6rem;
+            }
+        }
+
+        &.non-active {
+            opacity: 0.3;
+        }
+
+        &:hover {
+            & circle {
+                transform: scale(1.1);
+            }
         }
     }
 
     & path.citation {
         fill: none;
         stroke-width: 3;
-        stroke: #00000010;
+        stroke: $primary;
+        opacity: 0.15;
 
         &.external {
-            stroke: #00000006;
             stroke-width: 2;
+            stroke: $info;
+            opacity: 0.1;
         }
 
         &.active {
-            stroke: #000000aa;
-            stroke-dasharray: 15 5;
+            opacity: 0.5;
+        }
 
-            &.external {
-                stroke: #00000066;
-            }
+        &.non-active {
+            opacity: 0.05;
         }
     }
 
     & path.keyword {
         fill: $warning;
         opacity: 0.2;
+
+        &.active {
+            opacity: 0.5;
+        }
+
+        &.non-active {
+            opacity: 0.05;
+        }
+    }
+
+    & path.author {
+        opacity: 0.2;
+
+        &.active {
+            opacity: 0.5;
+        }
+
+        &.non-active {
+            opacity: 0.05;
+        }
     }
 }
 

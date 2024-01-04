@@ -4,6 +4,7 @@ import { useInterfaceStore } from "./interface.js";
 
 import Publication from "@/Publication.js";
 import Filter from '@/Filter.js';
+import Author from '@/Author.js';
 import { shuffle, saveAsFile } from "@/Util.js"
 import { clearCache } from "@/Cache.js";
 
@@ -69,6 +70,7 @@ export const useSessionStore = defineStore('session', {
   actions: {
     clear() {
       this.selectedPublications = [];
+      this.selectedPublicationsAuthors = [];
       this.selectedQueue = [];
       this.excludedPublicationsDois = [];
       this.excludedQueue = [];
@@ -183,135 +185,8 @@ export const useSessionStore = defineStore('session', {
     },
 
     computeSelectedPublicationsAuthors() {
-      function toAuthorId(str) {
-        return str
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "")
-          .toLowerCase();
-      }
-
-      function mergeCounts(counts1, counts2) {
-        const counts = {};
-        Object.keys(counts1).forEach((key) => {
-          counts[key] = counts1[key];
-        });
-        Object.keys(counts2).forEach((key) => {
-          if (!counts[key]) {
-            counts[key] = 0;
-          }
-          counts[key] += counts2[key];
-        });
-        return counts;
-      }
-
-      function deleteAuthor(authorId, newAuthorId) {
-        delete authors[authorId];
-        Object.values(authors).forEach((author) => {
-          if (author.coauthors[authorId]) {
-            author.coauthors[newAuthorId] = author.coauthors[newAuthorId] ? author.coauthors[newAuthorId] + author.coauthors[authorId] : author.coauthors[authorId];
-            delete author.coauthors[authorId];
-          }
-        });
-      }
-
-      const authors = {};
-      // assemble authors from selected publications
-      this.selectedPublications.forEach((publication) => {
-        publication.authorOrcid?.split("; ").forEach((author, i) => {
-          const authorName = author.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g, "");
-          const authorId = toAuthorId(authorName);
-          if (!authors[authorId]) {
-            authors[authorId] = {
-              id: authorId,
-              name: authorName,
-              count: 0,
-              firstAuthorCount: 0,
-              score: 0,
-              keywords: {},
-              orcid: "",
-              alternativeNames: [authorName],
-              coauthors: {},
-              yearMin: 9999,
-              yearMax: 0,
-              newPublication: false,
-            };
-          }
-          authors[authorId].count++;
-          authors[authorId].firstAuthorCount += i > 0 ? 0 : 1;
-          // updating score
-          authors[authorId].score += (this.isAuthorScoreEnabled ? publication.score : 1)
-            * (this.isFirstAuthorBoostEnabled ? (i > 0 ? 1 : 2) : 1)
-            * (this.isAuthorNewBoostEnabled ? (publication.isNew ? 2 : 1) : 1);
-          const orcid = author.match(/(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g);
-          if (orcid) {
-            authors[authorId].orcid = orcid[0];
-          }
-          const keywordCounts = publication.boostKeywords.map(keyword => ({ [keyword]: 1 })).reduce((a, b) => Object.assign(a, b), {}); // convert array to object
-          authors[authorId].keywords = mergeCounts(authors[authorId].keywords, keywordCounts);
-          const coauthorCounts = publication.author?.split("; ")
-            .map(coauthor => toAuthorId(coauthor))
-            .filter(coauthorId => coauthorId !== authorId)
-            .map(coauthorId => ({ [coauthorId]: 1 }))
-            .reduce((a, b) => Object.assign(a, b), {}); // convert array to object
-          authors[authorId].coauthors = mergeCounts(authors[authorId].coauthors, coauthorCounts);
-          authors[authorId].yearMin = Math.min(authors[authorId].yearMin, Number(publication.year));
-          authors[authorId].yearMax = Math.max(authors[authorId].yearMax, Number(publication.year));
-          authors[authorId].newPublication = authors[authorId].newPublication || publication.isNew;
-        });
-      });
-      // merge author with same ORCID
-      const orcidAuthors = Object.values(authors).filter((author) => author.orcid);
-      orcidAuthors.forEach((author) => {
-        const authorMatches = orcidAuthors.filter((author2) => author2.orcid === author.orcid);
-        if (authorMatches.length > 1) {
-          authorMatches.forEach((author2) => {
-            if (author.id.length > author2.id.length) {
-              author.count += author2.count;
-              author.firstAuthorCount += author2.firstAuthorCount;
-              author.score += author2.score;
-              author.keywords = mergeCounts(author.keywords, author2.keywords);
-              author.alternativeNames = [...new Set(author.alternativeNames.concat(author2.alternativeNames))];
-              author.coauthors = mergeCounts(author.coauthors, author2.coauthors);
-              author.yearMin = Math.min(author.yearMin, author2.yearMin);
-              author.yearMax = Math.max(author.yearMax, author2.yearMax);
-              author.newPublication = author.newPublication || author2.newPublication;
-              deleteAuthor(author2.id, author.id);
-            }
-          });
-        }
-      });
-      // match authors with abbreviated names and merge them
-      let authorsWithAbbreviatedNames = Object.values(authors).filter((author) => author.id.match(/^\w+,\s\w\.?(\s\w\.?)?$/));
-      Object.values(authors).filter(author => !authorsWithAbbreviatedNames.includes(author)).forEach((author) => {
-        // check if author has version with additional first name
-        if (Object.values(authors).filter((author2) => author2.id.startsWith(author.id)).length > 1) {
-          authorsWithAbbreviatedNames.push(author);
-        }
-      });
-      const authorsWithoutAbbreviatedNames = Object.values(authors).filter((author) => !authorsWithAbbreviatedNames.includes(author));
-      authorsWithAbbreviatedNames.forEach((author) => {
-        const authorId = author.id.replace(/^(\w+,\s\w)\.?(\s\w\.?)?$/, "$1")
-        const authorMatches = authorsWithoutAbbreviatedNames.filter((author2) => author2.id.startsWith(authorId));
-        if (authorMatches.length === 1 && (!author.orcid || !authorMatches[0].orcid || author.orcid === authorMatches[0].orcid)) {
-          authorMatches[0].count += author.count;
-          authorMatches[0].firstAuthorCount += author.firstAuthorCount;
-          authorMatches[0].score += author.score;
-          authorMatches[0].keywords = mergeCounts(author.keywords, authorMatches[0].keywords);
-          authorMatches[0].coauthors = mergeCounts(author.coauthors, authorMatches[0].coauthors);
-          if (author.orcid && !authorMatches[0].orcid) {
-            authorMatches[0].orcid = author.orcid;
-          }
-          authorMatches[0].alternativeNames = [...new Set(author.alternativeNames.concat(authorMatches[0].alternativeNames))];
-          authorMatches[0].yearMin = Math.min(author.yearMin, authorMatches[0].yearMin);
-          authorMatches[0].yearMax = Math.max(author.yearMax, authorMatches[0].yearMax);
-          authorMatches[0].newPublication = author.newPublication || authorMatches[0].newPublication;
-          deleteAuthor(author.id, authorMatches[0].id);
-        }
-      });
-      // sort by score
-      this.selectedPublicationsAuthors = Object.values(authors).sort(
-        (a, b) => b.score + b.firstAuthorCount / 100 + b.count / 1000 - (a.score + a.firstAuthorCount / 100 + a.count / 1000)
-      );
+      this.selectedPublicationsAuthors = Author.computePublicationsAuthors(
+        this.selectedPublications, this.isAuthorScoreEnabled, this.isFirstAuthorBoostEnabled, this.isAuthorNewBoostEnabled);
     },
 
     async computeSuggestions() {
@@ -420,6 +295,10 @@ export const useSessionStore = defineStore('session', {
     },
 
     setActivePublication(doi) {
+      this.publications.forEach((publication) => {
+        publication.isActive = false;
+        publication.isLinkedToActive = false;
+      });
       this.selectedPublications.forEach((selectedPublication) => {
         selectedPublication.isActive = selectedPublication.doi === doi;
         if (selectedPublication.isActive) {

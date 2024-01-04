@@ -47,6 +47,7 @@ export default class Publication {
         this.isRead = false;
         this.isHovered = false;
         this.isKeywordHovered = false;
+        this.isAuthorHovered = false;
         // loading state
         this.wasFetched = false;
     }

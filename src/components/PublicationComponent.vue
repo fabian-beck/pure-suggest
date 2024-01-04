@@ -36,6 +36,7 @@
         sessionStore.isQueuingForExcluded(publication.doi),
       'is-hovered': publication.isHovered,
       'is-keyword-hovered': publication.isKeywordHovered,
+      'is-author-hovered': publication.isAuthorHovered,
     }" :id="publication.doi" tabindex="0" v-on:focus="activate" @click.stop="activate"
       @mouseenter="sessionStore.hoverPublication(publication, true)"
       @mouseleave="sessionStore.hoverPublication(publication, false)">
@@ -293,7 +294,12 @@ li {
 
     &.is-keyword-hovered .glyph {
       box-shadow: 0 0 0.2rem 0.05rem $warning;
-      border-color: $warning-dark;
+      border-color: $warning-dark !important;
+    }
+
+    &.is-author-hovered .glyph {
+      box-shadow: 0 0 0.2rem 0.05rem $dark;
+      border-color: $dark !important;
     }
 
     &.is-active {
