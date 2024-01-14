@@ -9,17 +9,17 @@
         <v-list>
           <v-list-item>
             <v-checkbox v-model="sessionStore.isAuthorScoreEnabled" label="Consider publication score"
-              @change="sessionStore.computeSelectedPublicationsAuthors" density="compact"
+              @change="sessionStore.updateScores" density="compact"
               hint="Otherwise, each publication counts as one" persistent-hint />
           </v-list-item>
           <v-list-item>
             <v-checkbox v-model="sessionStore.isFirstAuthorBoostEnabled" label="Boost first authors"
-              @change="sessionStore.computeSelectedPublicationsAuthors" density="compact"
+              @change="sessionStore.updateScores" density="compact"
               hint="Counting first author publications twice" persistent-hint />
           </v-list-item>
           <v-list-item>
             <v-checkbox v-model="sessionStore.isAuthorNewBoostEnabled" label="Boost new publications"
-              @change="sessionStore.computeSelectedPublicationsAuthors" density="compact"
+              @change="sessionStore.updateScores" density="compact"
               :hint="`Counting publications tagged as 'new' twice`" persistent-hint />
           </v-list-item>
         </v-list>
