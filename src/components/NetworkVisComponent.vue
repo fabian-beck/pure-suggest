@@ -76,18 +76,14 @@
                         </template>
                         <v-list>
                             <v-list-item prepend-icon="mdi-water-plus-outline">
-                                <v-list-item-content>
-                                    <v-list-item-title>Number of <b>suggested</b> shown</v-list-item-title>
-                                    <v-slider v-model="suggestedNumberFactor" :max="1" :min="0.1" step="0.05"
-                                        @update:modelValue="plot(true)" />
-                                </v-list-item-content>
+                                <v-list-item-title>Number of <b>suggested</b> shown</v-list-item-title>
+                                <v-slider v-model="suggestedNumberFactor" :max="1" :min="0.1" step="0.05"
+                                    @update:modelValue="plot(true)" />
                             </v-list-item>
                             <v-list-item prepend-icon="mdi-account">
-                                <v-list-item-content>
-                                    <v-list-item-title>Number of <b>authors</b> shown</v-list-item-title>
-                                    <v-slider v-model="authorNumberFactor" :max="2" :min="0.1" step="0.1"
-                                        @update:modelValue="plot(true)" />
-                                </v-list-item-content>
+                                <v-list-item-title>Number of <b>authors</b> shown</v-list-item-title>
+                                <v-slider v-model="authorNumberFactor" :max="2" :min="0.1" step="0.1"
+                                    @update:modelValue="plot(true)" />
                             </v-list-item>
                         </v-list>
                     </v-menu>
@@ -314,7 +310,7 @@ export default {
                     if (this.showSuggestedNodes) {
                         publications = publications.concat(this.sessionStore.suggestedPublicationsFiltered.slice(0, Math.round(this.suggestedNumberFactor * 50)));
                     }
-                    
+
                     publications.forEach((publication) => {
                         if (publication.year) {
                             this.doiToIndex[publication.doi] = i;
@@ -750,7 +746,7 @@ export default {
             });
             this.plot();
         },
-        authorNodeMouseover: function(event, d) {
+        authorNodeMouseover: function (event, d) {
             this.sessionStore.publicationsFiltered.forEach((publication) => {
                 if (d.author.publicationDois.includes(publication.doi)) {
                     publication.isAuthorHovered = true;
@@ -758,7 +754,7 @@ export default {
             });
             this.plot();
         },
-        authorNodeMouseout: function() {
+        authorNodeMouseout: function () {
             this.sessionStore.publicationsFiltered.forEach((publication) => {
                 publication.isAuthorHovered = false;
             });
