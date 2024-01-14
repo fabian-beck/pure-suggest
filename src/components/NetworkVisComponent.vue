@@ -75,10 +75,19 @@
                                 v-bind="props"></CompactButton>
                         </template>
                         <v-list>
-                            <v-list-item>
-                                <v-checkbox v-model="isFocusingSuggested" label="Focus on top-ranked suggested"
-                                    @change="plot(true)" density="compact"
-                                    hint="Cuts the shown number of suggested publications" persistent-hint />
+                            <v-list-item prepend-icon="mdi-water-plus-outline">
+                                <v-list-item-content>
+                                    <v-list-item-title>Number of <b>suggested</b> shown</v-list-item-title>
+                                    <v-slider v-model="suggestedNumberFactor" :max="1" :min="0.1" step="0.05"
+                                        @update:modelValue="plot(true)" />
+                                </v-list-item-content>
+                            </v-list-item>
+                            <v-list-item prepend-icon="mdi-account">
+                                <v-list-item-content>
+                                    <v-list-item-title>Number of <b>authors</b> shown</v-list-item-title>
+                                    <v-slider v-model="authorNumberFactor" :max="2" :min="0.1" step="0.1"
+                                        @update:modelValue="plot(true)" />
+                                </v-list-item-content>
                             </v-list-item>
                         </v-list>
                     </v-menu>
@@ -134,7 +143,8 @@ export default {
             showNodes: ["selected", "suggested", "keyword", "author"],
             errorMessage: "",
             errorTimer: null,
-            isFocusingSuggested: true,
+            suggestedNumberFactor: 0.3,
+            authorNumberFactor: 0.5,
         };
     },
     computed: {
@@ -285,8 +295,7 @@ export default {
             function initGraph() {
                 this.doiToIndex = {};
                 this.filteredAuthors = this.sessionStore.selectedPublicationsAuthors
-                    .filter((author) => author.publicationDois?.length > 1)
-                    .slice(0, 10);
+                    .slice(0, this.authorNumberFactor * this.sessionStore.selectedPublications.length);
                 const nodes = initNodes.call(this);
                 const links = initLinks.call(this);
                 // https://observablehq.com/@d3/modifying-a-force-directed-graph
@@ -297,13 +306,15 @@ export default {
                 function initNodes() {
                     let nodes = [];
                     let i = 0;
-                    const publications = this.showSelectedNodes ?
-                        (this.showSuggestedNodes ?
-                            (this.isFocusingSuggested ? this.sessionStore.publicationsFilteredandFocused : this.sessionStore.publicationsFiltered)
-                            : this.sessionStore.selectedPublications)
-                        : (this.showSuggestedNodes ?
-                            (this.isFocusingSuggested ? this.sessionStore.suggestedPublicationsFilteredandFocused : this.sessionStore.suggestedPublicationsFiltered)
-                            : []);
+
+                    let publications = [];
+                    if (this.showSelectedNodes) {
+                        publications = publications.concat(this.sessionStore.selectedPublications);
+                    }
+                    if (this.showSuggestedNodes) {
+                        publications = publications.concat(this.sessionStore.suggestedPublicationsFiltered.slice(0, Math.round(this.suggestedNumberFactor * 50)));
+                    }
+                    
                     publications.forEach((publication) => {
                         if (publication.year) {
                             this.doiToIndex[publication.doi] = i;
