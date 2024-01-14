@@ -285,8 +285,7 @@ export default {
             function initGraph() {
                 this.doiToIndex = {};
                 this.filteredAuthors = this.sessionStore.selectedPublicationsAuthors
-                    .filter((author) => author.publicationDois?.length > 1)
-                    .slice(0, 10);
+                    .slice(0, this.sessionStore.selectedPublications.length);
                 const nodes = initNodes.call(this);
                 const links = initLinks.call(this);
                 // https://observablehq.com/@d3/modifying-a-force-directed-graph
