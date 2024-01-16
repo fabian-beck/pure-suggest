@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="isDialogShown" scrollable :fullscreen="interfaceStore.isMobile" :persistent="noCloseButton">
+    <v-dialog v-model="isDialogShown" scrollable :fullscreen="interfaceStore.isMobile">
         <v-card>
             <v-card-title
                 :class="`has-background-${headerColor} ${headerColor.startsWith('light') ? 'has-text-dark' : 'has-text-light'}`">
@@ -33,7 +33,6 @@ export default {
         headerColor: String,
         title: String,
         icon: String,
-        noCloseButton: Boolean,
     },
     data() {
         return {
