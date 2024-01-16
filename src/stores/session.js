@@ -121,9 +121,11 @@ export const useSessionStore = defineStore('session', {
       this.selectedPublications = this.selectedPublications.filter(
         publication => !this.excludedQueue.includes(publication.doi)
       );
-      this.suggestion.publications = this.suggestion.publications.filter(
-        publication => (!this.selectedQueue.includes(publication.doi) && !this.excludedQueue.includes(publication.doi))
-      );
+      if (this.suggestion) {
+        this.suggestion.publications = this.suggestion.publications.filter(
+          publication => (!this.selectedQueue.includes(publication.doi) && !this.excludedQueue.includes(publication.doi))
+        );
+      }
       if (this.selectedQueue.length) {
         this.addPublicationsToSelection(this.selectedQueue);
       }
