@@ -16,6 +16,7 @@ The tool is available at: https://fabian-beck.github.io/pure-suggest/
 ## Additional functionality
 
 * Add publications to selection by DOIs or search
+* View the main authors of the selected publications
 * Filter suggestions by different criteria
 * Automatic tagging of publication characteristics (e.g., highly cited)
 * Quick access to publications through links (DOIs, open access versions, or Google Scholar)
@@ -28,7 +29,7 @@ The tool is available at: https://fabian-beck.github.io/pure-suggest/
 
 ### Blog
 
-We publish news, tutorials, use cases, etc. as part of our blog on Medium.com: https://medium.com/@pure_suggest
+We publish news as part of our blog on Medium.com: https://medium.com/@pure_suggest
 
 ### Scientific publications
 

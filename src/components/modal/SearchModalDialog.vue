@@ -1,6 +1,5 @@
 <template>
-  <ModalDialog v-model="isSearchModalDialogShown" title="Search/add publications" icon="mdi-magnify" headerColor="primary"
-    noCloseButton>
+  <ModalDialog v-model="isSearchModalDialogShown" title="Search/add publications" icon="mdi-magnify" headerColor="primary">
     <template v-slot:sticky>
       <form v-on:submit.prevent="search" class="has-background-primary-light">
         <v-text-field clearable v-model="interfaceStore.searchQuery" type="input" ref="searchInput" variant="solo"
@@ -24,18 +23,6 @@
           v-show="searchResults.type === 'doi' && filteredSearchResults.length > 0" small>
           <v-icon left>mdi-plus-thick</v-icon> Add all
         </v-btn>
-        <p class="comment">
-          <b><span v-show="addedPublications.length === 0">No</span><span v-show="addedPublications.length > 0">{{
-            addedPublications.length
-          }}</span>
-            publication<span v-show="addedPublications.length > 1">s</span></b>
-          <span v-show="addedPublications.length === 0">&nbsp;yet marked</span>
-          to be added to selected.
-        </p>
-        <v-spacer></v-spacer>
-        <v-btn class="level-item has-background-primary has-text-white" @click="updateAndClose" @click.stop="logAdd()"
-          :disabled="addedPublications.length === 0">
-          <v-icon left>mdi-update</v-icon>Update</v-btn>
       </v-card-actions>
     </template>
     <div class="content">
@@ -80,7 +67,6 @@ export default {
   data() {
     return {
       searchResults: { results: [], type: "empty" },
-      addedPublications: [],
       isLoading: false,
       loaded: 0,
       cleanedSearchQuery: "",
@@ -93,8 +79,7 @@ export default {
           !this.sessionStore.selectedPublicationsDois.includes(
             publication.doi
           ) &&
-          !this.sessionStore.selectedQueue.includes(publication.doi) &&
-          !this.addedPublications.includes(publication.doi)
+          !this.sessionStore.selectedQueue.includes(publication.doi) 
       );
     },
   },
@@ -148,9 +133,8 @@ export default {
     },
 
     addPublication(doi) {
-      if (this.addedPublications.includes(doi)) return;
       this.sessionStore.logQd(doi,"import")
-      this.addedPublications.push(doi);
+      this.sessionStore.queueForSelected(doi);
     },
 
     addAllPublications() {
@@ -162,11 +146,6 @@ export default {
       this.interfaceStore.searchQuery = "";
     },
 
-    updateAndClose() {
-      this.sessionStore.addPublicationsAndUpdate(this.addedPublications);
-      this.close();
-    },
-
     close() {
       this.interfaceStore.isSearchModalDialogShown = false;
       this.reset();
@@ -174,7 +153,6 @@ export default {
 
     reset() {
       this.searchResults = { results: [], type: "empty" };
-      this.addedPublications = [];
       this.isLoading = false;
     },
     logAdd(){
