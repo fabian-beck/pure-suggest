@@ -22,6 +22,9 @@
               <v-list-item class="is-hidden-desktop">
                 {{ sessionStateString }}
               </v-list-item>
+              <v-list-item prepend-icon="mdi-minus-thick" @click="interfaceStore.isExcludedModalDialogShown = true"
+                title="Excluded publications" v-if="sessionStore.excludedPublicationsCount > 0">
+              </v-list-item>
               <v-list-item prepend-icon="mdi-export" @click="sessionStore.exportSession"
                 title="Export selected as JSON" />
               <v-list-item prepend-icon="mdi-export" @click="sessionStore.exportAllBibtex"
