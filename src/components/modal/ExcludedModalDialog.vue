@@ -6,10 +6,8 @@
                 <ul class="publication-list">
                     <li class="publication-component media" v-for="publication in excludedPublications"
                         :key="publication.doi">
-                        <!-- FIX: Does not update when publication data is fetched -->
                         <div class="media-content">
-                            {{ publication.title }}
-                            ({{ publication.doi }})
+                            <PublicationDescription :publication="publication" :alwaysShowDetails="true"></PublicationDescription>
                         </div>
                         <div class="media-right">
                             <CompactButton icon="mdi-undo" v-tippy="'Remove from list of excluded publication again.'"
@@ -25,22 +23,25 @@
 <script>
 import { useInterfaceStore } from "@/stores/interface.js";
 import { useSessionStore } from "@/stores/session.js";
-import { ref, watch } from "vue";
+import { watch } from "vue";
 import Publication from "@/Publication.js";
+import { reactive } from "vue";
 
 export default {
     setup() {
         const interfaceStore = useInterfaceStore();
         const sessionStore = useSessionStore();
 
-        const excludedPublications = ref([]);
+        const excludedPublications = reactive([]);
 
         const updateExcludedPublications = () => {
-            excludedPublications.value = [];
+            excludedPublications.splice(0, excludedPublications.length);
             sessionStore.excludedPublicationsDois.forEach((doi) => {
-                const publication = new Publication(doi);
+                excludedPublications.push(new Publication(doi));
+            });
+            // fetch publication data (Important note: as this is async, it needs to work on the publications after pushing them to the array; otherwise, the updates will not be noted)
+            excludedPublications.forEach((publication) => {
                 publication.fetchData();
-                excludedPublications.value.push(publication);
             });
         };
 
