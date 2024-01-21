@@ -17,6 +17,7 @@ export const useInterfaceStore = defineStore('interface', {
             isFilterPanelShown: false,
             isSearchModalDialogShown: false,
             isAuthorModalDialogShown: false,
+            isExcludeModalDialogShown: false,
             isAboutModalDialogShown: false,
             isKeyboardControlsModalDialogShown: false,
             isFeedbackSnackbarShown: false,

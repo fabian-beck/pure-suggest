@@ -12,6 +12,7 @@
     <!-- Modal dialogs -->
     <SearchModalDialog />
     <AuthorModalDialog />
+    <ExcludedModalDialog />
     <AboutModalDialog />
     <KeyboardControlsModalDialog />
     <!-- Other dialogs and overlays -->
