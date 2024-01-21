@@ -11,9 +11,9 @@
                             </PublicationDescription>
                         </div>
                         <div class="media-right">
-                            <CompactButton icon="mdi-undo" v-tippy="'Remove from list of excluded publication again.'"
+                            <CompactButton icon="mdi-undo" v-tippy="'Remove proublication from list of excluded publications again.'"
                                 v-on:click="removeFromExcluded(publication)"></CompactButton>
-                            <CompactButton icon="mdi-plus-thick" v-tippy="'Add directly to selected publications.'"
+                            <CompactButton icon="mdi-plus-thick" v-tippy="'Mark publication to be added to selected publications.'"
                                 v-on:click="removeFromExcludedAndAddToSelected(publication)" class="has-text-primary">
                             </CompactButton>
                         </div>
@@ -68,9 +68,8 @@ export default {
             this.updateExcludedPublications();
         },
         removeFromExcludedAndAddToSelected(publication) {
-            this.sessionStore.removeFromExcludedPublication(publication.doi);
-            this.sessionStore.addPublicationsToSelection([publication.doi]);
-            this.updateExcludedPublications();
+            this.sessionStore.queueForSelected([publication.doi]);
+            this.removeFromExcluded(publication);
         },
     },
 };
