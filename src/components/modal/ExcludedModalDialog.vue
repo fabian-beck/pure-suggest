@@ -7,11 +7,15 @@
                     <li class="publication-component media" v-for="publication in excludedPublications"
                         :key="publication.doi">
                         <div class="media-content">
-                            <PublicationDescription :publication="publication" :alwaysShowDetails="true"></PublicationDescription>
+                            <PublicationDescription :publication="publication" :alwaysShowDetails="true">
+                            </PublicationDescription>
                         </div>
                         <div class="media-right">
                             <CompactButton icon="mdi-undo" v-tippy="'Remove from list of excluded publication again.'"
                                 v-on:click="removeFromExcluded(publication)"></CompactButton>
+                            <CompactButton icon="mdi-plus-thick" v-tippy="'Add directly to selected publications.'"
+                                v-on:click="sessionStore.addToSelectedPublication(publication.doi)" class="has-text-primary">
+                            </CompactButton>
                         </div>
                     </li>
                 </ul>
@@ -47,7 +51,7 @@ export default {
 
         watch(
             () => interfaceStore.isExcludedModalDialogShown,
-            (newValue, _) => {
+            (newValue) => {
                 if (newValue === true) {
                     console.log("Excluded publications dialog shown");
                     updateExcludedPublications();
