@@ -1,6 +1,16 @@
 <template>
-    <ModalDialog headerColor="primary" title="Edit excluded publications" icon="mdi-minus-thick"
+    <ModalDialog headerColor="primary" title="Excluded publications" icon="mdi-minus-thick"
         v-model="interfaceStore.isExcludedModalDialogShown">
+        <template v-slot:sticky>
+            <v-sheet class="has-background-primary-light pa-2">
+                <p class="comment" v-if="excludedPublications.length > 0">
+                    These publications will not be suggested again unlike you remove them from this list.
+                    Alternatively, you can direclty mark them to be selected.</p>
+                <p class="comment" v-else>
+                    No publications currently excluded; you may close this dialog.
+                </p>
+            </v-sheet>
+        </template>
         <div class="content">
             <section>
                 <ul class="publication-list">
@@ -11,9 +21,11 @@
                             </PublicationDescription>
                         </div>
                         <div class="media-right">
-                            <CompactButton icon="mdi-undo" v-tippy="'Remove proublication from list of excluded publications again.'"
+                            <CompactButton icon="mdi-undo"
+                                v-tippy="'Remove proublication from list of excluded publications again.'"
                                 v-on:click="removeFromExcluded(publication)"></CompactButton>
-                            <CompactButton icon="mdi-plus-thick" v-tippy="'Mark publication to be added to selected publications.'"
+                            <CompactButton icon="mdi-plus-thick"
+                                v-tippy="'Mark publication to be added to selected publications.'"
                                 v-on:click="removeFromExcludedAndAddToSelected(publication)" class="has-text-primary">
                             </CompactButton>
                         </div>
@@ -74,3 +86,7 @@ export default {
     },
 };
 </script>
+
+<style scoped lang="scss">
+@include comment;
+</style>
