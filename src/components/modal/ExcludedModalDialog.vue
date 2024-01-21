@@ -14,7 +14,7 @@
                             <CompactButton icon="mdi-undo" v-tippy="'Remove from list of excluded publication again.'"
                                 v-on:click="removeFromExcluded(publication)"></CompactButton>
                             <CompactButton icon="mdi-plus-thick" v-tippy="'Add directly to selected publications.'"
-                                v-on:click="sessionStore.addToSelectedPublication(publication.doi)" class="has-text-primary">
+                                v-on:click="removeFromExcludedAndAddToSelected(publication)" class="has-text-primary">
                             </CompactButton>
                         </div>
                     </li>
@@ -65,6 +65,11 @@ export default {
         removeFromExcluded(publication) {
             this.sessionStore.removeFromExcludedPublication(publication.doi)
             this.sessionStore.updateSuggestions();
+            this.updateExcludedPublications();
+        },
+        removeFromExcludedAndAddToSelected(publication) {
+            this.sessionStore.removeFromExcludedPublication(publication.doi);
+            this.sessionStore.addPublicationsToSelection([publication.doi]);
             this.updateExcludedPublications();
         },
     },
