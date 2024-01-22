@@ -43,7 +43,9 @@
               to be excluded</span>.
           </div>
           <div class="media-right level">
-            <CompactButton icon="mdi-undo" class="ml-2 level-item" v-tippy="'Remove all publications from queue again.'"
+            <CompactButton icon="mdi-pencil" class="ml-2 level-item" v-tippy="'Edit publications in queue.'"
+              v-on:click="interfaceStore.isQueueModalDialogShown = true"></CompactButton>
+            <CompactButton icon="mdi-undo" class="ml-1 level-item" v-tippy="'Remove all publications from queue again.'"
               v-on:click="sessionStore.clearQueues()"></CompactButton>
             <v-btn class="has-background-primary has-text-white ml-2 level-item"
               v-tippy="'Update suggested and excluded publications with queue and compute new suggestions.'"

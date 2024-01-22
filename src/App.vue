@@ -13,6 +13,7 @@
     <SearchModalDialog />
     <AuthorModalDialog />
     <ExcludedModalDialog />
+    <QueueModalDialog />
     <AboutModalDialog />
     <KeyboardControlsModalDialog />
     <!-- Other dialogs and overlays -->
