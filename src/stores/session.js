@@ -130,13 +130,6 @@ export const useSessionStore = defineStore('session', {
         this.addPublicationsToSelection(this.selectedQueue);
       }
       await this.updateSuggestions();
-      if (
-        !this.interfaceStore.isfeedbackInvitationShown &&
-        !this.interfaceStore.feebackInvitationWasShown &&
-        this.selectedPublications.length >= 10
-      ) {
-        this.interfaceStore.showFeedbackInvitation();
-      }
       this.clearQueues();
     },
 

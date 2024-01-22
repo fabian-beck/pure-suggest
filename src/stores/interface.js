@@ -20,7 +20,6 @@ export const useInterfaceStore = defineStore('interface', {
             isExcludedModalDialogShown: false,
             isAboutModalDialogShown: false,
             isKeyboardControlsModalDialogShown: false,
-            isFeedbackSnackbarShown: false,
             feebackInvitationWasShown: false,
             confirmDialog: {
                 message: "",
@@ -44,8 +43,7 @@ export const useInterfaceStore = defineStore('interface', {
                 || this.isAuthorModalDialogShown
                 || this.isExcludedModalDialogShown
                 || this.isAboutModalDialogShown
-                || this.isKeyboardControlsModalDialogShown
-                || this.isFeedbackSnackbarShown;
+                || this.isKeyboardControlsModalDialogShown;
         }
     },
     actions: {
@@ -94,11 +92,6 @@ export const useInterfaceStore = defineStore('interface', {
             }
         },
 
-        showFeedbackInvitation() {
-            this.isFeedbackSnackbarShown = true;
-            this.feebackInvitationWasShown = true;
-        },
-
         openSearchModalDialog(query) {
             this.searchQuery = query ? query : "";
             this.isSearchModalDialogShown = true;
@@ -106,15 +99,6 @@ export const useInterfaceStore = defineStore('interface', {
 
         openAuthorModalDialog() {
             this.isAuthorModalDialogShown = true;
-        },
-
-        openFeedback() {
-            this.showConfirmDialog("<p>What you like and do not like, what features are missing, how you are using the tool, bugs, criticism, ... anything.</p><p>&nbsp;</p><p>We invite you to provide feedback publicly. Clicking 'OK' will open a GitHub discussion in another tab where you can post a comment (account required). Alternatively, you can always send a private message to <a href='mailto:fabian.beck@uni-bamberg.de'>fabian.beck@uni-bamberg.de</a>.</p>", () => {
-                window.open(
-                    "https://github.com/fabian-beck/pure-suggest/discussions/214"
-                )
-            },
-                "We are interested in your opinion!")
         },
 
         activatePublicationComponent: function (publicationComponent) {

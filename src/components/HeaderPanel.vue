@@ -46,7 +46,6 @@
           <v-list-item>
             <HeaderExternalLinks />
           </v-list-item>
-          <v-list-item prepend-icon="mdi-comment-quote-outline" @click="interfaceStore.openFeedback" title="Feedback" />
           <v-list-item prepend-icon="mdi-keyboard-outline"
             @click="interfaceStore.isKeyboardControlsModalDialogShown = true" class="is-hidden-touch"
             title="Keyboard controls" />
