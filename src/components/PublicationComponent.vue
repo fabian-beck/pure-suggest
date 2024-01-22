@@ -1,6 +1,6 @@
 <template>
   <li>
-    <div class="level is-mobile queueing-controls" v-if="sessionStore.isQueuingForSelected(publication.doi) ||
+    <div class="level is-mobile queue-controls" v-if="sessionStore.isQueuingForSelected(publication.doi) ||
       sessionStore.isQueuingForExcluded(publication.doi)" :class="{
         'to-be-selected': sessionStore.isQueuingForSelected(publication.doi),
       }">
@@ -363,7 +363,7 @@ li {
     }
   }
 
-  & .queueing-controls {
+  & .queue-controls {
     z-index: 1;
     position: absolute;
     border-radius: 4px;
