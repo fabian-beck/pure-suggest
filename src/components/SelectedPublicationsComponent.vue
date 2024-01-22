@@ -21,36 +21,42 @@
     </div>
     <div class="header">
       <div>
-        <div class="notification has-background-primary-light media p-2" v-show="sessionStore.isUpdatable">
-          <div class="media-content has-text-centered mt-2">
-            <InlineIcon icon="mdi-tray-full" class="mr-1"></InlineIcon>
-            <b>Queue:&nbsp;</b>
-            <span v-show="sessionStore.selectedQueue.length">
-              {{
-                sessionStore.selectedQueue.length > 1
-                ? `${sessionStore.selectedQueue.length} publications`
-                : "1 publication"
-              }}
-              to be added</span><span v-show="sessionStore.selectedQueue.length &&
-                  sessionStore.excludedQueue.length
-                  ">
-              and </span><span v-show="sessionStore.excludedQueue.length">
-              {{
-                sessionStore.excludedQueue.length > 1
-                ? `${sessionStore.excludedQueue.length} publications`
-                : "1 publication"
-              }}
-              to be excluded</span>.
-          </div>
-          <div class="media-right level">
-            <CompactButton icon="mdi-undo" class="ml-2 level-item" v-tippy="'Remove all publications from queue again.'"
-              v-on:click="sessionStore.clearQueues()"></CompactButton>
-            <v-btn class="has-background-primary has-text-white ml-2 level-item"
-              v-tippy="'Update suggested and excluded publications with queue and compute new suggestions.'"
-              @click="sessionStore.updateQueued">
-              <v-icon left>mdi-update</v-icon>
-              <span class="key">U</span>pdate
-            </v-btn>
+        <div class="notification has-background-primary-light p-2" v-show="sessionStore.isUpdatable">
+          <div class="level">
+            <div class="has-text-centered level-item queue-description">
+              <p>
+                <InlineIcon icon="mdi-tray-full" class="mr-2"></InlineIcon>
+                <b>Queue:&nbsp;</b>
+                <span v-show="sessionStore.selectedQueue.length">
+                  {{
+                    sessionStore.selectedQueue.length > 1
+                    ? `${sessionStore.selectedQueue.length} publications`
+                    : "1 publication"
+                  }}
+                  to be selected</span><span v-show="sessionStore.selectedQueue.length &&
+                      sessionStore.excludedQueue.length
+                      ">
+                  and </span><span v-show="sessionStore.excludedQueue.length">
+                  {{
+                    sessionStore.excludedQueue.length > 1
+                    ? `${sessionStore.excludedQueue.length} publications`
+                    : "1 publication"
+                  }}
+                  to be excluded</span>.
+              </p>
+            </div>
+            <div class="media-right"
+              :class="{ 'level-item': interfaceStore.isMobile, 'level-right': !interfaceStore.isMobile }">
+              <CompactButton icon="mdi-pencil" class="ml-2" v-tippy="'Edit publications in queue.'"
+                v-on:click="interfaceStore.isQueueModalDialogShown = true"></CompactButton>
+              <CompactButton icon="mdi-undo" class="ml-1" v-tippy="'Remove all publications from queue again.'"
+                v-on:click="sessionStore.clearQueues()"></CompactButton>
+              <v-btn class="has-background-primary has-text-white ml-2"
+                v-tippy="'Update suggested and excluded publications with queue and compute new suggestions.'"
+                @click="sessionStore.updateQueued" prepend-icon="mdi-update">
+                <span class="key">U</span>pdate
+              </v-btn>
+            </div>
           </div>
         </div>
         <div class="notification has-text-centered has-background-primary-light p-2" v-show="sessionStore.isEmpty">
@@ -134,8 +140,20 @@ export default {
     }
   }
 
+  & .queue-description {
+    max-width: calc(46vw - 200px);
+  }
+
   & .publication-list {
     @include scrollable-list;
+  }
+}
+
+@include touch {
+  .box {
+    & .queue-description {
+      max-width: 100vw;
+    }
   }
 }
 </style>

@@ -64,7 +64,7 @@ export default {
         watch(
             () => interfaceStore.isExcludedModalDialogShown,
             (newValue) => {
-                if (newValue === true) {
+                if (newValue) {
                     console.log("Excluded publications dialog shown");
                     updateExcludedPublications();
                 }
