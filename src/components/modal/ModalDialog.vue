@@ -63,7 +63,8 @@ export default {
 </script>
 
 <style scoped lang="scss">
-:deep(.v-overlay__content) {
+
+:deep(.v-overlay__content:has(.v-card)) {
     margin-top: 48px !important;
     height: calc(100vh - 48px) !important;
 
