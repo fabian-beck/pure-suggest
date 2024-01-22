@@ -17,6 +17,38 @@
                     v-show="sessionStore.isUpdatable" small prependIcon="mdi-update">Update</v-btn>
             </v-card-actions>
         </template>
+        <div class="content">
+            <section>
+                <div v-show="sessionStore.selectedQueue.length">
+                    <label>Queueing for <b>selected</b>:</label>
+                    <ul class="publication-list">
+                        <li class="publication-component media" v-for="doi in sessionStore.selectedQueue" :key="doi">
+                            <div class="media-content">
+                                {{ doi }}
+                            </div>
+                            <div class="media-right">
+                                <CompactButton icon="mdi-undo" v-tippy="'Remove publication from queue.'"
+                                    v-on:click="sessionStore.removeFromQueues(doi)"></CompactButton>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div v-show="sessionStore.excludedQueue.length">
+                    <label>Queueing for <b>excluded</b>:</label>
+                    <ul class="publication-list">
+                        <li class="publication-component media" v-for="doi in sessionStore.excludedQueue" :key="doi">
+                            <div class="media-content">
+                                {{ doi }}
+                            </div>
+                            <div class="media-right">
+                                <CompactButton icon="mdi-undo" v-tippy="'Remove publication from queue.'"
+                                    v-on:click="sessionStore.removeFromQueues(doi)"></CompactButton>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+        </div>
     </ModalDialog>
 </template>
 
@@ -45,8 +77,6 @@ export default {
         },
     },
 };
-
-
 </script>
 
 <style scoped lang="scss">
