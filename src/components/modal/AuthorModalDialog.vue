@@ -9,18 +9,18 @@
         <v-list>
           <v-list-item>
             <v-checkbox v-model="sessionStore.isAuthorScoreEnabled" label="Consider publication score"
-              @change="sessionStore.updateScores" density="compact"
-              hint="Otherwise, each publication counts as one" persistent-hint />
+              @change="sessionStore.updateScores" density="compact" hint="Otherwise, each publication counts as one"
+              persistent-hint />
           </v-list-item>
           <v-list-item>
             <v-checkbox v-model="sessionStore.isFirstAuthorBoostEnabled" label="Boost first authors"
-              @change="sessionStore.updateScores" density="compact"
-              hint="Counting first author publications twice" persistent-hint />
+              @change="sessionStore.updateScores" density="compact" hint="Counting first author publications twice"
+              persistent-hint />
           </v-list-item>
           <v-list-item>
             <v-checkbox v-model="sessionStore.isAuthorNewBoostEnabled" label="Boost new publications"
-              @change="sessionStore.updateScores" density="compact"
-              :hint="`Counting publications tagged as 'new' twice`" persistent-hint />
+              @change="sessionStore.updateScores" density="compact" :hint="`Counting publications tagged as 'new' twice`"
+              persistent-hint />
           </v-list-item>
         </v-list>
       </v-menu>
@@ -28,7 +28,8 @@
     <div class="content">
       <section>
         <ul>
-          <li v-for="author in sessionStore.selectedPublicationsAuthors" :key="author.id" class="media">
+          <li v-for="author in sessionStore.selectedPublicationsAuthors" :key="author.id" class="media"
+            :id="toTagId(author.id)">
             <AuthorGlyph :author="author" class="media-left"></AuthorGlyph>
             <div class="media-content">
               <div class="content">
@@ -67,7 +68,8 @@
                   Co-author of
                   <v-chip class="tag coauthor" v-for="coauthorId in Object.keys(author.coauthors).sort(
                     (a, b) => author.coauthors[b] - author.coauthors[a]
-                  )" :key="coauthorId" :style="coauthorStyle(author.coauthors[coauthorId])">
+                  )" :key="coauthorId" :style="coauthorStyle(author.coauthors[coauthorId])"
+                    @click="scrollToAuthor(coauthorId)">
                     {{ sessionStore.selectedPublicationsAuthors.filter(author => author.id === coauthorId)[0].name }} ({{
                       author.coauthors[coauthorId] }})
                   </v-chip>
@@ -111,6 +113,23 @@ export default {
     cancel() {
       this.interfaceStore.isAuthorModalDialogShown = false;
     },
+    scrollToAuthor(id) {
+      const tagId = this.toTagId(id);
+      const authorElement = document.getElementById(tagId);
+      authorElement.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "center",
+      });
+      const authorElementClasses = authorElement.classList;
+      authorElementClasses.add("highlight");
+      setTimeout(() => {
+        authorElementClasses.remove("highlight");
+      }, 2000);
+    },
+    toTagId(id) {
+      return `author-${id.replace(/[^a-zA-Z0-9]/g, "-")}`;
+    },
   },
   components: { CompactButton }
 };
@@ -122,24 +141,39 @@ export default {
   padding: 0;
   margin: 0;
 
-  & .media-left {
-    min-width: 4.5rem;
-    min-height: 3rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+  & li {
+    padding: 0 0.5rem;
+    &.highlight {
+      background-color: hsla(0, 0%, 70%, 0.5);
+      animation: fadeOut 2s forwards;
+    }
 
-  & .tag {
-    margin: 0.25rem;
-    position: relative;
-    top: -0.1rem;
+    @keyframes fadeOut {
+      to {
+        background-color: transparent;
+      }
+    }
 
-    &.keyword {
-      text-decoration: underline;
-      text-decoration-color: hsl(48, 100%, 67%);
-      text-decoration-thickness: 0.2rem;
+    & .media-left {
+      min-width: 4.5rem;
+      min-height: 3rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    & .tag {
+      margin: 0.25rem;
+      position: relative;
+      top: -0.1rem;
+
+      &.keyword {
+        text-decoration: underline;
+        text-decoration-color: hsl(48, 100%, 67%);
+        text-decoration-thickness: 0.2rem;
+      }
     }
   }
-}
-</style>
+
+
+}</style>
