@@ -14,14 +14,14 @@
       </v-btn>
     </template>
     <v-sheet class="has-background-warning-light p-2 pt-4">
-      <form @submit.prevent="sessionStore.updateScores"
+      <form @submit.prevent="sessionStore.logAndUpdateScores"
         v-tippy="`Boost by factors of 2 the score of publications that contain the following keyword(s) in their title.`">
         <v-text-field ref="boost" class="boost" density="compact" v-model="sessionStore.boostKeywordString"
           label="Boost keywords" variant="solo" append-inner-icon="mdi-close"
           @click:append-inner="sessionStore.setBoostKeywordString('')"
           hint="Use ',' to separate keywords, use '|' to discern alternatives/synonyms." persistent-hint>
           <template v-slot:append>
-            <v-btn class="has-background-warning" @click="sessionStore.updateScores" height="47">
+            <v-btn class="has-background-warning" @click="sessionStore.logAndUpdateScores" height="47">
               <v-icon>mdi-chevron-double-up</v-icon>
             </v-btn>
           </template>

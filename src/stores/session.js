@@ -3,9 +3,9 @@ import { defineStore } from "pinia";
 import { useInterfaceStore } from "./interface.js";
 
 import Publication from "@/Publication.js";
-import Filter from '@/Filter.js';
-import Author from '@/Author.js';
-import { shuffle, saveAsFile } from "@/Util.js"
+import Filter from "@/Filter.js";
+import Author from "@/Author.js";
+import { shuffle, saveAsFile } from "@/Util.js";
 import { clearCache } from "@/Cache.js";
 import { logPubEvent } from "@/Logging";
 import { logActionEvent } from "@/Logging";
@@ -38,18 +38,44 @@ export const useSessionStore = defineStore("session", {
     suggestedPublications: (state) =>
       state.suggestion ? state.suggestion.publications : [],
     suggestedPublicationsFiltered: (state) =>
-      state.interfaceStore.isFilterPanelShown ?
-        state.suggestedPublications.filter(publication => state.filter.matches(publication)) : state.suggestedPublications,
-    publications: (state) => state.selectedPublications.concat(state.suggestedPublications),
-    publicationsFiltered: (state) => state.selectedPublications.concat(state.suggestedPublicationsFiltered),
-    yearMax: (state) => Math.max(...state.publicationsFiltered.filter(publication => publication.year).map(publication => Number(publication.year))),
-    yearMin: (state) => Math.min(...state.publicationsFiltered.filter(publication => publication.year).map(publication => Number(publication.year))),
-    unreadSuggestionsCount: (state) => state.suggestedPublicationsFiltered.filter(
-      (publication) => !publication.isRead
-    ).length,
-    isKeywordLinkedToActive: (state) => (keyword) => state.activePublication && state.activePublication.boostKeywords.includes(keyword),
-    uniqueBoostKeywords: (state) => [...new Set(state.boostKeywordString.toUpperCase().split(/,\s*/).map(keyword => keyword.trim()))],
-    isUpdatable: (state) => state.selectedQueue.length > 0 || state.excludedQueue.length > 0,
+      state.interfaceStore.isFilterPanelShown
+        ? state.suggestedPublications.filter((publication) =>
+            state.filter.matches(publication)
+          )
+        : state.suggestedPublications,
+    publications: (state) =>
+      state.selectedPublications.concat(state.suggestedPublications),
+    publicationsFiltered: (state) =>
+      state.selectedPublications.concat(state.suggestedPublicationsFiltered),
+    yearMax: (state) =>
+      Math.max(
+        ...state.publicationsFiltered
+          .filter((publication) => publication.year)
+          .map((publication) => Number(publication.year))
+      ),
+    yearMin: (state) =>
+      Math.min(
+        ...state.publicationsFiltered
+          .filter((publication) => publication.year)
+          .map((publication) => Number(publication.year))
+      ),
+    unreadSuggestionsCount: (state) =>
+      state.suggestedPublicationsFiltered.filter(
+        (publication) => !publication.isRead
+      ).length,
+    isKeywordLinkedToActive: (state) => (keyword) =>
+      state.activePublication &&
+      state.activePublication.boostKeywords.includes(keyword),
+    uniqueBoostKeywords: (state) => [
+      ...new Set(
+        state.boostKeywordString
+          .toUpperCase()
+          .split(/,\s*/)
+          .map((keyword) => keyword.trim())
+      ),
+    ],
+    isUpdatable: (state) =>
+      state.selectedQueue.length > 0 || state.excludedQueue.length > 0,
     isEmpty: (state) =>
       state.selectedPublicationsCount === 0 &&
       state.excludedPublicationsCount === 0 &&
@@ -66,6 +92,7 @@ export const useSessionStore = defineStore("session", {
         (publication) => publication.doi === doi
       )[0],
   },
+
   actions: {
     clear() {
       this.selectedPublications = [];
@@ -91,6 +118,7 @@ export const useSessionStore = defineStore("session", {
 
     setBoostKeywordString(boostKeywordString) {
       this.boostKeywordString = boostKeywordString;
+      this.logKeywordUpdate();
       this.updateScores();
     },
 
@@ -143,7 +171,9 @@ export const useSessionStore = defineStore("session", {
       );
       if (this.suggestion) {
         this.suggestion.publications = this.suggestion.publications.filter(
-          publication => (!this.selectedQueue.includes(publication.doi) && !this.excludedQueue.includes(publication.doi))
+          (publication) =>
+            !this.selectedQueue.includes(publication.doi) &&
+            !this.excludedQueue.includes(publication.doi)
         );
       }
       if (this.selectedQueue.length) {
@@ -171,13 +201,14 @@ export const useSessionStore = defineStore("session", {
       console.log(`Adding to selection publications with DOIs: ${dois}.`);
       dois.forEach((doi) => {
         doi = doi.toLowerCase();
-        logPubEvent("Pub added", doi);
         if (this.isExcluded(doi)) {
           this.removeFromExcludedPublication(doi);
         }
         if (!this.getSelectedPublicationByDoi(doi)) {
           this.selectedPublications.push(new Publication(doi));
         }
+        let logPub = this.getPublicationByDoi(doi);
+        logPubEvent("Pub added", doi, logPub.title, logPub.authorShort);
       });
     },
 
@@ -200,7 +231,11 @@ export const useSessionStore = defineStore("session", {
 
     computeSelectedPublicationsAuthors() {
       this.selectedPublicationsAuthors = Author.computePublicationsAuthors(
-        this.selectedPublications, this.isAuthorScoreEnabled, this.isFirstAuthorBoostEnabled, this.isAuthorNewBoostEnabled);
+        this.selectedPublications,
+        this.isAuthorScoreEnabled,
+        this.isFirstAuthorBoostEnabled,
+        this.isAuthorNewBoostEnabled
+      );
     },
 
     async computeSuggestions() {
@@ -301,9 +336,15 @@ export const useSessionStore = defineStore("session", {
     updateScores() {
       console.log("Updating scores of publications and reordering them.");
       // treat spaces before/after commas
-      this.boostKeywordString = this.boostKeywordString.replace(/\s*,\s*/g, ", ");
+      this.boostKeywordString = this.boostKeywordString.replace(
+        /\s*,\s*/g,
+        ", "
+      );
       // remove spaces before/after vertical line
-      this.boostKeywordString = this.boostKeywordString.replace(/\s*\|\s*/g, "|");
+      this.boostKeywordString = this.boostKeywordString.replace(
+        /\s*\|\s*/g,
+        "|"
+      );
       // upper case
       this.boostKeywordString = this.boostKeywordString.toUpperCase();
       this.publications.forEach((publication) => {
@@ -318,6 +359,8 @@ export const useSessionStore = defineStore("session", {
           logPubEvent(
             "Pub suggested",
             pub.doi,
+            pub.title,
+            pub.authorShort,
             this.selectedPublicationsCount,
             this.suggestedPublications.findIndex(
               (publication) => publication.doi === pub.doi
@@ -504,13 +547,21 @@ export const useSessionStore = defineStore("session", {
     },
     logKeywordUpdate() {
       let logKeywords = this.boostKeywordString.replaceAll(",", "_");
+      console.log("Keywords updated: ", logKeywords);
       logActionEvent("Keywords updated", logKeywords);
+    },
+
+    logAndUpdateScores() {
+      this.logKeywordUpdate();
+      this.updateScores();
     },
     logPositionsFilterUpdate() {
       this.suggestedPublicationsFiltered.forEach((pub) => {
         logPubEvent(
           "Pub filtered",
           pub.doi,
+          pub.title,
+          pub.authorShort,
           this.selectedPublicationsCount,
           this.suggestedPublicationsFiltered.findIndex(
             (publication) => publication.doi === pub.doi
@@ -530,6 +581,8 @@ export const useSessionStore = defineStore("session", {
           logPubEvent(
             "Pub suggested",
             pub.doi,
+            pub.title,
+            pub.authorShort,
             this.selectedPublicationsCount,
             this.suggestedPublications.findIndex(
               (publication) => publication.doi === pub.doi
@@ -547,18 +600,21 @@ export const useSessionStore = defineStore("session", {
         "_" +
         this.filter.tag;
       allFilters = allFilters.replaceAll(/(undefined|null)/g, "");
-      if (allFilters.replaceAll("_","").length == 0){
+      if (allFilters.replaceAll("_", "").length == 0) {
         logActionEvent("Filter removed", allFilters);
       } else {
-      logActionEvent("Filter updated", allFilters);
+        logActionEvent("Filter updated", allFilters);
       }
       this.logPositionsFilterUpdate();
     },
 
     logDeactivate(doi, reason) {
+      let logPub = this.getPublicationByDoi(doi);
       logPubEvent(
         "Pub deactivated",
-        doi,
+        logPub.doi,
+        logPub.title,
+        logPub.authorShort,
         this.selectedPublicationsCount,
         this.suggestedPublications.findIndex(
           (publication) => publication.doi === doi
@@ -568,9 +624,12 @@ export const useSessionStore = defineStore("session", {
       );
     },
     logDoiClick(doi, component) {
+      let logPub = this.getPublicationByDoi(doi);
       logPubEvent(
         "Clicked doi",
         doi,
+        logPub.title,
+        logPub.authorShort,
         this.selectedPublicationsCount,
         this.suggestedPublications.findIndex(
           (publication) => publication.doi === doi
@@ -579,9 +638,12 @@ export const useSessionStore = defineStore("session", {
       );
     },
     logScholarClick(doi, component) {
+      let logPub = this.getPublicationByDoi(doi);
       logPubEvent(
         "Clicked scholar",
         doi,
+        logPub.title,
+        logPub.authorShort,
         this.selectedPublicationsCount,
         this.suggestedPublications.findIndex(
           (publication) => publication.doi === doi
@@ -590,9 +652,12 @@ export const useSessionStore = defineStore("session", {
       );
     },
     logAbstractClick(doi, component) {
+      let logPub = this.getPublicationByDoi(doi);
       logPubEvent(
-        "Clicked Abstract",
+        "Clicked abstract",
         doi,
+        logPub.title,
+        logPub.authorShort,
         this.selectedPublicationsCount,
         this.suggestedPublications.findIndex(
           (publication) => publication.doi === doi
@@ -601,9 +666,12 @@ export const useSessionStore = defineStore("session", {
       );
     },
     logQd(doi, activationSource) {
+      let logPub = this.getPublicationByDoi(doi);
       logPubEvent(
         "Pub qd for selected",
         doi,
+        logPub.title,
+        logPub.authorShort,
         this.selectedPublicationsCount,
         this.suggestedPublications.findIndex(
           (publication) => publication.doi === doi
@@ -612,9 +680,12 @@ export const useSessionStore = defineStore("session", {
       );
     },
     logActivate(doi, component) {
+      let logPub = this.getPublicationByDoi(doi);
       logPubEvent(
         "Pub activated",
         doi,
+        logPub.title,
+        logPub.authorShort,
         this.selectedPublicationsCount,
         this.suggestedPublications.findIndex(
           (publication) => publication.doi === doi
@@ -623,9 +694,12 @@ export const useSessionStore = defineStore("session", {
       );
     },
     logExclude(doi, component) {
+      let logPub = this.getPublicationByDoi(doi);
       logPubEvent(
         "Pub excluded",
         doi,
+        logPub.title,
+        logPub.authorShort,
         this.selectedPublicationsCount,
         this.suggestedPublications.findIndex(
           (publication) => publication.doi === doi
@@ -650,6 +724,11 @@ export const useSessionStore = defineStore("session", {
     },
     logAuthorScholarClick() {
       logActionEvent("Clicked author scholar");
+    },
+    getPublicationByDoi(doi) {
+      return this.publications.filter(
+        (publication) => publication.doi === doi
+      )[0];
     },
   },
 });

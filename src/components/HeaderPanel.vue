@@ -32,8 +32,8 @@
           </v-menu>
           <BoostKeywordsComponent />
         </div>
-      <FinishStudyButton />
       </v-app-bar-title>
+      <FinishStudyButton />
       <v-menu bottom left offset-y transition="slide-y-transition">
         <template v-slot:activator="{ props }">
           <v-btn icon v-bind="props" class="mr-1" density="compact">
