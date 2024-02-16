@@ -99,6 +99,7 @@ export default {
     const interfaceStore = useInterfaceStore();
     return { sessionStore, interfaceStore };
   },
+  expose: ["scrollToAuthor"],
   methods: {
     keywordStyle(count) {
       return {

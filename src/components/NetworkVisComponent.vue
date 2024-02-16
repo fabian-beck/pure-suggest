@@ -102,7 +102,6 @@ import { storeToRefs } from "pinia";
 
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
-import CompactButton from "./basic/CompactButton.vue";
 
 const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;
@@ -457,7 +456,8 @@ export default {
                             .attr("pointer-events", "none");
                         authorNodes
                             .on("mouseover", this.authorNodeMouseover)
-                            .on("mouseout", this.authorNodeMouseout);
+                            .on("mouseout", this.authorNodeMouseout)
+                            .on("click", this.authorNodeClick);
 
                         return g;
                     });
@@ -762,6 +762,9 @@ export default {
             });
             this.plot();
         },
+        authorNodeClick: function (event, d) {
+            this.interfaceStore.openAuthorModalDialog(d.author.id);
+        },
         yearX: function (year) {
             const width = Math.max(this.svgWidth, 2 * this.svgHeight);
             return ((year - CURRENT_YEAR) * width * 0.03 +
@@ -797,7 +800,6 @@ export default {
             this.svg.attr("transform", transform);
         },
     },
-    components: { CompactButton }
 };
 </script>
 
