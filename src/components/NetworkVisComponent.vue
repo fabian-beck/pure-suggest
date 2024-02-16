@@ -450,9 +450,11 @@ export default {
                         const authorNodes = g.filter((d) => d.type === "author");
                         authorNodes
                             .append("circle")
+                            .attr("pointer-events", "all")
                             .attr("r", 12)
                             .attr("fill", "black");
-                        authorNodes.append("text");
+                        authorNodes.append("text")
+                            .attr("pointer-events", "none");
                         authorNodes
                             .on("mouseover", this.authorNodeMouseover)
                             .on("mouseout", this.authorNodeMouseout);
