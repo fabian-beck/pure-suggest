@@ -969,7 +969,7 @@ export default {
     }
 
     & g.author.node-container {
-        cursor: default;
+        cursor: pointer;
 
         & circle {
             fill: black;

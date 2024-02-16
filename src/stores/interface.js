@@ -20,6 +20,7 @@ export const useInterfaceStore = defineStore('interface', {
             isExcludedModalDialogShown: false,
             isQueueModalDialogShown: false,
             isAboutModalDialogShown: false,
+            scrollAuthorId: null,
             isKeyboardControlsModalDialogShown: false,
             feebackInvitationWasShown: false,
             confirmDialog: {
@@ -99,8 +100,11 @@ export const useInterfaceStore = defineStore('interface', {
             this.isSearchModalDialogShown = true;
         },
 
-        openAuthorModalDialog() {
+        openAuthorModalDialog(authorId) {
             this.isAuthorModalDialogShown = true;
+            if (authorId) {
+                this.scrollAuthorId = authorId;
+            }
         },
 
         activatePublicationComponent: function (publicationComponent) {
