@@ -90,7 +90,6 @@
 <script>
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
-import CompactButton from "../basic/CompactButton.vue";
 
 export default {
   name: "AuthorModalDialog",
@@ -99,6 +98,7 @@ export default {
     const interfaceStore = useInterfaceStore();
     return { sessionStore, interfaceStore };
   },
+  expose: ["scrollToAuthor"],
   methods: {
     keywordStyle(count) {
       return {
@@ -125,13 +125,25 @@ export default {
       authorElementClasses.add("highlight");
       setTimeout(() => {
         authorElementClasses.remove("highlight");
-      }, 2000);
+      }, 3000);
     },
     toTagId(id) {
       return `author-${id.replace(/[^a-zA-Z0-9]/g, "-")}`;
     },
   },
-  components: { CompactButton }
+  watch: {
+    'interfaceStore.scrollAuthorId': {
+      handler: function (newValue) {
+        if (newValue) {
+          // wait for 1 second to ensure that the author list is rendered
+          setTimeout(() => {
+            this.scrollToAuthor(newValue);
+            this.interfaceStore.scrollAuthorId = null;
+          }, 1000);
+        }
+      },
+    },
+  }
 };
 </script>
 
@@ -143,6 +155,7 @@ export default {
 
   & li {
     padding: 0 0.5rem;
+
     &.highlight {
       background-color: hsla(0, 0%, 70%, 0.5);
       animation: fadeOut 2s forwards;
@@ -176,4 +189,5 @@ export default {
   }
 
 
-}</style>
+}
+</style>
