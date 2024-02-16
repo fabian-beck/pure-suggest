@@ -139,7 +139,7 @@ export default class Publication {
         this.isOpenAccess = this.oaLink ? true : false;
     }
 
-    updateScore(boostKeywords) {
+    updateScore(boostKeywords, isBoost) {
         this.boostKeywords = [];
         this.boostMatches = 0;
         this.boostFactor = 1;
@@ -168,7 +168,9 @@ export default class Publication {
                         // split matched title fragement
                         this.boostMatches += 1;
                         this.boostKeywords.push(boostKeyword);
-                        this.boostFactor = this.boostFactor * 2;
+                        if (isBoost) {
+                            this.boostFactor = this.boostFactor * 2;
+                        }
                         titleFragments[i] = [
                             titleFragment.substring(0, index),
                             "<u style='text-decoration-color: hsl(48, 100%, 67%); text-decoration-thickness: 0.25rem;'>" + titleFragment.substring(index, index + alternativeKeyword.length) + "</u>",
