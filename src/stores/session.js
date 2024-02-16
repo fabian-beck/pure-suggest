@@ -20,6 +20,7 @@ export const useSessionStore = defineStore('session', {
       suggestion: "",
       maxSuggestions: 50,
       boostKeywordString: "",
+      isBoost: true,
       activePublication: "",
       readPublicationsDois: new Set(),
       filter: new Filter(),
@@ -266,7 +267,7 @@ export const useSessionStore = defineStore('session', {
       // upper case
       this.boostKeywordString = this.boostKeywordString.toUpperCase();
       this.publications.forEach((publication) => {
-        publication.updateScore(this.uniqueBoostKeywords);
+        publication.updateScore(this.uniqueBoostKeywords, this.isBoost);
       });
       Publication.sortPublications(this.selectedPublications);
       Publication.sortPublications(this.suggestedPublications);
