@@ -16,7 +16,7 @@
           </div>
         </div>
         <p>
-          <em>PURE suggest</em> is a scientific literature search tool that,
+          <em>PUREsuggest</em> is a scientific literature search tool that,
           starting from some seed papers, suggests scientific publications
           through citations/references.
         </p>
@@ -74,7 +74,7 @@
         </ul>
         <h2><v-icon>mdi-tools</v-icon>&ensp;Similar Tools</h2>
         <p>
-          <em>PURE suggest</em> is not the first of its kind, but other tools
+          <em>PUREsuggest</em> is not the first of its kind, but other tools
           are available that also provide a visually supported literature
           search through citation links. Try them out and decide yourself
           which one you like best!
@@ -94,7 +94,7 @@
           </li>
         </ul>
         <h2><v-icon>mdi-card-account-mail</v-icon>&ensp;Contact</h2>
-        <p><em>PURE suggest</em> has been created by:</p>
+        <p><em>PUREsuggest</em> has been created by:</p>
         <p>
           <a href="https://github.com/fabian-beck">Fabian Beck</a> <br />
           University of Bamberg <br />
