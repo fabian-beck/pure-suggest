@@ -5,8 +5,8 @@ const app = createApp(App)
 // App meta data
 import packageInfo from './../package.json';
 const appMeta = {
-  name: "PURE suggest",
-  nameHtml: '<span class="has-text-primary">PURE&nbsp;</span><span class="has-text-info">suggest</span>',
+  name: "PUREsuggest",
+  nameHtml: '<span class="has-text-primary">PURE&ThinSpace;</span><span class="has-text-info">suggest</span>',
   subtitle: "Citation-based literature search",
   version: packageInfo.version,
 };
