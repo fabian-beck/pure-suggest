@@ -1,4 +1,5 @@
 <template>
+    <div>
         <v-btn icon href="https://medium.com/@pure_suggest" v-tippy="{content: 'Read more on Medium', placement: 'bottom'}" flat>
             <v-icon>mdi-post</v-icon>
         </v-btn>
