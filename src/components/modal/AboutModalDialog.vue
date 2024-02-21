@@ -30,14 +30,6 @@
             <InlineIcon icon="mdi-license" />
           </a>.
         </p>
-        <p>
-          Follow updates on
-          <a href="https://twitter.com/pure_suggest">
-            Twitter
-            <InlineIcon icon="mdi-twitter" />
-            (@pure_suggest)
-          </a>.
-        </p>
         <h2><v-icon>mdi-file-document</v-icon>&ensp;Read more</h2>
         <p>
           We publish news, tutorials, use cases, etc. as part of our <b>blog
