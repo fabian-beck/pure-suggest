@@ -7,11 +7,13 @@
       <SuggestedPublicationsComponent id="suggested" v-show="!interfaceStore.isNetworkExpanded" />
       <NetworkVisComponent id="network" :svgWidth="1500" :svgHeight="600" />
     </div>
-    <QuickAccessBar id="quick-access" class="is-hidden-desktop" v-if="!interfaceStore.isAnyOverlayShown">
+    <QuickAccessBar id="quick-access" class="is-hidden-desktop" v-show="!interfaceStore.isAnyOverlayShown">
     </QuickAccessBar>
     <!-- Modal dialogs -->
     <SearchModalDialog />
     <AuthorModalDialog />
+    <ExcludedModalDialog />
+    <QueueModalDialog />
     <AboutModalDialog />
     <KeyboardControlsModalDialog />
     <!-- Other dialogs and overlays -->
@@ -26,7 +28,6 @@
     <ConfirmDialog />
     <InfoDialog />
     <ErrorToast />
-    <FeedbackSnackbar />
   </v-app>
 </template>
 

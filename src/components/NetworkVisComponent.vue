@@ -609,12 +609,18 @@ export default {
               .on("mouseover", this.keywordNodeMouseover)
               .on("mouseout", this.keywordNodeMouseout);
 
-            const authorNodes = g.filter((d) => d.type === "author");
-            authorNodes.append("circle").attr("r", 12).attr("fill", "black");
-            authorNodes.append("text");
-            authorNodes
-              .on("mouseover", this.authorNodeMouseover)
-              .on("mouseout", this.authorNodeMouseout);
+                        const authorNodes = g.filter((d) => d.type === "author");
+                        authorNodes
+                            .append("circle")
+                            .attr("pointer-events", "all")
+                            .attr("r", 12)
+                            .attr("fill", "black");
+                        authorNodes.append("text")
+                            .attr("pointer-events", "none");
+                        authorNodes
+                            .on("mouseover", this.authorNodeMouseover)
+                            .on("mouseout", this.authorNodeMouseout)
+                            .on("click", this.authorNodeClick);
 
             return g;
           });
@@ -904,149 +910,133 @@ export default {
           return `M${this.nodeX(d.target) - x1},${d.target.y - y1}
             L${this.nodeX(d.target)},${d.target.y}
             L${this.nodeX(d.target) - x2},${d.target.y - y2}`;
-        })
-        .attr("class", (d) => {
-          const classes = [d.type];
-          if (d.type === "citation") {
-            if (this.sessionStore.activePublication) {
-              if (
-                d.source.publication.isActive ||
-                d.target.publication.isActive
-              )
-                classes.push("active");
-              else {
-                classes.push("non-active");
-              }
+                })
+                .attr("class", (d) => {
+                    const classes = [d.type];
+                    if (d.type === "citation") {
+                        if (this.sessionStore.activePublication) {
+                            if (d.source.publication.isActive || d.target.publication.isActive)
+                                classes.push("active");
+                            else {
+                                classes.push("non-active");
+                            }
+                        }
+                        if (!(d.source.publication.isSelected &&
+                            d.target.publication.isSelected))
+                            classes.push("external");
+                    } else if (d.type === "keyword") {
+                        if (this.sessionStore.activePublication) {
+                            if (d.target.publication.isActive)
+                                classes.push("active");
+                            else {
+                                classes.push("non-active");
+                            }
+                        }
+                    } else if (d.type === "author") {
+                        if (this.sessionStore.activePublication) {
+                            if (d.target.publication.isActive)
+                                classes.push("active");
+                            else {
+                                classes.push("non-active");
+                            }
+                        }
+                    }
+                    return classes.join(" ");
+                });
+            this.node.attr("transform", (d) => `translate(${this.nodeX(d)}, ${d.y})`);
+        },
+        keywordNodeDrag: function () {
+            const that = this;
+            function dragStart() {
+                d3.select(this).classed("fixed", true);
+                that.isDragging = true;
             }
-            if (
-              !(
-                d.source.publication.isSelected &&
-                d.target.publication.isSelected
-              )
-            )
-              classes.push("external");
-          } else if (d.type === "keyword") {
-            if (this.sessionStore.activePublication) {
-              if (d.target.publication.isActive) classes.push("active");
-              else {
-                classes.push("non-active");
-              }
+            function dragMove(event, d) {
+                d.fx = event.x;
+                d.fy = event.y;
+                that.simulation.alpha(SIMULATION_ALPHA).restart();
             }
-          } else if (d.type === "author") {
-            if (this.sessionStore.activePublication) {
-              if (d.target.publication.isActive) classes.push("active");
-              else {
-                classes.push("non-active");
-              }
+            function dragEnd() {
+                that.isDragging = false;
             }
-          }
-          return classes.join(" ");
-        });
-      this.node.attr("transform", (d) => `translate(${this.nodeX(d)}, ${d.y})`);
+            return d3
+                .drag()
+                .on("start", dragStart)
+                .on("drag", dragMove)
+                .on("end", dragEnd);
+        },
+        keywordNodeClick: function (event, d) {
+            delete d.fx;
+            delete d.fy;
+            d3.select(event.target.parentNode).classed("fixed", false);
+            this.simulation.alpha(SIMULATION_ALPHA).restart();
+        },
+        keywordNodeMouseover: function (event, d) {
+            this.sessionStore.publicationsFiltered.forEach((publication) => {
+                if (publication.boostKeywords.includes(d.id)) {
+                    publication.isKeywordHovered = true;
+                }
+            });
+            this.plot();
+        },
+        keywordNodeMouseout: function () {
+            this.sessionStore.publicationsFiltered.forEach((publication) => {
+                publication.isKeywordHovered = false;
+            });
+            this.plot();
+        },
+        authorNodeMouseover: function (event, d) {
+            this.sessionStore.publicationsFiltered.forEach((publication) => {
+                if (d.author.publicationDois.includes(publication.doi)) {
+                    publication.isAuthorHovered = true;
+                }
+            });
+            this.plot();
+        },
+        authorNodeMouseout: function () {
+            this.sessionStore.publicationsFiltered.forEach((publication) => {
+                publication.isAuthorHovered = false;
+            });
+            this.plot();
+        },
+        authorNodeClick: function (event, d) {
+            this.interfaceStore.openAuthorModalDialog(d.author.id);
+        },
+        yearX: function (year) {
+            const width = Math.max(this.svgWidth, 2 * this.svgHeight);
+            return ((year - CURRENT_YEAR) * width * 0.03 +
+                width * (this.interfaceStore.isMobile ? 0.05 : 0.3));
+        },
+        nodeX: function (d) {
+            if (this.isNetworkClusters) {
+                return d.x;
+            } else {
+                switch (d.type) {
+                    case "publication":
+                        return this.yearX(d.publication.year);
+                    case "keyword":
+                        return this.yearX(CURRENT_YEAR + 2);
+                    default:
+                        return d.x;
+                }
+            }
+        },
+        activatePublication: function (event, d) {
+            this.sessionStore.activatePublicationComponentByDoi(d.publication.doi);
+            event.stopPropagation();
+        },
+        toggleMode() {
+            this.isNetworkClusters = !this.isNetworkClusters;
+        },
+        expandNetwork(isNetworkExpanded) {
+            this.interfaceStore.isNetworkExpanded = isNetworkExpanded;
+        },
+        zoomByFactor(factor) {
+            const transform = d3.zoomTransform(this.svg.node());
+            transform.k = transform.k * factor;
+            this.svg.attr("transform", transform);
+        },
     },
-    keywordNodeDrag: function () {
-      const that = this;
-      function dragStart() {
-        d3.select(this).classed("fixed", true);
-        that.isDragging = true;
-      }
-      function dragMove(event, d) {
-        d.fx = event.x;
-        d.fy = event.y;
-        that.simulation.alpha(SIMULATION_ALPHA).restart();
-      }
-      function dragEnd(event, d) {
-        that.isDragging = false;
-        logActionEvent("Keyword dragged", toRaw(d).id)
-      }
-      return d3
-        .drag()
-        .on("start", dragStart)
-        .on("drag", dragMove)
-        .on("end", dragEnd);
-    },
-    keywordNodeClick: function (event, d) {
-      delete d.fx;
-      delete d.fy;
-      d3.select(event.target.parentNode).classed("fixed", false);
-      this.simulation.alpha(SIMULATION_ALPHA).restart();
-    },
-    keywordNodeMouseover: function (event, d) {
-      this.sessionStore.publicationsFiltered.forEach((publication) => {
-        if (publication.boostKeywords.includes(d.id)) {
-          publication.isKeywordHovered = true;
-        }
-      });
-      this.plot();
-    },
-    keywordNodeMouseout: function () {
-      this.sessionStore.publicationsFiltered.forEach((publication) => {
-        publication.isKeywordHovered = false;
-      });
-      this.plot();
-    },
-    authorNodeMouseover: function (event, d) {
-      this.sessionStore.publicationsFiltered.forEach((publication) => {
-        if (d.author.publicationDois.includes(publication.doi)) {
-          publication.isAuthorHovered = true;
-        }
-      });
-      this.plot();
-    },
-    authorNodeMouseout: function () {
-      this.sessionStore.publicationsFiltered.forEach((publication) => {
-        publication.isAuthorHovered = false;
-      });
-      this.plot();
-    },
-    yearX: function (year) {
-      const width = Math.max(this.svgWidth, 2 * this.svgHeight);
-      return (
-        (year - CURRENT_YEAR) * width * 0.03 +
-        width * (this.interfaceStore.isMobile ? 0.05 : 0.3)
-      );
-    },
-    nodeX: function (d) {
-      if (this.isNetworkClusters) {
-        return d.x;
-      } else {
-        switch (d.type) {
-          case "publication":
-            return this.yearX(d.publication.year);
-          case "keyword":
-            return this.yearX(CURRENT_YEAR + 2);
-          default:
-            return d.x;
-        }
-      }
-    },
-    activatePublication: function (event, d) {
-      this.sessionStore.activatePublicationComponentByDoi(d.publication.doi, 'network');
-      event.stopPropagation();
-    },
-    toggleMode() {
-      this.isNetworkClusters = !this.isNetworkClusters;
-    },
-    expandNetwork(isNetworkExpanded) {
-      this.interfaceStore.isNetworkExpanded = isNetworkExpanded;
-    },
-    zoomByFactor(factor) {
-      const transform = d3.zoomTransform(this.svg.node());
-      transform.k = transform.k * factor;
-      this.svg.attr("transform", transform);
-    },
-    logCollapseNetwork() {
-      logActionEvent("Network collapsed");
-    },
-    logExpandNetwork() {
-      logActionEvent("Network expanded");
-    },
-    logAndPlot(action,actionDetails,param){
-      logActionEvent(action,actionDetails)
-      this.plot(param)
-    }
-  },
-  components: { CompactButton },
 };
 </script>
 
@@ -1211,8 +1201,8 @@ export default {
     }
   }
 
-  & g.author.node-container {
-    cursor: default;
+    & g.author.node-container {
+        cursor: pointer;
 
     & circle {
       fill: black;

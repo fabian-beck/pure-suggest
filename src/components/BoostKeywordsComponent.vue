@@ -5,7 +5,7 @@
         :density="interfaceStore.isMobile ? 'compact' : 'default'">
         <v-icon size="18">mdi-chevron-double-up</v-icon>
         <span class="is-hidden-touch ml-2">
-          <span v-html="boostKeywordStringHtml ? boostKeywordStringHtml : '[Set boost keywords]'"
+          <span v-html="boostKeywordStringHtml ? boostKeywordStringHtml : '[Set keywords]'"
             :class="{ 'has-text-warning-dark': !boostKeywordStringHtml }"></span>
           <v-icon class="ml-2">
             mdi-menu-down
@@ -17,7 +17,7 @@
       <form @submit.prevent="sessionStore.logAndUpdateScores"
         v-tippy="`Boost by factors of 2 the score of publications that contain the following keyword(s) in their title.`">
         <v-text-field ref="boost" class="boost" density="compact" v-model="sessionStore.boostKeywordString"
-          label="Boost keywords" variant="solo" append-inner-icon="mdi-close"
+          label="Keywords" variant="solo" append-inner-icon="mdi-close"
           @click:append-inner="sessionStore.setBoostKeywordString('')"
           hint="Use ',' to separate keywords, use '|' to discern alternatives/synonyms." persistent-hint>
           <template v-slot:append>
@@ -26,6 +26,9 @@
             </v-btn>
           </template>
         </v-text-field>
+        <v-checkbox v-model="sessionStore.isBoost" label="Boost scores" density="compact"
+          hint="Each matched keyword in a title will double the score of a publication" persistent-hint
+          @change="sessionStore.updateScores"></v-checkbox>
       </form>
     </v-sheet>
   </v-menu>

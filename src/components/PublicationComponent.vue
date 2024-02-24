@@ -1,8 +1,7 @@
 <template>
   <li>
-    <v-overlay :model-value="sessionStore.isQueuingForSelected(publication.doi) ||
-      sessionStore.isQueuingForExcluded(publication.doi)" contained persistent class="align-center justify-center">
-      <div class="level is-mobile" :class="{
+    <div class="level is-mobile queue-controls" v-if="sessionStore.isQueuingForSelected(publication.doi) ||
+      sessionStore.isQueuingForExcluded(publication.doi)" :class="{
         'to-be-selected': sessionStore.isQueuingForSelected(publication.doi),
       }">
         <div class="level-item">
@@ -22,7 +21,6 @@
             v-on:click="sessionStore.removeFromQueues(publication.doi)"></CompactButton>
         </div>
       </div>
-    </v-overlay>
     <div class="publication-component media" :class="{
       'is-active': publication.isActive,
       'is-selected': publication.isSelected,
@@ -367,13 +365,19 @@ li {
     }
   }
 
-  & .v-overlay__content>div {
+  & .queue-controls {
+    z-index: 1;
+    position: absolute;
     border-radius: 4px;
     width: 250px;
     color: $dark;
     border-left: 4px solid $dark;
     padding: 0.5rem;
     background-color: white;
+    top: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    @include light-shadow;
 
     &.to-be-selected {
       border-color: $primary;

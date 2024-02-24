@@ -28,7 +28,8 @@
     <div class="content">
       <section>
         <ul>
-          <li v-for="author in sessionStore.selectedPublicationsAuthors" :key="author.id" class="media">
+          <li v-for="author in sessionStore.selectedPublicationsAuthors" :key="author.id" class="media"
+            :id="toTagId(author.id)">
             <AuthorGlyph :author="author" class="media-left"></AuthorGlyph>
             <div class="media-content">
               <div class="content">
@@ -67,7 +68,8 @@
                   Co-author of
                   <v-chip class="tag coauthor" v-for="coauthorId in Object.keys(author.coauthors).sort(
                     (a, b) => author.coauthors[b] - author.coauthors[a]
-                  )" :key="coauthorId" :style="coauthorStyle(author.coauthors[coauthorId])">
+                  )" :key="coauthorId" :style="coauthorStyle(author.coauthors[coauthorId])"
+                    @click="scrollToAuthor(coauthorId)">
                     {{ sessionStore.selectedPublicationsAuthors.filter(author => author.id === coauthorId)[0].name }} ({{
                       author.coauthors[coauthorId] }})
                   </v-chip>
@@ -88,7 +90,6 @@
 <script>
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
-import CompactButton from "../basic/CompactButton.vue";
 
 export default {
   name: "AuthorModalDialog",
@@ -97,6 +98,7 @@ export default {
     const interfaceStore = useInterfaceStore();
     return { sessionStore, interfaceStore };
   },
+  expose: ["scrollToAuthor"],
   methods: {
     keywordStyle(count) {
       return {
@@ -111,8 +113,37 @@ export default {
     cancel() {
       this.interfaceStore.isAuthorModalDialogShown = false;
     },
+    scrollToAuthor(id) {
+      const tagId = this.toTagId(id);
+      const authorElement = document.getElementById(tagId);
+      authorElement.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "center",
+      });
+      const authorElementClasses = authorElement.classList;
+      authorElementClasses.add("highlight");
+      setTimeout(() => {
+        authorElementClasses.remove("highlight");
+      }, 3000);
+    },
+    toTagId(id) {
+      return `author-${id.replace(/[^a-zA-Z0-9]/g, "-")}`;
+    },
   },
-  components: { CompactButton }
+  watch: {
+    'interfaceStore.scrollAuthorId': {
+      handler: function (newValue) {
+        if (newValue) {
+          // wait for 1 second to ensure that the author list is rendered
+          setTimeout(() => {
+            this.scrollToAuthor(newValue);
+            this.interfaceStore.scrollAuthorId = null;
+          }, 1000);
+        }
+      },
+    },
+  }
 };
 </script>
 
@@ -122,24 +153,41 @@ export default {
   padding: 0;
   margin: 0;
 
-  & .media-left {
-    min-width: 4.5rem;
-    min-height: 3rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+  & li {
+    padding: 0 0.5rem;
 
-  & .tag {
-    margin: 0.25rem;
-    position: relative;
-    top: -0.1rem;
+    &.highlight {
+      background-color: hsla(0, 0%, 70%, 0.5);
+      animation: fadeOut 2s forwards;
+    }
 
-    &.keyword {
-      text-decoration: underline;
-      text-decoration-color: hsl(48, 100%, 67%);
-      text-decoration-thickness: 0.2rem;
+    @keyframes fadeOut {
+      to {
+        background-color: transparent;
+      }
+    }
+
+    & .media-left {
+      min-width: 4.5rem;
+      min-height: 3rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    & .tag {
+      margin: 0.25rem;
+      position: relative;
+      top: -0.1rem;
+
+      &.keyword {
+        text-decoration: underline;
+        text-decoration-color: hsl(48, 100%, 67%);
+        text-decoration-thickness: 0.2rem;
+      }
     }
   }
+
+
 }
 </style>

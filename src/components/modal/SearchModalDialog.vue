@@ -190,10 +190,5 @@ form {
   }
 }
 
-.comment {
-  margin: 0;
-  padding: 0.5rem;
-  font-size: 0.8rem;
-  color: #888;
-}
+@include comment;
 </style>

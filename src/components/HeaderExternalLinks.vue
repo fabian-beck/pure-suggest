@@ -1,8 +1,5 @@
 <template>
     <div>
-        <v-btn icon href="https://twitter.com/pure_suggest" v-tippy="{content: 'Follow us on Twitter', placement: 'bottom'}" flat>
-            <v-icon>mdi-twitter</v-icon>
-        </v-btn>
         <v-btn icon href="https://medium.com/@pure_suggest" v-tippy="{content: 'Read more on Medium', placement: 'bottom'}" flat>
             <v-icon>mdi-post</v-icon>
         </v-btn>

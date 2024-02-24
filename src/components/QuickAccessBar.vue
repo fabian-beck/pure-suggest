@@ -1,8 +1,7 @@
 <template>
   <div>
     <v-btn class="has-background-primary has-text-white" @click="sessionStore.updateQueued"
-      v-show="sessionStore.isUpdatable" id="quick-access-update" elevation="6">
-      <v-icon class="has-text-white" left>mdi-update</v-icon>
+      v-show="sessionStore.isUpdatable" id="quick-access-update" elevation="6" prepend-icon="mdi-update">
       <div class="button-label">Update</div>
     </v-btn>
     <v-btn-toggle borderless elevation="6">

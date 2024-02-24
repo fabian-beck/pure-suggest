@@ -1,10 +1,10 @@
-# PURE suggest – Citation-based literature search
+# PUREsuggest – Citation-based literature search
 
-*PURE suggest* is a scientific literature search tool that, starting from some seed papers, suggests scientific publications through citations/references.
+*PUREsuggest* is a scientific literature search tool that, starting from some seed papers, suggests scientific publications through citations/references.
 
 The tool is available at: https://fabian-beck.github.io/pure-suggest/
 
-![Interface of PURE suggest](pure_suggest.png)
+![Interface of PUREsuggest](pure_suggest.png)
 
 ## Key features
 

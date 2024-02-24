@@ -23,6 +23,7 @@ export const useSessionStore = defineStore("session", {
       suggestion: "",
       maxSuggestions: 50,
       boostKeywordString: "",
+      isBoost: true,
       activePublication: "",
       readPublicationsDois: new Set(),
       filter: new Filter(),
@@ -181,13 +182,6 @@ export const useSessionStore = defineStore("session", {
         this.addPublicationsToSelection(this.selectedQueue);
       }
       await this.updateSuggestions();
-      if (
-        !this.interfaceStore.isfeedbackInvitationShown &&
-        !this.interfaceStore.feebackInvitationWasShown &&
-        this.selectedPublications.length >= 10
-      ) {
-        this.interfaceStore.showFeedbackInvitation();
-      }
       this.clearQueues();
       logActionEvent("Update", this.selectedPublicationsCount);
     },
@@ -348,7 +342,7 @@ export const useSessionStore = defineStore("session", {
       // upper case
       this.boostKeywordString = this.boostKeywordString.toUpperCase();
       this.publications.forEach((publication) => {
-        publication.updateScore(this.uniqueBoostKeywords);
+        publication.updateScore(this.uniqueBoostKeywords, this.isBoost);
       });
       Publication.sortPublications(this.selectedPublications);
       Publication.sortPublications(this.suggestedPublications);
