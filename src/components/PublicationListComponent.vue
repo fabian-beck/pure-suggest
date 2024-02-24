@@ -5,7 +5,7 @@
       v-for="publication in publications"
       :key="publication.doi"
       :publication="publication"
-      :activationSource="'publicationList'" 
+      :activationSource="publicationListType" 
       v-on:activate="activatePublication"
     ></PublicationComponent>
   </ul>
@@ -18,6 +18,7 @@ export default {
   name: "PublicationListComponent",
   props: {
     publications: Array,
+    publicationListType: String
   },
   watch: {
     publications: {

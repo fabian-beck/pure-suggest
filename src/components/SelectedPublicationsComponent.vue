@@ -80,7 +80,7 @@
         </div>
       </div>
     </div>
-    <PublicationListComponent ref="publicationList" :publications="sessionStore.selectedPublications" />
+    <PublicationListComponent ref="publicationList" :publications="sessionStore.selectedPublications"  :publicationListType="'selected'"/>
   </div>
 </template>
 

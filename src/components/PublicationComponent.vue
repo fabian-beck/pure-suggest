@@ -185,7 +185,7 @@ export default {
   },
   methods: {
     activate: function () {
-      this.sessionStore.activatePublicationComponentByDoi(this.publication.doi);
+      this.sessionStore.activatePublicationComponentByDoi(this.publication.doi, this.activationSource);
       this.$emit("activate", this.publication.doi);
     },
     refocus: function () {

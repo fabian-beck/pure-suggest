@@ -133,8 +133,8 @@ export default {
     },
 
     addPublication(doi) {
-      this.sessionStore.logQd(doi,"import")
       this.sessionStore.queueForSelected(doi);
+      this.sessionStore.logQd(doi,"import")
     },
 
     addAllPublications() {

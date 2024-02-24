@@ -9,6 +9,7 @@ import { shuffle, saveAsFile } from "@/Util.js";
 import { clearCache } from "@/Cache.js";
 import { logPubEvent } from "@/Logging";
 import { logActionEvent } from "@/Logging";
+import { isProxy, toRaw } from "vue";
 
 export const useSessionStore = defineStore("session", {
   state: () => {
@@ -207,8 +208,7 @@ export const useSessionStore = defineStore("session", {
         if (!this.getSelectedPublicationByDoi(doi)) {
           this.selectedPublications.push(new Publication(doi));
         }
-        let logPub = this.getPublicationByDoi(doi);
-        logPubEvent("Pub added", doi, logPub.title, logPub.authorShort);
+        logPubEvent("Pub added", doi);
       });
     },
 
@@ -377,10 +377,13 @@ export const useSessionStore = defineStore("session", {
       this.updateSuggestions(this.maxSuggestions + 50);
     },
 
-    setActivePublication(doi) {
+    setActivePublication(doi, publicationSourceComponent) {
       if (this.activePublication && this.activePublication.doi != doi) {
-        console.log(this.activePublication);
         this.logDeactivate(this.activePublication.doi, "activated other pub");
+        this.logActivate(doi, publicationSourceComponent)
+      }
+      if (publicationSourceComponent == "network"){
+        this.logActivate(doi, publicationSourceComponent)
       }
       this.publications.forEach((publication) => {
         publication.isActive = false;
@@ -418,12 +421,12 @@ export const useSessionStore = defineStore("session", {
       console.log(`Highlighted as active publication with DOI ${doi}.`);
     },
 
-    activatePublicationComponentByDoi: function (doi) {
+    activatePublicationComponentByDoi: function (doi, activationSourceComponent) {
       if (doi !== this.activePublication?.doi) {
         this.interfaceStore.activatePublicationComponent(
           document.getElementById(doi)
         );
-        this.setActivePublication(doi);
+        this.setActivePublication(doi, activationSourceComponent);
       }
     },
 
@@ -666,18 +669,32 @@ export const useSessionStore = defineStore("session", {
       );
     },
     logQd(doi, activationSource) {
-      let logPub = this.getPublicationByDoi(doi);
+      //Not yet in any queues when being queued => no logging
+      let pub = this.getPublicationByDoi(doi);
+      if (pub){
       logPubEvent(
         "Pub qd for selected",
         doi,
-        logPub.title,
-        logPub.authorShort,
+        pub.title,
+        pub.authorShort,
         this.selectedPublicationsCount,
         this.suggestedPublications.findIndex(
           (publication) => publication.doi === doi
         ) + 1,
         activationSource
       );
+        } else {
+          logPubEvent(
+            "Pub qd for selected",
+            doi,
+            "","",
+            this.selectedPublicationsCount,
+            this.suggestedPublications.findIndex(
+              (publication) => publication.doi === doi
+            ) + 1,
+            activationSource
+          );
+        }
     },
     logActivate(doi, component) {
       let logPub = this.getPublicationByDoi(doi);
@@ -726,9 +743,14 @@ export const useSessionStore = defineStore("session", {
       logActionEvent("Clicked author scholar");
     },
     getPublicationByDoi(doi) {
-      return this.publications.filter(
-        (publication) => publication.doi === doi
-      )[0];
+      let allPubs = this.publications.map((pub) => {
+        if (isProxy(pub)) {
+          pub = toRaw(pub);
+        }
+        return pub
+      });
+      let pub = allPubs.filter((publication) => publication.doi === doi)[0];
+      return pub;
     },
   },
 });

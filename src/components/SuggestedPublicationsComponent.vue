@@ -69,7 +69,7 @@
         <FilterPanel v-show="interfaceStore.isFilterPanelShown"/>
       </v-expand-transition>
     </div>
-    <PublicationListComponent ref="publicationList" :publications="sessionStore.suggestedPublicationsFiltered" />
+    <PublicationListComponent ref="publicationList" :publications="sessionStore.suggestedPublicationsFiltered" :publicationListType="'suggested'" />
   </div>
 </template>
 

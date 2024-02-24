@@ -119,7 +119,7 @@
           multiple
           density="compact"
           elevation="1"
-          @click="plot(true)"
+          @click="logAndPlot('Network nodes shown updated', this.showNodes,true)"
         >
           <v-btn
             icon="mdi-water-outline"
@@ -169,7 +169,7 @@
                   :max="1"
                   :min="0.1"
                   step="0.05"
-                  @update:modelValue="plot(true)"
+                  @update:modelValue="logAndPlot('Network: shown suggested updated',this.suggestedNumberFactor,true)"
                 />
               </v-list-item>
               <v-list-item prepend-icon="mdi-account">
@@ -181,7 +181,7 @@
                   :max="2"
                   :min="0.1"
                   step="0.1"
-                  @update:modelValue="plot(true)"
+                  @update:modelValue="logAndPlot('Network: shown authors updated',this.authorNumberFactor,true)"
                 />
               </v-list-item>
             </v-list>
@@ -203,6 +203,8 @@ import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
 import { logActionEvent } from "../Logging";
 import CompactButton from "./basic/CompactButton.vue";
+import { toRaw } from "vue";
+
 
 const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;
@@ -953,8 +955,9 @@ export default {
         d.fy = event.y;
         that.simulation.alpha(SIMULATION_ALPHA).restart();
       }
-      function dragEnd() {
+      function dragEnd(event, d) {
         that.isDragging = false;
+        logActionEvent("Keyword dragged", toRaw(d).id)
       }
       return d3
         .drag()
@@ -1018,8 +1021,7 @@ export default {
       }
     },
     activatePublication: function (event, d) {
-        this.sessionStore.logActivate(d.publication.doi,'network')
-      this.sessionStore.activatePublicationComponentByDoi(d.publication.doi);
+      this.sessionStore.activatePublicationComponentByDoi(d.publication.doi, 'network');
       event.stopPropagation();
     },
     toggleMode() {
@@ -1039,6 +1041,10 @@ export default {
     logExpandNetwork() {
       logActionEvent("Network expanded");
     },
+    logAndPlot(action,actionDetails,param){
+      logActionEvent(action,actionDetails)
+      this.plot(param)
+    }
   },
   components: { CompactButton },
 };
