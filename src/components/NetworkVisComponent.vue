@@ -119,7 +119,9 @@
           multiple
           density="compact"
           elevation="1"
-          @click="logAndPlot('Network nodes shown updated', this.showNodes,true)"
+          @click="
+            logAndPlot('Network nodes shown updated', this.showNodes, true)
+          "
         >
           <v-btn
             icon="mdi-water-outline"
@@ -169,7 +171,13 @@
                   :max="1"
                   :min="0.1"
                   step="0.05"
-                  @update:modelValue="logAndPlot('Network: shown suggested updated',this.suggestedNumberFactor,true)"
+                  @update:modelValue="
+                    logAndPlot(
+                      'Network: shown suggested updated',
+                      this.suggestedNumberFactor,
+                      true
+                    )
+                  "
                 />
               </v-list-item>
               <v-list-item prepend-icon="mdi-account">
@@ -181,7 +189,13 @@
                   :max="2"
                   :min="0.1"
                   step="0.1"
-                  @update:modelValue="logAndPlot('Network: shown authors updated',this.authorNumberFactor,true)"
+                  @update:modelValue="
+                    logAndPlot(
+                      'Network: shown authors updated',
+                      this.authorNumberFactor,
+                      true
+                    )
+                  "
                 />
               </v-list-item>
             </v-list>
@@ -202,9 +216,7 @@ import { storeToRefs } from "pinia";
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
 import { logActionEvent } from "../Logging";
-import CompactButton from "./basic/CompactButton.vue";
 import { toRaw } from "vue";
-
 
 const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;
@@ -609,18 +621,17 @@ export default {
               .on("mouseover", this.keywordNodeMouseover)
               .on("mouseout", this.keywordNodeMouseout);
 
-                        const authorNodes = g.filter((d) => d.type === "author");
-                        authorNodes
-                            .append("circle")
-                            .attr("pointer-events", "all")
-                            .attr("r", 12)
-                            .attr("fill", "black");
-                        authorNodes.append("text")
-                            .attr("pointer-events", "none");
-                        authorNodes
-                            .on("mouseover", this.authorNodeMouseover)
-                            .on("mouseout", this.authorNodeMouseout)
-                            .on("click", this.authorNodeClick);
+            const authorNodes = g.filter((d) => d.type === "author");
+            authorNodes
+              .append("circle")
+              .attr("pointer-events", "all")
+              .attr("r", 12)
+              .attr("fill", "black");
+            authorNodes.append("text").attr("pointer-events", "none");
+            authorNodes
+              .on("mouseover", this.authorNodeMouseover)
+              .on("mouseout", this.authorNodeMouseout)
+              .on("click", this.authorNodeClick);
 
             return g;
           });
@@ -910,133 +921,154 @@ export default {
           return `M${this.nodeX(d.target) - x1},${d.target.y - y1}
             L${this.nodeX(d.target)},${d.target.y}
             L${this.nodeX(d.target) - x2},${d.target.y - y2}`;
-                })
-                .attr("class", (d) => {
-                    const classes = [d.type];
-                    if (d.type === "citation") {
-                        if (this.sessionStore.activePublication) {
-                            if (d.source.publication.isActive || d.target.publication.isActive)
-                                classes.push("active");
-                            else {
-                                classes.push("non-active");
-                            }
-                        }
-                        if (!(d.source.publication.isSelected &&
-                            d.target.publication.isSelected))
-                            classes.push("external");
-                    } else if (d.type === "keyword") {
-                        if (this.sessionStore.activePublication) {
-                            if (d.target.publication.isActive)
-                                classes.push("active");
-                            else {
-                                classes.push("non-active");
-                            }
-                        }
-                    } else if (d.type === "author") {
-                        if (this.sessionStore.activePublication) {
-                            if (d.target.publication.isActive)
-                                classes.push("active");
-                            else {
-                                classes.push("non-active");
-                            }
-                        }
-                    }
-                    return classes.join(" ");
-                });
-            this.node.attr("transform", (d) => `translate(${this.nodeX(d)}, ${d.y})`);
-        },
-        keywordNodeDrag: function () {
-            const that = this;
-            function dragStart() {
-                d3.select(this).classed("fixed", true);
-                that.isDragging = true;
+        })
+        .attr("class", (d) => {
+          const classes = [d.type];
+          if (d.type === "citation") {
+            if (this.sessionStore.activePublication) {
+              if (
+                d.source.publication.isActive ||
+                d.target.publication.isActive
+              )
+                classes.push("active");
+              else {
+                classes.push("non-active");
+              }
             }
-            function dragMove(event, d) {
-                d.fx = event.x;
-                d.fy = event.y;
-                that.simulation.alpha(SIMULATION_ALPHA).restart();
+            if (
+              !(
+                d.source.publication.isSelected &&
+                d.target.publication.isSelected
+              )
+            )
+              classes.push("external");
+          } else if (d.type === "keyword") {
+            if (this.sessionStore.activePublication) {
+              if (d.target.publication.isActive) classes.push("active");
+              else {
+                classes.push("non-active");
+              }
             }
-            function dragEnd() {
-                that.isDragging = false;
+          } else if (d.type === "author") {
+            if (this.sessionStore.activePublication) {
+              if (d.target.publication.isActive) classes.push("active");
+              else {
+                classes.push("non-active");
+              }
             }
-            return d3
-                .drag()
-                .on("start", dragStart)
-                .on("drag", dragMove)
-                .on("end", dragEnd);
-        },
-        keywordNodeClick: function (event, d) {
-            delete d.fx;
-            delete d.fy;
-            d3.select(event.target.parentNode).classed("fixed", false);
-            this.simulation.alpha(SIMULATION_ALPHA).restart();
-        },
-        keywordNodeMouseover: function (event, d) {
-            this.sessionStore.publicationsFiltered.forEach((publication) => {
-                if (publication.boostKeywords.includes(d.id)) {
-                    publication.isKeywordHovered = true;
-                }
-            });
-            this.plot();
-        },
-        keywordNodeMouseout: function () {
-            this.sessionStore.publicationsFiltered.forEach((publication) => {
-                publication.isKeywordHovered = false;
-            });
-            this.plot();
-        },
-        authorNodeMouseover: function (event, d) {
-            this.sessionStore.publicationsFiltered.forEach((publication) => {
-                if (d.author.publicationDois.includes(publication.doi)) {
-                    publication.isAuthorHovered = true;
-                }
-            });
-            this.plot();
-        },
-        authorNodeMouseout: function () {
-            this.sessionStore.publicationsFiltered.forEach((publication) => {
-                publication.isAuthorHovered = false;
-            });
-            this.plot();
-        },
-        authorNodeClick: function (event, d) {
-            this.interfaceStore.openAuthorModalDialog(d.author.id);
-        },
-        yearX: function (year) {
-            const width = Math.max(this.svgWidth, 2 * this.svgHeight);
-            return ((year - CURRENT_YEAR) * width * 0.03 +
-                width * (this.interfaceStore.isMobile ? 0.05 : 0.3));
-        },
-        nodeX: function (d) {
-            if (this.isNetworkClusters) {
-                return d.x;
-            } else {
-                switch (d.type) {
-                    case "publication":
-                        return this.yearX(d.publication.year);
-                    case "keyword":
-                        return this.yearX(CURRENT_YEAR + 2);
-                    default:
-                        return d.x;
-                }
-            }
-        },
-        activatePublication: function (event, d) {
-            this.sessionStore.activatePublicationComponentByDoi(d.publication.doi);
-            event.stopPropagation();
-        },
-        toggleMode() {
-            this.isNetworkClusters = !this.isNetworkClusters;
-        },
-        expandNetwork(isNetworkExpanded) {
-            this.interfaceStore.isNetworkExpanded = isNetworkExpanded;
-        },
-        zoomByFactor(factor) {
-            const transform = d3.zoomTransform(this.svg.node());
-            transform.k = transform.k * factor;
-            this.svg.attr("transform", transform);
-        },
+          }
+          return classes.join(" ");
+        });
+      this.node.attr("transform", (d) => `translate(${this.nodeX(d)}, ${d.y})`);
     },
+    keywordNodeDrag: function () {
+      const that = this;
+      function dragStart() {
+        d3.select(this).classed("fixed", true);
+        that.isDragging = true;
+      }
+      function dragMove(event, d) {
+        d.fx = event.x;
+        d.fy = event.y;
+        that.simulation.alpha(SIMULATION_ALPHA).restart();
+      }
+      function dragEnd(event, d) {
+        that.isDragging = false;
+        logActionEvent("Keyword dragged", toRaw(d).id);
+      }
+      return d3
+        .drag()
+        .on("start", dragStart)
+        .on("drag", dragMove)
+        .on("end", dragEnd);
+    },
+    keywordNodeClick: function (event, d) {
+      delete d.fx;
+      delete d.fy;
+      d3.select(event.target.parentNode).classed("fixed", false);
+      this.simulation.alpha(SIMULATION_ALPHA).restart();
+    },
+    keywordNodeMouseover: function (event, d) {
+      this.sessionStore.publicationsFiltered.forEach((publication) => {
+        if (publication.boostKeywords.includes(d.id)) {
+          publication.isKeywordHovered = true;
+        }
+      });
+      this.plot();
+    },
+    keywordNodeMouseout: function () {
+      this.sessionStore.publicationsFiltered.forEach((publication) => {
+        publication.isKeywordHovered = false;
+      });
+      this.plot();
+    },
+    authorNodeMouseover: function (event, d) {
+      this.sessionStore.publicationsFiltered.forEach((publication) => {
+        if (d.author.publicationDois.includes(publication.doi)) {
+          publication.isAuthorHovered = true;
+        }
+      });
+      this.plot();
+    },
+    authorNodeMouseout: function () {
+      this.sessionStore.publicationsFiltered.forEach((publication) => {
+        publication.isAuthorHovered = false;
+      });
+      this.plot();
+    },
+    authorNodeClick: function (event, d) {
+      this.interfaceStore.openAuthorModalDialog(d.author.id);
+    },
+    yearX: function (year) {
+      const width = Math.max(this.svgWidth, 2 * this.svgHeight);
+      return (
+        (year - CURRENT_YEAR) * width * 0.03 +
+        width * (this.interfaceStore.isMobile ? 0.05 : 0.3)
+      );
+    },
+    nodeX: function (d) {
+      if (this.isNetworkClusters) {
+        return d.x;
+      } else {
+        switch (d.type) {
+          case "publication":
+            return this.yearX(d.publication.year);
+          case "keyword":
+            return this.yearX(CURRENT_YEAR + 2);
+          default:
+            return d.x;
+        }
+      }
+    },
+    activatePublication: function (event, d) {
+      this.sessionStore.activatePublicationComponentByDoi(
+        d.publication.doi,
+        "network"
+      );
+      event.stopPropagation();
+    },
+    toggleMode() {
+      this.isNetworkClusters = !this.isNetworkClusters;
+    },
+    expandNetwork(isNetworkExpanded) {
+      this.interfaceStore.isNetworkExpanded = isNetworkExpanded;
+    },
+    zoomByFactor(factor) {
+      const transform = d3.zoomTransform(this.svg.node());
+      transform.k = transform.k * factor;
+      this.svg.attr("transform", transform);
+    },
+    logCollapseNetwork() {
+      logActionEvent("Network collapsed");
+    },
+    logExpandNetwork() {
+      logActionEvent("Network expanded");
+    },
+    logAndPlot(action, actionDetails, param) {
+      logActionEvent(action, actionDetails);
+      this.plot(param);
+    },
+  },
 };
 </script>
 
@@ -1201,8 +1233,8 @@ export default {
     }
   }
 
-    & g.author.node-container {
-        cursor: pointer;
+  & g.author.node-container {
+    cursor: pointer;
 
     & circle {
       fill: black;
