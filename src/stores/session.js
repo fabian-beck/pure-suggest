@@ -31,6 +31,7 @@ export const useSessionStore = defineStore("session", {
       isAuthorScoreEnabled: true,
       isFirstAuthorBoostEnabled: true,
       isAuthorNewBoostEnabled: true,
+      lastLoggedPub:"" //solution to log activation sources correctly
     };
   },
   getters: {
@@ -374,10 +375,10 @@ export const useSessionStore = defineStore("session", {
     setActivePublication(doi, publicationSourceComponent) {
       if (this.activePublication && this.activePublication.doi != doi) {
         this.logDeactivate(this.activePublication.doi, "activated other pub");
-        this.logActivate(doi, publicationSourceComponent)
       }
-      if (publicationSourceComponent == "network"){
+      if (this.lastLoggedPub != doi){
         this.logActivate(doi, publicationSourceComponent)
+        this.lastLoggedPub = ""
       }
       this.publications.forEach((publication) => {
         publication.isActive = false;
@@ -598,7 +599,7 @@ export const useSessionStore = defineStore("session", {
         this.filter.tag;
       allFilters = allFilters.replaceAll(/(undefined|null)/g, "");
       if (allFilters.replaceAll("_", "").length == 0) {
-        logActionEvent("Filter removed", allFilters);
+        logActionEvent("Filter removed");
       } else {
         logActionEvent("Filter updated", allFilters);
       }
@@ -731,6 +732,9 @@ export const useSessionStore = defineStore("session", {
         logActionEvent(action + "search");
       } else if (modal.toLowerCase() == "authors of selected") {
         logActionEvent(action + "authors");
+      }
+      else {
+        logActionEvent(action+modal)
       }
     },
     logAuthorScholarClick() {

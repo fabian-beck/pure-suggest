@@ -1041,6 +1041,8 @@ export default {
       }
     },
     activatePublication: function (event, d) {
+      this.sessionStore.lastLoggedPub = d.publication.doi
+      this.sessionStore.logActivate(d.publication.doi,"network")
       this.sessionStore.activatePublicationComponentByDoi(
         d.publication.doi,
         "network"

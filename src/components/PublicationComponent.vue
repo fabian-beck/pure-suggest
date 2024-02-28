@@ -183,6 +183,7 @@ export default {
   },
   methods: {
     activate: function () {
+      console.log(this.activationSource);
       this.sessionStore.activatePublicationComponentByDoi(this.publication.doi, this.activationSource);
       this.$emit("activate", this.publication.doi);
     },

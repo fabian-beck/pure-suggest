@@ -79,7 +79,7 @@
             <div class="level-right" v-if="publication.title && showDetails">
                 <div class="level-item">
                     <CompactButton icon="mdi-text" class="ml-5" v-if="publication.abstract && !alwaysShowDetails"
-                        v-on:click="showAbstract" v-tippy="`Abs<span class='key'>t</span>ract`"></CompactButton>
+                        v-on:click="showAbstract(); sessionStore.logAbstractClick(publication.doi, (activationSource == 'network' ? 'network' : (publication.isSelected ? 'selected' :  'suggested')))"  v-tippy="`Abs<span class='key'>t</span>ract`"></CompactButton>
                     <CompactButton icon="mdi-lock-open-check-outline" class="ml-5" v-if="publication.oaLink"
                         :href="publication.oaLink" v-tippy="`<span class='key'>O</span>pen access`">
                     </CompactButton>

@@ -9,17 +9,17 @@
         <v-list>
           <v-list-item>
             <v-checkbox v-model="sessionStore.isAuthorScoreEnabled" label="Consider publication score"
-              @change="sessionStore.updateScores; sessionStore.logAuthorFilter('Consider pubscore'+(sessionStore.isAuthorScoreEnabled ? ' off' : ' on'))" density="compact"
+              @change="sessionStore.updateScores; sessionStore.logAuthorFilter('Consider pubscore'+(sessionStore.isAuthorScoreEnabled ? ' on' : ' off'))" density="compact"
               hint="Otherwise, each publication counts as one" persistent-hint />
           </v-list-item>
           <v-list-item>
             <v-checkbox v-model="sessionStore.isFirstAuthorBoostEnabled" label="Boost first authors"
-              @change="sessionStore.updateScores; sessionStore.logAuthorFilter('Boost 1st authors'+(sessionStore.isFirstAuthorBoostEnabled ? ' off' : ' on'))" density="compact"
+              @change="sessionStore.updateScores; sessionStore.logAuthorFilter('Boost 1st authors'+(sessionStore.isFirstAuthorBoostEnabled ? ' on' : ' off'))" density="compact"
               hint="Counting first author publications twice" persistent-hint />
           </v-list-item>
           <v-list-item>
             <v-checkbox v-model="sessionStore.isAuthorNewBoostEnabled" label="Boost new publications"
-              @change="sessionStore.updateScores, sessionStore.logAuthorFilter('Boost new pubs'+(sessionStore.isAuthorNewBoostEnabled ? ' off' : ' on'))" density="compact"
+              @change="sessionStore.updateScores, sessionStore.logAuthorFilter('Boost new pubs'+(sessionStore.isAuthorNewBoostEnabled ? ' on' : ' off'))" density="compact"
               :hint="`Counting publications tagged as 'new' twice`" persistent-hint />
           </v-list-item>
         </v-list>
