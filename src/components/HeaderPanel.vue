@@ -36,7 +36,6 @@
           <BoostKeywordsComponent />
         </div>
       </v-app-bar-title>
-      <FinishStudyButton />
       <v-menu bottom left offset-y transition="slide-y-transition">
         <template v-slot:activator="{ props }">
           <v-btn icon v-bind="props" class="mr-1" density="compact">
@@ -54,6 +53,7 @@
             title="About" />
           <v-list-item prepend-icon="mdi-cached" @click="sessionStore.clearCache" class="has-text-danger"
             title="Clear cache (and session)" />
+            <DownloadLogItem />
         </v-list>
       </v-menu>
     </v-app-bar>
@@ -81,12 +81,8 @@
 <script>
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
-import FinishStudyButton from "./FinishStudyButton.vue";
-
 
 export default {
-  name: "HeaderPanel",
-  components: { FinishStudyButton },
   inject: ["appMeta"],
   setup() {
     const sessionStore = useSessionStore();

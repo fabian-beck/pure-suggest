@@ -53,6 +53,6 @@ export function getEventLog() {
   let finalLog =
     "event,date,doi,title,author,selectedPublicationsCount,posInSuggestions,activationSourceComponent,actionDetails\n" +
     log.join("\n");
-  saveAsFile("sessionLog.csv", "application/logFiles", finalLog);
+  saveAsFile("session_log.csv", "application/logFiles", finalLog);
   console.log(finalLog);
 }
