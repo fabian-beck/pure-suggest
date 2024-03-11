@@ -67,10 +67,6 @@
             <v-icon>mdi-alpha-t-box-outline</v-icon> Show abstract
           </li>
           <li>
-            <v-icon>mdi-alpha-o-box-outline</v-icon> Open "Open access"
-            link
-          </li>
-          <li>
             <v-icon>mdi-alpha-g-box-outline</v-icon> Open "Google Scholar"
             link
           </li>
