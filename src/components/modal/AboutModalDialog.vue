@@ -73,13 +73,16 @@
         </p>
         <ul>
           <li>
-            <a href="https://www.citationgecko.com/">Citation Gecko</a>
+            <a href="https://citationgecko.azurewebsites.net/">Citation Gecko</a>
           </li>
           <li>
             <a href="https://www.connectedpapers.com">Connected Papers</a>
           </li>
           <li>
             <a href="https://inciteful.xyz/">Inciteful</a>
+          </li>
+          <li>
+            <a href="https://www.litmaps.com/">Litmaps</a>
           </li>
           <li>
             <a href="https://www.researchrabbit.ai/">Research Rabbit</a>
