@@ -27,9 +27,6 @@
                 <PublicationTag v-if="publication.isUnnoted" icon="mdi-alert-box-outline"
                     v-tippy="`Identified as yet unnoted: ${publication.isUnnoted}.`">Unnoted
                 </PublicationTag>
-                <PublicationTag v-if="publication.isOpenAccess" icon="mdi-lock-open-check-outline"
-                    v-tippy="`Identified as open access: open access link available.`">Open access
-                </PublicationTag>
             </div>
         </div>
         <div v-if="showDetails">
@@ -80,9 +77,6 @@
                 <div class="level-item">
                     <CompactButton icon="mdi-text" class="ml-5" v-if="publication.abstract && !alwaysShowDetails"
                         v-on:click="showAbstract" v-tippy="`Abs<span class='key'>t</span>ract`"></CompactButton>
-                    <CompactButton icon="mdi-lock-open-check-outline" class="ml-5" v-if="publication.oaLink"
-                        :href="publication.oaLink" v-tippy="`<span class='key'>O</span>pen access`">
-                    </CompactButton>
                     <CompactButton icon="mdi-school" class="ml-5" :href="publication.gsUrl"
                         v-tippy="`<span class='key'>G</span>oogle Scholar`"></CompactButton>
                     <CompactButton icon="mdi-format-quote-close" class="ml-5" v-on:click="exportBibtex"

@@ -103,12 +103,6 @@ export function onKey(e) {
         ) {
             e.preventDefault();
             interfaceStore.showAbstract(sessionStore.activePublication);
-        } else if (
-            e.key === "o" &&
-            sessionStore.activePublication.oaLink
-        ) {
-            e.preventDefault();
-            window.open(sessionStore.activePublication.oaLink);
         } else if (e.key === "g") {
             e.preventDefault();
             window.open(sessionStore.activePublication.gsUrl);
