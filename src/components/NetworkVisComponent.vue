@@ -846,6 +846,10 @@ export default {
     width: 100%;
     height: 100%;
 
+    & g:focus {
+        outline: none;
+    }
+
     & g.publication.node-container {
         cursor: pointer;
 
