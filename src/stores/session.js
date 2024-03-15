@@ -111,6 +111,7 @@ export const useSessionStore = defineStore("session", {
       this.addQuery = "";
       // do not reset read publications as the user might to carry this information to the next session
       this.interfaceStore.clear();
+      logActionEvent("end");
     },
 
     removeFromExcludedPublication(doi) {
