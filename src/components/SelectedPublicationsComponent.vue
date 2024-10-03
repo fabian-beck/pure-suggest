@@ -157,7 +157,7 @@
 <script>
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
-import { bibtexParser } from "/Users/max/pure-suggest/src/Util.js";
+import { bibtexParser } from "@/Util.js";
 
 export default {
   name: "SelectedPublicationsComponent",
