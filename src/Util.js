@@ -45,7 +45,7 @@ export function shuffle(array, seed) {
 }
 
 // This function is used to parse a BibTeX file and extract all DOIs from it and returns a "session"
-export function myBibtexParser(file) {
+export function bibtexParser(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
