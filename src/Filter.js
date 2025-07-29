@@ -46,7 +46,6 @@ export default class Filter {
     matchesDoi(publication) {
         if (!this.doi) return true;
         let dois = this.doi.split(',').map(doi => doi.trim());
-        console.log("Checking DOIs:", dois, "against publication:", publication);
         return dois.some(doi => publication.citationDois.includes(doi) || publication.referenceDois.includes(doi));
     }
 

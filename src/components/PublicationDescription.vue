@@ -1,6 +1,9 @@
 <template>
     <div>
         <div class="summary" v-show="publication.wasFetched">
+            <v-icon v-if="sessionStore.filter.doi?.includes(publication.doi) && interfaceStore.isFilterPanelShown"
+                size="16" class="mr-1" @click.stop="addToFilter(publication.doi)"
+                v-tippy="'DOI is in filter.'">mdi-filter</v-icon>
             <span v-if="publication.title">
                 <b><span v-html="publication.titleHighlighted
                     ? highlight(publication.titleHighlighted)
@@ -36,7 +39,8 @@
                     " v-if="publication.author" @click.stop="refocus" @click.middle.stop="refocus"></span>
             </span>
             <span v-if="publication.container">
-                <em v-html="` ${highlight(publication.container)}`"></em>, <span :class="publication.year ? '' : 'unknown'"
+                <em v-html="` ${highlight(publication.container)}`"></em>, <span
+                    :class="publication.year ? '' : 'unknown'"
                     v-html="publication.year ? highlight(String(publication.year)) : '[unknown year]'"></span>.
             </span>
             <label><span class="key">D</span>OI:</label>
@@ -52,15 +56,16 @@
                     </label>
                     <b>{{
                         publication.referenceDois.length
-                        ? publication.referenceDois.length.toLocaleString("en")
-                        : "not available"
+                            ? publication.referenceDois.length.toLocaleString("en")
+                            : "not available"
                     }}</b>
                 </div>
                 <div class="level-item">
                     <label>
                         <InlineIcon icon="mdi-arrow-top-left-thick" color="dark" /> Cited by:
                     </label>
-                    <b v-if="!publication.tooManyCitations">{{ publication.citationDois.length.toLocaleString("en") }}</b>
+                    <b v-if="!publication.tooManyCitations">{{ publication.citationDois.length.toLocaleString("en")
+                        }}</b>
                     <span v-if="publication.citationsPerYear > 0 && !publication.tooManyCitations">
                         &nbsp;({{ publication.citationsPerYear.toFixed(1) }}/year)
                     </span>
@@ -82,6 +87,9 @@
                     <CompactButton icon="mdi-format-quote-close" class="ml-5" v-on:click="exportBibtex"
                         v-if="!alwaysShowDetails" v-tippy="`Export as BibTe<span class='key'>X</span> citation`">
                     </CompactButton>
+                    <CompactButton icon="mdi-filter-plus" class="ml-5" v-tippy="`Add DOI to filter`"
+                        :active="sessionStore.filter.doi?.includes(publication.doi)"
+                        @click="addToFilter(publication.doi)" v-if="publication.isSelected"></CompactButton>
                 </div>
             </div>
         </div>
@@ -133,6 +141,25 @@ export default {
             this.sessionStore.exportSingleBibtex(this.publication);
             this.refocus();
         },
+        addToFilter(doi) {
+            // check if filter panels is active, if not activate it
+            if (!this.interfaceStore.isFilterPanelShown) {
+                this.interfaceStore.isFilterPanelShown = true;
+            }
+            if (this.sessionStore.filter.doi?.includes(doi)) {
+                this.sessionStore.filter.doi = this.sessionStore.filter.doi
+                    .split(',')
+                    .map(d => d.trim())
+                    .filter(d => d !== doi)
+                    .join(', ');
+            } else {
+                if (!this.sessionStore.filter.doi) {
+                    this.sessionStore.filter.doi = doi;
+                } else {
+                    this.sessionStore.filter.doi += ', ' + doi;
+                }
+            }
+        }
     },
 }
 </script>
