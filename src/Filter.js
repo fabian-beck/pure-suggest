@@ -5,6 +5,7 @@ export default class Filter {
         this.yearStart = undefined;
         this.yearEnd = undefined;
         this.tag = "";
+        this.doi = "";
     }
 
     matchesString(publication) {
@@ -16,7 +17,7 @@ export default class Filter {
         return (yearNumeric && yearNumeric >= 1000 && yearNumeric < 10000);
     }
 
-    isYearActive () {
+    isYearActive() {
         return this.isSpecificYearActive(Number(this.yearStart)) || this.isSpecificYearActive(Number(this.yearEnd));
     }
 
@@ -42,10 +43,18 @@ export default class Filter {
         return publication[this.tag];
     }
 
+    matchesDoi(publication) {
+        if (!this.doi) return true;
+        let dois = this.doi.split(',').map(doi => doi.trim());
+        console.log("Checking DOIs:", dois, "against publication:", publication);
+        return dois.some(doi => publication.citationDois.includes(doi) || publication.referenceDois.includes(doi));
+    }
+
     matches(publication) {
         return this.matchesString(publication)
             && this.matchesTag(publication)
-            && this.matchesYear(publication);
+            && this.matchesYear(publication)
+            && this.matchesDoi(publication);
     }
 
 }

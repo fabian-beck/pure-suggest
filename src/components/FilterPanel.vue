@@ -24,6 +24,13 @@
                         item-value="value" variant="underlined" prepend-inner-icon="mdi-tag" clearable hide-details />
                 </v-col>
             </v-row>
+            <v-row>
+                <v-col>
+                    <!-- doi filter -->
+                    <v-text-field label="DOI" v-model="sessionStore.filter.doi" placeholder="10.1234/abcd"
+                        variant="underlined" prepend-inner-icon="mdi-file-document" clearable hide-details />
+                </v-col>
+            </v-row>
         </form>
     </div>
 </template>
