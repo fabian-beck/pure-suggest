@@ -8,6 +8,8 @@ import Author from '@/Author.js';
 import { shuffle, saveAsFile } from "@/Util.js"
 import { clearCache } from "@/Cache.js";
 
+const MAX_SUGGESTIONS = 100;
+
 export const useSessionStore = defineStore('session', {
   state: () => {
     return {
@@ -18,7 +20,7 @@ export const useSessionStore = defineStore('session', {
       excludedPublicationsDois: [],
       excludedQueue: [],
       suggestion: "",
-      maxSuggestions: 50,
+      maxSuggestions: MAX_SUGGESTIONS,
       boostKeywordString: "",
       isBoost: true,
       activePublication: "",
@@ -67,7 +69,7 @@ export const useSessionStore = defineStore('session', {
       this.excludedPublicationsDois = [];
       this.excludedQueue = [];
       this.suggestion = "";
-      this.maxSuggestions = 50;
+      this.maxSuggestions = MAX_SUGGESTIONS;
       this.boostKeywordString = "";
       this.activePublication = "";
       this.filter = new Filter();
@@ -153,7 +155,7 @@ export const useSessionStore = defineStore('session', {
       });
     },
 
-    async updateSuggestions(maxSuggestions = 50) {
+    async updateSuggestions(maxSuggestions = MAX_SUGGESTIONS) {
       this.maxSuggestions = maxSuggestions;
       this.interfaceStore.startLoading();
       let publicationsLoaded = 0;
