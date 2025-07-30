@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="summary" v-show="publication.wasFetched">
-            <v-icon v-if="sessionStore.filter.doi?.includes(publication.doi) && interfaceStore.isFilterPanelShown"
+            <v-icon v-if="sessionStore.filter.dois?.includes(publication.doi) && interfaceStore.isFilterPanelShown"
                 size="16" class="mr-1" @click.stop="addToFilter(publication.doi)"
                 v-tippy="'DOI is in filter.'">mdi-filter</v-icon>
             <span v-if="publication.title">
@@ -87,9 +87,10 @@
                     <CompactButton icon="mdi-format-quote-close" class="ml-5" v-on:click="exportBibtex"
                         v-if="!alwaysShowDetails" v-tippy="`Export as BibTe<span class='key'>X</span> citation`">
                     </CompactButton>
-                    <CompactButton icon="mdi-filter-plus" class="ml-5" v-tippy="`Add DOI to filter`"
-                        :active="sessionStore.filter.doi?.includes(publication.doi)"
-                        @click="addToFilter(publication.doi)" v-if="publication.isSelected"></CompactButton>
+                    <CompactButton icon="mdi-filter-plus" class="ml-5" v-tippy="getFilterDoiTooltip(publication.doi)"
+                        :active="isDoiFiltered(publication.doi)" @click="toggleDoi(publication.doi)"
+                        v-if="publication.isSelected">
+                    </CompactButton>
                 </div>
             </div>
         </div>
@@ -141,25 +142,21 @@ export default {
             this.sessionStore.exportSingleBibtex(this.publication);
             this.refocus();
         },
-        addToFilter(doi) {
-            // check if filter panels is active, if not activate it
+        toggleDoi(doi) {
             if (!this.interfaceStore.isFilterPanelShown) {
                 this.interfaceStore.isFilterPanelShown = true;
+                this.sessionStore.filter.addDoi(doi);
             }
-            if (this.sessionStore.filter.doi?.includes(doi)) {
-                this.sessionStore.filter.doi = this.sessionStore.filter.doi
-                    .split(',')
-                    .map(d => d.trim())
-                    .filter(d => d !== doi)
-                    .join(', ');
-            } else {
-                if (!this.sessionStore.filter.doi) {
-                    this.sessionStore.filter.doi = doi;
-                } else {
-                    this.sessionStore.filter.doi += ', ' + doi;
-                }
+            else {
+                this.sessionStore.filter.toggleDoi(doi);
             }
-        }
+        },
+        isDoiFiltered(doi) {
+            return this.sessionStore.filter.dois.includes(doi) && this.interfaceStore.isFilterPanelShown;
+        },
+        getFilterDoiTooltip(doi) {
+            return this.isDoiFiltered(doi) ? 'Active as filter; click to remove DOI from filter' : 'Add DOI to filter';
+        },
     },
 }
 </script>

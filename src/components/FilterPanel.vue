@@ -24,11 +24,13 @@
                         item-value="value" variant="underlined" prepend-inner-icon="mdi-tag" clearable hide-details />
                 </v-col>
             </v-row>
-            <v-row>
+            <v-row v-if="sessionStore.filter.dois.length > 0">
                 <v-col>
-                    <!-- doi filter -->
-                    <v-text-field label="DOI" v-model="sessionStore.filter.doi" placeholder="10.1234/abcd"
-                        variant="underlined" prepend-inner-icon="mdi-file-document" clearable hide-details />
+                    <v-chip v-for="doi in sessionStore.filter.dois" :key="doi" class="ma-1" closable
+                        @click:close="removeDoi(doi)" v-tippy="{ content: getDoiTooltip(doi), allowHTML: true }">
+                        <v-icon left>mdi-file-document</v-icon>
+                        {{ doi }}
+                    </v-chip>
                 </v-col>
             </v-row>
         </form>
@@ -54,5 +56,14 @@ export default {
             },
         ],
     }),
+    methods: {
+        removeDoi(doi) {
+            this.sessionStore.filter.removeDoi(doi);
+        },
+        getDoiTooltip(doi) {
+            const publication = this.sessionStore.getSelectedPublicationByDoi(doi);
+            return `Filtered to publications citing or cited by <b>${publication.title} (${publication.authorShort}, ${publication.year})</b>`;
+        },
+    },
 }
 </script>

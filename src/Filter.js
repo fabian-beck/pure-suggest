@@ -6,6 +6,7 @@ export default class Filter {
         this.yearEnd = undefined;
         this.tag = "";
         this.doi = "";
+        this.dois = [];
     }
 
     matchesString(publication) {
@@ -43,17 +44,36 @@ export default class Filter {
         return publication[this.tag];
     }
 
-    matchesDoi(publication) {
-        if (!this.doi) return true;
-        let dois = this.doi.split(',').map(doi => doi.trim());
-        return dois.some(doi => publication.citationDois.includes(doi) || publication.referenceDois.includes(doi));
+    toggleDoi(doi) {
+        if (this.dois.includes(doi)) {
+            this.removeDoi(doi);
+        } else {
+            this.addDoi(doi);
+        }
+    }
+
+    addDoi(doi) {
+        if (!this.dois.includes(doi)) {
+            this.dois.push(doi);
+        }
+    }
+
+    removeDoi(doi) {
+        console.log(`Removing DOI: ${doi}`);
+        this.dois = this.dois.filter(d => d !== doi);
+        console.log(`Remaining DOIs: ${this.dois}`);
+    }
+
+    matchesDois(publication) {
+        if (!this.dois.length) return true;
+        return this.dois.some(doi => publication.citationDois.includes(doi) || publication.referenceDois.includes(doi));
     }
 
     matches(publication) {
         return this.matchesString(publication)
             && this.matchesTag(publication)
             && this.matchesYear(publication)
-            && this.matchesDoi(publication);
+            && this.matchesDois(publication);
     }
 
 }
