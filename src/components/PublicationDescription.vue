@@ -110,10 +110,15 @@ export default {
     },
     methods: {
         highlight(string) {
-            if (!string)
+            const startTime = performance.now();
+            if (!string) {
+                console.debug(`[PERF] highlight: empty string - ${performance.now() - startTime}ms`);
                 return "";
-            if (!this.highlighted)
+            }
+            if (!this.highlighted) {
+                console.debug(`[PERF] highlight: no highlight text - ${performance.now() - startTime}ms`);
                 return string;
+            }
             const substrings = this.highlighted.split(' ');
             let highlightedString = string;
             substrings.forEach(substring => {
@@ -124,6 +129,8 @@ export default {
                     return `<span class="has-background-grey-light">${match}</span>`;
                 });
             });
+            const duration = performance.now() - startTime;
+            console.debug(`[PERF] highlight: processed "${string.substring(0, 50)}..." - ${duration}ms`);
             return highlightedString;
         },
         showAbstract: function () {

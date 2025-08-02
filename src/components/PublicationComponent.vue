@@ -179,6 +179,24 @@ export default {
       return "";
     },
   },
+  mounted() {
+    const startTime = performance.now();
+    this.$nextTick(() => {
+      const duration = performance.now() - startTime;
+      if (duration > 1) { // Only log if > 1ms to avoid spam
+        console.debug(`[PERF] PublicationComponent mounted (${this.publication.doi}) - ${duration.toFixed(2)}ms`);
+      }
+    });
+  },
+  updated() {
+    const startTime = performance.now();
+    this.$nextTick(() => {
+      const duration = performance.now() - startTime;
+      if (duration > 1) { // Only log if > 1ms to avoid spam
+        console.debug(`[PERF] PublicationComponent updated (${this.publication.doi}) - ${duration.toFixed(2)}ms`);
+      }
+    });
+  },
   methods: {
     activate: function () {
       this.sessionStore.activatePublicationComponentByDoi(this.publication.doi);

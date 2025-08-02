@@ -36,6 +36,7 @@
 <script>
 import { useSessionStore } from "./stores/session.js";
 import { useInterfaceStore } from "./stores/interface.js";
+import { perfMonitor } from "./utils/performance.js";
 
 import { onKey } from "./Keys.js";
 
@@ -50,15 +51,26 @@ export default {
     return { sessionStore, interfaceStore };
   },
   created() {
+    const startTime = performance.now();
     window.addEventListener("keydown", onKey);
+    console.debug(`[PERF] App created - ${performance.now() - startTime}ms`);
   },
   mounted() {
+    const startTime = performance.now();
     window.onbeforeunload = () => {
       window.scrollTo(0, 0);
       // triggers a prompt before closing/reloading the page
       if (!this.sessionStore.isEmpty) return "";
       return null;
     };
+    
+    // Log page performance metrics
+    setTimeout(() => {
+      perfMonitor.logPageMetrics();
+      perfMonitor.logMemoryUsage();
+    }, 1000);
+    
+    console.debug(`[PERF] App mounted - ${performance.now() - startTime}ms`);
   },
   beforeDestroy() {
     document.removeEventListener("keydown", this.onKey);

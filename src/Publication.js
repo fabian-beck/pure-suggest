@@ -52,13 +52,18 @@ export default class Publication {
 
     async fetchData(noCache = false) {
         if (this.wasFetched && !noCache) return;
+        const startTime = performance.now();
         try {
             // load data from data service
             await cachedFetch(`https://pure-publications-cw3de4q5va-ew.a.run.app/?doi=${this.doi}${noCache ? "&noCache=true" : ""}`, data => {
                 this.processData(data);
             }, undefined, noCache);
+            const duration = performance.now() - startTime;
+            console.debug(`[PERF] fetchData for ${this.doi}: ${duration.toFixed(2)}ms ${noCache ? '(no cache)' : '(cached)'}`);
         } catch (error) {
             console.log(error);
+            const duration = performance.now() - startTime;
+            console.debug(`[PERF] fetchData FAILED for ${this.doi}: ${duration.toFixed(2)}ms`);
         }
         this.wasFetched = true;
     }
