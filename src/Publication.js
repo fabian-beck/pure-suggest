@@ -69,10 +69,14 @@ export default class Publication {
     }
 
     processData(data) {
+        const startTime = performance.now();
+        
         // map each data property to the publication object
+        const mapStart = performance.now();
         Object.keys(data).forEach(key => {
             this[key] = data[key];
         });
+        console.debug(`[PERF] processData: object mapping - ${performance.now() - mapStart}ms`);
         // title
         const subtitle = data.subtitle;
         if (subtitle?.length && this.title.toLowerCase().indexOf(subtitle.toLowerCase())) {
@@ -139,6 +143,9 @@ export default class Publication {
         this.isNew = (CURRENT_YEAR - this.year) <= 2 ? "published within this or the previous two calendar years" : false;
         this.isUnnoted = this.citationsPerYear < 1 && !this.tooManyCitations
             ? `less than 1 citation per year` : false;
+            
+        const totalDuration = performance.now() - startTime;
+        console.debug(`[PERF] processData: total duration - ${totalDuration.toFixed(2)}ms`);
     }
 
     updateScore(boostKeywords, isBoost) {
