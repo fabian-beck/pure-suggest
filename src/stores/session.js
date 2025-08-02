@@ -115,6 +115,13 @@ export const useSessionStore = defineStore('session', {
     },
 
     async updateQueued() {
+      const startTime = performance.now();
+      console.log(`[PERF] Starting queue update workflow (${this.selectedQueue.length} to add, ${this.excludedQueue.length} to exclude)`);
+      
+      // Store the start time for end-to-end measurement
+      this._workflowStartTime = startTime;
+      this._isTrackingWorkflow = true;
+      
       this.clearActivePublication();
       if (this.excludedQueue.length) {
         this.excludedPublicationsDois = this.excludedPublicationsDois.concat(this.excludedQueue);
@@ -135,6 +142,13 @@ export const useSessionStore = defineStore('session', {
     },
 
     async addPublicationsAndUpdate(dois) {
+      const startTime = performance.now();
+      console.log(`[PERF] Starting manual publication add workflow for ${dois.length} publications`);
+      
+      // Store the start time for end-to-end measurement
+      this._workflowStartTime = startTime;
+      this._isTrackingWorkflow = true;
+      
       dois.forEach((doi) => this.removeFromQueues(doi));
       await this.addPublicationsToSelection(dois);
       await this.updateSuggestions();
@@ -169,6 +183,16 @@ export const useSessionStore = defineStore('session', {
       );
       await this.computeSuggestions();
       this.interfaceStore.endLoading();
+      
+      // Log end-to-end workflow timing if we're tracking one
+      if (this._isTrackingWorkflow && this._workflowStartTime) {
+        const totalDuration = performance.now() - this._workflowStartTime;
+        console.log(`[PERF] 🎯 END-TO-END WORKFLOW COMPLETED: ${totalDuration.toFixed(0)}ms (${(totalDuration/1000).toFixed(2)}s)`);
+        
+        // Reset tracking flags
+        this._isTrackingWorkflow = false;
+        this._workflowStartTime = null;
+      }
     },
 
     computeSelectedPublicationsAuthors() {
@@ -177,6 +201,7 @@ export const useSessionStore = defineStore('session', {
     },
 
     async computeSuggestions() {
+      const overallStart = performance.now();
 
       function incrementSuggestedPublicationCounter(
         _this,
@@ -201,6 +226,8 @@ export const useSessionStore = defineStore('session', {
 
       console.log(`Starting to compute new suggestions based on ${this.selectedPublicationsCount} selected (and ${this.excludedPublicationsCount} excluded).`);
       this.clearActivePublication("updating suggestions");
+      
+      const computeStart = performance.now();
       const suggestedPublications = {};
       this.selectedPublications.forEach((publication) => {
         publication.citationCount = 0;
@@ -226,6 +253,8 @@ export const useSessionStore = defineStore('session', {
           );
         });
       });
+      
+      const sortStart = performance.now();
       let filteredSuggestions = Object.values(suggestedPublications);
       filteredSuggestions = shuffle(filteredSuggestions, 0);
       console.log(`Identified ${filteredSuggestions.length} publications as suggestions.`);
@@ -234,9 +263,12 @@ export const useSessionStore = defineStore('session', {
         (a, b) =>
           b.citationCount + b.referenceCount - (a.citationCount + a.referenceCount)
       );
+      
       const preloadSuggestions = filteredSuggestions.slice(this.maxSuggestions, this.maxSuggestions + 50);
       filteredSuggestions = filteredSuggestions.slice(0, this.maxSuggestions);
       console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`);
+      
+      const fetchStart = performance.now();
       let publicationsLoadedCount = 0;
       this.interfaceStore.loadingMessage = `${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "info";
       await Promise.all(filteredSuggestions.map(async (suggestedPublication) => {
@@ -244,6 +276,7 @@ export const useSessionStore = defineStore('session', {
         publicationsLoadedCount++;
         this.interfaceStore.loadingMessage = `${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`;
       }));
+      
       filteredSuggestions.forEach((publication) => {
         publication.isRead = this.readPublicationsDois.has(publication.doi);
       });
@@ -255,10 +288,12 @@ export const useSessionStore = defineStore('session', {
         publications: Object.values(filteredSuggestions),
         totalSuggestions: Object.values(suggestedPublications).length
       };
+      
       this.updateScores();
     },
 
     updateScores() {
+      const startTime = performance.now();
       console.log("Updating scores of publications and reordering them.");
       // treat spaces before/after commas
       this.boostKeywordString = this.boostKeywordString.replace(/\s*,\s*/g, ", ");
@@ -266,12 +301,24 @@ export const useSessionStore = defineStore('session', {
       this.boostKeywordString = this.boostKeywordString.replace(/\s*\|\s*/g, "|");
       // upper case
       this.boostKeywordString = this.boostKeywordString.toUpperCase();
+      
+      const scoreUpdateStart = performance.now();
       this.publications.forEach((publication) => {
         publication.updateScore(this.uniqueBoostKeywords, this.isBoost);
       });
+      const scoreUpdateTime = performance.now() - scoreUpdateStart;
+      
+      const sortStart = performance.now();
       Publication.sortPublications(this.selectedPublications);
       Publication.sortPublications(this.suggestedPublications);
+      const sortTime = performance.now() - sortStart;
+      
+      const authorsStart = performance.now();
       this.computeSelectedPublicationsAuthors();
+      const authorsTime = performance.now() - authorsStart;
+      
+      const totalDuration = performance.now() - startTime;
+      
     },
 
     loadMoreSuggestions() {
@@ -371,6 +418,9 @@ export const useSessionStore = defineStore('session', {
         this.excludedPublicationsDois = session.excluded;
       }
       this.addPublicationsToSelection(session.selected);
+      
+      // Mark that we're tracking a workflow
+      this._isTrackingWorkflow = true;
       this.updateSuggestions();
     },
 
@@ -389,20 +439,30 @@ export const useSessionStore = defineStore('session', {
     },
 
     importSession: function (file) {
+      const startTime = performance.now();
+      console.log("[PERF] Starting session import workflow");
+      
       const fileReader = new FileReader();
       fileReader.onload = () => {
         try {
           const content = fileReader.result;
           const session = JSON.parse(content);
+          // Store the start time for end-to-end measurement
+          this._workflowStartTime = startTime;
           this.loadSession(session);
-        } catch {
-          this.interfaceStore.showErrorMessage(`Cannot read JSON from file.`);
+        } catch (error) {
+          console.error('Session import error:', error);
+          console.error('File content preview:', content?.substring(0, 200));
+          this.interfaceStore.showErrorMessage(`Cannot read JSON from file: ${error.message}`);
         }
       };
       fileReader.readAsText(file);
     },
 
     loadExample: function () {
+      const startTime = performance.now();
+      console.log("[PERF] Starting example load workflow");
+      
       const session = {
         selected: [
           "10.1109/tvcg.2015.2467757",
@@ -412,6 +472,9 @@ export const useSessionStore = defineStore('session', {
         ],
         boost: "cit, visual, map, publi|literat",
       };
+      
+      // Store the start time for end-to-end measurement
+      this._workflowStartTime = startTime;
       this.loadSession(session);
     },
 

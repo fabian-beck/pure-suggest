@@ -52,6 +52,7 @@ export default class Publication {
 
     async fetchData(noCache = false) {
         if (this.wasFetched && !noCache) return;
+        const startTime = performance.now();
         try {
             // load data from data service
             await cachedFetch(`https://pure-publications-cw3de4q5va-ew.a.run.app/?doi=${this.doi}${noCache ? "&noCache=true" : ""}`, data => {
@@ -64,7 +65,10 @@ export default class Publication {
     }
 
     processData(data) {
+        const startTime = performance.now();
+        
         // map each data property to the publication object
+        const mapStart = performance.now();
         Object.keys(data).forEach(key => {
             this[key] = data[key];
         });
@@ -134,6 +138,7 @@ export default class Publication {
         this.isNew = (CURRENT_YEAR - this.year) <= 2 ? "published within this or the previous two calendar years" : false;
         this.isUnnoted = this.citationsPerYear < 1 && !this.tooManyCitations
             ? `less than 1 citation per year` : false;
+            
     }
 
     updateScore(boostKeywords, isBoost) {
