@@ -1,6 +1,9 @@
 import _ from "lodash";
 
 import { cachedFetch } from "./Cache.js";
+import { SURVEY_THRESHOLDS, CITATION_THRESHOLDS, PUBLICATION_AGE, SCORING, TEXT_PROCESSING, SURVEY_KEYWORDS, ORDINAL_REGEX, ROMAN_NUMERAL_REGEX } from "./constants/publication.js";
+import { API_ENDPOINTS, API_PARAMS } from "./constants/api.js";
+import { ICON_SIZES, ORCID_ICON_URL, SCORE_COLOR_THRESHOLDS, SCORE_LIGHTNESS } from "./constants/ui.js";
 
 const ORCID_REGEX = /(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g;
 
@@ -28,7 +31,7 @@ export default class Publication {
         this.referenceCount = 0;
         this.boostMatches = 0;
         this.boostKeywords = []
-        this.boostFactor = 1;
+        this.boostFactor = SCORING.DEFAULT_BOOST_FACTOR;
         this.score = 0;
         this.scoreColor = "#FFF";
         this.citationsPerYear = 0;
@@ -54,7 +57,7 @@ export default class Publication {
         if (this.wasFetched && !noCache) return;
         try {
             // load data from data service
-            await cachedFetch(`https://pure-publications-cw3de4q5va-ew.a.run.app/?doi=${this.doi}${noCache ? "&noCache=true" : ""}`, data => {
+            await cachedFetch(`${API_ENDPOINTS.PUBLICATIONS}?doi=${this.doi}${noCache ? API_PARAMS.NO_CACHE_PARAM : ""}`, data => {
                 this.processData(data);
             }, undefined, noCache);
         } catch (error) {
@@ -88,7 +91,7 @@ export default class Publication {
             }
             this.author = data.author.replace(ORCID_REGEX, "");
             this.authorOrcid = data.author;
-            this.authorOrcidHtml = data.author.replace(ORCID_REGEX, " <a href='https://orcid.org/$2'><img alt='ORCID logo' src='https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png' width='14' height='14' /></a>");
+            this.authorOrcidHtml = data.author.replace(ORCID_REGEX, ` <a href='https://orcid.org/$2'><img alt='ORCID logo' src='${ORCID_ICON_URL}' width='${ICON_SIZES.ORCID_WIDTH}' height='${ICON_SIZES.ORCID_HEIGHT}' /></a>`);
         }
         // container
         this.container = "";
@@ -96,9 +99,9 @@ export default class Publication {
             let mappedWord = "";
             if (/\(.+\)/.test(word)) { // acronyms in brackets
                 mappedWord = word.toUpperCase();
-            } else if (/\d+(st|nd|rd|th)/i.test(word)) { // 1st 2nd 3rd 4th etc.
+            } else if (ORDINAL_REGEX.test(word)) { // 1st 2nd 3rd 4th etc.
                 mappedWord = word.toLowerCase();
-            } else if (/^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})(\.?)$/i.test(word)) { // roman numerals - see: https://regexpattern.com/roman-numerals/
+            } else if (ROMAN_NUMERAL_REGEX.test(word)) { // roman numerals - see: https://regexpattern.com/roman-numerals/
                 mappedWord = word.toUpperCase();
             } else {
                 mappedWord = TITLE_WORD_MAP[word.toLowerCase()];
@@ -122,24 +125,24 @@ export default class Publication {
         this.tooManyCitations = data.tooManyCitations;
         // Google Scholar link (not listing year as potentially misleading)
         const searchString = `${this.title} ${this.author?.split(',')[0]} ${this.container ?? ""}`;
-        this.gsUrl = `https://scholar.google.de/scholar?hl=en&q=${encodeURIComponent(searchString)}`
+        this.gsUrl = `${API_ENDPOINTS.GOOGLE_SCHOLAR}?hl=en&q=${encodeURIComponent(searchString)}`
         // tags
-        if (this.referenceDois.length > 100) {
-            this.isSurvey = `more than 100 references (${this.referenceDois.length})`;
-        } else if (this.referenceDois.length >= 50 && /.*(survey|state|review|advances|future).*/i.test(this.title)) {
-            this.isSurvey = `more than 50 references (${this.referenceDois.length}) and "${/(survey|state|review|advances|future)/i.exec(this.title)[0]}" in the title`;
+        if (this.referenceDois.length > SURVEY_THRESHOLDS.REFERENCE_COUNT_HIGH) {
+            this.isSurvey = `more than ${SURVEY_THRESHOLDS.REFERENCE_COUNT_HIGH} references (${this.referenceDois.length})`;
+        } else if (this.referenceDois.length >= SURVEY_THRESHOLDS.REFERENCE_COUNT_MIN && SURVEY_KEYWORDS.test(this.title)) {
+            this.isSurvey = `more than ${SURVEY_THRESHOLDS.REFERENCE_COUNT_MIN} references (${this.referenceDois.length}) and "${SURVEY_KEYWORDS.exec(this.title)[0]}" in the title`;
         }
-        this.isHighlyCited = this.citationsPerYear > 10 || this.tooManyCitations
-            ? `more than 10 citations per year` : false;
-        this.isNew = (CURRENT_YEAR - this.year) <= 2 ? "published within this or the previous two calendar years" : false;
-        this.isUnnoted = this.citationsPerYear < 1 && !this.tooManyCitations
-            ? `less than 1 citation per year` : false;
+        this.isHighlyCited = this.citationsPerYear > CITATION_THRESHOLDS.HIGHLY_CITED_PER_YEAR || this.tooManyCitations
+            ? `more than ${CITATION_THRESHOLDS.HIGHLY_CITED_PER_YEAR} citations per year` : false;
+        this.isNew = (CURRENT_YEAR - this.year) <= PUBLICATION_AGE.NEW_YEARS ? "published within this or the previous two calendar years" : false;
+        this.isUnnoted = this.citationsPerYear < CITATION_THRESHOLDS.UNNOTED_PER_YEAR && !this.tooManyCitations
+            ? `less than ${CITATION_THRESHOLDS.UNNOTED_PER_YEAR} citation per year` : false;
     }
 
     updateScore(boostKeywords, isBoost) {
         this.boostKeywords = [];
         this.boostMatches = 0;
-        this.boostFactor = 1;
+        this.boostFactor = SCORING.DEFAULT_BOOST_FACTOR;
         // use an array to keep track of highlighted title fragements
         let titleFragments = [this.title];
         // iterate over all boost keywords
@@ -166,7 +169,7 @@ export default class Publication {
                         this.boostMatches += 1;
                         this.boostKeywords.push(boostKeyword);
                         if (isBoost) {
-                            this.boostFactor = this.boostFactor * 2;
+                            this.boostFactor = this.boostFactor * SCORING.BOOST_MULTIPLIER;
                         }
                         titleFragments[i] = [
                             titleFragment.substring(0, index),
@@ -186,17 +189,17 @@ export default class Publication {
         // update score
         this.score = (this.citationCount + this.referenceCount + (this.isSelected ? 1 : 0)) * this.boostFactor;
         // update score color
-        let lightness = 100;
-        if (this.score >= 32) {
-            lightness = 60;
-        } else if (this.score >= 16) {
-            lightness = 72;
-        } else if (this.score >= 8) {
-            lightness = 80;
-        } else if (this.score >= 4) {
-            lightness = 90;
-        } else if (this.score >= 2) {
-            lightness = 95;
+        let lightness = SCORE_LIGHTNESS.DEFAULT;
+        if (this.score >= SCORE_COLOR_THRESHOLDS.VERY_HIGH) {
+            lightness = SCORE_LIGHTNESS.VERY_HIGH;
+        } else if (this.score >= SCORE_COLOR_THRESHOLDS.HIGH) {
+            lightness = SCORE_LIGHTNESS.HIGH;
+        } else if (this.score >= SCORE_COLOR_THRESHOLDS.MEDIUM_HIGH) {
+            lightness = SCORE_LIGHTNESS.MEDIUM_HIGH;
+        } else if (this.score >= SCORE_COLOR_THRESHOLDS.MEDIUM) {
+            lightness = SCORE_LIGHTNESS.MEDIUM;
+        } else if (this.score >= SCORE_COLOR_THRESHOLDS.LOW) {
+            lightness = SCORE_LIGHTNESS.LOW;
         }
         this.scoreColor = `hsl(0, 0%, ${lightness}%)`;
     }
@@ -355,8 +358,8 @@ function cleanTitle(title) {
     cleanedTitle = cleanedTitle.replaceAll(/---/g, "—"); // em dash 
     cleanedTitle = cleanedTitle.replaceAll(/ ?— ?/g, "—"); // em dash 
     cleanedTitle = cleanedTitle.replaceAll(/&[A-Z]/g, match => match.toLowerCase()); // converting &-encoded charachters to lower case, e.g., "&Amp;" -> "&amp;"
-    if (cleanedTitle.length > 300) {
-        cleanedTitle = cleanedTitle.substring(0, 295) + "[...]";
+    if (cleanedTitle.length > TEXT_PROCESSING.MAX_TITLE_LENGTH) {
+        cleanedTitle = cleanedTitle.substring(0, TEXT_PROCESSING.TITLE_TRUNCATION_POINT) + TEXT_PROCESSING.TITLE_TRUNCATION_SUFFIX;
     }
     return cleanedTitle;
 }

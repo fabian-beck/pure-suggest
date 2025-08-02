@@ -1,5 +1,6 @@
 import LZString from 'lz-string';
 import { get, set, keys, del, clear } from 'idb-keyval';
+import { CACHE_CONFIG } from './constants/cache.js';
 
 console.log(`Locally cached #elements: ${(await keys()).length}`)
 
@@ -7,7 +8,7 @@ export async function cachedFetch(url, processData, fetchParameters = {}, noCach
   try {
     if (noCache) throw new Error("No cache");
     const cacheObject = await get(url);
-    if (cacheObject.timestamp < Date.now() - 1000 * 60 * 60 * 24 * 100) {
+    if (cacheObject.timestamp < Date.now() - CACHE_CONFIG.EXPIRY_MS) {
       throw new Error("Cached data is too old");
     }
     const data = JSON.parse(LZString.decompress(cacheObject.data));
@@ -32,7 +33,7 @@ export async function cachedFetch(url, processData, fetchParameters = {}, noCach
         console.log(`Cache full (#elements: ${keysArray.length})! Removing elements...`)
         try {
           // local storage cache full, delete random elements
-          for (let i = 0; i < 100; i++) {
+          for (let i = 0; i < CACHE_CONFIG.CLEANUP_BATCH_SIZE; i++) {
             const randomStoredUrl = keysArray[
               Math.floor(Math.random() * keysArray.length)
             ];

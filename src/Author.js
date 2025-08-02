@@ -1,3 +1,5 @@
+import { SCORING } from './constants/publication.js';
+
 export default class Author {
 
     constructor(authorString, authorIndex, publication, isAuthorScoreEnabled, isFirstAuthorBoostEnabled, isAuthorNewBoostEnabled) {
@@ -6,8 +8,8 @@ export default class Author {
         this.count = 1;
         this.firstAuthorCount = authorIndex === 0 ? 1 : 0;
         this.score = (isAuthorScoreEnabled ? publication.score : 1)
-            * (isFirstAuthorBoostEnabled ? (authorIndex > 0 ? 1 : 2) : 1)
-            * (isAuthorNewBoostEnabled ? (publication.isNew ? 2 : 1) : 1);
+            * (isFirstAuthorBoostEnabled ? (authorIndex > 0 ? 1 : SCORING.FIRST_AUTHOR_BOOST) : 1)
+            * (isAuthorNewBoostEnabled ? (publication.isNew ? SCORING.NEW_PUBLICATION_BOOST : 1) : 1);
         this.keywords = publication.boostKeywords.map(keyword => ({ [keyword]: 1 })).reduce((a, b) => Object.assign(a, b), {});
         const orcid = authorString.match(/(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g);
         this.orcid = orcid ? orcid[0] : undefined;

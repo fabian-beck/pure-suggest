@@ -1,6 +1,7 @@
 import _ from "lodash";
 import { cachedFetch } from "./Cache.js";
 import Publication from "./Publication.js";
+import { API_ENDPOINTS, API_PARAMS } from "./constants/api.js";
 
 export default class PublicationSearch {
 
@@ -33,7 +34,7 @@ export default class PublicationSearch {
         const simplifiedQuery = this.query.replace(/\W+/g, "+").toLowerCase();
         console.log(`Searching for publications matching '${this.query}'.`)
         await cachedFetch(
-            `https://api.crossref.org/works?query=${simplifiedQuery}&mailto=fabian.beck@uni-bamberg.de&filter=has-references:true`,
+            `${API_ENDPOINTS.CROSSREF}?query=${simplifiedQuery}&mailto=${API_PARAMS.CROSSREF_EMAIL}&filter=${API_PARAMS.CROSSREF_FILTER}`,
             (data) => {
                 data.message.items.filter(item => item.title).forEach((item) => {
                     const publication = new Publication(item.DOI);
