@@ -7,6 +7,38 @@ const MAX_MEMORY_CACHE_SIZE = 2000; // Keep 2000 most recent items in memory
 
 console.log(`Locally cached #elements: ${(await keys()).length}`)
 
+// Warm up memory cache by loading IndexedDB entries
+async function warmUpMemoryCache() {
+  try {
+    const allKeys = await keys();
+    const warmUpCount = Math.min(500, allKeys.length); // Load up to 500 entries
+    
+    console.log(`🔥 Warming up memory cache with ${warmUpCount} entries...`);
+    
+    for (let i = 0; i < warmUpCount; i++) {
+      try {
+        const key = allKeys[i];
+        const cacheObject = await get(key);
+        
+        if (cacheObject && cacheObject.data) {
+          const data = JSON.parse(LZString.decompress(cacheObject.data));
+          addToMemoryCache(key, data);
+        }
+      } catch (error) {
+        // Skip problematic entries
+        continue;
+      }
+    }
+    
+    console.log(`✅ Memory cache warmed up: ${memoryCache.size} entries loaded`);
+  } catch (error) {
+    console.error('❌ Error during memory cache warm-up:', error);
+  }
+}
+
+// Start warm-up process
+warmUpMemoryCache();
+
 function addToMemoryCache(url, data) {
   // If cache is full, remove oldest item (first item)
   if (memoryCache.size >= MAX_MEMORY_CACHE_SIZE) {
