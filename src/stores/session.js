@@ -187,15 +187,7 @@ export const useSessionStore = defineStore('session', {
       // Log end-to-end workflow timing if we're tracking one
       if (this._isTrackingWorkflow && this._workflowStartTime) {
         const totalDuration = performance.now() - this._workflowStartTime;
-        console.group(`[PERF] 🎯 END-TO-END WORKFLOW COMPLETED: ${totalDuration.toFixed(2)}ms (${(totalDuration/1000).toFixed(2)}s)`);
-        console.log(`Workflow: session load → publications fetch → suggestions compute → rendering → UI ready`);
-        console.log(`💡 Time breakdown to check:`);
-        console.log(`   • Network requests: Check individual fetchData logs`);
-        console.log(`   • Suggestion computation: Check computeSuggestions logs`);
-        console.log(`   • Score updates: Check updateScores logs`);
-        console.log(`   • Component rendering: Check component mount/update logs`);
-        console.log(`   • Remaining time likely: DOM updates, reactivity, CSS rendering`);
-        console.groupEnd();
+        console.log(`[PERF] 🎯 END-TO-END WORKFLOW COMPLETED: ${totalDuration.toFixed(0)}ms (${(totalDuration/1000).toFixed(2)}s)`);
         
         // Reset tracking flags
         this._isTrackingWorkflow = false;
@@ -261,7 +253,6 @@ export const useSessionStore = defineStore('session', {
           );
         });
       });
-      console.debug(`[PERF] computeSuggestions: suggestion computation - ${performance.now() - computeStart}ms`);
       
       const sortStart = performance.now();
       let filteredSuggestions = Object.values(suggestedPublications);
@@ -272,7 +263,6 @@ export const useSessionStore = defineStore('session', {
         (a, b) =>
           b.citationCount + b.referenceCount - (a.citationCount + a.referenceCount)
       );
-      console.debug(`[PERF] computeSuggestions: sorting ${filteredSuggestions.length} suggestions - ${performance.now() - sortStart}ms`);
       
       const preloadSuggestions = filteredSuggestions.slice(this.maxSuggestions, this.maxSuggestions + 50);
       filteredSuggestions = filteredSuggestions.slice(0, this.maxSuggestions);
@@ -286,7 +276,6 @@ export const useSessionStore = defineStore('session', {
         publicationsLoadedCount++;
         this.interfaceStore.loadingMessage = `${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`;
       }));
-      console.debug(`[PERF] computeSuggestions: fetching ${filteredSuggestions.length} publications - ${performance.now() - fetchStart}ms`);
       
       filteredSuggestions.forEach((publication) => {
         publication.isRead = this.readPublicationsDois.has(publication.doi);
@@ -300,7 +289,6 @@ export const useSessionStore = defineStore('session', {
         totalSuggestions: Object.values(suggestedPublications).length
       };
       
-      console.debug(`[PERF] computeSuggestions: total duration - ${performance.now() - overallStart}ms`);
       this.updateScores();
     },
 
@@ -318,19 +306,23 @@ export const useSessionStore = defineStore('session', {
       this.publications.forEach((publication) => {
         publication.updateScore(this.uniqueBoostKeywords, this.isBoost);
       });
-      console.debug(`[PERF] updateScores: score updates for ${this.publications.length} publications - ${performance.now() - scoreUpdateStart}ms`);
+      const scoreUpdateTime = performance.now() - scoreUpdateStart;
       
       const sortStart = performance.now();
       Publication.sortPublications(this.selectedPublications);
       Publication.sortPublications(this.suggestedPublications);
-      console.debug(`[PERF] updateScores: sorting publications - ${performance.now() - sortStart}ms`);
+      const sortTime = performance.now() - sortStart;
       
       const authorsStart = performance.now();
       this.computeSelectedPublicationsAuthors();
-      console.debug(`[PERF] updateScores: compute authors - ${performance.now() - authorsStart}ms`);
+      const authorsTime = performance.now() - authorsStart;
       
       const totalDuration = performance.now() - startTime;
-      console.debug(`[PERF] updateScores: total duration - ${totalDuration}ms`);
+      
+      // Only log slow updateScores operations
+      if (totalDuration > 100) {
+        console.warn(`[PERF] 🐌 SLOW updateScores: ${totalDuration.toFixed(0)}ms (${this.publications.length} publications)`);
+      }
     },
 
     loadMoreSuggestions() {
@@ -462,8 +454,10 @@ export const useSessionStore = defineStore('session', {
           // Store the start time for end-to-end measurement
           this._workflowStartTime = startTime;
           this.loadSession(session);
-        } catch {
-          this.interfaceStore.showErrorMessage(`Cannot read JSON from file.`);
+        } catch (error) {
+          console.error('Session import error:', error);
+          console.error('File content preview:', content?.substring(0, 200));
+          this.interfaceStore.showErrorMessage(`Cannot read JSON from file: ${error.message}`);
         }
       };
       fileReader.readAsText(file);

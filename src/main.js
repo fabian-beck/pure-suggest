@@ -1,6 +1,12 @@
 import { createApp } from 'vue';
 import App from './App.vue'
+import perfTracker from './utils/performanceTracker.js';
+
 const app = createApp(App)
+
+// Global performance tracker
+app.config.globalProperties.$perfTracker = perfTracker;
+window.perfTracker = perfTracker;
 
 // App meta data
 import packageInfo from './../package.json';

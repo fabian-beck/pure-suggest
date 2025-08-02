@@ -58,12 +58,8 @@ export default class Publication {
             await cachedFetch(`https://pure-publications-cw3de4q5va-ew.a.run.app/?doi=${this.doi}${noCache ? "&noCache=true" : ""}`, data => {
                 this.processData(data);
             }, undefined, noCache);
-            const duration = performance.now() - startTime;
-            console.debug(`[PERF] fetchData for ${this.doi}: ${duration.toFixed(2)}ms ${noCache ? '(no cache)' : '(cached)'}`);
         } catch (error) {
             console.log(error);
-            const duration = performance.now() - startTime;
-            console.debug(`[PERF] fetchData FAILED for ${this.doi}: ${duration.toFixed(2)}ms`);
         }
         this.wasFetched = true;
     }
@@ -76,7 +72,6 @@ export default class Publication {
         Object.keys(data).forEach(key => {
             this[key] = data[key];
         });
-        console.debug(`[PERF] processData: object mapping - ${performance.now() - mapStart}ms`);
         // title
         const subtitle = data.subtitle;
         if (subtitle?.length && this.title.toLowerCase().indexOf(subtitle.toLowerCase())) {
@@ -144,8 +139,6 @@ export default class Publication {
         this.isUnnoted = this.citationsPerYear < 1 && !this.tooManyCitations
             ? `less than 1 citation per year` : false;
             
-        const totalDuration = performance.now() - startTime;
-        console.debug(`[PERF] processData: total duration - ${totalDuration.toFixed(2)}ms`);
     }
 
     updateScore(boostKeywords, isBoost) {

@@ -49,7 +49,10 @@ function addToMemoryCache(url, data) {
   // Add/update item (moves to end if already exists)
   memoryCache.delete(url);
   memoryCache.set(url, data);
-  console.debug(`[PERF] Added to memory cache: ${url} (cache size: ${memoryCache.size})`);
+  // Log memory cache milestones
+  if (memoryCache.size % 500 === 0 && memoryCache.size > 0) {
+    console.log(`[PERF] 📊 Memory cache: ${memoryCache.size} entries`);
+  }
 }
 
 export async function cachedFetch(url, processData, fetchParameters = {}, noCache = false) {
@@ -69,15 +72,22 @@ export async function cachedFetch(url, processData, fetchParameters = {}, noCach
       
       const processStart = performance.now();
       processData(cachedData);
-      console.debug(`[PERF] cachedFetch: processData - ${performance.now() - processStart}ms`);
-      
-      console.debug(`[PERF] cachedFetch: MEMORY HIT total - ${performance.now() - overallStart}ms`);
+      // Memory hits should be very fast - only log if unusually slow
+      const totalDuration = performance.now() - overallStart;
+      if (totalDuration > 20) {
+        console.warn(`[PERF] 🐌 SLOW memory hit: ${totalDuration.toFixed(0)}ms`);
+      }
       return;
     }
     
     const cacheGetStart = performance.now();
     const cacheObject = await get(url);
-    console.debug(`[PERF] cachedFetch: IndexedDB get - ${performance.now() - cacheGetStart}ms`);
+    const getDuration = performance.now() - cacheGetStart;
+    
+    // Only log very slow IndexedDB operations
+    if (getDuration > 500) {
+      console.warn(`[PERF] 🐌 VERY SLOW IndexedDB: ${getDuration.toFixed(0)}ms`);
+    }
     
     if (cacheObject.timestamp < Date.now() - 1000 * 60 * 60 * 24 * 100) {
       throw new Error("Cached data is too old");
@@ -85,7 +95,11 @@ export async function cachedFetch(url, processData, fetchParameters = {}, noCach
     
     const decompressStart = performance.now();
     const data = JSON.parse(LZString.decompress(cacheObject.data));
-    console.debug(`[PERF] cachedFetch: decompress + parse - ${performance.now() - decompressStart}ms`);
+    // Decompress timing - only log if unusually slow
+    const decompressDuration = performance.now() - decompressStart;
+    if (decompressDuration > 100) {
+      console.warn(`[PERF] 🐌 SLOW decompress: ${decompressDuration.toFixed(0)}ms`);
+    }
     
     if (!data) throw new Error("Cached data is empty");
     
@@ -94,15 +108,24 @@ export async function cachedFetch(url, processData, fetchParameters = {}, noCach
     
     const processStart = performance.now();
     processData(data);
-    console.debug(`[PERF] cachedFetch: processData - ${performance.now() - processStart}ms`);
+    const processDuration = performance.now() - processStart;
+    if (processDuration > 50) {
+      console.warn(`[PERF] 🐌 SLOW processData: ${processDuration.toFixed(0)}ms`);
+    }
     
-    console.debug(`[PERF] cachedFetch: INDEXED DB total - ${performance.now() - overallStart}ms`);
+    const totalDuration = performance.now() - overallStart;
+    if (totalDuration > 500) {
+      console.warn(`[PERF] 🐌 SLOW cached fetch: ${totalDuration.toFixed(0)}ms`);
+    }
   } catch (cannotLoadFromCacheError) {
-    console.debug(`[PERF] cachedFetch: cache miss, fetching from network`);
+    // Network fetch (cache miss)
     try {
       const fetchStart = performance.now();
       const response = await fetch(url, fetchParameters);
-      console.debug(`[PERF] cachedFetch: network fetch - ${performance.now() - fetchStart}ms`);
+      const fetchDuration = performance.now() - fetchStart;
+      if (fetchDuration > 2000) {
+        console.warn(`[PERF] 🐌 VERY SLOW network: ${fetchDuration.toFixed(0)}ms`);
+      }
       
       if (!response.ok) {
         throw new Error(`Received response with status ${response.status}`);
@@ -110,11 +133,17 @@ export async function cachedFetch(url, processData, fetchParameters = {}, noCach
       
       const parseStart = performance.now();
       const data = await response.json();
-      console.debug(`[PERF] cachedFetch: response.json() - ${performance.now() - parseStart}ms`);
+      const parseDuration = performance.now() - parseStart;
+      if (parseDuration > 500) {
+        console.warn(`[PERF] 🐌 SLOW JSON parse: ${parseDuration.toFixed(0)}ms`);
+      }
       
       const compressStart = performance.now();
       const compressedData = LZString.compress(JSON.stringify(data));
-      console.debug(`[PERF] cachedFetch: compress - ${performance.now() - compressStart}ms`);
+      const compressDuration = performance.now() - compressStart;
+      if (compressDuration > 200) {
+        console.warn(`[PERF] 🐌 SLOW compress: ${compressDuration.toFixed(0)}ms`);
+      }
       
       const cacheObject = { data: compressedData, timestamp: Date.now() };
       try {
@@ -123,7 +152,10 @@ export async function cachedFetch(url, processData, fetchParameters = {}, noCach
         }
         const cacheSetStart = performance.now();
         await set(url, cacheObject);
-        console.debug(`[PERF] cachedFetch: cache set - ${performance.now() - cacheSetStart}ms`);
+        const setDuration = performance.now() - cacheSetStart;
+        if (setDuration > 200) {
+          console.warn(`[PERF] 🐌 SLOW cache set: ${setDuration.toFixed(0)}ms`);
+        }
       } catch (error) {
         const keysArray = await keys();
         console.log(`Cache full (#elements: ${keysArray.length})! Removing elements...`)
@@ -149,9 +181,15 @@ export async function cachedFetch(url, processData, fetchParameters = {}, noCach
 
       const processStart = performance.now();
       processData(data);
-      console.debug(`[PERF] cachedFetch: processData - ${performance.now() - processStart}ms`);
+      const processDuration = performance.now() - processStart;
+      if (processDuration > 50) {
+        console.warn(`[PERF] 🐌 SLOW processData: ${processDuration.toFixed(0)}ms`);
+      }
       
-      console.debug(`[PERF] cachedFetch: NETWORK total - ${performance.now() - overallStart}ms`);
+      const totalDuration = performance.now() - overallStart;
+      if (totalDuration > 3000) {
+        console.warn(`[PERF] 🐌 VERY SLOW network total: ${totalDuration.toFixed(0)}ms`);
+      }
     } catch (error3) {
       console.error(`Unable to fetch or process data for "${url}": ${error3}`)
     }
