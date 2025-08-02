@@ -319,10 +319,6 @@ export const useSessionStore = defineStore('session', {
       
       const totalDuration = performance.now() - startTime;
       
-      // Only log slow updateScores operations
-      if (totalDuration > 100) {
-        console.warn(`[PERF] 🐌 SLOW updateScores: ${totalDuration.toFixed(0)}ms (${this.publications.length} publications)`);
-      }
     },
 
     loadMoreSuggestions() {

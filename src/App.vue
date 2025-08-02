@@ -37,7 +37,6 @@
 import { useSessionStore } from "./stores/session.js";
 import { useInterfaceStore } from "./stores/interface.js";
 import { perfMonitor } from "./utils/performance.js";
-import perfTracker from "./utils/performanceTracker.js";
 
 import { onKey } from "./Keys.js";
 
@@ -49,11 +48,6 @@ export default {
     // check if mobile 
     interfaceStore.checkMobile();
     window.addEventListener("resize", interfaceStore.checkMobile);
-    
-    // Set up global performance tracking
-    window.perfTracker = perfTracker;
-    sessionStore.perfTracker = perfTracker;
-    
     return { sessionStore, interfaceStore };
   },
   created() {

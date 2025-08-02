@@ -179,15 +179,6 @@ export default {
       return "";
     },
   },
-  mounted() {
-    const startTime = performance.now();
-    this.$nextTick(() => {
-      const duration = performance.now() - startTime;
-      
-      // Track PublicationComponent mounting performance
-      this.$perfTracker?.trackComponentMount(duration);
-    });
-  },
   methods: {
     activate: function () {
       this.sessionStore.activatePublicationComponentByDoi(this.publication.doi);

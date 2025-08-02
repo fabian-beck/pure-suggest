@@ -97,19 +97,11 @@ export default {
       });
     });
     const mountDuration = performance.now() - startTime;
-    // Only log slow SuggestedPublicationsComponent mounts
-    if (mountDuration > 100) {
-      console.warn(`[PERF] 🐌 SLOW SuggestedPublicationsComponent mount: ${mountDuration.toFixed(0)}ms`);
-    }
   },
   updated() {
     const startTime = performance.now();
     this.$nextTick(() => {
       const duration = performance.now() - startTime;
-      // Only log slow SuggestedPublicationsComponent updates
-      if (duration > 150) {
-        console.warn(`[PERF] 🐌 SLOW SuggestedPublicationsComponent update: ${duration.toFixed(0)}ms`);
-      }
     });
   },
 };
