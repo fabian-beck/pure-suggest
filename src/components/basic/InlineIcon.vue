@@ -1,5 +1,5 @@
 <template>
-    <v-icon size="x-small" :class="`has-text-${color}`">{{ icon }}</v-icon>
+    <v-icon size="x-small" :class="color ? `has-text-${color.replace(/\s+/g, '-')}` : ''">{{ icon }}</v-icon>
 </template>
 
 <script>
