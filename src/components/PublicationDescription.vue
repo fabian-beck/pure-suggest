@@ -157,7 +157,7 @@ export default {
             return this.sessionStore.filter.dois.includes(doi) && this.interfaceStore.isFilterPanelShown;
         },
         getFilterDoiTooltip(doi) {
-            return this.isDoiFiltered(doi) ? 'Active as filter; click to remove DOI from filter' : 'Add DOI to filter';
+            return this.isDoiFiltered(doi) ? 'Active as f<span class="key">i</span>lter; click to remove DOI from filter' : 'Add DOI to f<span class="key">i</span>lter';
         },
         refocus: function () {
             document.getElementById(this.publication.doi)?.focus();

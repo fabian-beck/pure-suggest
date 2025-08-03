@@ -111,6 +111,15 @@ export function onKey(e) {
             sessionStore.exportSingleBibtex(
                 sessionStore.activePublication
             );
+        } else if (e.key === "i") {
+            e.preventDefault();
+            const doi = sessionStore.activePublication.doi;
+            if (!interfaceStore.isFilterPanelShown) {
+                interfaceStore.isFilterPanelShown = true;
+                sessionStore.filter.addDoi(doi);
+            } else {
+                sessionStore.filter.toggleDoi(doi);
+            }
         }
     }
 }
