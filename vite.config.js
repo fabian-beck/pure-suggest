@@ -6,6 +6,11 @@ import Components from 'unplugin-vue-components/vite'
 
 
 export default defineConfig({
+    test: {
+        environment: 'happy-dom',
+        globals: true,
+        setupFiles: ['./tests/setup.js']
+    },
     base:'./',
     plugins: [
         vue(),
