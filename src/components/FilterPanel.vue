@@ -1,12 +1,12 @@
 <template>
     <div class="notification has-background-info-light p-2 is-gapless">
         <form>
-            <v-row>
-                <v-col cols="12" md="4">
+            <v-row dense>
+                <v-col cols="12" md="4" class="py-1">
                     <v-text-field label="Search" v-model="sessionStore.filter.string" placeholder="Text"
                         variant="underlined" prepend-inner-icon="mdi-card-search" clearable hide-details />
                 </v-col>
-                <v-col cols="12" md="4">
+                <v-col cols="12" md="4" class="py-1">
                     <v-row no-gutters>
                         <v-col cols="12" md="7">
                             <v-text-field label="Year from" v-model="sessionStore.filter.yearStart" placeholder="YYYY"
@@ -19,13 +19,13 @@
                         </v-col>
                     </v-row>
                 </v-col>
-                <v-col cols="12" md="4">
+                <v-col cols="12" md="4" class="py-1">
                     <v-select label="Tag" v-model="sessionStore.filter.tag" :items="Publication.TAGS" item-title="name"
                         item-value="value" variant="underlined" prepend-inner-icon="mdi-tag" clearable hide-details />
                 </v-col>
             </v-row>
-            <v-row v-if="sessionStore.filter.dois.length > 0">
-                <v-col>
+            <v-row dense v-if="sessionStore.filter.dois.length > 0">
+                <v-col class="py-1">
                     <v-chip v-for="doi in sessionStore.filter.dois" :key="doi" class="ma-1" closable
                         @click:close="removeDoi(doi)" v-tippy="{ content: getDoiTooltip(doi), allowHTML: true }">
                         <v-icon left>mdi-file-document</v-icon>
