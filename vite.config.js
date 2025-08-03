@@ -6,6 +6,12 @@ import Components from 'unplugin-vue-components/vite'
 
 
 export default defineConfig({
+    test: {
+        environment: 'happy-dom',
+        globals: true,
+        setupFiles: ['./tests/setup.js'],
+        css: false // Disable CSS processing in tests
+    },
     base:'./',
     plugins: [
         vue(),

@@ -5,8 +5,6 @@
 </template>
 
 <script>
-import { active } from 'd3';
-
 export default {
     name: "CompactButton",
     props: {
@@ -18,6 +16,7 @@ export default {
     },
     methods: {
         openLink() {
+            if (typeof this.click === 'function') this.click();
             if (this.href) window.open(this.href, '_blank');
         },
     }
