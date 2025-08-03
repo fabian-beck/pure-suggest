@@ -9,7 +9,8 @@ export default defineConfig({
     test: {
         environment: 'happy-dom',
         globals: true,
-        setupFiles: ['./tests/setup.js']
+        setupFiles: ['./tests/setup.js'],
+        css: false // Disable CSS processing in tests
     },
     base:'./',
     plugins: [

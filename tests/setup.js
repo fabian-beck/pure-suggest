@@ -2,7 +2,12 @@ import { config } from '@vue/test-utils'
 
 // Global test setup
 config.global.stubs = {
-  // Add global component stubs here if needed
+  // Stub Vuetify components globally
+  'v-btn': true,
+  'v-icon': true,
+  'v-card': true,
+  'v-dialog': true,
+  'v-switch': true
 }
 
 // Mock any global properties or plugins
