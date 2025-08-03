@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { useInterfaceStore } from "./interface.js";
 
 import Publication from "@/Publication.js";
+import { generateBibtex } from "@/utils/bibtex.js";
 import Filter from '@/Filter.js';
 import Author from '@/Author.js';
 import { shuffle, saveAsFile } from "@/Util.js"
@@ -252,7 +253,7 @@ export const useSessionStore = defineStore('session', {
         publication.fetchData()
       });
       this.suggestion = {
-        publications: Object.values(filteredSuggestions),
+        publications: filteredSuggestions,
         totalSuggestions: Object.values(suggestedPublications).length
       };
       this.updateScores();
@@ -426,7 +427,7 @@ export const useSessionStore = defineStore('session', {
     exportBibtex: function (publicationList) {
       let bib = "";
       publicationList.forEach(
-        (publication) => (bib += publication.toBibtex() + "\n\n")
+        (publication) => (bib += generateBibtex(publication) + "\n\n")
       );
       saveAsFile("publications.bib", "application/x-bibtex", bib);
     },
