@@ -49,7 +49,7 @@ export function generateBibtex(publication) {
     }
     if (publication.author) {
         bibString += `
-    author = {${publication.author.replaceAll(";", " and")}},`;
+    author = {${publication.author.replaceAll(/;\s*/g, " and ")}},`;
     }
     if (publication.year) {
         bibString += `
