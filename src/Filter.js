@@ -17,7 +17,7 @@ export default class Filter {
     }
 
     isSpecificYearActive(yearNumeric) {
-        return (yearNumeric && yearNumeric >= VALIDATION.MIN_YEAR && yearNumeric < VALIDATION.MAX_YEAR);
+        return (yearNumeric != null && !isNaN(yearNumeric) && yearNumeric >= VALIDATION.MIN_YEAR && yearNumeric < VALIDATION.MAX_YEAR);
     }
 
     isYearActive() {
@@ -43,7 +43,7 @@ export default class Filter {
 
     matchesTag(publication) {
         if (!this.tag) return true;
-        return publication[this.tag];
+        return Boolean(publication[this.tag]);
     }
 
     toggleDoi(doi) {
