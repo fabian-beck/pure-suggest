@@ -1,306 +1,265 @@
-import _ from "lodash";
-
 import { cachedFetch } from "./Cache.js";
+import { SURVEY_THRESHOLDS, CITATION_THRESHOLDS, PUBLICATION_AGE, SCORING, TEXT_PROCESSING, SURVEY_KEYWORDS, ORDINAL_REGEX, ROMAN_NUMERAL_REGEX, ORCID_REGEX, CURRENT_YEAR, TITLE_WORD_MAP, PUBLICATION_TAGS } from "./constants/publication.js";
+import { API_ENDPOINTS, API_PARAMS } from "./constants/api.js";
+import { ICON_SIZES, ORCID_ICON_URL, SCORE_COLOR_THRESHOLDS, SCORE_LIGHTNESS } from "./constants/ui.js";
 
-const ORCID_REGEX = /(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g;
-
+/**
+ * Represents an academic publication with metadata, citations, and scoring capabilities.
+ */
 export default class Publication {
+    /**
+     * Creates a new Publication instance.
+     * @param {string} doi - The DOI identifier for the publication.
+     */
     constructor(doi) {
-        // identifier
         this.doi = doi.toLowerCase();
-        this.doiUrl = "https://doi.org/" + doi;
-        // meta-data
-        this.title = "";
-        this.titleHighlighted = "";
-        this.year = undefined;
-        this.author = undefined;
-        this.authorShort = undefined;
-        this.authorOrcidHtml = undefined;
-        this.container = undefined;
-        this.volume = undefined;
-        this.issue = undefined;
-        this.page = undefined;
-        this.abstract = undefined;
-        // citation-related data
-        this.citationDois = [];
-        this.referenceDois = [];
-        this.citationCount = 0;
-        this.referenceCount = 0;
-        this.boostMatches = 0;
-        this.boostKeywords = []
-        this.boostFactor = 1;
-        this.score = 0;
-        this.scoreColor = "#FFF";
-        this.citationsPerYear = 0;
-        this.tooManyCitations = false;
-        // tags
-        this.isSurvey = false;
-        this.isHighlyCited = false;
-        this.isNew = false;
-        this.isUnnoted = false;
-        // interface properties
-        this.isActive = false;
-        this.isLinkedToActive = false;
-        this.isSelected = false;
-        this.isRead = false;
-        this.isHovered = false;
-        this.isKeywordHovered = false;
-        this.isAuthorHovered = false;
-        // loading state
-        this.wasFetched = false;
+        this.resetToDefaults();
     }
 
+    /**
+     * Gets the full DOI URL for this publication.
+     * @returns {string} The complete DOI URL.
+     */
+    get doiUrl() {
+        return `https://doi.org/${this.doi}`;
+    }
+
+    /**
+     * Calculates citations per year since publication.
+     * @returns {number} Average citations per year.
+     */
+    get citationsPerYear() {
+        return this.citationDois.length / Math.max(1, CURRENT_YEAR - (this.year || CURRENT_YEAR));
+    }
+
+    /**
+     * Generates Google Scholar search URL for this publication.
+     * @returns {string} Google Scholar search URL.
+     */
+    get gsUrl() {
+        const searchString = `${this.title} ${this.author?.split(',')[0]} ${this.container ?? ""}`;
+        return `${API_ENDPOINTS.GOOGLE_SCHOLAR}?hl=en&q=${encodeURIComponent(searchString)}`;
+    }
+
+    get authorShort() {
+        if (!this.author) return undefined;
+        
+        const authorArray = this.author.split('; ');
+        const firstAuthor = authorArray[0].split(', ')[0];
+        return authorArray.length === 1 ? firstAuthor 
+            : authorArray.length === 2 ? `${firstAuthor} and ${authorArray[1].split(', ')[0]}`
+            : `${firstAuthor} et al.`;
+    }
+
+    /**
+     * Resets all publication properties to default values.
+     */
+    resetToDefaults() {
+        // Meta-data
+        this.title = this.titleHighlighted = "";
+        this.year = this.author = this.authorOrcidHtml = undefined;
+        this.container = this.volume = this.issue = this.page = this.abstract = undefined;
+        
+        // Citation arrays and counts
+        this.citationDois = [];
+        this.referenceDois = [];
+        this.citationCount = this.referenceCount = this.boostMatches = this.score = 0;
+        this.boostKeywords = [];
+        this.boostFactor = SCORING.DEFAULT_BOOST_FACTOR;
+        this.scoreColor = "#FFF";
+        this.tooManyCitations = false;
+        
+        // Boolean flags (tags and interface state)
+        this.isSurvey = this.isHighlyCited = this.isNew = this.isUnnoted = false;
+        this.isActive = this.isLinkedToActive = this.isSelected = this.isRead = false;
+        this.isHovered = this.isKeywordHovered = this.isAuthorHovered = this.wasFetched = false;
+    }
+
+    /**
+     * Fetches publication data from the API.
+     * @param {boolean} noCache - Whether to bypass cache.
+     */
     async fetchData(noCache = false) {
         if (this.wasFetched && !noCache) return;
+        const startTime = performance.now();
         try {
             // load data from data service
-            await cachedFetch(`https://pure-publications-cw3de4q5va-ew.a.run.app/?doi=${this.doi}${noCache ? "&noCache=true" : ""}`, data => {
-                this.processData(data);
-            }, undefined, noCache);
+            await cachedFetch(`${API_ENDPOINTS.PUBLICATIONS}?doi=${this.doi}${noCache ? API_PARAMS.NO_CACHE_PARAM : ""}`, this.processData.bind(this), undefined, noCache);
         } catch (error) {
             console.log(error);
         }
         this.wasFetched = true;
     }
 
-    processData(data) {
-        // map each data property to the publication object
-        Object.keys(data).forEach(key => {
-            this[key] = data[key];
-        });
-        // title
+    /**
+     * Processes and cleans the publication title from API data.
+     * @param {Object} data - Raw publication data from API.
+     */
+    processTitle(data) {
         const subtitle = data.subtitle;
         if (subtitle?.length && this.title.toLowerCase().indexOf(subtitle.toLowerCase())) {
-            // merging title and subtitle, while adding a colon only when title does not end with a non-alpha-numeric character (cleaning potential html tags first)
             const cleanedTitle = this.title.replaceAll(/<[^>]*>/g, "");
             this.title += `${cleanedTitle.match(/^.*\W$/) ? "" : ":"}  ${subtitle}`;
         }
         this.title = cleanTitle(this.title);
-        // author
-        if (data.author) {
-            const authorArray = data.author.split('; ');
-            if (authorArray.length === 1) {
-                this.authorShort = authorArray[0].split(', ')[0];
-            } else if (authorArray.length === 2) {
-                this.authorShort = `${authorArray[0].split(', ')[0]} and ${authorArray[1].split(', ')[0]}`;
-            } else if (authorArray.length > 2) {
-                this.authorShort = `${authorArray[0].split(', ')[0]} et al.`;
-            }
-            this.author = data.author.replace(ORCID_REGEX, "");
-            this.authorOrcid = data.author;
-            this.authorOrcidHtml = data.author.replace(ORCID_REGEX, " <a href='https://orcid.org/$2'><img alt='ORCID logo' src='https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png' width='14' height='14' /></a>");
-        }
-        // container
+    }
+
+    /**
+     * Processes author information and creates display formats.
+     * @param {Object} data - Raw publication data from API.
+     */
+    processAuthor(data) {
+        if (!data.author) return;
+        
+        this.author = data.author.replace(ORCID_REGEX, "");
+        this.authorOrcid = data.author;
+        this.authorOrcidHtml = data.author.replace(ORCID_REGEX, ` <a href='https://orcid.org/$2'><img alt='ORCID logo' src='${ORCID_ICON_URL}' width='${ICON_SIZES.ORCID_WIDTH}' height='${ICON_SIZES.ORCID_HEIGHT}' /></a>`);
+    }
+
+    /**
+     * Processes publication container (journal/conference) name.
+     * @param {Object} data - Raw publication data from API.
+     */
+    processContainer(data) {
         this.container = "";
         data.container?.split(" ").forEach(word => {
             let mappedWord = "";
-            if (/\(.+\)/.test(word)) { // acronyms in brackets
+            if (/\(.+\)/.test(word)) {
                 mappedWord = word.toUpperCase();
-            } else if (/\d+(st|nd|rd|th)/i.test(word)) { // 1st 2nd 3rd 4th etc.
+            } else if (ORDINAL_REGEX.test(word)) {
                 mappedWord = word.toLowerCase();
-            } else if (/^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})(\.?)$/i.test(word)) { // roman numerals - see: https://regexpattern.com/roman-numerals/
+            } else if (ROMAN_NUMERAL_REGEX.test(word)) {
                 mappedWord = word.toUpperCase();
             } else {
                 mappedWord = TITLE_WORD_MAP[word.toLowerCase()];
             }
             this.container += (mappedWord ? mappedWord : word) + " ";
         });
-        this.container = _.trim(this.container, '. ');
+        this.container = this.container.trim().replace(/^[. ]+|[. ]+$/g, '');
         this.container = cleanTitle(this.container);
-        // citations
-        data.reference?.split("; ").forEach(referenceDoi => {
-            if (referenceDoi && !this.referenceDois.includes(referenceDoi.toLowerCase())) {
-                this.referenceDois.push(referenceDoi.toLowerCase());
-            }
-        });
-        data.citation?.split("; ").forEach(citationDoi => {
-            if (citationDoi && !this.citationDois.includes(citationDoi.toLowerCase())) {
-                this.citationDois.push(citationDoi.toLowerCase());
-            }
-        });
-        this.citationsPerYear = this.citationDois.length / (Math.max(1, CURRENT_YEAR - this.year));
-        this.tooManyCitations = data.tooManyCitations;
-        // Google Scholar link (not listing year as potentially misleading)
-        const searchString = `${this.title} ${this.author?.split(',')[0]} ${this.container ?? ""}`;
-        this.gsUrl = `https://scholar.google.de/scholar?hl=en&q=${encodeURIComponent(searchString)}`
-        // tags
-        if (this.referenceDois.length > 100) {
-            this.isSurvey = `more than 100 references (${this.referenceDois.length})`;
-        } else if (this.referenceDois.length >= 50 && /.*(survey|state|review|advances|future).*/i.test(this.title)) {
-            this.isSurvey = `more than 50 references (${this.referenceDois.length}) and "${/(survey|state|review|advances|future)/i.exec(this.title)[0]}" in the title`;
-        }
-        this.isHighlyCited = this.citationsPerYear > 10 || this.tooManyCitations
-            ? `more than 10 citations per year` : false;
-        this.isNew = (CURRENT_YEAR - this.year) <= 2 ? "published within this or the previous two calendar years" : false;
-        this.isUnnoted = this.citationsPerYear < 1 && !this.tooManyCitations
-            ? `less than 1 citation per year` : false;
     }
 
+    /**
+     * Processes citation and reference DOI lists.
+     * @param {Object} data - Raw publication data from API.
+     */
+    processCitations(data) {
+        const addUniqueDoi = (list, doi) => doi && !list.includes(doi.toLowerCase()) && list.push(doi.toLowerCase());
+        data.reference?.split("; ").forEach(doi => addUniqueDoi(this.referenceDois, doi));
+        data.citation?.split("; ").forEach(doi => addUniqueDoi(this.citationDois, doi));
+        this.tooManyCitations = data.tooManyCitations;
+    }
+
+
+    /**
+     * Analyzes publication data to assign classification tags.
+     */
+    processTags() {
+        if (this.referenceDois.length > SURVEY_THRESHOLDS.REFERENCE_COUNT_HIGH) {
+            this.isSurvey = `more than ${SURVEY_THRESHOLDS.REFERENCE_COUNT_HIGH} references (${this.referenceDois.length})`;
+        } else if (this.referenceDois.length >= SURVEY_THRESHOLDS.REFERENCE_COUNT_MIN && SURVEY_KEYWORDS.test(this.title)) {
+            this.isSurvey = `more than ${SURVEY_THRESHOLDS.REFERENCE_COUNT_MIN} references (${this.referenceDois.length}) and "${SURVEY_KEYWORDS.exec(this.title)[0]}" in the title`;
+        }
+        this.isHighlyCited = this.citationsPerYear > CITATION_THRESHOLDS.HIGHLY_CITED_PER_YEAR || this.tooManyCitations
+            ? `more than ${CITATION_THRESHOLDS.HIGHLY_CITED_PER_YEAR} citations per year` : false;
+        this.isNew = (CURRENT_YEAR - this.year) <= PUBLICATION_AGE.NEW_YEARS ? "published within this or the previous two calendar years" : false;
+        this.isUnnoted = this.citationsPerYear < CITATION_THRESHOLDS.UNNOTED_PER_YEAR && !this.tooManyCitations
+            ? `less than ${CITATION_THRESHOLDS.UNNOTED_PER_YEAR} citation per year` : false;
+    }
+
+    /**
+     * Main data processing method that coordinates all data processing steps.
+     * @param {Object} data - Raw publication data from API.
+     */
+    processData(data) {
+        const startTime = performance.now();
+        
+        // Map each data property to the publication object
+        const mapStart = performance.now();
+        Object.keys(data).forEach(key => {
+            this[key] = data[key];
+        });
+        
+        // Process different aspects of the publication data
+        this.processTitle(data);
+        this.processAuthor(data);
+        this.processContainer(data);
+        this.processCitations(data);
+        this.processTags();
+    }
+
+    /**
+     * Processes keywords to calculate boost metrics and highlight title.
+     * @param {string[]} boostKeywords - Keywords to search for.
+     * @param {boolean} isBoost - Whether to apply score boost for matches.
+     */
+    processKeywordMatching(boostKeywords, isBoost) {
+        const matches = findKeywordMatches(this.title, boostKeywords);
+        
+        // Update boost metrics
+        this.boostMatches = matches.length;
+        this.boostKeywords = matches.map(match => match.keyword);
+        if (isBoost) {
+            this.boostFactor = this.boostFactor * Math.pow(SCORING.BOOST_MULTIPLIER, matches.length);
+        }
+        
+        // Generate highlighted title
+        this.titleHighlighted = highlightTitle(this.title, matches);
+    }
+
+
+
+    /**
+     * Updates the publication score based on keyword matches.
+     * @param {string[]} boostKeywords - Keywords to boost score.
+     * @param {boolean} isBoost - Whether to apply boost multiplier.
+     */
     updateScore(boostKeywords, isBoost) {
         this.boostKeywords = [];
         this.boostMatches = 0;
-        this.boostFactor = 1;
-        // use an array to keep track of highlighted title fragements
-        let titleFragments = [this.title];
-        // iterate over all boost keywords
-        boostKeywords.forEach(boostKeyword => {
-            if (!boostKeyword) {
-                return
-            }
-            let index = -1;
-            boostKeyword.split("|").forEach(alternativeKeyword => {
-                if (index >= 0) {
-                    return;
-                }
-                // iterate overa all title fragments
-                for (let i = 0; i < titleFragments.length; i++) {
-                    const titleFragment = titleFragments[i];
-                    // ignore already highlighted parts
-                    if (titleFragment.indexOf("<") == 0) {
-                        continue
-                    }
-                    // search keyword in title fragement
-                    index = titleFragment.toUpperCase().indexOf(alternativeKeyword);
-                    if (index >= 0) {
-                        // split matched title fragement
-                        this.boostMatches += 1;
-                        this.boostKeywords.push(boostKeyword);
-                        if (isBoost) {
-                            this.boostFactor = this.boostFactor * 2;
-                        }
-                        titleFragments[i] = [
-                            titleFragment.substring(0, index),
-                            "<u style='text-decoration-color: hsl(48, 100%, 67%); text-decoration-thickness: 0.25rem;'>" + titleFragment.substring(index, index + alternativeKeyword.length) + "</u>",
-                            titleFragment.substring(index + alternativeKeyword.length)
-                        ];
-                        break
-                    }
-                }
-                // flatten the array for matching the next keyword
-                titleFragments = titleFragments.flat();
-            });
-
-        });
-        // join highlighted title
-        this.titleHighlighted = titleFragments.join("");
-        // update score
+        this.boostFactor = SCORING.DEFAULT_BOOST_FACTOR;
+        this.processKeywordMatching(boostKeywords, isBoost);
         this.score = (this.citationCount + this.referenceCount + (this.isSelected ? 1 : 0)) * this.boostFactor;
-        // update score color
-        let lightness = 100;
-        if (this.score >= 32) {
-            lightness = 60;
-        } else if (this.score >= 16) {
-            lightness = 72;
-        } else if (this.score >= 8) {
-            lightness = 80;
-        } else if (this.score >= 4) {
-            lightness = 90;
-        } else if (this.score >= 2) {
-            lightness = 95;
-        }
-        this.scoreColor = `hsl(0, 0%, ${lightness}%)`;
+        this.scoreColor = getScoreColor(this.score);
     }
 
-    toBibtex() {
-        function protectAcronyms(s) {
-            let s2 = s;
-            let detectedAcronyms = [];
-            s.split(/\W/).forEach(word => {
-                if (word.slice(1) != word.slice(1).toLowerCase() && !detectedAcronyms.includes(word)) {
-                    s2 = s2.replaceAll(word, `{${word}}`)
-                    detectedAcronyms.push(word);
-                }
-            });
-            return s2;
-        }
-        function translateSpecialCharaters(s) {
-            // &...; encoded characters
-            s = s.replaceAll("&amp;", "\\&")
-            s = s.replaceAll("&lt;", "<")
-            s = s.replaceAll("&gt;", ">")
-            s = s.replaceAll("&quot;", "\\\"")
-            s = s.replaceAll("&apos;", "'");
-            s = s.replaceAll("&nbsp;", " ");
-            // less and greater than
-            s = s.replaceAll("<", "{\\textless}")
-            s = s.replaceAll(">", "{\\textgreater}")
-            return s;
-        }
 
-        let type = "misc";
-        let bibString = "";
-        if (this.title) {
-            bibString += `
-    title = {${translateSpecialCharaters(protectAcronyms(this.title))}},`;
-        }
-        if (this.author) {
-            bibString += `
-    author = {${this.author.replaceAll(";", " and")}},`;
-        }
-        if (this.year) {
-            bibString += `
-    year = {${this.year}},`;
-        }
-        if (this.volume) {
-            type = "article"
-            bibString += `
-    journal = {${translateSpecialCharaters(this.container)}},
-    volume = {${this.volume}},`;
-            if (this.issue) {
-                bibString += `
-    number = {${this.issue}},`;
-            }
-        } else if (this.container) {
-            const container = this.container.toLowerCase();
-            type = (container.indexOf("proceedings") >= 0 || container.indexOf("conference") >= 0 || container.indexOf("symposium") >= 0 || container.indexOf("workshop") >= 0) ? "inproceedings" : "incollection";
-            bibString += `
-    booktitle = {${translateSpecialCharaters(this.container)}},`;
-        }
-        if (this.page) {
-            bibString += `
-    pages = {${this.page}},`;
-        }
-        return `@${type}{${this.doi.replaceAll(/_/g, "")},${bibString}
-    doi = {${this.doi}}
-}`;
-    }
-
+    /**
+     * Checks if the publication has any classification tags.
+     * @returns {boolean} True if publication has any tags.
+     */
     hasTag() {
         return Publication.TAGS.some(tag => this[tag.value]);
     }
 
+    /**
+     * Returns concatenated metadata for search purposes.
+     * @returns {string} Combined title, author, and container string.
+     */
     getMetaString() {
-        let string = ""
-        if (this.title) string += this.title + " ";
-        if (this.author) string += this.author + " ";
-        if (this.container) string += this.container + " ";
-        return string;
+        return [this.title, this.author, this.container].filter(Boolean).join(" ") + " ";
     }
 
+    /**
+     * Sets the hover state for UI interactions.
+     * @param {boolean} isHovered - Whether the publication is hovered.
+     */
     setHover(isHovered) {
         this.isHovered = isHovered;
     }
 
+    /**
+     * Gets the available publication tag definitions.
+     * @returns {Array} Array of tag configuration objects.
+     */
     static get TAGS() {
-        return [{
-            value: "isHighlyCited",
-            name: "Highly cited"
-        },
-        {
-            value: "isSurvey",
-            name: "Literature survey"
-        },
-        {
-            value: "isNew",
-            name: "New"
-        },
-        {
-            value: "isUnnoted",
-            name: "Unnoted"
-        },
-        ];
+        return PUBLICATION_TAGS;
     }
 
+    /**
+     * Sorts publications by score and year (in-place).
+     * @param {Publication[]} publicationList - Array of publications to sort.
+     */
     static sortPublications(publicationList) {
         publicationList.sort((a, b) => {
             return b.score - 1 / ((b.year ? b.year : 0) + 2) - (a.score - 1 / ((a.year ? a.year : 0) + 2))
@@ -309,54 +268,110 @@ export default class Publication {
 
 }
 
-const CURRENT_YEAR = new Date().getFullYear();
 
-const TITLE_WORD_MAP = {
-    "a": "a",
-    "an": "an",
-    "acm": "ACM",
-    "and": "and",
-    "by": "by",
-    "chi": "CHI",
-    "during": "during",
-    "for": "for",
-    "from": "from",
-    "ieee": "IEEE",
-    "ii": "II",
-    "iii": "III",
-    "in": "in",
-    "not": "not",
-    "of": "of",
-    "or": "or",
-    "on": "on",
-    "the": "the",
-    "their": "their",
-    "through": "through",
-    "to": "to",
-    "via": "via",
-    "with": "with",
-    "within": "within",
-}
-
+/**
+ * Removes HTML tags from a string.
+ * @param {string} string - Input string with HTML tags.
+ * @returns {string} String with HTML tags removed.
+ */
 function removeHtmlTags(string) {
     return string.replaceAll(/<[^>]*>/g, "");
 }
 
-function cleanTitle(title) {
-    let cleanedTitle = "";
-    removeHtmlTags(title).split(" ").forEach(word => {
-        const mappedWord = TITLE_WORD_MAP[word.toLowerCase()];
-        cleanedTitle += (mappedWord ? mappedWord : word) + " ";
+/**
+ * Gets the color representation for a publication score.
+ * @param {number} score - The publication score.
+ * @returns {string} HSL color string.
+ */
+function getScoreColor(score) {
+    const lightness = score >= SCORE_COLOR_THRESHOLDS.VERY_HIGH ? SCORE_LIGHTNESS.VERY_HIGH
+        : score >= SCORE_COLOR_THRESHOLDS.HIGH ? SCORE_LIGHTNESS.HIGH
+        : score >= SCORE_COLOR_THRESHOLDS.MEDIUM_HIGH ? SCORE_LIGHTNESS.MEDIUM_HIGH
+        : score >= SCORE_COLOR_THRESHOLDS.MEDIUM ? SCORE_LIGHTNESS.MEDIUM
+        : score >= SCORE_COLOR_THRESHOLDS.LOW ? SCORE_LIGHTNESS.LOW
+        : SCORE_LIGHTNESS.DEFAULT;
+    return `hsl(0, 0%, ${lightness}%)`;
+}
+
+/**
+ * Finds all keyword matches in a title string.
+ * @param {string} title - The title text to search in.
+ * @param {string[]} boostKeywords - Keywords to search for.
+ * @returns {Array} Array of match objects with keyword, position, and length.
+ */
+function findKeywordMatches(title, boostKeywords) {
+    const matches = [];
+    const upperTitle = title.toUpperCase();
+    
+    boostKeywords.forEach(boostKeyword => {
+        if (!boostKeyword) return;
+        
+        boostKeyword.split("|").forEach(alternativeKeyword => {
+            const index = upperTitle.indexOf(alternativeKeyword);
+            if (index >= 0) {
+                // Check if this position is already matched
+                const overlaps = matches.some(match => 
+                    index < match.position + match.length && index + alternativeKeyword.length > match.position
+                );
+                if (!overlaps) {
+                    matches.push({
+                        keyword: boostKeyword,
+                        position: index,
+                        length: alternativeKeyword.length,
+                        text: alternativeKeyword
+                    });
+                }
+            }
+        });
     });
-    cleanedTitle = cleanedTitle.charAt(0).toUpperCase() + cleanedTitle.slice(1); // make first character uppercase
-    cleanedTitle = cleanedTitle.trim();
-    cleanedTitle = cleanedTitle.replaceAll(/--/g, "–"); // en dash 
-    cleanedTitle = cleanedTitle.replaceAll(/ - /g, " – "); // en dash
-    cleanedTitle = cleanedTitle.replaceAll(/---/g, "—"); // em dash 
-    cleanedTitle = cleanedTitle.replaceAll(/ ?— ?/g, "—"); // em dash 
-    cleanedTitle = cleanedTitle.replaceAll(/&[A-Z]/g, match => match.toLowerCase()); // converting &-encoded charachters to lower case, e.g., "&Amp;" -> "&amp;"
-    if (cleanedTitle.length > 300) {
-        cleanedTitle = cleanedTitle.substring(0, 295) + "[...]";
-    }
-    return cleanedTitle;
+    
+    return matches.sort((a, b) => a.position - b.position);
+}
+
+/**
+ * Generates highlighted title with matched keywords underlined.
+ * @param {string} title - The original title text.
+ * @param {Array} matches - Array of match objects with position and length.
+ * @returns {string} HTML string with highlighted keywords.
+ */
+function highlightTitle(title, matches) {
+    if (matches.length === 0) return title;
+    
+    let result = "";
+    let lastPosition = 0;
+    
+    matches.forEach(match => {
+        // Add text before match
+        result += title.substring(lastPosition, match.position);
+        // Add highlighted match
+        result += `<u style='text-decoration-color: hsl(48, 100%, 67%); text-decoration-thickness: 0.25rem;'>${title.substring(match.position, match.position + match.length)}</u>`;
+        lastPosition = match.position + match.length;
+    });
+    
+    // Add remaining text
+    result += title.substring(lastPosition);
+    return result;
+}
+
+/**
+ * Cleans and formats publication titles with proper capitalization and punctuation.
+ * @param {string} title - Raw title string.
+ * @returns {string} Cleaned and formatted title.
+ */
+function cleanTitle(title) {
+    let cleanedTitle = removeHtmlTags(title)
+        .split(" ")
+        .map(word => TITLE_WORD_MAP[word.toLowerCase()] || word)
+        .join(" ")
+        .trim()
+        .replace(/--/g, "–")
+        .replace(/ - /g, " – ")
+        .replace(/---/g, "—")
+        .replace(/ ?— ?/g, "—")
+        .replace(/&[A-Z]/g, match => match.toLowerCase());
+    
+    cleanedTitle = cleanedTitle.charAt(0).toUpperCase() + cleanedTitle.slice(1);
+    return cleanedTitle.length > TEXT_PROCESSING.MAX_TITLE_LENGTH 
+        ? cleanedTitle.substring(0, TEXT_PROCESSING.TITLE_TRUNCATION_POINT) + TEXT_PROCESSING.TITLE_TRUNCATION_SUFFIX
+        : cleanedTitle;
 }

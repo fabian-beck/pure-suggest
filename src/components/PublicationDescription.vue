@@ -119,10 +119,12 @@ export default {
     },
     methods: {
         highlight(string) {
-            if (!string)
+            if (!string) {
                 return "";
-            if (!this.highlighted)
+            }
+            if (!this.highlighted) {
                 return string;
+            }
             const substrings = this.highlighted.split(' ');
             let highlightedString = string;
             substrings.forEach(substring => {
@@ -156,6 +158,9 @@ export default {
         },
         getFilterDoiTooltip(doi) {
             return this.isDoiFiltered(doi) ? 'Active as filter; click to remove DOI from filter' : 'Add DOI to filter';
+        },
+        refocus: function () {
+            document.getElementById(this.publication.doi)?.focus();
         },
     },
 }

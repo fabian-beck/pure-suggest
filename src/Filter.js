@@ -1,3 +1,5 @@
+import { VALIDATION } from './constants/ui.js';
+
 export default class Filter {
 
     constructor() {
@@ -15,7 +17,7 @@ export default class Filter {
     }
 
     isSpecificYearActive(yearNumeric) {
-        return (yearNumeric && yearNumeric >= 1000 && yearNumeric < 10000);
+        return (yearNumeric && yearNumeric >= VALIDATION.MIN_YEAR && yearNumeric < VALIDATION.MAX_YEAR);
     }
 
     isYearActive() {
