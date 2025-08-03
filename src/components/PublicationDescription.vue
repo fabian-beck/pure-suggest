@@ -110,10 +110,12 @@ export default {
     },
     methods: {
         highlight(string) {
-            if (!string)
+            if (!string) {
                 return "";
-            if (!this.highlighted)
+            }
+            if (!this.highlighted) {
                 return string;
+            }
             const substrings = this.highlighted.split(' ');
             let highlightedString = string;
             substrings.forEach(substring => {

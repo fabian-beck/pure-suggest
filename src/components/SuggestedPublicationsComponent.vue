@@ -88,12 +88,20 @@ export default {
     title: String,
   },
   mounted() {
+    const startTime = performance.now();
     this.sessionStore.$onAction(({ name, after }) => {
       after(() => {
         if (name === "updateQueued") {
           this.$refs.publicationList.$el.scrollTop = 0;
         }
       });
+    });
+    const mountDuration = performance.now() - startTime;
+  },
+  updated() {
+    const startTime = performance.now();
+    this.$nextTick(() => {
+      const duration = performance.now() - startTime;
     });
   },
 };

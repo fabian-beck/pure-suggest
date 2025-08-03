@@ -81,6 +81,7 @@ export default class Publication {
      */
     async fetchData(noCache = false) {
         if (this.wasFetched && !noCache) return;
+        const startTime = performance.now();
         try {
             // load data from data service
             await cachedFetch(`${API_ENDPOINTS.PUBLICATIONS}?doi=${this.doi}${noCache ? API_PARAMS.NO_CACHE_PARAM : ""}`, this.processData.bind(this), undefined, noCache);
@@ -171,7 +172,10 @@ export default class Publication {
      * @param {Object} data - Raw publication data from API.
      */
     processData(data) {
+        const startTime = performance.now();
+        
         // Map each data property to the publication object
+        const mapStart = performance.now();
         Object.keys(data).forEach(key => {
             this[key] = data[key];
         });
