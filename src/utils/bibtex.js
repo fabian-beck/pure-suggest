@@ -49,7 +49,7 @@ export function generateBibtex(publication) {
     }
     if (publication.author) {
         bibString += `
-    author = {${publication.author.replaceAll(/;\s*/g, " and ")}},`;
+    author = {${translateSpecialCharacters(publication.author).replaceAll(/;\s*/g, " and ")}},`;
     }
     if (publication.year) {
         bibString += `
@@ -58,7 +58,7 @@ export function generateBibtex(publication) {
     if (publication.volume) {
         type = "article"
         bibString += `
-    journal = {${translateSpecialCharacters(publication.container)}},
+    journal = {${translateSpecialCharacters(publication.container || "")}},
     volume = {${publication.volume}},`;
         if (publication.issue) {
             bibString += `
@@ -74,7 +74,7 @@ export function generateBibtex(publication) {
         bibString += `
     pages = {${publication.page}},`;
     }
-    return `@${type}{${publication.doi.replaceAll(/_/g, "")},${bibString}
+    return `@${type}{${publication.doi.replaceAll(/[_-]/g, "")},${bibString}
     doi = {${publication.doi}}
 }`;
 }
