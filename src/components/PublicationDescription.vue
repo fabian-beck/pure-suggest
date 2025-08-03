@@ -135,6 +135,9 @@ export default {
             this.sessionStore.exportSingleBibtex(this.publication);
             this.refocus();
         },
+        refocus: function () {
+            document.getElementById(this.publication.doi)?.focus();
+        },
     },
 }
 </script>
