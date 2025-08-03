@@ -114,11 +114,14 @@ export function onKey(e) {
         } else if (e.key === "i") {
             e.preventDefault();
             const doi = sessionStore.activePublication.doi;
-            if (!interfaceStore.isFilterPanelShown) {
-                interfaceStore.isFilterPanelShown = true;
-                sessionStore.filter.addDoi(doi);
-            } else {
-                sessionStore.filter.toggleDoi(doi);
+            // Only allow DOI filtering for selected publications, not suggested ones
+            if (sessionStore.isSelected(doi)) {
+                if (!interfaceStore.isFilterPanelShown) {
+                    interfaceStore.isFilterPanelShown = true;
+                    sessionStore.filter.addDoi(doi);
+                } else {
+                    sessionStore.filter.toggleDoi(doi);
+                }
             }
         }
     }
