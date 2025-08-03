@@ -12,8 +12,9 @@
         <div class="level-item">
           <tippy>
             <div class="mr-2">
-              <v-icon size="18" color="white" class="mr-1" v-show="interfaceStore.isFilterPanelShown">mdi-filter</v-icon>
-              <v-badge :content="sessionStore.unreadSuggestionsCount" color="black" class="mr-3" offset-y="-4"
+              <v-icon size="18" color="white" class="mr-1"
+                v-show="interfaceStore.isFilterPanelShown">mdi-filter</v-icon>
+              <v-badge :content="sessionStore.unreadSuggestionsCount" color="black" class="mr-5" offset-y="-4"
                 offset-x="-9" :value="sessionStore.unreadSuggestionsCount > 0" transition="scale-rotate-transition">
                 <b>{{ sessionStore.suggestedPublicationsFiltered.length }}</b>
               </v-badge>
@@ -66,7 +67,7 @@
     </div>
     <div>
       <v-expand-transition>
-        <FilterPanel v-show="interfaceStore.isFilterPanelShown"/>
+        <FilterPanel v-show="interfaceStore.isFilterPanelShown" />
       </v-expand-transition>
     </div>
     <PublicationListComponent ref="publicationList" :publications="sessionStore.suggestedPublicationsFiltered" />

@@ -74,6 +74,9 @@
             <v-icon>mdi-alpha-x-box-outline</v-icon> Export as BibTeX
             citation
           </li>
+          <li>
+            <v-icon>mdi-alpha-i-box-outline</v-icon> Toggle DOI filter
+          </li>
         </ul>
         <h2>Citation Network</h2>
         <ul class="keys">
