@@ -5,7 +5,15 @@
       "Bash(npm test)",
       "Bash(git add:*)",
       "Bash(npm test:*)",
-      "Bash(npm outdated)"
+      "Bash(npm outdated)",
+      "Bash(npm run build:*)",
+      "Bash(npm update:*)",
+      "Bash(timeout 30 npm run build)",
+      "Bash(sed:*)",
+      "WebFetch(domain:bulma.io)",
+      "Bash(grep:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run lint)"
     ],
     "deny": []
   }

@@ -36,8 +36,7 @@ export default defineConfig({
     css: {
         preprocessorOptions: {
             scss: {
-                additionalData: `@import "node_modules/bulma/css/bulma.css";
-                @import "@/assets/_shared.scss";`
+                additionalData: `@import "@/assets/_shared.scss";`
             }
         }
     },

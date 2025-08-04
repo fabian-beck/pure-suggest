@@ -32,6 +32,9 @@ app.use(vuetify)
 // Icons
 import '@mdi/font/css/materialdesignicons.css'
 
+// Bulma CSS
+import 'bulma/css/bulma.css'
+
 // Bulma color overrides (must be imported after Bulma)
 import './assets/bulma-color-overrides.css'
 
