@@ -70,7 +70,7 @@ export default {
     }, 1000);
     
   },
-  beforeDestroy() {
+  beforeUnmount() {
     document.removeEventListener("keydown", this.onKey);
   },
 };

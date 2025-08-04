@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue'
-import path from 'path';
+import { fileURLToPath, URL } from 'node:url'
 
 import Components from 'unplugin-vue-components/vite'
 
@@ -24,7 +24,7 @@ export default defineConfig({
         alias: [
             {
                 find: '@',
-                replacement: path.resolve(__dirname, 'src')
+                replacement: fileURLToPath(new URL('./src', import.meta.url))
             }
         ]
     },
@@ -36,7 +36,7 @@ export default defineConfig({
     css: {
         preprocessorOptions: {
             scss: {
-                additionalData: `@import "@/assets/_shared.scss";`
+                additionalData: `@use "@/assets/_shared.scss" as *;`
             }
         }
     },
