@@ -32,6 +32,9 @@ app.use(vuetify)
 // Icons
 import '@mdi/font/css/materialdesignicons.css'
 
+// Bulma color overrides (must be imported after Bulma)
+import './assets/bulma-color-overrides.css'
+
 // VueTippy
 import VueTippy from 'vue-tippy';
 import 'tippy.js/dist/tippy.css'

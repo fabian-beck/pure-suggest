@@ -60,12 +60,13 @@
                     @click="plot(true)">
                     <v-btn icon="mdi-water-outline" v-tippy="'Show selected publications as nodes'" value="selected"
                         class="has-text-primary"></v-btn>
-                    <v-btn icon="mdi-water-plus-outline" v-tippy="'Show suggested publications as nodes'" value="suggested"
-                        class="has-text-info">
+                    <v-btn icon="mdi-water-plus-outline" v-tippy="'Show suggested publications as nodes'"
+                        value="suggested" class="has-text-info">
                     </v-btn>
                     <v-btn icon="mdi-chevron-double-up" v-tippy="'Show boost keywords as nodes'" value="keyword"
-                        class="has-text-warning-dark"></v-btn>
-                    <v-btn icon="mdi-account" v-tippy="'Show authors as nodes'" value="author" class="has-text-grey-dark">
+                        class="has-text-warning-40"></v-btn>
+                    <v-btn icon="mdi-account" v-tippy="'Show authors as nodes'" value="author"
+                        class="has-text-grey-dark">
                     </v-btn>
                 </v-btn-toggle>
                 <span>
@@ -860,7 +861,7 @@ export default {
         }
 
         & circle {
-            fill: $warning;
+            fill: var(--bulma-warning);
             stroke-width: 1f;
             @include light-shadow-svg;
         }
@@ -871,7 +872,7 @@ export default {
             filter: drop-shadow(0px 0px 1px white);
 
             &.unread {
-                fill: $info-dark;
+                fill: hsl(var(--bulma-info-h), var(--bulma-info-s), calc(var(--bulma-info-l) - 20%));
                 font-weight: 1000;
             }
 
@@ -896,7 +897,7 @@ export default {
 
             & rect,
             & circle {
-                stroke: $primary;
+                stroke: var(--bulma-primary);
             }
         }
 
@@ -904,7 +905,7 @@ export default {
 
             & rect,
             & circle {
-                stroke: $info;
+                stroke: var(--bulma-info);
             }
         }
 
@@ -921,8 +922,8 @@ export default {
         }
 
         &.is-keyword-hovered rect {
-            filter: drop-shadow(0px 0px 10px $warning);
-            stroke: $warning-dark;
+            filter: drop-shadow(0px 0px 10px var(--bulma-warning));
+            stroke: hsl(var(--bulma-warning-h), var(--bulma-warning-s), calc(var(--bulma-warning-l) - 20%));
         }
 
         &.is-author-hovered rect {
@@ -938,7 +939,7 @@ export default {
 
         &.queuingForSelected text.labelQueuingForSelected {
             visibility: visible;
-            fill: $primary-dark;
+            fill: hsl(var(--bulma-primary-h), var(--bulma-primary-s), calc(var(--bulma-primary-l) - 20%));
         }
 
         &.queuingForExcluded text.labelQueuingForExcluded {
@@ -952,7 +953,7 @@ export default {
         & text {
             text-anchor: middle;
             transform: translate(0px, 4px);
-            filter: drop-shadow(0px 0px 2px $warning);
+            filter: drop-shadow(0px 0px 2px var(--bulma-warning));
         }
 
         &.fixed text {
@@ -1011,12 +1012,12 @@ export default {
     & path.citation {
         fill: none;
         stroke-width: 3;
-        stroke: $primary;
+        stroke: var(--bulma-primary);
         opacity: 0.15;
 
         &.external {
             stroke-width: 2;
-            stroke: $info;
+            stroke: var(--bulma-info);
             opacity: 0.1;
         }
 
@@ -1030,7 +1031,7 @@ export default {
     }
 
     & path.keyword {
-        fill: $warning;
+        fill: var(--bulma-warning);
         opacity: 0.2;
 
         &.active {
@@ -1055,7 +1056,7 @@ export default {
     }
 }
 
-@include touch {
+@media screen and (max-width: 1023px) {
     .network-of-references {
         padding: 0 !important;
     }

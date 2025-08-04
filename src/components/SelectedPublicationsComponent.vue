@@ -21,7 +21,7 @@
     </div>
     <div class="header">
       <div>
-        <div class="notification has-background-primary-light p-2" v-show="sessionStore.isUpdatable">
+        <div class="notification has-background-primary-95 p-2" v-show="sessionStore.isUpdatable">
           <div class="level">
             <div class="has-text-centered level-item queue-description">
               <p>
@@ -59,25 +59,25 @@
             </div>
           </div>
         </div>
-        <div class="notification has-text-centered has-background-primary-light p-2" v-show="sessionStore.isEmpty">
+        <div class="notification has-text-centered has-background-primary-95 p-2" v-show="sessionStore.isEmpty">
           <p>
             <i>To start, <b>add publications</b> to selected:</i>
           </p>
           <div class="level mt-4 mb-2">
             <div class="level-item"></div>
             <div class="level-item">
-              <v-btn class="has-background-primary-light" @click.stop="interfaceStore.openSearchModalDialog()">
+              <v-btn class="has-background-primary-95" @click.stop="interfaceStore.openSearchModalDialog()">
                 <v-icon left class="mr-2">mdi-magnify</v-icon>
                 Search/add</v-btn>
             </div>
             <div class="level-item">
-              <v-btn class="has-background-primary-light" @click.stop="importSession"> <v-icon left
+              <v-btn class="has-background-primary-95" @click.stop="importSession"> <v-icon left
                   class="mr-2">mdi-import</v-icon>
                 Import session
               </v-btn>
             </div>
             <div class="level-item">
-              <v-btn class="has-background-primary-light" @click.stop="sessionStore.loadExample()">
+              <v-btn class="has-background-primary-95" @click.stop="sessionStore.loadExample()">
                 <v-icon left class="mr-2">mdi-file-document</v-icon>
                 Load example
               </v-btn>
@@ -149,7 +149,7 @@ export default {
   }
 }
 
-@include touch {
+@media screen and (max-width: 1023px) {
   .box {
     & .queue-description {
       max-width: 100vw;

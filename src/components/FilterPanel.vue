@@ -1,5 +1,5 @@
 <template>
-    <div class="notification has-background-info-light p-2 is-gapless">
+    <div class="notification has-background-info-95 p-2 is-gapless">
         <form>
             <v-row dense>
                 <v-col cols="12" md="4" class="py-1">

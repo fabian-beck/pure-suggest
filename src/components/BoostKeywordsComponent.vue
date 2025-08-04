@@ -1,5 +1,6 @@
 <template>
-  <v-menu v-if="!sessionStore.isEmpty" location="bottom" transition="slide-y-transition" :close-on-content-click="false">
+  <v-menu v-if="!sessionStore.isEmpty" location="bottom" transition="slide-y-transition"
+    :close-on-content-click="false">
     <template v-slot:activator="{ props }">
       <v-btn class="boost-button p-1 pl-4" v-bind="props" :icon="interfaceStore.isMobile" @click="handleMenuInput(true)"
         :density="interfaceStore.isMobile ? 'compact' : 'default'">
@@ -13,7 +14,7 @@
         </span>
       </v-btn>
     </template>
-    <v-sheet class="has-background-warning-light p-2 pt-4">
+    <v-sheet class="has-background-warning-95 p-2 pt-4">
       <form @submit.prevent="sessionStore.updateScores">
         <v-text-field ref="boost" class="boost" density="compact" v-model="sessionStore.boostKeywordString"
           label="Keywords" variant="solo" append-inner-icon="mdi-close"

@@ -19,8 +19,8 @@
           </v-list-item>
           <v-list-item>
             <v-checkbox v-model="sessionStore.isAuthorNewBoostEnabled" label="Boost new publications"
-              @change="sessionStore.updateScores" density="compact" :hint="`Counting publications tagged as 'new' twice`"
-              persistent-hint />
+              @change="sessionStore.updateScores" density="compact"
+              :hint="`Counting publications tagged as 'new' twice`" persistent-hint />
           </v-list-item>
         </v-list>
       </v-menu>
@@ -59,18 +59,19 @@
                 </div>
                 <div v-if="Object.keys(author.keywords).length > 0" class="is-size-7">
                   Related to
-                  <v-chip class="tag" v-for="keyword in sessionStore.uniqueBoostKeywords.filter(
+                  <v-chip label size="small" class="m-1" v-for="keyword in sessionStore.uniqueBoostKeywords.filter(
                     (keyword) => author.keywords[keyword]
                   )" :key="keyword" :style="keywordStyle(author.keywords[keyword])">{{ keyword }} ({{
-  author.keywords[keyword] }})</v-chip>
+                    author.keywords[keyword] }})</v-chip>
                 </div>
                 <div class="is-size-7">
                   Co-author of
-                  <v-chip class="tag coauthor" v-for="coauthorId in Object.keys(author.coauthors).sort(
+                  <v-chip label size="small" class="coauthor m-1" v-for="coauthorId in Object.keys(author.coauthors).sort(
                     (a, b) => author.coauthors[b] - author.coauthors[a]
                   )" :key="coauthorId" :style="coauthorStyle(author.coauthors[coauthorId])"
                     @click="scrollToAuthor(coauthorId)">
-                    {{ sessionStore.selectedPublicationsAuthors.filter(author => author.id === coauthorId)[0].name }} ({{
+                    {{sessionStore.selectedPublicationsAuthors.filter(author => author.id === coauthorId)[0].name}}
+                    ({{
                       author.coauthors[coauthorId] }})
                   </v-chip>
                 </div>

@@ -2,7 +2,7 @@
     <ModalDialog headerColor="primary" title="Excluded publications" icon="mdi-minus-thick"
         v-model="interfaceStore.isExcludedModalDialogShown">
         <template v-slot:sticky>
-            <v-sheet class="has-background-primary-light pa-2">
+            <v-sheet class="has-background-primary-95 pa-2">
                 <p class="comment" v-if="excludedPublications.length > 0">
                     These publications will not be suggested again unlike you remove them from this list.
                     Alternatively, you can direclty mark them to be selected.</p>

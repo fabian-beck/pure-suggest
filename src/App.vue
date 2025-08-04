@@ -150,7 +150,7 @@ $box-padding: 1rem;
 }
 
 .unknown {
-  color: $danger;
+  color: var(--bulma-danger);
 }
 
 .dialog .modal-card {
@@ -172,7 +172,7 @@ $box-padding: 1rem;
   z-index: 6000 !important;
 }
 
-@include touch {
+@media screen and (max-width: 1023px) {
   #app .v-application__wrap {
     display: block;
     margin-bottom: 5rem;

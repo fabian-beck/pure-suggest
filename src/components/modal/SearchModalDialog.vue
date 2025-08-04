@@ -1,7 +1,7 @@
 <template>
   <ModalDialog v-model="isSearchModalDialogShown" title="Search/add publications" icon="mdi-magnify" headerColor="primary">
     <template v-slot:sticky>
-      <form v-on:submit.prevent="search" class="has-background-primary-light">
+      <form v-on:submit.prevent="search" class="has-background-primary-95">
         <v-text-field clearable v-model="interfaceStore.searchQuery" type="input" ref="searchInput" variant="solo"
           append-icon="mdi-magnify" @click:append="search" density="compact"
           hint="Search for keywords, names, etc. or add by providing DOI(s) in any format">
@@ -9,7 +9,7 @@
       </form>
     </template>
     <template v-slot:footer>
-      <v-card-actions :class="`has-background-primary-light`">
+      <v-card-actions :class="`has-background-primary-95`">
         <p class="comment is-hidden-mobile">
           <span v-show="['doi', 'search'].includes(searchResults.type)">Showing
             <b>{{ filteredSearchResults.length }} publication{{

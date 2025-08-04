@@ -1,7 +1,7 @@
 <template>
     <ModalDialog headerColor="primary" title="Queue" icon="mdi-tray-full" v-model="interfaceStore.isQueueModalDialogShown">
         <template v-slot:sticky>
-            <v-sheet class="has-background-primary-light pa-2">
+            <v-sheet class="has-background-primary-95 pa-2">
                 <p class="comment" v-if="sessionStore.isUpdatable">
                     These publications are maked to be selected or excluded with the next update.</p>
                 <p class="comment" v-else>
@@ -10,8 +10,8 @@
             </v-sheet>
         </template>
         <template v-slot:footer>
-            <v-card-actions class="has-background-primary-light level-right">
-                <v-btn class="has-background-primary-light has-text-dark mr-2" v-on:click="clearQueuesAndClose"
+            <v-card-actions class="has-background-primary-95 level-right">
+                <v-btn class="has-background-primary-95 has-text-dark mr-2" v-on:click="clearQueuesAndClose"
                     v-show="sessionStore.isUpdatable" small prependIcon="mdi-undo">Clear all</v-btn>
                 <v-btn class="has-background-primary has-text-white ml-2" v-on:click="updateQueuedAndClose"
                     v-show="sessionStore.isUpdatable" small prependIcon="mdi-update">Update</v-btn>

@@ -137,11 +137,11 @@ export default {
   margin-top: 48px;
 
   & .column {
-    margin: $block-spacing;
+    margin: var(--bulma-block-spacing, 1.5rem);
   }
 }
 
-@include touch {
+@media screen and (max-width: 1023px) {
   :deep(.app-name) {
     font-size: 1.2rem !important;
   }

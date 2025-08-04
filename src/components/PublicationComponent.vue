@@ -212,7 +212,7 @@ li {
         height: 5rem;
         margin: 0.6rem;
         border-width: 0.125rem;
-        border-color: $info;
+        border-color: var(--bulma-info);
         border-style: solid;
         @include light-shadow;
 
@@ -236,9 +236,9 @@ li {
           top: -7px;
           right: -7px;
           @include light-shadow;
-          background: $warning;
-          font-size: $size-5;
-          border: 1px solid $info;
+          background: var(--bulma-warning);
+          font-size: 1.25rem;
+          border: 1px solid var(--bulma-info);
 
           & .v-icon {
             position: relative;
@@ -291,13 +291,13 @@ li {
     }
 
     &.is-keyword-hovered .glyph {
-      box-shadow: 0 0 0.2rem 0.05rem $warning;
-      border-color: $warning-dark !important;
+      box-shadow: 0 0 0.2rem 0.05rem var(--bulma-warning);
+      border-color: hsl(var(--bulma-warning-h), var(--bulma-warning-s), calc(var(--bulma-warning-l) - 20%)) !important;
     }
 
     &.is-author-hovered .glyph {
-      box-shadow: 0 0 0.2rem 0.05rem $dark;
-      border-color: $dark !important;
+      box-shadow: 0 0 0.2rem 0.05rem var(--bulma-dark);
+      border-color: var(--bulma-dark) !important;
     }
 
     &.is-active {
@@ -306,22 +306,22 @@ li {
     }
 
     &.is-unread {
-      background: rgba($color: $info, $alpha: 0.1);
+      background: hsla(var(--bulma-info-h), var(--bulma-info-s), var(--bulma-info-l), 0.1);
 
       & .summary {
-        color: $info-dark;
+        color: hsl(var(--bulma-info-h), var(--bulma-info-s), calc(var(--bulma-info-l) - 20%));
       }
 
       & .glyph .score {
-        color: $info-dark;
+        color: hsl(var(--bulma-info-h), var(--bulma-info-s), calc(var(--bulma-info-l) - 20%));
       }
     }
 
     &.is-selected .glyph {
-      border-color: $primary;
+      border-color: var(--bulma-primary);
 
       & .boost-indicator {
-        border-color: $primary;
+        border-color: var(--bulma-primary);
       }
     }
 
@@ -331,7 +331,7 @@ li {
     }
 
     & .glyph>div:focus>div {
-      outline: 1px solid $dark;
+      outline: 1px solid var(--bulma-dark);
       outline-offset: 0.1rem;
     }
 
@@ -359,7 +359,7 @@ li {
 
     &:focus,
     &.is-active {
-      outline: 1px solid $dark;
+      outline: 1px solid var(--bulma-dark);
     }
   }
 
@@ -368,8 +368,8 @@ li {
     position: absolute;
     border-radius: 4px;
     width: 250px;
-    color: $dark;
-    border-left: 4px solid $dark;
+    color: var(--bulma-dark);
+    border-left: 4px solid var(--bulma-dark);
     padding: 0.5rem;
     background-color: white;
     top: 1.5rem;
@@ -378,15 +378,15 @@ li {
     @include light-shadow;
 
     &.to-be-selected {
-      border-color: $primary;
-      color: $primary-dark;
-      background-color: $primary-light;
+      border-color: var(--bulma-primary);
+      color: hsl(var(--bulma-primary-h), var(--bulma-primary-s), calc(var(--bulma-primary-l) - 20%));
+      background-color: var(--bulma-primary-95);
     }
 
   }
 }
 
-@include touch {
+@media screen and (max-width: 1023px) {
   .publication-component {
     & .media-content {
       padding-left: 0;

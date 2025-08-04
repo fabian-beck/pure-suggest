@@ -93,7 +93,7 @@ export default {
         padding: calc(0.5rem + 1%) !important;
 
         & h2 {
-            font-size: $size-5 !important;
+            font-size: 1.25rem !important;
 
             & .v-icon {
                 position: relative;
@@ -104,7 +104,7 @@ export default {
 
 }
 
-@include desktop {
+@media screen and (min-width: 1024px) {
     :deep(.v-overlay__content) {
         max-width: 1024px !important;
         margin-top: 60px !important;
