@@ -25,7 +25,7 @@ async function warmUpMemoryCache() {
           const data = JSON.parse(LZString.decompress(cacheObject.data));
           addToMemoryCache(key, data);
         }
-      } catch (error) {
+      } catch {
         // Skip problematic entries
         continue;
       }
@@ -57,75 +57,56 @@ function addToMemoryCache(url, data) {
 }
 
 export async function cachedFetch(url, processData, fetchParameters = {}, noCache = false) {
-  const overallStart = performance.now();
   
   try {
     if (noCache) throw new Error("No cache");
     
     // Check memory cache first
     if (memoryCache.has(url)) {
-      const memoryStart = performance.now();
       const cachedData = memoryCache.get(url);
       
       // Move to end (mark as recently used)
       memoryCache.delete(url);
       memoryCache.set(url, cachedData);
       
-      const processStart = performance.now();
       processData(cachedData);
       return;
     }
     
-    const cacheGetStart = performance.now();
     const cacheObject = await get(url);
-    const getDuration = performance.now() - cacheGetStart;
     
     if (cacheObject.timestamp < Date.now() - CACHE_CONFIG.EXPIRY_MS) {
       throw new Error("Cached data is too old");
     }
     
-    const decompressStart = performance.now();
     const data = JSON.parse(LZString.decompress(cacheObject.data));
-    const decompressDuration = performance.now() - decompressStart;
     
     if (!data) throw new Error("Cached data is empty");
     
     // Add to memory cache for future use
     addToMemoryCache(url, data);
     
-    const processStart = performance.now();
     processData(data);
-    const processDuration = performance.now() - processStart;
-    
-    const totalDuration = performance.now() - overallStart;
-  } catch (cannotLoadFromCacheError) {
+  } catch {
     // Network fetch (cache miss)
     try {
-      const fetchStart = performance.now();
       const response = await fetch(url, fetchParameters);
-      const fetchDuration = performance.now() - fetchStart;
       
       if (!response.ok) {
         throw new Error(`Received response with status ${response.status}`);
       }
       
-      const parseStart = performance.now();
       const data = await response.json();
-      const parseDuration = performance.now() - parseStart;
       
-      const compressStart = performance.now();
       const compressedData = LZString.compress(JSON.stringify(data));
-      const compressDuration = performance.now() - compressStart;
       
       const cacheObject = { data: compressedData, timestamp: Date.now() };
       try {
         if (noCache) {
           url = url.replace("&noCache=true", "");
         }
-        const cacheSetStart = performance.now();
         await set(url, cacheObject);
-        const setDuration = performance.now() - cacheSetStart;
-      } catch (error) {
+      } catch {
         const keysArray = await keys();
         console.log(`Cache full (#elements: ${keysArray.length})! Removing elements...`)
         try {
@@ -148,11 +129,7 @@ export async function cachedFetch(url, processData, fetchParameters = {}, noCach
       // Add to memory cache for future use
       addToMemoryCache(url, data);
 
-      const processStart = performance.now();
       processData(data);
-      const processDuration = performance.now() - processStart;
-      
-      const totalDuration = performance.now() - overallStart;
     } catch (error3) {
       console.error(`Unable to fetch or process data for "${url}": ${error3}`)
     }

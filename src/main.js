@@ -49,7 +49,6 @@ app.use(VueTippy, {
     allowHTML: true,
   },
 });
-// eslint-disable-next-line vue/multi-word-component-names
 // Vue.component("tippy", TippyComponent);
 
 // Vue.config.productionTip = false;

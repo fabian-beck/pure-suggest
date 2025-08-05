@@ -204,7 +204,6 @@ export const useSessionStore = defineStore('session', {
     },
 
     async computeSuggestions() {
-      const overallStart = performance.now();
 
       function incrementSuggestedPublicationCounter(
         _this,
@@ -229,8 +228,6 @@ export const useSessionStore = defineStore('session', {
 
       console.log(`Starting to compute new suggestions based on ${this.selectedPublicationsCount} selected (and ${this.excludedPublicationsCount} excluded).`);
       this.clearActivePublication("updating suggestions");
-      
-      const computeStart = performance.now();
       const suggestedPublications = {};
       this.selectedPublications.forEach((publication) => {
         publication.citationCount = 0;
@@ -256,8 +253,6 @@ export const useSessionStore = defineStore('session', {
           );
         });
       });
-      
-      const sortStart = performance.now();
       let filteredSuggestions = Object.values(suggestedPublications);
       filteredSuggestions = shuffle(filteredSuggestions, 0);
       console.log(`Identified ${filteredSuggestions.length} publications as suggestions.`);
@@ -270,8 +265,6 @@ export const useSessionStore = defineStore('session', {
       const preloadSuggestions = filteredSuggestions.slice(this.maxSuggestions, this.maxSuggestions + 50);
       filteredSuggestions = filteredSuggestions.slice(0, this.maxSuggestions);
       console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`);
-      
-      const fetchStart = performance.now();
       let publicationsLoadedCount = 0;
       this.interfaceStore.loadingMessage = `${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "info";
       await Promise.all(filteredSuggestions.map(async (suggestedPublication) => {
@@ -296,7 +289,6 @@ export const useSessionStore = defineStore('session', {
     },
 
     updateScores() {
-      const startTime = performance.now();
       console.log("Updating scores of publications and reordering them.");
       // treat spaces before/after commas
       this.boostKeywordString = this.boostKeywordString.replace(/\s*,\s*/g, ", ");
@@ -305,22 +297,15 @@ export const useSessionStore = defineStore('session', {
       // upper case
       this.boostKeywordString = this.boostKeywordString.toUpperCase();
       
-      const scoreUpdateStart = performance.now();
       this.publications.forEach((publication) => {
         publication.updateScore(this.uniqueBoostKeywords, this.isBoost);
       });
-      const scoreUpdateTime = performance.now() - scoreUpdateStart;
       
-      const sortStart = performance.now();
       Publication.sortPublications(this.selectedPublications);
       Publication.sortPublications(this.suggestedPublications);
-      const sortTime = performance.now() - sortStart;
       
-      const authorsStart = performance.now();
       this.computeSelectedPublicationsAuthors();
-      const authorsTime = performance.now() - authorsStart;
       
-      const totalDuration = performance.now() - startTime;
       
     },
 
@@ -447,8 +432,9 @@ export const useSessionStore = defineStore('session', {
       
       const fileReader = new FileReader();
       fileReader.onload = () => {
+        let content;
         try {
-          const content = fileReader.result;
+          content = fileReader.result;
           const session = JSON.parse(content);
           // Store the start time for end-to-end measurement
           this._workflowStartTime = startTime;
