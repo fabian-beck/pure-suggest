@@ -306,7 +306,10 @@ function findKeywordMatches(title, boostKeywords) {
     boostKeywords.forEach(boostKeyword => {
         if (!boostKeyword) return;
         
+        let keywordMatched = false;
         boostKeyword.split("|").forEach(alternativeKeyword => {
+            if (keywordMatched) return; // Skip if this keyword group already has a match
+            
             const index = upperTitle.indexOf(alternativeKeyword);
             if (index >= 0) {
                 // Check if this position is already matched
@@ -320,6 +323,7 @@ function findKeywordMatches(title, boostKeywords) {
                         length: alternativeKeyword.length,
                         text: alternativeKeyword
                     });
+                    keywordMatched = true; // Mark this keyword group as matched
                 }
             }
         });
