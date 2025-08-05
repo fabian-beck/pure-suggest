@@ -83,7 +83,7 @@ export function onKey(e) {
                         ? activePublicationComponent.parentNode.nextElementSibling.getElementsByClassName("publication-component")[0]
                         : activePublicationComponent.parentNode.previousElementSibling.getElementsByClassName("publication-component")[0]
                 );
-            } catch (error) {
+            } catch {
                 console.log("Could not activate next/previous publication.")
             }
         } else if (e.key === "+") {
