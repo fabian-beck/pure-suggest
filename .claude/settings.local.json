@@ -13,7 +13,11 @@
       "WebFetch(domain:bulma.io)",
       "Bash(grep:*)",
       "Bash(npm install:*)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "Bash(mkdir:*)",
+      "Bash(npm run test:perf:*)",
+      "Bash(npx vitest run:*)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": []
   }

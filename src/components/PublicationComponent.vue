@@ -35,9 +35,7 @@
       'is-hovered': publication.isHovered,
       'is-keyword-hovered': publication.isKeywordHovered,
       'is-author-hovered': publication.isAuthorHovered,
-    }" :id="publication.doi" tabindex="0" v-on:focus="activate" @click.stop="activate"
-      @mouseenter="sessionStore.hoverPublication(publication, true)"
-      @mouseleave="sessionStore.hoverPublication(publication, false)">
+    }" :id="publication.doi" tabindex="0" @focus="activate">
       <tippy class="media-left" placement="right">
         <div class="glyph has-text-centered" v-bind:style="{ 'background-color': publication.scoreColor }"
           v-show="publication.wasFetched">

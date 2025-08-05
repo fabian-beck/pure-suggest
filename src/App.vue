@@ -51,11 +51,9 @@ export default {
     return { sessionStore, interfaceStore };
   },
   created() {
-    const startTime = performance.now();
     window.addEventListener("keydown", onKey);
   },
   mounted() {
-    const startTime = performance.now();
     window.onbeforeunload = () => {
       window.scrollTo(0, 0);
       // triggers a prompt before closing/reloading the page

@@ -89,7 +89,6 @@ export default {
     title: String,
   },
   mounted() {
-    const startTime = performance.now();
     this.sessionStore.$onAction(({ name, after }) => {
       after(() => {
         if (name === "updateQueued") {
@@ -97,12 +96,9 @@ export default {
         }
       });
     });
-    const mountDuration = performance.now() - startTime;
   },
   updated() {
-    const startTime = performance.now();
     this.$nextTick(() => {
-      const duration = performance.now() - startTime;
     });
   },
 };

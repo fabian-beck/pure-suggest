@@ -80,10 +80,10 @@ export function onKey(e) {
             try {
                 interfaceStore.activatePublicationComponent(
                     e.key === "ArrowDown"
-                        ? activePublicationComponent.parentNode.nextSibling.getElementsByClassName("publication-component")[0]
-                        : activePublicationComponent.parentNode.previousSibling.getElementsByClassName("publication-component")[0]
+                        ? activePublicationComponent.parentNode.nextElementSibling.getElementsByClassName("publication-component")[0]
+                        : activePublicationComponent.parentNode.previousElementSibling.getElementsByClassName("publication-component")[0]
                 );
-            } catch (error) {
+            } catch {
                 console.log("Could not activate next/previous publication.")
             }
         } else if (e.key === "+") {
