@@ -8,8 +8,8 @@ import Filter from '@/Filter.js';
 import Author from '@/Author.js';
 import { shuffle, saveAsFile } from "@/Util.js"
 import { clearCache } from "@/Cache.js";
+import { PAGINATION } from "@/constants/ui.js";
 
-const MAX_SUGGESTIONS = 100;
 
 export const useSessionStore = defineStore('session', {
   state: () => {
@@ -21,7 +21,7 @@ export const useSessionStore = defineStore('session', {
       excludedPublicationsDois: [],
       excludedQueue: [],
       suggestion: "",
-      maxSuggestions: MAX_SUGGESTIONS,
+      maxSuggestions: PAGINATION.INITIAL_SUGGESTIONS_COUNT,
       boostKeywordString: "",
       isBoost: true,
       activePublication: "",
@@ -70,7 +70,7 @@ export const useSessionStore = defineStore('session', {
       this.excludedPublicationsDois = [];
       this.excludedQueue = [];
       this.suggestion = "";
-      this.maxSuggestions = MAX_SUGGESTIONS;
+      this.maxSuggestions = PAGINATION.INITIAL_SUGGESTIONS_COUNT;
       this.boostKeywordString = "";
       this.activePublication = "";
       this.filter = new Filter();
@@ -170,7 +170,7 @@ export const useSessionStore = defineStore('session', {
       });
     },
 
-    async updateSuggestions(maxSuggestions = MAX_SUGGESTIONS) {
+    async updateSuggestions(maxSuggestions = PAGINATION.INITIAL_SUGGESTIONS_COUNT) {
       this.maxSuggestions = maxSuggestions;
       this.interfaceStore.startLoading();
       let publicationsLoaded = 0;
@@ -262,7 +262,7 @@ export const useSessionStore = defineStore('session', {
           b.citationCount + b.referenceCount - (a.citationCount + a.referenceCount)
       );
       
-      const preloadSuggestions = filteredSuggestions.slice(this.maxSuggestions, this.maxSuggestions + 50);
+      const preloadSuggestions = filteredSuggestions.slice(this.maxSuggestions, this.maxSuggestions + PAGINATION.LOAD_MORE_INCREMENT);
       filteredSuggestions = filteredSuggestions.slice(0, this.maxSuggestions);
       console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`);
       let publicationsLoadedCount = 0;
@@ -312,7 +312,7 @@ export const useSessionStore = defineStore('session', {
     loadMoreSuggestions() {
       console.log("Loading more suggestions.");
       this.updateSuggestions(
-        this.maxSuggestions + 50
+        this.maxSuggestions + PAGINATION.LOAD_MORE_INCREMENT
       );
     },
 
