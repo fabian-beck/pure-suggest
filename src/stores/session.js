@@ -38,9 +38,56 @@ export const useSessionStore = defineStore('session', {
     selectedPublicationsCount: (state) => state.selectedPublications.length,
     excludedPublicationsCount: (state) => state.excludedPublicationsDois.length,
     suggestedPublications: (state) => state.suggestion ? state.suggestion.publications : [],
-    suggestedPublicationsFiltered: (state) =>
-      state.interfaceStore.isFilterPanelShown ?
-        state.suggestedPublications.filter(publication => state.filter.matches(publication)) : state.suggestedPublications,
+    suggestedPublicationsFiltered: (state) => {
+      if (!state.filter.hasActiveFilters()) {
+        return state.suggestedPublications;
+      }
+      
+      // Sort by filter match first (true values first), then by score descending
+      return [...state.suggestedPublications].sort((a, b) => {
+        const aMatches = state.filter.matches(a);
+        const bMatches = state.filter.matches(b);
+        
+        if (aMatches && !bMatches) return -1;
+        if (!aMatches && bMatches) return 1;
+        
+        // If both match or both don't match, sort by score descending
+        return b.score - a.score;
+      });
+    },
+    selectedPublicationsFiltered: (state) => {
+      if (!state.filter.hasActiveFilters()) {
+        return state.selectedPublications;
+      }
+      
+      // Sort by filter match first (true values first), then by score descending
+      return [...state.selectedPublications].sort((a, b) => {
+        const aMatches = state.filter.matches(a);
+        const bMatches = state.filter.matches(b);
+        
+        if (aMatches && !bMatches) return -1;
+        if (!aMatches && bMatches) return 1;
+        
+        // If both match or both don't match, sort by score descending
+        return b.score - a.score;
+      });
+    },
+    selectedPublicationsFilteredCount: (state) => {
+      if (!state.filter.hasActiveFilters()) return 0;
+      return state.selectedPublications.filter(publication => state.filter.matches(publication)).length;
+    },
+    selectedPublicationsNonFilteredCount: (state) => {
+      if (!state.filter.hasActiveFilters()) return 0;
+      return state.selectedPublications.filter(publication => !state.filter.matches(publication)).length;
+    },
+    suggestedPublicationsFilteredCount: (state) => {
+      if (!state.filter.hasActiveFilters()) return 0;
+      return state.suggestedPublications.filter(publication => state.filter.matches(publication)).length;
+    },
+    suggestedPublicationsNonFilteredCount: (state) => {
+      if (!state.filter.hasActiveFilters()) return 0;
+      return state.suggestedPublications.filter(publication => !state.filter.matches(publication)).length;
+    },
     publications: (state) => state.selectedPublications.concat(state.suggestedPublications),
     publicationsFiltered: (state) => state.selectedPublications.concat(state.suggestedPublicationsFiltered),
     yearMax: (state) => Math.max(...state.publicationsFiltered.filter(publication => publication.year).map(publication => Number(publication.year))),

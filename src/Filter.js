@@ -9,6 +9,7 @@ export default class Filter {
         this.tag = "";
         this.doi = "";
         this.dois = [];
+        this.isActive = true;
     }
 
     matchesString(publication) {
@@ -72,10 +73,15 @@ export default class Filter {
     }
 
     matches(publication) {
+        if (!this.isActive) return true;
         return this.matchesString(publication)
             && this.matchesTag(publication)
             && this.matchesYear(publication)
             && this.matchesDois(publication);
+    }
+
+    hasActiveFilters() {
+        return this.isActive && !!(this.string || this.tag || this.isYearActive() || this.dois.length > 0);
     }
 
 }

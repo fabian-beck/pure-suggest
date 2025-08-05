@@ -14,7 +14,6 @@ export const useInterfaceStore = defineStore('interface', {
             isNetworkExpanded: false,
             isNetworkClusters: true,
             searchQuery: "",
-            isFilterPanelShown: false,
             isSearchModalDialogShown: false,
             isAuthorModalDialogShown: false,
             isExcludedModalDialogShown: false,

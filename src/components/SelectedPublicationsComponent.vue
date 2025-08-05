@@ -86,7 +86,7 @@
         </div>
       </div>
     </div>
-    <PublicationListComponent ref="publicationList" :publications="sessionStore.selectedPublications" />
+    <PublicationListComponent ref="publicationList" :publications="sessionStore.selectedPublicationsFiltered" :showSectionHeaders="true" publicationType="selected" />
   </div>
 </template>
 

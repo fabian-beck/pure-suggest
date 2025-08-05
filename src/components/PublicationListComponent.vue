@@ -1,22 +1,30 @@
 <template>
   <ul 
     class="publication-list has-background-white"
+    :class="{ 'empty-list': publications.length === 0 }"
     @click="handleDelegatedClick"
     @mouseenter="handleDelegatedMouseEnter"
     @mouseleave="handleDelegatedMouseLeave"
   >
-    <LazyPublicationComponent
-      v-for="publication in publications"
-      :key="publication.doi"
-      :publication="publication"
-      v-on:activate="activatePublication"
-    />
+    <template v-for="item in publicationsWithHeaders" :key="item.key">
+      <li v-if="item.type === 'header'" class="section-header">
+        <h3 class="section-header-text" :class="{ 'info-theme': publicationType === 'suggested' }">
+          {{ item.text }}
+        </h3>
+      </li>
+      <LazyPublicationComponent
+        v-else
+        :publication="item.publication"
+        v-on:activate="activatePublication"
+      />
+    </template>
   </ul>
 </template>
 
 <script>
 import { scrollToTargetAdjusted } from "@/Util.js";
 import { useSessionStore } from "@/stores/session.js";
+import { useInterfaceStore } from "@/stores/interface.js";
 import LazyPublicationComponent from './LazyPublicationComponent.vue';
 
 export default {
@@ -26,10 +34,20 @@ export default {
   },
   props: {
     publications: Array,
+    showSectionHeaders: {
+      type: Boolean,
+      default: false
+    },
+    publicationType: {
+      type: String,
+      default: 'general', // 'selected' or 'suggested' or 'general'
+      validator: (value) => ['selected', 'suggested', 'general'].includes(value)
+    }
   },
   setup() {
     const sessionStore = useSessionStore();
-    return { sessionStore };
+    const interfaceStore = useInterfaceStore();
+    return { sessionStore, interfaceStore };
   },
   watch: {
     publications: {
@@ -41,6 +59,84 @@ export default {
         }
       },
     },
+  },
+  computed: {
+    publicationsWithHeaders() {
+      if (!this.showSectionHeaders || !this.sessionStore.filter.hasActiveFilters()) {
+        return this.publications.map(publication => ({
+          type: 'publication',
+          publication,
+          key: publication.doi
+        }));
+      }
+
+      const result = [];
+      let filteredCount = 0;
+      let nonFilteredCount = 0;
+      let addedFilteredHeader = false;
+      let addedNonFilteredHeader = false;
+
+      this.publications.forEach(publication => {
+        const matches = this.sessionStore.filter.matches(publication);
+        
+        if (matches) {
+          if (!addedFilteredHeader) {
+            if (this.publicationType === 'selected') {
+              filteredCount = this.sessionStore.selectedPublicationsFilteredCount;
+              result.push({
+                type: 'header',
+                text: `Filtered publications (${filteredCount})`,
+                key: 'filtered-header'
+              });
+            } else if (this.publicationType === 'suggested') {
+              filteredCount = this.sessionStore.suggestedPublicationsFilteredCount;
+              result.push({
+                type: 'header',
+                text: `Filtered publications (${filteredCount})`,
+                key: 'filtered-header'
+              });
+            }
+            addedFilteredHeader = true;
+          }
+          result.push({
+            type: 'publication',
+            publication,
+            key: publication.doi
+          });
+        } else {
+          if (!addedNonFilteredHeader) {
+            if (this.publicationType === 'selected') {
+              nonFilteredCount = this.sessionStore.selectedPublicationsNonFilteredCount;
+              if (nonFilteredCount > 0) {
+                result.push({
+                  type: 'header',
+                  text: `Other publications (${nonFilteredCount})`,
+                  key: 'non-filtered-header'
+                });
+                addedNonFilteredHeader = true;
+              }
+            } else if (this.publicationType === 'suggested') {
+              nonFilteredCount = this.sessionStore.suggestedPublicationsNonFilteredCount;
+              if (nonFilteredCount > 0) {
+                result.push({
+                  type: 'header',
+                  text: `Other publications (${nonFilteredCount})`,
+                  key: 'non-filtered-header'
+                });
+                addedNonFilteredHeader = true;
+              }
+            }
+          }
+          result.push({
+            type: 'publication',
+            publication,
+            key: publication.doi
+          });
+        }
+      });
+
+      return result;
+    }
   },
   data() {
     return {
@@ -148,3 +244,40 @@ export default {
   },
 };
 </script>
+
+<style lang="scss" scoped>
+.section-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin: 0;
+  padding: 0;
+  
+  .section-header-text {
+    margin: 0;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--bulma-primary-dark);
+    background: linear-gradient(135deg, var(--bulma-primary-95) 0%, var(--bulma-primary-90) 100%);
+    border-left: 3px solid var(--bulma-primary);
+    border-bottom: 1px solid var(--bulma-primary-85);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    @include light-shadow;
+    
+    &.info-theme {
+      color: var(--bulma-info-dark);
+      background: linear-gradient(135deg, var(--bulma-info-95) 0%, var(--bulma-info-90) 100%);
+      border-left-color: var(--bulma-info);
+      border-bottom-color: var(--bulma-info-85);
+    }
+  }
+}
+
+.publication-list.empty-list {
+  min-height: 200px;
+  height: 100%;
+  flex: 1;
+}
+</style>
