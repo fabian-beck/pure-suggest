@@ -88,7 +88,7 @@ describe('PublicationListComponent - Section Headers', () => {
 
       const headers = wrapper.findAll('.section-header-text')
       expect(headers).toHaveLength(2)
-      expect(headers[0].text()).toBe('Filtered publications (1)')
+      expect(headers[0].text()).toBe('Filtered (1)')
       expect(headers[1].text()).toBe('Other publications (1)')
     })
   })
@@ -108,7 +108,7 @@ describe('PublicationListComponent - Section Headers', () => {
 
       const headers = wrapper.findAll('.section-header-text')
       expect(headers).toHaveLength(2)
-      expect(headers[0].text()).toBe('Filtered publications (1)')
+      expect(headers[0].text()).toBe('Filtered (1)')
       expect(headers[1].text()).toBe('Other publications (1)')
     })
   })

@@ -8,8 +8,7 @@
   >
     <template v-for="item in publicationsWithHeaders" :key="item.key">
       <li v-if="item.type === 'header'" class="section-header">
-        <h3 class="section-header-text" :class="{ 'info-theme': publicationType === 'suggested' }">
-          {{ item.text }}
+        <h3 class="section-header-text" :class="{ 'info-theme': publicationType === 'suggested' }" v-html="item.text">
         </h3>
       </li>
       <LazyPublicationComponent
@@ -90,14 +89,14 @@ export default {
               filteredCount = this.sessionStore.selectedPublicationsFilteredCount;
               result.push({
                 type: 'header',
-                text: `Filtered publications (${filteredCount})`,
+                text: `<i class="mdi mdi-filter"></i> Filtered (${filteredCount})`,
                 key: 'filtered-header'
               });
             } else if (this.publicationType === 'suggested') {
               filteredCount = this.sessionStore.suggestedPublicationsFilteredCount;
               result.push({
                 type: 'header',
-                text: `Filtered publications (${filteredCount})`,
+                text: `<i class="mdi mdi-filter"></i> Filtered (${filteredCount})`,
                 key: 'filtered-header'
               });
             }
