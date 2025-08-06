@@ -8,7 +8,9 @@ const mockSessionStore = {
   filter: {
     addDoi: vi.fn(),
     toggleDoi: vi.fn(),
-    isActive: true
+    isActive: true,
+    applyToSelected: true,
+    applyToSuggested: true
   },
   isSelected: vi.fn()
 }

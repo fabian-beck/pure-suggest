@@ -62,7 +62,12 @@ export default {
   },
   computed: {
     publicationsWithHeaders() {
-      if (!this.showSectionHeaders || !this.sessionStore.filter.hasActiveFilters()) {
+      // Don't show headers if filtering is not active for this publication type
+      const isFilteringApplied = this.sessionStore.filter.hasActiveFilters() &&
+        ((this.publicationType === 'selected' && this.sessionStore.filter.applyToSelected) ||
+         (this.publicationType === 'suggested' && this.sessionStore.filter.applyToSuggested));
+         
+      if (!this.showSectionHeaders || !isFilteringApplied) {
         return this.publications.map(publication => ({
           type: 'publication',
           publication,

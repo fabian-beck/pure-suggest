@@ -19,8 +19,14 @@
       <form>
         <v-row dense class="mb-2">
           <v-col cols="12" class="py-1">
-            <v-switch ref="filterSwitch" v-model="sessionStore.filter.isActive" label="Apply filters" density="compact"
+            <v-switch ref="filterSwitch" v-model="sessionStore.filter.isActive" label="Apply filters to" density="compact"
               color="grey-darken-1" hide-details @keydown="handleSwitchKeydown"></v-switch>
+            <div v-if="sessionStore.filter.isActive" class="mt-2 ml-6">
+              <v-checkbox v-model="sessionStore.filter.applyToSelected" label="selected" density="compact" 
+                color="grey-darken-1" hide-details class="d-inline-block mr-4"></v-checkbox>
+              <v-checkbox v-model="sessionStore.filter.applyToSuggested" label="suggested" density="compact" 
+                color="grey-darken-1" hide-details class="d-inline-block"></v-checkbox>
+            </div>
           </v-col>
         </v-row>
         <v-row dense :class="{ 'opacity-50': !sessionStore.filter.isActive }">

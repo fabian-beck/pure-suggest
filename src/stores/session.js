@@ -39,7 +39,7 @@ export const useSessionStore = defineStore('session', {
     excludedPublicationsCount: (state) => state.excludedPublicationsDois.length,
     suggestedPublications: (state) => state.suggestion ? state.suggestion.publications : [],
     suggestedPublicationsFiltered: (state) => {
-      if (!state.filter.hasActiveFilters()) {
+      if (!state.filter.hasActiveFilters() || !state.filter.applyToSuggested) {
         return state.suggestedPublications;
       }
       
@@ -56,7 +56,7 @@ export const useSessionStore = defineStore('session', {
       });
     },
     selectedPublicationsFiltered: (state) => {
-      if (!state.filter.hasActiveFilters()) {
+      if (!state.filter.hasActiveFilters() || !state.filter.applyToSelected) {
         return state.selectedPublications;
       }
       

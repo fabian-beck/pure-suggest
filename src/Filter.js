@@ -10,6 +10,8 @@ export default class Filter {
         this.doi = "";
         this.dois = [];
         this.isActive = true;
+        this.applyToSelected = true;
+        this.applyToSuggested = true;
     }
 
     matchesString(publication) {
@@ -85,7 +87,7 @@ export default class Filter {
     }
 
     hasActiveFilters() {
-        return this.isActive && !!(this.string || this.tag || this.isYearActive() || this.dois.length > 0);
+        return this.isActive && !!(this.string || this.tag || this.isYearActive() || this.dois.length > 0) && (this.applyToSelected || this.applyToSuggested);
     }
 
 }

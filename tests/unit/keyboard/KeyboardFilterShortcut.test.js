@@ -5,7 +5,9 @@ import { onKey } from '../../../src/Keys.js'
 const mockSessionStore = {
   isEmpty: false,
   filter: {
-    isActive: true
+    isActive: true,
+    applyToSelected: true,
+    applyToSuggested: true
   }
 }
 

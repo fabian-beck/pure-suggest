@@ -48,6 +48,8 @@ describe('FilterMenuComponent', () => {
         tag: '',
         dois: [],
         isActive: true,
+        applyToSelected: true,
+        applyToSuggested: true,
         hasActiveFilters: vi.fn(() => false),
         removeDoi: vi.fn()
       },
@@ -265,5 +267,21 @@ describe('FilterMenuComponent', () => {
     wrapper = mount(FilterMenuComponent)
     
     expect(wrapper.vm.filterSummaryHtml).toContain('year: 2020–2025')
+  })
+
+  it('should show checkboxes when filters are active', () => {
+    mockSessionStore.filter.isActive = true
+    wrapper = mount(FilterMenuComponent)
+    
+    const checkboxes = wrapper.findAll('v-checkbox')
+    expect(checkboxes).toHaveLength(2)
+  })
+
+  it('should hide checkboxes when filters are inactive', () => {
+    mockSessionStore.filter.isActive = false
+    wrapper = mount(FilterMenuComponent)
+    
+    const checkboxes = wrapper.findAll('v-checkbox')
+    expect(checkboxes).toHaveLength(0)
   })
 })

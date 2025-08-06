@@ -55,7 +55,9 @@ describe('PublicationListComponent - Section Headers', () => {
     mockSessionStore = {
       filter: {
         matches: vi.fn(),
-        hasActiveFilters: vi.fn(() => true)
+        hasActiveFilters: vi.fn(() => true),
+        applyToSelected: true,
+        applyToSuggested: true
       },
       selectedPublicationsFilteredCount: 1,
       selectedPublicationsNonFilteredCount: 1,
@@ -204,6 +206,56 @@ describe('PublicationListComponent - Section Headers', () => {
 
       const list = wrapper.find('.publication-list')
       expect(list.classes()).not.toContain('empty-list')
+    })
+  })
+
+  describe('checkbox-based filtering', () => {
+    it('should not show headers for selected publications when applyToSelected is false', () => {
+      mockSessionStore.filter.applyToSelected = false
+      mockSessionStore.filter.matches.mockImplementation(pub => pub.doi === '10.1234/pub1')
+
+      wrapper = mount(PublicationListComponent, {
+        props: {
+          publications: mockPublications,
+          showSectionHeaders: true,
+          publicationType: 'selected'
+        }
+      })
+
+      const headers = wrapper.findAll('.section-header-text')
+      expect(headers).toHaveLength(0)
+    })
+
+    it('should not show headers for suggested publications when applyToSuggested is false', () => {
+      mockSessionStore.filter.applyToSuggested = false
+      mockSessionStore.filter.matches.mockImplementation(pub => pub.doi === '10.1234/pub1')
+
+      wrapper = mount(PublicationListComponent, {
+        props: {
+          publications: mockPublications,
+          showSectionHeaders: true,
+          publicationType: 'suggested'
+        }
+      })
+
+      const headers = wrapper.findAll('.section-header-text')
+      expect(headers).toHaveLength(0)
+    })
+
+    it('should show headers for selected publications when applyToSelected is true', () => {
+      mockSessionStore.filter.applyToSelected = true
+      mockSessionStore.filter.matches.mockImplementation(pub => pub.doi === '10.1234/pub1')
+
+      wrapper = mount(PublicationListComponent, {
+        props: {
+          publications: mockPublications,
+          showSectionHeaders: true,
+          publicationType: 'selected'
+        }
+      })
+
+      const headers = wrapper.findAll('.section-header-text')
+      expect(headers).toHaveLength(2)
     })
   })
 })

@@ -27,6 +27,8 @@ describe('Filter', () => {
       expect(filter.doi).toBe("")
       expect(filter.dois).toEqual([])
       expect(filter.isActive).toBe(true)
+      expect(filter.applyToSelected).toBe(true)
+      expect(filter.applyToSuggested).toBe(true)
     })
   })
 
@@ -452,6 +454,22 @@ describe('Filter', () => {
       filter.dois = ['10.1234/test']
       filter.isActive = false
       expect(filter.hasActiveFilters()).toBe(false)
+    })
+
+    it('should return false when filters are active but neither publication type is selected', () => {
+      filter.string = "test"
+      filter.isActive = true
+      filter.applyToSelected = false
+      filter.applyToSuggested = false
+      expect(filter.hasActiveFilters()).toBe(false)
+    })
+
+    it('should return true when filters are active and at least one publication type is selected', () => {
+      filter.string = "test"
+      filter.isActive = true
+      filter.applyToSelected = true
+      filter.applyToSuggested = false
+      expect(filter.hasActiveFilters()).toBe(true)
     })
   })
 
