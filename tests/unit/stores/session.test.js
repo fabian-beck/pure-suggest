@@ -7,7 +7,6 @@ import Filter from '@/Filter.js'
 // Mock the interface store
 vi.mock('@/stores/interface.js', () => ({
   useInterfaceStore: vi.fn(() => ({
-    isFilterPanelShown: false,
     clear: vi.fn()
   }))
 }))
@@ -37,7 +36,7 @@ describe('Session Store - Selected Publications Filtering', () => {
     
     // Create mock interface store
     interfaceStore = {
-      isFilterPanelShown: false
+      clear: vi.fn()
     }
     
     // Mock the interface store to return our mock
@@ -81,20 +80,12 @@ describe('Session Store - Selected Publications Filtering', () => {
   })
 
   describe('selectedPublicationsFiltered', () => {
-    it('should return all publications when filter panel is not shown', () => {
-      interfaceStore.isFilterPanelShown = false
-      const filtered = sessionStore.selectedPublicationsFiltered
-      expect(filtered).toEqual([mockPublication1, mockPublication2, mockPublication3])
-    })
-
-    it('should return all publications in original order when filter panel is shown but no filters active', () => {
-      interfaceStore.isFilterPanelShown = true
+    it('should return all publications when no filters are active', () => {
       const filtered = sessionStore.selectedPublicationsFiltered
       expect(filtered).toEqual([mockPublication1, mockPublication2, mockPublication3])
     })
 
     it('should sort filtered publications to top when filter is active', () => {
-      interfaceStore.isFilterPanelShown = true
       sessionStore.filter.string = 'Machine Learning'
       
       const filtered = sessionStore.selectedPublicationsFiltered
@@ -106,7 +97,6 @@ describe('Session Store - Selected Publications Filtering', () => {
     })
 
     it('should sort by score within filtered and non-filtered groups', () => {
-      interfaceStore.isFilterPanelShown = true
       sessionStore.filter.tag = 'someTag'
       
       const filtered = sessionStore.selectedPublicationsFiltered
@@ -120,7 +110,6 @@ describe('Session Store - Selected Publications Filtering', () => {
     })
 
     it('should handle year filters correctly', () => {
-      interfaceStore.isFilterPanelShown = true
       sessionStore.filter.yearStart = '2021'
       sessionStore.filter.yearEnd = '2023'
       
@@ -134,7 +123,6 @@ describe('Session Store - Selected Publications Filtering', () => {
     })
 
     it('should handle DOI filters correctly', () => {
-      interfaceStore.isFilterPanelShown = true
       sessionStore.filter.dois = ['10.1234/citation1']
       
       const filtered = sessionStore.selectedPublicationsFiltered
@@ -147,20 +135,17 @@ describe('Session Store - Selected Publications Filtering', () => {
   })
 
   describe('selectedPublicationsFilteredCount', () => {
-    it('should return 0 when filter panel is not shown', () => {
-      interfaceStore.isFilterPanelShown = false
+    it('should return 0 when no filters are active', () => {
       expect(sessionStore.selectedPublicationsFilteredCount).toBe(0)
     })
 
     it('should return correct count when filter is active', () => {
-      interfaceStore.isFilterPanelShown = true
       sessionStore.filter.string = 'Machine Learning'
       
       expect(sessionStore.selectedPublicationsFilteredCount).toBe(1)
     })
 
     it('should return correct count with tag filter', () => {
-      interfaceStore.isFilterPanelShown = true
       sessionStore.filter.tag = 'someTag'
       
       expect(sessionStore.selectedPublicationsFilteredCount).toBe(2)
@@ -168,20 +153,17 @@ describe('Session Store - Selected Publications Filtering', () => {
   })
 
   describe('selectedPublicationsNonFilteredCount', () => {
-    it('should return 0 when filter panel is not shown', () => {
-      interfaceStore.isFilterPanelShown = false
+    it('should return 0 when no filters are active', () => {
       expect(sessionStore.selectedPublicationsNonFilteredCount).toBe(0)
     })
 
     it('should return correct count when filter is active', () => {
-      interfaceStore.isFilterPanelShown = true
       sessionStore.filter.string = 'Machine Learning'
       
       expect(sessionStore.selectedPublicationsNonFilteredCount).toBe(2)
     })
 
     it('should return correct count with tag filter', () => {
-      interfaceStore.isFilterPanelShown = true
       sessionStore.filter.tag = 'someTag'
       
       expect(sessionStore.selectedPublicationsNonFilteredCount).toBe(1)
@@ -190,7 +172,6 @@ describe('Session Store - Selected Publications Filtering', () => {
 
   describe('integration with Filter class', () => {
     it('should work with complex filter combinations', () => {
-      interfaceStore.isFilterPanelShown = true
       sessionStore.filter.string = 'Learning'
       sessionStore.filter.yearStart = '2020'
       sessionStore.filter.tag = 'someTag'
@@ -208,7 +189,6 @@ describe('Session Store - Selected Publications Filtering', () => {
 
     it('should handle empty selected publications array', () => {
       sessionStore.selectedPublications = []
-      interfaceStore.isFilterPanelShown = true
       sessionStore.filter.string = 'anything'
       
       expect(sessionStore.selectedPublicationsFiltered).toEqual([])

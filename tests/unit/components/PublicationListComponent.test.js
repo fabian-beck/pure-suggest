@@ -66,7 +66,6 @@ describe('PublicationListComponent - Section Headers', () => {
     }
 
     mockInterfaceStore = {
-      isFilterPanelShown: true
     }
 
     vi.mocked(useSessionStore).mockReturnValue(mockSessionStore)

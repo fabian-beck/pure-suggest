@@ -52,7 +52,6 @@ export const useInterfaceStore = defineStore('interface', {
         clear() {
             this.isNetworkExpanded = false;
             this.isNetworkClusters = true;
-            this.isFilterPanelShown = false;
             window.scrollTo(0, 0);
         },
 

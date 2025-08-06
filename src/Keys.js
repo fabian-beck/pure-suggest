@@ -62,6 +62,10 @@ export function onKey(e) {
         interfaceStore.isNetworkClusters = !interfaceStore.isNetworkClusters;
     } else if (e.key === "ArrowLeft") {
         e.preventDefault();
+        // Close filter menu when navigating to publications
+        if (window.filterMenuComponent) {
+            window.filterMenuComponent.closeMenu();
+        }
         interfaceStore.activatePublicationComponent(
             document
                 .getElementById("selected")
@@ -69,6 +73,10 @@ export function onKey(e) {
         );
     } else if (e.key === "ArrowRight") {
         e.preventDefault();
+        // Close filter menu when navigating to publications
+        if (window.filterMenuComponent) {
+            window.filterMenuComponent.closeMenu();
+        }
         interfaceStore.activatePublicationComponent(
             document
                 .getElementById("suggested")
@@ -122,10 +130,6 @@ export function onKey(e) {
                 sessionStore.filter.toggleDoi(doi);
                 // Ensure filters are active when adding DOI
                 sessionStore.filter.isActive = true;
-                // Open filter menu to show the added DOI
-                if (window.filterMenuComponent) {
-                    window.filterMenuComponent.openMenu();
-                }
             }
         }
     }

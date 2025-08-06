@@ -16,8 +16,7 @@ const mockSessionStore = {
 }
 
 const mockInterfaceStore = {
-  isAnyOverlayShown: false,
-  isFilterPanelShown: false
+  isAnyOverlayShown: false
 }
 
 // Mock the store imports
@@ -33,7 +32,6 @@ describe('Keyboard DOI Filter Bug', () => {
   beforeEach(() => {
     // Reset mocks
     vi.clearAllMocks()
-    mockInterfaceStore.isFilterPanelShown = false
     mockSessionStore.activePublication = null
     mockSessionStore.filter.isActive = true
     
@@ -90,8 +88,8 @@ describe('Keyboard DOI Filter Bug', () => {
       expect(window.filterMenuComponent.openMenu).not.toHaveBeenCalled()
     })
 
-    it('should toggle DOI filter when pressing "i" on selected publication with filter panel already open', () => {
-      // Setup: Active publication is selected (filter panel state doesn't matter anymore)
+    it('should toggle DOI filter when pressing "i" on selected publication with filter menu already open', () => {
+      // Setup: Active publication is selected (filter menu state doesn't matter anymore)
       mockSessionStore.activePublication = {
         doi: 'selected-publication-doi'
       }
@@ -109,8 +107,8 @@ describe('Keyboard DOI Filter Bug', () => {
       expect(window.filterMenuComponent.openMenu).toHaveBeenCalled()
     })
 
-    it('should NOT toggle DOI filter when pressing "i" on suggested publication with filter panel open', () => {
-      // Setup: Active publication is NOT selected (filter panel state doesn't matter anymore)
+    it('should NOT toggle DOI filter when pressing "i" on suggested publication with filter menu open', () => {
+      // Setup: Active publication is NOT selected (filter menu state doesn't matter anymore)
       mockSessionStore.activePublication = {
         doi: 'suggested-publication-doi'
       }
