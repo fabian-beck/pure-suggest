@@ -66,11 +66,12 @@ describe('FilterMenuComponent', () => {
     vi.mocked(useInterfaceStore).mockReturnValue(mockInterfaceStore)
   })
 
-  it('should render filter menu button when session is not empty', () => {
+  it('should render filter menu when session is not empty', () => {
     wrapper = mount(FilterMenuComponent)
     
-    const button = wrapper.find('.filter-button')
-    expect(button.exists()).toBe(true)
+    // Check that the v-menu component is rendered
+    const menu = wrapper.find('v-menu')
+    expect(menu.exists()).toBe(true)
   })
 
   it('should not render when session is empty', () => {
@@ -110,13 +111,13 @@ describe('FilterMenuComponent', () => {
     expect(mockSessionStore.filter.removeDoi).toHaveBeenCalledWith('10.1234/test')
   })
 
-  it('should show [Filters off] when filters are inactive but have values', () => {
+  it('should show [FILTERS OFF] when filters are inactive but have values', () => {
     mockSessionStore.filter.string = 'test'
     mockSessionStore.filter.isActive = false
     
     wrapper = mount(FilterMenuComponent)
     
-    expect(wrapper.vm.displayText).toBe('[Filters off]')
+    expect(wrapper.vm.displayText).toBe('[FILTERS OFF]')
   })
 
   it('should automatically enable filters when button is clicked', () => {
@@ -125,6 +126,117 @@ describe('FilterMenuComponent', () => {
     
     wrapper.vm.handleMenuClick()
     
+    expect(mockSessionStore.filter.isActive).toBe(true)
+  })
+
+  it('should remove DOI chip when Enter key is pressed', () => {
+    mockSessionStore.filter.dois = ['10.1234/test']
+    wrapper = mount(FilterMenuComponent)
+    
+    const event = new KeyboardEvent('keydown', { key: 'Enter' })
+    event.preventDefault = vi.fn()
+    event.stopPropagation = vi.fn()
+    
+    wrapper.vm.handleChipKeydown(event, '10.1234/test')
+    
+    expect(event.preventDefault).toHaveBeenCalled()
+    expect(event.stopPropagation).toHaveBeenCalled()
+    expect(mockSessionStore.filter.removeDoi).toHaveBeenCalledWith('10.1234/test')
+  })
+
+  it('should remove DOI chip when Space key is pressed', () => {
+    mockSessionStore.filter.dois = ['10.1234/test']
+    wrapper = mount(FilterMenuComponent)
+    
+    const event = new KeyboardEvent('keydown', { key: ' ' })
+    event.preventDefault = vi.fn()
+    event.stopPropagation = vi.fn()
+    
+    wrapper.vm.handleChipKeydown(event, '10.1234/test')
+    
+    expect(event.preventDefault).toHaveBeenCalled()
+    expect(event.stopPropagation).toHaveBeenCalled()
+    expect(mockSessionStore.filter.removeDoi).toHaveBeenCalledWith('10.1234/test')
+  })
+
+  it('should not remove DOI chip when other keys are pressed', () => {
+    mockSessionStore.filter.dois = ['10.1234/test']
+    wrapper = mount(FilterMenuComponent)
+    
+    const event = new KeyboardEvent('keydown', { key: 'Escape' })
+    event.preventDefault = vi.fn()
+    event.stopPropagation = vi.fn()
+    
+    wrapper.vm.handleChipKeydown(event, '10.1234/test')
+    
+    expect(event.preventDefault).not.toHaveBeenCalled()
+    expect(event.stopPropagation).not.toHaveBeenCalled()
+    expect(mockSessionStore.filter.removeDoi).not.toHaveBeenCalled()
+  })
+
+  it('should toggle filter switch when Enter key is pressed', () => {
+    mockSessionStore.filter.isActive = true
+    wrapper = mount(FilterMenuComponent)
+    
+    const event = new KeyboardEvent('keydown', { key: 'Enter' })
+    event.preventDefault = vi.fn()
+    event.stopPropagation = vi.fn()
+    
+    wrapper.vm.handleSwitchKeydown(event)
+    
+    expect(event.preventDefault).toHaveBeenCalled()
+    expect(event.stopPropagation).toHaveBeenCalled()
+    expect(mockSessionStore.filter.isActive).toBe(false)
+  })
+
+  it('should toggle filter switch when Space key is pressed', () => {
+    mockSessionStore.filter.isActive = false
+    wrapper = mount(FilterMenuComponent)
+    
+    const event = new KeyboardEvent('keydown', { key: ' ' })
+    event.preventDefault = vi.fn()
+    event.stopPropagation = vi.fn()
+    
+    wrapper.vm.handleSwitchKeydown(event)
+    
+    expect(event.preventDefault).toHaveBeenCalled()
+    expect(event.stopPropagation).toHaveBeenCalled()
+    expect(mockSessionStore.filter.isActive).toBe(true)
+  })
+
+  it('should not toggle filter switch when other keys are pressed', () => {
+    const initialState = true
+    mockSessionStore.filter.isActive = initialState
+    wrapper = mount(FilterMenuComponent)
+    
+    const event = new KeyboardEvent('keydown', { key: 'Escape' })
+    event.preventDefault = vi.fn()
+    event.stopPropagation = vi.fn()
+    
+    wrapper.vm.handleSwitchKeydown(event)
+    
+    expect(event.preventDefault).not.toHaveBeenCalled()
+    expect(event.stopPropagation).not.toHaveBeenCalled()
+    expect(mockSessionStore.filter.isActive).toBe(initialState)
+  })
+
+  it('should close menu when openMenu is called while menu is already open', () => {
+    wrapper = mount(FilterMenuComponent)
+    wrapper.vm.isMenuOpen = true
+    
+    wrapper.vm.openMenu()
+    
+    expect(wrapper.vm.isMenuOpen).toBe(false)
+  })
+
+  it('should open menu and enable filters when openMenu is called while menu is closed', () => {
+    wrapper = mount(FilterMenuComponent)
+    wrapper.vm.isMenuOpen = false
+    mockSessionStore.filter.isActive = false
+    
+    wrapper.vm.openMenu()
+    
+    expect(wrapper.vm.isMenuOpen).toBe(true)
     expect(mockSessionStore.filter.isActive).toBe(true)
   })
 })

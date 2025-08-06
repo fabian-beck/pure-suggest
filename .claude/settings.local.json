@@ -17,7 +17,8 @@
       "Bash(mkdir:*)",
       "Bash(npm run test:perf:*)",
       "Bash(npx vitest run:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(npx vitest run:*)"
     ],
     "deny": []
   }

@@ -34,7 +34,7 @@
             </v-list>
           </v-menu>
           <BoostKeywordsComponent />
-          <FilterMenuComponent />
+          <FilterMenuComponent ref="filterMenuComponent" />
         </div>
       </v-app-bar-title>
       <v-menu bottom left offset-y transition="slide-y-transition">
@@ -93,6 +93,10 @@ export default {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
     return { sessionStore, interfaceStore };
+  },
+  mounted() {
+    // Expose filter menu to global scope for keyboard access
+    window.filterMenuComponent = this.$refs.filterMenuComponent;
   },
   computed: {
     sessionStateString() {

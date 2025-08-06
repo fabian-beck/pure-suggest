@@ -8,6 +8,7 @@ describe('Filter', () => {
   beforeEach(() => {
     filter = new Filter()
     mockPublication = {
+      doi: '10.1234/test-doi',
       year: '2023',
       citationDois: ['10.1234/citation1', '10.1234/citation2'],
       referenceDois: ['10.1234/ref1', '10.1234/ref2'],
@@ -328,6 +329,11 @@ describe('Filter', () => {
 
     it('should return true when publication has matching reference DOI', () => {
       filter.dois = ['10.1234/ref1']
+      expect(filter.matchesDois(mockPublication)).toBe(true)
+    })
+
+    it('should return true when publication DOI matches filter DOI', () => {
+      filter.dois = ['10.1234/test-doi']
       expect(filter.matchesDois(mockPublication)).toBe(true)
     })
 

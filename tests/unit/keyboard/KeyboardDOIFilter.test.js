@@ -7,7 +7,8 @@ const mockSessionStore = {
   isEmpty: false,
   filter: {
     addDoi: vi.fn(),
-    toggleDoi: vi.fn()
+    toggleDoi: vi.fn(),
+    isActive: true
   },
   isSelected: vi.fn()
 }
@@ -32,6 +33,12 @@ describe('Keyboard DOI Filter Bug', () => {
     vi.clearAllMocks()
     mockInterfaceStore.isFilterPanelShown = false
     mockSessionStore.activePublication = null
+    mockSessionStore.filter.isActive = true
+    
+    // Mock window.filterMenuComponent for the new approach
+    window.filterMenuComponent = {
+      openMenu: vi.fn()
+    }
     
     // Mock document.activeElement to not be an input
     Object.defineProperty(document, 'activeElement', {
@@ -54,10 +61,11 @@ describe('Keyboard DOI Filter Bug', () => {
 
       onKey(event)
 
-      // Should prevent default and add DOI to filter
+      // Should prevent default, toggle DOI, ensure filter is active, and open menu
       expect(event.preventDefault).toHaveBeenCalled()
-      expect(mockInterfaceStore.isFilterPanelShown).toBe(true)
-      expect(mockSessionStore.filter.addDoi).toHaveBeenCalledWith('selected-publication-doi')
+      expect(mockSessionStore.filter.toggleDoi).toHaveBeenCalledWith('selected-publication-doi')
+      expect(mockSessionStore.filter.isActive).toBe(true)
+      expect(window.filterMenuComponent.openMenu).toHaveBeenCalled()
     })
 
     it('should NOT add DOI filter when pressing "i" on suggested publication', () => {
@@ -75,14 +83,13 @@ describe('Keyboard DOI Filter Bug', () => {
 
       // With the fix: preventDefault is called but no filter operations happen
       expect(event.preventDefault).toHaveBeenCalled()
-      expect(mockInterfaceStore.isFilterPanelShown).toBe(false)
       expect(mockSessionStore.filter.addDoi).not.toHaveBeenCalled()
       expect(mockSessionStore.filter.toggleDoi).not.toHaveBeenCalled()
+      expect(window.filterMenuComponent.openMenu).not.toHaveBeenCalled()
     })
 
     it('should toggle DOI filter when pressing "i" on selected publication with filter panel already open', () => {
-      // Setup: Filter panel is already shown and active publication is selected
-      mockInterfaceStore.isFilterPanelShown = true
+      // Setup: Active publication is selected (filter panel state doesn't matter anymore)
       mockSessionStore.activePublication = {
         doi: 'selected-publication-doi'
       }
@@ -96,11 +103,12 @@ describe('Keyboard DOI Filter Bug', () => {
       expect(event.preventDefault).toHaveBeenCalled()
       expect(mockSessionStore.filter.toggleDoi).toHaveBeenCalledWith('selected-publication-doi')
       expect(mockSessionStore.filter.addDoi).not.toHaveBeenCalled()
+      expect(mockSessionStore.filter.isActive).toBe(true)
+      expect(window.filterMenuComponent.openMenu).toHaveBeenCalled()
     })
 
     it('should NOT toggle DOI filter when pressing "i" on suggested publication with filter panel open', () => {
-      // Setup: Filter panel is shown but active publication is NOT selected
-      mockInterfaceStore.isFilterPanelShown = true
+      // Setup: Active publication is NOT selected (filter panel state doesn't matter anymore)
       mockSessionStore.activePublication = {
         doi: 'suggested-publication-doi'
       }
@@ -115,6 +123,7 @@ describe('Keyboard DOI Filter Bug', () => {
       expect(event.preventDefault).toHaveBeenCalled()
       expect(mockSessionStore.filter.toggleDoi).not.toHaveBeenCalled()
       expect(mockSessionStore.filter.addDoi).not.toHaveBeenCalled()
+      expect(window.filterMenuComponent.openMenu).not.toHaveBeenCalled()
     })
   })
 

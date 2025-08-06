@@ -1,5 +1,5 @@
 <template>
-  <v-menu v-if="!sessionStore.isEmpty" location="bottom" transition="slide-y-transition"
+  <v-menu v-if="!sessionStore.isEmpty" v-model="isMenuOpen" ref="filterMenu" location="bottom" transition="slide-y-transition"
     :close-on-content-click="false">
     <template v-slot:activator="{ props }">
       <v-btn class="filter-button p-1 pl-4" v-bind="props" :icon="interfaceStore.isMobile" @click="handleMenuClick"
@@ -19,8 +19,8 @@
       <form>
         <v-row dense class="mb-2">
           <v-col cols="12" class="py-1">
-            <v-switch v-model="sessionStore.filter.isActive" label="Apply filters" density="compact"
-              color="grey-darken-1" hide-details></v-switch>
+            <v-switch ref="filterSwitch" v-model="sessionStore.filter.isActive" label="Apply filters" density="compact"
+              color="grey-darken-1" hide-details @keydown="handleSwitchKeydown"></v-switch>
           </v-col>
         </v-row>
         <v-row dense :class="{ 'opacity-50': !sessionStore.filter.isActive }">
@@ -49,7 +49,8 @@
         <v-row dense v-if="sessionStore.filter.dois.length > 0">
           <v-col class="py-1">
             <v-chip v-for="doi in sessionStore.filter.dois" :key="doi" class="ma-1" closable
-              @click:close="removeDoi(doi)" v-tippy="{ content: getDoiTooltip(doi), allowHTML: true }">
+              @click:close="removeDoi(doi)" @keydown="handleChipKeydown($event, doi)" 
+              v-tippy="{ content: getDoiTooltip(doi), allowHTML: true }">
               <v-icon left>mdi-file-document</v-icon>
               {{ doi }}
             </v-chip>
@@ -75,6 +76,7 @@ export default {
   },
 
   data: () => ({
+    isMenuOpen: false,
     yearRules: [
       value => {
         if (!value) return true;
@@ -113,14 +115,14 @@ export default {
     displayText() {
       // If filters are turned off but have values, show "filters off" message
       if (!this.sessionStore.filter.isActive && this.hasFilterValues) {
-        return '[Filters off]';
+        return '[FILTERS OFF]';
       }
       // If filters are on and have values, show summary
       if (this.sessionStore.filter.hasActiveFilters()) {
         return this.filterSummaryHtml;
       }
       // Default text when no filters are set
-      return '[Set filters]';
+      return '[SET FILTERS]';
     },
     
     hasFilterValues() {
@@ -139,10 +141,54 @@ export default {
     handleMenuInput(value) {
       if (value) {
         this.$nextTick(() => {
-          this.$refs.filterInput?.focus();
+          // Focus on the switch element when menu opens via button click
+          const switchElement = this.$refs.filterSwitch?.$el?.querySelector('input');
+          if (switchElement) {
+            switchElement.focus();
+          }
         });
       }
     },
+    
+    openMenu() {
+      // If menu is already open, close it
+      if (this.isMenuOpen) {
+        this.closeMenu();
+        return;
+      }
+      
+      // Programmatically open the menu and focus on the switch
+      this.sessionStore.filter.isActive = true;
+      this.isMenuOpen = true;
+      this.$nextTick(() => {
+        // Focus on the switch element (Vuetify v-switch creates an input element)
+        const switchElement = this.$refs.filterSwitch?.$el?.querySelector('input');
+        if (switchElement) {
+          switchElement.focus();
+        }
+      });
+    },
+    
+    closeMenu() {
+      this.isMenuOpen = false;
+    },
+    
+    handleSwitchKeydown(event) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        event.stopPropagation();
+        this.sessionStore.filter.isActive = !this.sessionStore.filter.isActive;
+      }
+    },
+    
+    handleChipKeydown(event, doi) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        event.stopPropagation();
+        this.removeDoi(doi);
+      }
+    },
+    
     removeDoi(doi) {
       this.sessionStore.filter.removeDoi(doi);
     },

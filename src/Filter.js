@@ -69,7 +69,11 @@ export default class Filter {
 
     matchesDois(publication) {
         if (!this.dois.length) return true;
-        return this.dois.some(doi => publication.citationDois.includes(doi) || publication.referenceDois.includes(doi));
+        return this.dois.some(doi => 
+            publication.doi === doi || 
+            publication.citationDois.includes(doi) || 
+            publication.referenceDois.includes(doi)
+        );
     }
 
     matches(publication) {

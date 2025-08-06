@@ -53,7 +53,10 @@ export function onKey(e) {
         sessionStore.updateQueued();
     } else if (e.key === "f") {
         e.preventDefault();
-        interfaceStore.isFilterPanelShown = !interfaceStore.isFilterPanelShown;
+        // Open filter menu and focus on it
+        if (window.filterMenuComponent) {
+            window.filterMenuComponent.openMenu();
+        }
     } else if (e.key === "m") {
         e.preventDefault();
         interfaceStore.isNetworkClusters = !interfaceStore.isNetworkClusters;
@@ -116,11 +119,12 @@ export function onKey(e) {
             const doi = sessionStore.activePublication.doi;
             // Only allow DOI filtering for selected publications, not suggested ones
             if (sessionStore.isSelected(doi)) {
-                if (!interfaceStore.isFilterPanelShown) {
-                    interfaceStore.isFilterPanelShown = true;
-                    sessionStore.filter.addDoi(doi);
-                } else {
-                    sessionStore.filter.toggleDoi(doi);
+                sessionStore.filter.toggleDoi(doi);
+                // Ensure filters are active when adding DOI
+                sessionStore.filter.isActive = true;
+                // Open filter menu to show the added DOI
+                if (window.filterMenuComponent) {
+                    window.filterMenuComponent.openMenu();
                 }
             }
         }
