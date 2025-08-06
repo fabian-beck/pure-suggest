@@ -239,4 +239,31 @@ describe('FilterMenuComponent', () => {
     expect(wrapper.vm.isMenuOpen).toBe(true)
     expect(mockSessionStore.filter.isActive).toBe(true)
   })
+
+  it('should show year range with en dash for start year only', () => {
+    mockSessionStore.filter.yearStart = '2020'
+    mockSessionStore.filter.yearEnd = ''
+    mockSessionStore.filter.isActive = true
+    wrapper = mount(FilterMenuComponent)
+    
+    expect(wrapper.vm.filterSummaryHtml).toContain('year: 2020–')
+  })
+
+  it('should show year range with en dash for end year only', () => {
+    mockSessionStore.filter.yearStart = ''
+    mockSessionStore.filter.yearEnd = '2025'
+    mockSessionStore.filter.isActive = true
+    wrapper = mount(FilterMenuComponent)
+    
+    expect(wrapper.vm.filterSummaryHtml).toContain('year: –2025')
+  })
+
+  it('should show year range with en dash for both start and end years', () => {
+    mockSessionStore.filter.yearStart = '2020'
+    mockSessionStore.filter.yearEnd = '2025'
+    mockSessionStore.filter.isActive = true
+    wrapper = mount(FilterMenuComponent)
+    
+    expect(wrapper.vm.filterSummaryHtml).toContain('year: 2020–2025')
+  })
 })

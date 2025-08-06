@@ -96,7 +96,17 @@ export default {
       }
       
       if (filter.yearStart || filter.yearEnd) {
-        const yearRange = `${filter.yearStart || ''}${filter.yearStart && filter.yearEnd ? '-' : ''}${filter.yearEnd || ''}`;
+        let yearRange;
+        if (filter.yearStart && filter.yearEnd) {
+          // Both start and end specified: "XXXX–YYYY"
+          yearRange = `${filter.yearStart}–${filter.yearEnd}`;
+        } else if (filter.yearStart) {
+          // Only start specified: "XXXX–" (meaning XXXX and later)
+          yearRange = `${filter.yearStart}–`;
+        } else {
+          // Only end specified: "–XXXX" (meaning XXXX and earlier)
+          yearRange = `–${filter.yearEnd}`;
+        }
         parts.push(`<span class="filter-part">year: ${yearRange}</span>`);
       }
       
