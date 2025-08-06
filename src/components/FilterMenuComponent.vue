@@ -4,7 +4,7 @@
     <template v-slot:activator="{ props }">
       <v-btn class="filter-button p-1 pl-4" v-bind="props" :icon="interfaceStore.isMobile" @click="handleMenuClick"
         :density="interfaceStore.isMobile ? 'compact' : 'default'"
-        :color="sessionStore.filter.hasActiveFilters() ? 'default' : 'grey-darken-1'">
+        :color="buttonColor">
         <v-icon size="18">mdi-filter</v-icon>
         <span class="is-hidden-touch ml-2">
           <span v-html="displayText"
@@ -15,17 +15,19 @@
         </span>
       </v-btn>
     </template>
-    <v-sheet class="has-background-grey-lighten-4 p-2 pt-4" style="min-width: 500px;">
+    <v-sheet class="has-background-grey-lighten-4 p-2 pt-4" style="width: 700px; max-width: 95vw;">
       <form>
-        <v-row dense class="mb-2">
-          <v-col cols="12" class="py-1">
-            <v-switch ref="filterSwitch" v-model="sessionStore.filter.isActive" label="Apply filters to" density="compact"
-              color="grey-darken-1" hide-details @keydown="handleSwitchKeydown"></v-switch>
-            <div v-if="sessionStore.filter.isActive" class="mt-2 ml-6">
+        <v-row dense class="mb-1">
+          <v-col cols="12" class="py-0 d-flex align-center">
+            <v-switch ref="filterSwitch" v-model="sessionStore.filter.isActive" label="Apply filters" density="compact"
+              color="grey-darken-1" hide-details @keydown="handleSwitchKeydown" class="mr-2 ml-2"></v-switch>
+            <span class="text-body-2 mr-3 ml-3" style="line-height: 24px; display: inline-flex; align-items: center;" 
+              :class="{ 'text-disabled': !sessionStore.filter.isActive }">to</span>
+            <div class="d-flex" :class="{ 'opacity-50': !sessionStore.filter.isActive }">
               <v-checkbox v-model="sessionStore.filter.applyToSelected" label="selected" density="compact" 
-                color="grey-darken-1" hide-details class="d-inline-block mr-4"></v-checkbox>
+                hide-details class="mr-4 primary-checkbox" :disabled="!sessionStore.filter.isActive"></v-checkbox>
               <v-checkbox v-model="sessionStore.filter.applyToSuggested" label="suggested" density="compact" 
-                color="grey-darken-1" hide-details class="d-inline-block"></v-checkbox>
+                hide-details class="info-checkbox" :disabled="!sessionStore.filter.isActive"></v-checkbox>
             </div>
           </v-col>
         </v-row>
@@ -145,6 +147,25 @@ export default {
       const filter = this.sessionStore.filter;
       return !!(filter.string || filter.tag || filter.yearStart || filter.yearEnd || filter.dois.length > 0);
     },
+    
+    buttonColor() {
+      if (!this.sessionStore.filter.hasActiveFilters()) {
+        return 'grey-darken-1';
+      }
+      
+      const applyToSelected = this.sessionStore.filter.applyToSelected;
+      const applyToSuggested = this.sessionStore.filter.applyToSuggested;
+      
+      if (applyToSelected && !applyToSuggested) {
+        // Use CSS custom property for Bulma primary color
+        return 'hsl(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l))';
+      } else if (!applyToSelected && applyToSuggested) {
+        // Use CSS custom property for Bulma info color
+        return 'hsl(var(--bulma-info-h), var(--bulma-info-s), var(--bulma-info-l))';
+      } else {
+        return 'default'; // Both or neither selected
+      }
+    },
   },
 
   methods: {
@@ -235,5 +256,28 @@ export default {
 .opacity-50 {
   opacity: 0.5;
   pointer-events: none;
+}
+
+/* Use exact Bulma primary and info colors for checkboxes */
+:deep(.primary-checkbox .v-selection-control__input) {
+  color: hsl(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l)) !important; /* Bulma primary - turquoise */
+}
+
+:deep(.info-checkbox .v-selection-control__input) {
+  color: hsl(var(--bulma-info-h), var(--bulma-info-s), var(--bulma-info-l)) !important; /* Bulma info - cyan */
+}
+
+/* Ensure consistent gray colors for disabled elements */
+:deep(.v-checkbox--disabled .v-label) {
+  opacity: 0.6 !important; /* Use opacity instead of hardcoded color */
+}
+
+:deep(.v-text-field--disabled .v-field-label) {
+  opacity: 0.6 !important; /* Use opacity instead of hardcoded color */
+}
+
+/* Disabled text color class */
+.text-disabled {
+  opacity: 0.6;
 }
 </style>

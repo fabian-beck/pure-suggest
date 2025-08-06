@@ -277,11 +277,48 @@ describe('FilterMenuComponent', () => {
     expect(checkboxes).toHaveLength(2)
   })
 
-  it('should hide checkboxes when filters are inactive', () => {
+  it('should show checkboxes as disabled when filters are inactive', () => {
     mockSessionStore.filter.isActive = false
     wrapper = mount(FilterMenuComponent)
     
     const checkboxes = wrapper.findAll('v-checkbox')
-    expect(checkboxes).toHaveLength(0)
+    expect(checkboxes).toHaveLength(2)
+    // Checkboxes should be disabled when filters are inactive
+    expect(checkboxes[0].attributes('disabled')).toBeDefined()
+    expect(checkboxes[1].attributes('disabled')).toBeDefined()
+  })
+
+  it('should return primary color when only selected is checked', () => {
+    mockSessionStore.filter.hasActiveFilters.mockReturnValue(true)
+    mockSessionStore.filter.applyToSelected = true
+    mockSessionStore.filter.applyToSuggested = false
+    wrapper = mount(FilterMenuComponent)
+    
+    expect(wrapper.vm.buttonColor).toBe('hsl(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l))')
+  })
+
+  it('should return info color when only suggested is checked', () => {
+    mockSessionStore.filter.hasActiveFilters.mockReturnValue(true)
+    mockSessionStore.filter.applyToSelected = false
+    mockSessionStore.filter.applyToSuggested = true
+    wrapper = mount(FilterMenuComponent)
+    
+    expect(wrapper.vm.buttonColor).toBe('hsl(var(--bulma-info-h), var(--bulma-info-s), var(--bulma-info-l))')
+  })
+
+  it('should return default color when both are checked', () => {
+    mockSessionStore.filter.hasActiveFilters.mockReturnValue(true)
+    mockSessionStore.filter.applyToSelected = true
+    mockSessionStore.filter.applyToSuggested = true
+    wrapper = mount(FilterMenuComponent)
+    
+    expect(wrapper.vm.buttonColor).toBe('default')
+  })
+
+  it('should return grey color when no filters are active', () => {
+    mockSessionStore.filter.hasActiveFilters.mockReturnValue(false)
+    wrapper = mount(FilterMenuComponent)
+    
+    expect(wrapper.vm.buttonColor).toBe('grey-darken-1')
   })
 })
