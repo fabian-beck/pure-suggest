@@ -208,6 +208,151 @@ describe('Keys Module - Keyboard Event Handling', () => {
         expect(mockInterfaceStore.closeFilterMenu).toHaveBeenCalled()
       })
     })
+
+    describe('Arrow Up/Down Navigation', () => {
+      beforeEach(() => {
+        // Reset mock state before each navigation test
+        mockSessionStore.activePublication = { doi: 'test-publication' }
+      })
+
+      it('should navigate to next publication within same section', () => {
+        // Mock DOM structure with simple next sibling containing publication-component
+        const mockCurrentComponent = { parentNode: {} }
+        const mockNextPublication = { focus: vi.fn() }
+        const mockNextContainer = { 
+          getElementsByClassName: vi.fn(() => [mockNextPublication])
+        }
+        
+        mockCurrentComponent.parentNode.nextElementSibling = mockNextContainer
+        
+        // Mock getElementsByClassName to return our current component
+        document.getElementsByClassName = vi.fn((className) => {
+          if (className === 'publication-component is-active') {
+            return [mockCurrentComponent]
+          }
+          return []
+        })
+
+        const event = createKeyboardEvent('ArrowDown')
+        
+        onKey(event)
+        
+        expect(event.preventDefault).toHaveBeenCalled()
+        expect(mockInterfaceStore.activatePublicationComponent).toHaveBeenCalledWith(mockNextPublication)
+      })
+
+      it('should skip section headers and navigate to next publication across sections', () => {
+        // Mock DOM structure where next sibling is a section header, then a publication
+        const mockCurrentComponent = { parentNode: {} }
+        const mockSectionHeader = { 
+          className: 'section-header',
+          getElementsByClassName: vi.fn(() => []) // No publication-component in header
+        }
+        const mockNextPublication = { focus: vi.fn() }
+        const mockNextContainer = { 
+          className: 'publication-wrapper',
+          getElementsByClassName: vi.fn(() => [mockNextPublication])
+        }
+        
+        // Set up the chain: current -> header -> publication
+        mockCurrentComponent.parentNode.nextElementSibling = mockSectionHeader
+        mockSectionHeader.nextElementSibling = mockNextContainer
+        
+        // Mock getElementsByClassName to return our current component
+        document.getElementsByClassName = vi.fn((className) => {
+          if (className === 'publication-component is-active') {
+            return [mockCurrentComponent]
+          }
+          return []
+        })
+
+        const event = createKeyboardEvent('ArrowDown')
+        
+        onKey(event)
+        
+        expect(event.preventDefault).toHaveBeenCalled()
+        expect(mockInterfaceStore.activatePublicationComponent).toHaveBeenCalledWith(mockNextPublication)
+      })
+
+      it('should handle end of publication list gracefully', () => {
+        // Mock DOM structure where there is no next publication
+        const mockCurrentComponent = { parentNode: {} }
+        mockCurrentComponent.parentNode.nextElementSibling = null
+        
+        // Mock getElementsByClassName to return our current component
+        document.getElementsByClassName = vi.fn((className) => {
+          if (className === 'publication-component is-active') {
+            return [mockCurrentComponent]
+          }
+          return []
+        })
+
+        const event = createKeyboardEvent('ArrowDown')
+        
+        // Should not throw an error
+        expect(() => onKey(event)).not.toThrow()
+        expect(event.preventDefault).toHaveBeenCalled()
+      })
+
+      it('should navigate to previous publication within same section', () => {
+        // Mock DOM structure with simple previous sibling containing publication-component
+        const mockCurrentComponent = { parentNode: {} }
+        const mockPrevPublication = { focus: vi.fn() }
+        const mockPrevContainer = { 
+          getElementsByClassName: vi.fn(() => [mockPrevPublication])
+        }
+        
+        mockCurrentComponent.parentNode.previousElementSibling = mockPrevContainer
+        
+        // Mock getElementsByClassName to return our current component
+        document.getElementsByClassName = vi.fn((className) => {
+          if (className === 'publication-component is-active') {
+            return [mockCurrentComponent]
+          }
+          return []
+        })
+
+        const event = createKeyboardEvent('ArrowUp')
+        
+        onKey(event)
+        
+        expect(event.preventDefault).toHaveBeenCalled()
+        expect(mockInterfaceStore.activatePublicationComponent).toHaveBeenCalledWith(mockPrevPublication)
+      })
+
+      it('should skip section headers when navigating up across sections', () => {
+        // Mock DOM structure where previous sibling is a section header, then a publication
+        const mockCurrentComponent = { parentNode: {} }
+        const mockSectionHeader = { 
+          className: 'section-header',
+          getElementsByClassName: vi.fn(() => []) // No publication-component in header
+        }
+        const mockPrevPublication = { focus: vi.fn() }
+        const mockPrevContainer = { 
+          className: 'publication-wrapper',
+          getElementsByClassName: vi.fn(() => [mockPrevPublication])
+        }
+        
+        // Set up the chain: publication <- header <- current
+        mockCurrentComponent.parentNode.previousElementSibling = mockSectionHeader
+        mockSectionHeader.previousElementSibling = mockPrevContainer
+        
+        // Mock getElementsByClassName to return our current component
+        document.getElementsByClassName = vi.fn((className) => {
+          if (className === 'publication-component is-active') {
+            return [mockCurrentComponent]
+          }
+          return []
+        })
+
+        const event = createKeyboardEvent('ArrowUp')
+        
+        onKey(event)
+        
+        expect(event.preventDefault).toHaveBeenCalled()
+        expect(mockInterfaceStore.activatePublicationComponent).toHaveBeenCalledWith(mockPrevPublication)
+      })
+    })
   })
 
   describe('Input Field Handling', () => {
