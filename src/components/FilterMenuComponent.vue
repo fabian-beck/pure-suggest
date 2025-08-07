@@ -74,170 +74,149 @@
   </v-menu>
 </template>
 
-<script>
-import { useSessionStore } from "@/stores/session.js";
-import { useInterfaceStore } from "@/stores/interface.js";
-import Publication from "@/Publication.js";
+<script setup>
+import { computed, ref, nextTick } from 'vue'
+import { useSessionStore } from "@/stores/session.js"
+import { useInterfaceStore } from "@/stores/interface.js"
+import Publication from "@/Publication.js"
 
-export default {
-  name: "FilterMenuComponent",
+const sessionStore = useSessionStore()
+const interfaceStore = useInterfaceStore()
 
-  setup() {
-    const sessionStore = useSessionStore();
-    const interfaceStore = useInterfaceStore();
-    return { sessionStore, interfaceStore, Publication };
+const filterSwitch = ref(null)
+const filterInput = ref(null)
+
+const yearRules = [
+  value => {
+    if (!value) return true;
+    const regex = /^\d{4}$/;
+    return regex.test(value) || "Year must be a four digit number.";
   },
+]
 
-  data: () => ({
-    yearRules: [
-      value => {
-        if (!value) return true;
-        const regex = /^\d{4}$/;
-        return regex.test(value) || "Year must be a four digit number.";
-      },
-    ],
-  }),
+const filterSummaryHtml = computed(() => {
+  const filter = sessionStore.filter
+  const parts = []
 
-  computed: {
-    filterSummaryHtml() {
-      const filter = this.sessionStore.filter;
-      let parts = [];
+  if (filter.string) {
+    parts.push(`<span class="filter-part">text: "${filter.string}"</span>`)
+  }
 
-      if (filter.string) {
-        parts.push(`<span class="filter-part">text: "${filter.string}"</span>`);
+  if (filter.yearStart || filter.yearEnd) {
+    let yearRange
+    if (filter.yearStart && filter.yearEnd) {
+      yearRange = `${filter.yearStart}–${filter.yearEnd}`
+    } else if (filter.yearStart) {
+      yearRange = `${filter.yearStart}–`
+    } else {
+      yearRange = `–${filter.yearEnd}`
+    }
+    parts.push(`<span class="filter-part">year: ${yearRange}</span>`)
+  }
+
+  if (filter.tag) {
+    const tagName = Publication.TAGS.find(t => t.value === filter.tag)?.name || filter.tag
+    parts.push(`<span class="filter-part">tag: ${tagName}</span>`)
+  }
+
+  if (filter.dois.length > 0) {
+    parts.push(`<span class="filter-part">citations: ${filter.dois.length}</span>`)
+  }
+
+  return parts.length > 0 ? parts.join('<span class="filter-separator">, </span>') : ''
+})
+
+const hasFilterValues = computed(() => {
+  const filter = sessionStore.filter
+  return !!(filter.string || filter.tag || filter.yearStart || filter.yearEnd || filter.dois.length > 0)
+})
+
+const displayText = computed(() => {
+  if (!sessionStore.filter.isActive && hasFilterValues.value) {
+    return '[FILTERS OFF]'
+  }
+  if (sessionStore.filter.hasActiveFilters()) {
+    return filterSummaryHtml.value
+  }
+  return '[SET FILTERS]'
+})
+
+const buttonColor = computed(() => {
+  if (!sessionStore.filter.hasActiveFilters()) {
+    return 'grey-darken-1'
+  }
+
+  const applyToSelected = sessionStore.filter.applyToSelected
+  const applyToSuggested = sessionStore.filter.applyToSuggested
+
+  if (applyToSelected && !applyToSuggested) {
+    return 'hsl(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l))'
+  } else if (!applyToSelected && applyToSuggested) {
+    return 'hsl(var(--bulma-info-h), var(--bulma-info-s), var(--bulma-info-l))'
+  } else {
+    return 'default'
+  }
+})
+
+function handleMenuClick() {
+  sessionStore.filter.isActive = true
+  handleMenuInput(true)
+}
+
+function handleMenuInput(value) {
+  if (value) {
+    nextTick(() => {
+      const switchElement = filterSwitch.value?.$el?.querySelector('input')
+      if (switchElement) {
+        switchElement.focus()
       }
+    })
+  }
+}
 
-      if (filter.yearStart || filter.yearEnd) {
-        let yearRange;
-        if (filter.yearStart && filter.yearEnd) {
-          // Both start and end specified: "XXXX–YYYY"
-          yearRange = `${filter.yearStart}–${filter.yearEnd}`;
-        } else if (filter.yearStart) {
-          // Only start specified: "XXXX–" (meaning XXXX and later)
-          yearRange = `${filter.yearStart}–`;
-        } else {
-          // Only end specified: "–XXXX" (meaning XXXX and earlier)
-          yearRange = `–${filter.yearEnd}`;
-        }
-        parts.push(`<span class="filter-part">year: ${yearRange}</span>`);
+function openMenu() {
+  sessionStore.filter.isActive = true
+  
+  const wasOpened = interfaceStore.openFilterMenu()
+  
+  if (wasOpened) {
+    nextTick(() => {
+      const switchElement = filterSwitch.value?.$el?.querySelector('input')
+      if (switchElement) {
+        switchElement.focus()
       }
+    })
+  }
+}
 
-      if (filter.tag) {
-        const tagName = Publication.TAGS.find(t => t.value === filter.tag)?.name || filter.tag;
-        parts.push(`<span class="filter-part">tag: ${tagName}</span>`);
-      }
+function closeMenu() {
+  interfaceStore.closeFilterMenu()
+}
 
-      if (filter.dois.length > 0) {
-        parts.push(`<span class="filter-part">citations: ${filter.dois.length}</span>`);
-      }
+function handleSwitchKeydown(event) {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    event.stopPropagation()
+    sessionStore.filter.isActive = !sessionStore.filter.isActive
+  }
+}
 
-      return parts.length > 0 ? parts.join('<span class="filter-separator">, </span>') : '';
-    },
+function handleChipKeydown(event, doi) {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    event.stopPropagation()
+    removeDoi(doi)
+  }
+}
 
-    displayText() {
-      // If filters are turned off but have values, show "filters off" message
-      if (!this.sessionStore.filter.isActive && this.hasFilterValues) {
-        return '[FILTERS OFF]';
-      }
-      // If filters are on and have values, show summary
-      if (this.sessionStore.filter.hasActiveFilters()) {
-        return this.filterSummaryHtml;
-      }
-      // Default text when no filters are set
-      return '[SET FILTERS]';
-    },
+function removeDoi(doi) {
+  sessionStore.filter.removeDoi(doi)
+}
 
-    hasFilterValues() {
-      const filter = this.sessionStore.filter;
-      return !!(filter.string || filter.tag || filter.yearStart || filter.yearEnd || filter.dois.length > 0);
-    },
-
-    buttonColor() {
-      if (!this.sessionStore.filter.hasActiveFilters()) {
-        return 'grey-darken-1';
-      }
-
-      const applyToSelected = this.sessionStore.filter.applyToSelected;
-      const applyToSuggested = this.sessionStore.filter.applyToSuggested;
-
-      if (applyToSelected && !applyToSuggested) {
-        // Use CSS custom property for Bulma primary color
-        return 'hsl(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l))';
-      } else if (!applyToSelected && applyToSuggested) {
-        // Use CSS custom property for Bulma info color
-        return 'hsl(var(--bulma-info-h), var(--bulma-info-s), var(--bulma-info-l))';
-      } else {
-        return 'default'; // Both or neither selected
-      }
-    },
-  },
-
-  methods: {
-    handleMenuClick() {
-      // Always turn on filters when clicking the button
-      this.sessionStore.filter.isActive = true;
-      this.handleMenuInput(true);
-    },
-
-    handleMenuInput(value) {
-      if (value) {
-        this.$nextTick(() => {
-          // Focus on the switch element when menu opens via button click
-          const switchElement = this.$refs.filterSwitch?.$el?.querySelector('input');
-          if (switchElement) {
-            switchElement.focus();
-          }
-        });
-      }
-    },
-
-    openMenu() {
-      // Ensure filters are active when opening menu
-      this.sessionStore.filter.isActive = true;
-      
-      // Use store action to open menu (handles toggle logic)
-      const wasOpened = this.interfaceStore.openFilterMenu();
-      
-      if (wasOpened) {
-        this.$nextTick(() => {
-          // Focus on the switch element (Vuetify v-switch creates an input element)
-          const switchElement = this.$refs.filterSwitch?.$el?.querySelector('input');
-          if (switchElement) {
-            switchElement.focus();
-          }
-        });
-      }
-    },
-
-    closeMenu() {
-      this.interfaceStore.closeFilterMenu();
-    },
-
-    handleSwitchKeydown(event) {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        event.stopPropagation();
-        this.sessionStore.filter.isActive = !this.sessionStore.filter.isActive;
-      }
-    },
-
-    handleChipKeydown(event, doi) {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        event.stopPropagation();
-        this.removeDoi(doi);
-      }
-    },
-
-    removeDoi(doi) {
-      this.sessionStore.filter.removeDoi(doi);
-    },
-    getDoiTooltip(doi) {
-      const publication = this.sessionStore.getSelectedPublicationByDoi(doi);
-      return `Filtered to publications citing or cited by <b>${publication.title} (${publication.authorShort}, ${publication.year})</b>`;
-    },
-  },
-};
+function getDoiTooltip(doi) {
+  const publication = sessionStore.getSelectedPublicationByDoi(doi)
+  return `Filtered to publications citing or cited by <b>${publication.title} (${publication.authorShort}, ${publication.year})</b>`
+}
 </script>
 
 <style lang="scss" scoped>

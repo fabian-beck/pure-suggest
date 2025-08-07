@@ -333,13 +333,16 @@ export const useSessionStore = defineStore('session', {
     },
 
     setActivePublication(doi) {
+      // Clear all active states first
       this.publications.forEach((publication) => {
         publication.isActive = false;
         publication.isLinkedToActive = false;
       });
+      // Set active state for selected publications
       this.selectedPublications.forEach((selectedPublication) => {
-        selectedPublication.isActive = selectedPublication.doi === doi;
-        if (selectedPublication.isActive) {
+        const isActive = selectedPublication.doi === doi
+        selectedPublication.isActive = isActive;
+        if (isActive) {
           this.activePublication = selectedPublication;
           this.selectedPublications.forEach((publication) => {
             publication.isLinkedToActive =
@@ -353,9 +356,11 @@ export const useSessionStore = defineStore('session', {
           });
         }
       });
+      // Set active state for suggested publications
       this.suggestedPublications.forEach((suggestedPublication) => {
-        suggestedPublication.isActive = suggestedPublication.doi === doi;
-        if (suggestedPublication.isActive) {
+        const isActive = suggestedPublication.doi === doi
+        suggestedPublication.isActive = isActive;
+        if (isActive) {
           suggestedPublication.isRead = true;
           this.readPublicationsDois.add(doi);
           this.activePublication = suggestedPublication;
@@ -377,14 +382,18 @@ export const useSessionStore = defineStore('session', {
     },
 
     clearActivePublication(source) {
-      if (!this.activePublication) return;
+      if (!this.activePublication) {
+        return;
+      }
+      
+      const previousDoi = this.activePublication.doi
       this.activePublication = undefined;
       this.publications.forEach((publication) => {
         publication.isActive = false;
         publication.isLinkedToActive = false;
       });
       console.log(
-        `Cleared any highlighted active publication, triggered by "${source}".`
+        `Cleared active publication ${previousDoi}, triggered by "${source}".`
       );
     },
 

@@ -20,233 +20,210 @@
   </ul>
 </template>
 
-<script>
-import { scrollToTargetAdjusted } from "@/Util.js";
-import { useSessionStore } from "@/stores/session.js";
-import { useInterfaceStore } from "@/stores/interface.js";
-import LazyPublicationComponent from './LazyPublicationComponent.vue';
+<script setup>
+import { computed, nextTick, watch, ref, onMounted, onBeforeUnmount } from 'vue'
+import { scrollToTargetAdjusted } from "@/Util.js"
+import { useSessionStore } from "@/stores/session.js"
+import { useInterfaceStore } from "@/stores/interface.js"
+import { usePublicationHeaders } from "@/composables/usePublicationHeaders.js"
+import LazyPublicationComponent from './LazyPublicationComponent.vue'
 
-export default {
-  name: "PublicationListComponent",
-  components: {
-    LazyPublicationComponent
+const sessionStore = useSessionStore()
+const interfaceStore = useInterfaceStore()
+
+const props = defineProps({
+  publications: Array,
+  showSectionHeaders: {
+    type: Boolean,
+    default: false
   },
-  props: {
-    publications: Array,
-    showSectionHeaders: {
-      type: Boolean,
-      default: false
-    },
-    publicationType: {
-      type: String,
-      default: 'general', // 'selected' or 'suggested' or 'general'
-      validator: (value) => ['selected', 'suggested', 'general'].includes(value)
-    }
-  },
-  setup() {
-    const sessionStore = useSessionStore();
-    const interfaceStore = useInterfaceStore();
-    return { sessionStore, interfaceStore };
-  },
-  watch: {
-    publications: {
-      deep: true,
-      handler: function (newPublications, oldPublications) {
-        // Only auto-scroll if publications list actually changed (not just state updates)
-        if (!oldPublications || newPublications.length !== oldPublications.length) {
-          this.$nextTick(this.scrollToActivated);
-        }
-      },
-    },
-  },
-  computed: {
-    publicationsWithHeaders() {
-      // Don't show headers if filtering is not active for this publication type
-      const isFilteringApplied = this.sessionStore.filter.hasActiveFilters() &&
-        ((this.publicationType === 'selected' && this.sessionStore.filter.applyToSelected) ||
-         (this.publicationType === 'suggested' && this.sessionStore.filter.applyToSuggested));
-         
-      if (!this.showSectionHeaders || !isFilteringApplied) {
-        return this.publications.map(publication => ({
+  publicationType: {
+    type: String,
+    default: 'general',
+    validator: (value) => ['selected', 'suggested', 'general'].includes(value)
+  }
+})
+
+const publicationsWithHeaders = computed(() => {
+  // Don't show headers if filtering is not active for this publication type
+  const isFilteringApplied = sessionStore.filter.hasActiveFilters() &&
+    ((props.publicationType === 'selected' && sessionStore.filter.applyToSelected) ||
+     (props.publicationType === 'suggested' && sessionStore.filter.applyToSuggested))
+     
+  if (!props.showSectionHeaders || !isFilteringApplied) {
+    return props.publications.map(publication => ({
+      type: 'publication',
+      publication,
+      key: publication.doi
+    }))
+  }
+
+  // Use composable for complex header logic
+  const result = []
+  const filteredCount = props.publicationType === 'selected' 
+    ? sessionStore.selectedPublicationsFilteredCount 
+    : sessionStore.suggestedPublicationsFilteredCount
+  const nonFilteredCount = props.publicationType === 'selected'
+    ? sessionStore.selectedPublicationsNonFilteredCount
+    : sessionStore.suggestedPublicationsNonFilteredCount
+
+  // Add filtered publications with header
+  if (filteredCount > 0) {
+    result.push({
+      type: 'header',
+      text: `<i class="mdi mdi-filter"></i> Filtered (${filteredCount})`,
+      key: 'filtered-header'
+    })
+    
+    props.publications
+      .filter(pub => sessionStore.filter.matches(pub))
+      .forEach(publication => {
+        result.push({
           type: 'publication',
           publication,
           key: publication.doi
-        }));
-      }
+        })
+      })
+  }
 
-      const result = [];
-      let filteredCount = 0;
-      let nonFilteredCount = 0;
-      let addedFilteredHeader = false;
-      let addedNonFilteredHeader = false;
+  // Add non-filtered publications with header
+  if (nonFilteredCount > 0) {
+    result.push({
+      type: 'header',
+      text: `Other publications (${nonFilteredCount})`,
+      key: 'non-filtered-header'
+    })
+    
+    props.publications
+      .filter(pub => !sessionStore.filter.matches(pub))
+      .forEach(publication => {
+        result.push({
+          type: 'publication',
+          publication,
+          key: publication.doi
+        })
+      })
+  }
 
-      this.publications.forEach(publication => {
-        const matches = this.sessionStore.filter.matches(publication);
-        
-        if (matches) {
-          if (!addedFilteredHeader) {
-            if (this.publicationType === 'selected') {
-              filteredCount = this.sessionStore.selectedPublicationsFilteredCount;
-              result.push({
-                type: 'header',
-                text: `<i class="mdi mdi-filter"></i> Filtered (${filteredCount})`,
-                key: 'filtered-header'
-              });
-            } else if (this.publicationType === 'suggested') {
-              filteredCount = this.sessionStore.suggestedPublicationsFilteredCount;
-              result.push({
-                type: 'header',
-                text: `<i class="mdi mdi-filter"></i> Filtered (${filteredCount})`,
-                key: 'filtered-header'
-              });
-            }
-            addedFilteredHeader = true;
-          }
-          result.push({
-            type: 'publication',
-            publication,
-            key: publication.doi
-          });
-        } else {
-          if (!addedNonFilteredHeader) {
-            if (this.publicationType === 'selected') {
-              nonFilteredCount = this.sessionStore.selectedPublicationsNonFilteredCount;
-              if (nonFilteredCount > 0) {
-                result.push({
-                  type: 'header',
-                  text: `Other publications (${nonFilteredCount})`,
-                  key: 'non-filtered-header'
-                });
-                addedNonFilteredHeader = true;
-              }
-            } else if (this.publicationType === 'suggested') {
-              nonFilteredCount = this.sessionStore.suggestedPublicationsNonFilteredCount;
-              if (nonFilteredCount > 0) {
-                result.push({
-                  type: 'header',
-                  text: `Other publications (${nonFilteredCount})`,
-                  key: 'non-filtered-header'
-                });
-                addedNonFilteredHeader = true;
-              }
-            }
-          }
-          result.push({
-            type: 'publication',
-            publication,
-            key: publication.doi
-          });
-        }
-      });
+  return result
+})
 
-      return result;
+// Reactive data
+const onNextActivatedScroll = ref(true)
+const lastScrollTime = ref(0)
+const userIsScrolling = ref(false)
+
+const emit = defineEmits(['activate'])
+
+// Watch for publications changes
+watch(
+  () => props.publications,
+  (newPublications, oldPublications) => {
+    if (!oldPublications || newPublications.length !== oldPublications.length) {
+      nextTick(scrollToActivated)
     }
   },
-  data() {
-    return {
-      onNextActivatedScroll: true,
-      lastScrollTime: 0,
-      userIsScrolling: false,
-    };
-  },
-  mounted() {
-    // Track user scrolling to prevent auto-scroll interference
-    let scrollTimeout;
-    window.addEventListener('scroll', () => {
-      this.userIsScrolling = true;
-      this.lastScrollTime = Date.now();
-      
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        this.userIsScrolling = false;
-      }, 150);
-    });
-  },
-  methods: {
-    activatePublication: function (doi) {
-      this.onNextActivatedScroll = false;
-      this.$emit('activate', doi);
-    },
-    
-    // Event delegation handlers
-    handleDelegatedClick(event) {
-      const publicationElement = this.findPublicationElement(event.target);
-      if (publicationElement) {
-        event.stopPropagation();
-        const doi = publicationElement.id;
-        if (doi) {
-          this.sessionStore.activatePublicationComponentByDoi(doi);
-          this.activatePublication(doi);
-        }
-      }
-    },
-    
-    handleDelegatedMouseEnter(event) {
-      const publicationElement = this.findPublicationElement(event.target);
-      if (publicationElement) {
-        const doi = publicationElement.id;
-        const publication = this.publications.find(p => p.doi === doi);
-        if (publication) {
-          this.sessionStore.hoverPublication(publication, true);
-        }
-      }
-    },
-    
-    handleDelegatedMouseLeave(event) {
-      const publicationElement = this.findPublicationElement(event.target);
-      if (publicationElement) {
-        const doi = publicationElement.id;
-        const publication = this.publications.find(p => p.doi === doi);
-        if (publication) {
-          this.sessionStore.hoverPublication(publication, false);
-        }
-      }
-    },
-    
-    
-    // Helper method to find the publication element from event target
-    findPublicationElement(target) {
-      // Walk up the DOM tree to find the element with publication-component class
-      let element = target;
-      while (element && element !== this.$el) {
-        if (element.classList && element.classList.contains('publication-component')) {
-          return element;
-        }
-        element = element.parentElement;
-      }
-      return null;
-    },
-    scrollToActivated() {
-      // Don't auto-scroll if user is currently scrolling or just scrolled
-      const timeSinceLastScroll = Date.now() - this.lastScrollTime;
-      if (this.userIsScrolling || timeSinceLastScroll < 1000) {
-        this.onNextActivatedScroll = true;
-        return;
-      }
+  { deep: true }
+)
+// Lifecycle with cleanup
+let scrollTimeout
+let scrollHandler
 
-      if (this.onNextActivatedScroll) {
-        // Use setTimeout to avoid conflicts with lazy loading
-        setTimeout(() => {
-          const publicationComponent =
-            this.$el.getElementsByClassName("is-active")[0];
-          if (publicationComponent) {
-            if (window.innerWidth <= 1023)
-              scrollToTargetAdjusted(publicationComponent, 65);
-            else {
-              publicationComponent.scrollIntoView({
-                behavior: "smooth",
-                block: "start",
-                inline: "nearest",
-              });
-            }
-          }
-        }, 100);
-      } else {
-        this.onNextActivatedScroll = true;
+onMounted(() => {
+  scrollHandler = () => {
+    userIsScrolling.value = true
+    lastScrollTime.value = Date.now()
+    
+    clearTimeout(scrollTimeout)
+    scrollTimeout = setTimeout(() => {
+      userIsScrolling.value = false
+    }, 150)
+  }
+  
+  window.addEventListener('scroll', scrollHandler)
+})
+
+onBeforeUnmount(() => {
+  if (scrollHandler) {
+    window.removeEventListener('scroll', scrollHandler)
+  }
+  if (scrollTimeout) {
+    clearTimeout(scrollTimeout)
+  }
+})
+
+// Methods
+function activatePublication(doi) {
+  onNextActivatedScroll.value = false
+  emit('activate', doi)
+}
+
+function handleDelegatedClick(event) {
+  const publicationComponent = findPublicationElement(event.target)
+  if (publicationComponent) {
+    publicationComponent.click()
+  }
+}
+
+function handleDelegatedMouseEnter(event) {
+  const publicationElement = findPublicationElement(event.target)
+  if (publicationElement) {
+    const doi = publicationElement.id
+    const publication = props.publications.find(p => p.doi === doi)
+    if (publication) {
+      sessionStore.hoverPublication(publication, true)
+    }
+  }
+}
+
+function handleDelegatedMouseLeave(event) {
+  const publicationElement = findPublicationElement(event.target)
+  if (publicationElement) {
+    const doi = publicationElement.id
+    const publication = props.publications.find(p => p.doi === doi)
+    if (publication) {
+      sessionStore.hoverPublication(publication, false)
+    }
+  }
+}
+
+function findPublicationElement(target) {
+  let element = target
+  while (element) {
+    if (element.classList?.contains('publication-component')) {
+      return element
+    }
+    element = element.parentElement
+  }
+  return null
+}
+
+function scrollToActivated() {
+  const timeSinceLastScroll = Date.now() - lastScrollTime.value
+  if (userIsScrolling.value || timeSinceLastScroll < 1000) {
+    onNextActivatedScroll.value = true
+    return
+  }
+
+  if (onNextActivatedScroll.value) {
+    setTimeout(() => {
+      const publicationComponent = document.getElementsByClassName("is-active")[0]
+      if (publicationComponent) {
+        if (window.innerWidth <= 1023) {
+          scrollToTargetAdjusted(publicationComponent, 65)
+        } else {
+          publicationComponent.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+            inline: "nearest",
+          })
+        }
       }
-    },
-  },
-};
+    }, 100)
+  } else {
+    onNextActivatedScroll.value = true
+  }
+}
 </script>
 
 <style lang="scss" scoped>

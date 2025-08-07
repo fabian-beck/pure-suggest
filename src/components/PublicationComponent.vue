@@ -35,7 +35,7 @@
       'is-hovered': publication.isHovered,
       'is-keyword-hovered': publication.isKeywordHovered,
       'is-author-hovered': publication.isAuthorHovered,
-    }" :id="publication.doi" tabindex="0" @focus="activate">
+    }" :id="publication.doi" tabindex="0" @focus="activate" @click.stop>
       <tippy class="media-left" placement="right">
         <div class="glyph has-text-centered" v-bind:style="{ 'background-color': publication.scoreColor }"
           v-show="publication.wasFetched">
@@ -149,44 +149,57 @@
   </li>
 </template>
 
-<script>
-import { useSessionStore } from "@/stores/session.js";
-import { useInterfaceStore } from "@/stores/interface.js";
+<script setup>
+import { computed, watch } from 'vue'
+import { useSessionStore } from "@/stores/session.js"
+import { useInterfaceStore } from "@/stores/interface.js"
 
-export default {
-  name: "PublicationComponent",
-  setup() {
-    const sessionStore = useSessionStore();
-    const interfaceStore = useInterfaceStore();
-    return { sessionStore, interfaceStore };
-  },
-  props: {
-    publication: Object,
-  },
-  computed: {
-    chevronType: function () {
-      if (this.publication.boostFactor >= 8) {
-        return "chevron-triple-up";
-      }
-      else if (this.publication.boostFactor >= 4) {
-        return "chevron-double-up";
-      }
-      else if (this.publication.boostFactor > 1) {
-        return "chevron-up";
-      }
-      return "";
-    },
-  },
-  methods: {
-    activate: function () {
-      this.sessionStore.activatePublicationComponentByDoi(this.publication.doi);
-      this.$emit("activate", this.publication.doi);
-    },
-    refocus: function () {
-      document.getElementById(this.publication.doi).focus();
-    },
-  },
-};
+const sessionStore = useSessionStore()
+const interfaceStore = useInterfaceStore()
+
+const emit = defineEmits(['activate'])
+const props = defineProps({
+  publication: {
+    type: Object,
+    required: true
+  }
+})
+
+
+const chevronType = computed(() => {
+  if (props.publication.boostFactor >= 8) {
+    return "chevron-triple-up"
+  }
+  else if (props.publication.boostFactor >= 4) {
+    return "chevron-double-up"
+  }
+  else if (props.publication.boostFactor > 1) {
+    return "chevron-up"
+  }
+  return ""
+})
+
+let isActivating = false
+
+function activate() {
+  // Prevent recursive activation calls
+  if (isActivating) {
+    return
+  }
+  
+  isActivating = true
+  sessionStore.activatePublicationComponentByDoi(props.publication.doi)
+  emit("activate", props.publication.doi)
+  
+  // Reset the flag after a brief delay to allow for the activation to complete
+  setTimeout(() => {
+    isActivating = false
+  }, 100)
+}
+
+function refocus() {
+  document.getElementById(props.publication.doi).focus()
+}
 </script>
 
 <style lang="scss">
