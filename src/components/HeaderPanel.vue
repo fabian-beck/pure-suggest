@@ -60,7 +60,7 @@
     <div class="columns intro-message" v-if="sessionStore.isEmpty">
       <div class="column">
         <div class="subtitle level-item mt-2">
-          {{ this.appMeta.subtitle }}
+          {{ appMeta.subtitle }}
         </div>
       </div>
       <div class="column is-two-thirds">
@@ -78,30 +78,23 @@
   </div>
 </template>
 
-<script>
-import { useSessionStore } from "@/stores/session.js";
-import { useInterfaceStore } from "@/stores/interface.js";
-import FilterMenuComponent from "@/components/FilterMenuComponent.vue";
+<script setup>
+import { computed, inject, ref } from 'vue'
+import { useSessionStore } from "@/stores/session.js"
+import { useInterfaceStore } from "@/stores/interface.js"
+import FilterMenuComponent from "@/components/FilterMenuComponent.vue"
 
-export default {
-  name: "HeaderPanel",
-  components: {
-    FilterMenuComponent
-  },
-  inject: ["appMeta"],
-  setup() {
-    const sessionStore = useSessionStore();
-    const interfaceStore = useInterfaceStore();
-    return { sessionStore, interfaceStore };
-  },
-  computed: {
-    sessionStateString() {
-      return `${this.sessionStore.selectedPublicationsCount} selected${this.sessionStore.excludedPublicationsCount
-        ? `; ${this.sessionStore.excludedPublicationsCount} excluded`
-        : ""}`;
-    }
-  },
-};
+const appMeta = inject("appMeta")
+const sessionStore = useSessionStore()
+const interfaceStore = useInterfaceStore()
+
+const filterMenuComponent = ref(null)
+
+const sessionStateString = computed(() => {
+  return `${sessionStore.selectedPublicationsCount} selected${sessionStore.excludedPublicationsCount
+    ? `; ${sessionStore.excludedPublicationsCount} excluded`
+    : ""}`
+})
 </script>
 
 <style lang="scss" scoped>
