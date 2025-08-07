@@ -37,27 +37,21 @@
   />
 </template>
 
-<script>
-import { ref, watch, onMounted, onUnmounted } from 'vue';
-import PublicationComponent from './PublicationComponent.vue';
+<script setup>
+import { ref, watch, onMounted, onUnmounted } from 'vue'
+import PublicationComponent from './PublicationComponent.vue'
 
-export default {
-  name: 'LazyPublicationComponent',
-  components: {
-    PublicationComponent
+const emit = defineEmits(['activate'])
+const props = defineProps({
+  publication: {
+    type: Object,
+    required: true
   },
-  emits: ['activate'],
-  props: {
-    publication: {
-      type: Object,
-      required: true
-    },
-    estimatedHeight: {
-      type: Number,
-      default: 85 // Based on typical PublicationComponent height
-    }
-  },
-  setup(props, { emit }) {
+  estimatedHeight: {
+    type: Number,
+    default: 85 // Based on typical PublicationComponent height
+  }
+})
     const hasLoaded = ref(false);
     const targetRef = ref(null);
     let observer = null;
@@ -193,16 +187,6 @@ export default {
       }
     }
 
-    return {
-      hasLoaded,
-      targetRef,
-      forceLoad,
-      handleFocus,
-      handleClick,
-      handleKeyDown
-    };
-  }
-};
 </script>
 
 <style lang="scss" scoped>
