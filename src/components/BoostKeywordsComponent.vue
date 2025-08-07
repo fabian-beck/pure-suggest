@@ -35,43 +35,34 @@
   </v-menu>
 </template>
 
-<script>
-import { useSessionStore } from "@/stores/session.js";
-import { useInterfaceStore } from "@/stores/interface.js";
+<script setup>
+import { computed, nextTick, ref } from 'vue'
+import { useSessionStore } from "@/stores/session.js"
+import { useInterfaceStore } from "@/stores/interface.js"
 
-export default {
-  name: "BoostKeywordsComponent",
+const sessionStore = useSessionStore()
+const interfaceStore = useInterfaceStore()
 
-  setup() {
-    const sessionStore = useSessionStore();
-    const interfaceStore = useInterfaceStore();
-    return { sessionStore, interfaceStore };
-  },
+const boost = ref(null)
 
-  computed: {
-    boostKeywordStringHtml() {
-      let html = this.sessionStore.boostKeywordString;
-      // wrap comma seperated words in span.word
-      html = html.replace(/\s*([^,|]+)/g, "<span class='word'>$1</span>");
-      // wrap | in span.alt
-      html = html.replace(/\|/g, "<span class='alt'>|</span>");
-      // wrap , in span.comma
-      html = html.replace(/,/g, "<span class='comma'>,</span>");
-      return html;
-    },
-  },
+const boostKeywordStringHtml = computed(() => {
+  let html = sessionStore.boostKeywordString
+  // wrap comma seperated words in span.word
+  html = html.replace(/\s*([^,|]+)/g, "<span class='word'>$1</span>")
+  // wrap | in span.alt
+  html = html.replace(/\|/g, "<span class='alt'>|</span>")
+  // wrap , in span.comma
+  html = html.replace(/,/g, "<span class='comma'>,</span>")
+  return html
+})
 
-  methods: {
-    handleMenuInput(value) {
-      if (value) {
-        this.$nextTick(() => {
-          this.$refs.boost.focus();
-        });
-      }
-    },
-  },
-
-};
+function handleMenuInput(value) {
+  if (value) {
+    nextTick(() => {
+      boost.value?.focus()
+    })
+  }
+}
 </script>
 
 <style lang="scss" scoped>
