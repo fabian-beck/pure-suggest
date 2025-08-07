@@ -81,7 +81,7 @@ describe('FilterMenuComponent', () => {
     wrapper = mount(FilterMenuComponent)
     
     // Check that the v-menu component is rendered
-    const menu = wrapper.find('v-menu')
+    const menu = wrapper.find('.v-menu')
     expect(menu.exists()).toBe(true)
   })
 
@@ -284,7 +284,7 @@ describe('FilterMenuComponent', () => {
     mockSessionStore.filter.isActive = true
     wrapper = mount(FilterMenuComponent)
     
-    const checkboxes = wrapper.findAll('v-checkbox')
+    const checkboxes = wrapper.findAll('.v-checkbox')
     expect(checkboxes).toHaveLength(2)
   })
 
@@ -292,7 +292,7 @@ describe('FilterMenuComponent', () => {
     mockSessionStore.filter.isActive = false
     wrapper = mount(FilterMenuComponent)
     
-    const checkboxes = wrapper.findAll('v-checkbox')
+    const checkboxes = wrapper.findAll('.v-checkbox')
     expect(checkboxes).toHaveLength(2)
     // Checkboxes should be disabled when filters are inactive
     expect(checkboxes[0].attributes('disabled')).toBeDefined()
