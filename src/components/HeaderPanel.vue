@@ -94,10 +94,6 @@ export default {
     const interfaceStore = useInterfaceStore();
     return { sessionStore, interfaceStore };
   },
-  mounted() {
-    // Expose filter menu to global scope for keyboard access
-    window.filterMenuComponent = this.$refs.filterMenuComponent;
-  },
   computed: {
     sessionStateString() {
       return `${this.sessionStore.selectedPublicationsCount} selected${this.sessionStore.excludedPublicationsCount
