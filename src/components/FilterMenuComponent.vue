@@ -2,7 +2,8 @@
   <v-menu v-if="!sessionStore.isEmpty" v-model="isMenuOpen" ref="filterMenu" location="bottom"
     transition="slide-y-transition" :close-on-content-click="false">
     <template v-slot:activator="{ props }">
-      <v-btn class="filter-button p-1 pl-4" v-bind="props" :icon="interfaceStore.isMobile" @click="handleMenuClick"
+      <v-btn class="filter-button" :class="interfaceStore.isMobile ? '' : 'p-1 pl-4'" 
+        v-bind="props" :icon="interfaceStore.isMobile" @click="handleMenuClick"
         :density="interfaceStore.isMobile ? 'compact' : 'default'" :color="buttonColor">
         <v-icon size="18">mdi-filter</v-icon>
         <span class="is-hidden-touch ml-2">
@@ -17,16 +18,21 @@
     <v-sheet class="has-background-grey-lighten-4 p-2 pt-4" style="width: 700px; max-width: 95vw;">
       <form>
         <v-row dense>
-          <v-col cols="12" class="py-0 d-flex align-center">
-            <v-switch ref="filterSwitch" v-model="sessionStore.filter.isActive" label="Apply filters" density="compact"
-              color="grey-darken-1" hide-details @keydown="handleSwitchKeydown" class="mr-2 ml-2"></v-switch>
-            <span class="text-body-2 mr-3 ml-3" style="line-height: 24px; display: inline-flex; align-items: center;"
-              :class="{ 'text-disabled': !sessionStore.filter.isActive }">to</span>
-            <div class="d-flex" :class="{ 'opacity-50': !sessionStore.filter.isActive }">
-              <v-checkbox v-model="sessionStore.filter.applyToSelected" label="selected" density="compact" hide-details
-                class="mr-4 primary-checkbox" :disabled="!sessionStore.filter.isActive"></v-checkbox>
-              <v-checkbox v-model="sessionStore.filter.applyToSuggested" label="suggested" density="compact"
-                hide-details class="info-checkbox" :disabled="!sessionStore.filter.isActive"></v-checkbox>
+          <v-col cols="12" class="py-0">
+            <!-- Mobile: Stack vertically, Desktop: Inline -->
+            <div :class="interfaceStore.isMobile ? 'd-block' : 'd-flex align-center'">
+              <div :class="interfaceStore.isMobile ? 'd-flex align-center mb-2' : 'd-flex align-center'">
+                <v-switch ref="filterSwitch" v-model="sessionStore.filter.isActive" label="Apply filters" density="compact"
+                  color="grey-darken-1" hide-details @keydown="handleSwitchKeydown" class="mr-2 ml-2"></v-switch>
+                <span class="text-body-2 mr-3 ml-3" style="line-height: 24px; display: inline-flex; align-items: center;"
+                  :class="{ 'text-disabled': !sessionStore.filter.isActive }">to</span>
+              </div>
+              <div class="d-flex" :class="[interfaceStore.isMobile ? 'ml-4' : '', { 'opacity-50': !sessionStore.filter.isActive }]">
+                <v-checkbox v-model="sessionStore.filter.applyToSelected" label="selected" density="compact" hide-details
+                  class="mr-4 primary-checkbox" :disabled="!sessionStore.filter.isActive"></v-checkbox>
+                <v-checkbox v-model="sessionStore.filter.applyToSuggested" label="suggested" density="compact"
+                  hide-details class="info-checkbox" :disabled="!sessionStore.filter.isActive"></v-checkbox>
+              </div>
             </div>
           </v-col>
         </v-row>
@@ -249,6 +255,21 @@ export default {
 .filter-button {
   :deep(.v-btn__content) {
     text-transform: none;
+  }
+  
+  /* Mobile round button icon centering - simple flexbox approach */
+  &.v-btn--icon {
+    :deep(.v-btn__content) {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+    
+    :deep(.v-icon) {
+      margin: 0 !important;
+    }
   }
 }
 

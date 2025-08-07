@@ -2,7 +2,8 @@
   <v-menu v-if="!sessionStore.isEmpty" location="bottom" transition="slide-y-transition"
     :close-on-content-click="false">
     <template v-slot:activator="{ props }">
-      <v-btn class="boost-button p-1 pl-4" v-bind="props" :icon="interfaceStore.isMobile" @click="handleMenuInput(true)"
+      <v-btn class="boost-button" :class="interfaceStore.isMobile ? '' : 'p-1 pl-4'" 
+        v-bind="props" :icon="interfaceStore.isMobile" @click="handleMenuInput(true)"
         :density="interfaceStore.isMobile ? 'compact' : 'default'">
         <v-icon size="18">mdi-chevron-double-up</v-icon>
         <span class="is-hidden-touch ml-2">
@@ -105,5 +106,26 @@ export default {
   margin-left: 0.2rem;
   margin-right: 0.3rem;
   font-weight: bold;
+}
+
+.boost-button {
+  :deep(.v-btn__content) {
+    text-transform: none;
+  }
+  
+  /* Mobile round button icon centering - same as filter button */
+  &.v-btn--icon {
+    :deep(.v-btn__content) {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+    
+    :deep(.v-icon) {
+      margin: 0 !important;
+    }
+  }
 }
 </style>
