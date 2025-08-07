@@ -15,8 +15,8 @@ export function saveAsFile(filename, mime, data) {
 
 // https://stackoverflow.com/questions/49820013/javascript-scrollintoview-smooth-scroll-and-offset
 export function scrollToTargetAdjusted(element, offsetY) {
-  var elementPosition = element.getBoundingClientRect().top;
-  var offsetPosition = elementPosition + window.pageYOffset - offsetY;
+  const elementPosition = element.getBoundingClientRect().top;
+  const offsetPosition = elementPosition + window.pageYOffset - offsetY;
 
   window.scrollTo({
     top: offsetPosition,
@@ -28,11 +28,11 @@ export function scrollToTargetAdjusted(element, offsetY) {
 export function shuffle(array, seed) {
 
   function random(seed) {
-    var x = Math.sin(seed++) * 10000;
+    const x = Math.sin(seed++) * 10000;
     return x - Math.floor(x);
   }
 
-  var m = array.length, t, i;
+  let m = array.length, t, i;
   while (m) {
     i = Math.floor(random(seed) * m--);
     t = array[m];

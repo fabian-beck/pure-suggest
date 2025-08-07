@@ -104,7 +104,6 @@
 import * as d3 from "d3";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
-import _ from "lodash";
 import { storeToRefs } from "pinia";
 
 import { useSessionStore } from "@/stores/session.js";
@@ -645,7 +644,10 @@ export default {
             function updateYearLabels() {
                 if (this.sessionStore.publicationsFiltered.length === 0)
                     return;
-                const yearRange = _.range(this.sessionStore.yearMin - 4, this.sessionStore.yearMax + 1).filter((year) => year % 5 === 0);
+                const yearRange = Array.from(
+                    { length: this.sessionStore.yearMax - this.sessionStore.yearMin + 6 },
+                    (_, i) => this.sessionStore.yearMin - 4 + i
+                ).filter((year) => year % 5 === 0);
                 this.label = this.label
                     .data(yearRange, (d) => d)
                     .join((enter) => {

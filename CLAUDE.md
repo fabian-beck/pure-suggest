@@ -7,6 +7,7 @@
 - Add tests whenever appropriate, but try to keep them concise and focused on the most important issues
 - Keep commit messages minimal, with small changes only having short messages
 - Always clean up obsolete code or unnecessary comments
+- Act on failing tests immediately to prevent technical debt and maintain code quality
 
 ## Design Principles
 

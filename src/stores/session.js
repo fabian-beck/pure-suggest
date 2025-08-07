@@ -4,6 +4,7 @@ import { useInterfaceStore } from "./interface.js";
 
 import Publication from "@/Publication.js";
 import { generateBibtex } from "@/utils/bibtex.js";
+import { getFilteredPublications, countFilteredPublications } from "@/utils/filterUtils.js";
 import Filter from '@/Filter.js';
 import Author from '@/Author.js';
 import { shuffle, saveAsFile } from "@/Util.js"
@@ -39,54 +40,22 @@ export const useSessionStore = defineStore('session', {
     excludedPublicationsCount: (state) => state.excludedPublicationsDois.length,
     suggestedPublications: (state) => state.suggestion ? state.suggestion.publications : [],
     suggestedPublicationsFiltered: (state) => {
-      if (!state.filter.hasActiveFilters() || !state.filter.applyToSuggested) {
-        return state.suggestedPublications;
-      }
-      
-      // Sort by filter match first (true values first), then by score descending
-      return [...state.suggestedPublications].sort((a, b) => {
-        const aMatches = state.filter.matches(a);
-        const bMatches = state.filter.matches(b);
-        
-        if (aMatches && !bMatches) return -1;
-        if (!aMatches && bMatches) return 1;
-        
-        // If both match or both don't match, sort by score descending
-        return b.score - a.score;
-      });
+      return getFilteredPublications(state.suggestedPublications, state.filter, state.filter.applyToSuggested);
     },
     selectedPublicationsFiltered: (state) => {
-      if (!state.filter.hasActiveFilters() || !state.filter.applyToSelected) {
-        return state.selectedPublications;
-      }
-      
-      // Sort by filter match first (true values first), then by score descending
-      return [...state.selectedPublications].sort((a, b) => {
-        const aMatches = state.filter.matches(a);
-        const bMatches = state.filter.matches(b);
-        
-        if (aMatches && !bMatches) return -1;
-        if (!aMatches && bMatches) return 1;
-        
-        // If both match or both don't match, sort by score descending
-        return b.score - a.score;
-      });
+      return getFilteredPublications(state.selectedPublications, state.filter, state.filter.applyToSelected);
     },
     selectedPublicationsFilteredCount: (state) => {
-      if (!state.filter.hasActiveFilters()) return 0;
-      return state.selectedPublications.filter(publication => state.filter.matches(publication)).length;
+      return countFilteredPublications(state.selectedPublications, state.filter, true);
     },
     selectedPublicationsNonFilteredCount: (state) => {
-      if (!state.filter.hasActiveFilters()) return 0;
-      return state.selectedPublications.filter(publication => !state.filter.matches(publication)).length;
+      return countFilteredPublications(state.selectedPublications, state.filter, false);
     },
     suggestedPublicationsFilteredCount: (state) => {
-      if (!state.filter.hasActiveFilters()) return 0;
-      return state.suggestedPublications.filter(publication => state.filter.matches(publication)).length;
+      return countFilteredPublications(state.suggestedPublications, state.filter, true);
     },
     suggestedPublicationsNonFilteredCount: (state) => {
-      if (!state.filter.hasActiveFilters()) return 0;
-      return state.suggestedPublications.filter(publication => !state.filter.matches(publication)).length;
+      return countFilteredPublications(state.suggestedPublications, state.filter, false);
     },
     publications: (state) => state.selectedPublications.concat(state.suggestedPublications),
     publicationsFiltered: (state) => state.selectedPublications.concat(state.suggestedPublicationsFiltered),
