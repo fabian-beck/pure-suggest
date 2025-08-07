@@ -53,34 +53,29 @@
   </div>
 </template>
 
-<script>
-import { useSessionStore } from "@/stores/session.js";
-import { useInterfaceStore } from "@/stores/interface.js";
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useSessionStore } from "@/stores/session.js"
+import { useInterfaceStore } from "@/stores/interface.js"
 
-export default {
-  name: "SuggestedPublicationsComponent",
-  setup() {
-    const sessionStore = useSessionStore();
-    const interfaceStore = useInterfaceStore();
-    return { sessionStore, interfaceStore };
-  },
-  props: {
-    title: String,
-  },
-  mounted() {
-    this.sessionStore.$onAction(({ name, after }) => {
-      after(() => {
-        if (name === "updateQueued") {
-          this.$refs.publicationList.$el.scrollTop = 0;
-        }
-      });
-    });
-  },
-  updated() {
-    this.$nextTick(() => {
-    });
-  },
-};
+defineProps({
+  title: String,
+})
+
+const sessionStore = useSessionStore()
+const interfaceStore = useInterfaceStore()
+
+const publicationList = ref(null)
+
+onMounted(() => {
+  sessionStore.$onAction(({ name, after }) => {
+    after(() => {
+      if (name === "updateQueued") {
+        publicationList.value.$el.scrollTop = 0
+      }
+    })
+  })
+})
 </script>
 
 <style lang="scss" scoped>
