@@ -4,7 +4,6 @@ import {
   createMockSessionStore, 
   createMockInterfaceStore, 
   createKeyboardEvent,
-  setupFilterMenuComponentMock,
   setupDOMElementMocks
 } from '../utils/testMocks.js'
 
@@ -31,8 +30,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
     mockSessionStore.filter.isActive = true
     mockInterfaceStore.isAnyOverlayShown = false
     
-    // Setup mock components and DOM
-    setupFilterMenuComponentMock()
+    // Setup DOM mocks
     setupDOMElementMocks()
   })
 
@@ -43,18 +41,17 @@ describe('Keys Module - Keyboard Event Handling', () => {
       onKey(event)
       
       expect(event.preventDefault).toHaveBeenCalled()
-      expect(window.filterMenuComponent.openMenu).toHaveBeenCalled()
+      expect(mockInterfaceStore.openFilterMenu).toHaveBeenCalled()
     })
 
     it('should toggle filter menu when pressing "f" while menu is open', () => {
-      window.filterMenuComponent.isMenuOpen = true
-      window.filterMenuComponent.closeMenu = vi.fn()
+      mockInterfaceStore.isFilterMenuOpen = true
       const event = createKeyboardEvent('f')
       
       onKey(event)
       
       expect(event.preventDefault).toHaveBeenCalled()
-      expect(window.filterMenuComponent.openMenu).toHaveBeenCalled()
+      expect(mockInterfaceStore.openFilterMenu).toHaveBeenCalled()
       // Note: openMenu method handles toggling internally when already open
     })
 
@@ -65,7 +62,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
       onKey(event)
       
       expect(event.preventDefault).not.toHaveBeenCalled()
-      expect(window.filterMenuComponent.openMenu).not.toHaveBeenCalled()
+      expect(mockInterfaceStore.openFilterMenu).not.toHaveBeenCalled()
     })
 
     it('should not open filter menu when overlay is shown', () => {
@@ -75,7 +72,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
       onKey(event)
       
       expect(event.preventDefault).toHaveBeenCalled()
-      expect(window.filterMenuComponent.openMenu).not.toHaveBeenCalled()
+      expect(mockInterfaceStore.openFilterMenu).not.toHaveBeenCalled()
     })
 
     it('should not open filter menu when input is focused', () => {
@@ -88,7 +85,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
       onKey(event)
       
       expect(event.preventDefault).not.toHaveBeenCalled()
-      expect(window.filterMenuComponent.openMenu).not.toHaveBeenCalled()
+      expect(mockInterfaceStore.openFilterMenu).not.toHaveBeenCalled()
     })
   })
 
@@ -104,13 +101,13 @@ describe('Keys Module - Keyboard Event Handling', () => {
         expect(event.preventDefault).toHaveBeenCalled()
         expect(mockSessionStore.filter.toggleDoi).toHaveBeenCalledWith('selected-publication-doi')
         expect(mockSessionStore.filter.isActive).toBe(true)
-        expect(window.filterMenuComponent.openMenu).not.toHaveBeenCalled()
+        expect(mockInterfaceStore.openFilterMenu).not.toHaveBeenCalled()
       })
 
       it('should work consistently regardless of filter menu state', () => {
         mockSessionStore.activePublication = { doi: 'selected-publication-doi' }
         mockSessionStore.isSelected.mockReturnValue(true)
-        window.filterMenuComponent.isMenuOpen = true
+        mockInterfaceStore.isFilterMenuOpen = true
         const event = createKeyboardEvent('i')
         
         onKey(event)
@@ -118,7 +115,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
         expect(event.preventDefault).toHaveBeenCalled()
         expect(mockSessionStore.filter.toggleDoi).toHaveBeenCalledWith('selected-publication-doi')
         expect(mockSessionStore.filter.isActive).toBe(true)
-        expect(window.filterMenuComponent.openMenu).not.toHaveBeenCalled()
+        expect(mockInterfaceStore.openFilterMenu).not.toHaveBeenCalled()
       })
     })
 
@@ -133,13 +130,13 @@ describe('Keys Module - Keyboard Event Handling', () => {
         expect(event.preventDefault).toHaveBeenCalled()
         expect(mockSessionStore.filter.addDoi).not.toHaveBeenCalled()
         expect(mockSessionStore.filter.toggleDoi).not.toHaveBeenCalled()
-        expect(window.filterMenuComponent.openMenu).not.toHaveBeenCalled()
+        expect(mockInterfaceStore.openFilterMenu).not.toHaveBeenCalled()
       })
 
       it('should NOT work on suggested publications even when filter menu is open', () => {
         mockSessionStore.activePublication = { doi: 'suggested-publication-doi' }
         mockSessionStore.isSelected.mockReturnValue(false)
-        window.filterMenuComponent.isMenuOpen = true
+        mockInterfaceStore.isFilterMenuOpen = true
         const event = createKeyboardEvent('i')
         
         onKey(event)
@@ -188,7 +185,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
         onKey(event)
         
         expect(event.preventDefault).toHaveBeenCalled()
-        expect(window.filterMenuComponent.closeMenu).toHaveBeenCalled()
+        expect(mockInterfaceStore.closeFilterMenu).toHaveBeenCalled()
         expect(document.getElementById).toHaveBeenCalledWith('selected')
       })
 
@@ -198,16 +195,17 @@ describe('Keys Module - Keyboard Event Handling', () => {
         onKey(event)
         
         expect(event.preventDefault).toHaveBeenCalled()
-        expect(window.filterMenuComponent.closeMenu).toHaveBeenCalled()
+        expect(mockInterfaceStore.closeFilterMenu).toHaveBeenCalled()
         expect(document.getElementById).toHaveBeenCalledWith('suggested')
       })
 
       it('should handle missing filter menu component gracefully', () => {
-        window.filterMenuComponent = null
+        // With Pinia store, there's no missing component issue
         const event = createKeyboardEvent('ArrowLeft')
         
         expect(() => onKey(event)).not.toThrow()
         expect(event.preventDefault).toHaveBeenCalled()
+        expect(mockInterfaceStore.closeFilterMenu).toHaveBeenCalled()
       })
     })
   })
@@ -235,7 +233,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
       
       onKey(event)
       
-      expect(window.filterMenuComponent.openMenu).not.toHaveBeenCalled()
+      expect(mockInterfaceStore.openFilterMenu).not.toHaveBeenCalled()
     })
 
     it('should not process keys when element with input class is focused', () => {
@@ -247,7 +245,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
       
       onKey(event)
       
-      expect(window.filterMenuComponent.openMenu).not.toHaveBeenCalled()
+      expect(mockInterfaceStore.openFilterMenu).not.toHaveBeenCalled()
     })
   })
 
@@ -257,7 +255,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
       
       onKey(event)
       
-      expect(window.filterMenuComponent.openMenu).not.toHaveBeenCalled()
+      expect(mockInterfaceStore.openFilterMenu).not.toHaveBeenCalled()
     })
 
     it('should ignore events with Shift key', () => {
@@ -265,7 +263,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
       
       onKey(event)
       
-      expect(window.filterMenuComponent.openMenu).not.toHaveBeenCalled()
+      expect(mockInterfaceStore.openFilterMenu).not.toHaveBeenCalled()
     })
 
     it('should ignore events with Meta key', () => {
@@ -273,7 +271,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
       
       onKey(event)
       
-      expect(window.filterMenuComponent.openMenu).not.toHaveBeenCalled()
+      expect(mockInterfaceStore.openFilterMenu).not.toHaveBeenCalled()
     })
 
     it('should ignore repeated events (except ArrowDown/ArrowUp)', () => {
@@ -282,7 +280,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
       
       onKey(event)
       
-      expect(window.filterMenuComponent.openMenu).not.toHaveBeenCalled()
+      expect(mockInterfaceStore.openFilterMenu).not.toHaveBeenCalled()
     })
   })
 
@@ -294,7 +292,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
       onKey(event)
       
       expect(event.preventDefault).toHaveBeenCalled()
-      expect(window.filterMenuComponent.openMenu).not.toHaveBeenCalled()
+      expect(mockInterfaceStore.openFilterMenu).not.toHaveBeenCalled()
     })
 
     it('should not prevent default when overlay is shown and in input field', () => {

@@ -34,6 +34,7 @@ export const useInterfaceStore = defineStore('interface', {
                 title: "",
             },
             isMobile: true,
+            isFilterMenuOpen: false,
         }
     },
     getters: {
@@ -109,6 +110,23 @@ export const useInterfaceStore = defineStore('interface', {
             if (publicationComponent) {
                 publicationComponent.focus();
             }
+        },
+
+        openFilterMenu() {
+            if (this.isFilterMenuOpen) {
+                this.closeFilterMenu()
+                return false
+            }
+            this.isFilterMenuOpen = true
+            return true
+        },
+
+        closeFilterMenu() {
+            this.isFilterMenuOpen = false
+        },
+
+        setFilterMenuState(isOpen) {
+            this.isFilterMenuOpen = isOpen
         },
 
     }

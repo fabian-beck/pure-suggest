@@ -54,18 +54,14 @@ export function onKey(e) {
     } else if (e.key === "f") {
         e.preventDefault();
         // Open filter menu and focus on it
-        if (window.filterMenuComponent) {
-            window.filterMenuComponent.openMenu();
-        }
+        interfaceStore.openFilterMenu();
     } else if (e.key === "m") {
         e.preventDefault();
         interfaceStore.isNetworkClusters = !interfaceStore.isNetworkClusters;
     } else if (e.key === "ArrowLeft") {
         e.preventDefault();
         // Close filter menu when navigating to publications
-        if (window.filterMenuComponent) {
-            window.filterMenuComponent.closeMenu();
-        }
+        interfaceStore.closeFilterMenu();
         interfaceStore.activatePublicationComponent(
             document
                 .getElementById("selected")
@@ -74,9 +70,7 @@ export function onKey(e) {
     } else if (e.key === "ArrowRight") {
         e.preventDefault();
         // Close filter menu when navigating to publications
-        if (window.filterMenuComponent) {
-            window.filterMenuComponent.closeMenu();
-        }
+        interfaceStore.closeFilterMenu();
         interfaceStore.activatePublicationComponent(
             document
                 .getElementById("suggested")

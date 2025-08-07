@@ -36,7 +36,7 @@ describe('FilterMenuComponent', () => {
   let mockSessionStore
   let mockInterfaceStore
 
-  beforeEach(() => {
+  beforeEach(async () => {
     setActivePinia(createPinia())
     
     mockSessionStore = {
@@ -61,7 +61,16 @@ describe('FilterMenuComponent', () => {
     }
 
     mockInterfaceStore = {
-      isMobile: false
+      isMobile: false,
+      isFilterMenuOpen: false,
+      openFilterMenu: vi.fn(() => {
+        mockInterfaceStore.isFilterMenuOpen = !mockInterfaceStore.isFilterMenuOpen
+        return mockInterfaceStore.isFilterMenuOpen
+      }),
+      closeFilterMenu: vi.fn(() => {
+        mockInterfaceStore.isFilterMenuOpen = false
+      }),
+      setFilterMenuState: vi.fn()
     }
 
     vi.mocked(useSessionStore).mockReturnValue(mockSessionStore)
@@ -223,22 +232,24 @@ describe('FilterMenuComponent', () => {
   })
 
   it('should close menu when openMenu is called while menu is already open', () => {
+    mockInterfaceStore.isFilterMenuOpen = true
     wrapper = mount(FilterMenuComponent)
-    wrapper.vm.isMenuOpen = true
     
     wrapper.vm.openMenu()
     
-    expect(wrapper.vm.isMenuOpen).toBe(false)
+    expect(mockInterfaceStore.openFilterMenu).toHaveBeenCalled()
+    expect(mockInterfaceStore.isFilterMenuOpen).toBe(false)
   })
 
   it('should open menu and enable filters when openMenu is called while menu is closed', () => {
-    wrapper = mount(FilterMenuComponent)
-    wrapper.vm.isMenuOpen = false
+    mockInterfaceStore.isFilterMenuOpen = false
     mockSessionStore.filter.isActive = false
+    wrapper = mount(FilterMenuComponent)
     
     wrapper.vm.openMenu()
     
-    expect(wrapper.vm.isMenuOpen).toBe(true)
+    expect(mockInterfaceStore.openFilterMenu).toHaveBeenCalled()
+    expect(mockInterfaceStore.isFilterMenuOpen).toBe(true)
     expect(mockSessionStore.filter.isActive).toBe(true)
   })
 

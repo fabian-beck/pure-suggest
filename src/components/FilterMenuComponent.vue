@@ -1,5 +1,5 @@
 <template>
-  <v-menu v-if="!sessionStore.isEmpty" v-model="isMenuOpen" ref="filterMenu" location="bottom"
+  <v-menu v-if="!sessionStore.isEmpty" v-model="interfaceStore.isFilterMenuOpen" ref="filterMenu" location="bottom"
     transition="slide-y-transition" :close-on-content-click="false">
     <template v-slot:activator="{ props }">
       <v-btn class="filter-button" :class="interfaceStore.isMobile ? '' : 'p-1 pl-4'" 
@@ -89,7 +89,6 @@ export default {
   },
 
   data: () => ({
-    isMenuOpen: false,
     yearRules: [
       value => {
         if (!value) return true;
@@ -193,26 +192,25 @@ export default {
     },
 
     openMenu() {
-      // If menu is already open, close it
-      if (this.isMenuOpen) {
-        this.closeMenu();
-        return;
-      }
-
-      // Programmatically open the menu and focus on the switch
+      // Ensure filters are active when opening menu
       this.sessionStore.filter.isActive = true;
-      this.isMenuOpen = true;
-      this.$nextTick(() => {
-        // Focus on the switch element (Vuetify v-switch creates an input element)
-        const switchElement = this.$refs.filterSwitch?.$el?.querySelector('input');
-        if (switchElement) {
-          switchElement.focus();
-        }
-      });
+      
+      // Use store action to open menu (handles toggle logic)
+      const wasOpened = this.interfaceStore.openFilterMenu();
+      
+      if (wasOpened) {
+        this.$nextTick(() => {
+          // Focus on the switch element (Vuetify v-switch creates an input element)
+          const switchElement = this.$refs.filterSwitch?.$el?.querySelector('input');
+          if (switchElement) {
+            switchElement.focus();
+          }
+        });
+      }
     },
 
     closeMenu() {
-      this.isMenuOpen = false;
+      this.interfaceStore.closeFilterMenu();
     },
 
     handleSwitchKeydown(event) {

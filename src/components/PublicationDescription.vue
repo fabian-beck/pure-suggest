@@ -146,9 +146,9 @@ export default {
         },
         toggleDoi(doi) {
             // Check if the filter menu is open
-            if (window.filterMenuComponent && !window.filterMenuComponent.isMenuOpen) {
+            if (!this.interfaceStore.isFilterMenuOpen) {
                 // Open the filter menu and add the DOI
-                window.filterMenuComponent.openMenu();
+                this.interfaceStore.openFilterMenu();
                 this.sessionStore.filter.addDoi(doi);
             }
             else {

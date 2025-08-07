@@ -28,9 +28,14 @@ export function createMockInterfaceStore(overrides = {}) {
     isAnyOverlayShown: false,
     clear: vi.fn(),
     activatePublicationComponent: vi.fn(),
+    isFilterMenuOpen: false,
+    openFilterMenu: vi.fn(() => true),
+    closeFilterMenu: vi.fn(),
+    setFilterMenuState: vi.fn(),
     ...overrides
   }
 }
+
 
 /**
  * Creates a keyboard event with preventDefault mock
@@ -41,17 +46,6 @@ export function createKeyboardEvent(key, options = {}) {
   return event
 }
 
-/**
- * Sets up window.filterMenuComponent mock
- */
-export function setupFilterMenuComponentMock() {
-  window.filterMenuComponent = {
-    openMenu: vi.fn(),
-    closeMenu: vi.fn(),
-    isMenuOpen: false
-  }
-  return window.filterMenuComponent
-}
 
 /**
  * Sets up DOM element mocks for navigation tests
