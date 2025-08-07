@@ -90,42 +90,36 @@
   </div>
 </template>
 
-<script>
-import { useSessionStore } from "@/stores/session.js";
-import { useInterfaceStore } from "@/stores/interface.js";
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useSessionStore } from "@/stores/session.js"
+import { useInterfaceStore } from "@/stores/interface.js"
 
-export default {
-  name: "SelectedPublicationsComponent",
+const sessionStore = useSessionStore()
+const interfaceStore = useInterfaceStore()
 
-  setup() {
-    const sessionStore = useSessionStore();
-    const interfaceStore = useInterfaceStore();
-    return { sessionStore, interfaceStore };
-  },
+const publicationList = ref(null)
 
-  mounted() {
-    this.sessionStore.$onAction(({ name, after }) => {
-      after(() => {
-        if (name === "updateQueued") {
-          this.$refs.publicationList.$el.scrollTop = 0;
-        }
-      });
-    });
-  },
+function importSession() {
+  interfaceStore.showConfirmDialog(`<label>Choose an exported session JSON file:&nbsp;</label>
+    <input type="file" id="import-json-input" accept="application/JSON"/>`,
+    () =>
+      sessionStore.importSession(
+        document.getElementById("import-json-input").files[0]
+      ),
+    "Import session",
+  )
+}
 
-  methods: {
-    importSession: function () {
-      this.interfaceStore.showConfirmDialog(`<label>Choose an exported session JSON file:&nbsp;</label>
-        <input type="file" id="import-json-input" accept="application/JSON"/>`,
-        () =>
-          this.sessionStore.importSession(
-            document.getElementById("import-json-input").files[0]
-          ),
-        "Import session",
-      );
-    },
-  },
-};
+onMounted(() => {
+  sessionStore.$onAction(({ name, after }) => {
+    after(() => {
+      if (name === "updateQueued") {
+        publicationList.value.$el.scrollTop = 0
+      }
+    })
+  })
+})
 </script>
 
 <style lang="scss" scoped>

@@ -21,7 +21,9 @@
       "Bash(npx vitest run:*)",
       "Bash(npm run dev:*)",
       "Bash(npm run test:unit:*)",
-      "Bash(npm run test:*)"
+      "Bash(npm run test:*)",
+      "Bash(timeout 30s npm run test -- --run tests/unit/components/LazyPublicationComponent.test.js)",
+      "Bash(timeout 30s npm run test -- --run tests/unit/components/PublicationComponent.test.js)"
     ],
     "deny": []
   }

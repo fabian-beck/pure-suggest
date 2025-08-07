@@ -8,7 +8,8 @@
 - Keep commit messages minimal, with small changes only having short messages
 - Always clean up obsolete code or unnecessary comments
 - Act on failing tests immediately to prevent technical debt and maintain code quality
-- For a bug, try to first write a test to reproduce it, then fix it.
+- For a bug, try to first write a test to reproduce it, then fix it
+- Generate commit messages based on actual diffs (not memory)
 
 ## Design Principles
 
