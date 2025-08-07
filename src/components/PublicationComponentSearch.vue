@@ -14,12 +14,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
 
 defineProps({
     publication: Object,
     searchQuery: String,
 })
 
-const loaded = ref(false)
 </script>

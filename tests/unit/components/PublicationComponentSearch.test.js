@@ -78,20 +78,4 @@ describe('PublicationComponentSearch', () => {
     expect(description.props('alwaysShowDetails')).toBe(true)
   })
 
-  it('has loaded data property', () => {
-    const wrapper = mount(PublicationComponentSearch, {
-      props: {
-        publication: mockPublication,
-        searchQuery: 'Test'
-      },
-      global: {
-        stubs: {
-          'PublicationDescription': true,
-          'CompactButton': true
-        }
-      }
-    })
-
-    expect(wrapper.vm.loaded).toBe(false)
-  })
 })

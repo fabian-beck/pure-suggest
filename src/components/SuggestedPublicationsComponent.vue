@@ -56,14 +56,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useSessionStore } from "@/stores/session.js"
-import { useInterfaceStore } from "@/stores/interface.js"
 
 defineProps({
   title: String,
 })
 
 const sessionStore = useSessionStore()
-const interfaceStore = useInterfaceStore()
 
 const publicationList = ref(null)
 

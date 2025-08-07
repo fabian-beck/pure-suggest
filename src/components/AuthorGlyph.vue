@@ -52,24 +52,6 @@ const authorColor = computed(() => {
     return `hsl(0, 0%, ${Math.max(60 - score / 3, 0)}%)`
 })
 
-function authorIconSize(score) {
-    if (!sessionStore.isAuthorScoreEnabled) {
-        score = score * 20
-    }
-    if (!sessionStore.isFirstAuthorBoostEnabled) {
-        score = score * 1.5
-    }
-    if (score > 128) {
-        return "24"
-    }
-    if (score > 64) {
-        return "22"
-    }
-    if (score > 16) {
-        return "20"
-    }
-    return "18"
-}
 </script>
 
 <style scoped>

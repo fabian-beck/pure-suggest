@@ -231,27 +231,6 @@ describe('FilterMenuComponent', () => {
     expect(mockSessionStore.filter.isActive).toBe(initialState)
   })
 
-  it('should close menu when openMenu is called while menu is already open', () => {
-    mockInterfaceStore.isFilterMenuOpen = true
-    wrapper = mount(FilterMenuComponent)
-    
-    wrapper.vm.openMenu()
-    
-    expect(mockInterfaceStore.openFilterMenu).toHaveBeenCalled()
-    expect(mockInterfaceStore.isFilterMenuOpen).toBe(false)
-  })
-
-  it('should open menu and enable filters when openMenu is called while menu is closed', () => {
-    mockInterfaceStore.isFilterMenuOpen = false
-    mockSessionStore.filter.isActive = false
-    wrapper = mount(FilterMenuComponent)
-    
-    wrapper.vm.openMenu()
-    
-    expect(mockInterfaceStore.openFilterMenu).toHaveBeenCalled()
-    expect(mockInterfaceStore.isFilterMenuOpen).toBe(true)
-    expect(mockSessionStore.filter.isActive).toBe(true)
-  })
 
   it('should show year range with en dash for start year only', () => {
     mockSessionStore.filter.yearStart = '2020'

@@ -174,24 +174,6 @@ function handleMenuInput(value) {
   }
 }
 
-function openMenu() {
-  sessionStore.filter.isActive = true
-  
-  const wasOpened = interfaceStore.openFilterMenu()
-  
-  if (wasOpened) {
-    nextTick(() => {
-      const switchElement = filterSwitch.value?.$el?.querySelector('input')
-      if (switchElement) {
-        switchElement.focus()
-      }
-    })
-  }
-}
-
-function closeMenu() {
-  interfaceStore.closeFilterMenu()
-}
 
 function handleSwitchKeydown(event) {
   if (event.key === 'Enter' || event.key === ' ') {

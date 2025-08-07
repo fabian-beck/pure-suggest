@@ -24,12 +24,9 @@
 import { computed, nextTick, watch, ref, onMounted, onBeforeUnmount } from 'vue'
 import { scrollToTargetAdjusted } from "@/Util.js"
 import { useSessionStore } from "@/stores/session.js"
-import { useInterfaceStore } from "@/stores/interface.js"
-import { usePublicationHeaders } from "@/composables/usePublicationHeaders.js"
 import LazyPublicationComponent from './LazyPublicationComponent.vue'
 
 const sessionStore = useSessionStore()
-const interfaceStore = useInterfaceStore()
 
 const props = defineProps({
   publications: Array,

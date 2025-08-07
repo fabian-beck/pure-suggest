@@ -150,12 +150,10 @@
 </template>
 
 <script setup>
-import { computed, watch } from 'vue'
+import { computed } from 'vue'
 import { useSessionStore } from "@/stores/session.js"
-import { useInterfaceStore } from "@/stores/interface.js"
 
 const sessionStore = useSessionStore()
-const interfaceStore = useInterfaceStore()
 
 const emit = defineEmits(['activate'])
 const props = defineProps({
@@ -197,9 +195,6 @@ function activate() {
   }, 100)
 }
 
-function refocus() {
-  document.getElementById(props.publication.doi).focus()
-}
 </script>
 
 <style lang="scss">
