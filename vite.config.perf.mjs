@@ -11,9 +11,9 @@ export default defineConfig({
         globals: true,
         setupFiles: ['./tests/setup.js'],
         css: false, // Disable CSS processing in tests
-        include: ['tests/unit/**/*.test.js'], // Only unit tests
-        testTimeout: 5000, // 5 second timeout for unit tests
-        hookTimeout: 10000  // 10 second timeout for unit test hooks
+        include: ['tests/performance/**/*.test.js'], // Only performance tests
+        testTimeout: 60000, // 60 second timeout for performance tests
+        hookTimeout: 120000 // 2 minute timeout for dev server startup/shutdown
     },
     base:'./',
     plugins: [
