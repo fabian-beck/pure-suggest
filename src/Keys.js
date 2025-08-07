@@ -1,6 +1,33 @@
 import { useSessionStore } from "./stores/session.js";
 import { useInterfaceStore } from "./stores/interface.js";
 
+/**
+ * Find the next or previous publication component, skipping section headers
+ * @param {Element} currentElement - The current publication's parent element
+ * @param {string} direction - 'next' or 'previous'
+ * @returns {Element|null} - The next/previous publication component or null if not found
+ */
+function findAdjacentPublicationComponent(currentElement, direction) {
+    let sibling = direction === 'next' 
+        ? currentElement.nextElementSibling 
+        : currentElement.previousElementSibling;
+    
+    while (sibling) {
+        // Look for publication-component within this sibling
+        const publicationComponent = sibling.getElementsByClassName("publication-component")[0];
+        if (publicationComponent) {
+            return publicationComponent;
+        }
+        
+        // Move to the next/previous sibling if no publication found
+        sibling = direction === 'next' 
+            ? sibling.nextElementSibling 
+            : sibling.previousElementSibling;
+    }
+    
+    return null;
+}
+
 export function onKey(e) {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
@@ -53,12 +80,15 @@ export function onKey(e) {
         sessionStore.updateQueued();
     } else if (e.key === "f") {
         e.preventDefault();
-        interfaceStore.isFilterPanelShown = !interfaceStore.isFilterPanelShown;
+        // Open filter menu and focus on it
+        interfaceStore.openFilterMenu();
     } else if (e.key === "m") {
         e.preventDefault();
         interfaceStore.isNetworkClusters = !interfaceStore.isNetworkClusters;
     } else if (e.key === "ArrowLeft") {
         e.preventDefault();
+        // Close filter menu when navigating to publications
+        interfaceStore.closeFilterMenu();
         interfaceStore.activatePublicationComponent(
             document
                 .getElementById("selected")
@@ -66,6 +96,8 @@ export function onKey(e) {
         );
     } else if (e.key === "ArrowRight") {
         e.preventDefault();
+        // Close filter menu when navigating to publications
+        interfaceStore.closeFilterMenu();
         interfaceStore.activatePublicationComponent(
             document
                 .getElementById("suggested")
@@ -78,11 +110,14 @@ export function onKey(e) {
                 "publication-component is-active"
             )[0];
             try {
-                interfaceStore.activatePublicationComponent(
-                    e.key === "ArrowDown"
-                        ? activePublicationComponent.parentNode.nextElementSibling.getElementsByClassName("publication-component")[0]
-                        : activePublicationComponent.parentNode.previousElementSibling.getElementsByClassName("publication-component")[0]
+                const direction = e.key === "ArrowDown" ? 'next' : 'previous';
+                const nextPublicationComponent = findAdjacentPublicationComponent(
+                    activePublicationComponent.parentNode, 
+                    direction
                 );
+                if (nextPublicationComponent) {
+                    interfaceStore.activatePublicationComponent(nextPublicationComponent);
+                }
             } catch {
                 console.log("Could not activate next/previous publication.")
             }
@@ -116,12 +151,9 @@ export function onKey(e) {
             const doi = sessionStore.activePublication.doi;
             // Only allow DOI filtering for selected publications, not suggested ones
             if (sessionStore.isSelected(doi)) {
-                if (!interfaceStore.isFilterPanelShown) {
-                    interfaceStore.isFilterPanelShown = true;
-                    sessionStore.filter.addDoi(doi);
-                } else {
-                    sessionStore.filter.toggleDoi(doi);
-                }
+                sessionStore.filter.toggleDoi(doi);
+                // Ensure filters are active when adding DOI
+                sessionStore.filter.isActive = true;
             }
         }
     }

@@ -34,6 +34,7 @@
             </v-list>
           </v-menu>
           <BoostKeywordsComponent />
+          <FilterMenuComponent ref="filterMenuComponent" />
         </div>
       </v-app-bar-title>
       <v-menu bottom left offset-y transition="slide-y-transition">
@@ -80,9 +81,13 @@
 <script>
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
+import FilterMenuComponent from "@/components/FilterMenuComponent.vue";
 
 export default {
   name: "HeaderPanel",
+  components: {
+    FilterMenuComponent
+  },
   inject: ["appMeta"],
   setup() {
     const sessionStore = useSessionStore();
@@ -101,6 +106,7 @@ export default {
 
 <style lang="scss" scoped>
 .v-toolbar {
+  position: relative !important;
   z-index: 3000 !important;
 
   & :deep(.v-toolbar__content) {
@@ -134,7 +140,7 @@ export default {
 
 .intro-message,
 .intro-message-placeholder {
-  margin-top: 48px;
+  margin-top: 0.5rem;
 
   & .column {
     margin: var(--bulma-block-spacing, 1.5rem);

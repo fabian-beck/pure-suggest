@@ -76,6 +76,12 @@
                                 v-bind="props"></CompactButton>
                         </template>
                         <v-list>
+                            <v-list-item prepend-icon="mdi-filter">
+                                <v-checkbox v-model="onlyShowFiltered" label="Only show filtered" 
+                                    :disabled="!sessionStore.filter.hasActiveFilters()"
+                                    @update:modelValue="plot(true)" 
+                                    hide-details class="mt-0"></v-checkbox>
+                            </v-list-item>
                             <v-list-item prepend-icon="mdi-water-plus-outline">
                                 <v-list-item-title>Number of <b>suggested</b> shown</v-list-item-title>
                                 <v-slider v-model="suggestedNumberFactor" :max="1" :min="0.1" step="0.05"
@@ -141,6 +147,7 @@ export default {
             errorTimer: null,
             suggestedNumberFactor: 0.3,
             authorNumberFactor: 0.5,
+            onlyShowFiltered: false,
         };
     },
     computed: {
@@ -166,6 +173,12 @@ export default {
         filter: {
             deep: true,
             handler: function () {
+                // Update "only show filtered" based on filter state
+                if (!this.sessionStore.filter.hasActiveFilters()) {
+                    this.onlyShowFiltered = false;
+                } else {
+                    this.onlyShowFiltered = true;
+                }
                 this.plot(true);
             },
         },
@@ -198,6 +211,10 @@ export default {
         this.link = this.svg.append("g").attr("class", "links").selectAll("path");
         this.node = this.svg.append("g").attr("class", "nodes").selectAll("rect");
         this.isDragging = false;
+        
+        // Set initial state of "only show filtered" based on whether filters are active
+        this.onlyShowFiltered = this.sessionStore.filter.hasActiveFilters();
+        
         this.sessionStore.$onAction(({ name, after }) => {
             after(() => {
                 if (name === "updateScores") {
@@ -290,8 +307,9 @@ export default {
 
             function initGraph() {
                 this.doiToIndex = {};
-                this.filteredAuthors = this.sessionStore.selectedPublicationsAuthors
-                    .slice(0, this.authorNumberFactor * this.sessionStore.selectedPublications.length);
+                const allAuthors = this.sessionStore.selectedPublicationsAuthors;
+                this.filteredAuthors = allAuthors.slice(0, this.authorNumberFactor * this.sessionStore.selectedPublications.length);
+                
                 const nodes = initNodes.call(this);
                 const links = initLinks.call(this);
                 // https://observablehq.com/@d3/modifying-a-force-directed-graph
@@ -305,10 +323,18 @@ export default {
 
                     let publications = [];
                     if (this.showSelectedNodes) {
-                        publications = publications.concat(this.sessionStore.selectedPublications);
+                        let selectedPubs = this.sessionStore.selectedPublications;
+                        if (this.onlyShowFiltered && this.sessionStore.filter.hasActiveFilters() && this.sessionStore.filter.applyToSelected) {
+                            selectedPubs = selectedPubs.filter(pub => this.sessionStore.filter.matches(pub));
+                        }
+                        publications = publications.concat(selectedPubs);
                     }
                     if (this.showSuggestedNodes) {
-                        publications = publications.concat(this.sessionStore.suggestedPublicationsFiltered.slice(0, Math.round(this.suggestedNumberFactor * 50)));
+                        let suggestedPubs = this.sessionStore.suggestedPublications;
+                        if (this.onlyShowFiltered && this.sessionStore.filter.hasActiveFilters() && this.sessionStore.filter.applyToSuggested) {
+                            suggestedPubs = suggestedPubs.filter(pub => this.sessionStore.filter.matches(pub));
+                        }
+                        publications = publications.concat(suggestedPubs.slice(0, Math.round(this.suggestedNumberFactor * 50)));
                     }
 
                     publications.forEach((publication) => {
@@ -335,12 +361,18 @@ export default {
                         });
                     }
                     if (this.showAuthorNodes) {
+                        // Only show authors connected to currently displayed publications
+                        const displayedDois = new Set(publications.map(pub => pub.doi));
                         this.filteredAuthors.forEach((author) => {
-                            nodes.push({
-                                id: author.id,
-                                author: author,
-                                type: "author",
-                            });
+                            // Check if this author has any publications in the displayed set
+                            const hasDisplayedPublications = author.publicationDois.some(doi => displayedDois.has(doi));
+                            if (hasDisplayedPublications) {
+                                nodes.push({
+                                    id: author.id,
+                                    author: author,
+                                    type: "author",
+                                });
+                            }
                         });
                     }
                     return nodes;

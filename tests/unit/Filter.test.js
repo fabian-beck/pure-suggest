@@ -8,6 +8,7 @@ describe('Filter', () => {
   beforeEach(() => {
     filter = new Filter()
     mockPublication = {
+      doi: '10.1234/test-doi',
       year: '2023',
       citationDois: ['10.1234/citation1', '10.1234/citation2'],
       referenceDois: ['10.1234/ref1', '10.1234/ref2'],
@@ -25,6 +26,9 @@ describe('Filter', () => {
       expect(filter.tag).toBe("")
       expect(filter.doi).toBe("")
       expect(filter.dois).toEqual([])
+      expect(filter.isActive).toBe(true)
+      expect(filter.applyToSelected).toBe(true)
+      expect(filter.applyToSuggested).toBe(true)
     })
   })
 
@@ -330,6 +334,11 @@ describe('Filter', () => {
       expect(filter.matchesDois(mockPublication)).toBe(true)
     })
 
+    it('should return true when publication DOI matches filter DOI', () => {
+      filter.dois = ['10.1234/test-doi']
+      expect(filter.matchesDois(mockPublication)).toBe(true)
+    })
+
     it('should return true when any filter DOI matches', () => {
       filter.dois = ['10.1234/nonexistent', '10.1234/citation1']
       expect(filter.matchesDois(mockPublication)).toBe(true)
@@ -395,6 +404,102 @@ describe('Filter', () => {
       filter.yearEnd = '2025'
       filter.dois = ['10.1234/citation1']
       
+      expect(filter.matches(mockPublication)).toBe(true)
+    })
+  })
+
+  describe('hasActiveFilters', () => {
+    it('should return false when no filters are set', () => {
+      expect(filter.hasActiveFilters()).toBe(false)
+    })
+
+    it('should return true when string filter is set', () => {
+      filter.string = "test"
+      expect(filter.hasActiveFilters()).toBe(true)
+    })
+
+    it('should return true when tag filter is set', () => {
+      filter.tag = "someTag"
+      expect(filter.hasActiveFilters()).toBe(true)
+    })
+
+    it('should return true when year filter is active', () => {
+      filter.yearStart = '2020'
+      expect(filter.hasActiveFilters()).toBe(true)
+    })
+
+    it('should return true when DOI filter has entries', () => {
+      filter.dois = ['10.1234/test']
+      expect(filter.hasActiveFilters()).toBe(true)
+    })
+
+    it('should return false when year values are set but not active', () => {
+      filter.yearStart = '999'
+      filter.yearEnd = '10001'
+      expect(filter.hasActiveFilters()).toBe(false)
+    })
+
+    it('should return true when multiple filters are active', () => {
+      filter.string = "test"
+      filter.tag = "someTag"
+      filter.yearStart = '2020'
+      filter.dois = ['10.1234/test']
+      expect(filter.hasActiveFilters()).toBe(true)
+    })
+
+    it('should return false when filters are set but isActive is false', () => {
+      filter.string = "test"
+      filter.tag = "someTag"
+      filter.yearStart = '2020'
+      filter.dois = ['10.1234/test']
+      filter.isActive = false
+      expect(filter.hasActiveFilters()).toBe(false)
+    })
+
+    it('should return false when filters are active but neither publication type is selected', () => {
+      filter.string = "test"
+      filter.isActive = true
+      filter.applyToSelected = false
+      filter.applyToSuggested = false
+      expect(filter.hasActiveFilters()).toBe(false)
+    })
+
+    it('should return true when filters are active and at least one publication type is selected', () => {
+      filter.string = "test"
+      filter.isActive = true
+      filter.applyToSelected = true
+      filter.applyToSuggested = false
+      expect(filter.hasActiveFilters()).toBe(true)
+    })
+  })
+
+  describe('isActive toggle functionality', () => {
+    it('should return true for all publications when isActive is false', () => {
+      filter.string = "nonmatching"
+      filter.tag = "nonmatching"
+      filter.yearStart = '1800'
+      filter.yearEnd = '1850'
+      filter.isActive = false
+      
+      expect(filter.matches(mockPublication)).toBe(true)
+    })
+
+    it('should apply filters normally when isActive is true', () => {
+      filter.string = "nonmatching"
+      filter.isActive = true
+      
+      expect(filter.matches(mockPublication)).toBe(false)
+    })
+
+    it('should toggle filtering behavior when isActive changes', () => {
+      filter.string = "nonmatching"
+      
+      // With isActive true, should not match
+      filter.isActive = true
+      expect(filter.matches(mockPublication)).toBe(false)
+      
+      // With isActive false, should match all
+      filter.isActive = false
       expect(filter.matches(mockPublication)).toBe(true)
     })
   })

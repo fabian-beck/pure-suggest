@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="summary" v-show="publication.wasFetched">
-            <v-icon v-if="sessionStore.filter.dois?.includes(publication.doi) && interfaceStore.isFilterPanelShown"
+            <v-icon v-if="sessionStore.filter.dois?.includes(publication.doi)"
                 size="16" class="mr-1" @click.stop="addToFilter(publication.doi)"
                 v-tippy="'DOI is in filter.'">mdi-filter</v-icon>
             <span v-if="publication.title">
@@ -145,16 +145,19 @@ export default {
             this.refocus();
         },
         toggleDoi(doi) {
-            if (!this.interfaceStore.isFilterPanelShown) {
-                this.interfaceStore.isFilterPanelShown = true;
+            // Check if the filter menu is open
+            if (!this.interfaceStore.isFilterMenuOpen) {
+                // Open the filter menu and add the DOI
+                this.interfaceStore.openFilterMenu();
                 this.sessionStore.filter.addDoi(doi);
             }
             else {
+                // Menu is already open, just toggle the DOI
                 this.sessionStore.filter.toggleDoi(doi);
             }
         },
         isDoiFiltered(doi) {
-            return this.sessionStore.filter.dois.includes(doi) && this.interfaceStore.isFilterPanelShown;
+            return this.sessionStore.filter.dois.includes(doi);
         },
         getFilterDoiTooltip(doi) {
             return this.isDoiFiltered(doi) ? 'Active as f<span class="key">i</span>lter; click to remove DOI from filter' : 'Add DOI to f<span class="key">i</span>lter';

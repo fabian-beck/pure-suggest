@@ -14,7 +14,6 @@ export const useInterfaceStore = defineStore('interface', {
             isNetworkExpanded: false,
             isNetworkClusters: true,
             searchQuery: "",
-            isFilterPanelShown: false,
             isSearchModalDialogShown: false,
             isAuthorModalDialogShown: false,
             isExcludedModalDialogShown: false,
@@ -35,6 +34,7 @@ export const useInterfaceStore = defineStore('interface', {
                 title: "",
             },
             isMobile: true,
+            isFilterMenuOpen: false,
         }
     },
     getters: {
@@ -53,7 +53,6 @@ export const useInterfaceStore = defineStore('interface', {
         clear() {
             this.isNetworkExpanded = false;
             this.isNetworkClusters = true;
-            this.isFilterPanelShown = false;
             window.scrollTo(0, 0);
         },
 
@@ -111,6 +110,23 @@ export const useInterfaceStore = defineStore('interface', {
             if (publicationComponent) {
                 publicationComponent.focus();
             }
+        },
+
+        openFilterMenu() {
+            if (this.isFilterMenuOpen) {
+                this.closeFilterMenu()
+                return false
+            }
+            this.isFilterMenuOpen = true
+            return true
+        },
+
+        closeFilterMenu() {
+            this.isFilterMenuOpen = false
+        },
+
+        setFilterMenuState(isOpen) {
+            this.isFilterMenuOpen = isOpen
         },
 
     }

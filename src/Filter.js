@@ -9,6 +9,9 @@ export default class Filter {
         this.tag = "";
         this.doi = "";
         this.dois = [];
+        this.isActive = true;
+        this.applyToSelected = true;
+        this.applyToSuggested = true;
     }
 
     matchesString(publication) {
@@ -68,14 +71,23 @@ export default class Filter {
 
     matchesDois(publication) {
         if (!this.dois.length) return true;
-        return this.dois.some(doi => publication.citationDois.includes(doi) || publication.referenceDois.includes(doi));
+        return this.dois.some(doi => 
+            publication.doi === doi || 
+            publication.citationDois.includes(doi) || 
+            publication.referenceDois.includes(doi)
+        );
     }
 
     matches(publication) {
+        if (!this.isActive) return true;
         return this.matchesString(publication)
             && this.matchesTag(publication)
             && this.matchesYear(publication)
             && this.matchesDois(publication);
+    }
+
+    hasActiveFilters() {
+        return this.isActive && !!(this.string || this.tag || this.isYearActive() || this.dois.length > 0) && (this.applyToSelected || this.applyToSuggested);
     }
 
 }

@@ -12,8 +12,6 @@
         <div class="level-item">
           <tippy>
             <div class="mr-2">
-              <v-icon size="18" color="white" class="mr-1"
-                v-show="interfaceStore.isFilterPanelShown">mdi-filter</v-icon>
               <v-badge :content="sessionStore.unreadSuggestionsCount" color="black" class="mr-5" offset-y="-4"
                 offset-x="-9" :value="sessionStore.unreadSuggestionsCount > 0" transition="scale-rotate-transition">
                 <b>{{ sessionStore.suggestedPublicationsFiltered.length }}</b>
@@ -34,13 +32,6 @@
                 <b>({{ sessionStore.unreadSuggestionsCount }}</b> of them
                 unread)
               </span>
-              <span v-if="interfaceStore.isFilterPanelShown">
-                filtered from
-                <b>{{
-                  sessionStore.suggestedPublications.length
-                }}</b>
-                loaded ones,
-              </span>
               of in total
               <b>
                 {{
@@ -56,21 +47,9 @@
               sessionStore.suggestion.totalSuggestions
               "></CompactButton>
         </div>
-        <div class="level-item" v-if="sessionStore.suggestion">
-          <CompactSwitch v-model="interfaceStore.isFilterPanelShown" class="ml-5" hide-details density="compact"
-            v-tippy="`Activate/deactivate <b>filter</b> to restrict suggested publications by different criteria.`">
-          </CompactSwitch>
-          <v-icon size="18" color="white" class="mr-1 ml-4">mdi-filter</v-icon>
-          <span class="key">F</span>ilter
-        </div>
       </div>
     </div>
-    <div>
-      <v-expand-transition>
-        <FilterPanel v-show="interfaceStore.isFilterPanelShown" />
-      </v-expand-transition>
-    </div>
-    <PublicationListComponent ref="publicationList" :publications="sessionStore.suggestedPublicationsFiltered" />
+    <PublicationListComponent ref="publicationList" :publications="sessionStore.suggestedPublicationsFiltered" :showSectionHeaders="true" publicationType="suggested" />
   </div>
 </template>
 
@@ -107,7 +86,7 @@ export default {
 <style lang="scss" scoped>
 .box {
   display: grid;
-  grid-template-rows: max-content max-content auto;
+  grid-template-rows: max-content auto;
   position: relative;
 
   & .notification {

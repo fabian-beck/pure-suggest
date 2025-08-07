@@ -21,7 +21,7 @@
     </div>
     <div class="header">
       <div>
-        <div class="notification has-background-primary-95 p-2" v-show="sessionStore.isUpdatable">
+        <div class="notification queue-panel p-2" v-show="sessionStore.isUpdatable">
           <div class="level">
             <div class="has-text-centered level-item queue-description">
               <p>
@@ -86,7 +86,7 @@
         </div>
       </div>
     </div>
-    <PublicationListComponent ref="publicationList" :publications="sessionStore.selectedPublications" />
+    <PublicationListComponent ref="publicationList" :publications="sessionStore.selectedPublicationsFiltered" :showSectionHeaders="true" publicationType="selected" />
   </div>
 </template>
 
@@ -155,5 +155,11 @@ export default {
       max-width: 100vw;
     }
   }
+}
+
+.queue-panel {
+  background: linear-gradient(135deg, var(--bulma-primary-95) 0%, var(--bulma-primary-90) 100%) !important;
+  border-left: 3px solid var(--bulma-primary) !important;
+  border-bottom: 2px solid var(--bulma-primary) !important;
 }
 </style>
