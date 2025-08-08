@@ -289,7 +289,10 @@ export default {
                 
                 initGraph.call(this);
                 updateNodes.call(this);
-                updateLinks.call(this);
+                this.link = updateNetworkLinks(
+                    this.link,
+                    this.networkSimulation.graph.value.links
+                );
                 this.label = updateYearLabels(
                     this.label,
                     this.sessionStore,
@@ -393,13 +396,6 @@ export default {
                     throw new Error("Cannot update author nodes in network: " + error.message);
                 }
                 // Old helper functions removed - now handled by modules
-            }
-
-            function updateLinks() {
-                this.link = updateNetworkLinks(
-                    this.link,
-                    this.networkSimulation.graph.value.links
-                );
             }
         },
         tick: function () {
