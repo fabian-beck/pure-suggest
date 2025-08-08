@@ -128,30 +128,28 @@ export function updateAuthorNodes(nodeSelection, sessionStore, existingTooltips)
 }
 
 /**
- * Handle author node mouseover event
+ * Highlight publications authored by the specified author
  */
-export function handleAuthorNodeMouseover(event, d, sessionStore, plotCallback) {
-    sessionStore.publicationsFiltered.forEach((publication) => {
-        if (d.author.publicationDois.includes(publication.doi)) {
+export function highlightAuthorPublications(authorNode, publications) {
+    publications.forEach((publication) => {
+        if (authorNode.author.publicationDois.includes(publication.doi)) {
             publication.isAuthorHovered = true;
         }
     });
-    plotCallback();
 }
 
 /**
- * Handle author node mouseout event
+ * Clear author highlighting from all publications
  */
-export function handleAuthorNodeMouseout(event, d, sessionStore, plotCallback) {
-    sessionStore.publicationsFiltered.forEach((publication) => {
+export function clearAuthorHighlight(publications) {
+    publications.forEach((publication) => {
         publication.isAuthorHovered = false;
     });
-    plotCallback();
 }
 
 /**
- * Handle author node click event
+ * Open modal dialog for the specified author
  */
-export function handleAuthorNodeClick(event, d, interfaceStore) {
-    interfaceStore.openAuthorModalDialog(d.author.id);
+export function openAuthorModal(authorNode, interfaceStore) {
+    interfaceStore.openAuthorModalDialog(authorNode.author.id);
 }

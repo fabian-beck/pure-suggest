@@ -119,35 +119,33 @@ export function updateKeywordNodes(nodeSelection, sessionStore, existingTooltips
 }
 
 /**
- * Handle keyword node click event - detaches fixed positioning
+ * Release fixed positioning from a keyword node
  */
-export function handleKeywordNodeClick(event, d, networkSimulation, SIMULATION_ALPHA) {
-    delete d.fx;
-    delete d.fy;
+export function releaseKeywordPosition(event, keywordNode, networkSimulation, SIMULATION_ALPHA) {
+    delete keywordNode.fx;
+    delete keywordNode.fy;
     d3.select(event.target.parentNode).classed("fixed", false);
     networkSimulation.restart(SIMULATION_ALPHA);
 }
 
 /**
- * Handle keyword node mouseover event
+ * Highlight publications that contain the specified keyword
  */
-export function handleKeywordNodeMouseover(event, d, sessionStore, plotCallback) {
-    sessionStore.publicationsFiltered.forEach((publication) => {
-        if (publication.boostKeywords.includes(d.id)) {
+export function highlightKeywordPublications(keywordNode, publications) {
+    publications.forEach((publication) => {
+        if (publication.boostKeywords.includes(keywordNode.id)) {
             publication.isKeywordHovered = true;
         }
     });
-    plotCallback();
 }
 
 /**
- * Handle keyword node mouseout event
+ * Clear keyword highlighting from all publications
  */
-export function handleKeywordNodeMouseout(event, d, sessionStore, plotCallback) {
-    sessionStore.publicationsFiltered.forEach((publication) => {
+export function clearKeywordHighlight(publications) {
+    publications.forEach((publication) => {
         publication.isKeywordHovered = false;
     });
-    plotCallback();
 }
 
 /**

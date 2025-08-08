@@ -77,9 +77,8 @@
                         </template>
                         <v-list>
                             <v-list-item prepend-icon="mdi-filter">
-                                <v-checkbox v-model="onlyShowFiltered" label="Only show filtered" 
-                                    :disabled="!sessionStore.filter.hasActiveFilters()"
-                                    @update:modelValue="plot(true)" 
+                                <v-checkbox v-model="onlyShowFiltered" label="Only show filtered"
+                                    :disabled="!sessionStore.filter.hasActiveFilters()" @update:modelValue="plot(true)"
                                     hide-details class="mt-0"></v-checkbox>
                             </v-list-item>
                             <v-list-item prepend-icon="mdi-water-plus-outline">
@@ -114,39 +113,39 @@ import { useNetworkSimulation } from "@/composables/useNetworkSimulation.js";
 import { calculateYearX, SIMULATION_ALPHA, getNodeXPosition } from "@/composables/networkForces.js";
 
 // Node types
-import { 
-    initializePublicationNodes, 
+import {
+    initializePublicationNodes,
     updatePublicationNodes
 } from "@/composables/publicationNodes.js";
-import { 
-    initializeKeywordNodes, 
+import {
+    initializeKeywordNodes,
     updateKeywordNodes,
-    handleKeywordNodeClick,
-    handleKeywordNodeMouseover,
-    handleKeywordNodeMouseout,
+    releaseKeywordPosition,
+    highlightKeywordPublications,
+    clearKeywordHighlight,
     createKeywordNodeDrag
 } from "@/composables/keywordNodes.js";
-import { 
-    initializeAuthorNodes, 
+import {
+    initializeAuthorNodes,
     updateAuthorNodes,
-    handleAuthorNodeMouseover,
-    handleAuthorNodeMouseout,
-    handleAuthorNodeClick
+    highlightAuthorPublications,
+    clearAuthorHighlight,
+    openAuthorModal
 } from "@/composables/authorNodes.js";
 
 // Links
-import { 
+import {
     updateNetworkLinks,
     updateLinkProperties
 } from "@/composables/networkLinks.js";
 
 // Graph data management
-import { 
+import {
     initializeGraphData
 } from "@/composables/useGraphData.js";
 
 // Year labels
-import { 
+import {
     updateYearLabels
 } from "@/composables/useYearLabels.js";
 
@@ -157,10 +156,10 @@ export default {
         const { filter, activePublication } = storeToRefs(sessionStore);
         const interfaceStore = useInterfaceStore();
         const { isNetworkClusters } = storeToRefs(interfaceStore);
-        
+
         // Initialize network simulation composable
         const networkSimulation = useNetworkSimulation();
-        
+
         return {
             sessionStore,
             filter,
@@ -245,7 +244,7 @@ export default {
         this.label = this.svg.append("g").attr("class", "labels").selectAll("text");
         this.link = this.svg.append("g").attr("class", "links").selectAll("path");
         this.node = this.svg.append("g").attr("class", "nodes").selectAll("rect");
-        
+
         // Initialize simulation using composable
         this.networkSimulation.initializeSimulation({
             svgWidth: this.svgWidth,
@@ -255,10 +254,10 @@ export default {
             selectedPublicationsCount: this.sessionStore.selectedPublications.length,
             tickHandler: this.tick
         });
-        
+
         // Set initial state of "only show filtered" based on whether filters are active
         this.onlyShowFiltered = this.sessionStore.filter.hasActiveFilters();
-        
+
         this.sessionStore.$onAction(({ name, after }) => {
             after(() => {
                 if (name === "updateScores") {
@@ -286,7 +285,7 @@ export default {
                     selectedPublicationsCount: this.sessionStore.selectedPublications.length,
                     tickHandler: this.tick
                 });
-                
+
                 initGraph.call(this);
                 updateNodes.call(this);
                 this.link = updateNetworkLinks(
@@ -300,10 +299,10 @@ export default {
                     this.svgHeight,
                     this.isNetworkClusters
                 );
-                
+
                 // Update graph data in simulation
                 this.networkSimulation.updateGraphData(this.networkSimulation.graph.value.nodes, this.networkSimulation.graph.value.links);
-                
+
                 if (restart) {
                     this.networkSimulation.restart(SIMULATION_ALPHA);
                 } else {
@@ -325,11 +324,11 @@ export default {
             function initGraph() {
                 // Initialize complete graph data using composable
                 const graphData = initializeGraphData(this);
-                
+
                 // Update component state
                 this.doiToIndex = graphData.doiToIndex;
                 this.filteredAuthors = graphData.filteredAuthors;
-                
+
                 // Update simulation graph data
                 this.networkSimulation.graph.value.nodes = graphData.nodes;
                 this.networkSimulation.graph.value.links = graphData.links;
@@ -347,10 +346,10 @@ export default {
                         initializePublicationNodes(g, this.activatePublication, (publication, isHovered) => this.sessionStore.hoverPublication(publication, isHovered));
 
                         // Initialize keyword nodes using module
-                        initializeKeywordNodes(g, this.keywordNodeDrag, this.keywordNodeClick, this.keywordNodeMouseover, this.keywordNodeMouseout);
+                        initializeKeywordNodes(g, this.keywordNodeDrag, this.keywordNodeClick, this.onKeywordNodeMouseover, this.onKeywordNodeMouseout);
 
                         // Initialize author nodes using module
-                        initializeAuthorNodes(g, this.authorNodeMouseover, this.authorNodeMouseout, this.authorNodeClick);
+                        initializeAuthorNodes(g, this.onAuthorNodeMouseover, this.onAuthorNodeMouseout, this.authorNodeClick);
 
                         return g;
                     });
@@ -384,7 +383,7 @@ export default {
         tick: function () {
             // Update link properties using module
             updateLinkProperties(this.link, (d) => getNodeXPosition(d, this.isNetworkClusters, this.yearX), this.sessionStore);
-            
+
             // Update node positions
             this.node.attr("transform", (d) => `translate(${getNodeXPosition(d, this.isNetworkClusters, this.yearX)}, ${d.y})`);
         },
@@ -392,22 +391,26 @@ export default {
             return createKeywordNodeDrag(this.networkSimulation, SIMULATION_ALPHA);
         },
         keywordNodeClick: function (event, d) {
-            handleKeywordNodeClick(event, d, this.networkSimulation, SIMULATION_ALPHA);
+            releaseKeywordPosition(event, d, this.networkSimulation, SIMULATION_ALPHA);
         },
-        keywordNodeMouseover: function (event, d) {
-            handleKeywordNodeMouseover(event, d, this.sessionStore, this.plot);
+        onKeywordNodeMouseover: function (event, d) {
+            highlightKeywordPublications(d, this.sessionStore.publicationsFiltered);
+            this.plot();
         },
-        keywordNodeMouseout: function (event, d) {
-            handleKeywordNodeMouseout(event, d, this.sessionStore, this.plot);
+        onKeywordNodeMouseout: function () {
+            clearKeywordHighlight(this.sessionStore.publicationsFiltered);
+            this.plot();
         },
-        authorNodeMouseover: function (event, d) {
-            handleAuthorNodeMouseover(event, d, this.sessionStore, this.plot);
+        onAuthorNodeMouseover: function (event, d) {
+            highlightAuthorPublications(d, this.sessionStore.publicationsFiltered);
+            this.plot();
         },
-        authorNodeMouseout: function (event, d) {
-            handleAuthorNodeMouseout(event, d, this.sessionStore, this.plot);
+        onAuthorNodeMouseout: function () {
+            clearAuthorHighlight(this.sessionStore.publicationsFiltered);
+            this.plot();
         },
         authorNodeClick: function (event, d) {
-            handleAuthorNodeClick(event, d, this.interfaceStore);
+            openAuthorModal(d, this.interfaceStore);
         },
         yearX: function (year) {
             return calculateYearX(year, this.svgWidth, this.svgHeight, this.interfaceStore.isMobile);

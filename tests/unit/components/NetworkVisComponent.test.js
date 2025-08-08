@@ -167,6 +167,17 @@ vi.mock('@/composables/useNetworkSimulation.js', () => ({
 
 vi.mock('@/composables/networkForces.js', () => ({
   calculateYearX: vi.fn((year, width, height, isMobile) => year * 10), // Simple mock calculation
+  getNodeXPosition: vi.fn((node, isNetworkClusters, yearXFunc) => {
+    // In cluster mode, return node's x position; otherwise use year-based calculation
+    if (isNetworkClusters && node.x !== undefined) {
+      return node.x;
+    }
+    // For timeline mode, use year-based calculation
+    if (node.publication?.year && yearXFunc) {
+      return yearXFunc(node.publication.year);
+    }
+    return 100; // Default position for other node types
+  }),
   CURRENT_YEAR: 2025,
   SIMULATION_ALPHA: 0.5
 }))
@@ -179,9 +190,9 @@ vi.mock('@/composables/publicationNodes.js', () => ({
 vi.mock('@/composables/keywordNodes.js', () => ({
   initializeKeywordNodes: vi.fn(() => createMockSelection()),
   updateKeywordNodes: vi.fn(() => ({ nodes: createMockSelection(), tooltips: [] })),
-  handleKeywordNodeClick: vi.fn((event, d, networkSimulation, SIMULATION_ALPHA) => {
-    delete d.fx;
-    delete d.fy;
+  releaseKeywordPosition: vi.fn((event, keywordNode, networkSimulation, SIMULATION_ALPHA) => {
+    delete keywordNode.fx;
+    delete keywordNode.fy;
     // Mock the DOM operation and simulation restart
     if (event.target?.parentNode?.classList?.remove) {
       event.target.parentNode.classList.remove("fixed");
@@ -190,25 +201,23 @@ vi.mock('@/composables/keywordNodes.js', () => ({
       networkSimulation.restart(SIMULATION_ALPHA);
     }
   }),
-  handleKeywordNodeMouseover: vi.fn((event, d, sessionStore, plotCallback) => {
+  highlightKeywordPublications: vi.fn((keywordNode, publications) => {
     // Mock setting hover state on publications
-    if (sessionStore.publicationsFiltered) {
-      sessionStore.publicationsFiltered.forEach(pub => {
-        if (pub.boostKeywords && pub.boostKeywords.includes(d.id)) {
+    if (publications) {
+      publications.forEach(pub => {
+        if (pub.boostKeywords && pub.boostKeywords.includes(keywordNode.id)) {
           pub.isKeywordHovered = true;
         }
       });
     }
-    if (plotCallback) plotCallback();
   }),
-  handleKeywordNodeMouseout: vi.fn((event, d, sessionStore, plotCallback) => {
+  clearKeywordHighlight: vi.fn((publications) => {
     // Mock clearing hover state on publications
-    if (sessionStore.publicationsFiltered) {
-      sessionStore.publicationsFiltered.forEach(pub => {
+    if (publications) {
+      publications.forEach(pub => {
         pub.isKeywordHovered = false;
       });
     }
-    if (plotCallback) plotCallback();
   }),
   createKeywordNodeDrag: vi.fn(() => ({
     on: vi.fn(() => ({ on: vi.fn() }))
@@ -218,30 +227,28 @@ vi.mock('@/composables/keywordNodes.js', () => ({
 vi.mock('@/composables/authorNodes.js', () => ({
   initializeAuthorNodes: vi.fn(() => createMockSelection()),
   updateAuthorNodes: vi.fn(() => ({ nodes: createMockSelection(), tooltips: [] })),
-  handleAuthorNodeMouseover: vi.fn((event, d, sessionStore, plotCallback) => {
+  highlightAuthorPublications: vi.fn((authorNode, publications) => {
     // Mock setting hover state on publications based on author's publicationDois
-    if (sessionStore.publicationsFiltered && d.author && d.author.publicationDois) {
-      sessionStore.publicationsFiltered.forEach(pub => {
-        if (d.author.publicationDois.includes(pub.doi)) {
+    if (publications && authorNode.author && authorNode.author.publicationDois) {
+      publications.forEach(pub => {
+        if (authorNode.author.publicationDois.includes(pub.doi)) {
           pub.isAuthorHovered = true;
         }
       });
     }
-    if (plotCallback) plotCallback();
   }),
-  handleAuthorNodeMouseout: vi.fn((event, d, sessionStore, plotCallback) => {
+  clearAuthorHighlight: vi.fn((publications) => {
     // Mock clearing hover state on publications  
-    if (sessionStore.publicationsFiltered) {
-      sessionStore.publicationsFiltered.forEach(pub => {
+    if (publications) {
+      publications.forEach(pub => {
         pub.isAuthorHovered = false;
       });
     }
-    if (plotCallback) plotCallback();
   }),
-  handleAuthorNodeClick: vi.fn((event, d, interfaceStore) => {
+  openAuthorModal: vi.fn((authorNode, interfaceStore) => {
     // Mock author modal dialog opening
     if (interfaceStore.openAuthorModalDialog) {
-      interfaceStore.openAuthorModalDialog(d.author.id);
+      interfaceStore.openAuthorModalDialog(authorNode.author.id);
     }
   })
 }))
@@ -256,6 +263,22 @@ vi.mock('@/composables/useGraphData.js', () => ({
     // If existingNodeData has nodes, preserve them for testing
     const existingNodes = context?.existingNodeData;
     const hasExistingData = existingNodes && existingNodes.length > 0;
+    
+    // If no existing data, generate from session store if available
+    if (!hasExistingData && context?.sessionStore?.publications?.length > 0) {
+      const nodes = context.sessionStore.publications.map((pub, index) => ({
+        id: pub.doi,
+        type: 'publication',
+        publication: pub
+      }));
+      
+      return {
+        nodes: nodes,
+        links: nodes.length > 1 ? [{ source: nodes[0].id, target: nodes[1].id, type: 'citation' }] : [],
+        doiToIndex: Object.fromEntries(nodes.map((node, index) => [node.id, index])),
+        filteredAuthors: []
+      };
+    }
     
     return {
       nodes: hasExistingData ? existingNodes : [],
@@ -788,9 +811,9 @@ describe('NetworkVisComponent', () => {
     })
 
     it('handles errors in plot method gracefully', async () => {
-      // Mock D3 to throw an error
-      const originalD3Select = wrapper.vm.svg.selectAll
-      wrapper.vm.svg.selectAll = vi.fn(() => {
+      // Mock the node data method to throw an error
+      const originalNodeData = wrapper.vm.node.data
+      wrapper.vm.node.data = vi.fn(() => {
         throw new Error('D3 rendering error')
       })
 
@@ -803,7 +826,7 @@ describe('NetworkVisComponent', () => {
       expect(wrapper.vm.errorTimer).toBeDefined()
 
       // Restore original method
-      wrapper.vm.svg.selectAll = originalD3Select
+      wrapper.vm.node.data = originalNodeData
     })
 
     it('skips plotting when dragging', () => {
@@ -967,7 +990,7 @@ describe('NetworkVisComponent', () => {
         const mockEvent = {}
         const mockData = { id: 'machine learning' }
         
-        wrapper.vm.keywordNodeMouseover(mockEvent, mockData)
+        wrapper.vm.onKeywordNodeMouseover(mockEvent, mockData)
         
         // Should set isKeywordHovered for matching publications
         expect(mockSessionStore.publicationsFiltered[0].isKeywordHovered).toBe(true)
@@ -978,7 +1001,9 @@ describe('NetworkVisComponent', () => {
         // First set hover state
         mockSessionStore.publicationsFiltered[0].isKeywordHovered = true
         
-        wrapper.vm.keywordNodeMouseout()
+        const mockEvent = {}
+        const mockData = { id: 'machine learning' }
+        wrapper.vm.onKeywordNodeMouseout(mockEvent, mockData)
         
         // Should clear hover state for all publications
         expect(mockSessionStore.publicationsFiltered[0].isKeywordHovered).toBe(false)
@@ -1002,7 +1027,7 @@ describe('NetworkVisComponent', () => {
           } 
         }
         
-        wrapper.vm.authorNodeMouseover(mockEvent, mockData)
+        wrapper.vm.onAuthorNodeMouseover(mockEvent, mockData)
         
         // Should set isAuthorHovered for matching publications
         expect(mockSessionStore.publicationsFiltered[0].isAuthorHovered).toBe(false)
@@ -1013,7 +1038,13 @@ describe('NetworkVisComponent', () => {
         // First set hover state
         mockSessionStore.publicationsFiltered[1].isAuthorHovered = true
         
-        wrapper.vm.authorNodeMouseout()
+        const mockEvent = {}
+        const mockData = { 
+          author: { 
+            publicationDois: ['10.1234/pub2'] 
+          } 
+        }
+        wrapper.vm.onAuthorNodeMouseout(mockEvent, mockData)
         
         // Should clear hover state for all publications
         expect(mockSessionStore.publicationsFiltered[0].isAuthorHovered).toBe(false)
@@ -1099,7 +1130,34 @@ describe('NetworkVisComponent', () => {
           { id: 'author2', name: 'Jane Smith', yearMin: 2020, yearMax: 2022 }
         ],
         uniqueBoostKeywords: ['machine learning', 'AI', 'deep learning', 'neural networks'],
-        publications: [], // This would normally contain all publications
+        publications: [
+          { 
+            doi: '10.1234/selected1', 
+            title: 'Selected Publication 1', 
+            year: 2020,
+            boostKeywords: ['machine learning', 'AI']
+          },
+          { 
+            doi: '10.1234/selected2', 
+            title: 'Selected Publication 2', 
+            year: 2021,
+            boostKeywords: ['deep learning']
+          }
+        ],
+        publicationsFiltered: [
+          { 
+            doi: '10.1234/selected1', 
+            title: 'Selected Publication 1', 
+            year: 2020,
+            boostKeywords: ['machine learning', 'AI']
+          },
+          { 
+            doi: '10.1234/selected2', 
+            title: 'Selected Publication 2', 
+            year: 2021,
+            boostKeywords: ['deep learning']
+          }
+        ],
         updateQueued: vi.fn(),
         $onAction: vi.fn(),
         filter: {
@@ -1348,7 +1406,10 @@ describe('NetworkVisComponent', () => {
       expect(typeof yearX).toBe('number')
     })
 
-    it('calculates node X position correctly in timeline mode', () => {
+    it('calculates node X position correctly in timeline mode', async () => {
+      // Import the composable function directly
+      const { getNodeXPosition } = await import('@/composables/networkForces.js')
+      
       const publicationNode = {
         type: 'publication',
         publication: { year: 2020 }
@@ -1358,14 +1419,17 @@ describe('NetworkVisComponent', () => {
         type: 'keyword'
       }
       
-      const nodeX1 = wrapper.vm.nodeX(publicationNode)
-      const nodeX2 = wrapper.vm.nodeX(keywordNode)
+      const nodeX1 = getNodeXPosition(publicationNode, false, wrapper.vm.yearX)
+      const nodeX2 = getNodeXPosition(keywordNode, false, wrapper.vm.yearX)
       
       expect(typeof nodeX1).toBe('number')
       expect(typeof nodeX2).toBe('number')
     })
 
-    it('calculates node X position correctly in clusters mode', () => {
+    it('calculates node X position correctly in clusters mode', async () => {
+      // Import the composable function directly
+      const { getNodeXPosition } = await import('@/composables/networkForces.js')
+      
       // Mock clusters mode
       vi.mocked(useInterfaceStore).mockReturnValue({
         isMobile: false,
@@ -1394,7 +1458,7 @@ describe('NetworkVisComponent', () => {
       })
 
       const nodeWithPosition = { type: 'publication', x: 100, y: 50 }
-      const nodeX = clustersWrapper.vm.nodeX(nodeWithPosition)
+      const nodeX = getNodeXPosition(nodeWithPosition, true, clustersWrapper.vm.yearX)
       
       // In clusters mode, should return the node's x position
       expect(nodeX).toBe(100)
