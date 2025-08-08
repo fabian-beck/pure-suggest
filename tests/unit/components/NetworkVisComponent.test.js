@@ -140,7 +140,8 @@ vi.mock('@/stores/interface.js', () => ({
     isMobile: false,
     isNetworkExpanded: false,
     isNetworkClusters: false,
-    isLoading: false
+    isLoading: false,
+    openAuthorModalDialog: vi.fn()
   }))
 }))
 
@@ -178,18 +179,71 @@ vi.mock('@/composables/publicationNodes.js', () => ({
 vi.mock('@/composables/keywordNodes.js', () => ({
   initializeKeywordNodes: vi.fn(() => createMockSelection()),
   updateKeywordNodes: vi.fn(() => ({ nodes: createMockSelection(), tooltips: [] })),
-  handleKeywordNodeClick: vi.fn(),
-  handleKeywordNodeMouseover: vi.fn(),
-  handleKeywordNodeMouseout: vi.fn(),
-  createKeywordNodeDrag: vi.fn(() => vi.fn())
+  handleKeywordNodeClick: vi.fn((event, d, networkSimulation, SIMULATION_ALPHA) => {
+    delete d.fx;
+    delete d.fy;
+    // Mock the DOM operation and simulation restart
+    if (event.target?.parentNode?.classList?.remove) {
+      event.target.parentNode.classList.remove("fixed");
+    }
+    if (networkSimulation?.restart) {
+      networkSimulation.restart(SIMULATION_ALPHA);
+    }
+  }),
+  handleKeywordNodeMouseover: vi.fn((event, d, sessionStore, plotCallback) => {
+    // Mock setting hover state on publications
+    if (sessionStore.publicationsFiltered) {
+      sessionStore.publicationsFiltered.forEach(pub => {
+        if (pub.boostKeywords && pub.boostKeywords.includes(d.id)) {
+          pub.isKeywordHovered = true;
+        }
+      });
+    }
+    if (plotCallback) plotCallback();
+  }),
+  handleKeywordNodeMouseout: vi.fn((event, d, sessionStore, plotCallback) => {
+    // Mock clearing hover state on publications
+    if (sessionStore.publicationsFiltered) {
+      sessionStore.publicationsFiltered.forEach(pub => {
+        pub.isKeywordHovered = false;
+      });
+    }
+    if (plotCallback) plotCallback();
+  }),
+  createKeywordNodeDrag: vi.fn(() => ({
+    on: vi.fn(() => ({ on: vi.fn() }))
+  }))
 }))
 
 vi.mock('@/composables/authorNodes.js', () => ({
   initializeAuthorNodes: vi.fn(() => createMockSelection()),
   updateAuthorNodes: vi.fn(() => ({ nodes: createMockSelection(), tooltips: [] })),
-  handleAuthorNodeMouseover: vi.fn(),
-  handleAuthorNodeMouseout: vi.fn(),
-  handleAuthorNodeClick: vi.fn()
+  handleAuthorNodeMouseover: vi.fn((event, d, sessionStore, plotCallback) => {
+    // Mock setting hover state on publications based on author's publicationDois
+    if (sessionStore.publicationsFiltered && d.author && d.author.publicationDois) {
+      sessionStore.publicationsFiltered.forEach(pub => {
+        if (d.author.publicationDois.includes(pub.doi)) {
+          pub.isAuthorHovered = true;
+        }
+      });
+    }
+    if (plotCallback) plotCallback();
+  }),
+  handleAuthorNodeMouseout: vi.fn((event, d, sessionStore, plotCallback) => {
+    // Mock clearing hover state on publications  
+    if (sessionStore.publicationsFiltered) {
+      sessionStore.publicationsFiltered.forEach(pub => {
+        pub.isAuthorHovered = false;
+      });
+    }
+    if (plotCallback) plotCallback();
+  }),
+  handleAuthorNodeClick: vi.fn((event, d, interfaceStore) => {
+    // Mock author modal dialog opening
+    if (interfaceStore.openAuthorModalDialog) {
+      interfaceStore.openAuthorModalDialog(d.author.id);
+    }
+  })
 }))
 
 vi.mock('@/composables/networkLinks.js', () => ({
@@ -198,13 +252,21 @@ vi.mock('@/composables/networkLinks.js', () => ({
 }))
 
 vi.mock('@/composables/useGraphData.js', () => ({
-  initializeGraphData: vi.fn(() => ({
-    nodes: [],
-    links: [],
-    doiToIndex: {},
-    filteredAuthors: []
-  })),
-  createGraphContext: vi.fn(() => ({}))
+  initializeGraphData: vi.fn((context) => {
+    // If existingNodeData has nodes, preserve them for testing
+    const existingNodes = context?.existingNodeData;
+    const hasExistingData = existingNodes && existingNodes.length > 0;
+    
+    return {
+      nodes: hasExistingData ? existingNodes : [],
+      links: hasExistingData ? [{ source: existingNodes[0], target: existingNodes[1], type: 'citation' }] : [],
+      doiToIndex: hasExistingData ? { [existingNodes[0].id]: 0, [existingNodes[1]?.id]: 1 } : {},
+      filteredAuthors: []
+    };
+  }),
+  createGraphContext: vi.fn((component) => ({
+    existingNodeData: component?.networkSimulation?.graph?.value?.nodes || []
+  }))
 }))
 
 // Mock components

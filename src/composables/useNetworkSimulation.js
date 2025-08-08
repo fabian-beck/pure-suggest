@@ -5,7 +5,7 @@
  * It provides reactive integration between Vue component state and D3 force simulation.
  */
 
-import { ref, computed, watch, onUnmounted } from 'vue';
+import { ref, onUnmounted } from 'vue';
 import { 
   createForceSimulation, 
   updateSimulationForces, 
@@ -14,7 +14,7 @@ import {
   SIMULATION_ALPHA 
 } from './networkForces.js';
 
-export function useNetworkSimulation(props) {
+export function useNetworkSimulation() {
   // Simulation instance
   const simulation = ref(null);
   const isDragging = ref(false);
