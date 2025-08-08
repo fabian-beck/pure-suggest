@@ -146,7 +146,11 @@ import {
     createGraphContext
 } from "@/composables/useGraphData.js";
 
-const MARGIN = 50;
+// Year labels
+import { 
+    updateYearLabels,
+    createYearLabelsConfig
+} from "@/composables/useYearLabels.js";
 
 export default {
     name: "NetworkVisComponent",
@@ -288,7 +292,7 @@ export default {
                 initGraph.call(this);
                 updateNodes.call(this);
                 updateLinks.call(this);
-                updateYearLabels.call(this);
+                this.updateYearLabels();
                 
                 // Update graph data in simulation
                 this.networkSimulation.updateGraphData(this.networkSimulation.graph.value.nodes, this.networkSimulation.graph.value.links);
@@ -396,47 +400,6 @@ export default {
                     this.networkSimulation.graph.value.links
                 );
             }
-
-            function updateYearLabels() {
-                if (this.sessionStore.publicationsFiltered.length === 0)
-                    return;
-                const yearRange = Array.from(
-                    { length: this.sessionStore.yearMax - this.sessionStore.yearMin + 6 },
-                    (_, i) => this.sessionStore.yearMin - 4 + i
-                ).filter((year) => year % 5 === 0);
-                this.label = this.label
-                    .data(yearRange, (d) => d)
-                    .join((enter) => {
-                        const g = enter.append("g");
-                        g.append("rect");
-                        g.append("text");
-                        g.append("text");
-                        return g;
-                    });
-                this.label
-                    .selectAll("rect")
-                    .attr("width", (d) => this.yearX(Math.min(d + 5, CURRENT_YEAR)) - this.yearX(d))
-                    .attr("height", 20000)
-                    .attr("fill", (d) => d % 10 === 0 ? "#fafafa" : "white")
-                    .attr("x", -24)
-                    .attr("y", -10000);
-                this.label
-                    .selectAll("text")
-                    .attr("text-anchor", "middle")
-                    .text((d) => d)
-                    .attr("fill", "grey");
-                this.label
-                    .selectAll("text, rect")
-                    .attr("visibility", !this.sessionStore.isEmpty && !this.isNetworkClusters
-                        ? "visible"
-                        : "hidden");
-                if (!this.sessionStore.isEmpty) {
-                    this.label
-                        .attr("transform", (d) => `translate(${this.yearX(d)},${this.svgHeight / 2 - MARGIN})`)
-                        .select("text")
-                        .attr("y", -this.svgHeight + 2 * MARGIN);
-                }
-            }
         },
         tick: function () {
             // Update link properties using module
@@ -497,6 +460,16 @@ export default {
             const transform = d3.zoomTransform(this.svg.node());
             transform.k = transform.k * factor;
             this.svg.attr("transform", transform);
+        },
+        updateYearLabels() {
+            const config = createYearLabelsConfig(
+                this.label,
+                this.sessionStore,
+                this.yearX,
+                this.svgHeight,
+                this.isNetworkClusters
+            );
+            this.label = updateYearLabels(config);
         },
     },
 };
