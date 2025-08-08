@@ -95,15 +95,27 @@ function createGraphNodes(context) {
     
     // Get filtered publications based on visibility settings
     const publications = getFilteredPublications(
-        sessionStore,
+        sessionStore.selectedPublications,
+        sessionStore.suggestedPublications,
         showSelectedNodes,
         showSuggestedNodes,
         suggestedNumberFactor,
-        onlyShowFiltered
+        onlyShowFiltered,
+        {
+            hasActiveFilters: sessionStore.filter.hasActiveFilters(),
+            applyToSelected: sessionStore.filter.applyToSelected,
+            applyToSuggested: sessionStore.filter.applyToSuggested,
+            matches: (pub) => sessionStore.filter.matches(pub)
+        }
     );
 
     // Create publication nodes
-    const publicationNodes = createPublicationNodes(publications, doiToIndex, sessionStore);
+    const publicationNodes = createPublicationNodes(
+        publications, 
+        doiToIndex, 
+        sessionStore.selectedQueue, 
+        sessionStore.excludedQueue
+    );
     nodes = nodes.concat(publicationNodes);
     
     // Create keyword nodes
@@ -139,11 +151,18 @@ function createGraphLinks(context) {
     
     // Get filtered publications for link creation
     const publications = getFilteredPublications(
-        sessionStore,
+        sessionStore.selectedPublications,
+        sessionStore.suggestedPublications,
         showSelectedNodes,
         showSuggestedNodes,
         suggestedNumberFactor,
-        onlyShowFiltered
+        onlyShowFiltered,
+        {
+            hasActiveFilters: sessionStore.filter.hasActiveFilters(),
+            applyToSelected: sessionStore.filter.applyToSelected,
+            applyToSuggested: sessionStore.filter.applyToSuggested,
+            matches: (pub) => sessionStore.filter.matches(pub)
+        }
     );
 
     // Create all network links using module

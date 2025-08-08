@@ -344,7 +344,7 @@ export default {
                             .attr("class", (d) => `node-container ${d.type}`);
 
                         // Initialize publication nodes using module
-                        initializePublicationNodes(g, this.activatePublication, this.sessionStore);
+                        initializePublicationNodes(g, this.activatePublication, (publication, isHovered) => this.sessionStore.hoverPublication(publication, isHovered));
 
                         // Initialize keyword nodes using module
                         initializeKeywordNodes(g, this.keywordNodeDrag, this.keywordNodeClick, this.keywordNodeMouseover, this.keywordNodeMouseout);
@@ -356,7 +356,7 @@ export default {
                     });
                 try {
                     // Update publication nodes using module
-                    const publicationResult = updatePublicationNodes(this.node, this.sessionStore, this.publicationTooltips);
+                    const publicationResult = updatePublicationNodes(this.node, this.sessionStore.activePublication, this.publicationTooltips);
                     this.publicationTooltips = publicationResult.tooltips;
                 }
                 catch (error) {

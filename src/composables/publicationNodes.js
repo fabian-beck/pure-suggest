@@ -14,7 +14,7 @@ const ENLARGE_FACTOR = 1.5;
 /**
  * Create publication node data from publications
  */
-export function createPublicationNodes(publications, doiToIndex, sessionStore) {
+export function createPublicationNodes(publications, doiToIndex, selectedQueue, excludedQueue) {
     const nodes = [];
     let i = 0;
 
@@ -24,8 +24,8 @@ export function createPublicationNodes(publications, doiToIndex, sessionStore) {
             nodes.push({
                 id: publication.doi,
                 publication: publication,
-                isQueuingForSelected: sessionStore.isQueuingForSelected(publication.doi),
-                isQueuingForExcluded: sessionStore.isQueuingForExcluded(publication.doi),
+                isQueuingForSelected: selectedQueue.includes(publication.doi),
+                isQueuingForExcluded: excludedQueue.includes(publication.doi),
                 type: "publication",
             });
             i++;
@@ -38,7 +38,7 @@ export function createPublicationNodes(publications, doiToIndex, sessionStore) {
 /**
  * Initialize publication node DOM elements
  */
-export function initializePublicationNodes(nodeSelection, activatePublication, sessionStore) {
+export function initializePublicationNodes(nodeSelection, activatePublication, hoverHandler) {
     const publicationNodes = nodeSelection.filter((d) => d.type === "publication");
     
     // Add rect element (main visual element for publication nodes)
@@ -46,8 +46,8 @@ export function initializePublicationNodes(nodeSelection, activatePublication, s
         .append("rect")
         .attr("pointer-events", "all")
         .on("click", activatePublication)
-        .on("mouseover", (event, d) => sessionStore.hoverPublication(d.publication, true))
-        .on("mouseout", (event, d) => sessionStore.hoverPublication(d.publication, false));
+        .on("mouseover", (event, d) => hoverHandler(d.publication, true))
+        .on("mouseout", (event, d) => hoverHandler(d.publication, false));
     
     // Add score text (displays the publication score)
     publicationNodes
@@ -80,7 +80,7 @@ export function initializePublicationNodes(nodeSelection, activatePublication, s
 /**
  * Update publication node visual properties
  */
-export function updatePublicationNodes(nodeSelection, sessionStore, existingTooltips) {
+export function updatePublicationNodes(nodeSelection, activePublication, existingTooltips) {
     const publicationNodes = nodeSelection.filter((d) => d.type === "publication");
     
     // Update CSS classes based on state
@@ -89,7 +89,7 @@ export function updatePublicationNodes(nodeSelection, sessionStore, existingTool
         .classed("suggested", (d) => !d.publication.isSelected)
         .classed("active", (d) => d.publication.isActive)
         .classed("linkedToActive", (d) => d.publication.isLinkedToActive)
-        .classed("non-active", (d) => sessionStore.activePublication && !d.publication.isActive && !d.publication.isLinkedToActive)
+        .classed("non-active", (d) => activePublication && !d.publication.isActive && !d.publication.isLinkedToActive)
         .classed("queuingForSelected", (d) => d.isQueuingForSelected)
         .classed("queuingForExcluded", (d) => d.isQueuingForExcluded)
         .classed("is-hovered", (d) => d.publication.isHovered)
@@ -178,21 +178,29 @@ function getBoostIndicatorSize(d) {
 /**
  * Get filtered publications based on visibility settings and filters
  */
-export function getFilteredPublications(sessionStore, showSelectedNodes, showSuggestedNodes, suggestedNumberFactor, onlyShowFiltered) {
+export function getFilteredPublications(
+    selectedPublications, 
+    suggestedPublications, 
+    showSelectedNodes, 
+    showSuggestedNodes, 
+    suggestedNumberFactor, 
+    onlyShowFiltered,
+    filterConfig
+) {
     let publications = [];
     
     if (showSelectedNodes) {
-        let selectedPubs = sessionStore.selectedPublications;
-        if (onlyShowFiltered && sessionStore.filter.hasActiveFilters() && sessionStore.filter.applyToSelected) {
-            selectedPubs = selectedPubs.filter(pub => sessionStore.filter.matches(pub));
+        let selectedPubs = selectedPublications;
+        if (onlyShowFiltered && filterConfig.hasActiveFilters && filterConfig.applyToSelected) {
+            selectedPubs = selectedPubs.filter(filterConfig.matches);
         }
         publications = publications.concat(selectedPubs);
     }
     
     if (showSuggestedNodes) {
-        let suggestedPubs = sessionStore.suggestedPublications;
-        if (onlyShowFiltered && sessionStore.filter.hasActiveFilters() && sessionStore.filter.applyToSuggested) {
-            suggestedPubs = suggestedPubs.filter(pub => sessionStore.filter.matches(pub));
+        let suggestedPubs = suggestedPublications;
+        if (onlyShowFiltered && filterConfig.hasActiveFilters && filterConfig.applyToSuggested) {
+            suggestedPubs = suggestedPubs.filter(filterConfig.matches);
         }
         publications = publications.concat(suggestedPubs.slice(0, Math.round(suggestedNumberFactor * 50)));
     }
