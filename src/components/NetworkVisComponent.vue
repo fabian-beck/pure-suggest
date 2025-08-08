@@ -115,13 +115,10 @@ import { calculateYearX, CURRENT_YEAR, SIMULATION_ALPHA } from "@/composables/ne
 
 // Node types
 import { 
-    createPublicationNodes, 
     initializePublicationNodes, 
-    updatePublicationNodes, 
-    getFilteredPublications 
+    updatePublicationNodes
 } from "@/composables/publicationNodes.js";
 import { 
-    createKeywordNodes, 
     initializeKeywordNodes, 
     updateKeywordNodes,
     handleKeywordNodeClick,
@@ -130,7 +127,6 @@ import {
     createKeywordNodeDrag
 } from "@/composables/keywordNodes.js";
 import { 
-    createAuthorNodes, 
     initializeAuthorNodes, 
     updateAuthorNodes,
     handleAuthorNodeMouseover,
@@ -140,10 +136,15 @@ import {
 
 // Links
 import { 
-    createNetworkLinks,
     updateNetworkLinks,
     updateLinkProperties
 } from "@/composables/networkLinks.js";
+
+// Graph data management
+import { 
+    initializeGraphData,
+    createGraphContext
+} from "@/composables/useGraphData.js";
 
 const MARGIN = 50;
 
@@ -311,69 +312,19 @@ export default {
 
 
             function initGraph() {
-                this.doiToIndex = {};
-                const allAuthors = this.sessionStore.selectedPublicationsAuthors;
-                this.filteredAuthors = allAuthors.slice(0, this.authorNumberFactor * this.sessionStore.selectedPublications.length);
+                // Create graph context from component state
+                const context = createGraphContext(this);
                 
-                const nodes = initNodes.call(this);
-                const links = initLinks.call(this);
-                // https://observablehq.com/@d3/modifying-a-force-directed-graph
-                const old = new Map(this.node.data().map((d) => [d.id, d]));
-                this.networkSimulation.graph.value.nodes = nodes.map((d) => Object.assign(old.get(d.id) || { x: 0, y: 0 }, d));
-                this.networkSimulation.graph.value.links = links.map((d) => Object.assign({}, d));
-
-                function initNodes() {
-                    let nodes = [];
-                    
-                    // Get filtered publications based on visibility settings
-                    const publications = getFilteredPublications(
-                        this.sessionStore, 
-                        this.showSelectedNodes, 
-                        this.showSuggestedNodes, 
-                        this.suggestedNumberFactor, 
-                        this.onlyShowFiltered
-                    );
-
-                    // Create publication nodes
-                    const publicationNodes = createPublicationNodes(publications, this.doiToIndex, this.sessionStore);
-                    nodes = nodes.concat(publicationNodes);
-                    
-                    // Create keyword nodes
-                    if (this.showKeywordNodes) {
-                        const keywordNodes = createKeywordNodes(this.sessionStore);
-                        nodes = nodes.concat(keywordNodes);
-                    }
-                    
-                    // Create author nodes
-                    if (this.showAuthorNodes) {
-                        const authorNodes = createAuthorNodes(this.filteredAuthors, publications);
-                        nodes = nodes.concat(authorNodes);
-                    }
-                    
-                    return nodes;
-                }
-
-                function initLinks() {
-                    // Get filtered publications for link creation
-                    const publications = getFilteredPublications(
-                        this.sessionStore, 
-                        this.showSelectedNodes, 
-                        this.showSuggestedNodes, 
-                        this.suggestedNumberFactor, 
-                        this.onlyShowFiltered
-                    );
-
-                    // Create all network links using module
-                    return createNetworkLinks(
-                        this.sessionStore, 
-                        this.doiToIndex, 
-                        this.filteredAuthors, 
-                        publications, 
-                        this.showKeywordNodes, 
-                        this.showAuthorNodes
-                    );
-                }
-
+                // Initialize complete graph data using composable
+                const graphData = initializeGraphData(context);
+                
+                // Update component state
+                this.doiToIndex = graphData.doiToIndex;
+                this.filteredAuthors = graphData.filteredAuthors;
+                
+                // Update simulation graph data
+                this.networkSimulation.graph.value.nodes = graphData.nodes;
+                this.networkSimulation.graph.value.links = graphData.links;
             }
 
             function updateNodes() {

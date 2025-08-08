@@ -171,15 +171,11 @@ vi.mock('@/composables/networkForces.js', () => ({
 }))
 
 vi.mock('@/composables/publicationNodes.js', () => ({
-  createPublicationNodes: vi.fn(() => []),
   initializePublicationNodes: vi.fn(() => createMockSelection()),
-  updatePublicationNodes: vi.fn(() => ({ nodes: createMockSelection(), tooltips: [] })),
-  getFilteredPublications: vi.fn(() => [])
+  updatePublicationNodes: vi.fn(() => ({ nodes: createMockSelection(), tooltips: [] }))
 }))
 
 vi.mock('@/composables/keywordNodes.js', () => ({
-  createKeywordNodes: vi.fn(() => []),
-  createKeywordLinks: vi.fn(() => []),
   initializeKeywordNodes: vi.fn(() => createMockSelection()),
   updateKeywordNodes: vi.fn(() => ({ nodes: createMockSelection(), tooltips: [] })),
   handleKeywordNodeClick: vi.fn(),
@@ -189,8 +185,6 @@ vi.mock('@/composables/keywordNodes.js', () => ({
 }))
 
 vi.mock('@/composables/authorNodes.js', () => ({
-  createAuthorNodes: vi.fn(() => []),
-  createAuthorLinks: vi.fn(() => []),
   initializeAuthorNodes: vi.fn(() => createMockSelection()),
   updateAuthorNodes: vi.fn(() => ({ nodes: createMockSelection(), tooltips: [] })),
   handleAuthorNodeMouseover: vi.fn(),
@@ -199,9 +193,18 @@ vi.mock('@/composables/authorNodes.js', () => ({
 }))
 
 vi.mock('@/composables/networkLinks.js', () => ({
-  createNetworkLinks: vi.fn(() => []),
   updateNetworkLinks: vi.fn(() => createMockSelection()),
   updateLinkProperties: vi.fn()
+}))
+
+vi.mock('@/composables/useGraphData.js', () => ({
+  initializeGraphData: vi.fn(() => ({
+    nodes: [],
+    links: [],
+    doiToIndex: {},
+    filteredAuthors: []
+  })),
+  createGraphContext: vi.fn(() => ({}))
 }))
 
 // Mock components
