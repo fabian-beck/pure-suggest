@@ -1,0 +1,177 @@
+/**
+ * Keyword Node Management
+ * 
+ * This module handles the creation, initialization, and updating of keyword nodes
+ * in the network visualization. Keyword nodes represent research keywords and are
+ * displayed as text-based nodes that can be dragged and repositioned.
+ */
+
+import tippy from "tippy.js";
+import * as d3 from "d3";
+
+/**
+ * Create keyword node data from unique boost keywords
+ */
+export function createKeywordNodes(sessionStore) {
+    const nodes = [];
+    
+    sessionStore.uniqueBoostKeywords.forEach((keyword) => {
+        const frequency = sessionStore.publications.filter(
+            (publication) => publication.boostKeywords.includes(keyword)
+        ).length;
+        
+        nodes.push({
+            id: keyword,
+            frequency: frequency,
+            type: "keyword"
+        });
+    });
+
+    return nodes;
+}
+
+/**
+ * Create keyword links connecting keywords to publications
+ */
+export function createKeywordLinks(sessionStore, doiToIndex) {
+    const links = [];
+    
+    sessionStore.uniqueBoostKeywords.forEach((keyword) => {
+        sessionStore.publicationsFiltered.forEach((publication) => {
+            if (publication.doi in doiToIndex && publication.boostKeywords.includes(keyword)) {
+                links.push({
+                    source: keyword,
+                    target: publication.doi,
+                    type: "keyword",
+                });
+            }
+        });
+    });
+
+    return links;
+}
+
+/**
+ * Initialize keyword node DOM elements
+ */
+export function initializeKeywordNodes(nodeSelection, keywordNodeDrag, keywordNodeClick, keywordNodeMouseover, keywordNodeMouseout) {
+    const keywordNodes = nodeSelection.filter((d) => d.type === "keyword");
+    
+    // Add text element
+    keywordNodes.append("text");
+    
+    // Add event handlers
+    keywordNodes
+        .call(keywordNodeDrag())
+        .on("click", keywordNodeClick)
+        .on("mouseover", keywordNodeMouseover)
+        .on("mouseout", keywordNodeMouseout);
+
+    return keywordNodes;
+}
+
+/**
+ * Update keyword node visual properties
+ */
+export function updateKeywordNodes(nodeSelection, sessionStore, existingTooltips) {
+    const keywordNodes = nodeSelection.filter((d) => d.type === "keyword");
+    
+    // Update CSS classes based on state
+    keywordNodes
+        .classed("linkedToActive", (d) => sessionStore.isKeywordLinkedToActive(d.id))
+        .classed("non-active", (d) => sessionStore.activePublication && !sessionStore.isKeywordLinkedToActive(d.id));
+
+    // Clean up existing tooltips
+    if (existingTooltips) {
+        existingTooltips.forEach((tooltip) => tooltip.destroy());
+    }
+
+    // Set up tooltip content
+    keywordNodes.attr("data-tippy-content", (d) => {
+        const isLinked = sessionStore.isKeywordLinkedToActive(d.id);
+        return `Keyword <b>${d.id}</b> is matched in <b>${d.frequency}</b> publication${d.frequency > 1 ? "s" : ""}${
+            isLinked ? ", and also linked to the currently active publication" : ""
+        }.<br><br><i>Drag to reposition (sticky), click to detach.</i>`;
+    });
+
+    // Create new tooltips
+    const newTooltips = tippy(keywordNodes.nodes(), {
+        maxWidth: "min(400px,70vw)",
+        allowHTML: true,
+    });
+
+    // Update text content and styling
+    keywordNodes
+        .select("text")
+        .attr("font-size", (d) => {
+            if (d.frequency >= 10)
+                return "0.8em";
+            return "0.7em";
+        })
+        .text((d) => {
+            if (d.id.includes("|")) {
+                return d.id.split("|")[0] + "|..";
+            }
+            return d.id;
+        });
+
+    return { nodes: keywordNodes, tooltips: newTooltips };
+}
+
+/**
+ * Handle keyword node click event - detaches fixed positioning
+ */
+export function handleKeywordNodeClick(event, d, networkSimulation, SIMULATION_ALPHA) {
+    delete d.fx;
+    delete d.fy;
+    d3.select(event.target.parentNode).classed("fixed", false);
+    networkSimulation.restart(SIMULATION_ALPHA);
+}
+
+/**
+ * Handle keyword node mouseover event
+ */
+export function handleKeywordNodeMouseover(event, d, sessionStore, plotCallback) {
+    sessionStore.publicationsFiltered.forEach((publication) => {
+        if (publication.boostKeywords.includes(d.id)) {
+            publication.isKeywordHovered = true;
+        }
+    });
+    plotCallback();
+}
+
+/**
+ * Handle keyword node mouseout event
+ */
+export function handleKeywordNodeMouseout(event, d, sessionStore, plotCallback) {
+    sessionStore.publicationsFiltered.forEach((publication) => {
+        publication.isKeywordHovered = false;
+    });
+    plotCallback();
+}
+
+/**
+ * Create drag behavior for keyword nodes
+ */
+export function createKeywordNodeDrag(networkSimulation, SIMULATION_ALPHA) {
+    function dragStart() {
+        d3.select(this).classed("fixed", true);
+        networkSimulation.setDragging(true);
+    }
+    
+    function dragMove(event, d) {
+        d.fx = event.x;
+        d.fy = event.y;
+        networkSimulation.restart(SIMULATION_ALPHA);
+    }
+    
+    function dragEnd() {
+        networkSimulation.setDragging(false);
+    }
+    
+    return d3
+        .drag()
+        .on("start", dragStart)
+        .on("drag", dragMove)
+        .on("end", dragEnd);
+}
