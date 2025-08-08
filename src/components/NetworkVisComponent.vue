@@ -111,7 +111,7 @@ import { useInterfaceStore } from "@/stores/interface.js";
 
 // Force simulation
 import { useNetworkSimulation } from "@/composables/useNetworkSimulation.js";
-import { calculateYearX, CURRENT_YEAR, SIMULATION_ALPHA } from "@/composables/networkForces.js";
+import { calculateYearX, SIMULATION_ALPHA, getNodeXPosition } from "@/composables/networkForces.js";
 
 // Node types
 import { 
@@ -404,10 +404,10 @@ export default {
         },
         tick: function () {
             // Update link properties using module
-            updateLinkProperties(this.link, this.nodeX, this.sessionStore);
+            updateLinkProperties(this.link, (d) => getNodeXPosition(d, this.isNetworkClusters, this.yearX), this.sessionStore);
             
             // Update node positions
-            this.node.attr("transform", (d) => `translate(${this.nodeX(d)}, ${d.y})`);
+            this.node.attr("transform", (d) => `translate(${getNodeXPosition(d, this.isNetworkClusters, this.yearX)}, ${d.y})`);
         },
         keywordNodeDrag: function () {
             return createKeywordNodeDrag(this.networkSimulation, SIMULATION_ALPHA);
@@ -432,20 +432,6 @@ export default {
         },
         yearX: function (year) {
             return calculateYearX(year, this.svgWidth, this.svgHeight, this.interfaceStore.isMobile);
-        },
-        nodeX: function (d) {
-            if (this.isNetworkClusters) {
-                return d.x;
-            } else {
-                switch (d.type) {
-                    case "publication":
-                        return this.yearX(d.publication.year);
-                    case "keyword":
-                        return this.yearX(CURRENT_YEAR + 2);
-                    default:
-                        return d.x;
-                }
-            }
         },
         activatePublication: function (event, d) {
             this.sessionStore.activatePublicationComponentByDoi(d.publication.doi);
