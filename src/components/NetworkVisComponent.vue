@@ -102,14 +102,18 @@
 
 <script>
 import * as d3 from "d3";
-import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
 import { storeToRefs } from "pinia";
 
+// Stores
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
+
+// Force simulation
 import { useNetworkSimulation } from "@/composables/useNetworkSimulation.js";
 import { calculateYearX, CURRENT_YEAR, SIMULATION_ALPHA } from "@/composables/networkForces.js";
+
+// Node types
 import { 
     createPublicationNodes, 
     initializePublicationNodes, 
@@ -118,7 +122,6 @@ import {
 } from "@/composables/publicationNodes.js";
 import { 
     createKeywordNodes, 
-    createKeywordLinks, 
     initializeKeywordNodes, 
     updateKeywordNodes,
     handleKeywordNodeClick,
@@ -128,13 +131,14 @@ import {
 } from "@/composables/keywordNodes.js";
 import { 
     createAuthorNodes, 
-    createAuthorLinks, 
     initializeAuthorNodes, 
     updateAuthorNodes,
     handleAuthorNodeMouseover,
     handleAuthorNodeMouseout,
     handleAuthorNodeClick
 } from "@/composables/authorNodes.js";
+
+// Links
 import { 
     createNetworkLinks,
     updateNetworkLinks,
