@@ -16,7 +16,7 @@ import { createNetworkLinks } from "./networkLinks.js";
 /**
  * Initialize complete graph data structure
  */
-export function initializeGraphData(context) {
+export function initializeGraphData(component) {
     const {
         sessionStore,
         showSelectedNodes,
@@ -26,8 +26,10 @@ export function initializeGraphData(context) {
         suggestedNumberFactor,
         authorNumberFactor,
         onlyShowFiltered,
-        existingNodeData
-    } = context;
+        node
+    } = component;
+    
+    const existingNodeData = node?.data ? node.data() : null;
 
     // Initialize DOI to index mapping
     const doiToIndex = {};
@@ -169,19 +171,3 @@ function preserveNodePositions(newNodes, existingNodeData) {
     return newNodes.map((d) => Object.assign(oldPositions.get(d.id) || { x: 0, y: 0 }, d));
 }
 
-/**
- * Get graph configuration context from component
- */
-export function createGraphContext(component) {
-    return {
-        sessionStore: component.sessionStore,
-        showSelectedNodes: component.showSelectedNodes,
-        showSuggestedNodes: component.showSuggestedNodes,
-        showKeywordNodes: component.showKeywordNodes,
-        showAuthorNodes: component.showAuthorNodes,
-        suggestedNumberFactor: component.suggestedNumberFactor,
-        authorNumberFactor: component.authorNumberFactor,
-        onlyShowFiltered: component.onlyShowFiltered,
-        existingNodeData: component.node?.data ? component.node.data() : null
-    };
-}

@@ -142,8 +142,7 @@ import {
 
 // Graph data management
 import { 
-    initializeGraphData,
-    createGraphContext
+    initializeGraphData
 } from "@/composables/useGraphData.js";
 
 // Year labels
@@ -316,11 +315,8 @@ export default {
 
 
             function initGraph() {
-                // Create graph context from component state
-                const context = createGraphContext(this);
-                
                 // Initialize complete graph data using composable
-                const graphData = initializeGraphData(context);
+                const graphData = initializeGraphData(this);
                 
                 // Update component state
                 this.doiToIndex = graphData.doiToIndex;
