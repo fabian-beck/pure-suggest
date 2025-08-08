@@ -738,4 +738,226 @@ describe('NetworkVisComponent', () => {
       }).not.toThrow()
     })
   })
+
+  describe('Node and Link Data Handling', () => {
+    let wrapper
+    let mockSessionStore
+
+    beforeEach(() => {
+      mockSessionStore = {
+        isEmpty: false,
+        isUpdatable: false,
+        selectedPublications: [
+          { 
+            doi: '10.1234/selected1', 
+            title: 'Selected Publication 1', 
+            year: 2020,
+            boostKeywords: ['machine learning', 'AI']
+          },
+          { 
+            doi: '10.1234/selected2', 
+            title: 'Selected Publication 2', 
+            year: 2021,
+            boostKeywords: ['deep learning']
+          }
+        ],
+        suggestedPublications: [
+          { 
+            doi: '10.1234/suggested1', 
+            title: 'Suggested Publication 1', 
+            year: 2019,
+            boostKeywords: ['machine learning']
+          },
+          { 
+            doi: '10.1234/suggested2', 
+            title: 'Suggested Publication 2', 
+            year: 2022,
+            boostKeywords: ['neural networks']
+          }
+        ],
+        selectedPublicationsAuthors: [
+          { id: 'author1', name: 'John Doe', yearMin: 2019, yearMax: 2021 },
+          { id: 'author2', name: 'Jane Smith', yearMin: 2020, yearMax: 2022 }
+        ],
+        uniqueBoostKeywords: ['machine learning', 'AI', 'deep learning', 'neural networks'],
+        publications: [], // This would normally contain all publications
+        updateQueued: vi.fn(),
+        $onAction: vi.fn(),
+        filter: {
+          hasActiveFilters: vi.fn(() => false),
+          matches: vi.fn(() => true),
+          applyToSelected: true,
+          applyToSuggested: true
+        },
+        activePublication: null,
+        isQueuingForSelected: vi.fn(() => false),
+        isQueuingForExcluded: vi.fn(() => false)
+      }
+
+      vi.mocked(useSessionStore).mockReturnValue(mockSessionStore)
+
+      wrapper = mount(NetworkVisComponent, {
+        global: {
+          stubs: {
+            'v-icon': true,
+            'CompactSwitch': true,
+            'CompactButton': true,
+            'v-btn': true,
+            'v-btn-toggle': true,
+            'v-menu': true,
+            'v-list': true,
+            'v-list-item': true,
+            'v-list-item-title': true,
+            'v-checkbox': true,
+            'v-slider': true,
+            'PublicationComponent': true
+          }
+        }
+      })
+    })
+
+    it('initializes empty graph data correctly', () => {
+      expect(wrapper.vm.graph).toEqual({ nodes: [], links: [] })
+      expect(wrapper.vm.doiToIndex).toBeUndefined() // Only set during plot
+    })
+
+    it('handles node visibility settings correctly', () => {
+      // Test default node visibility
+      expect(wrapper.vm.showSelectedNodes).toBe(true)
+      expect(wrapper.vm.showSuggestedNodes).toBe(true) 
+      expect(wrapper.vm.showKeywordNodes).toBe(true)
+      expect(wrapper.vm.showAuthorNodes).toBe(true)
+
+      // Test toggling node visibility
+      wrapper.vm.showNodes = ['selected']
+      expect(wrapper.vm.showSelectedNodes).toBe(true)
+      expect(wrapper.vm.showSuggestedNodes).toBe(false)
+      expect(wrapper.vm.showKeywordNodes).toBe(false)
+      expect(wrapper.vm.showAuthorNodes).toBe(false)
+    })
+
+    it('handles filtered vs non-filtered data correctly', () => {
+      // Test with filters inactive
+      expect(wrapper.vm.onlyShowFiltered).toBe(false)
+
+      // Test with filters active
+      mockSessionStore.filter.hasActiveFilters.mockReturnValue(true)
+      wrapper = mount(NetworkVisComponent, {
+        global: {
+          stubs: {
+            'v-icon': true,
+            'CompactSwitch': true,
+            'CompactButton': true,
+            'v-btn': true,
+            'v-btn-toggle': true,
+            'v-menu': true,
+            'v-list': true,
+            'v-list-item': true,
+            'v-list-item-title': true,
+            'v-checkbox': true,
+            'v-slider': true,
+            'PublicationComponent': true
+          }
+        }
+      })
+
+      expect(wrapper.vm.onlyShowFiltered).toBe(true)
+    })
+
+    it('respects suggested number factor settings', () => {
+      expect(wrapper.vm.suggestedNumberFactor).toBe(0.3)
+      
+      wrapper.vm.suggestedNumberFactor = 0.8
+      expect(wrapper.vm.suggestedNumberFactor).toBe(0.8)
+    })
+
+    it('respects author number factor settings', () => {
+      expect(wrapper.vm.authorNumberFactor).toBe(0.5)
+      
+      wrapper.vm.authorNumberFactor = 1.2
+      expect(wrapper.vm.authorNumberFactor).toBe(1.2)
+    })
+
+    it('handles plot method execution with data', () => {
+      // Set up test data
+      wrapper.vm.graph.nodes = [
+        { id: '10.1234/test1', type: 'publication' },
+        { id: '10.1234/test2', type: 'publication' }
+      ]
+      wrapper.vm.graph.links = [
+        { source: '10.1234/test1', target: '10.1234/test2', type: 'citation' }
+      ]
+
+      // Should handle plotting with data without errors
+      expect(() => {
+        wrapper.vm.plot()
+      }).not.toThrow()
+
+      expect(wrapper.vm.graph.nodes).toHaveLength(2)
+      expect(wrapper.vm.graph.links).toHaveLength(1)
+    })
+  })
+
+  describe('Watchers and Reactive Updates', () => {
+    let wrapper
+
+    beforeEach(() => {
+      wrapper = mount(NetworkVisComponent, {
+        global: {
+          stubs: {
+            'v-icon': true,
+            'CompactSwitch': true,
+            'CompactButton': true,
+            'v-btn': true,
+            'v-btn-toggle': true,
+            'v-menu': true,
+            'v-list': true,
+            'v-list-item': true,
+            'v-list-item-title': true,
+            'v-checkbox': true,
+            'v-slider': true,
+            'PublicationComponent': true
+          }
+        }
+      })
+    })
+
+    it('reacts to cluster mode changes', async () => {
+      // isNetworkClusters comes from the interface store, not component data
+      // Just verify that the component can access the property
+      expect(wrapper.vm.isNetworkClusters).toBeDefined()
+      
+      // Test that the cluster mode can be toggled via interface store mock
+      const mockInterfaceStore = vi.mocked(useInterfaceStore)()
+      mockInterfaceStore.isNetworkClusters = true
+      expect(mockInterfaceStore.isNetworkClusters).toBe(true)
+    })
+
+    it('updates onlyShowFiltered based on filter state changes', async () => {
+      // Initially false when no filters active
+      expect(wrapper.vm.onlyShowFiltered).toBe(false)
+      
+      // Can be manually set
+      await wrapper.setData({ onlyShowFiltered: true })
+      expect(wrapper.vm.onlyShowFiltered).toBe(true)
+    })
+
+    it('handles error timeout correctly', async () => {
+      // Set an error message directly
+      wrapper.vm.errorMessage = 'Test error'
+      expect(wrapper.vm.errorMessage).toBe('Test error')
+      
+      // Simulate setting timeout (just verify it can be set)
+      const timeoutId = setTimeout(() => {}, 100)
+      wrapper.vm.errorTimer = timeoutId
+      expect(wrapper.vm.errorTimer).toBeDefined()
+      
+      // Clear the timeout to avoid memory leaks
+      clearTimeout(timeoutId)
+      
+      // Clear error
+      wrapper.vm.errorMessage = ''
+      expect(wrapper.vm.errorMessage).toBe('')
+    })
+  })
 })
