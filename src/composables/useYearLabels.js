@@ -83,14 +83,7 @@ export function updateYearLabelVisibility(labelSelection, isVisible, yearXCalcul
  * Complete year labels update function
  * This is the main function that orchestrates all year label updates
  */
-export function updateYearLabels(config) {
-  const {
-    labelSelection,
-    sessionStore,
-    yearXCalculator,
-    svgHeight,
-    isNetworkClusters
-  } = config;
+export function updateYearLabels(labelSelection, sessionStore, yearXCalculator, svgHeight, isNetworkClusters) {
   
   // Early return if no publications (matches original behavior)
   if (!sessionStore.publicationsFiltered || sessionStore.publicationsFiltered.length === 0) {
@@ -122,15 +115,3 @@ export function updateYearLabels(config) {
   return updatedLabels;
 }
 
-/**
- * Create year labels configuration object
- */
-export function createYearLabelsConfig(labelSelection, sessionStore, yearXCalculator, svgHeight, isNetworkClusters) {
-  return {
-    labelSelection,
-    sessionStore,
-    yearXCalculator,
-    svgHeight,
-    isNetworkClusters
-  };
-}

@@ -147,8 +147,7 @@ import {
 
 // Year labels
 import { 
-    updateYearLabels,
-    createYearLabelsConfig
+    updateYearLabels
 } from "@/composables/useYearLabels.js";
 
 export default {
@@ -458,14 +457,13 @@ export default {
             this.svg.attr("transform", transform);
         },
         updateYearLabels() {
-            const config = createYearLabelsConfig(
+            this.label = updateYearLabels(
                 this.label,
                 this.sessionStore,
                 this.yearX,
                 this.svgHeight,
                 this.isNetworkClusters
             );
-            this.label = updateYearLabels(config);
         },
     },
 };
