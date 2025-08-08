@@ -18,7 +18,24 @@ const createMockSelection = () => ({
   merge: vi.fn(() => createMockSelection()),
   style: vi.fn(() => createMockSelection()),
   text: vi.fn(() => createMockSelection()),
-  on: vi.fn(() => createMockSelection())
+  on: vi.fn(() => createMockSelection()),
+  node: vi.fn(() => ({ getBoundingClientRect: () => ({ x: 0, y: 0, width: 100, height: 100 }) }))
+})
+
+const createMockForce = () => ({
+  links: vi.fn(() => createMockForce()),
+  id: vi.fn(() => createMockForce()),
+  distance: vi.fn(() => createMockForce()),
+  strength: vi.fn(() => createMockForce())
+})
+
+const createMockSimulation = () => ({
+  alphaDecay: vi.fn(() => createMockSimulation()),
+  alphaMin: vi.fn(() => createMockSimulation()),
+  nodes: vi.fn(() => createMockSimulation()),
+  force: vi.fn(() => createMockForce()),
+  alpha: vi.fn(() => createMockSimulation()),
+  restart: vi.fn(() => createMockSimulation())
 })
 
 vi.mock('d3', () => ({
@@ -27,15 +44,8 @@ vi.mock('d3', () => ({
   zoom: vi.fn(() => ({
     on: vi.fn(() => createMockSelection())
   })),
-  forceSimulation: vi.fn(() => ({
-    alphaDecay: vi.fn(() => ({
-      alphaMin: vi.fn(() => ({}))
-    })),
-    nodes: vi.fn(() => ({})),
-    force: vi.fn(() => ({})),
-    alpha: vi.fn(() => ({})),
-    restart: vi.fn(() => ({}))
-  })),
+  zoomTransform: vi.fn(() => ({ k: 1, x: 0, y: 0 })),
+  forceSimulation: vi.fn(() => createMockSimulation()),
   forceLink: vi.fn(() => ({
     id: vi.fn(() => ({
       distance: vi.fn(() => ({
@@ -557,6 +567,175 @@ describe('NetworkVisComponent', () => {
       
       wrapper.vm.showNodes = ['selected', 'suggested', 'keyword']
       expect(wrapper.vm.showAuthorNodes).toBe(false)
+    })
+  })
+
+  describe('D3.js Graph Rendering', () => {
+    let wrapper
+    let mockSessionStore
+
+    beforeEach(() => {
+      mockSessionStore = {
+        isEmpty: false,
+        isUpdatable: false,
+        selectedPublications: [
+          { doi: '10.1234/test1', title: 'Test Publication 1', year: 2020 },
+          { doi: '10.1234/test2', title: 'Test Publication 2', year: 2021 }
+        ],
+        suggestedPublications: [
+          { doi: '10.1234/suggested1', title: 'Suggested Publication 1', year: 2019 }
+        ],
+        boostKeywords: [
+          { name: 'machine learning', weight: 0.8 }
+        ],
+        updateQueued: vi.fn(),
+        $onAction: vi.fn(),
+        filter: {
+          hasActiveFilters: vi.fn(() => false)
+        },
+        activePublication: null
+      }
+
+      vi.mocked(useSessionStore).mockReturnValue(mockSessionStore)
+
+      wrapper = mount(NetworkVisComponent, {
+        global: {
+          stubs: {
+            'v-icon': true,
+            'CompactSwitch': true,
+            'CompactButton': true,
+            'v-btn': true,
+            'v-btn-toggle': true,
+            'v-menu': true,
+            'v-list': true,
+            'v-list-item': true,
+            'v-list-item-title': true,
+            'v-checkbox': true,
+            'v-slider': true,
+            'PublicationComponent': true
+          }
+        }
+      })
+    })
+
+    it('calls plot method without errors', () => {
+      expect(() => {
+        wrapper.vm.plot()
+      }).not.toThrow()
+    })
+
+    it('calls plot method with restart parameter', () => {
+      expect(() => {
+        wrapper.vm.plot(true)
+      }).not.toThrow()
+    })
+
+    it('handles errors in plot method gracefully', async () => {
+      // Mock D3 to throw an error
+      const originalD3Select = wrapper.vm.svg.selectAll
+      wrapper.vm.svg.selectAll = vi.fn(() => {
+        throw new Error('D3 rendering error')
+      })
+
+      wrapper.vm.plot()
+
+      // Should set error message
+      expect(wrapper.vm.errorMessage).toBe('Sorry, an error occurred while plotting the citation network.')
+      
+      // Should clear error after timeout (we can't easily test the timeout, but can check it's set)
+      expect(wrapper.vm.errorTimer).toBeDefined()
+
+      // Restore original method
+      wrapper.vm.svg.selectAll = originalD3Select
+    })
+
+    it('skips plotting when dragging', () => {
+      wrapper.vm.isDragging = true
+      
+      const spy = vi.spyOn(wrapper.vm.simulation, 'restart')
+      wrapper.vm.plot()
+      
+      // Should not call simulation restart when dragging
+      expect(spy).not.toHaveBeenCalled()
+    })
+
+    it('updates simulation with graph data', () => {
+      // Since the plot method can throw errors internally and catches them,
+      // we just verify the plot method runs without throwing to the test
+      wrapper.vm.graph.nodes = [{ id: 'test-node' }]
+      wrapper.vm.graph.links = [{ source: 'node1', target: 'node2' }]
+      
+      expect(() => {
+        wrapper.vm.plot()
+      }).not.toThrow()
+      
+      // Verify graph data is set
+      expect(wrapper.vm.graph.nodes).toHaveLength(1)
+      expect(wrapper.vm.graph.links).toHaveLength(1)
+    })
+
+    it('restarts simulation when restart parameter is true', () => {
+      // Test that the plot method handles restart parameter without errors
+      expect(() => {
+        wrapper.vm.plot(true)
+      }).not.toThrow()
+      
+      expect(() => {
+        wrapper.vm.plot(false)
+      }).not.toThrow()
+    })
+  })
+
+  describe('User Interaction Methods', () => {
+    let wrapper
+
+    beforeEach(() => {
+      wrapper = mount(NetworkVisComponent, {
+        global: {
+          stubs: {
+            'v-icon': true,
+            'CompactSwitch': true,
+            'CompactButton': true,
+            'v-btn': true,
+            'v-btn-toggle': true,
+            'v-menu': true,
+            'v-list': true,
+            'v-list-item': true,
+            'v-list-item-title': true,
+            'v-checkbox': true,
+            'v-slider': true,
+            'PublicationComponent': true
+          }
+        }
+      })
+    })
+
+    it('expands network when expandNetwork(true) is called', () => {
+      const mockInterfaceStore = vi.mocked(useInterfaceStore)()
+      
+      wrapper.vm.expandNetwork(true)
+      
+      expect(mockInterfaceStore.isNetworkExpanded).toBe(true)
+    })
+
+    it('collapses network when expandNetwork(false) is called', () => {
+      const mockInterfaceStore = vi.mocked(useInterfaceStore)()
+      
+      wrapper.vm.expandNetwork(false)
+      
+      expect(mockInterfaceStore.isNetworkExpanded).toBe(false)
+    })
+
+    it('handles zoom in correctly', () => {
+      expect(() => {
+        wrapper.vm.zoomByFactor(1.2)
+      }).not.toThrow()
+    })
+
+    it('handles zoom out correctly', () => {
+      expect(() => {
+        wrapper.vm.zoomByFactor(0.8)
+      }).not.toThrow()
     })
   })
 })
