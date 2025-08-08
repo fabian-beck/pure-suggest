@@ -290,7 +290,13 @@ export default {
                 initGraph.call(this);
                 updateNodes.call(this);
                 updateLinks.call(this);
-                this.updateYearLabels();
+                this.label = updateYearLabels(
+                    this.label,
+                    this.sessionStore,
+                    this.yearX,
+                    this.svgHeight,
+                    this.isNetworkClusters
+                );
                 
                 // Update graph data in simulation
                 this.networkSimulation.updateGraphData(this.networkSimulation.graph.value.nodes, this.networkSimulation.graph.value.links);
@@ -455,15 +461,6 @@ export default {
             const transform = d3.zoomTransform(this.svg.node());
             transform.k = transform.k * factor;
             this.svg.attr("transform", transform);
-        },
-        updateYearLabels() {
-            this.label = updateYearLabels(
-                this.label,
-                this.sessionStore,
-                this.yearX,
-                this.svgHeight,
-                this.isNetworkClusters
-            );
         },
     },
 };
