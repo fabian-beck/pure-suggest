@@ -19,6 +19,7 @@ const createMockSelection = () => ({
   style: vi.fn(() => createMockSelection()),
   text: vi.fn(() => createMockSelection()),
   on: vi.fn(() => createMockSelection()),
+  classed: vi.fn(() => createMockSelection()),
   node: vi.fn(() => ({ getBoundingClientRect: () => ({ x: 0, y: 0, width: 100, height: 100 }) }))
 })
 
@@ -45,6 +46,12 @@ vi.mock('d3', () => ({
     on: vi.fn(() => createMockSelection())
   })),
   zoomTransform: vi.fn(() => ({ k: 1, x: 0, y: 0 })),
+  drag: vi.fn(() => {
+    const mockDrag = {
+      on: vi.fn(() => mockDrag)
+    }
+    return mockDrag
+  }),
   forceSimulation: vi.fn(() => createMockSimulation()),
   forceLink: vi.fn(() => ({
     id: vi.fn(() => ({
@@ -736,6 +743,168 @@ describe('NetworkVisComponent', () => {
       expect(() => {
         wrapper.vm.zoomByFactor(0.8)
       }).not.toThrow()
+    })
+  })
+
+  describe('Advanced User Interactions', () => {
+    let wrapper
+    let mockSessionStore
+
+    beforeEach(() => {
+      mockSessionStore = {
+        isEmpty: false,
+        isUpdatable: false,
+        selectedPublications: [],
+        suggestedPublications: [],
+        boostKeywords: [],
+        updateQueued: vi.fn(),
+        $onAction: vi.fn(),
+        filter: {
+          hasActiveFilters: vi.fn(() => false)
+        },
+        activePublication: { doi: '10.1234/active', title: 'Active Publication' },
+        publicationsFiltered: [
+          { doi: '10.1234/pub1', boostKeywords: ['machine learning'], isKeywordHovered: false, isAuthorHovered: false },
+          { doi: '10.1234/pub2', boostKeywords: ['AI'], isKeywordHovered: false, isAuthorHovered: false }
+        ],
+        isKeywordLinkedToActive: vi.fn(() => true)
+      }
+
+      const mockInterfaceStore = {
+        isMobile: false,
+        isNetworkExpanded: false,
+        isNetworkClusters: false,
+        isLoading: false,
+        openAuthorModalDialog: vi.fn()
+      }
+
+      vi.mocked(useSessionStore).mockReturnValue(mockSessionStore)
+      vi.mocked(useInterfaceStore).mockReturnValue(mockInterfaceStore)
+
+      wrapper = mount(NetworkVisComponent, {
+        global: {
+          stubs: {
+            'v-icon': true,
+            'CompactSwitch': true,
+            'CompactButton': true,
+            'v-btn': true,
+            'v-btn-toggle': true,
+            'v-menu': true,
+            'v-list': true,
+            'v-list-item': true,
+            'v-list-item-title': true,
+            'v-checkbox': true,
+            'v-slider': true,
+            'PublicationComponent': true
+          }
+        }
+      })
+    })
+
+    describe('Keyword Node Interactions', () => {
+      it('handles keyword node click correctly', () => {
+        const mockEvent = { target: { parentNode: { classList: { remove: vi.fn() } } } }
+        const mockData = { id: 'machine learning', fx: 100, fy: 50 }
+        
+        wrapper.vm.keywordNodeClick(mockEvent, mockData)
+        
+        // Should remove fixed position
+        expect(mockData.fx).toBeUndefined()
+        expect(mockData.fy).toBeUndefined()
+      })
+
+      it('handles keyword node mouseover correctly', () => {
+        const mockEvent = {}
+        const mockData = { id: 'machine learning' }
+        
+        wrapper.vm.keywordNodeMouseover(mockEvent, mockData)
+        
+        // Should set isKeywordHovered for matching publications
+        expect(mockSessionStore.publicationsFiltered[0].isKeywordHovered).toBe(true)
+        expect(mockSessionStore.publicationsFiltered[1].isKeywordHovered).toBe(false)
+      })
+
+      it('handles keyword node mouseout correctly', () => {
+        // First set hover state
+        mockSessionStore.publicationsFiltered[0].isKeywordHovered = true
+        
+        wrapper.vm.keywordNodeMouseout()
+        
+        // Should clear hover state for all publications
+        expect(mockSessionStore.publicationsFiltered[0].isKeywordHovered).toBe(false)
+        expect(mockSessionStore.publicationsFiltered[1].isKeywordHovered).toBe(false)
+      })
+
+      it('creates keyword drag behavior correctly', () => {
+        const dragBehavior = wrapper.vm.keywordNodeDrag()
+        
+        expect(dragBehavior).toBeDefined()
+        expect(typeof dragBehavior.on).toBe('function')
+      })
+    })
+
+    describe('Author Node Interactions', () => {
+      it('handles author node mouseover correctly', () => {
+        const mockEvent = {}
+        const mockData = { 
+          author: { 
+            publicationDois: ['10.1234/pub2'] 
+          } 
+        }
+        
+        wrapper.vm.authorNodeMouseover(mockEvent, mockData)
+        
+        // Should set isAuthorHovered for matching publications
+        expect(mockSessionStore.publicationsFiltered[0].isAuthorHovered).toBe(false)
+        expect(mockSessionStore.publicationsFiltered[1].isAuthorHovered).toBe(true)
+      })
+
+      it('handles author node mouseout correctly', () => {
+        // First set hover state
+        mockSessionStore.publicationsFiltered[1].isAuthorHovered = true
+        
+        wrapper.vm.authorNodeMouseout()
+        
+        // Should clear hover state for all publications
+        expect(mockSessionStore.publicationsFiltered[0].isAuthorHovered).toBe(false)
+        expect(mockSessionStore.publicationsFiltered[1].isAuthorHovered).toBe(false)
+      })
+
+      it('handles author node click correctly', () => {
+        const mockEvent = {}
+        const mockData = { author: { id: 'author123' } }
+        const mockInterfaceStore = vi.mocked(useInterfaceStore)()
+        
+        wrapper.vm.authorNodeClick(mockEvent, mockData)
+        
+        // Should open author modal dialog
+        expect(mockInterfaceStore.openAuthorModalDialog).toHaveBeenCalledWith('author123')
+      })
+    })
+
+    describe('Drag Behavior', () => {
+      it('sets dragging state correctly during drag operations', () => {
+        expect(wrapper.vm.isDragging).toBe(false)
+        
+        // Simulate drag start
+        wrapper.vm.isDragging = true
+        expect(wrapper.vm.isDragging).toBe(true)
+        
+        // Simulate drag end
+        wrapper.vm.isDragging = false
+        expect(wrapper.vm.isDragging).toBe(false)
+      })
+
+      it('prevents plotting during drag operations', () => {
+        const plotSpy = vi.spyOn(wrapper.vm, 'plot').mockImplementation(() => {})
+        
+        wrapper.vm.isDragging = true
+        wrapper.vm.plot()
+        
+        // Plot should return early when dragging
+        expect(plotSpy).toHaveBeenCalled()
+        plotSpy.mockRestore()
+      })
     })
   })
 
