@@ -286,6 +286,174 @@ describe('NetworkVisComponent', () => {
     })
   })
 
+  describe('Component Initialization and Mounting', () => {
+    it('initializes D3 simulation on mount', () => {
+      const wrapper = mount(NetworkVisComponent, {
+        global: {
+          stubs: {
+            'v-icon': true,
+            'CompactSwitch': true,
+            'CompactButton': true,
+            'v-btn': true,
+            'v-btn-toggle': true,
+            'v-menu': true,
+            'v-list': true,
+            'v-list-item': true,
+            'v-list-item-title': true,
+            'v-checkbox': true,
+            'v-slider': true,
+            'PublicationComponent': true
+          }
+        }
+      })
+
+      // D3 simulation should be initialized
+      expect(wrapper.vm.simulation).toBeDefined()
+      
+      // D3 SVG elements should be initialized
+      expect(wrapper.vm.svg).toBeDefined()
+      expect(wrapper.vm.zoom).toBeDefined()
+      expect(wrapper.vm.node).toBeDefined()
+      expect(wrapper.vm.link).toBeDefined()
+      expect(wrapper.vm.label).toBeDefined()
+    })
+
+    it('sets SVG dimensions based on container size', () => {
+      const wrapper = mount(NetworkVisComponent, {
+        global: {
+          stubs: {
+            'v-icon': true,
+            'CompactSwitch': true,
+            'CompactButton': true,
+            'v-btn': true,
+            'v-btn-toggle': true,
+            'v-menu': true,
+            'v-list': true,
+            'v-list-item': true,
+            'v-list-item-title': true,
+            'v-checkbox': true,
+            'v-slider': true,
+            'PublicationComponent': true
+          }
+        }
+      })
+
+      // Should use mocked container dimensions (800x400)
+      expect(wrapper.vm.svgWidth).toBe(800)
+      // Height should be width/5 for non-mobile (800/5 = 160)
+      expect(wrapper.vm.svgHeight).toBe(160)
+    })
+
+    it('sets different SVG dimensions for mobile', () => {
+      // Mock mobile interface
+      vi.mocked(useInterfaceStore).mockReturnValue({
+        isMobile: true,
+        isNetworkExpanded: false,
+        isNetworkClusters: false,
+        isLoading: false
+      })
+
+      const wrapper = mount(NetworkVisComponent, {
+        global: {
+          stubs: {
+            'v-icon': true,
+            'CompactSwitch': true,
+            'CompactButton': true,
+            'v-btn': true,
+            'v-btn-toggle': true,
+            'v-menu': true,
+            'v-list': true,
+            'v-list-item': true,
+            'v-list-item-title': true,
+            'v-checkbox': true,
+            'v-slider': true,
+            'PublicationComponent': true
+          }
+        }
+      })
+
+      // Should use container height directly for mobile
+      expect(wrapper.vm.svgHeight).toBe(400)
+    })
+
+    it('initializes onlyShowFiltered based on filter state', () => {
+      // Test with active filters
+      vi.mocked(useSessionStore).mockReturnValue({
+        isEmpty: false,
+        isUpdatable: false,
+        selectedPublications: [],
+        suggestedPublications: [],
+        boostKeywords: [],
+        updateQueued: vi.fn(),
+        $onAction: vi.fn(),
+        filter: {
+          hasActiveFilters: vi.fn(() => true)
+        },
+        activePublication: null
+      })
+
+      const wrapper = mount(NetworkVisComponent, {
+        global: {
+          stubs: {
+            'v-icon': true,
+            'CompactSwitch': true,
+            'CompactButton': true,
+            'v-btn': true,
+            'v-btn-toggle': true,
+            'v-menu': true,
+            'v-list': true,
+            'v-list-item': true,
+            'v-list-item-title': true,
+            'v-checkbox': true,
+            'v-slider': true,
+            'PublicationComponent': true
+          }
+        }
+      })
+
+      expect(wrapper.vm.onlyShowFiltered).toBe(true)
+    })
+
+    it('sets up session store action listeners', () => {
+      const mockOnAction = vi.fn()
+      vi.mocked(useSessionStore).mockReturnValue({
+        isEmpty: false,
+        isUpdatable: false,
+        selectedPublications: [],
+        suggestedPublications: [],
+        boostKeywords: [],
+        updateQueued: vi.fn(),
+        $onAction: mockOnAction,
+        filter: {
+          hasActiveFilters: vi.fn(() => false)
+        },
+        activePublication: null
+      })
+
+      mount(NetworkVisComponent, {
+        global: {
+          stubs: {
+            'v-icon': true,
+            'CompactSwitch': true,
+            'CompactButton': true,
+            'v-btn': true,
+            'v-btn-toggle': true,
+            'v-menu': true,
+            'v-list': true,
+            'v-list-item': true,
+            'v-list-item-title': true,
+            'v-checkbox': true,
+            'v-slider': true,
+            'PublicationComponent': true
+          }
+        }
+      })
+
+      // Should set up action listeners for store updates
+      expect(mockOnAction).toHaveBeenCalled()
+    })
+  })
+
   describe('Computed Properties', () => {
     it('computes showSelectedNodes correctly', () => {
       const wrapper = mount(NetworkVisComponent, {
