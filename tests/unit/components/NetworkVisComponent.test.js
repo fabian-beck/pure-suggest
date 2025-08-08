@@ -5,23 +5,42 @@ import { ref } from 'vue'
 import NetworkVisComponent from '@/components/NetworkVisComponent.vue'
 
 // Mock D3.js with chainable methods
-const createMockSelection = () => ({
-  append: vi.fn(() => createMockSelection()),
-  attr: vi.fn(() => createMockSelection()),
-  select: vi.fn(() => createMockSelection()),
-  selectAll: vi.fn(() => createMockSelection()),
-  call: vi.fn(() => createMockSelection()),
-  data: vi.fn(() => createMockSelection()),
-  enter: vi.fn(() => createMockSelection()),
-  exit: vi.fn(() => createMockSelection()),
-  remove: vi.fn(() => createMockSelection()),
-  merge: vi.fn(() => createMockSelection()),
-  style: vi.fn(() => createMockSelection()),
-  text: vi.fn(() => createMockSelection()),
-  on: vi.fn(() => createMockSelection()),
-  classed: vi.fn(() => createMockSelection()),
-  node: vi.fn(() => ({ getBoundingClientRect: () => ({ x: 0, y: 0, width: 100, height: 100 }) }))
-})
+const createMockSelection = () => {
+  const mockData = [];
+  const selection = {
+    append: vi.fn(() => createMockSelection()),
+    attr: vi.fn(() => createMockSelection()),
+    select: vi.fn(() => createMockSelection()),
+    selectAll: vi.fn(() => createMockSelection()),
+    call: vi.fn(() => createMockSelection()),
+    data: vi.fn((data) => {
+      if (data) {
+        // Store the data and return an object with map function for D3 data binding
+        return {
+          map: vi.fn((fn) => data.map(fn)),
+          join: vi.fn(() => createMockSelection()),
+          enter: vi.fn(() => createMockSelection()),
+          exit: vi.fn(() => createMockSelection()),
+          remove: vi.fn(() => createMockSelection())
+        };
+      }
+      return mockData;
+    }),
+    join: vi.fn(() => createMockSelection()),
+    enter: vi.fn(() => createMockSelection()),
+    exit: vi.fn(() => createMockSelection()),
+    remove: vi.fn(() => createMockSelection()),
+    merge: vi.fn(() => createMockSelection()),
+    style: vi.fn(() => createMockSelection()),
+    text: vi.fn(() => createMockSelection()),
+    on: vi.fn(() => createMockSelection()),
+    classed: vi.fn(() => createMockSelection()),
+    filter: vi.fn(() => createMockSelection()),
+    node: vi.fn(() => ({ getBoundingClientRect: () => ({ x: 0, y: 0, width: 100, height: 100 }) })),
+    nodes: vi.fn(() => [])
+  };
+  return selection;
+}
 
 const createMockForce = () => ({
   links: vi.fn(() => createMockForce()),
@@ -102,6 +121,10 @@ vi.mock('@/stores/session.js', () => ({
     isUpdatable: false,
     selectedPublications: [],
     suggestedPublications: [],
+    selectedPublicationsAuthors: [
+      { id: 'author1', name: 'John Doe', yearMin: 2019, yearMax: 2021 },
+      { id: 'author2', name: 'Jane Smith', yearMin: 2020, yearMax: 2022 }
+    ],
     boostKeywords: [],
     updateQueued: vi.fn(),
     $onAction: vi.fn(),
@@ -145,6 +168,40 @@ vi.mock('@/composables/networkForces.js', () => ({
   calculateYearX: vi.fn((year, width, height, isMobile) => year * 10), // Simple mock calculation
   CURRENT_YEAR: 2025,
   SIMULATION_ALPHA: 0.5
+}))
+
+vi.mock('@/composables/publicationNodes.js', () => ({
+  createPublicationNodes: vi.fn(() => []),
+  initializePublicationNodes: vi.fn(() => createMockSelection()),
+  updatePublicationNodes: vi.fn(() => ({ nodes: createMockSelection(), tooltips: [] })),
+  getFilteredPublications: vi.fn(() => [])
+}))
+
+vi.mock('@/composables/keywordNodes.js', () => ({
+  createKeywordNodes: vi.fn(() => []),
+  createKeywordLinks: vi.fn(() => []),
+  initializeKeywordNodes: vi.fn(() => createMockSelection()),
+  updateKeywordNodes: vi.fn(() => ({ nodes: createMockSelection(), tooltips: [] })),
+  handleKeywordNodeClick: vi.fn(),
+  handleKeywordNodeMouseover: vi.fn(),
+  handleKeywordNodeMouseout: vi.fn(),
+  createKeywordNodeDrag: vi.fn(() => vi.fn())
+}))
+
+vi.mock('@/composables/authorNodes.js', () => ({
+  createAuthorNodes: vi.fn(() => []),
+  createAuthorLinks: vi.fn(() => []),
+  initializeAuthorNodes: vi.fn(() => createMockSelection()),
+  updateAuthorNodes: vi.fn(() => ({ nodes: createMockSelection(), tooltips: [] })),
+  handleAuthorNodeMouseover: vi.fn(),
+  handleAuthorNodeMouseout: vi.fn(),
+  handleAuthorNodeClick: vi.fn()
+}))
+
+vi.mock('@/composables/networkLinks.js', () => ({
+  createNetworkLinks: vi.fn(() => []),
+  updateNetworkLinks: vi.fn(() => createMockSelection()),
+  updateLinkProperties: vi.fn()
 }))
 
 // Mock components

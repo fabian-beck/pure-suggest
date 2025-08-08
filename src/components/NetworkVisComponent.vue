@@ -135,6 +135,11 @@ import {
     handleAuthorNodeMouseout,
     handleAuthorNodeClick
 } from "@/composables/authorNodes.js";
+import { 
+    createNetworkLinks,
+    updateNetworkLinks,
+    updateLinkProperties
+} from "@/composables/networkLinks.js";
 
 const MARGIN = 50;
 
@@ -345,8 +350,6 @@ export default {
                 }
 
                 function initLinks() {
-                    const links = [];
-                    
                     // Get filtered publications for link creation
                     const publications = getFilteredPublications(
                         this.sessionStore, 
@@ -356,45 +359,15 @@ export default {
                         this.onlyShowFiltered
                     );
 
-                    // Create keyword links
-                    if (this.showKeywordNodes) {
-                        const keywordLinks = createKeywordLinks(this.sessionStore, this.doiToIndex);
-                        links.push(...keywordLinks);
-                    }
-                    
-                    // Create citation links
-                    this.sessionStore.selectedPublications.forEach((publication) => {
-                        if (publication.doi in this.doiToIndex) {
-                            publication.citationDois.forEach((citationDoi) => {
-                                if (citationDoi in this.doiToIndex) {
-                                    links.push({
-                                        source: citationDoi,
-                                        target: publication.doi,
-                                        type: "citation",
-                                        internal: this.sessionStore.isSelected(citationDoi),
-                                    });
-                                }
-                            });
-                            publication.referenceDois.forEach((referenceDoi) => {
-                                if (referenceDoi in this.doiToIndex) {
-                                    links.push({
-                                        source: publication.doi,
-                                        target: referenceDoi,
-                                        type: "citation",
-                                        internal: this.sessionStore.isSelected(referenceDoi),
-                                    });
-                                }
-                            });
-                        }
-                    });
-                    
-                    // Create author links
-                    if (this.showAuthorNodes) {
-                        const authorLinks = createAuthorLinks(this.filteredAuthors, publications, this.doiToIndex);
-                        links.push(...authorLinks);
-                    }
-                    
-                    return links;
+                    // Create all network links using module
+                    return createNetworkLinks(
+                        this.sessionStore, 
+                        this.doiToIndex, 
+                        this.filteredAuthors, 
+                        publications, 
+                        this.showKeywordNodes, 
+                        this.showAuthorNodes
+                    );
                 }
 
             }
@@ -463,9 +436,10 @@ export default {
             }
 
             function updateLinks() {
-                this.link = this.link
-                    .data(this.networkSimulation.graph.value.links, (d) => [d.source, d.target])
-                    .join("path");
+                this.link = updateNetworkLinks(
+                    this.link,
+                    this.networkSimulation.graph.value.links
+                );
             }
 
             function updateYearLabels() {
@@ -510,64 +484,10 @@ export default {
             }
         },
         tick: function () {
-            this.link
-                .attr("d", (d) => {
-                    const dx = this.nodeX(d.target) - this.nodeX(d.source);
-                    const dy = d.target.y - d.source.y;
-                    // curved link for citations
-                    if (d.type === "citation") {
-                        const dr = Math.pow(dx * dx + dy * dy, 0.6);
-                        return `M${this.nodeX(d.target)},${d.target.y}A${dr},${dr} 0 0,1 ${this.nodeX(d.source)},${d.source.y}`;
-                    }
-                    // tapered links for keywords:
-                    // drawing a triangle as part of a circle segment with its center at the target node
-                    const r = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
-                    const alpha = Math.acos(dx / r);
-                    const beta = 2 / r;
-                    const x1 = r * Math.cos(alpha + beta);
-                    let y1 = r * Math.sin(alpha + beta);
-                    const x2 = r * Math.cos(alpha - beta);
-                    let y2 = r * Math.sin(alpha - beta);
-                    if (d.source.y > d.target.y) {
-                        y1 = -y1;
-                        y2 = -y2;
-                    }
-                    return `M${this.nodeX(d.target) - x1},${d.target.y - y1}
-            L${this.nodeX(d.target)},${d.target.y}
-            L${this.nodeX(d.target) - x2},${d.target.y - y2}`;
-                })
-                .attr("class", (d) => {
-                    const classes = [d.type];
-                    if (d.type === "citation") {
-                        if (this.sessionStore.activePublication) {
-                            if (d.source.publication.isActive || d.target.publication.isActive)
-                                classes.push("active");
-                            else {
-                                classes.push("non-active");
-                            }
-                        }
-                        if (!(d.source.publication.isSelected &&
-                            d.target.publication.isSelected))
-                            classes.push("external");
-                    } else if (d.type === "keyword") {
-                        if (this.sessionStore.activePublication) {
-                            if (d.target.publication.isActive)
-                                classes.push("active");
-                            else {
-                                classes.push("non-active");
-                            }
-                        }
-                    } else if (d.type === "author") {
-                        if (this.sessionStore.activePublication) {
-                            if (d.target.publication.isActive)
-                                classes.push("active");
-                            else {
-                                classes.push("non-active");
-                            }
-                        }
-                    }
-                    return classes.join(" ");
-                });
+            // Update link properties using module
+            updateLinkProperties(this.link, this.nodeX, this.sessionStore);
+            
+            // Update node positions
             this.node.attr("transform", (d) => `translate(${this.nodeX(d)}, ${d.y})`);
         },
         keywordNodeDrag: function () {
