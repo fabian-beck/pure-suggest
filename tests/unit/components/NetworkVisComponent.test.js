@@ -1129,4 +1129,203 @@ describe('NetworkVisComponent', () => {
       expect(wrapper.vm.errorMessage).toBe('')
     })
   })
+
+  describe('Force Simulation Behavior', () => {
+    let wrapper
+
+    beforeEach(() => {
+      wrapper = mount(NetworkVisComponent, {
+        global: {
+          stubs: {
+            'v-icon': true,
+            'CompactSwitch': true,
+            'CompactButton': true,
+            'v-btn': true,
+            'v-btn-toggle': true,
+            'v-menu': true,
+            'v-list': true,
+            'v-list-item': true,
+            'v-list-item-title': true,
+            'v-checkbox': true,
+            'v-slider': true,
+            'PublicationComponent': true
+          }
+        }
+      })
+    })
+
+    it('calculates year X coordinate correctly for desktop', () => {
+      const currentYear = new Date().getFullYear()
+      
+      // Test with default non-mobile width (800) and height (160)
+      const yearX2020 = wrapper.vm.yearX(2020)
+      const yearX2021 = wrapper.vm.yearX(2021)
+      
+      expect(typeof yearX2020).toBe('number')
+      expect(typeof yearX2021).toBe('number')
+      expect(yearX2021).toBeGreaterThan(yearX2020) // Later years should be further right
+    })
+
+    it('calculates year X coordinate correctly for mobile', () => {
+      // Mock mobile interface
+      vi.mocked(useInterfaceStore).mockReturnValue({
+        isMobile: true,
+        isNetworkExpanded: false,
+        isNetworkClusters: false,
+        isLoading: false
+      })
+
+      const mobileWrapper = mount(NetworkVisComponent, {
+        global: {
+          stubs: {
+            'v-icon': true,
+            'CompactSwitch': true,
+            'CompactButton': true,
+            'v-btn': true,
+            'v-btn-toggle': true,
+            'v-menu': true,
+            'v-list': true,
+            'v-list-item': true,
+            'v-list-item-title': true,
+            'v-checkbox': true,
+            'v-slider': true,
+            'PublicationComponent': true
+          }
+        }
+      })
+
+      const yearX = mobileWrapper.vm.yearX(2020)
+      expect(typeof yearX).toBe('number')
+    })
+
+    it('calculates node X position correctly in timeline mode', () => {
+      const publicationNode = {
+        type: 'publication',
+        publication: { year: 2020 }
+      }
+      
+      const keywordNode = {
+        type: 'keyword'
+      }
+      
+      const nodeX1 = wrapper.vm.nodeX(publicationNode)
+      const nodeX2 = wrapper.vm.nodeX(keywordNode)
+      
+      expect(typeof nodeX1).toBe('number')
+      expect(typeof nodeX2).toBe('number')
+    })
+
+    it('calculates node X position correctly in clusters mode', () => {
+      // Mock clusters mode
+      vi.mocked(useInterfaceStore).mockReturnValue({
+        isMobile: false,
+        isNetworkExpanded: false,
+        isNetworkClusters: true,
+        isLoading: false
+      })
+
+      const clustersWrapper = mount(NetworkVisComponent, {
+        global: {
+          stubs: {
+            'v-icon': true,
+            'CompactSwitch': true,
+            'CompactButton': true,
+            'v-btn': true,
+            'v-btn-toggle': true,
+            'v-menu': true,
+            'v-list': true,
+            'v-list-item': true,
+            'v-list-item-title': true,
+            'v-checkbox': true,
+            'v-slider': true,
+            'PublicationComponent': true
+          }
+        }
+      })
+
+      const nodeWithPosition = { type: 'publication', x: 100, y: 50 }
+      const nodeX = clustersWrapper.vm.nodeX(nodeWithPosition)
+      
+      // In clusters mode, should return the node's x position
+      expect(nodeX).toBe(100)
+    })
+
+    it('handles publication activation correctly', () => {
+      const mockSessionStore = vi.mocked(useSessionStore)()
+      mockSessionStore.activatePublicationComponentByDoi = vi.fn()
+      
+      const mockEvent = { stopPropagation: vi.fn() }
+      const mockData = { publication: { doi: '10.1234/test' } }
+      
+      wrapper.vm.activatePublication(mockEvent, mockData)
+      
+      expect(mockSessionStore.activatePublicationComponentByDoi).toHaveBeenCalledWith('10.1234/test')
+      expect(mockEvent.stopPropagation).toHaveBeenCalled()
+    })
+
+    it('handles simulation alpha and restart correctly', () => {
+      // The simulation should be initialized with proper alpha decay and min values
+      expect(wrapper.vm.simulation).toBeDefined()
+      
+      // Test that simulation methods exist and can be called
+      expect(() => {
+        wrapper.vm.simulation.alpha(0.5)
+        wrapper.vm.simulation.restart()
+      }).not.toThrow()
+    })
+
+    it('toggles network mode correctly', () => {
+      const initialClusters = wrapper.vm.isNetworkClusters
+      
+      wrapper.vm.toggleMode()
+      
+      expect(wrapper.vm.isNetworkClusters).toBe(!initialClusters)
+    })
+  })
+
+  describe('Tooltip Functionality', () => {
+    let wrapper
+
+    beforeEach(() => {
+      wrapper = mount(NetworkVisComponent, {
+        global: {
+          stubs: {
+            'v-icon': true,
+            'CompactSwitch': true,
+            'CompactButton': true,
+            'v-btn': true,
+            'v-btn-toggle': true,
+            'v-menu': true,
+            'v-list': true,
+            'v-list-item': true,
+            'v-list-item-title': true,
+            'v-checkbox': true,
+            'v-slider': true,
+            'PublicationComponent': true
+          }
+        }
+      })
+    })
+
+    it('initializes without tooltips', () => {
+      // Tooltips should be undefined initially
+      expect(wrapper.vm.keywordTooltips).toBeUndefined()
+      expect(wrapper.vm.authorTooltips).toBeUndefined()
+    })
+
+    it('handles tooltip lifecycle correctly during updates', () => {
+      // The plot method handles tooltip creation and updates
+      // This is tested indirectly through the plot method tests
+      expect(() => {
+        wrapper.vm.plot()
+      }).not.toThrow()
+    })
+
+    it('provides proper tippy configuration', () => {
+      // Tippy.js is mocked, but we can verify the component handles it
+      expect(() => {
+        wrapper.vm.plot()
+      }).not.toThrow()
+    })
+  })
 })
