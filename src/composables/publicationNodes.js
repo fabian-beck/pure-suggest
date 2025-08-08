@@ -57,6 +57,22 @@ export function initializePublicationNodes(nodeSelection, activatePublication, s
     
     // Add boost indicator circle (shows boost factor visually)
     publicationNodes.append("circle");
+    
+    // Add queueing labels (+ for selected, - for excluded)
+    publicationNodes
+        .append("text")
+        .classed("labelQueuingForSelected", true)
+        .attr("pointer-events", "none")
+        .attr("x", 15)
+        .attr("y", 15)
+        .text("+");
+    publicationNodes
+        .append("text")
+        .classed("labelQueuingForExcluded", true)
+        .attr("pointer-events", "none")
+        .attr("x", 15)
+        .attr("y", 15)
+        .text("-");
 
     return publicationNodes;
 }

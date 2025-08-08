@@ -345,23 +345,6 @@ export default {
 
                         // Initialize publication nodes using module
                         initializePublicationNodes(g, this.activatePublication, this.sessionStore);
-                        
-                        // Add additional publication text elements not covered in the basic module
-                        const publicationNodes = g.filter((d) => d.type === "publication");
-                        publicationNodes
-                            .append("text")
-                            .classed("labelQueuingForSelected", true)
-                            .attr("pointer-events", "none")
-                            .attr("x", 15)
-                            .attr("y", 15)
-                            .text("+");
-                        publicationNodes
-                            .append("text")
-                            .classed("labelQueuingForExcluded", true)
-                            .attr("pointer-events", "none")
-                            .attr("x", 15)
-                            .attr("y", 15)
-                            .text("-");
 
                         // Initialize keyword nodes using module
                         initializeKeywordNodes(g, this.keywordNodeDrag, this.keywordNodeClick, this.keywordNodeMouseover, this.keywordNodeMouseout);
