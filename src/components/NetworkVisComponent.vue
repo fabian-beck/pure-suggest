@@ -108,12 +108,12 @@ import { storeToRefs } from "pinia";
 
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
+import { useNetworkSimulation } from "@/composables/useNetworkSimulation.js";
+import { calculateYearX, CURRENT_YEAR, SIMULATION_ALPHA } from "@/composables/networkForces.js";
 
 const RECT_SIZE = 20;
 const ENLARGE_FACTOR = 1.5;
 const MARGIN = 50;
-const SIMULATION_ALPHA = 0.5;
-const CURRENT_YEAR = new Date().getFullYear();
 
 export default {
     name: "NetworkVisComponent",
@@ -122,18 +122,21 @@ export default {
         const { filter, activePublication } = storeToRefs(sessionStore);
         const interfaceStore = useInterfaceStore();
         const { isNetworkClusters } = storeToRefs(interfaceStore);
+        
+        // Initialize network simulation composable
+        const networkSimulation = useNetworkSimulation();
+        
         return {
             sessionStore,
             filter,
             activePublication,
             interfaceStore,
             isNetworkClusters,
+            networkSimulation,
         };
     },
     data: function () {
         return {
-            graph: { nodes: [], links: [] },
-            simulation: null,
             svg: null,
             svgWidth: Number,
             svgHeight: Number,
@@ -204,12 +207,19 @@ export default {
             that.svg.attr("transform", event.transform);
         });
         this.svg = d3.select("#network-svg").call(this.zoom).select("g");
-        this.simulation = d3.forceSimulation();
-        this.simulation.alphaDecay(0.015).alphaMin(0.01);
         this.label = this.svg.append("g").attr("class", "labels").selectAll("text");
         this.link = this.svg.append("g").attr("class", "links").selectAll("path");
         this.node = this.svg.append("g").attr("class", "nodes").selectAll("rect");
-        this.isDragging = false;
+        
+        // Initialize simulation using composable
+        this.networkSimulation.initializeSimulation({
+            svgWidth: this.svgWidth,
+            svgHeight: this.svgHeight,
+            isMobile: this.interfaceStore.isMobile,
+            isNetworkClusters: this.isNetworkClusters,
+            selectedPublicationsCount: this.sessionStore.selectedPublications.length,
+            tickHandler: this.tick
+        });
         
         // Set initial state of "only show filtered" based on whether filters are active
         this.onlyShowFiltered = this.sessionStore.filter.hasActiveFilters();
@@ -229,20 +239,32 @@ export default {
     methods: {
         plot: function (restart) {
 
-            if (this.isDragging)
+            if (this.networkSimulation.isDragging.value)
                 return;
             try {
-                initForces.call(this);
+                // Update simulation configuration
+                this.networkSimulation.updateSimulation({
+                    svgWidth: this.svgWidth,
+                    svgHeight: this.svgHeight,
+                    isMobile: this.interfaceStore.isMobile,
+                    isNetworkClusters: this.isNetworkClusters,
+                    selectedPublicationsCount: this.sessionStore.selectedPublications.length,
+                    tickHandler: this.tick
+                });
+                
                 initGraph.call(this);
                 updateNodes.call(this);
                 updateLinks.call(this);
                 updateYearLabels.call(this);
-                this.simulation.nodes(this.graph.nodes);
-                this.simulation.force("link").links(this.graph.links);
+                
+                // Update graph data in simulation
+                this.networkSimulation.updateGraphData(this.networkSimulation.graph.value.nodes, this.networkSimulation.graph.value.links);
+                
                 if (restart) {
-                    this.simulation.alpha(SIMULATION_ALPHA);
+                    this.networkSimulation.restart(SIMULATION_ALPHA);
+                } else {
+                    this.networkSimulation.start();
                 }
-                this.simulation.restart();
             }
             catch (error) {
                 console.error("Cannot plot network: " + error.message);
@@ -255,54 +277,6 @@ export default {
                 }, 10000);
             }
 
-            function initForces() {
-                const that = this;
-                this.simulation
-                    .force("link", d3
-                        .forceLink()
-                        .id((d) => d.id)
-                        .distance((d) => {
-                            switch (d.type) {
-                                case "citation":
-                                    return (that.isNetworkClusters && d.internal) ? 1500 / that.sessionStore.selectedPublications.length : 10;
-                                case "keyword":
-                                    return 0;
-                                case "author":
-                                    return 0;
-                            }
-                        })
-                        .strength((d) => {
-                            const internalFactor = d.type === "citation" ? (d.internal ? 1 : 1.5)
-                                : (d.type === "keyword" ? 0.5
-                                    : 2.5); // author
-                            const clustersFactor = that.isNetworkClusters ? 1 : 0.5;
-                            return 0.05 * clustersFactor * internalFactor;
-                        }))
-                    .force("charge", d3
-                        .forceManyBody()
-                        .strength(Math.min(-200, -100 * Math.sqrt(that.sessionStore.selectedPublications.length))))
-                    .force("x", d3
-                        .forceX()
-                        .x((d) => {
-                            if (that.isNetworkClusters) {
-                                return 0;
-                            }
-                            switch (d.type) {
-                                case "publication":
-                                    return this.yearX(d.publication.year);
-                                case "keyword":
-                                    return this.yearX(CURRENT_YEAR + 2);
-                                default:
-                                    return this.yearX((d.author.yearMax + d.author.yearMin) / 2);
-                            }
-                        })
-                        .strength((d) => that.isNetworkClusters ? 0.05 : (d.type === "author" ? 0.2 : 10)))
-                    .force("y", d3
-                        .forceY()
-                        .y(0)
-                        .strength(that.isNetworkClusters ? 0.1 : 0.25))
-                    .on("tick", this.tick);
-            }
 
             function initGraph() {
                 this.doiToIndex = {};
@@ -313,8 +287,8 @@ export default {
                 const links = initLinks.call(this);
                 // https://observablehq.com/@d3/modifying-a-force-directed-graph
                 const old = new Map(this.node.data().map((d) => [d.id, d]));
-                this.graph.nodes = nodes.map((d) => Object.assign(old.get(d.id) || { x: 0, y: 0 }, d));
-                this.graph.links = links.map((d) => Object.assign({}, d));
+                this.networkSimulation.graph.value.nodes = nodes.map((d) => Object.assign(old.get(d.id) || { x: 0, y: 0 }, d));
+                this.networkSimulation.graph.value.links = links.map((d) => Object.assign({}, d));
 
                 function initNodes() {
                     let nodes = [];
@@ -437,7 +411,7 @@ export default {
 
             function updateNodes() {
                 this.node = this.node
-                    .data(this.graph.nodes, (d) => d.id)
+                    .data(this.networkSimulation.graph.value.nodes, (d) => d.id)
                     .join((enter) => {
                         const g = enter
                             .append("g")
@@ -637,7 +611,7 @@ export default {
 
             function updateLinks() {
                 this.link = this.link
-                    .data(this.graph.links, (d) => [d.source, d.target])
+                    .data(this.networkSimulation.graph.value.links, (d) => [d.source, d.target])
                     .join("path");
             }
 
@@ -747,15 +721,15 @@ export default {
             const that = this;
             function dragStart() {
                 d3.select(this).classed("fixed", true);
-                that.isDragging = true;
+                that.networkSimulation.setDragging(true);
             }
             function dragMove(event, d) {
                 d.fx = event.x;
                 d.fy = event.y;
-                that.simulation.alpha(SIMULATION_ALPHA).restart();
+                that.networkSimulation.restart(SIMULATION_ALPHA);
             }
             function dragEnd() {
-                that.isDragging = false;
+                that.networkSimulation.setDragging(false);
             }
             return d3
                 .drag()
@@ -767,7 +741,7 @@ export default {
             delete d.fx;
             delete d.fy;
             d3.select(event.target.parentNode).classed("fixed", false);
-            this.simulation.alpha(SIMULATION_ALPHA).restart();
+            this.networkSimulation.restart(SIMULATION_ALPHA);
         },
         keywordNodeMouseover: function (event, d) {
             this.sessionStore.publicationsFiltered.forEach((publication) => {
@@ -801,9 +775,7 @@ export default {
             this.interfaceStore.openAuthorModalDialog(d.author.id);
         },
         yearX: function (year) {
-            const width = Math.max(this.svgWidth, 2 * this.svgHeight);
-            return ((year - CURRENT_YEAR) * width * 0.03 +
-                width * (this.interfaceStore.isMobile ? 0.05 : 0.3));
+            return calculateYearX(year, this.svgWidth, this.svgHeight, this.interfaceStore.isMobile);
         },
         nodeX: function (d) {
             if (this.isNetworkClusters) {

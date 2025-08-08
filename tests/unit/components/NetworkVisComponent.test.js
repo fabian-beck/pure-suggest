@@ -36,7 +36,9 @@ const createMockSimulation = () => ({
   nodes: vi.fn(() => createMockSimulation()),
   force: vi.fn(() => createMockForce()),
   alpha: vi.fn(() => createMockSimulation()),
-  restart: vi.fn(() => createMockSimulation())
+  restart: vi.fn(() => createMockSimulation()),
+  stop: vi.fn(() => createMockSimulation()),
+  on: vi.fn(() => createMockSimulation())
 })
 
 vi.mock('d3', () => ({
@@ -117,6 +119,32 @@ vi.mock('@/stores/interface.js', () => ({
     isNetworkClusters: false,
     isLoading: false
   }))
+}))
+
+// Mock composables  
+vi.mock('@/composables/useNetworkSimulation.js', () => ({
+  useNetworkSimulation: vi.fn(() => {
+    const mockIsDragging = { value: false }
+    return {
+      simulation: { value: createMockSimulation() },
+      graph: { value: { nodes: [], links: [] } },
+      isDragging: mockIsDragging,
+      initializeSimulation: vi.fn(),
+      updateSimulation: vi.fn(),
+      updateGraphData: vi.fn(),
+      restart: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      setDragging: vi.fn((value) => { mockIsDragging.value = value }),
+      getYearXCalculator: vi.fn()
+    }
+  })
+}))
+
+vi.mock('@/composables/networkForces.js', () => ({
+  calculateYearX: vi.fn((year, width, height, isMobile) => year * 10), // Simple mock calculation
+  CURRENT_YEAR: 2025,
+  SIMULATION_ALPHA: 0.5
 }))
 
 // Mock components
@@ -292,9 +320,9 @@ describe('NetworkVisComponent', () => {
         }
       })
 
-      expect(wrapper.vm.graph).toEqual({ nodes: [], links: [] })
+      expect(wrapper.vm.networkSimulation.graph.value).toEqual({ nodes: [], links: [] })
       // After mounted(), simulation is initialized with D3's forceSimulation
-      expect(wrapper.vm.simulation).toBeDefined()
+      expect(wrapper.vm.networkSimulation.simulation).toBeDefined()
       expect(wrapper.vm.showNodes).toEqual(['selected', 'suggested', 'keyword', 'author'])
       expect(wrapper.vm.errorMessage).toBe('')
       expect(wrapper.vm.suggestedNumberFactor).toBe(0.3)
@@ -325,7 +353,7 @@ describe('NetworkVisComponent', () => {
       })
 
       // D3 simulation should be initialized
-      expect(wrapper.vm.simulation).toBeDefined()
+      expect(wrapper.vm.networkSimulation.simulation).toBeDefined()
       
       // D3 SVG elements should be initialized
       expect(wrapper.vm.svg).toBeDefined()
@@ -657,9 +685,9 @@ describe('NetworkVisComponent', () => {
     })
 
     it('skips plotting when dragging', () => {
-      wrapper.vm.isDragging = true
+      wrapper.vm.networkSimulation.setDragging(true)
       
-      const spy = vi.spyOn(wrapper.vm.simulation, 'restart')
+      const spy = vi.spyOn(wrapper.vm.networkSimulation, 'restart')
       wrapper.vm.plot()
       
       // Should not call simulation restart when dragging
@@ -669,16 +697,16 @@ describe('NetworkVisComponent', () => {
     it('updates simulation with graph data', () => {
       // Since the plot method can throw errors internally and catches them,
       // we just verify the plot method runs without throwing to the test
-      wrapper.vm.graph.nodes = [{ id: 'test-node' }]
-      wrapper.vm.graph.links = [{ source: 'node1', target: 'node2' }]
+      wrapper.vm.networkSimulation.graph.nodes = [{ id: 'test-node' }]
+      wrapper.vm.networkSimulation.graph.links = [{ source: 'node1', target: 'node2' }]
       
       expect(() => {
         wrapper.vm.plot()
       }).not.toThrow()
       
       // Verify graph data is set
-      expect(wrapper.vm.graph.nodes).toHaveLength(1)
-      expect(wrapper.vm.graph.links).toHaveLength(1)
+      expect(wrapper.vm.networkSimulation.graph.nodes).toHaveLength(1)
+      expect(wrapper.vm.networkSimulation.graph.links).toHaveLength(1)
     })
 
     it('restarts simulation when restart parameter is true', () => {
@@ -884,21 +912,21 @@ describe('NetworkVisComponent', () => {
 
     describe('Drag Behavior', () => {
       it('sets dragging state correctly during drag operations', () => {
-        expect(wrapper.vm.isDragging).toBe(false)
+        expect(wrapper.vm.networkSimulation.isDragging.value).toBe(false)
         
         // Simulate drag start
-        wrapper.vm.isDragging = true
-        expect(wrapper.vm.isDragging).toBe(true)
+        wrapper.vm.networkSimulation.setDragging(true)
+        expect(wrapper.vm.networkSimulation.isDragging.value).toBe(true)
         
         // Simulate drag end
-        wrapper.vm.isDragging = false
-        expect(wrapper.vm.isDragging).toBe(false)
+        wrapper.vm.networkSimulation.setDragging(false)
+        expect(wrapper.vm.networkSimulation.isDragging.value).toBe(false)
       })
 
       it('prevents plotting during drag operations', () => {
         const plotSpy = vi.spyOn(wrapper.vm, 'plot').mockImplementation(() => {})
         
-        wrapper.vm.isDragging = true
+        wrapper.vm.networkSimulation.setDragging(true)
         wrapper.vm.plot()
         
         // Plot should return early when dragging
@@ -986,7 +1014,7 @@ describe('NetworkVisComponent', () => {
     })
 
     it('initializes empty graph data correctly', () => {
-      expect(wrapper.vm.graph).toEqual({ nodes: [], links: [] })
+      expect(wrapper.vm.networkSimulation.graph.value).toEqual({ nodes: [], links: [] })
       expect(wrapper.vm.doiToIndex).toBeUndefined() // Only set during plot
     })
 
@@ -1049,11 +1077,11 @@ describe('NetworkVisComponent', () => {
 
     it('handles plot method execution with data', () => {
       // Set up test data
-      wrapper.vm.graph.nodes = [
+      wrapper.vm.networkSimulation.graph.value.nodes = [
         { id: '10.1234/test1', type: 'publication' },
         { id: '10.1234/test2', type: 'publication' }
       ]
-      wrapper.vm.graph.links = [
+      wrapper.vm.networkSimulation.graph.value.links = [
         { source: '10.1234/test1', target: '10.1234/test2', type: 'citation' }
       ]
 
@@ -1062,8 +1090,8 @@ describe('NetworkVisComponent', () => {
         wrapper.vm.plot()
       }).not.toThrow()
 
-      expect(wrapper.vm.graph.nodes).toHaveLength(2)
-      expect(wrapper.vm.graph.links).toHaveLength(1)
+      expect(wrapper.vm.networkSimulation.graph.value.nodes).toHaveLength(2)
+      expect(wrapper.vm.networkSimulation.graph.value.links).toHaveLength(1)
     })
   })
 
@@ -1265,12 +1293,12 @@ describe('NetworkVisComponent', () => {
 
     it('handles simulation alpha and restart correctly', () => {
       // The simulation should be initialized with proper alpha decay and min values
-      expect(wrapper.vm.simulation).toBeDefined()
+      expect(wrapper.vm.networkSimulation.simulation.value).toBeDefined()
       
       // Test that simulation methods exist and can be called
       expect(() => {
-        wrapper.vm.simulation.alpha(0.5)
-        wrapper.vm.simulation.restart()
+        wrapper.vm.networkSimulation.simulation.value.alpha(0.5)
+        wrapper.vm.networkSimulation.simulation.value.restart()
       }).not.toThrow()
     })
 
