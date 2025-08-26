@@ -97,7 +97,7 @@ export default class Publication {
     processTitle(data) {
         const subtitle = data.subtitle;
         if (subtitle?.length && this.title.toLowerCase().indexOf(subtitle.toLowerCase())) {
-            const cleanedTitle = this.title.replaceAll(/<[^>]*>/g, "");
+            const cleanedTitle = removeHtmlTags(this.title);
             this.title += `${cleanedTitle.match(/^.*\W$/) ? "" : ":"}  ${subtitle}`;
         }
         this.title = cleanTitle(this.title);
@@ -265,14 +265,6 @@ export default class Publication {
 }
 
 
-/**
- * Removes HTML tags from a string.
- * @param {string} string - Input string with HTML tags.
- * @returns {string} String with HTML tags removed.
- */
-function removeHtmlTags(string) {
-    return string.replaceAll(/<[^>]*>/g, "");
-}
 
 /**
  * Gets the color representation for a publication score.
@@ -357,6 +349,20 @@ function highlightTitle(title, matches) {
  * Cleans and formats publication titles with proper capitalization and punctuation.
  * @param {string} title - Raw title string.
  * @returns {string} Cleaned and formatted title.
+ */
+/**
+ * Removes HTML tags from a string.
+ * @param {string} string - Input string with HTML tags.
+ * @returns {string} String with HTML tags removed.
+ */
+function removeHtmlTags(string) {
+    return string.replaceAll(/<[^>]*>/g, "");
+}
+
+/**
+ * Clean and standardize publication title
+ * @param {string} title - Raw title string
+ * @returns {string} Cleaned title
  */
 function cleanTitle(title) {
     let cleanedTitle = removeHtmlTags(title)

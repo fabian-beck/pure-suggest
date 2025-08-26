@@ -22,9 +22,6 @@ export function useNetworkSimulation() {
   const graph = ref({ nodes: [], links: [] });
   
   // Create year X calculator function
-  const createYearXCalculator = (svgWidth, svgHeight, isMobile) => {
-    return (year) => calculateYearX(year, svgWidth, svgHeight, isMobile);
-  };
 
   /**
    * Initialize the force simulation
@@ -39,7 +36,7 @@ export function useNetworkSimulation() {
       tickHandler
     } = config;
 
-    const yearXCalculator = createYearXCalculator(svgWidth, svgHeight, isMobile);
+    const yearXCalculator = (year) => calculateYearX(year, svgWidth, svgHeight, isMobile);
 
     simulation.value = createForceSimulation({
       isNetworkClusters,
@@ -66,7 +63,7 @@ export function useNetworkSimulation() {
       tickHandler
     } = config;
 
-    const yearXCalculator = createYearXCalculator(svgWidth, svgHeight, isMobile);
+    const yearXCalculator = (year) => calculateYearX(year, svgWidth, svgHeight, isMobile);
 
     initializeForces(simulation.value, {
       isNetworkClusters,

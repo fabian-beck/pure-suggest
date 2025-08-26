@@ -521,3 +521,4 @@ export const useSessionStore = defineStore('session', {
 function asDois(publications) {
   return publications.map((publication) => publication.doi);
 }
+

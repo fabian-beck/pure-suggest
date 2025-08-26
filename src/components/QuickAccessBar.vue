@@ -34,15 +34,16 @@ import { scrollToTargetAdjusted } from "@/Util.js"
 
 const sessionStore = useSessionStore()
 
+function scrollTo(id) {
+  scrollToTargetAdjusted(document.getElementById(id), 55)
+}
+
 const isComponentActive = reactive({
   selected: true,
   suggested: false,
   network: false,
 })
 
-function scrollTo(id) {
-  scrollToTargetAdjusted(document.getElementById(id), 55)
-}
 
 function updateActiveButton() {
   isComponentActive.selected = false
