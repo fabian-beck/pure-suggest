@@ -155,16 +155,3 @@ export function createForceSimulation(config) {
   return initializeForces(simulation, config);
 }
 
-/**
- * Update simulation forces when configuration changes
- */
-export function updateSimulationForces(simulation, config) {
-  return initializeForces(simulation, config);
-}
-
-/**
- * Restart simulation with specified alpha value
- */
-export function restartSimulation(simulation, alpha = SIMULATION_ALPHA) {
-  simulation.alpha(alpha).restart();
-}

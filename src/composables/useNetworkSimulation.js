@@ -8,8 +8,7 @@
 import { ref, onUnmounted } from 'vue';
 import { 
   createForceSimulation, 
-  updateSimulationForces, 
-  restartSimulation,
+  initializeForces,
   calculateYearX,
   SIMULATION_ALPHA 
 } from './networkForces.js';
@@ -69,7 +68,7 @@ export function useNetworkSimulation() {
 
     const yearXCalculator = createYearXCalculator(svgWidth, svgHeight, isMobile);
 
-    updateSimulationForces(simulation.value, {
+    initializeForces(simulation.value, {
       isNetworkClusters,
       selectedPublicationsCount,
       yearXCalculator,
@@ -98,7 +97,7 @@ export function useNetworkSimulation() {
    */
   function restart(alpha = SIMULATION_ALPHA) {
     if (simulation.value && !isDragging.value) {
-      restartSimulation(simulation.value, alpha);
+      simulation.value.alpha(alpha).restart();
     }
   }
 
@@ -127,12 +126,6 @@ export function useNetworkSimulation() {
     isDragging.value = dragging;
   }
 
-  /**
-   * Get year X coordinate calculator
-   */
-  function getYearXCalculator(svgWidth, svgHeight, isMobile) {
-    return createYearXCalculator(svgWidth, svgHeight, isMobile);
-  }
 
   /**
    * Cleanup on component unmount
@@ -158,6 +151,5 @@ export function useNetworkSimulation() {
     start,
     stop,
     setDragging,
-    getYearXCalculator
   };
 }

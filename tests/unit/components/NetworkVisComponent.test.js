@@ -160,7 +160,6 @@ vi.mock('@/composables/useNetworkSimulation.js', () => ({
       start: vi.fn(),
       stop: vi.fn(),
       setDragging: vi.fn((value) => { mockIsDragging.value = value }),
-      getYearXCalculator: vi.fn()
     }
   })
 }))
