@@ -147,9 +147,3 @@ export function clearAuthorHighlight(publications) {
     });
 }
 
-/**
- * Open modal dialog for the specified author
- */
-export function openAuthorModal(authorNode, interfaceStore) {
-    interfaceStore.openAuthorModalDialog(authorNode.author.id);
-}

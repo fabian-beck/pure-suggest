@@ -129,8 +129,7 @@ import {
     initializeAuthorNodes,
     updateAuthorNodes,
     highlightAuthorPublications,
-    clearAuthorHighlight,
-    openAuthorModal
+    clearAuthorHighlight
 } from "@/composables/authorNodes.js";
 
 // Links
@@ -410,7 +409,7 @@ export default {
             this.plot();
         },
         authorNodeClick: function (event, d) {
-            openAuthorModal(d, this.interfaceStore);
+            this.interfaceStore.openAuthorModalDialog(d.author.id);
         },
         yearX: function (year) {
             return calculateYearX(year, this.svgWidth, this.svgHeight, this.interfaceStore.isMobile);

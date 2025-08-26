@@ -244,12 +244,6 @@ vi.mock('@/composables/authorNodes.js', () => ({
         pub.isAuthorHovered = false;
       });
     }
-  }),
-  openAuthorModal: vi.fn((authorNode, interfaceStore) => {
-    // Mock author modal dialog opening
-    if (interfaceStore.openAuthorModalDialog) {
-      interfaceStore.openAuthorModalDialog(authorNode.author.id);
-    }
   })
 }))
 
