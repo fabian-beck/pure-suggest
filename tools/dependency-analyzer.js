@@ -53,6 +53,7 @@ function analyzeFile(filePath) {
     
     const analysis = {
       type: fileType,
+      lineCount: content.split('\n').length,
       imports: [],
       exports: [],
       templateComponents: [],
@@ -191,6 +192,7 @@ filesByType.forEach((files, type) => {
       console.log(`  🏗️ Classes: ${deps.classes.join(', ')}`);
     }
     
+    console.log(`  📏 Lines: ${deps.lineCount}`);
     console.log('');
   });
 });
@@ -285,9 +287,10 @@ function generateGraphML() {
     
     nodeMap.set(fileName, {
       id: fileName,
-      label: path.basename(filePath), // Keep original name with extension for label
+      label: `${path.basename(filePath)} (${deps.lineCount})`, // Add line count to label
       type: nodeType,
-      path: filePath
+      path: filePath,
+      lineCount: deps.lineCount
     });
   });
   
@@ -445,15 +448,31 @@ function generateGraphML() {
     'Store Reference': '#FF6B6B'
   };
   
+  // Calculate border width based on line count (1.0 to 5.0 range)
+  const lineCounts = Array.from(nodeMap.values())
+    .filter(node => node.lineCount)
+    .map(node => node.lineCount);
+  const minLines = Math.min(...lineCounts);
+  const maxLines = Math.max(...lineCounts);
+  
+  function getBorderWidth(lineCount) {
+    if (!lineCount || minLines === maxLines) return 1.0;
+    // Scale from 1.0 to 5.0 based on line count
+    const normalized = (lineCount - minLines) / (maxLines - minLines);
+    return 1.0 + (normalized * 4.0);
+  }
+  
   nodeMap.forEach(node => {
     const color = typeColors[node.type] || '#CCCCCC';
     const cleanLabel = node.label.trim(); // Remove any whitespace/tabs
+    const borderWidth = getBorderWidth(node.lineCount);
+    
     graphml += `    <node id="${node.id}">
       <data key="d0">
         <y:ShapeNode>
           <y:Geometry height="50.0" width="150.0"/>
           <y:Fill color="${color}" transparent="false"/>
-          <y:BorderStyle color="#000000" type="line" width="1.0"/>
+          <y:BorderStyle color="#000000" type="line" width="${borderWidth}"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Arial" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" modelName="custom" textColor="#000000" visible="true">${cleanLabel}<y:LabelModel>
               <y:SmartNodeLabelModel distance="4.0"/>
             </y:LabelModel>
@@ -502,8 +521,9 @@ console.log('\n📊 GraphML Export Complete!');
 console.log('   📁 File: tools/output/project-dependencies.graphml');
 console.log('   🎨 Open with: yEd, Gephi, or any GraphML-compatible tool');
 console.log('   🎯 Node colors represent file types');
+console.log('   📏 Node border thickness represents file size (lines of code)');
 console.log('   ⚫ All edges are black dependency arrows');
-console.log('   📝 16pt Arial font labels for readability');
+console.log('   📝 16pt Arial font labels show filename and line count');
 console.log('\nNode Color Legend:');
 console.log('   🟢 Vue Components: #42B883');
 console.log('   🔴 Stores: #FF6B6B');  
@@ -513,3 +533,6 @@ console.log('   🟢 Utilities: #A8E6CF');
 console.log('   🟣 Entry Point: #FF8B94');
 console.log('   🟪 Modules: #B4A7D6');
 console.log('   🟠 Template References: #FFA07A');
+console.log('\nBorder Thickness:');
+console.log('   📐 1.0px (thin) = Smallest files');
+console.log('   📐 5.0px (thick) = Largest files');
