@@ -31,47 +31,35 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { computed } from 'vue';
 import CompactButton from "@/components/basic/CompactButton.vue";
 import CompactSwitch from "@/components/basic/CompactSwitch.vue";
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
 
-export default {
-    name: "NetworkHeader",
-    components: {
-        CompactButton,
-        CompactSwitch
+const props = defineProps({
+    errorMessage: {
+        type: String,
+        default: ""
     },
-    props: {
-        errorMessage: {
-            type: String,
-            default: ""
-        },
-        isNetworkClusters: {
-            type: Boolean,
-            default: false
-        }
-    },
-    emits: ["expandNetwork", "update:isNetworkClusters"],
-    setup() {
-        const sessionStore = useSessionStore();
-        const interfaceStore = useInterfaceStore();
-        
-        return {
-            sessionStore,
-            interfaceStore
-        };
-    },
-    computed: {
-        isNetworkClustersModel: {
-            get() {
-                return this.isNetworkClusters;
-            },
-            set(value) {
-                this.$emit("update:isNetworkClusters", value);
-            }
-        }
+    isNetworkClusters: {
+        type: Boolean,
+        default: false
     }
-};
+});
+
+const emit = defineEmits(["expandNetwork", "update:isNetworkClusters"]);
+
+const sessionStore = useSessionStore();
+const interfaceStore = useInterfaceStore();
+
+const isNetworkClustersModel = computed({
+    get() {
+        return props.isNetworkClusters;
+    },
+    set(value) {
+        emit("update:isNetworkClusters", value);
+    }
+});
 </script>

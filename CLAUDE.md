@@ -95,3 +95,4 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 - Do not use config objects to hide complex parameter setups in function calls.
 - Don't run dev mode yourself (npm run dev)
 - Make sure to adapt tests along with changes in the project.
+- Use Vue 3 Composition API for new components
