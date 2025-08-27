@@ -84,6 +84,9 @@ import { createPublicationNodes } from "@/utils/network/publicationNodes.js";
 import { createKeywordNodes } from "@/utils/network/keywordNodes.js";
 import { createAuthorNodes } from "@/utils/network/authorNodes.js";
 
+// Year labels
+import { updateYearLabels } from "@/utils/network/yearLabels.js";
+
 // Components
 import NetworkControls from "@/components/NetworkControls.vue";
 import NetworkHeader from "@/components/NetworkHeader.vue";
@@ -246,56 +249,15 @@ export default {
                 const hasPublications = this.sessionStore.publicationsFiltered?.length > 0;
                 const shouldShow = !this.sessionStore.isEmpty && !this.isNetworkClusters;
                 
-                if (!hasPublications) {
-                    // Early return if no publications
-                    this.label = this.label;
-                } else if (!this.label) {
-                    throw new Error("Label selection is undefined - cannot update year labels");
-                } else {
-                    // Generate year range
-                    const yearRange = this.generateYearRange(this.sessionStore.yearMin, this.sessionStore.yearMax);
-                    
-                    // Initialize year labels
-                    const updatedLabels = this.label
-                        .data(yearRange, (d) => d)
-                        .join((enter) => {
-                            const g = enter.append("g");
-                            g.append("rect");
-                            g.append("text");
-                            g.append("text");
-                            return g;
-                        });
-                    
-                    // Update label rectangles
-                    updatedLabels
-                        .selectAll("rect")
-                        .attr("width", (d) => this.yearX(Math.min(d + 5, this.getCurrentYear())) - this.yearX(d))
-                        .attr("height", 20000)
-                        .attr("fill", (d) => d % 10 === 0 ? "#fafafa" : "white")
-                        .attr("x", -24)
-                        .attr("y", -10000);
-                    
-                    // Update label text
-                    updatedLabels
-                        .selectAll("text")
-                        .attr("text-anchor", "middle")
-                        .text((d) => d)
-                        .attr("fill", "grey");
-                    
-                    // Set visibility and positioning
-                    updatedLabels
-                        .selectAll("text, rect")
-                        .attr("visibility", shouldShow ? "visible" : "hidden");
-                        
-                    if (shouldShow) {
-                        updatedLabels
-                            .attr("transform", (d) => `translate(${this.yearX(d)}, ${this.svgHeight / 2 - 50})`)
-                            .select("text")
-                            .attr("y", -this.svgHeight + 100);
-                    }
-                    
-                    this.label = updatedLabels;
-                }
+                this.label = updateYearLabels(
+                    this.label,
+                    hasPublications,
+                    this.sessionStore.yearMin,
+                    this.sessionStore.yearMax,
+                    shouldShow,
+                    this.yearX,
+                    this.svgHeight
+                );
 
                 // Update graph data in simulation
                 this.updateGraphData(this.graph.nodes, this.graph.links);
@@ -588,22 +550,6 @@ export default {
             this.isDragging = dragging;
         },
 
-        // Year label helper methods (moved from yearLabels.js)
-        generateYearRange(yearMin, yearMax) {
-            if (yearMin === undefined || yearMax === undefined) {
-                return [];
-            }
-            
-            const rangeLength = yearMax - yearMin + 6;
-            const startYear = yearMin - 4;
-            
-            return Array.from({ length: rangeLength }, (_, i) => startYear + i)
-                .filter((year) => year % 5 === 0);
-        },
-
-        getCurrentYear() {
-            return new Date().getFullYear();
-        },
     },
 };
 </script>
