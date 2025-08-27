@@ -21,7 +21,6 @@ export const useInterfaceStore = defineStore('interface', {
             isAboutModalDialogShown: false,
             scrollAuthorId: null,
             isKeyboardControlsModalDialogShown: false,
-            feebackInvitationWasShown: false,
             confirmDialog: {
                 message: "",
                 action: () => { },

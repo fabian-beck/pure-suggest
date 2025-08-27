@@ -177,7 +177,6 @@ vi.mock('@/composables/networkForces.js', () => ({
     }
     return 100; // Default position for other node types
   }),
-  CURRENT_YEAR: 2025,
   SIMULATION_ALPHA: 0.5
 }))
 

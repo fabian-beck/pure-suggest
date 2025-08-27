@@ -5,7 +5,7 @@
  * in timeline mode for the citation network visualization.
  */
 
-import { CURRENT_YEAR } from "@/composables/networkForces.js";
+import { CURRENT_YEAR } from "@/constants/publication.js";
 
 const MARGIN = 50;
 

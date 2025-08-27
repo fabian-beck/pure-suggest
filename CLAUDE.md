@@ -91,3 +91,4 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 ## Design Principles
 
 - "selected" identifies through primary color (turquoise), "suggested" through info color (cyan)
+- Avoid functions of minimal lenght and logic (unecessary indirection)

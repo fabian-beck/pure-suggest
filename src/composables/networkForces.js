@@ -7,9 +7,9 @@
  */
 
 import * as d3 from "d3";
+import { CURRENT_YEAR } from "@/constants/publication.js";
 
 export const SIMULATION_ALPHA = 0.5;
-export const CURRENT_YEAR = new Date().getFullYear();
 
 /**
  * Calculate link distance based on link type and network mode
