@@ -1,7 +1,8 @@
 import { cachedFetch } from "./Cache.js";
 import { SURVEY_THRESHOLDS, CITATION_THRESHOLDS, PUBLICATION_AGE, SCORING, TEXT_PROCESSING, SURVEY_KEYWORDS, ORDINAL_REGEX, ROMAN_NUMERAL_REGEX, ORCID_REGEX, CURRENT_YEAR, TITLE_WORD_MAP, PUBLICATION_TAGS } from "./constants/publication.js";
 import { API_ENDPOINTS, API_PARAMS } from "./constants/api.js";
-import { ICON_SIZES, ORCID_ICON_URL, SCORE_COLOR_THRESHOLDS, SCORE_LIGHTNESS } from "./constants/ui.js";
+import { ICON_SIZES, ORCID_ICON_URL } from "./constants/ui.js";
+import { findKeywordMatches, highlightTitle, calculateBoostFactor, calculatePublicationScore, getScoreColor } from "./utils/scoringUtils.js";
 
 /**
  * Represents an academic publication with metadata, citations, and scoring capabilities.
@@ -195,9 +196,7 @@ export default class Publication {
         // Update boost metrics
         this.boostMatches = matches.length;
         this.boostKeywords = matches.map(match => match.keyword);
-        if (isBoost) {
-            this.boostFactor = this.boostFactor * Math.pow(SCORING.BOOST_MULTIPLIER, matches.length);
-        }
+        this.boostFactor = calculateBoostFactor(matches.length, isBoost);
         
         // Generate highlighted title
         this.titleHighlighted = highlightTitle(this.title, matches);
@@ -215,7 +214,7 @@ export default class Publication {
         this.boostMatches = 0;
         this.boostFactor = SCORING.DEFAULT_BOOST_FACTOR;
         this.processKeywordMatching(boostKeywords, isBoost);
-        this.score = (this.citationCount + this.referenceCount + (this.isSelected ? 1 : 0)) * this.boostFactor;
+        this.score = calculatePublicationScore(this.citationCount, this.referenceCount, this.isSelected, this.boostFactor);
         this.scoreColor = getScoreColor(this.score);
     }
 
@@ -266,84 +265,6 @@ export default class Publication {
 
 
 
-/**
- * Gets the color representation for a publication score.
- * @param {number} score - The publication score.
- * @returns {string} HSL color string.
- */
-function getScoreColor(score) {
-    const lightness = score >= SCORE_COLOR_THRESHOLDS.VERY_HIGH ? SCORE_LIGHTNESS.VERY_HIGH
-        : score >= SCORE_COLOR_THRESHOLDS.HIGH ? SCORE_LIGHTNESS.HIGH
-        : score >= SCORE_COLOR_THRESHOLDS.MEDIUM_HIGH ? SCORE_LIGHTNESS.MEDIUM_HIGH
-        : score >= SCORE_COLOR_THRESHOLDS.MEDIUM ? SCORE_LIGHTNESS.MEDIUM
-        : score >= SCORE_COLOR_THRESHOLDS.LOW ? SCORE_LIGHTNESS.LOW
-        : SCORE_LIGHTNESS.DEFAULT;
-    return `hsl(0, 0%, ${lightness}%)`;
-}
-
-/**
- * Finds all keyword matches in a title string.
- * @param {string} title - The title text to search in.
- * @param {string[]} boostKeywords - Keywords to search for.
- * @returns {Array} Array of match objects with keyword, position, and length.
- */
-function findKeywordMatches(title, boostKeywords) {
-    const matches = [];
-    const upperTitle = title.toUpperCase();
-    
-    boostKeywords.forEach(boostKeyword => {
-        if (!boostKeyword) return;
-        
-        let keywordMatched = false;
-        boostKeyword.split("|").forEach(alternativeKeyword => {
-            if (keywordMatched) return; // Skip if this keyword group already has a match
-            
-            const index = upperTitle.indexOf(alternativeKeyword);
-            if (index >= 0) {
-                // Check if this position is already matched
-                const overlaps = matches.some(match => 
-                    index < match.position + match.length && index + alternativeKeyword.length > match.position
-                );
-                if (!overlaps) {
-                    matches.push({
-                        keyword: boostKeyword,
-                        position: index,
-                        length: alternativeKeyword.length,
-                        text: alternativeKeyword
-                    });
-                    keywordMatched = true; // Mark this keyword group as matched
-                }
-            }
-        });
-    });
-    
-    return matches.sort((a, b) => a.position - b.position);
-}
-
-/**
- * Generates highlighted title with matched keywords underlined.
- * @param {string} title - The original title text.
- * @param {Array} matches - Array of match objects with position and length.
- * @returns {string} HTML string with highlighted keywords.
- */
-function highlightTitle(title, matches) {
-    if (matches.length === 0) return title;
-    
-    let result = "";
-    let lastPosition = 0;
-    
-    matches.forEach(match => {
-        // Add text before match
-        result += title.substring(lastPosition, match.position);
-        // Add highlighted match
-        result += `<u style='text-decoration-color: hsl(48, 100%, 67%); text-decoration-thickness: 0.25rem;'>${title.substring(match.position, match.position + match.length)}</u>`;
-        lastPosition = match.position + match.length;
-    });
-    
-    // Add remaining text
-    result += title.substring(lastPosition);
-    return result;
-}
 
 /**
  * Cleans and formats publication titles with proper capitalization and punctuation.

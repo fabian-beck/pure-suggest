@@ -5,6 +5,7 @@ import { useInterfaceStore } from "./interface.js";
 import Publication from "@/Publication.js";
 import { generateBibtex } from "@/utils/bibtex.js";
 import { getFilteredPublications, countFilteredPublications } from "@/utils/filterUtils.js";
+import { normalizeBoostKeywordString, parseUniqueBoostKeywords, updatePublicationScores } from "@/utils/scoringUtils.js";
 import Filter from '@/Filter.js';
 import Author from '@/Author.js';
 import { shuffle, saveAsFile } from "@/Util.js"
@@ -65,7 +66,7 @@ export const useSessionStore = defineStore('session', {
       (publication) => !publication.isRead
     ).length,
     isKeywordLinkedToActive: (state) => (keyword) => state.activePublication && state.activePublication.boostKeywords.includes(keyword),
-    uniqueBoostKeywords: (state) => [...new Set(state.boostKeywordString.toUpperCase().split(/,\s*/).map(keyword => keyword.trim()))],
+    uniqueBoostKeywords: (state) => parseUniqueBoostKeywords(state.boostKeywordString),
     isUpdatable: (state) => state.selectedQueue.length > 0 || state.excludedQueue.length > 0,
     isEmpty: (state) =>
       state.selectedPublicationsCount === 0
@@ -306,23 +307,17 @@ export const useSessionStore = defineStore('session', {
 
     updateScores() {
       console.log("Updating scores of publications and reordering them.");
-      // treat spaces before/after commas
-      this.boostKeywordString = this.boostKeywordString.replace(/\s*,\s*/g, ", ");
-      // remove spaces before/after vertical line
-      this.boostKeywordString = this.boostKeywordString.replace(/\s*\|\s*/g, "|");
-      // upper case
-      this.boostKeywordString = this.boostKeywordString.toUpperCase();
       
-      this.publications.forEach((publication) => {
-        publication.updateScore(this.uniqueBoostKeywords, this.isBoost);
-      });
+      // Normalize boost keyword string
+      this.boostKeywordString = normalizeBoostKeywordString(this.boostKeywordString);
+      
+      // Update scores for all publications
+      updatePublicationScores(this.publications, this.uniqueBoostKeywords, this.isBoost);
       
       Publication.sortPublications(this.selectedPublications);
       Publication.sortPublications(this.suggestedPublications);
       
       this.computeSelectedPublicationsAuthors();
-      
-      
     },
 
     loadMoreSuggestions() {
