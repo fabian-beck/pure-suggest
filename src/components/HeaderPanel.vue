@@ -8,7 +8,8 @@
           <v-menu v-if="!sessionStore.isEmpty" location="bottom" transition="slide-y-transition">
             <template v-slot:activator="{ props }">
               <v-btn v-bind="props" :icon="interfaceStore.isMobile"
-                :density="interfaceStore.isMobile ? 'compact' : 'default'">
+                :density="interfaceStore.isMobile ? 'compact' : 'default'"
+                class="session-state-button">
                 <v-icon size="18">mdi-text-box-multiple-outline</v-icon>
                 <span class="is-hidden-touch ml-2">
                   {{ sessionStateString }}
@@ -101,6 +102,9 @@ const sessionStateString = computed(() => {
 .v-toolbar {
   position: relative !important;
   z-index: 3000 !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  overflow: hidden !important;
 
   & :deep(.v-toolbar__content) {
     padding: 0 0.5vw;
@@ -121,9 +125,38 @@ const sessionStateString = computed(() => {
         & .session-state {
           margin-top: 6px;
           margin-left: 1vw;
+          display: flex;
+          align-items: center;
+          flex: 1; /* Take available space to allow natural expansion */
+          min-width: 0; /* Allow flex items to shrink below their content size */
+          overflow: hidden;
+          gap: 1vw; /* Modern gap instead of margins */
 
-          &>button {
-            margin-left: 1vw;
+          /* Session state button - never shrink, always readable */
+          & .session-state-button {
+            flex: 0 0 auto; /* Fixed size, never shrink */
+            
+            /* Reduce excess padding on desktop */
+            &:not(.v-btn--icon) {
+              padding-left: 8px !important;
+              padding-right: 8px !important;
+              min-width: auto !important;
+            }
+          }
+          
+          /* Boost keywords - can shrink when needed on desktop, fixed on mobile */
+          & .boost-button {
+            flex: 0 1 auto; /* Natural size but can shrink under pressure */
+            
+            /* Mobile: completely remove from flex layout to maintain circle */
+            &.v-btn--icon {
+              flex: none !important; /* Not part of flex layout on mobile */
+            }
+          }
+          
+          /* Filter button - fixed size */
+          &>button:last-child {
+            flex: 0 0 auto; /* Fixed size, never shrink */
           }
         }
       }
