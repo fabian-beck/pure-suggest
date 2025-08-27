@@ -85,13 +85,13 @@ export function initializeAuthorNodes(nodeSelection, authorNodeMouseover, author
 /**
  * Update author node visual properties
  */
-export function updateAuthorNodes(nodeSelection, sessionStore, existingTooltips) {
+export function updateAuthorNodes(nodeSelection, activePublication, existingTooltips) {
     const authorNodes = nodeSelection.filter((d) => d.type === "author");
     
     // Update CSS classes based on state
     authorNodes
-        .classed("linkedToActive", (d) => d.author.publicationDois.includes(sessionStore.activePublication?.doi))
-        .classed("non-active", (d) => sessionStore.activePublication && !d.author.publicationDois.includes(sessionStore.activePublication?.doi));
+        .classed("linkedToActive", (d) => d.author.publicationDois.includes(activePublication?.doi))
+        .classed("non-active", (d) => activePublication && !d.author.publicationDois.includes(activePublication?.doi));
 
     // Clean up existing tooltips
     if (existingTooltips) {

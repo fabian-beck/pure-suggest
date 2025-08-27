@@ -120,7 +120,7 @@ function createGraphNodes(context) {
     
     // Create keyword nodes
     if (showKeywordNodes) {
-        const keywordNodes = createKeywordNodes(sessionStore);
+        const keywordNodes = createKeywordNodes(sessionStore.uniqueBoostKeywords, sessionStore.publications);
         nodes = nodes.concat(keywordNodes);
     }
     

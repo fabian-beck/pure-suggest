@@ -17,7 +17,7 @@ export function createNetworkLinks(sessionStore, doiToIndex, filteredAuthors, pu
     
     // Create keyword links
     if (showKeywordNodes) {
-        const keywordLinks = createKeywordLinks(sessionStore, doiToIndex);
+        const keywordLinks = createKeywordLinks(sessionStore.uniqueBoostKeywords, sessionStore.publicationsFiltered, doiToIndex);
         links.push(...keywordLinks);
     }
     
@@ -116,11 +116,11 @@ export function calculateLinkPath(d, nodeX) {
 /**
  * Calculate CSS classes for link styling based on state
  */
-export function calculateLinkClasses(d, sessionStore) {
+export function calculateLinkClasses(d, activePublication) {
     const classes = [d.type];
     
     if (d.type === "citation") {
-        if (sessionStore.activePublication) {
+        if (activePublication) {
             if (d.source.publication.isActive || d.target.publication.isActive) {
                 classes.push("active");
             } else {
@@ -131,7 +131,7 @@ export function calculateLinkClasses(d, sessionStore) {
             classes.push("external");
         }
     } else if (d.type === "keyword") {
-        if (sessionStore.activePublication) {
+        if (activePublication) {
             if (d.target.publication.isActive) {
                 classes.push("active");
             } else {
@@ -139,7 +139,7 @@ export function calculateLinkClasses(d, sessionStore) {
             }
         }
     } else if (d.type === "author") {
-        if (sessionStore.activePublication) {
+        if (activePublication) {
             if (d.target.publication.isActive) {
                 classes.push("active");
             } else {
@@ -154,8 +154,8 @@ export function calculateLinkClasses(d, sessionStore) {
 /**
  * Update link visual properties (path and classes)
  */
-export function updateLinkProperties(linkSelection, nodeX, sessionStore) {
+export function updateLinkProperties(linkSelection, nodeX, activePublication) {
     linkSelection
         .attr("d", (d) => calculateLinkPath(d, nodeX))
-        .attr("class", (d) => calculateLinkClasses(d, sessionStore));
+        .attr("class", (d) => calculateLinkClasses(d, activePublication));
 }

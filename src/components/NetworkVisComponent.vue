@@ -293,10 +293,12 @@ export default {
                 );
                 this.label = updateYearLabels(
                     this.label,
-                    this.sessionStore,
+                    this.sessionStore.publicationsFiltered?.length > 0,
+                    this.sessionStore.yearMin,
+                    this.sessionStore.yearMax,
+                    !this.sessionStore.isEmpty && !this.isNetworkClusters,
                     this.yearX,
-                    this.svgHeight,
-                    this.isNetworkClusters
+                    this.svgHeight
                 );
 
                 // Update graph data in simulation
@@ -362,7 +364,7 @@ export default {
                 }
                 try {
                     // Update keyword nodes using module
-                    const keywordResult = updateKeywordNodes(this.node, this.sessionStore, this.keywordTooltips);
+                    const keywordResult = updateKeywordNodes(this.node, this.sessionStore.activePublication, this.keywordTooltips);
                     this.keywordTooltips = keywordResult.tooltips;
                 }
                 catch (error) {
@@ -370,7 +372,7 @@ export default {
                 }
                 try {
                     // Update author nodes using module
-                    const authorResult = updateAuthorNodes(this.node, this.sessionStore, this.authorTooltips);
+                    const authorResult = updateAuthorNodes(this.node, this.sessionStore.activePublication, this.authorTooltips);
                     this.authorTooltips = authorResult.tooltips;
                 }
                 catch (error) {
@@ -381,7 +383,7 @@ export default {
         },
         tick: function () {
             // Update link properties using module
-            updateLinkProperties(this.link, (d) => getNodeXPosition(d, this.isNetworkClusters, this.yearX), this.sessionStore);
+            updateLinkProperties(this.link, (d) => getNodeXPosition(d, this.isNetworkClusters, this.yearX), this.sessionStore.activePublication);
 
             // Update node positions
             this.node.attr("transform", (d) => `translate(${getNodeXPosition(d, this.isNetworkClusters, this.yearX)}, ${d.y})`);

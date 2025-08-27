@@ -79,38 +79,33 @@ export function updateYearLabelVisibility(labelSelection, isVisible, yearXCalcul
   }
 }
 
+
 /**
  * Complete year labels update function
  * This is the main function that orchestrates all year label updates
  */
-export function updateYearLabels(labelSelection, sessionStore, yearXCalculator, svgHeight, isNetworkClusters) {
+export function updateYearLabels(labelSelection, hasPublications, yearMin, yearMax, shouldShow, yearXCalculator, svgHeight) {
   
-  // Early return if no publications (matches original behavior)
-  if (!sessionStore.publicationsFiltered || sessionStore.publicationsFiltered.length === 0) {
+  // Early return if no publications
+  if (!hasPublications) {
     return labelSelection;
   }
   
-  // If labelSelection is undefined, the D3 operations will fail as expected (for tests)
+  // Validate label selection
   if (!labelSelection) {
-    // This will throw an error that should be caught by the component's error handling
     throw new Error("Label selection is undefined - cannot update year labels");
   }
   
-  // Generate year range
-  const yearRange = generateYearRange(sessionStore.yearMin, sessionStore.yearMax);
-  
-  // Initialize/update label elements
+  // Generate year range and initialize labels
+  const yearRange = generateYearRange(yearMin, yearMax);
   const updatedLabels = initializeYearLabels(labelSelection, yearRange);
   
-  // Update rectangles
+  // Update visual properties
   updateYearLabelRects(updatedLabels, yearXCalculator);
-  
-  // Update text
   updateYearLabelText(updatedLabels);
   
   // Set visibility and positioning
-  const isVisible = !sessionStore.isEmpty && !isNetworkClusters;
-  updateYearLabelVisibility(updatedLabels, isVisible, yearXCalculator, svgHeight);
+  updateYearLabelVisibility(updatedLabels, shouldShow, yearXCalculator, svgHeight);
   
   return updatedLabels;
 }

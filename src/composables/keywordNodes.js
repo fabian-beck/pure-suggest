@@ -12,11 +12,11 @@ import * as d3 from "d3";
 /**
  * Create keyword node data from unique boost keywords
  */
-export function createKeywordNodes(sessionStore) {
+export function createKeywordNodes(uniqueBoostKeywords, publications) {
     const nodes = [];
     
-    sessionStore.uniqueBoostKeywords.forEach((keyword) => {
-        const frequency = sessionStore.publications.filter(
+    uniqueBoostKeywords.forEach((keyword) => {
+        const frequency = publications.filter(
             (publication) => publication.boostKeywords.includes(keyword)
         ).length;
         
@@ -33,11 +33,11 @@ export function createKeywordNodes(sessionStore) {
 /**
  * Create keyword links connecting keywords to publications
  */
-export function createKeywordLinks(sessionStore, doiToIndex) {
+export function createKeywordLinks(uniqueBoostKeywords, publicationsFiltered, doiToIndex) {
     const links = [];
     
-    sessionStore.uniqueBoostKeywords.forEach((keyword) => {
-        sessionStore.publicationsFiltered.forEach((publication) => {
+    uniqueBoostKeywords.forEach((keyword) => {
+        publicationsFiltered.forEach((publication) => {
             if (publication.doi in doiToIndex && publication.boostKeywords.includes(keyword)) {
                 links.push({
                     source: keyword,
@@ -73,13 +73,13 @@ export function initializeKeywordNodes(nodeSelection, keywordNodeDrag, keywordNo
 /**
  * Update keyword node visual properties
  */
-export function updateKeywordNodes(nodeSelection, sessionStore, existingTooltips) {
+export function updateKeywordNodes(nodeSelection, activePublication, existingTooltips) {
     const keywordNodes = nodeSelection.filter((d) => d.type === "keyword");
     
-    // Update CSS classes based on state
+    // Update CSS classes based on state  
     keywordNodes
-        .classed("linkedToActive", (d) => sessionStore.isKeywordLinkedToActive(d.id))
-        .classed("non-active", (d) => sessionStore.activePublication && !sessionStore.isKeywordLinkedToActive(d.id));
+        .classed("linkedToActive", (d) => activePublication && activePublication.boostKeywords.includes(d.id))
+        .classed("non-active", (d) => activePublication && !activePublication.boostKeywords.includes(d.id));
 
     // Clean up existing tooltips
     if (existingTooltips) {
@@ -88,7 +88,7 @@ export function updateKeywordNodes(nodeSelection, sessionStore, existingTooltips
 
     // Set up tooltip content
     keywordNodes.attr("data-tippy-content", (d) => {
-        const isLinked = sessionStore.isKeywordLinkedToActive(d.id);
+        const isLinked = activePublication && activePublication.boostKeywords.includes(d.id);
         return `Keyword <b>${d.id}</b> is matched in <b>${d.frequency}</b> publication${d.frequency > 1 ? "s" : ""}${
             isLinked ? ", and also linked to the currently active publication" : ""
         }.<br><br><i>Drag to reposition (sticky), click to detach.</i>`;
