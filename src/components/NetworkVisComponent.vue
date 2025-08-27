@@ -128,34 +128,28 @@ import {
     releaseKeywordPosition,
     highlightKeywordPublications,
     clearKeywordHighlight,
-    createKeywordNodeDrag
+    createKeywordNodeDrag,
+    createKeywordLinks
 } from "@/utils/network/keywordNodes.js";
 import {
     initializeAuthorNodes,
     updateAuthorNodes,
     highlightAuthorPublications,
-    clearAuthorHighlight
+    clearAuthorHighlight,
+    createAuthorLinks
 } from "@/utils/network/authorNodes.js";
 
 // Links
 import {
     updateNetworkLinks,
-    updateLinkProperties
+    updateLinkProperties,
+    createCitationLinks
 } from "@/utils/network/links.js";
 
 // Additional node utilities
-import { 
-    createPublicationNodes, 
-    getFilteredPublications 
-} from "@/utils/network/publicationNodes.js";
+import { createPublicationNodes } from "@/utils/network/publicationNodes.js";
 import { createKeywordNodes } from "@/utils/network/keywordNodes.js";
 import { createAuthorNodes } from "@/utils/network/authorNodes.js";
-import { createNetworkLinks } from "@/utils/network/links.js";
-
-// Year labels
-import {
-    updateYearLabels
-} from "@/utils/network/yearLabels.js";
 
 export default {
     name: "NetworkVisComponent",
@@ -307,15 +301,60 @@ export default {
                     this.link,
                     this.graph.links
                 );
-                this.label = updateYearLabels(
-                    this.label,
-                    this.sessionStore.publicationsFiltered?.length > 0,
-                    this.sessionStore.yearMin,
-                    this.sessionStore.yearMax,
-                    !this.sessionStore.isEmpty && !this.isNetworkClusters,
-                    this.yearX,
-                    this.svgHeight
-                );
+                // Update year labels
+                const hasPublications = this.sessionStore.publicationsFiltered?.length > 0;
+                const shouldShow = !this.sessionStore.isEmpty && !this.isNetworkClusters;
+                
+                if (!hasPublications) {
+                    // Early return if no publications
+                    this.label = this.label;
+                } else if (!this.label) {
+                    throw new Error("Label selection is undefined - cannot update year labels");
+                } else {
+                    // Generate year range
+                    const yearRange = this.generateYearRange(this.sessionStore.yearMin, this.sessionStore.yearMax);
+                    
+                    // Initialize year labels
+                    const updatedLabels = this.label
+                        .data(yearRange, (d) => d)
+                        .join((enter) => {
+                            const g = enter.append("g");
+                            g.append("rect");
+                            g.append("text");
+                            g.append("text");
+                            return g;
+                        });
+                    
+                    // Update label rectangles
+                    updatedLabels
+                        .selectAll("rect")
+                        .attr("width", (d) => this.yearX(Math.min(d + 5, this.getCurrentYear())) - this.yearX(d))
+                        .attr("height", 20000)
+                        .attr("fill", (d) => d % 10 === 0 ? "#fafafa" : "white")
+                        .attr("x", -24)
+                        .attr("y", -10000);
+                    
+                    // Update label text
+                    updatedLabels
+                        .selectAll("text")
+                        .attr("text-anchor", "middle")
+                        .text((d) => d)
+                        .attr("fill", "grey");
+                    
+                    // Set visibility and positioning
+                    updatedLabels
+                        .selectAll("text, rect")
+                        .attr("visibility", shouldShow ? "visible" : "hidden");
+                        
+                    if (shouldShow) {
+                        updatedLabels
+                            .attr("transform", (d) => `translate(${this.yearX(d)}, ${this.svgHeight / 2 - 50})`)
+                            .select("text")
+                            .attr("y", -this.svgHeight + 100);
+                    }
+                    
+                    this.label = updatedLabels;
+                }
 
                 // Update graph data in simulation
                 this.updateGraphData(this.graph.nodes, this.graph.links);
@@ -346,24 +385,24 @@ export default {
                 const allAuthors = this.sessionStore.selectedPublicationsAuthors || [];
                 const filteredAuthors = allAuthors.slice(0, this.authorNumberFactor * this.sessionStore.selectedPublications.length);
                 
-                // Create filter config object
-                const filterConfig = {
-                    hasActiveFilters: this.sessionStore.filter.hasActiveFilters(),
-                    applyToSelected: this.sessionStore.filter.applyToSelected,
-                    applyToSuggested: this.sessionStore.filter.applyToSuggested,
-                    matches: (pub) => this.sessionStore.filter.matches(pub)
-                };
-                
                 // Get filtered publications
-                const publications = getFilteredPublications(
-                    this.sessionStore.selectedPublications || [],
-                    this.sessionStore.suggestedPublications || [],
-                    this.showSelectedNodes,
-                    this.showSuggestedNodes,
-                    this.suggestedNumberFactor,
-                    this.onlyShowFiltered,
-                    filterConfig
-                );
+                let publications = [];
+                
+                if (this.showSelectedNodes) {
+                    let selectedPubs = this.sessionStore.selectedPublications || [];
+                    if (this.onlyShowFiltered && this.sessionStore.filter.hasActiveFilters() && this.sessionStore.filter.applyToSelected) {
+                        selectedPubs = selectedPubs.filter(pub => this.sessionStore.filter.matches(pub));
+                    }
+                    publications = publications.concat(selectedPubs);
+                }
+                
+                if (this.showSuggestedNodes) {
+                    let suggestedPubs = this.sessionStore.suggestedPublications || [];
+                    if (this.onlyShowFiltered && this.sessionStore.filter.hasActiveFilters() && this.sessionStore.filter.applyToSuggested) {
+                        suggestedPubs = suggestedPubs.filter(pub => this.sessionStore.filter.matches(pub));
+                    }
+                    publications = publications.concat(suggestedPubs.slice(0, Math.round(this.suggestedNumberFactor * 50)));
+                }
 
                 // Create nodes
                 let nodes = [];
@@ -390,17 +429,23 @@ export default {
                 }
 
                 // Create links
-                const links = createNetworkLinks(
-                    this.sessionStore.uniqueBoostKeywords || [],
-                    this.sessionStore.publicationsFiltered || [], 
-                    this.sessionStore.selectedPublications || [],
-                    this.sessionStore.isSelected || (() => false),
-                    doiToIndex,
-                    filteredAuthors,
-                    publications,
-                    this.showKeywordNodes,
-                    this.showAuthorNodes
-                );
+                const links = [];
+                
+                // Create keyword links
+                if (this.showKeywordNodes) {
+                    const keywordLinks = createKeywordLinks(this.sessionStore.uniqueBoostKeywords || [], publications, doiToIndex);
+                    links.push(...keywordLinks);
+                }
+                
+                // Create citation links
+                const citationLinks = createCitationLinks(this.sessionStore.selectedPublications || [], this.sessionStore.isSelected || (() => false), doiToIndex);
+                links.push(...citationLinks);
+                
+                // Create author links
+                if (this.showAuthorNodes) {
+                    const authorLinks = createAuthorLinks(filteredAuthors, publications, doiToIndex);
+                    links.push(...authorLinks);
+                }
 
                 // Preserve existing node positions for smooth transitions
                 const existingNodeData = this.node?.data ? this.node.data() : null;
@@ -600,6 +645,23 @@ export default {
 
         setDragging(dragging) {
             this.isDragging = dragging;
+        },
+
+        // Year label helper methods (moved from yearLabels.js)
+        generateYearRange(yearMin, yearMax) {
+            if (yearMin === undefined || yearMax === undefined) {
+                return [];
+            }
+            
+            const rangeLength = yearMax - yearMin + 6;
+            const startYear = yearMin - 4;
+            
+            return Array.from({ length: rangeLength }, (_, i) => startYear + i)
+                .filter((year) => year % 5 === 0);
+        },
+
+        getCurrentYear() {
+            return new Date().getFullYear();
         },
     },
 };
