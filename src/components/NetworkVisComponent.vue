@@ -108,15 +108,20 @@ import { storeToRefs } from "pinia";
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
 
-// Force simulation
-import { useNetworkSimulation } from "@/composables/useNetworkSimulation.js";
-import { calculateYearX, SIMULATION_ALPHA, getNodeXPosition } from "@/composables/networkForces.js";
+// Force simulation utilities
+import { 
+    createForceSimulation, 
+    initializeForces,
+    calculateYearX, 
+    SIMULATION_ALPHA, 
+    getNodeXPosition 
+} from "@/utils/network/forces.js";
 
 // Node types
 import {
     initializePublicationNodes,
     updatePublicationNodes
-} from "@/composables/publicationNodes.js";
+} from "@/utils/network/publicationNodes.js";
 import {
     initializeKeywordNodes,
     updateKeywordNodes,
@@ -124,29 +129,33 @@ import {
     highlightKeywordPublications,
     clearKeywordHighlight,
     createKeywordNodeDrag
-} from "@/composables/keywordNodes.js";
+} from "@/utils/network/keywordNodes.js";
 import {
     initializeAuthorNodes,
     updateAuthorNodes,
     highlightAuthorPublications,
     clearAuthorHighlight
-} from "@/composables/authorNodes.js";
+} from "@/utils/network/authorNodes.js";
 
 // Links
 import {
     updateNetworkLinks,
     updateLinkProperties
-} from "@/composables/networkLinks.js";
+} from "@/utils/network/links.js";
 
-// Graph data management
-import {
-    initializeGraphData
-} from "@/composables/useGraphData.js";
+// Additional node utilities
+import { 
+    createPublicationNodes, 
+    getFilteredPublications 
+} from "@/utils/network/publicationNodes.js";
+import { createKeywordNodes } from "@/utils/network/keywordNodes.js";
+import { createAuthorNodes } from "@/utils/network/authorNodes.js";
+import { createNetworkLinks } from "@/utils/network/links.js";
 
 // Year labels
 import {
     updateYearLabels
-} from "@/composables/useYearLabels.js";
+} from "@/utils/network/yearLabels.js";
 
 export default {
     name: "NetworkVisComponent",
@@ -156,16 +165,12 @@ export default {
         const interfaceStore = useInterfaceStore();
         const { isNetworkClusters } = storeToRefs(interfaceStore);
 
-        // Initialize network simulation composable
-        const networkSimulation = useNetworkSimulation();
-
         return {
             sessionStore,
             filter,
             activePublication,
             interfaceStore,
             isNetworkClusters,
-            networkSimulation,
         };
     },
     data: function () {
@@ -183,6 +188,10 @@ export default {
             suggestedNumberFactor: 0.3,
             authorNumberFactor: 0.5,
             onlyShowFiltered: false,
+            // D3 simulation state (moved from useNetworkSimulation)
+            simulation: null,
+            isDragging: false,
+            graph: { nodes: [], links: [] },
         };
     },
     computed: {
@@ -244,8 +253,8 @@ export default {
         this.link = this.svg.append("g").attr("class", "links").selectAll("path");
         this.node = this.svg.append("g").attr("class", "nodes").selectAll("rect");
 
-        // Initialize simulation using composable
-        this.networkSimulation.initializeSimulation({
+        // Initialize D3 simulation
+        this.initializeSimulation({
             svgWidth: this.svgWidth,
             svgHeight: this.svgHeight,
             isMobile: this.interfaceStore.isMobile,
@@ -269,14 +278,21 @@ export default {
             });
         });
     },
+    beforeUnmount() {
+        // Cleanup D3 simulation (moved from useNetworkSimulation)
+        if (this.simulation) {
+            this.simulation.stop();
+            this.simulation = null;
+        }
+    },
     methods: {
         plot: function (restart) {
 
-            if (this.networkSimulation.isDragging.value)
+            if (this.isDragging)
                 return;
             try {
                 // Update simulation configuration
-                this.networkSimulation.updateSimulation({
+                this.updateSimulation({
                     svgWidth: this.svgWidth,
                     svgHeight: this.svgHeight,
                     isMobile: this.interfaceStore.isMobile,
@@ -289,7 +305,7 @@ export default {
                 updateNodes.call(this);
                 this.link = updateNetworkLinks(
                     this.link,
-                    this.networkSimulation.graph.value.links
+                    this.graph.links
                 );
                 this.label = updateYearLabels(
                     this.label,
@@ -302,12 +318,12 @@ export default {
                 );
 
                 // Update graph data in simulation
-                this.networkSimulation.updateGraphData(this.networkSimulation.graph.value.nodes, this.networkSimulation.graph.value.links);
+                this.updateGraphData(this.graph.nodes, this.graph.links);
 
                 if (restart) {
-                    this.networkSimulation.restart(SIMULATION_ALPHA);
+                    this.restart(SIMULATION_ALPHA);
                 } else {
-                    this.networkSimulation.start();
+                    this.start();
                 }
             }
             catch (error) {
@@ -323,21 +339,86 @@ export default {
 
 
             function initGraph() {
-                // Initialize complete graph data using composable
-                const graphData = initializeGraphData(this);
+                // Initialize DOI to index mapping
+                const doiToIndex = {};
+                
+                // Filter authors based on factor
+                const allAuthors = this.sessionStore.selectedPublicationsAuthors || [];
+                const filteredAuthors = allAuthors.slice(0, this.authorNumberFactor * this.sessionStore.selectedPublications.length);
+                
+                // Create filter config object
+                const filterConfig = {
+                    hasActiveFilters: this.sessionStore.filter.hasActiveFilters(),
+                    applyToSelected: this.sessionStore.filter.applyToSelected,
+                    applyToSuggested: this.sessionStore.filter.applyToSuggested,
+                    matches: (pub) => this.sessionStore.filter.matches(pub)
+                };
+                
+                // Get filtered publications
+                const publications = getFilteredPublications(
+                    this.sessionStore.selectedPublications || [],
+                    this.sessionStore.suggestedPublications || [],
+                    this.showSelectedNodes,
+                    this.showSuggestedNodes,
+                    this.suggestedNumberFactor,
+                    this.onlyShowFiltered,
+                    filterConfig
+                );
+
+                // Create nodes
+                let nodes = [];
+                
+                // Create publication nodes
+                const publicationNodes = createPublicationNodes(
+                    publications, 
+                    doiToIndex, 
+                    this.sessionStore.selectedQueue || [], 
+                    this.sessionStore.excludedQueue || []
+                );
+                nodes = nodes.concat(publicationNodes);
+                
+                // Create keyword nodes
+                if (this.showKeywordNodes) {
+                    const keywordNodes = createKeywordNodes(this.sessionStore.uniqueBoostKeywords || [], this.sessionStore.publications || []);
+                    nodes = nodes.concat(keywordNodes);
+                }
+                
+                // Create author nodes
+                if (this.showAuthorNodes) {
+                    const authorNodes = createAuthorNodes(filteredAuthors, publications);
+                    nodes = nodes.concat(authorNodes);
+                }
+
+                // Create links
+                const links = createNetworkLinks(
+                    this.sessionStore.uniqueBoostKeywords || [],
+                    this.sessionStore.publicationsFiltered || [], 
+                    this.sessionStore.selectedPublications || [],
+                    this.sessionStore.isSelected || (() => false),
+                    doiToIndex,
+                    filteredAuthors,
+                    publications,
+                    this.showKeywordNodes,
+                    this.showAuthorNodes
+                );
+
+                // Preserve existing node positions for smooth transitions
+                const existingNodeData = this.node?.data ? this.node.data() : null;
+                const processedNodes = this.preserveNodePositions(nodes, existingNodeData);
+                const processedLinks = links.map((d) => Object.assign({}, d));
 
                 // Update component state
-                this.doiToIndex = graphData.doiToIndex;
-                this.filteredAuthors = graphData.filteredAuthors;
+                this.doiToIndex = doiToIndex;
+                this.filteredAuthors = filteredAuthors;
 
                 // Update simulation graph data
-                this.networkSimulation.graph.value.nodes = graphData.nodes;
-                this.networkSimulation.graph.value.links = graphData.links;
+                this.graph.nodes = processedNodes;
+                this.graph.links = processedLinks;
             }
 
             function updateNodes() {
                 this.node = this.node
-                    .data(this.networkSimulation.graph.value.nodes, (d) => d.id)
+                    .data(this.graph.nodes, (d) => d.id)
                     .join((enter) => {
                         const g = enter
                             .append("g")
@@ -389,25 +470,25 @@ export default {
             this.node.attr("transform", (d) => `translate(${getNodeXPosition(d, this.isNetworkClusters, this.yearX)}, ${d.y})`);
         },
         keywordNodeDrag: function () {
-            return createKeywordNodeDrag(this.networkSimulation, SIMULATION_ALPHA);
+            return createKeywordNodeDrag(this, SIMULATION_ALPHA);
         },
         keywordNodeClick: function (event, d) {
-            releaseKeywordPosition(event, d, this.networkSimulation, SIMULATION_ALPHA);
+            releaseKeywordPosition(event, d, this, SIMULATION_ALPHA);
         },
         onKeywordNodeMouseover: function (event, d) {
-            highlightKeywordPublications(d, this.sessionStore.publicationsFiltered);
+            highlightKeywordPublications(d, this.sessionStore.publicationsFiltered || []);
             this.plot();
         },
         onKeywordNodeMouseout: function () {
-            clearKeywordHighlight(this.sessionStore.publicationsFiltered);
+            clearKeywordHighlight(this.sessionStore.publicationsFiltered || []);
             this.plot();
         },
         onAuthorNodeMouseover: function (event, d) {
-            highlightAuthorPublications(d, this.sessionStore.publicationsFiltered);
+            highlightAuthorPublications(d, this.sessionStore.publicationsFiltered || []);
             this.plot();
         },
         onAuthorNodeMouseout: function () {
-            clearAuthorHighlight(this.sessionStore.publicationsFiltered);
+            clearAuthorHighlight(this.sessionStore.publicationsFiltered || []);
             this.plot();
         },
         authorNodeClick: function (event, d) {
@@ -430,6 +511,95 @@ export default {
             const transform = d3.zoomTransform(this.svg.node());
             transform.k = transform.k * factor;
             this.svg.attr("transform", transform);
+        },
+        preserveNodePositions(newNodes, existingNodeData) {
+            if (!existingNodeData || typeof existingNodeData.map !== 'function') {
+                // If no existing data, return nodes with default positions
+                return newNodes.map((d) => Object.assign({ x: 0, y: 0 }, d));
+            }
+            
+            const oldPositions = new Map(existingNodeData.map((d) => [d.id, d]));
+            return newNodes.map((d) => Object.assign(oldPositions.get(d.id) || { x: 0, y: 0 }, d));
+        },
+
+        // D3 Simulation methods (moved from useNetworkSimulation)
+        initializeSimulation(config) {
+            const {
+                svgWidth,
+                svgHeight,
+                isMobile,
+                isNetworkClusters,
+                selectedPublicationsCount,
+                tickHandler
+            } = config;
+
+            const yearXCalculator = (year) => calculateYearX(year, svgWidth, svgHeight, isMobile);
+
+            this.simulation = createForceSimulation({
+                isNetworkClusters,
+                selectedPublicationsCount,
+                yearXCalculator,
+                tickHandler
+            });
+
+            return this.simulation;
+        },
+
+        updateSimulation(config) {
+            if (!this.simulation) return;
+
+            const {
+                svgWidth,
+                svgHeight,
+                isMobile,
+                isNetworkClusters,
+                selectedPublicationsCount,
+                tickHandler
+            } = config;
+
+            const yearXCalculator = (year) => calculateYearX(year, svgWidth, svgHeight, isMobile);
+
+            initializeForces(this.simulation, {
+                isNetworkClusters,
+                selectedPublicationsCount,
+                yearXCalculator,
+                tickHandler
+            });
+        },
+
+        updateGraphData(nodes, links) {
+            this.graph.nodes = nodes;
+            this.graph.links = links;
+
+            if (this.simulation) {
+                this.simulation.nodes(nodes);
+                const linkForce = this.simulation.force("link");
+                if (linkForce && linkForce.links) {
+                    linkForce.links(links);
+                }
+            }
+        },
+
+        restart(alpha = SIMULATION_ALPHA) {
+            if (this.simulation && !this.isDragging) {
+                this.simulation.alpha(alpha).restart();
+            }
+        },
+
+        start() {
+            if (this.simulation) {
+                this.simulation.restart();
+            }
+        },
+
+        stop() {
+            if (this.simulation) {
+                this.simulation.stop();
+            }
+        },
+
+        setDragging(dragging) {
+            this.isDragging = dragging;
         },
     },
 };

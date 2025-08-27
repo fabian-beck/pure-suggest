@@ -12,17 +12,27 @@ import { createAuthorLinks } from "./authorNodes.js";
 /**
  * Create all links for the network visualization
  */
-export function createNetworkLinks(sessionStore, doiToIndex, filteredAuthors, publications, showKeywordNodes, showAuthorNodes) {
+export function createNetworkLinks(
+    uniqueBoostKeywords,
+    publicationsFiltered, 
+    selectedPublications,
+    isSelectedFn,
+    doiToIndex, 
+    filteredAuthors, 
+    publications, 
+    showKeywordNodes, 
+    showAuthorNodes
+) {
     const links = [];
     
     // Create keyword links
     if (showKeywordNodes) {
-        const keywordLinks = createKeywordLinks(sessionStore.uniqueBoostKeywords, sessionStore.publicationsFiltered, doiToIndex);
+        const keywordLinks = createKeywordLinks(uniqueBoostKeywords, publicationsFiltered, doiToIndex);
         links.push(...keywordLinks);
     }
     
     // Create citation links
-    const citationLinks = createCitationLinks(sessionStore, doiToIndex);
+    const citationLinks = createCitationLinks(selectedPublications, isSelectedFn, doiToIndex);
     links.push(...citationLinks);
     
     // Create author links
@@ -37,10 +47,10 @@ export function createNetworkLinks(sessionStore, doiToIndex, filteredAuthors, pu
 /**
  * Create citation links between publications
  */
-export function createCitationLinks(sessionStore, doiToIndex) {
+export function createCitationLinks(selectedPublications, isSelectedFn, doiToIndex) {
     const links = [];
     
-    sessionStore.selectedPublications.forEach((publication) => {
+    selectedPublications.forEach((publication) => {
         if (publication.doi in doiToIndex) {
             // Create links for citations (papers this publication cites)
             publication.citationDois.forEach((citationDoi) => {
@@ -49,7 +59,7 @@ export function createCitationLinks(sessionStore, doiToIndex) {
                         source: citationDoi,
                         target: publication.doi,
                         type: "citation",
-                        internal: sessionStore.isSelected(citationDoi),
+                        internal: isSelectedFn(citationDoi),
                     });
                 }
             });
@@ -61,7 +71,7 @@ export function createCitationLinks(sessionStore, doiToIndex) {
                         source: publication.doi,
                         target: referenceDoi,
                         type: "citation",
-                        internal: sessionStore.isSelected(referenceDoi),
+                        internal: isSelectedFn(referenceDoi),
                     });
                 }
             });
