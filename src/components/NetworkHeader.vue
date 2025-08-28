@@ -10,7 +10,7 @@
             <div class="has-text-danger has-background-danger-light p-1" v-if="errorMessage">{{ errorMessage }}
             </div>
         </div>
-        <div class="level-right" v-show="!sessionStore.isEmpty">
+        <div class="level-right" v-show="!isEmpty">
             <div class="level-item has-text-white mr-4 mb-0"
                 v-tippy="`There are two display <span class='key'>m</span>odes:<br><br><b>Timeline:</b> 
         The diagram places publications from left to right based on year, and vertically tries to group linked publications close to each other.<br><br>
@@ -37,6 +37,7 @@ import CompactButton from "@/components/basic/CompactButton.vue";
 import CompactSwitch from "@/components/basic/CompactSwitch.vue";
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
+import { useAppState } from "@/composables/useAppState.js";
 
 const props = defineProps({
     errorMessage: {
@@ -53,6 +54,7 @@ const emit = defineEmits(["expandNetwork", "update:isNetworkClusters"]);
 
 const sessionStore = useSessionStore();
 const interfaceStore = useInterfaceStore();
+const { isEmpty } = useAppState();
 
 const isNetworkClustersModel = computed({
     get() {

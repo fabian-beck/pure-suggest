@@ -8,7 +8,7 @@
           <h2 class="is-size-5 ml-2">Selected</h2>
         </div>
       </div>
-      <div class="level-right" v-show="!sessionStore.isEmpty">
+      <div class="level-right" v-show="!isEmpty">
         <div class="level-item">
           <CompactButton icon="mdi-account-group has-text-white"
             v-tippy="`List <span class='key'>a</span>uthors of selected publications.`"
@@ -59,7 +59,7 @@
             </div>
           </div>
         </div>
-        <div class="notification has-text-centered has-background-primary-95 p-2" v-show="sessionStore.isEmpty">
+        <div class="notification has-text-centered has-background-primary-95 p-2" v-show="isEmpty">
           <p>
             <i>To start, <b>add publications</b> to selected:</i>
           </p>
@@ -91,12 +91,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useSessionStore } from "@/stores/session.js"
 import { useInterfaceStore } from "@/stores/interface.js"
+import { useAppState } from "@/composables/useAppState.js"
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
+const { isEmpty } = useAppState()
 
 const publicationList = ref(null)
 

@@ -1,5 +1,5 @@
 <template>
-  <v-menu v-if="!sessionStore.isEmpty" v-model="interfaceStore.isFilterMenuOpen" ref="filterMenu" location="bottom"
+  <v-menu v-if="!isEmpty" v-model="interfaceStore.isFilterMenuOpen" ref="filterMenu" location="bottom"
     transition="slide-y-transition" :close-on-content-click="false">
     <template v-slot:activator="{ props }">
       <v-btn class="filter-button" :class="interfaceStore.isMobile ? '' : 'p-1 pl-4'" 
@@ -79,9 +79,11 @@ import { computed, ref, nextTick } from 'vue'
 import { useSessionStore } from "@/stores/session.js"
 import { useInterfaceStore } from "@/stores/interface.js"
 import Publication from "@/Publication.js"
+import { useAppState } from "@/composables/useAppState.js"
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
+const { isEmpty } = useAppState()
 
 const filterSwitch = ref(null)
 const filterInput = ref(null)

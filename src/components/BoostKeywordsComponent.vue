@@ -1,5 +1,5 @@
 <template>
-  <v-menu v-if="!sessionStore.isEmpty" location="bottom" transition="slide-y-transition"
+  <v-menu v-if="!isEmpty" location="bottom" transition="slide-y-transition"
     :close-on-content-click="false">
     <template v-slot:activator="{ props }">
       <v-btn class="boost-button" :class="interfaceStore.isMobile ? '' : 'p-1 pl-4'" 
@@ -39,9 +39,11 @@
 import { computed, nextTick, ref } from 'vue'
 import { useSessionStore } from "@/stores/session.js"
 import { useInterfaceStore } from "@/stores/interface.js"
+import { useAppState } from "@/composables/useAppState.js"
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
+const { isEmpty } = useAppState()
 
 const boost = ref(null)
 

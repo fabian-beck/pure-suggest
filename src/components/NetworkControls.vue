@@ -1,5 +1,5 @@
 <template>
-    <div class="controls-footer-right" v-show="!sessionStore.isEmpty">
+    <div class="controls-footer-right" v-show="!isEmpty">
         <span class="mr-4">
             <CompactButton icon="mdi-plus" v-tippy="'Zoom in'" v-on:click="$emit('zoom', 1.2)" elevation="1"
                 class="mr-2" color="white">
@@ -53,6 +53,7 @@
 import { computed } from 'vue';
 import CompactButton from "@/components/basic/CompactButton.vue";
 import { useSessionStore } from "@/stores/session.js";
+import { useAppState } from "@/composables/useAppState.js";
 
 const props = defineProps({
     showNodes: {
@@ -76,6 +77,7 @@ const props = defineProps({
 const emit = defineEmits(["zoom", "plot", "update:showNodes", "update:onlyShowFiltered", "update:suggestedNumberFactor", "update:authorNumberFactor"]);
 
 const sessionStore = useSessionStore();
+const { isEmpty } = useAppState();
 
 const showNodesModel = computed({
     get() {

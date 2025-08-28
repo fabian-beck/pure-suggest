@@ -5,7 +5,7 @@
       <v-app-bar-title>
         <div class="app-name" v-html="appMeta.nameHtml"></div>
         <div class="session-state">
-          <v-menu v-if="!sessionStore.isEmpty" location="bottom" transition="slide-y-transition">
+          <v-menu v-if="!isEmpty" location="bottom" transition="slide-y-transition">
             <template v-slot:activator="{ props }">
               <v-btn v-bind="props" :icon="interfaceStore.isMobile"
                 :density="interfaceStore.isMobile ? 'compact' : 'default'"
@@ -30,7 +30,7 @@
                 title="Export selected as JSON" />
               <v-list-item prepend-icon="mdi-export" @click="sessionStore.exportAllBibtex"
                 title="Export selected as BibTeX" />
-              <v-list-item prepend-icon="mdi-delete" @click="sessionStore.clearSession" class="has-text-danger"
+              <v-list-item prepend-icon="mdi-delete" @click="clearSession" class="has-text-danger"
                 title="Clear session" />
             </v-list>
           </v-menu>
@@ -53,19 +53,19 @@
             title="Keyboard controls" />
           <v-list-item prepend-icon="mdi-information-outline" @click="interfaceStore.isAboutModalDialogShown = true"
             title="About" />
-          <v-list-item prepend-icon="mdi-cached" @click="sessionStore.clearCache" class="has-text-danger"
+          <v-list-item prepend-icon="mdi-cached" @click="clearCache" class="has-text-danger"
             title="Clear cache (and session)" />
         </v-list>
       </v-menu>
     </v-app-bar>
-    <div class="columns intro-message" v-if="sessionStore.isEmpty">
+    <div class="columns intro-message" v-if="isEmpty">
       <div class="column">
         <div class="subtitle level-item mt-2">
           {{ appMeta.subtitle }}
         </div>
       </div>
       <div class="column is-two-thirds">
-        <div class="notification has-text-centered p-2" v-show="sessionStore.isEmpty">
+        <div class="notification has-text-centered p-2" v-show="isEmpty">
           <p>
             Based on a set of selected publications,
             <b class="has-text-info">suggest</b>ing related
@@ -84,10 +84,12 @@ import { computed, inject, ref } from 'vue'
 import { useSessionStore } from "@/stores/session.js"
 import { useInterfaceStore } from "@/stores/interface.js"
 import FilterMenuComponent from "@/components/FilterMenuComponent.vue"
+import { useAppState } from "@/composables/useAppState.js"
 
 const appMeta = inject("appMeta")
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
+const { isEmpty, clearSession, clearCache } = useAppState()
 
 const filterMenuComponent = ref(null)
 

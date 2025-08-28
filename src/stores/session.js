@@ -10,7 +10,6 @@ import { SuggestionService } from "@/services/SuggestionService.js";
 import Filter from '@/Filter.js';
 import Author from '@/Author.js';
 import { saveAsFile } from "@/Util.js"
-import { clearCache } from "@/Cache.js";
 import { PAGINATION } from "@/constants/ui.js";
 
 
@@ -69,11 +68,6 @@ export const useSessionStore = defineStore('session', {
     isKeywordLinkedToActive: (state) => (keyword) => state.activePublication && state.activePublication.boostKeywords.includes(keyword),
     uniqueBoostKeywords: (state) => parseUniqueBoostKeywords(state.boostKeywordString),
     isUpdatable: (state) => state.selectedQueue.length > 0 || state.excludedQueue.length > 0,
-    isEmpty: (state) =>
-      state.selectedPublicationsCount === 0
-      && state.excludedPublicationsCount === 0
-      && state.selectedQueue.length === 0
-      && !state.isUpdatable,
     isSelected: (state) => (doi) => state.selectedPublicationsDois.includes(doi),
     isExcluded: (state) => (doi) => state.excludedPublicationsDois.includes(doi),
     isQueuingForSelected: (state) => (doi) => state.selectedQueue.includes(doi),
@@ -81,21 +75,6 @@ export const useSessionStore = defineStore('session', {
     getSelectedPublicationByDoi: (state) => (doi) => state.selectedPublications.filter(publication => publication.doi === doi)[0],
   },
   actions: {
-    clear() {
-      this.selectedPublications = [];
-      this.selectedPublicationsAuthors = [];
-      this.selectedQueue = [];
-      this.excludedPublicationsDois = [];
-      this.excludedQueue = [];
-      this.suggestion = "";
-      this.maxSuggestions = PAGINATION.INITIAL_SUGGESTIONS_COUNT;
-      this.boostKeywordString = "";
-      this.activePublication = "";
-      this.filter = new Filter();
-      this.addQuery = "";
-      // do not reset read publications as the user might to carry this information to the next session
-      this.interfaceStore.clear();
-    },
 
     removeFromExcludedPublication(doi) {
       this.excludedPublicationsDois = this.excludedPublicationsDois.filter(excludedDoi => excludedDoi != doi)
@@ -367,10 +346,6 @@ export const useSessionStore = defineStore('session', {
       this.updateSuggestions();
     },
 
-    clearSession: function () {
-      this.interfaceStore.showConfirmDialog(
-        "You are going to clear all selected and excluded articles and jump back to the initial state.", this.clear);
-    },
 
     exportSession: function () {
       let data = {
@@ -438,13 +413,6 @@ export const useSessionStore = defineStore('session', {
       saveAsFile("publications.bib", "application/x-bibtex", bib);
     },
 
-    clearCache: function () {
-      this.interfaceStore.showConfirmDialog(
-        "You are going to clear the cache, as well as all selected and excluded articles and jump back to the initial state.", () => {
-          this.clear();
-          clearCache();
-        });
-    },
   }
 })
 

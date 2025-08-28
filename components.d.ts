@@ -25,6 +25,8 @@ declare module 'vue' {
     KeyboardControlsModalDialog: typeof import('./src/components/modal/KeyboardControlsModalDialog.vue')['default']
     LazyPublicationComponent: typeof import('./src/components/LazyPublicationComponent.vue')['default']
     ModalDialog: typeof import('./src/components/modal/ModalDialog.vue')['default']
+    NetworkControls: typeof import('./src/components/NetworkControls.vue')['default']
+    NetworkHeader: typeof import('./src/components/NetworkHeader.vue')['default']
     NetworkVisComponent: typeof import('./src/components/NetworkVisComponent.vue')['default']
     PublicationComponent: typeof import('./src/components/PublicationComponent.vue')['default']
     PublicationComponentSearch: typeof import('./src/components/PublicationComponentSearch.vue')['default']

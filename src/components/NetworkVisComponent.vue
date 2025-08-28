@@ -40,6 +40,7 @@ import { storeToRefs } from "pinia";
 // Stores
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
+import { useAppState } from "@/composables/useAppState.js";
 
 // Force simulation utilities
 import { 
@@ -102,6 +103,7 @@ export default {
         const { filter, activePublication } = storeToRefs(sessionStore);
         const interfaceStore = useInterfaceStore();
         const { isNetworkClusters } = storeToRefs(interfaceStore);
+        const { isEmpty } = useAppState();
 
         return {
             sessionStore,
@@ -109,6 +111,7 @@ export default {
             activePublication,
             interfaceStore,
             isNetworkClusters,
+            isEmpty
         };
     },
     data: function () {
@@ -247,7 +250,7 @@ export default {
                 );
                 // Update year labels
                 const hasPublications = this.sessionStore.publicationsFiltered?.length > 0;
-                const shouldShow = !this.sessionStore.isEmpty && !this.isNetworkClusters;
+                const shouldShow = !this.isEmpty && !this.isNetworkClusters;
                 
                 this.label = updateYearLabels(
                     this.label,
