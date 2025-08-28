@@ -15,7 +15,7 @@
                     :publication="activePublication" :is-active="true"></PublicationComponent>
             </ul>
             <div class="controls-header-left">
-                <v-btn class="has-background-primary has-text-white" @click="sessionStore.updateQueued"
+                <v-btn class="has-background-primary has-text-white" @click="updateQueued"
                     v-show="sessionStore.isUpdatable && interfaceStore.isNetworkExpanded" id="quick-access-update">
                     <v-icon left>mdi-update</v-icon>
                     <span class="key">U</span>pdate
@@ -103,7 +103,7 @@ export default {
         const { filter, activePublication } = storeToRefs(sessionStore);
         const interfaceStore = useInterfaceStore();
         const { isNetworkClusters } = storeToRefs(interfaceStore);
-        const { isEmpty } = useAppState();
+        const { isEmpty, activatePublicationComponentByDoi, updateQueued } = useAppState();
 
         return {
             sessionStore,
@@ -111,7 +111,9 @@ export default {
             activePublication,
             interfaceStore,
             isNetworkClusters,
-            isEmpty
+            isEmpty,
+            activatePublicationComponentByDoi,
+            updateQueued
         };
     },
     data: function () {
@@ -449,7 +451,7 @@ export default {
             return calculateYearX(year, this.svgWidth, this.svgHeight, this.interfaceStore.isMobile);
         },
         activatePublication: function (event, d) {
-            this.sessionStore.activatePublicationComponentByDoi(d.publication.doi);
+            this.activatePublicationComponentByDoi(d.publication.doi);
             event.stopPropagation();
         },
         toggleMode() {

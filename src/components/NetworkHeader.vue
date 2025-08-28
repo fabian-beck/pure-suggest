@@ -35,7 +35,6 @@
 import { computed } from 'vue';
 import CompactButton from "@/components/basic/CompactButton.vue";
 import CompactSwitch from "@/components/basic/CompactSwitch.vue";
-import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
 import { useAppState } from "@/composables/useAppState.js";
 
@@ -52,7 +51,6 @@ const props = defineProps({
 
 const emit = defineEmits(["expandNetwork", "update:isNetworkClusters"]);
 
-const sessionStore = useSessionStore();
 const interfaceStore = useInterfaceStore();
 const { isEmpty } = useAppState();
 

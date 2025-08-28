@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-btn class="has-background-primary has-text-white" @click="sessionStore.updateQueued"
+    <v-btn class="has-background-primary has-text-white" @click="updateQueued"
       v-show="sessionStore.isUpdatable" id="quick-access-update" elevation="6" prepend-icon="mdi-update">
       <div class="button-label">Update</div>
     </v-btn>
@@ -30,9 +30,11 @@
 <script setup>
 import { reactive, onMounted, onUnmounted } from 'vue'
 import { useSessionStore } from "@/stores/session.js"
+import { useAppState } from "@/composables/useAppState.js"
 import { scrollToTargetAdjusted } from "@/Util.js"
 
 const sessionStore = useSessionStore()
+const { updateQueued } = useAppState()
 
 function scrollTo(id) {
   scrollToTargetAdjusted(document.getElementById(id), 55)

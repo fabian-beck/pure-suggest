@@ -117,7 +117,7 @@
               </div>
             </div>
             <div class="level-right">
-              <v-btn v-tippy="'Retry loading metadata.'" @click.stop="sessionStore.retryLoadingPublication(publication)"
+              <v-btn v-tippy="'Retry loading metadata.'" @click.stop="retryLoadingPublication(publication)"
                 small>
                 <v-icon left>mdi-refresh</v-icon>
                 Retry
@@ -152,8 +152,10 @@
 <script setup>
 import { computed } from 'vue'
 import { useSessionStore } from "@/stores/session.js"
+import { useAppState } from "@/composables/useAppState.js"
 
 const sessionStore = useSessionStore()
+const { retryLoadingPublication, activatePublicationComponentByDoi } = useAppState()
 
 const emit = defineEmits(['activate'])
 const props = defineProps({
@@ -186,7 +188,7 @@ function activate() {
   }
   
   isActivating = true
-  sessionStore.activatePublicationComponentByDoi(props.publication.doi)
+  activatePublicationComponentByDoi(props.publication.doi)
   emit("activate", props.publication.doi)
   
   // Reset the flag after a brief delay to allow for the activation to complete

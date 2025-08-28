@@ -53,7 +53,7 @@
                 v-on:click="sessionStore.clearQueues()"></CompactButton>
               <v-btn class="has-background-primary has-text-white ml-2"
                 v-tippy="'Update suggested and excluded publications with queue and compute new suggestions.'"
-                @click="sessionStore.updateQueued" prepend-icon="mdi-update">
+                @click="updateQueued" prepend-icon="mdi-update">
                 <span class="key">U</span>pdate
               </v-btn>
             </div>
@@ -77,7 +77,7 @@
               </v-btn>
             </div>
             <div class="level-item">
-              <v-btn class="has-background-primary-95" @click.stop="sessionStore.loadExample()">
+              <v-btn class="has-background-primary-95" @click.stop="loadExample()">
                 <v-icon left class="mr-2">mdi-file-document</v-icon>
                 Load example
               </v-btn>
@@ -98,7 +98,7 @@ import { useAppState } from "@/composables/useAppState.js"
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
-const { isEmpty } = useAppState()
+const { isEmpty, importSession: importSessionFromState, loadExample, updateQueued } = useAppState()
 
 const publicationList = ref(null)
 
@@ -106,7 +106,7 @@ function importSession() {
   interfaceStore.showConfirmDialog(`<label>Choose an exported session JSON file:&nbsp;</label>
     <input type="file" id="import-json-input" accept="application/JSON"/>`,
     () =>
-      sessionStore.importSession(
+      importSessionFromState(
         document.getElementById("import-json-input").files[0]
       ),
     "Import session",

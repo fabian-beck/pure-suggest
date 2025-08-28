@@ -1,12 +1,10 @@
 import { defineStore } from 'pinia'
 
-import { useInterfaceStore } from "./interface.js";
 
 import Publication from "@/Publication.js";
 import { generateBibtex } from "@/utils/bibtex.js";
 import { getFilteredPublications, countFilteredPublications } from "@/utils/filterUtils.js";
 import { normalizeBoostKeywordString, parseUniqueBoostKeywords, updatePublicationScores } from "@/utils/scoringUtils.js";
-import { SuggestionService } from "@/services/SuggestionService.js";
 import Filter from '@/Filter.js';
 import Author from '@/Author.js';
 import { saveAsFile } from "@/Util.js"
@@ -16,7 +14,6 @@ import { PAGINATION } from "@/constants/ui.js";
 export const useSessionStore = defineStore('session', {
   state: () => {
     return {
-      interfaceStore: useInterfaceStore(),
       selectedPublications: [],
       selectedPublicationsAuthors: [],
       selectedQueue: [],
@@ -114,45 +111,7 @@ export const useSessionStore = defineStore('session', {
       this.hasUpdated(`Cleared queues.`);
     },
 
-    async updateQueued() {
-      const startTime = performance.now();
-      console.log(`[PERF] Starting queue update workflow (${this.selectedQueue.length} to add, ${this.excludedQueue.length} to exclude)`);
-      
-      // Store the start time for end-to-end measurement
-      this._workflowStartTime = startTime;
-      this._isTrackingWorkflow = true;
-      
-      this.clearActivePublication();
-      if (this.excludedQueue.length) {
-        this.excludedPublicationsDois = this.excludedPublicationsDois.concat(this.excludedQueue);
-      }
-      this.selectedPublications = this.selectedPublications.filter(
-        publication => !this.excludedQueue.includes(publication.doi)
-      );
-      if (this.suggestion) {
-        this.suggestion.publications = this.suggestion.publications.filter(
-          publication => (!this.selectedQueue.includes(publication.doi) && !this.excludedQueue.includes(publication.doi))
-        );
-      }
-      if (this.selectedQueue.length) {
-        this.addPublicationsToSelection(this.selectedQueue);
-      }
-      await this.updateSuggestions();
-      this.clearQueues();
-    },
 
-    async addPublicationsAndUpdate(dois) {
-      const startTime = performance.now();
-      console.log(`[PERF] Starting manual publication add workflow for ${dois.length} publications`);
-      
-      // Store the start time for end-to-end measurement
-      this._workflowStartTime = startTime;
-      this._isTrackingWorkflow = true;
-      
-      dois.forEach((doi) => this.removeFromQueues(doi));
-      await this.addPublicationsToSelection(dois);
-      await this.updateSuggestions();
-    },
 
     async addPublicationsToSelection(dois) {
       console.log(`Adding to selection publications with DOIs: ${dois}.`);
@@ -167,79 +126,28 @@ export const useSessionStore = defineStore('session', {
       });
     },
 
-    async updateSuggestions(maxSuggestions = PAGINATION.INITIAL_SUGGESTIONS_COUNT) {
-      this.maxSuggestions = maxSuggestions;
-      this.interfaceStore.startLoading();
-      let publicationsLoaded = 0;
-      this.interfaceStore.loadingMessage =
-        `${publicationsLoaded}/${this.selectedPublicationsCount} selected publications loaded`;
-      await Promise.all(
-        this.selectedPublications.map(async (publication) => {
-          await publication.fetchData();
-          publication.isSelected = true;
-          publicationsLoaded++;
-          this.interfaceStore.loadingMessage = `${publicationsLoaded}/${this.selectedPublicationsCount} selected publications loaded`;
-        })
-      );
-      await this.computeSuggestions();
-      this.interfaceStore.endLoading();
-      
-      // Log end-to-end workflow timing if we're tracking one
-      if (this._isTrackingWorkflow && this._workflowStartTime) {
-        const totalDuration = performance.now() - this._workflowStartTime;
-        console.log(`[PERF] 🎯 END-TO-END WORKFLOW COMPLETED: ${totalDuration.toFixed(0)}ms (${(totalDuration/1000).toFixed(2)}s)`);
-        
-        // Reset tracking flags
-        this._isTrackingWorkflow = false;
-        this._workflowStartTime = null;
-      }
-    },
 
     computeSelectedPublicationsAuthors() {
       this.selectedPublicationsAuthors = Author.computePublicationsAuthors(
         this.selectedPublications, this.isAuthorScoreEnabled, this.isFirstAuthorBoostEnabled, this.isAuthorNewBoostEnabled);
     },
 
-    async computeSuggestions() {
-      console.log(`Starting to compute new suggestions based on ${this.selectedPublicationsCount} selected (and ${this.excludedPublicationsCount} excluded).`);
-      this.clearActivePublication("updating suggestions");
-      
-      this.suggestion = await SuggestionService.computeSuggestions({
-        selectedPublications: this.selectedPublications,
-        isExcluded: this.isExcluded,
-        isSelected: this.isSelected,
-        getSelectedPublicationByDoi: this.getSelectedPublicationByDoi,
-        maxSuggestions: this.maxSuggestions,
-        readPublicationsDois: this.readPublicationsDois,
-        updateLoadingMessage: (message) => {
-          this.interfaceStore.loadingMessage = message;
-        }
-      });
-      
-      this.updateScores();
-    },
 
     updateScores() {
       console.log("Updating scores of publications and reordering them.");
-      
+
       // Normalize boost keyword string
       this.boostKeywordString = normalizeBoostKeywordString(this.boostKeywordString);
-      
+
       // Update scores for all publications
       updatePublicationScores(this.publications, this.uniqueBoostKeywords, this.isBoost);
-      
+
       Publication.sortPublications(this.selectedPublications);
       Publication.sortPublications(this.suggestedPublications);
-      
+
       this.computeSelectedPublicationsAuthors();
     },
 
-    loadMoreSuggestions() {
-      console.log("Loading more suggestions.");
-      this.updateSuggestions(
-        this.maxSuggestions + PAGINATION.LOAD_MORE_INCREMENT
-      );
-    },
 
     setActivePublication(doi) {
       // Clear all active states first
@@ -283,18 +191,12 @@ export const useSessionStore = defineStore('session', {
       console.log(`Highlighted as active publication with DOI ${doi}.`);
     },
 
-    activatePublicationComponentByDoi: function (doi) {
-      if (doi !== this.activePublication?.doi) {
-        this.interfaceStore.activatePublicationComponent(document.getElementById(doi));
-        this.setActivePublication(doi);
-      }
-    },
 
     clearActivePublication(source) {
       if (!this.activePublication) {
         return;
       }
-      
+
       const previousDoi = this.activePublication.doi
       this.activePublication = undefined;
       this.publications.forEach((publication) => {
@@ -313,38 +215,11 @@ export const useSessionStore = defineStore('session', {
       }
     },
 
-    async retryLoadingPublication(publication) {
-      this.interfaceStore.startLoading();
-      this.interfaceStore.loadingMessage = "Retrying to load metadata";
-      await publication.fetchData(true);
-      await this.updateSuggestions();
-      this.activatePublicationComponentByDoi(publication.doi);
-    },
 
     // This method can be watched to manually trigger updates 
     hasUpdated() {
     },
 
-    loadSession(session) {
-      console.log(`Loading session ${JSON.stringify(session)}`);
-      if (!session || !session.selected) {
-        this.interfaceStore.showErrorMessage(
-          "Cannot read session state from JSON."
-        );
-        return;
-      }
-      if (session.boost) {
-        this.setBoostKeywordString(session.boost);
-      }
-      if (session.excluded) {
-        this.excludedPublicationsDois = session.excluded;
-      }
-      this.addPublicationsToSelection(session.selected);
-      
-      // Mark that we're tracking a workflow
-      this._isTrackingWorkflow = true;
-      this.updateSuggestions();
-    },
 
 
     exportSession: function () {
@@ -356,46 +231,7 @@ export const useSessionStore = defineStore('session', {
       saveAsFile("session.json", "application/json", JSON.stringify(data));
     },
 
-    importSession: function (file) {
-      const startTime = performance.now();
-      console.log("[PERF] Starting session import workflow");
-      
-      const fileReader = new FileReader();
-      fileReader.onload = () => {
-        let content;
-        try {
-          content = fileReader.result;
-          const session = JSON.parse(content);
-          // Store the start time for end-to-end measurement
-          this._workflowStartTime = startTime;
-          this.loadSession(session);
-        } catch (error) {
-          console.error('Session import error:', error);
-          console.error('File content preview:', content?.substring(0, 200));
-          this.interfaceStore.showErrorMessage(`Cannot read JSON from file: ${error.message}`);
-        }
-      };
-      fileReader.readAsText(file);
-    },
 
-    loadExample: function () {
-      const startTime = performance.now();
-      console.log("[PERF] Starting example load workflow");
-      
-      const session = {
-        selected: [
-          "10.1109/tvcg.2015.2467757",
-          "10.1109/tvcg.2015.2467621",
-          "10.1002/asi.24171",
-          "10.2312/evp.20221110"
-        ],
-        boost: "cit, visual, map, publi|literat",
-      };
-      
-      // Store the start time for end-to-end measurement
-      this._workflowStartTime = startTime;
-      this.loadSession(session);
-    },
 
     exportAllBibtex: function () {
       this.exportBibtex(this.selectedPublications);

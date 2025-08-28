@@ -58,6 +58,7 @@
 <script>
 import { useInterfaceStore } from "@/stores/interface.js";
 import { useSessionStore } from "@/stores/session.js";
+import { useAppState } from "@/composables/useAppState.js";
 import { watch, reactive } from "vue";
 import Publication from "../../Publication";
 
@@ -65,6 +66,7 @@ export default {
     setup() {
         const interfaceStore = useInterfaceStore();
         const sessionStore = useSessionStore();
+        const { updateQueued } = useAppState();
 
         const selectedQueue = reactive([]);
         const excludedQueue = reactive([]);
@@ -101,6 +103,7 @@ export default {
             selectedQueue,
             excludedQueue,
             updatePublications,
+            updateQueued
         };
     },
     methods: {
@@ -109,7 +112,7 @@ export default {
             this.interfaceStore.isQueueModalDialogShown = false;
         },
         updateQueuedAndClose() {
-            this.sessionStore.updateQueued();
+            this.updateQueued();
             this.interfaceStore.isQueueModalDialogShown = false;
         },
         removeFromQueueAndUpdatePublications(publication) {

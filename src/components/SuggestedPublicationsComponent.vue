@@ -43,7 +43,7 @@
             </template>
           </tippy>
           <CompactButton icon="mdi-playlist-plus has-text-white" class="ml-2"
-            v-tippy="'Load more suggested publications.'" @click="sessionStore.loadMoreSuggestions()" :disabled="sessionStore.suggestedPublications.length ===
+            v-tippy="'Load more suggested publications.'" @click="loadMoreSuggestions()" :disabled="sessionStore.suggestedPublications.length ===
               sessionStore.suggestion.totalSuggestions
               "></CompactButton>
         </div>
@@ -56,12 +56,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useSessionStore } from "@/stores/session.js"
+import { useAppState } from "@/composables/useAppState.js"
 
 defineProps({
   title: String,
 })
 
 const sessionStore = useSessionStore()
+const { loadMoreSuggestions } = useAppState()
 
 const publicationList = ref(null)
 

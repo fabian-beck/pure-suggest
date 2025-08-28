@@ -32,7 +32,7 @@ function findAdjacentPublicationComponent(currentElement, direction) {
 export function onKey(e) {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
-    const { clearSession } = useAppState();
+    const { clearSession, updateQueued } = useAppState();
     if (
         e.ctrlKey ||
         e.shiftKey ||
@@ -79,7 +79,7 @@ export function onKey(e) {
         document.getElementsByClassName("boost")[0].getElementsByTagName("input")[0].focus();
     } else if (e.key === "u") {
         e.preventDefault();
-        sessionStore.updateQueued();
+        updateQueued();
     } else if (e.key === "f") {
         e.preventDefault();
         // Open filter menu and focus on it

@@ -39,6 +39,7 @@
 <script>
 import { useInterfaceStore } from "@/stores/interface.js";
 import { useSessionStore } from "@/stores/session.js";
+import { useAppState } from "@/composables/useAppState.js";
 import { watch } from "vue";
 import Publication from "@/Publication.js";
 import { reactive } from "vue";
@@ -47,6 +48,7 @@ export default {
     setup() {
         const interfaceStore = useInterfaceStore();
         const sessionStore = useSessionStore();
+        const { updateSuggestions } = useAppState();
 
         const excludedPublications = reactive([]);
 
@@ -71,12 +73,12 @@ export default {
             }
         );
 
-        return { interfaceStore, sessionStore, excludedPublications, updateExcludedPublications };
+        return { interfaceStore, sessionStore, excludedPublications, updateExcludedPublications, updateSuggestions };
     },
     methods: {
         removeFromExcluded(publication) {
             this.sessionStore.removeFromExcludedPublication(publication.doi)
-            this.sessionStore.updateSuggestions();
+            this.updateSuggestions();
             this.updateExcludedPublications();
         },
         removeFromExcludedAndAddToSelected(publication) {
