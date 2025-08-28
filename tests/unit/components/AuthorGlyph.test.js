@@ -3,15 +3,15 @@ import { mount } from '@vue/test-utils'
 import AuthorGlyph from '@/components/AuthorGlyph.vue'
 
 // Mock stores
-const mockSessionStore = {
+const mockAuthorStore = {
   isAuthorScoreEnabled: true,
   isFirstAuthorBoostEnabled: true,
-  isNewPublicationBoostEnabled: true
+  isAuthorNewBoostEnabled: true
 }
 
 // Mock the store imports
-vi.mock('@/stores/session.js', () => ({
-  useSessionStore: () => mockSessionStore
+vi.mock('@/stores/author.js', () => ({
+  useAuthorStore: () => mockAuthorStore
 }))
 
 describe('AuthorGlyph', () => {
@@ -108,7 +108,7 @@ describe('AuthorGlyph', () => {
   })
 
   it('handles different score scenarios with disabled settings', () => {
-    mockSessionStore.isAuthorScoreEnabled = false
+    mockAuthorStore.isAuthorScoreEnabled = false
     
     const wrapper = mount(AuthorGlyph, {
       props: {

@@ -91,7 +91,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useSessionStore } from "@/stores/session.js"
 import { useInterfaceStore } from "@/stores/interface.js"
 import { useAppState } from "@/composables/useAppState.js"

@@ -6,7 +6,6 @@ import { generateBibtex } from "@/utils/bibtex.js";
 import { getFilteredPublications, countFilteredPublications } from "@/utils/filterUtils.js";
 import { normalizeBoostKeywordString, parseUniqueBoostKeywords, updatePublicationScores } from "@/utils/scoringUtils.js";
 import Filter from '@/Filter.js';
-import Author from '@/Author.js';
 import { saveAsFile } from "@/Util.js"
 import { PAGINATION } from "@/constants/ui.js";
 
@@ -15,7 +14,6 @@ export const useSessionStore = defineStore('session', {
   state: () => {
     return {
       selectedPublications: [],
-      selectedPublicationsAuthors: [],
       selectedQueue: [],
       excludedPublicationsDois: [],
       excludedQueue: [],
@@ -27,9 +25,6 @@ export const useSessionStore = defineStore('session', {
       readPublicationsDois: new Set(),
       filter: new Filter(),
       addQuery: "",
-      isAuthorScoreEnabled: true,
-      isFirstAuthorBoostEnabled: true,
-      isAuthorNewBoostEnabled: true,
     }
   },
   getters: {
@@ -127,10 +122,6 @@ export const useSessionStore = defineStore('session', {
     },
 
 
-    computeSelectedPublicationsAuthors() {
-      this.selectedPublicationsAuthors = Author.computePublicationsAuthors(
-        this.selectedPublications, this.isAuthorScoreEnabled, this.isFirstAuthorBoostEnabled, this.isAuthorNewBoostEnabled);
-    },
 
 
     updateScores() {
@@ -144,8 +135,6 @@ export const useSessionStore = defineStore('session', {
 
       Publication.sortPublications(this.selectedPublications);
       Publication.sortPublications(this.suggestedPublications);
-
-      this.computeSelectedPublicationsAuthors();
     },
 
 

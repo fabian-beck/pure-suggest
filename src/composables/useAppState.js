@@ -1,11 +1,10 @@
 import { computed } from 'vue'
 import { useSessionStore } from '@/stores/session.js'
 import { useInterfaceStore } from '@/stores/interface.js'
+import { useAuthorStore } from '@/stores/author.js'
 import Filter from '@/Filter.js'
 import { PAGINATION } from '@/constants/ui.js'
 import { clearCache as clearCacheUtil } from '@/Cache.js'
-import Publication from '@/Publication.js'
-import Author from '@/Author.js'
 import { SuggestionService } from '@/services/SuggestionService.js'
 
 export function useAppState() {
@@ -13,6 +12,7 @@ export function useAppState() {
   
   const sessionStore = useSessionStore()
   const interfaceStore = useInterfaceStore()
+  const authorStore = useAuthorStore()
   
   /**
    * Computes whether the session is empty (no publications selected/excluded/queued)
@@ -30,7 +30,6 @@ export function useAppState() {
    */
   const clear = () => {
     sessionStore.selectedPublications = []
-    sessionStore.selectedPublicationsAuthors = []
     sessionStore.selectedQueue = []
     sessionStore.excludedPublicationsDois = []
     sessionStore.excludedQueue = []
@@ -40,6 +39,8 @@ export function useAppState() {
     sessionStore.activePublication = ""
     sessionStore.filter = new Filter()
     sessionStore.addQuery = ""
+    // Clear author store
+    authorStore.selectedPublicationsAuthors = []
     // do not reset read publications as the user might to carry this information to the next session
     interfaceStore.clear()
   }
@@ -119,6 +120,7 @@ export function useAppState() {
     })
     
     sessionStore.updateScores()
+    authorStore.computeSelectedPublicationsAuthors(sessionStore.selectedPublications)
   }
 
   /**
