@@ -30,7 +30,8 @@ export default class Publication {
      * @returns {number} Average citations per year.
      */
     get citationsPerYear() {
-        return this.citationDois.length / Math.max(1, CURRENT_YEAR - (this.year || CURRENT_YEAR));
+        const yearDiff = this.year ? CURRENT_YEAR - this.year : 1;
+        return this.citationDois.length / Math.max(1, yearDiff);
     }
 
     /**

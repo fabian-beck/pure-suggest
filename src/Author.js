@@ -15,10 +15,10 @@ export default class Author {
         this.orcid = orcid ? orcid[0] : undefined;
         this.alternativeNames = [this.name];
         this.coauthors = publication.author?.split("; ")
-            .map(coauthor => Author.nameToId(coauthor))
+            ?.map(coauthor => Author.nameToId(coauthor))
             .filter(coauthorId => coauthorId !== this.id)
             .map(coauthorId => ({ [coauthorId]: 1 }))
-            .reduce((a, b) => ({ ...a, ...b }), {}); // convert array to object;
+            .reduce((a, b) => ({ ...a, ...b }), {}) ?? {}; // convert array to object;
         this.yearMin = publication.year;
         this.yearMax = publication.year;
         this.newPublication = publication.isNew;
@@ -47,8 +47,8 @@ export default class Author {
         this.orcid = this.orcid ? this.orcid : author.orcid;
         this.alternativeNames = [...new Set(this.alternativeNames.concat(author.alternativeNames))];
         this.coauthors = mergeCounts(this.coauthors, author.coauthors);
-        this.yearMin = Math.min(this.yearMin, author.yearMin);
-        this.yearMax = Math.max(this.yearMax, author.yearMax);
+        this.yearMin = Math.min(this.yearMin || Infinity, author.yearMin || Infinity) || undefined;
+        this.yearMax = Math.max(this.yearMax || -Infinity, author.yearMax || -Infinity) || undefined;
         this.newPublication = this.newPublication || author.newPublication;
         this.publicationDois = [...new Set(this.publicationDois.concat(author.publicationDois))];
     }
@@ -57,6 +57,13 @@ export default class Author {
         return str
             .normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "")
+            // Handle Nordic and other extended Latin characters not covered by NFD
+            .replace(/[øØ]/g, "o")
+            .replace(/[åÅ]/g, "a")
+            .replace(/[æÆ]/g, "ae")
+            .replace(/[ðÐ]/g, "d")
+            .replace(/[þÞ]/g, "th")
+            .replace(/[ßẞ]/g, "ss")
             .toLowerCase();
     }
 
