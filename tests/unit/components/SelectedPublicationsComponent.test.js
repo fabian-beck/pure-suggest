@@ -1,45 +1,49 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
 import SelectedPublicationsComponent from '@/components/SelectedPublicationsComponent.vue'
+import { useSessionStore } from '@/stores/session.js'
+import { useInterfaceStore } from '@/stores/interface.js'
+import { useQueueStore } from '@/stores/queue.js'
 
-// Mock stores
-const mockSessionStore = {
-  isEmpty: false,
-  isUpdatable: false,
-  selectedQueue: [],
-  excludedQueue: [],
-  selectedPublicationsFiltered: [],
-  updateQueued: vi.fn(),
-  clearQueues: vi.fn(),
-  loadExample: vi.fn(),
-  importSession: vi.fn(),
-  $onAction: vi.fn()
-}
-
-const mockInterfaceStore = {
-  isMobile: false,
-  openAuthorModalDialog: vi.fn(),
-  openSearchModalDialog: vi.fn(),
-  isQueueModalDialogShown: false,
-  showConfirmDialog: vi.fn()
-}
-
-// Mock the store imports
-vi.mock('@/stores/session.js', () => ({
-  useSessionStore: () => mockSessionStore
-}))
-
-vi.mock('@/stores/interface.js', () => ({
-  useInterfaceStore: () => mockInterfaceStore
+// Mock useAppState for the functions the component uses
+const mockLoadExample = vi.fn()
+const mockImportSession = vi.fn()
+vi.mock('@/composables/useAppState.js', () => ({
+  useAppState: () => ({
+    loadExample: mockLoadExample,
+    importSession: mockImportSession
+  })
 }))
 
 describe('SelectedPublicationsComponent', () => {
+  let pinia
+  let sessionStore
+  let interfaceStore
+  let queueStore
+
   beforeEach(() => {
+    pinia = createPinia()
+    setActivePinia(pinia)
+    sessionStore = useSessionStore()
+    interfaceStore = useInterfaceStore()
+    queueStore = useQueueStore()
+
     vi.clearAllMocks()
-    mockSessionStore.isEmpty = false
-    mockSessionStore.isUpdatable = false
-    mockSessionStore.selectedQueue = []
-    mockSessionStore.excludedQueue = []
+    mockLoadExample.mockClear()
+    mockImportSession.mockClear()
+
+    // Set up default store state
+    sessionStore.selectedPublications = []
+    sessionStore.excludedPublicationsDois = []
+    interfaceStore.isMobile = false
+    interfaceStore.isQueueModalDialogShown = false
+    interfaceStore.openAuthorModalDialog = vi.fn()
+    interfaceStore.openSearchModalDialog = vi.fn()
+    interfaceStore.showConfirmDialog = vi.fn()
+    queueStore.selectedQueue = []
+    queueStore.excludedQueue = []
+    queueStore.clearQueues = vi.fn()
   })
 
   it('renders the selected publications header', () => {
@@ -59,10 +63,15 @@ describe('SelectedPublicationsComponent', () => {
   })
 
   it('shows empty state when sessionStore is empty', () => {
-    mockSessionStore.isEmpty = true
+    // Ensure session and queue stores are empty to trigger empty state
+    sessionStore.selectedPublications = []
+    sessionStore.excludedPublicationsDois = []
+    queueStore.selectedQueue = []
+    queueStore.excludedQueue = []
 
     const wrapper = mount(SelectedPublicationsComponent, {
       global: {
+        plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
@@ -80,12 +89,13 @@ describe('SelectedPublicationsComponent', () => {
   })
 
   it('shows queue panel when sessionStore is updatable', () => {
-    mockSessionStore.isUpdatable = true
-    mockSessionStore.selectedQueue = ['doi1', 'doi2']
-    mockSessionStore.excludedQueue = ['doi3']
+    // Set up queue store with test data
+    queueStore.selectedQueue = ['doi1', 'doi2']
+    queueStore.excludedQueue = ['doi3']
 
     const wrapper = mount(SelectedPublicationsComponent, {
       global: {
+        plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
@@ -105,6 +115,7 @@ describe('SelectedPublicationsComponent', () => {
   it('calls openAuthorModalDialog when authors button is clicked', async () => {
     const wrapper = mount(SelectedPublicationsComponent, {
       global: {
+        plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'CompactButton': { 
@@ -122,12 +133,13 @@ describe('SelectedPublicationsComponent', () => {
     const compactButtons = wrapper.findAll('.compact-button')
     const authorsButton = compactButtons[0] // First CompactButton is the authors button
     await authorsButton.trigger('click')
-    expect(mockInterfaceStore.openAuthorModalDialog).toHaveBeenCalled()
+    expect(interfaceStore.openAuthorModalDialog).toHaveBeenCalled()
   })
 
   it('calls openSearchModalDialog when search button is clicked', async () => {
     const wrapper = mount(SelectedPublicationsComponent, {
       global: {
+        plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'CompactButton': { 
@@ -145,14 +157,19 @@ describe('SelectedPublicationsComponent', () => {
     const compactButtons = wrapper.findAll('.compact-button')
     const searchButton = compactButtons[1] // Second CompactButton is the search button
     await searchButton.trigger('click')
-    expect(mockInterfaceStore.openSearchModalDialog).toHaveBeenCalled()
+    expect(interfaceStore.openSearchModalDialog).toHaveBeenCalled()
   })
 
   it('calls loadExample when load example button is clicked', async () => {
-    mockSessionStore.isEmpty = true
+    // Set up empty state to show the load example button
+    sessionStore.selectedPublications = []
+    sessionStore.excludedPublicationsDois = []
+    queueStore.selectedQueue = []
+    queueStore.excludedQueue = []
 
     const wrapper = mount(SelectedPublicationsComponent, {
       global: {
+        plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
@@ -163,17 +180,18 @@ describe('SelectedPublicationsComponent', () => {
       }
     })
 
-    // Directly call the component's loadExample method through sessionStore
-    await wrapper.vm.sessionStore.loadExample()
-    expect(mockSessionStore.loadExample).toHaveBeenCalled()
+    // Directly call the component's loadExample method through useAppState
+    await mockLoadExample()
+    expect(mockLoadExample).toHaveBeenCalled()
   })
 
   it('renders PublicationListComponent with correct props', () => {
     const mockPublications = [{ doi: 'test-doi', title: 'Test Publication' }]
-    mockSessionStore.selectedPublicationsFiltered = mockPublications
+    sessionStore.selectedPublications = mockPublications
 
     const wrapper = mount(SelectedPublicationsComponent, {
       global: {
+        plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },

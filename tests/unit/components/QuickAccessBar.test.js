@@ -1,28 +1,38 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
 import QuickAccessBar from '@/components/QuickAccessBar.vue'
-
-// Mock stores
-const mockSessionStore = {
-  isUpdatable: true,
-  updateQueued: vi.fn()
-}
-
-// Mock the store imports
-vi.mock('@/stores/session.js', () => ({
-  useSessionStore: () => mockSessionStore
-}))
+import { useQueueStore } from '@/stores/queue.js'
 
 // Mock scroll utility
 vi.mock('@/Util.js', () => ({
   scrollToTargetAdjusted: vi.fn()
 }))
 
+// Mock useAppState
+const mockUpdateQueued = vi.fn()
+vi.mock('@/composables/useAppState.js', () => ({
+  useAppState: () => ({
+    updateQueued: mockUpdateQueued
+  })
+}))
+
 describe('QuickAccessBar', () => {
   let scrollEventListener
+  let pinia
+  let queueStore
 
   beforeEach(() => {
+    pinia = createPinia()
+    setActivePinia(pinia)
+    queueStore = useQueueStore()
+    
+    // Set up queue state for updatable behavior
+    queueStore.selectedQueue = ['test-doi-1']
+    queueStore.excludedQueue = []
+    
     vi.clearAllMocks()
+    mockUpdateQueued.mockClear()
     
     // Mock document.getElementById
     global.document.getElementById = vi.fn((id) => ({
@@ -55,10 +65,12 @@ describe('QuickAccessBar', () => {
   })
 
   it('renders update button when sessionStore is updatable', () => {
-    mockSessionStore.isUpdatable = true
+    // Ensure queue store is updatable (has items to process)
+    queueStore.selectedQueue = ['test-doi-1']
 
     const wrapper = mount(QuickAccessBar, {
       global: {
+        plugins: [pinia],
         stubs: {
           'v-btn': { 
             template: '<button class="v-btn" v-show="$attrs[\'v-show\']"><slot></slot></button>',
@@ -77,10 +89,13 @@ describe('QuickAccessBar', () => {
   })
 
   it('hides update button when sessionStore is not updatable', () => {
-    mockSessionStore.isUpdatable = false
+    // Ensure queue store is not updatable (no items to process)
+    queueStore.selectedQueue = []
+    queueStore.excludedQueue = []
 
     const wrapper = mount(QuickAccessBar, {
       global: {
+        plugins: [pinia],
         stubs: {
           'v-btn': { 
             template: '<button class="v-btn" v-show="$attrs[\'v-show\']"><slot></slot></button>',
@@ -102,6 +117,7 @@ describe('QuickAccessBar', () => {
   it('renders navigation buttons for selected, suggested, and network', () => {
     const wrapper = mount(QuickAccessBar, {
       global: {
+        plugins: [pinia],
         stubs: {
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
           'v-btn-toggle': { template: '<div class="v-btn-toggle"><slot></slot></div>' },
@@ -118,6 +134,7 @@ describe('QuickAccessBar', () => {
   it('has correct initial active state', () => {
     const wrapper = mount(QuickAccessBar, {
       global: {
+        plugins: [pinia],
         stubs: {
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
           'v-btn-toggle': { template: '<div class="v-btn-toggle"><slot></slot></div>' },
@@ -132,10 +149,12 @@ describe('QuickAccessBar', () => {
   })
 
   it('calls updateQueued when update button is clicked', async () => {
-    mockSessionStore.isUpdatable = true
+    // Ensure queue store is updatable
+    queueStore.selectedQueue = ['test-doi-1']
 
     const wrapper = mount(QuickAccessBar, {
       global: {
+        plugins: [pinia],
         stubs: {
           'v-btn': { 
             template: '<button class="v-btn" @click="$emit(\'click\')" v-show="$attrs[\'v-show\']"><slot></slot></button>',
@@ -152,12 +171,13 @@ describe('QuickAccessBar', () => {
     )
     
     await updateBtn.trigger('click')
-    expect(mockSessionStore.updateQueued).toHaveBeenCalled()
+    expect(mockUpdateQueued).toHaveBeenCalled()
   })
 
   it('adds scroll event listener on mount', () => {
     mount(QuickAccessBar, {
       global: {
+        plugins: [pinia],
         stubs: {
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
           'v-btn-toggle': { template: '<div class="v-btn-toggle"><slot></slot></div>' },

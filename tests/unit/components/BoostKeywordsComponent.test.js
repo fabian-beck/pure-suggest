@@ -1,39 +1,42 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
 import BoostKeywordsComponent from '@/components/BoostKeywordsComponent.vue'
-
-// Mock stores
-const mockSessionStore = {
-  isEmpty: false,
-  boostKeywordString: 'test, example',
-  isBoost: true,
-  setBoostKeywordString: vi.fn(),
-  updateScores: vi.fn()
-}
-
-const mockInterfaceStore = {
-  isMobile: false
-}
-
-// Mock the store imports
-vi.mock('@/stores/session.js', () => ({
-  useSessionStore: () => mockSessionStore
-}))
-
-vi.mock('@/stores/interface.js', () => ({
-  useInterfaceStore: () => mockInterfaceStore
-}))
+import { useSessionStore } from '@/stores/session.js'
+import { useInterfaceStore } from '@/stores/interface.js'
+import { useQueueStore } from '@/stores/queue.js'
 
 describe('BoostKeywordsComponent', () => {
+  let pinia
+  let sessionStore
+  let interfaceStore
+  let queueStore
+
   beforeEach(() => {
-    vi.clearAllMocks()
+    pinia = createPinia()
+    setActivePinia(pinia)
+    sessionStore = useSessionStore()
+    interfaceStore = useInterfaceStore()
+    queueStore = useQueueStore()
+    
+    // Set up default values
+    sessionStore.boostKeywordString = 'test, example'
+    sessionStore.isBoost = true
+    sessionStore.setBoostKeywordString = vi.fn()
+    sessionStore.updateScores = vi.fn()
+    interfaceStore.isMobile = false
   })
 
   it('does not render when sessionStore is empty', () => {
-    mockSessionStore.isEmpty = true
+    // Set up empty session state to make isEmpty = true
+    sessionStore.selectedPublications = []
+    sessionStore.excludedPublicationsDois = []
+    queueStore.selectedQueue = []
+    queueStore.excludedQueue = []
 
     const wrapper = mount(BoostKeywordsComponent, {
       global: {
+        plugins: [pinia],
         stubs: {
           'v-menu': { template: '<div class="v-menu"><slot></slot><div class="activator"><slot name="activator"></slot></div></div>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
@@ -49,10 +52,12 @@ describe('BoostKeywordsComponent', () => {
   })
 
   it('renders menu when sessionStore is not empty', () => {
-    mockSessionStore.isEmpty = false
+    // Set up non-empty session state to make isEmpty = false
+    sessionStore.selectedPublications = [{ doi: '10.1000/test' }]
 
     const wrapper = mount(BoostKeywordsComponent, {
       global: {
+        plugins: [pinia],
         stubs: {
           'v-menu': { template: '<div class="v-menu"><slot></slot><div class="activator"><slot name="activator"></slot></div></div>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
@@ -68,11 +73,12 @@ describe('BoostKeywordsComponent', () => {
   })
 
   it('generates correct HTML for boost keyword string', () => {
-    mockSessionStore.boostKeywordString = 'word1, word2|alt, word3'
-    mockSessionStore.isEmpty = false
+    sessionStore.boostKeywordString = 'word1, word2|alt, word3'
+    sessionStore.selectedPublications = [{ doi: '10.1000/test' }] // Make not empty
 
     const wrapper = mount(BoostKeywordsComponent, {
       global: {
+        plugins: [pinia],
         stubs: {
           'v-menu': { template: '<div class="v-menu"><slot></slot></div>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
@@ -91,11 +97,12 @@ describe('BoostKeywordsComponent', () => {
   })
 
   it('generates empty HTML when boostKeywordString is empty', () => {
-    mockSessionStore.boostKeywordString = ''
-    mockSessionStore.isEmpty = false
+    sessionStore.boostKeywordString = ''
+    sessionStore.selectedPublications = [{ doi: '10.1000/test' }] // Make not empty
 
     const wrapper = mount(BoostKeywordsComponent, {
       global: {
+        plugins: [pinia],
         stubs: {
           'v-menu': true,
           'v-btn': true,
@@ -111,11 +118,12 @@ describe('BoostKeywordsComponent', () => {
   })
 
   it('has correct mobile state', () => {
-    mockInterfaceStore.isMobile = true
-    mockSessionStore.isEmpty = false
+    interfaceStore.isMobile = true
+    sessionStore.selectedPublications = [{ doi: '10.1000/test' }] // Make not empty
 
     const wrapper = mount(BoostKeywordsComponent, {
       global: {
+        plugins: [pinia],
         stubs: {
           'v-menu': true,
           'v-btn': true,

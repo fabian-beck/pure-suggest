@@ -6,7 +6,15 @@ import { CACHE_CONFIG } from './constants/cache.js';
 const memoryCache = new Map();
 const MAX_MEMORY_CACHE_SIZE = 2000; // Keep 2000 most recent items in memory
 
-console.log(`Locally cached #elements: ${(await keys()).length}`)
+// Only access IndexedDB if available (not in test environment)
+if (typeof indexedDB !== 'undefined') {
+  try {
+    const keyCount = (await keys()).length;
+    console.log(`Locally cached #elements: ${keyCount}`);
+  } catch (error) {
+    console.warn('IndexedDB not available:', error.message);
+  }
+}
 
 // Warm up memory cache by loading IndexedDB entries
 async function warmUpMemoryCache() {
@@ -37,8 +45,10 @@ async function warmUpMemoryCache() {
   }
 }
 
-// Start warm-up process
-warmUpMemoryCache();
+// Start warm-up process only if IndexedDB is available
+if (typeof indexedDB !== 'undefined') {
+  warmUpMemoryCache();
+}
 
 function addToMemoryCache(url, data) {
   // If cache is full, remove oldest item (first item)
@@ -71,6 +81,11 @@ export async function cachedFetch(url, processData, fetchParameters = {}, noCach
       
       processData(cachedData);
       return;
+    }
+    
+    // Skip IndexedDB operations if not available
+    if (typeof indexedDB === 'undefined') {
+      throw new Error("IndexedDB not available");
     }
     
     const cacheObject = await get(url);
@@ -137,7 +152,9 @@ export async function cachedFetch(url, processData, fetchParameters = {}, noCach
 }
 
 export function clearCache() {
-  clear();
+  if (typeof indexedDB !== 'undefined') {
+    clear();
+  }
   memoryCache.clear();
   console.log('Cleared both IndexedDB and memory cache');
 }

@@ -5,7 +5,9 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 
 ## Architecture
 - **Framework**: Vue 3 with Composition API
-- **State Management**: Pinia stores (`session.js`, `interface.js`)
+- **State Management**: Pinia stores (`session.js`, `interface.js`, `queue.js`, `author.js`)
+- **Business Logic**: `useAppState.js` composable with extracted functionality
+- **Services**: `SuggestionService.js` for suggestion computation
 - **UI Framework**: Vuetify 3 + Bulma CSS hybrid approach
 - **Visualization**: D3.js for network diagrams
 - **Build Tool**: Vite
@@ -26,7 +28,11 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 - `Cache.js`: IndexedDB-based caching system
 - `PublicationSearch.js`: DOI-based search functionality
 
+## Services Layer
+- `SuggestionService.js`: Dedicated service for computing publication suggestions (extracted from session store)
+
 ## Composables (Vue 3)
+- `useAppState.js`: Core application logic extracted from stores (session management, suggestions, queuing)
 - `useGraphData.js`: Graph data management for network visualization
 - `useNetworkSimulation.js`: D3 force simulation management
 - `networkForces.js`: Force calculation algorithms
@@ -57,9 +63,12 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 6. **Visualization**: Network diagram shows citation relationships
 7. **Export**: Session state and BibTeX export capabilities
 
-## State Management
-- **Session Store**: Publications, suggestions, filters, queues, boost keywords
+## State Management (Refactored Architecture)
+- **Session Store**: Selected publications, excluded publications, suggestions, filters, boost keywords, active publication
+- **Queue Store**: Temporary queues for batch operations (add/exclude publications)
+- **Author Store**: Independent author aggregation and scoring (extracted from session store)
 - **Interface Store**: UI state, modals, loading states, mobile responsiveness
+- **useAppState Composable**: Business logic layer coordinating between stores (session management, suggestion computation, queuing operations)
 
 ## Performance Features
 - Lazy loading of publication metadata
@@ -73,6 +82,25 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 - Fallback strategies for metadata fetching
 - Rate limiting and error handling
 - Cache-first data loading strategy
+
+## Recent Architecture Refactoring
+
+The codebase has undergone significant refactoring to improve separation of concerns and maintainability:
+
+### Store Separation
+- **Author Store Extraction**: Author-related functionality moved from session store to dedicated `author.js` store
+- **Queue Store Creation**: Temporary queuing operations separated into dedicated `queue.js` store
+- **Session Store Simplification**: Focused on core publication and suggestion state management
+
+### Business Logic Extraction
+- **useAppState Composable**: Core application logic extracted from stores into reusable composable
+- **SuggestionService**: Suggestion computation logic moved to dedicated service layer
+- **Cleaner Component Integration**: Components now use useAppState instead of direct store manipulation
+
+### Benefits
+- **Better Testability**: Clear separation makes unit testing more focused and reliable
+- **Improved Maintainability**: Single responsibility principle applied to stores and services
+- **Enhanced Reusability**: Composable pattern enables better code reuse across components
 
 ## Best Practices
 

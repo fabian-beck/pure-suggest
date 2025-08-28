@@ -1,39 +1,45 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
 import PublicationComponent from '@/components/PublicationComponent.vue'
+import { useSessionStore } from '@/stores/session.js'
+import { useInterfaceStore } from '@/stores/interface.js'
 
-// Mock stores
-const mockSessionStore = {
-  isQueuingForSelected: vi.fn(() => false),
-  isQueuingForExcluded: vi.fn(() => false),
-  removeFromQueues: vi.fn(),
-  activatePublicationComponentByDoi: vi.fn(),
-  queueForSelected: vi.fn(),
-  queueForExcluded: vi.fn(),
-  retryLoadingPublication: vi.fn(),
-  hoverPublication: vi.fn(),
-  filter: {
-    dois: []
-  }
-}
-
-const mockInterfaceStore = {}
-
-// Mock the store imports
-vi.mock('@/stores/session.js', () => ({
-  useSessionStore: () => mockSessionStore
-}))
-
-vi.mock('@/stores/interface.js', () => ({
-  useInterfaceStore: () => mockInterfaceStore
+// Mock useAppState for the functions the component uses
+const mockActivatePublicationComponentByDoi = vi.fn()
+vi.mock('@/composables/useAppState.js', () => ({
+  useAppState: () => ({
+    activatePublicationComponentByDoi: mockActivatePublicationComponentByDoi
+  })
 }))
 
 describe('Publication Activation', () => {
   let wrapper
+  let pinia
+  let sessionStore
+  let interfaceStore
 
   beforeEach(() => {
+    pinia = createPinia()
+    setActivePinia(pinia)
+    sessionStore = useSessionStore()
+    interfaceStore = useInterfaceStore()
+
     // Reset mocks
     vi.clearAllMocks()
+    mockActivatePublicationComponentByDoi.mockClear()
+
+    // Set up interface store methods
+    interfaceStore.activatePublicationComponent = vi.fn()
+
+    // Set up session store methods
+    sessionStore.isQueuingForSelected = vi.fn(() => false)
+    sessionStore.isQueuingForExcluded = vi.fn(() => false)
+    sessionStore.removeFromQueues = vi.fn()
+    sessionStore.queueForSelected = vi.fn()
+    sessionStore.queueForExcluded = vi.fn()
+    sessionStore.retryLoadingPublication = vi.fn()
+    sessionStore.hoverPublication = vi.fn()
 
     const mockPublication = {
       doi: 'test-publication-doi',
@@ -62,6 +68,7 @@ describe('Publication Activation', () => {
         publication: mockPublication
       },
       global: {
+        plugins: [pinia],
         stubs: {
           'tippy': true,
           'v-icon': true,
@@ -83,7 +90,7 @@ describe('Publication Activation', () => {
     await publicationElement.trigger('focus')
     
     // Verify that the sessionStore method was called with correct DOI
-    expect(mockSessionStore.activatePublicationComponentByDoi).toHaveBeenCalledWith('test-publication-doi')
+    expect(mockActivatePublicationComponentByDoi).toHaveBeenCalledWith('test-publication-doi')
   })
 
   it('should emit activate event when publication is activated', async () => {
@@ -104,7 +111,7 @@ describe('Publication Activation', () => {
     await publicationElement.trigger('focus')
     
     // Verify both operations happened
-    expect(mockSessionStore.activatePublicationComponentByDoi).toHaveBeenCalledWith('test-publication-doi')
+    expect(mockActivatePublicationComponentByDoi).toHaveBeenCalledWith('test-publication-doi')
     expect(wrapper.emitted()).toHaveProperty('activate')
     expect(wrapper.emitted().activate[0]).toEqual(['test-publication-doi'])
     
@@ -121,8 +128,8 @@ describe('Publication Activation', () => {
     await publicationElement.trigger('focus')
     
     // Verify the integration point that handles visual blending
-    expect(mockSessionStore.activatePublicationComponentByDoi).toHaveBeenCalledTimes(1)
-    expect(mockSessionStore.activatePublicationComponentByDoi).toHaveBeenCalledWith('test-publication-doi')
+    expect(mockActivatePublicationComponentByDoi).toHaveBeenCalledTimes(1)
+    expect(mockActivatePublicationComponentByDoi).toHaveBeenCalledWith('test-publication-doi')
     
     // The sessionStore method is responsible for:
     // 1. Setting the active publication
@@ -140,8 +147,8 @@ describe('Publication Activation', () => {
     await publicationElement.trigger('focus')
     
     // Should still only call the sessionStore method once due to the guard
-    expect(mockSessionStore.activatePublicationComponentByDoi).toHaveBeenCalledTimes(1)
-    expect(mockSessionStore.activatePublicationComponentByDoi).toHaveBeenCalledWith('test-publication-doi')
+    expect(mockActivatePublicationComponentByDoi).toHaveBeenCalledTimes(1)
+    expect(mockActivatePublicationComponentByDoi).toHaveBeenCalledWith('test-publication-doi')
     
     // This prevents the issue where:
     // focus → activate → sessionStore → interfaceStore.focus() → focus → activate (loop)

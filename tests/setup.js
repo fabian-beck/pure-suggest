@@ -1,6 +1,9 @@
 import { config } from '@vue/test-utils'
+import { createPinia } from 'pinia'
 
 // Global test setup
+config.global.plugins = [createPinia()]
+
 config.global.stubs = {
   // Stub Vuetify components globally with proper templates
   'v-btn': { template: '<button><slot></slot></button>' },

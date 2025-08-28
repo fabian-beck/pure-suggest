@@ -1,37 +1,39 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
 import SuggestedPublicationsComponent from '@/components/SuggestedPublicationsComponent.vue'
+import { useSessionStore } from '@/stores/session.js'
+import { useInterfaceStore } from '@/stores/interface.js'
 
-// Mock stores
-const mockSessionStore = {
-  suggestion: null,
-  unreadSuggestionsCount: 0,
-  suggestedPublicationsFiltered: [],
-  suggestedPublications: [],
-  loadMoreSuggestions: vi.fn(),
-  $onAction: vi.fn()
-}
-
-const mockInterfaceStore = {
-  isMobile: false
-}
-
-// Mock the store imports
-vi.mock('@/stores/session.js', () => ({
-  useSessionStore: () => mockSessionStore
-}))
-
-vi.mock('@/stores/interface.js', () => ({
-  useInterfaceStore: () => mockInterfaceStore
+// Mock useAppState
+const mockLoadMoreSuggestions = vi.fn()
+vi.mock('@/composables/useAppState.js', () => ({
+  useAppState: () => ({
+    loadMoreSuggestions: mockLoadMoreSuggestions
+  })
 }))
 
 describe('SuggestedPublicationsComponent', () => {
+  let pinia
+  let sessionStore
+  let interfaceStore
+
   beforeEach(() => {
+    pinia = createPinia()
+    setActivePinia(pinia)
+    sessionStore = useSessionStore()
+    interfaceStore = useInterfaceStore()
+    
+    // Set up default store state
+    interfaceStore.isMobile = false
+    
     vi.clearAllMocks()
-    mockSessionStore.suggestion = null
-    mockSessionStore.unreadSuggestionsCount = 0
-    mockSessionStore.suggestedPublicationsFiltered = []
-    mockSessionStore.suggestedPublications = []
+    mockLoadMoreSuggestions.mockClear()
+    
+    // Set up default session store state
+    sessionStore.suggestion = null
+    sessionStore.selectedPublications = []
+    sessionStore.excludedPublicationsDois = []
   })
 
   it('renders the suggested publications header', () => {
@@ -51,17 +53,17 @@ describe('SuggestedPublicationsComponent', () => {
   })
 
   it('shows suggestion count when suggestions are available', () => {
-    mockSessionStore.suggestion = {
-      totalSuggestions: 1000
+    sessionStore.suggestion = {
+      totalSuggestions: 1000,
+      publications: [
+        { doi: 'test-doi-1', title: 'Test Publication 1' },
+        { doi: 'test-doi-2', title: 'Test Publication 2' }
+      ]
     }
-    mockSessionStore.suggestedPublicationsFiltered = [
-      { doi: 'test-doi-1', title: 'Test Publication 1' },
-      { doi: 'test-doi-2', title: 'Test Publication 2' }
-    ]
-    mockSessionStore.unreadSuggestionsCount = 5
 
     const wrapper = mount(SuggestedPublicationsComponent, {
       global: {
+        plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'v-badge': { 
@@ -81,15 +83,16 @@ describe('SuggestedPublicationsComponent', () => {
   })
 
   it('shows load more button when suggestions are available', () => {
-    mockSessionStore.suggestion = {
-      totalSuggestions: 1000
+    sessionStore.suggestion = {
+      totalSuggestions: 1000,
+      publications: [
+        { doi: 'test-doi-1', title: 'Test Publication 1' }
+      ]
     }
-    mockSessionStore.suggestedPublications = [
-      { doi: 'test-doi-1', title: 'Test Publication 1' }
-    ]
 
     const wrapper = mount(SuggestedPublicationsComponent, {
       global: {
+        plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'v-badge': { template: '<div class="v-badge"><slot></slot></div>' },
@@ -110,15 +113,16 @@ describe('SuggestedPublicationsComponent', () => {
   })
 
   it('disables load more button when all suggestions are loaded', () => {
-    mockSessionStore.suggestion = {
-      totalSuggestions: 1
+    sessionStore.suggestion = {
+      totalSuggestions: 1,
+      publications: [
+        { doi: 'test-doi-1', title: 'Test Publication 1' }
+      ]
     }
-    mockSessionStore.suggestedPublications = [
-      { doi: 'test-doi-1', title: 'Test Publication 1' }
-    ]
 
     const wrapper = mount(SuggestedPublicationsComponent, {
       global: {
+        plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'v-badge': { template: '<div class="v-badge"><slot></slot></div>' },
@@ -139,15 +143,16 @@ describe('SuggestedPublicationsComponent', () => {
   })
 
   it('calls loadMoreSuggestions when load more button is clicked', async () => {
-    mockSessionStore.suggestion = {
-      totalSuggestions: 1000
+    sessionStore.suggestion = {
+      totalSuggestions: 1000,
+      publications: [
+        { doi: 'test-doi-1', title: 'Test Publication 1' }
+      ]
     }
-    mockSessionStore.suggestedPublications = [
-      { doi: 'test-doi-1', title: 'Test Publication 1' }
-    ]
 
     const wrapper = mount(SuggestedPublicationsComponent, {
       global: {
+        plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'v-badge': { template: '<div class="v-badge"><slot></slot></div>' },
@@ -164,15 +169,19 @@ describe('SuggestedPublicationsComponent', () => {
 
     const loadMoreBtn = wrapper.find('.compact-button')
     await loadMoreBtn.trigger('click')
-    expect(mockSessionStore.loadMoreSuggestions).toHaveBeenCalled()
+    expect(mockLoadMoreSuggestions).toHaveBeenCalled()
   })
 
   it('renders PublicationListComponent with correct props', () => {
     const mockPublications = [{ doi: 'test-doi', title: 'Test Publication' }]
-    mockSessionStore.suggestedPublicationsFiltered = mockPublications
+    sessionStore.suggestion = {
+      publications: mockPublications,
+      totalSuggestions: 100
+    }
 
     const wrapper = mount(SuggestedPublicationsComponent, {
       global: {
+        plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'v-badge': { template: '<div class="v-badge"><slot></slot></div>' },
@@ -188,10 +197,11 @@ describe('SuggestedPublicationsComponent', () => {
   })
 
   it('hides count and load more when no suggestions are available', () => {
-    mockSessionStore.suggestion = null
+    sessionStore.suggestion = null
 
     const wrapper = mount(SuggestedPublicationsComponent, {
       global: {
+        plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'v-badge': { template: '<div class="v-badge"><slot></slot></div>' },
