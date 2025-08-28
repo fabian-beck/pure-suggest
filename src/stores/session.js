@@ -6,9 +6,10 @@ import Publication from "@/Publication.js";
 import { generateBibtex } from "@/utils/bibtex.js";
 import { getFilteredPublications, countFilteredPublications } from "@/utils/filterUtils.js";
 import { normalizeBoostKeywordString, parseUniqueBoostKeywords, updatePublicationScores } from "@/utils/scoringUtils.js";
+import { SuggestionService } from "@/services/SuggestionService.js";
 import Filter from '@/Filter.js';
 import Author from '@/Author.js';
-import { shuffle, saveAsFile } from "@/Util.js"
+import { saveAsFile } from "@/Util.js"
 import { clearCache } from "@/Cache.js";
 import { PAGINATION } from "@/constants/ui.js";
 
@@ -221,86 +222,20 @@ export const useSessionStore = defineStore('session', {
     },
 
     async computeSuggestions() {
-
-      function incrementSuggestedPublicationCounter(
-        _this,
-        doi,
-        counter,
-        doiList,
-        sourceDoi
-      ) {
-        if (!_this.isExcluded(doi)) {
-          if (!_this.isSelected(doi)) {
-            if (!suggestedPublications[doi]) {
-              const citingPublication = new Publication(doi);
-              suggestedPublications[doi] = citingPublication;
-            }
-            suggestedPublications[doi][doiList].push(sourceDoi);
-            suggestedPublications[doi][counter]++;
-          } else {
-            _this.getSelectedPublicationByDoi(doi)[counter]++;
-          }
-        }
-      }
-
       console.log(`Starting to compute new suggestions based on ${this.selectedPublicationsCount} selected (and ${this.excludedPublicationsCount} excluded).`);
       this.clearActivePublication("updating suggestions");
-      const suggestedPublications = {};
-      this.selectedPublications.forEach((publication) => {
-        publication.citationCount = 0;
-        publication.referenceCount = 0;
-      });
-      this.selectedPublications.forEach((publication) => {
-        publication.citationDois.forEach((citationDoi) => {
-          incrementSuggestedPublicationCounter(
-            this,
-            citationDoi,
-            "citationCount",
-            "referenceDois",
-            publication.doi
-          );
-        });
-        publication.referenceDois.forEach((referenceDoi) => {
-          incrementSuggestedPublicationCounter(
-            this,
-            referenceDoi,
-            "referenceCount",
-            "citationDois",
-            publication.doi
-          );
-        });
-      });
-      let filteredSuggestions = Object.values(suggestedPublications);
-      filteredSuggestions = shuffle(filteredSuggestions, 0);
-      console.log(`Identified ${filteredSuggestions.length} publications as suggestions.`);
-      // titles not yet fetched, that is why sorting can be only done on citations/references
-      filteredSuggestions.sort(
-        (a, b) =>
-          b.citationCount + b.referenceCount - (a.citationCount + a.referenceCount)
-      );
       
-      const preloadSuggestions = filteredSuggestions.slice(this.maxSuggestions, this.maxSuggestions + PAGINATION.LOAD_MORE_INCREMENT);
-      filteredSuggestions = filteredSuggestions.slice(0, this.maxSuggestions);
-      console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`);
-      let publicationsLoadedCount = 0;
-      this.interfaceStore.loadingMessage = `${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "info";
-      await Promise.all(filteredSuggestions.map(async (suggestedPublication) => {
-        await suggestedPublication.fetchData()
-        publicationsLoadedCount++;
-        this.interfaceStore.loadingMessage = `${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`;
-      }));
-      
-      filteredSuggestions.forEach((publication) => {
-        publication.isRead = this.readPublicationsDois.has(publication.doi);
+      this.suggestion = await SuggestionService.computeSuggestions({
+        selectedPublications: this.selectedPublications,
+        isExcluded: this.isExcluded,
+        isSelected: this.isSelected,
+        getSelectedPublicationByDoi: this.getSelectedPublicationByDoi,
+        maxSuggestions: this.maxSuggestions,
+        readPublicationsDois: this.readPublicationsDois,
+        updateLoadingMessage: (message) => {
+          this.interfaceStore.loadingMessage = message;
+        }
       });
-      console.log("Completed computing and loading of new suggestions.");
-      preloadSuggestions.forEach(publication => {
-        publication.fetchData()
-      });
-      this.suggestion = {
-        publications: filteredSuggestions,
-        totalSuggestions: Object.values(suggestedPublications).length
-      };
       
       this.updateScores();
     },
