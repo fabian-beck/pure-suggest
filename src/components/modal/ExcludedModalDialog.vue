@@ -48,7 +48,7 @@ export default {
     setup() {
         const interfaceStore = useInterfaceStore();
         const sessionStore = useSessionStore();
-        const { updateSuggestions } = useAppState();
+        const { updateSuggestions, queueForSelected } = useAppState();
 
         const excludedPublications = reactive([]);
 
@@ -73,7 +73,7 @@ export default {
             }
         );
 
-        return { interfaceStore, sessionStore, excludedPublications, updateExcludedPublications, updateSuggestions };
+        return { interfaceStore, sessionStore, excludedPublications, updateExcludedPublications, updateSuggestions, queueForSelected };
     },
     methods: {
         removeFromExcluded(publication) {
@@ -82,7 +82,7 @@ export default {
             this.updateExcludedPublications();
         },
         removeFromExcludedAndAddToSelected(publication) {
-            this.sessionStore.queueForSelected([publication.doi]);
+            this.queueForSelected(publication.doi);
             this.removeFromExcluded(publication);
         },
     },

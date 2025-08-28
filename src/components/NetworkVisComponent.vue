@@ -16,7 +16,7 @@
             </ul>
             <div class="controls-header-left">
                 <v-btn class="has-background-primary has-text-white" @click="updateQueued"
-                    v-show="sessionStore.isUpdatable && interfaceStore.isNetworkExpanded" id="quick-access-update">
+                    v-show="queueStore.isUpdatable && interfaceStore.isNetworkExpanded" id="quick-access-update">
                     <v-icon left>mdi-update</v-icon>
                     <span class="key">U</span>pdate
                 </v-btn>
@@ -40,6 +40,7 @@ import { storeToRefs } from "pinia";
 // Stores
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
+import { useQueueStore } from "@/stores/queue.js";
 import { useAppState } from "@/composables/useAppState.js";
 
 // Force simulation utilities
@@ -103,6 +104,7 @@ export default {
         const { filter, activePublication } = storeToRefs(sessionStore);
         const interfaceStore = useInterfaceStore();
         const { isNetworkClusters } = storeToRefs(interfaceStore);
+        const queueStore = useQueueStore();
         const { isEmpty, activatePublicationComponentByDoi, updateQueued } = useAppState();
 
         return {
@@ -111,6 +113,7 @@ export default {
             activePublication,
             interfaceStore,
             isNetworkClusters,
+            queueStore,
             isEmpty,
             activatePublicationComponentByDoi,
             updateQueued
@@ -319,8 +322,8 @@ export default {
                 const publicationNodes = createPublicationNodes(
                     publications, 
                     doiToIndex, 
-                    this.sessionStore.selectedQueue || [], 
-                    this.sessionStore.excludedQueue || []
+                    this.queueStore.selectedQueue || [], 
+                    this.queueStore.excludedQueue || []
                 );
                 nodes = nodes.concat(publicationNodes);
                 

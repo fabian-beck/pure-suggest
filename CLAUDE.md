@@ -96,3 +96,4 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 - Don't run dev mode yourself (npm run dev)
 - Make sure to adapt tests along with changes in the project.
 - Use Vue 3 Composition API for new components
+- Never ignore failing tests.

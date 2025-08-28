@@ -21,25 +21,25 @@
     </div>
     <div class="header">
       <div>
-        <div class="notification queue-panel p-2" v-show="sessionStore.isUpdatable">
+        <div class="notification queue-panel p-2" v-show="queueStore.isUpdatable">
           <div class="level">
             <div class="has-text-centered level-item queue-description">
               <p>
                 <InlineIcon icon="mdi-tray-full" class="mr-2"></InlineIcon>
                 <b>Queue:&nbsp;</b>
-                <span v-show="sessionStore.selectedQueue.length">
+                <span v-show="queueStore.selectedQueue.length">
                   {{
-                    sessionStore.selectedQueue.length > 1
-                    ? `${sessionStore.selectedQueue.length} publications`
+                    queueStore.selectedQueue.length > 1
+                    ? `${queueStore.selectedQueue.length} publications`
                     : "1 publication"
                   }}
-                  to be selected</span><span v-show="sessionStore.selectedQueue.length &&
-                      sessionStore.excludedQueue.length
+                  to be selected</span><span v-show="queueStore.selectedQueue.length &&
+                      queueStore.excludedQueue.length
                       ">
-                  and </span><span v-show="sessionStore.excludedQueue.length">
+                  and </span><span v-show="queueStore.excludedQueue.length">
                   {{
-                    sessionStore.excludedQueue.length > 1
-                    ? `${sessionStore.excludedQueue.length} publications`
+                    queueStore.excludedQueue.length > 1
+                    ? `${queueStore.excludedQueue.length} publications`
                     : "1 publication"
                   }}
                   to be excluded</span>.
@@ -50,7 +50,7 @@
               <CompactButton icon="mdi-pencil" class="ml-2" v-tippy="'Edit publications in queue.'"
                 v-on:click="interfaceStore.isQueueModalDialogShown = true"></CompactButton>
               <CompactButton icon="mdi-undo" class="ml-1" v-tippy="'Remove all publications from queue again.'"
-                v-on:click="sessionStore.clearQueues()"></CompactButton>
+                v-on:click="queueStore.clearQueues()"></CompactButton>
               <v-btn class="has-background-primary has-text-white ml-2"
                 v-tippy="'Update suggested and excluded publications with queue and compute new suggestions.'"
                 @click="updateQueued" prepend-icon="mdi-update">
@@ -94,10 +94,12 @@
 import { ref, onMounted } from 'vue'
 import { useSessionStore } from "@/stores/session.js"
 import { useInterfaceStore } from "@/stores/interface.js"
+import { useQueueStore } from "@/stores/queue.js"
 import { useAppState } from "@/composables/useAppState.js"
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
+const queueStore = useQueueStore()
 const { isEmpty, importSession: importSessionFromState, loadExample, updateQueued } = useAppState()
 
 const publicationList = ref(null)

@@ -2,6 +2,7 @@ import { computed } from 'vue'
 import { useSessionStore } from '@/stores/session.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useAuthorStore } from '@/stores/author.js'
+import { useQueueStore } from '@/stores/queue.js'
 import Filter from '@/Filter.js'
 import { PAGINATION } from '@/constants/ui.js'
 import { clearCache as clearCacheUtil } from '@/Cache.js'
@@ -13,6 +14,7 @@ export function useAppState() {
   const sessionStore = useSessionStore()
   const interfaceStore = useInterfaceStore()
   const authorStore = useAuthorStore()
+  const queueStore = useQueueStore()
   
   /**
    * Computes whether the session is empty (no publications selected/excluded/queued)
@@ -21,8 +23,8 @@ export function useAppState() {
   const isEmpty = computed(() => 
     sessionStore.selectedPublicationsCount === 0
     && sessionStore.excludedPublicationsCount === 0
-    && sessionStore.selectedQueue.length === 0
-    && !sessionStore.isUpdatable
+    && queueStore.selectedQueue.length === 0
+    && !queueStore.isUpdatable
   )
 
   /**
@@ -30,15 +32,16 @@ export function useAppState() {
    */
   const clear = () => {
     sessionStore.selectedPublications = []
-    sessionStore.selectedQueue = []
     sessionStore.excludedPublicationsDois = []
-    sessionStore.excludedQueue = []
     sessionStore.suggestion = ""
     sessionStore.maxSuggestions = PAGINATION.INITIAL_SUGGESTIONS_COUNT
     sessionStore.boostKeywordString = ""
     sessionStore.activePublication = ""
     sessionStore.filter = new Filter()
     sessionStore.addQuery = ""
+    // Clear queue store
+    queueStore.selectedQueue = []
+    queueStore.excludedQueue = []
     // Clear author store
     authorStore.selectedPublicationsAuthors = []
     // do not reset read publications as the user might to carry this information to the next session
@@ -208,29 +211,29 @@ export function useAppState() {
    */
   const updateQueued = async () => {
     const startTime = performance.now()
-    console.log(`[PERF] Starting queue update workflow (${sessionStore.selectedQueue.length} to add, ${sessionStore.excludedQueue.length} to exclude)`)
+    console.log(`[PERF] Starting queue update workflow (${queueStore.selectedQueue.length} to add, ${queueStore.excludedQueue.length} to exclude)`)
     
     // Store the start time for end-to-end measurement
     sessionStore._workflowStartTime = startTime
     sessionStore._isTrackingWorkflow = true
     
     sessionStore.clearActivePublication()
-    if (sessionStore.excludedQueue.length) {
-      sessionStore.excludedPublicationsDois = sessionStore.excludedPublicationsDois.concat(sessionStore.excludedQueue)
+    if (queueStore.excludedQueue.length) {
+      sessionStore.excludedPublicationsDois = sessionStore.excludedPublicationsDois.concat(queueStore.excludedQueue)
     }
     sessionStore.selectedPublications = sessionStore.selectedPublications.filter(
-      publication => !sessionStore.excludedQueue.includes(publication.doi)
+      publication => !queueStore.excludedQueue.includes(publication.doi)
     )
     if (sessionStore.suggestion) {
       sessionStore.suggestion.publications = sessionStore.suggestion.publications.filter(
-        publication => (!sessionStore.selectedQueue.includes(publication.doi) && !sessionStore.excludedQueue.includes(publication.doi))
+        publication => (!queueStore.selectedQueue.includes(publication.doi) && !queueStore.excludedQueue.includes(publication.doi))
       )
     }
-    if (sessionStore.selectedQueue.length) {
-      sessionStore.addPublicationsToSelection(sessionStore.selectedQueue)
+    if (queueStore.selectedQueue.length) {
+      sessionStore.addPublicationsToSelection(queueStore.selectedQueue)
     }
     await updateSuggestions()
-    sessionStore.clearQueues()
+    queueStore.clearQueues()
   }
 
   /**
@@ -244,7 +247,7 @@ export function useAppState() {
     sessionStore._workflowStartTime = startTime
     sessionStore._isTrackingWorkflow = true
     
-    dois.forEach((doi) => sessionStore.removeFromQueues(doi))
+    dois.forEach((doi) => queueStore.removeFromQueues(doi))
     await sessionStore.addPublicationsToSelection(dois)
     await updateSuggestions()
   }
@@ -270,6 +273,29 @@ export function useAppState() {
     sessionStore._workflowStartTime = startTime
     loadSession(session)
   }
+
+  /**
+   * Queues publications for selection (coordinates between queue and session stores)
+   */
+  const queueForSelected = (dois) => {
+    if (!Array.isArray(dois)) dois = [dois];
+    queueStore.excludedQueue = queueStore.excludedQueue.filter(excludedDoi => !dois.includes(excludedDoi));
+    dois.forEach(doi => {
+      if (sessionStore.isSelected(doi) || queueStore.selectedQueue.includes(doi)) return;
+      queueStore.selectedQueue.push(doi);
+    });
+    queueStore.hasUpdated(`Queued ${dois.length} publication(s) for selection.`);
+  }
+
+  /**
+   * Queues publications for exclusion (coordinates between queue and session stores)
+   */
+  const queueForExcluded = (doi) => {
+    if (sessionStore.isExcluded(doi) || queueStore.excludedQueue.includes(doi)) return
+    queueStore.selectedQueue = queueStore.selectedQueue.filter(seletedDoi => doi != seletedDoi);
+    queueStore.excludedQueue.push(doi);
+    queueStore.hasUpdated(`Queued ${doi} for exclusion.`);
+  }
   
   return {
     isEmpty,
@@ -285,6 +311,8 @@ export function useAppState() {
     loadMoreSuggestions,
     updateQueued,
     addPublicationsAndUpdate,
-    loadExample
+    loadExample,
+    queueForSelected,
+    queueForExcluded
   }
 }

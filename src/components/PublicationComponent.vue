@@ -1,14 +1,14 @@
 <template>
   <li>
-    <div class="level is-mobile queue-controls" v-if="sessionStore.isQueuingForSelected(publication.doi) ||
-      sessionStore.isQueuingForExcluded(publication.doi)" :class="{
-        'to-be-selected': sessionStore.isQueuingForSelected(publication.doi),
+    <div class="level is-mobile queue-controls" v-if="queueStore.isQueuingForSelected(publication.doi) ||
+      queueStore.isQueuingForExcluded(publication.doi)" :class="{
+        'to-be-selected': queueStore.isQueuingForSelected(publication.doi),
       }">
         <div class="level-item">
           <span>
             <InlineIcon icon="mdi-tray-full" color="dark" />
             To be
-            <span v-if="sessionStore.isQueuingForSelected(publication.doi)"><b>selected </b>
+            <span v-if="queueStore.isQueuingForSelected(publication.doi)"><b>selected </b>
               <InlineIcon icon="mdi-plus-thick" color="primary-dark" />
             </span>
             <span v-else><b> excluded </b>
@@ -18,7 +18,7 @@
         </div>
         <div class="level-right">
           <CompactButton icon="mdi-undo" v-tippy="'Remove publication from queue again.'"
-            v-on:click="sessionStore.removeFromQueues(publication.doi)"></CompactButton>
+            v-on:click="queueStore.removeFromQueues(publication.doi)"></CompactButton>
         </div>
       </div>
     <div class="publication-component media" :class="{
@@ -30,8 +30,8 @@
         !publication.isSelected &&
         publication.wasFetched,
       'is-queuing':
-        sessionStore.isQueuingForSelected(publication.doi) ||
-        sessionStore.isQueuingForExcluded(publication.doi),
+        queueStore.isQueuingForSelected(publication.doi) ||
+        queueStore.isQueuingForExcluded(publication.doi),
       'is-hovered': publication.isHovered,
       'is-keyword-hovered': publication.isKeywordHovered,
       'is-author-hovered': publication.isAuthorHovered,
@@ -137,11 +137,11 @@
       <div class="media-right">
         <div>
           <CompactButton v-if="!publication.isSelected" icon="mdi-plus-thick"
-            v-on:click="sessionStore.queueForSelected(publication.doi)" class="has-text-primary"
+            v-on:click="queueForSelected(publication.doi)" class="has-text-primary"
             v-tippy="'Mark publication to be added to selected publications.'"></CompactButton>
         </div>
         <div>
-          <CompactButton icon="mdi-minus-thick" v-on:click="sessionStore.queueForExcluded(publication.doi)"
+          <CompactButton icon="mdi-minus-thick" v-on:click="queueForExcluded(publication.doi)"
             v-tippy="'Mark publication to be excluded for suggestions.'"></CompactButton>
         </div>
       </div>
@@ -151,11 +151,11 @@
 
 <script setup>
 import { computed } from 'vue'
-import { useSessionStore } from "@/stores/session.js"
+import { useQueueStore } from "@/stores/queue.js"
 import { useAppState } from "@/composables/useAppState.js"
 
-const sessionStore = useSessionStore()
-const { retryLoadingPublication, activatePublicationComponentByDoi } = useAppState()
+const queueStore = useQueueStore()
+const { retryLoadingPublication, activatePublicationComponentByDoi, queueForSelected, queueForExcluded } = useAppState()
 
 const emit = defineEmits(['activate'])
 const props = defineProps({
@@ -196,6 +196,7 @@ function activate() {
     isActivating = false
   }, 100)
 }
+
 
 </script>
 

@@ -14,9 +14,7 @@ export const useSessionStore = defineStore('session', {
   state: () => {
     return {
       selectedPublications: [],
-      selectedQueue: [],
       excludedPublicationsDois: [],
-      excludedQueue: [],
       suggestion: "",
       maxSuggestions: PAGINATION.INITIAL_SUGGESTIONS_COUNT,
       boostKeywordString: "",
@@ -59,11 +57,8 @@ export const useSessionStore = defineStore('session', {
     ).length,
     isKeywordLinkedToActive: (state) => (keyword) => state.activePublication && state.activePublication.boostKeywords.includes(keyword),
     uniqueBoostKeywords: (state) => parseUniqueBoostKeywords(state.boostKeywordString),
-    isUpdatable: (state) => state.selectedQueue.length > 0 || state.excludedQueue.length > 0,
     isSelected: (state) => (doi) => state.selectedPublicationsDois.includes(doi),
     isExcluded: (state) => (doi) => state.excludedPublicationsDois.includes(doi),
-    isQueuingForSelected: (state) => (doi) => state.selectedQueue.includes(doi),
-    isQueuingForExcluded: (state) => (doi) => state.excludedQueue.includes(doi),
     getSelectedPublicationByDoi: (state) => (doi) => state.selectedPublications.filter(publication => publication.doi === doi)[0],
   },
   actions: {
@@ -77,34 +72,6 @@ export const useSessionStore = defineStore('session', {
       this.updateScores();
     },
 
-    queueForSelected(dois) {
-      if (!Array.isArray(dois)) dois = [dois];
-      this.excludedQueue = this.excludedQueue.filter(excludedDoi => !dois.includes(excludedDoi));
-      dois.forEach(doi => {
-        if (this.isSelected(doi) || this.selectedQueue.includes(doi)) return;
-        this.selectedQueue.push(doi);
-      });
-      this.hasUpdated(`Queued ${dois.length} publication(s) for selection.`);
-    },
-
-    queueForExcluded(doi) {
-      if (this.isExcluded(doi) || this.excludedQueue.includes(doi)) return
-      this.selectedQueue = this.selectedQueue.filter(seletedDoi => doi != seletedDoi);
-      this.excludedQueue.push(doi);
-      this.hasUpdated(`Queued ${doi} for exclusion.`);
-    },
-
-    removeFromQueues(doi) {
-      this.selectedQueue = this.selectedQueue.filter(seletedDoi => doi != seletedDoi);
-      this.excludedQueue = this.excludedQueue.filter(excludedDoi => doi != excludedDoi);
-      this.hasUpdated(`Removed ${doi} from queues.`);
-    },
-
-    clearQueues() {
-      this.excludedQueue = [];
-      this.selectedQueue = [];
-      this.hasUpdated(`Cleared queues.`);
-    },
 
 
 
