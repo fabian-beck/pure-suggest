@@ -1,5 +1,21 @@
-import { SCORING } from "@/constants/publication.js";
-import { SCORE_COLOR_THRESHOLDS, SCORE_LIGHTNESS } from "@/constants/ui.js";
+import { SCORING } from "@/constants/config.js";
+
+const SCORE_COLOR_THRESHOLDS = {
+  VERY_HIGH: 32,
+  HIGH: 16,
+  MEDIUM_HIGH: 8,
+  MEDIUM: 4,
+  LOW: 2
+};
+
+const SCORE_LIGHTNESS = {
+  VERY_HIGH: 60,
+  HIGH: 72,
+  MEDIUM_HIGH: 80,
+  MEDIUM: 90,
+  LOW: 95,
+  DEFAULT: 100
+};
 
 /**
  * Utility functions for publication scoring and keyword matching

@@ -1,4 +1,4 @@
-import { SCORING } from './constants/publication.js';
+import { SCORING } from './constants/config.js';
 
 export default class Author {
 

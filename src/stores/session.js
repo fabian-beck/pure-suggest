@@ -7,7 +7,7 @@ import { getFilteredPublications, countFilteredPublications } from "@/utils/filt
 import { normalizeBoostKeywordString, parseUniqueBoostKeywords, updatePublicationScores } from "@/utils/scoringUtils.js";
 import Filter from '@/Filter.js';
 import { saveAsFile } from "@/Util.js"
-import { PAGINATION } from "@/constants/ui.js";
+import { PAGINATION } from "@/constants/config.js";
 
 
 export const useSessionStore = defineStore('session', {

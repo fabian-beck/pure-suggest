@@ -1,6 +1,6 @@
 import Publication from "@/Publication.js";
 import { shuffle } from "@/Util.js";
-import { PAGINATION } from "@/constants/ui.js";
+import { PAGINATION } from "@/constants/config.js";
 
 /**
  * Service for computing publication suggestions based on citation networks

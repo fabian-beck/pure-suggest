@@ -1,6 +1,6 @@
 import { cachedFetch } from "./Cache.js";
 import Publication from "./Publication.js";
-import { API_ENDPOINTS, API_PARAMS } from "./constants/api.js";
+import { API_ENDPOINTS, API_PARAMS } from "./constants/config.js";
 
 export default class PublicationSearch {
 

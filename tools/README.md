@@ -36,3 +36,35 @@ node dependency-analyzer.js
 - Pinia stores
 - Vue composables
 - Constants and utilities
+
+## Constant Usage Analyzer
+
+**File**: `constant-usage-analyzer.js`
+
+Analyzes constant usage patterns across the codebase to identify candidates for decentralization or centralization.
+
+### Features
+- Scans all constants from `src/constants/` directory
+- Excludes test files from decentralization consideration
+- Categorizes constants as single-use, multi-use, or unused
+- Provides detailed usage statistics and file locations
+- Generates actionable recommendations for constant organization
+
+### Usage
+```bash
+cd tools
+node constant-usage-analyzer.js
+```
+
+### Output
+- Console analysis with usage patterns and recommendations
+- `tools/output/constant-usage-analysis.json` - Detailed JSON report
+- Categorized lists of constants for different actions:
+  - Single-use constants (candidates for decentralization)
+  - Multi-use constants (keep centralized)
+  - Unused constants (candidates for removal)
+
+### Analysis Logic
+- **Single-use**: Constants used in only one non-test file (should be moved locally)
+- **Multi-use**: Constants used in multiple non-test files (should remain centralized)
+- **Test usage**: Tracked separately and not counted for decentralization decisions
