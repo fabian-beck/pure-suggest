@@ -17,6 +17,18 @@
       <v-list-item class="is-hidden-desktop">
         {{ sessionStateString }}
       </v-list-item>
+      <div class="px-4 py-4" @click.stop>
+        <v-text-field
+          v-model="sessionName"
+          label="Session Name"
+          variant="outlined"
+          density="compact"
+          hide-details
+          @blur="updateSessionName"
+          @keyup.enter="updateSessionName"
+          prepend-inner-icon="mdi-pencil"
+        />
+      </div>
       <v-list-item prepend-icon="mdi-minus-thick" @click="interfaceStore.isExcludedModalDialogShown = true"
         title="Excluded publications" v-if="sessionStore.excludedPublicationsCount > 0">
       </v-list-item>
@@ -31,7 +43,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useSessionStore } from "@/stores/session.js"
 import { useInterfaceStore } from "@/stores/interface.js"
 import { useAppState } from "@/composables/useAppState.js"
@@ -40,9 +52,20 @@ const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
 const { isEmpty, clearSession } = useAppState()
 
+const sessionName = ref(sessionStore.sessionName)
+
 const sessionStateString = computed(() => {
   return `${sessionStore.selectedPublicationsCount} selected${sessionStore.excludedPublicationsCount
     ? `; ${sessionStore.excludedPublicationsCount} excluded`
     : ""}`
+})
+
+const updateSessionName = () => {
+  sessionStore.setSessionName(sessionName.value)
+}
+
+// Watch for changes in the store to keep the local ref in sync
+watch(() => sessionStore.sessionName, (newName) => {
+  sessionName.value = newName
 })
 </script>

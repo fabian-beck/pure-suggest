@@ -23,6 +23,7 @@ export const useSessionStore = defineStore('session', {
       readPublicationsDois: new Set(),
       filter: new Filter(),
       addQuery: "",
+      sessionName: "Untitled Session",
     }
   },
   getters: {
@@ -70,6 +71,10 @@ export const useSessionStore = defineStore('session', {
     setBoostKeywordString(boostKeywordString) {
       this.boostKeywordString = boostKeywordString;
       this.updateScores();
+    },
+
+    setSessionName(sessionName) {
+      this.sessionName = sessionName || "Untitled Session";
     },
 
 
@@ -180,6 +185,7 @@ export const useSessionStore = defineStore('session', {
 
     exportSession: function () {
       let data = {
+        name: this.sessionName,
         selected: this.selectedPublicationsDois,
         excluded: this.excludedPublicationsDois,
         boost: this.uniqueBoostKeywords.join(", "),

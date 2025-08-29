@@ -29,7 +29,9 @@
       "Bash(timeout 30s npm run test)",
       "Bash(node:*)",
       "Bash(timeout 30s npm run test -- --run tests/unit/components/HeaderPanel.test.js)",
-      "Bash(timeout 60s npm test)"
+      "Bash(timeout 60s npm test)",
+      "Bash(timeout 30s npm run test -- --run tests/unit/stores/session.test.js)",
+      "Bash(timeout 30s npm run test -- --run tests/unit/components/SessionMenuComponent.test.js)"
     ],
     "deny": []
   }
