@@ -21,11 +21,13 @@
         <v-text-field
           v-model="sessionName"
           label="Session Name"
-          variant="outlined"
+          variant="underlined"
           density="compact"
           hide-details
+          clearable
           @blur="updateSessionName"
           @keyup.enter="updateSessionName"
+          @click:clear="clearSessionName"
           prepend-inner-icon="mdi-pencil"
         />
       </div>
@@ -72,6 +74,11 @@ const sessionStateString = computed(() => {
 
 const updateSessionName = () => {
   sessionStore.setSessionName(sessionName.value)
+}
+
+const clearSessionName = () => {
+  sessionName.value = ''
+  sessionStore.setSessionName('')
 }
 
 // Watch for changes in the store to keep the local ref in sync
