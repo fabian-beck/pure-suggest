@@ -27,7 +27,9 @@
       "Bash(node analyze-vue-deps.js)",
       "Bash(timeout 30s npm run test -- --run tests/unit/components/NetworkVisComponent.test.js)",
       "Bash(timeout 30s npm run test)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(timeout 30s npm run test -- --run tests/unit/components/HeaderPanel.test.js)",
+      "Bash(timeout 60s npm test)"
     ],
     "deny": []
   }

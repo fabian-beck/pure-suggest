@@ -5,35 +5,7 @@
       <v-app-bar-title>
         <div class="app-name" v-html="appMeta.nameHtml"></div>
         <div class="session-state">
-          <v-menu v-if="!isEmpty" location="bottom" transition="slide-y-transition">
-            <template v-slot:activator="{ props }">
-              <v-btn v-bind="props" :icon="interfaceStore.isMobile"
-                :density="interfaceStore.isMobile ? 'compact' : 'default'"
-                class="session-state-button">
-                <v-icon size="18">mdi-text-box-multiple-outline</v-icon>
-                <span class="is-hidden-touch ml-2">
-                  {{ sessionStateString }}
-                  <v-icon class="ml-2">
-                    mdi-menu-down
-                  </v-icon>
-                </span>
-              </v-btn>
-            </template>
-            <v-list>
-              <v-list-item class="is-hidden-desktop">
-                {{ sessionStateString }}
-              </v-list-item>
-              <v-list-item prepend-icon="mdi-minus-thick" @click="interfaceStore.isExcludedModalDialogShown = true"
-                title="Excluded publications" v-if="sessionStore.excludedPublicationsCount > 0">
-              </v-list-item>
-              <v-list-item prepend-icon="mdi-export" @click="sessionStore.exportSession"
-                title="Export selected as JSON" />
-              <v-list-item prepend-icon="mdi-export" @click="sessionStore.exportAllBibtex"
-                title="Export selected as BibTeX" />
-              <v-list-item prepend-icon="mdi-delete" @click="clearSession" class="has-text-danger"
-                title="Clear session" />
-            </v-list>
-          </v-menu>
+          <SessionMenuComponent />
           <BoostKeywordsComponent />
           <FilterMenuComponent ref="filterMenuComponent" />
         </div>
@@ -80,24 +52,17 @@
 </template>
 
 <script setup>
-import { computed, inject, ref } from 'vue'
-import { useSessionStore } from "@/stores/session.js"
+import { inject, ref } from 'vue'
 import { useInterfaceStore } from "@/stores/interface.js"
 import FilterMenuComponent from "@/components/FilterMenuComponent.vue"
+import SessionMenuComponent from "@/components/SessionMenuComponent.vue"
 import { useAppState } from "@/composables/useAppState.js"
 
 const appMeta = inject("appMeta")
-const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
-const { isEmpty, clearSession, clearCache } = useAppState()
+const { isEmpty, clearCache } = useAppState()
 
 const filterMenuComponent = ref(null)
-
-const sessionStateString = computed(() => {
-  return `${sessionStore.selectedPublicationsCount} selected${sessionStore.excludedPublicationsCount
-    ? `; ${sessionStore.excludedPublicationsCount} excluded`
-    : ""}`
-})
 </script>
 
 <style lang="scss" scoped>
