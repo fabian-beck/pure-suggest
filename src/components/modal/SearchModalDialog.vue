@@ -53,6 +53,7 @@ import { storeToRefs } from "pinia";
 
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
+import { useQueueStore } from "@/stores/queue.js";
 import { useAppState } from "@/composables/useAppState.js";
 
 import PublicationSearch from "@/PublicationSearch.js";
@@ -62,9 +63,10 @@ export default {
   setup() {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
+    const queueStore = useQueueStore();
     const { queueForSelected } = useAppState();
     const { isSearchModalDialogShown } = storeToRefs(interfaceStore);
-    return { sessionStore, interfaceStore, isSearchModalDialogShown, queueForSelected };
+    return { sessionStore, interfaceStore, queueStore, isSearchModalDialogShown, queueForSelected };
   },
   data() {
     return {
@@ -81,7 +83,7 @@ export default {
           !this.sessionStore.selectedPublicationsDois.includes(
             publication.doi
           ) &&
-          !this.sessionStore.selectedQueue.includes(publication.doi) 
+          !this.queueStore.selectedQueue.includes(publication.doi) 
       );
     },
   },
