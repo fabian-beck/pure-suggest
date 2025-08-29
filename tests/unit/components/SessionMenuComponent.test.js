@@ -211,10 +211,56 @@ describe('SessionMenuComponent', () => {
     })
   })
 
-  it('should display correct session state string', () => {
-    wrapper = createWrapper()
-    const sessionStateText = wrapper.text()
-    expect(sessionStateText).toContain('5 selected; 2 excluded')
+  describe('Session state string display', () => {
+    it('should display session name with publication counts when session name is not default', () => {
+      mockSessionStore.sessionName = 'My Research Session'
+      wrapper = createWrapper()
+      const sessionStateText = wrapper.text()
+      expect(sessionStateText).toContain('My Research Session (5 selected; 2 excluded)')
+    })
+
+    it('should display only publication counts when session name is default "Untitled Session"', () => {
+      mockSessionStore.sessionName = 'Untitled Session'
+      wrapper = createWrapper()
+      const sessionStateText = wrapper.text()
+      expect(sessionStateText).toContain('5 selected; 2 excluded')
+      expect(sessionStateText).not.toContain('Untitled Session')
+    })
+
+    it('should display session name with only selected count when no excluded publications', () => {
+      mockSessionStore.sessionName = 'My Project'
+      mockSessionStore.excludedPublicationsCount = 0
+      wrapper = createWrapper()
+      const sessionStateText = wrapper.text()
+      expect(sessionStateText).toContain('My Project (5 selected)')
+      expect(sessionStateText).not.toContain('excluded')
+    })
+
+    it('should display only selected count when session name is default and no excluded publications', () => {
+      mockSessionStore.sessionName = 'Untitled Session'
+      mockSessionStore.excludedPublicationsCount = 0
+      wrapper = createWrapper()
+      const sessionStateText = wrapper.text()
+      expect(sessionStateText).toContain('5 selected')
+      expect(sessionStateText).not.toContain('Untitled Session')
+      expect(sessionStateText).not.toContain('excluded')
+    })
+
+    it('should handle empty session name by treating it as default', () => {
+      mockSessionStore.sessionName = ''
+      wrapper = createWrapper()
+      const sessionStateText = wrapper.text()
+      expect(sessionStateText).toContain('5 selected; 2 excluded')
+      expect(sessionStateText).not.toContain('(')
+    })
+
+    it('should handle null session name by treating it as default', () => {
+      mockSessionStore.sessionName = null
+      wrapper = createWrapper()
+      const sessionStateText = wrapper.text()
+      expect(sessionStateText).toContain('5 selected; 2 excluded')
+      expect(sessionStateText).not.toContain('(')
+    })
   })
 
   it('should show excluded publications item when there are excluded publications', () => {

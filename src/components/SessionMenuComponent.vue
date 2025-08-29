@@ -55,9 +55,19 @@ const { isEmpty, clearSession } = useAppState()
 const sessionName = ref(sessionStore.sessionName)
 
 const sessionStateString = computed(() => {
-  return `${sessionStore.selectedPublicationsCount} selected${sessionStore.excludedPublicationsCount
+  const publicationCount = `${sessionStore.selectedPublicationsCount} selected${sessionStore.excludedPublicationsCount
     ? `; ${sessionStore.excludedPublicationsCount} excluded`
     : ""}`
+  
+  // Show session name if it's not the default and not empty/null
+  const isDefaultName = !sessionStore.sessionName || 
+                       sessionStore.sessionName === 'Untitled Session'
+  
+  if (isDefaultName) {
+    return publicationCount
+  } else {
+    return `${sessionStore.sessionName} (${publicationCount})`
+  }
 })
 
 const updateSessionName = () => {
