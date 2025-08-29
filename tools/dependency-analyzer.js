@@ -97,10 +97,30 @@ function analyzeFile(filePath) {
     
     // Vue-specific analysis
     if (fileType === 'Vue Component') {
-      // Extract template component usage
-      const templateMatch = content.match(/<template[^>]*>([\s\S]*?)<\/template>/);
-      if (templateMatch) {
-        const template = templateMatch[1];
+      // Extract template component usage - find the MAIN template block (not nested v-slot templates)
+      const lines = content.split('\n');
+      let templateStart = -1;
+      let templateEnd = -1;
+      let depth = 0;
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (line.includes('<template') && templateStart === -1) {
+          templateStart = i;
+          depth++;
+        } else if (line.includes('<template')) {
+          depth++;
+        } else if (line.includes('</template>')) {
+          depth--;
+          if (depth === 0 && templateStart !== -1) {
+            templateEnd = i;
+            break;
+          }
+        }
+      }
+      
+      if (templateStart !== -1 && templateEnd !== -1) {
+        const template = lines.slice(templateStart + 1, templateEnd).join('\n');
         const componentMatches = template.match(/<([A-Z][a-zA-Z]*)/g);
         if (componentMatches) {
           analysis.templateComponents = [...new Set(componentMatches.map(match => match.slice(1)))];
