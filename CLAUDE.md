@@ -125,3 +125,4 @@ The codebase has undergone significant refactoring to improve separation of conc
 - Make sure to adapt tests along with changes in the project.
 - Use Vue 3 Composition API for new components
 - Never ignore failing tests.
+- For implementing new features or fix bugs, work in a test-driven style whenever possible.
