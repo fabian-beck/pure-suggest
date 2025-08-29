@@ -1,13 +1,13 @@
 <template>
-  <v-menu v-if="!sessionStore.isEmpty" location="bottom" transition="slide-y-transition"
+  <v-menu v-if="!isEmpty" location="bottom" transition="slide-y-transition"
     :close-on-content-click="false">
     <template v-slot:activator="{ props }">
       <v-btn class="boost-button" :class="interfaceStore.isMobile ? '' : 'p-1 pl-4'" 
         v-bind="props" :icon="interfaceStore.isMobile" @click="handleMenuInput(true)"
         :density="interfaceStore.isMobile ? 'compact' : 'default'">
         <v-icon size="18">mdi-chevron-double-up</v-icon>
-        <span class="is-hidden-touch ml-2">
-          <span v-html="boostKeywordStringHtml ? boostKeywordStringHtml : '[Set keywords]'"
+        <span class="is-hidden-touch ml-2 boost-keywords-display">
+          <span class="keywords-text" v-html="boostKeywordStringHtml ? boostKeywordStringHtml : '[Set keywords]'"
             :class="{ 'has-text-warning-dark': !boostKeywordStringHtml }"></span>
           <v-icon class="ml-2">
             mdi-menu-down
@@ -35,43 +35,37 @@
   </v-menu>
 </template>
 
-<script>
-import { useSessionStore } from "@/stores/session.js";
-import { useInterfaceStore } from "@/stores/interface.js";
+<script setup>
+import { computed, nextTick, ref } from 'vue'
+import { useSessionStore } from "@/stores/session.js"
+import { useInterfaceStore } from "@/stores/interface.js"
+import { useAppState } from "@/composables/useAppState.js"
 
-export default {
-  name: "BoostKeywordsComponent",
+const sessionStore = useSessionStore()
+const interfaceStore = useInterfaceStore()
+const { isEmpty } = useAppState()
 
-  setup() {
-    const sessionStore = useSessionStore();
-    const interfaceStore = useInterfaceStore();
-    return { sessionStore, interfaceStore };
-  },
+const boost = ref(null)
 
-  computed: {
-    boostKeywordStringHtml() {
-      let html = this.sessionStore.boostKeywordString;
-      // wrap comma seperated words in span.word
-      html = html.replace(/\s*([^,|]+)/g, "<span class='word'>$1</span>");
-      // wrap | in span.alt
-      html = html.replace(/\|/g, "<span class='alt'>|</span>");
-      // wrap , in span.comma
-      html = html.replace(/,/g, "<span class='comma'>,</span>");
-      return html;
-    },
-  },
+const boostKeywordStringHtml = computed(() => {
+  let html = sessionStore.boostKeywordString
+  // wrap comma seperated words in span.word
+  html = html.replace(/\s*([^,|]+)/g, "<span class='word'>$1</span>")
+  // wrap | in span.alt
+  html = html.replace(/\|/g, "<span class='alt'>|</span>")
+  // wrap , in span.comma
+  html = html.replace(/,/g, "<span class='comma'>,</span>")
+  return html
+})
 
-  methods: {
-    handleMenuInput(value) {
-      if (value) {
-        this.$nextTick(() => {
-          this.$refs.boost.focus();
-        });
-      }
-    },
-  },
 
-};
+function handleMenuInput(value) {
+  if (value) {
+    nextTick(() => {
+      boost.value?.focus()
+    })
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -109,12 +103,44 @@ export default {
 }
 
 .boost-button {
+  flex: 0 1 auto; /* Don't grow, but allow shrinking when needed */
+  min-width: 120px; /* Minimum width for usability */
+  /* Remove max-width to allow natural expansion */
+  
   :deep(.v-btn__content) {
     text-transform: none;
+    overflow: hidden;
   }
   
-  /* Mobile round button icon centering - same as filter button */
+  .boost-keywords-display {
+    display: inline-flex;
+    align-items: center;
+    overflow: hidden;
+    
+    .keywords-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      /* Remove max-width to allow natural expansion until container forces truncation */
+      min-width: 0;
+    }
+    
+    /* Keep the dropdown icon fixed */
+    .v-icon {
+      flex: 0 0 auto;
+      margin-left: 0.5rem !important;
+    }
+  }
+  
+  /* Mobile round button - force circle shape with correct size */
   &.v-btn--icon {
+    flex: none !important; /* Remove all flex behavior */
+    width: 28px !important; /* Correct compact density size */
+    height: 28px !important;
+    min-width: 28px !important;
+    max-width: 28px !important;
+    border-radius: 50% !important;
+    
     :deep(.v-btn__content) {
       display: flex !important;
       align-items: center !important;
@@ -128,4 +154,5 @@ export default {
     }
   }
 }
+
 </style>

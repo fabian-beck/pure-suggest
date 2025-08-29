@@ -7,11 +7,13 @@
     "build": "vite build",
     "preview": "vite preview --open",
     "lint": "eslint src",
-    "test": "vitest",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "test:perf": "vitest run tests/performance",
-    "test:perf:watch": "vitest tests/performance"
+    "test:perf": "vitest run --config vite.config.perf.mjs",
+    "test:perf:watch": "vitest --config vite.config.perf.mjs",
+    "test:all": "npm test && npm run test:perf"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
@@ -20,7 +22,6 @@
     "core-js": "^3.21.0",
     "d3": "^7",
     "idb-keyval": "^6.2.1",
-    "lodash": "^4.17.21",
     "lz-string": "^1.4.4",
     "pinia": "^3.0.3",
     "sass": "^1.49.7",

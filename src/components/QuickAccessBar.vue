@@ -1,7 +1,7 @@
 <template>
   <div>
-    <v-btn class="has-background-primary has-text-white" @click="sessionStore.updateQueued"
-      v-show="sessionStore.isUpdatable" id="quick-access-update" elevation="6" prepend-icon="mdi-update">
+    <v-btn class="has-background-primary has-text-white" @click="updateQueued"
+      v-show="queueStore.isUpdatable" id="quick-access-update" elevation="6" prepend-icon="mdi-update">
       <div class="button-label">Update</div>
     </v-btn>
     <v-btn-toggle borderless elevation="6">
@@ -27,54 +27,51 @@
   </div>
 </template>
 
-<script>
-import { useSessionStore } from "@/stores/session.js";
+<script setup>
+import { reactive, onMounted, onUnmounted } from 'vue'
+import { useQueueStore } from "@/stores/queue.js"
+import { useAppState } from "@/composables/useAppState.js"
+import { scrollToTargetAdjusted } from "@/Util.js"
 
-import { scrollToTargetAdjusted } from "@/Util.js";
+const queueStore = useQueueStore()
+const { updateQueued } = useAppState()
 
-export default {
-  name: "QuickAccessBar",
-  setup() {
-    const sessionStore = useSessionStore();
-    return { sessionStore };
-  },
-  mounted() {
-    document.addEventListener("scroll", this.updateActiveButton);
-  },
-  data() {
-    return {
-      isComponentActive: {
-        selected: true,
-        suggested: false,
-        network: false,
-      },
-    };
-  },
-  methods: {
-    scrollTo(id) {
-      scrollToTargetAdjusted(document.getElementById(id), 55);
-    },
+function scrollTo(id) {
+  scrollToTargetAdjusted(document.getElementById(id), 55)
+}
 
-    updateActiveButton() {
-      this.isComponentActive = {
-        selected: false,
-        suggested: false,
-        network: false,
-      };
-      const activationHeight = document.documentElement.clientHeight * 0.7;
-      for (const componentId of Object.keys(this.isComponentActive)) {
-        const component = document.getElementById(componentId);
-        const rect = component.getBoundingClientRect();
-        this.isComponentActive[componentId] =
-          (rect.top >= 0 && rect.top <= activationHeight) ||
-          (rect.top < 0 && rect.bottom > activationHeight);
-        if (this.isComponentActive[componentId]) {
-          break;
-        }
-      }
-    },
-  },
-};
+const isComponentActive = reactive({
+  selected: true,
+  suggested: false,
+  network: false,
+})
+
+
+function updateActiveButton() {
+  isComponentActive.selected = false
+  isComponentActive.suggested = false
+  isComponentActive.network = false
+  
+  const activationHeight = document.documentElement.clientHeight * 0.7
+  for (const componentId of Object.keys(isComponentActive)) {
+    const component = document.getElementById(componentId)
+    const rect = component.getBoundingClientRect()
+    isComponentActive[componentId] =
+      (rect.top >= 0 && rect.top <= activationHeight) ||
+      (rect.top < 0 && rect.bottom > activationHeight)
+    if (isComponentActive[componentId]) {
+      break
+    }
+  }
+}
+
+onMounted(() => {
+  document.addEventListener("scroll", updateActiveButton)
+})
+
+onUnmounted(() => {
+  document.removeEventListener("scroll", updateActiveButton)
+})
 </script>
 <style lang="scss" scoped>
 .v-btn-group {

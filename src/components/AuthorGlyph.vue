@@ -28,54 +28,30 @@
     </tippy>
 </template>
 
-<script>
-import { useSessionStore } from "@/stores/session.js";
+<script setup>
+import { computed } from 'vue'
+import { useAuthorStore } from "@/stores/author.js"
 
-export default {
-    props: {
-        author: Object,
-    },
-    setup() {
-        const sessionStore = useSessionStore();
-        return { sessionStore };
-    },
-    computed: {
-        authorColor() {
-            let score = this.author.score;
-            if (!this.sessionStore.isAuthorScoreEnabled) {
-                score = score * 20;
-            }
-            if (!this.sessionStore.isFirstAuthorBoostEnabled) {
-                score = score * 1.5;
-            }
-            if (!this.sessionStore.isNewPublicationBoostEnabled) {
-                score = score * 1.5;
-            }
-            return `hsl(0, 0%, ${Math.max(60 - score / 3, 0)}%)`;
-        },
-    },
-    methods: {
+const authorStore = useAuthorStore()
 
-        authorIconSize(score) {
-            if (!this.sessionStore.isAuthorScoreEnabled) {
-                score = score * 20;
-            }
-            if (!this.sessionStore.isFirstAuthorBoostEnabled) {
-                score = score * 1.5;
-            }
-            if (score > 128) {
-                return "24";
-            }
-            if (score > 64) {
-                return "22";
-            }
-            if (score > 16) {
-                return "20";
-            }
-            return "18";
-        },
+const props = defineProps({
+    author: Object,
+})
+
+const authorColor = computed(() => {
+    let score = props.author.score
+    if (!authorStore.isAuthorScoreEnabled) {
+        score = score * 20
     }
-}
+    if (!authorStore.isFirstAuthorBoostEnabled) {
+        score = score * 1.5
+    }
+    if (!authorStore.isAuthorNewBoostEnabled) {
+        score = score * 1.5
+    }
+    return `hsl(0, 0%, ${Math.max(60 - score / 3, 0)}%)`
+})
+
 </script>
 
 <style scoped>

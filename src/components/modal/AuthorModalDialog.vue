@@ -8,18 +8,18 @@
         </template>
         <v-list>
           <v-list-item>
-            <v-checkbox v-model="sessionStore.isAuthorScoreEnabled" label="Consider publication score"
-              @change="sessionStore.updateScores" density="compact" hint="Otherwise, each publication counts as one"
+            <v-checkbox v-model="authorStore.isAuthorScoreEnabled" label="Consider publication score"
+              @change="updateAuthorScores" density="compact" hint="Otherwise, each publication counts as one"
               persistent-hint />
           </v-list-item>
           <v-list-item>
-            <v-checkbox v-model="sessionStore.isFirstAuthorBoostEnabled" label="Boost first authors"
-              @change="sessionStore.updateScores" density="compact" hint="Counting first author publications twice"
+            <v-checkbox v-model="authorStore.isFirstAuthorBoostEnabled" label="Boost first authors"
+              @change="updateAuthorScores" density="compact" hint="Counting first author publications twice"
               persistent-hint />
           </v-list-item>
           <v-list-item>
-            <v-checkbox v-model="sessionStore.isAuthorNewBoostEnabled" label="Boost new publications"
-              @change="sessionStore.updateScores" density="compact"
+            <v-checkbox v-model="authorStore.isAuthorNewBoostEnabled" label="Boost new publications"
+              @change="updateAuthorScores" density="compact"
               :hint="`Counting publications tagged as 'new' twice`" persistent-hint />
           </v-list-item>
         </v-list>
@@ -28,7 +28,7 @@
     <div class="content">
       <section>
         <ul>
-          <li v-for="author in sessionStore.selectedPublicationsAuthors" :key="author.id" class="media"
+          <li v-for="author in authorStore.selectedPublicationsAuthors" :key="author.id" class="media"
             :id="toTagId(author.id)">
             <AuthorGlyph :author="author" class="media-left"></AuthorGlyph>
             <div class="media-content">
@@ -70,7 +70,7 @@
                     (a, b) => author.coauthors[b] - author.coauthors[a]
                   )" :key="coauthorId" :style="coauthorStyle(author.coauthors[coauthorId])"
                     @click="scrollToAuthor(coauthorId)">
-                    {{sessionStore.selectedPublicationsAuthors.filter(author => author.id === coauthorId)[0].name}}
+                    {{authorStore.selectedPublicationsAuthors.filter(author => author.id === coauthorId)[0].name}}
                     ({{
                       author.coauthors[coauthorId] }})
                   </v-chip>
@@ -90,14 +90,16 @@
 
 <script>
 import { useSessionStore } from "@/stores/session.js";
+import { useAuthorStore } from "@/stores/author.js";
 import { useInterfaceStore } from "@/stores/interface.js";
 
 export default {
   name: "AuthorModalDialog",
   setup() {
     const sessionStore = useSessionStore();
+    const authorStore = useAuthorStore();
     const interfaceStore = useInterfaceStore();
-    return { sessionStore, interfaceStore };
+    return { sessionStore, authorStore, interfaceStore };
   },
   expose: ["scrollToAuthor"],
   methods: {
@@ -113,6 +115,9 @@ export default {
     },
     cancel() {
       this.interfaceStore.isAuthorModalDialogShown = false;
+    },
+    updateAuthorScores() {
+      this.authorStore.computeSelectedPublicationsAuthors(this.sessionStore.selectedPublications);
     },
     scrollToAuthor(id) {
       const tagId = this.toTagId(id);

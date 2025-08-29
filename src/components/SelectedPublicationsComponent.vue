@@ -8,7 +8,7 @@
           <h2 class="is-size-5 ml-2">Selected</h2>
         </div>
       </div>
-      <div class="level-right" v-show="!sessionStore.isEmpty">
+      <div class="level-right" v-show="!isEmpty">
         <div class="level-item">
           <CompactButton icon="mdi-account-group has-text-white"
             v-tippy="`List <span class='key'>a</span>uthors of selected publications.`"
@@ -21,25 +21,25 @@
     </div>
     <div class="header">
       <div>
-        <div class="notification queue-panel p-2" v-show="sessionStore.isUpdatable">
+        <div class="notification queue-panel p-2" v-show="queueStore.isUpdatable">
           <div class="level">
             <div class="has-text-centered level-item queue-description">
               <p>
                 <InlineIcon icon="mdi-tray-full" class="mr-2"></InlineIcon>
                 <b>Queue:&nbsp;</b>
-                <span v-show="sessionStore.selectedQueue.length">
+                <span v-show="queueStore.selectedQueue.length">
                   {{
-                    sessionStore.selectedQueue.length > 1
-                    ? `${sessionStore.selectedQueue.length} publications`
+                    queueStore.selectedQueue.length > 1
+                    ? `${queueStore.selectedQueue.length} publications`
                     : "1 publication"
                   }}
-                  to be selected</span><span v-show="sessionStore.selectedQueue.length &&
-                      sessionStore.excludedQueue.length
+                  to be selected</span><span v-show="queueStore.selectedQueue.length &&
+                      queueStore.excludedQueue.length
                       ">
-                  and </span><span v-show="sessionStore.excludedQueue.length">
+                  and </span><span v-show="queueStore.excludedQueue.length">
                   {{
-                    sessionStore.excludedQueue.length > 1
-                    ? `${sessionStore.excludedQueue.length} publications`
+                    queueStore.excludedQueue.length > 1
+                    ? `${queueStore.excludedQueue.length} publications`
                     : "1 publication"
                   }}
                   to be excluded</span>.
@@ -50,16 +50,16 @@
               <CompactButton icon="mdi-pencil" class="ml-2" v-tippy="'Edit publications in queue.'"
                 v-on:click="interfaceStore.isQueueModalDialogShown = true"></CompactButton>
               <CompactButton icon="mdi-undo" class="ml-1" v-tippy="'Remove all publications from queue again.'"
-                v-on:click="sessionStore.clearQueues()"></CompactButton>
+                v-on:click="queueStore.clearQueues()"></CompactButton>
               <v-btn class="has-background-primary has-text-white ml-2"
                 v-tippy="'Update suggested and excluded publications with queue and compute new suggestions.'"
-                @click="sessionStore.updateQueued" prepend-icon="mdi-update">
+                @click="updateQueued" prepend-icon="mdi-update">
                 <span class="key">U</span>pdate
               </v-btn>
             </div>
           </div>
         </div>
-        <div class="notification has-text-centered has-background-primary-95 p-2" v-show="sessionStore.isEmpty">
+        <div class="notification has-text-centered has-background-primary-95 p-2" v-show="isEmpty">
           <p>
             <i>To start, <b>add publications</b> to selected:</i>
           </p>
@@ -77,7 +77,7 @@
               </v-btn>
             </div>
             <div class="level-item">
-              <v-btn class="has-background-primary-95" @click.stop="sessionStore.loadExample()">
+              <v-btn class="has-background-primary-95" @click.stop="loadExample()">
                 <v-icon left class="mr-2">mdi-file-document</v-icon>
                 Load example
               </v-btn>
@@ -90,42 +90,40 @@
   </div>
 </template>
 
-<script>
-import { useSessionStore } from "@/stores/session.js";
-import { useInterfaceStore } from "@/stores/interface.js";
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useSessionStore } from "@/stores/session.js"
+import { useInterfaceStore } from "@/stores/interface.js"
+import { useQueueStore } from "@/stores/queue.js"
+import { useAppState } from "@/composables/useAppState.js"
 
-export default {
-  name: "SelectedPublicationsComponent",
+const sessionStore = useSessionStore()
+const interfaceStore = useInterfaceStore()
+const queueStore = useQueueStore()
+const { isEmpty, importSession: importSessionFromState, loadExample, updateQueued } = useAppState()
 
-  setup() {
-    const sessionStore = useSessionStore();
-    const interfaceStore = useInterfaceStore();
-    return { sessionStore, interfaceStore };
-  },
+const publicationList = ref(null)
 
-  mounted() {
-    this.sessionStore.$onAction(({ name, after }) => {
-      after(() => {
-        if (name === "updateQueued") {
-          this.$refs.publicationList.$el.scrollTop = 0;
-        }
-      });
-    });
-  },
+function importSession() {
+  interfaceStore.showConfirmDialog(`<label>Choose an exported session JSON file:&nbsp;</label>
+    <input type="file" id="import-json-input" accept="application/JSON"/>`,
+    () =>
+      importSessionFromState(
+        document.getElementById("import-json-input").files[0]
+      ),
+    "Import session",
+  )
+}
 
-  methods: {
-    importSession: function () {
-      this.interfaceStore.showConfirmDialog(`<label>Choose an exported session JSON file:&nbsp;</label>
-        <input type="file" id="import-json-input" accept="application/JSON"/>`,
-        () =>
-          this.sessionStore.importSession(
-            document.getElementById("import-json-input").files[0]
-          ),
-        "Import session",
-      );
-    },
-  },
-};
+onMounted(() => {
+  sessionStore.$onAction(({ name, after }) => {
+    after(() => {
+      if (name === "updateQueued") {
+        publicationList.value.$el.scrollTop = 0
+      }
+    })
+  })
+})
 </script>
 
 <style lang="scss" scoped>

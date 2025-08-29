@@ -10,7 +10,10 @@ export default defineConfig({
         environment: 'happy-dom',
         globals: true,
         setupFiles: ['./tests/setup.js'],
-        css: false // Disable CSS processing in tests
+        css: false, // Disable CSS processing in tests
+        include: ['tests/unit/**/*.test.js'], // Only unit tests
+        testTimeout: 5000, // 5 second timeout for unit tests
+        hookTimeout: 10000  // 10 second timeout for unit test hooks
     },
     base:'./',
     plugins: [

@@ -1,14 +1,14 @@
 <template>
   <li>
-    <div class="level is-mobile queue-controls" v-if="sessionStore.isQueuingForSelected(publication.doi) ||
-      sessionStore.isQueuingForExcluded(publication.doi)" :class="{
-        'to-be-selected': sessionStore.isQueuingForSelected(publication.doi),
+    <div class="level is-mobile queue-controls" v-if="queueStore.isQueuingForSelected(publication.doi) ||
+      queueStore.isQueuingForExcluded(publication.doi)" :class="{
+        'to-be-selected': queueStore.isQueuingForSelected(publication.doi),
       }">
         <div class="level-item">
           <span>
             <InlineIcon icon="mdi-tray-full" color="dark" />
             To be
-            <span v-if="sessionStore.isQueuingForSelected(publication.doi)"><b>selected </b>
+            <span v-if="queueStore.isQueuingForSelected(publication.doi)"><b>selected </b>
               <InlineIcon icon="mdi-plus-thick" color="primary-dark" />
             </span>
             <span v-else><b> excluded </b>
@@ -18,7 +18,7 @@
         </div>
         <div class="level-right">
           <CompactButton icon="mdi-undo" v-tippy="'Remove publication from queue again.'"
-            v-on:click="sessionStore.removeFromQueues(publication.doi)"></CompactButton>
+            v-on:click="queueStore.removeFromQueues(publication.doi)"></CompactButton>
         </div>
       </div>
     <div class="publication-component media" :class="{
@@ -30,12 +30,12 @@
         !publication.isSelected &&
         publication.wasFetched,
       'is-queuing':
-        sessionStore.isQueuingForSelected(publication.doi) ||
-        sessionStore.isQueuingForExcluded(publication.doi),
+        queueStore.isQueuingForSelected(publication.doi) ||
+        queueStore.isQueuingForExcluded(publication.doi),
       'is-hovered': publication.isHovered,
       'is-keyword-hovered': publication.isKeywordHovered,
       'is-author-hovered': publication.isAuthorHovered,
-    }" :id="publication.doi" tabindex="0" @focus="activate">
+    }" :id="publication.doi" tabindex="0" @focus="activate" @click.stop>
       <tippy class="media-left" placement="right">
         <div class="glyph has-text-centered" v-bind:style="{ 'background-color': publication.scoreColor }"
           v-show="publication.wasFetched">
@@ -117,7 +117,7 @@
               </div>
             </div>
             <div class="level-right">
-              <v-btn v-tippy="'Retry loading metadata.'" @click.stop="sessionStore.retryLoadingPublication(publication)"
+              <v-btn v-tippy="'Retry loading metadata.'" @click.stop="retryLoadingPublication(publication)"
                 small>
                 <v-icon left>mdi-refresh</v-icon>
                 Retry
@@ -137,11 +137,11 @@
       <div class="media-right">
         <div>
           <CompactButton v-if="!publication.isSelected" icon="mdi-plus-thick"
-            v-on:click="sessionStore.queueForSelected(publication.doi)" class="has-text-primary"
+            v-on:click="queueForSelected(publication.doi)" class="has-text-primary"
             v-tippy="'Mark publication to be added to selected publications.'"></CompactButton>
         </div>
         <div>
-          <CompactButton icon="mdi-minus-thick" v-on:click="sessionStore.queueForExcluded(publication.doi)"
+          <CompactButton icon="mdi-minus-thick" v-on:click="queueForExcluded(publication.doi)"
             v-tippy="'Mark publication to be excluded for suggestions.'"></CompactButton>
         </div>
       </div>
@@ -149,44 +149,55 @@
   </li>
 </template>
 
-<script>
-import { useSessionStore } from "@/stores/session.js";
-import { useInterfaceStore } from "@/stores/interface.js";
+<script setup>
+import { computed } from 'vue'
+import { useQueueStore } from "@/stores/queue.js"
+import { useAppState } from "@/composables/useAppState.js"
 
-export default {
-  name: "PublicationComponent",
-  setup() {
-    const sessionStore = useSessionStore();
-    const interfaceStore = useInterfaceStore();
-    return { sessionStore, interfaceStore };
-  },
-  props: {
-    publication: Object,
-  },
-  computed: {
-    chevronType: function () {
-      if (this.publication.boostFactor >= 8) {
-        return "chevron-triple-up";
-      }
-      else if (this.publication.boostFactor >= 4) {
-        return "chevron-double-up";
-      }
-      else if (this.publication.boostFactor > 1) {
-        return "chevron-up";
-      }
-      return "";
-    },
-  },
-  methods: {
-    activate: function () {
-      this.sessionStore.activatePublicationComponentByDoi(this.publication.doi);
-      this.$emit("activate", this.publication.doi);
-    },
-    refocus: function () {
-      document.getElementById(this.publication.doi).focus();
-    },
-  },
-};
+const queueStore = useQueueStore()
+const { retryLoadingPublication, activatePublicationComponentByDoi, queueForSelected, queueForExcluded } = useAppState()
+
+const emit = defineEmits(['activate'])
+const props = defineProps({
+  publication: {
+    type: Object,
+    required: true
+  }
+})
+
+
+const chevronType = computed(() => {
+  if (props.publication.boostFactor >= 8) {
+    return "chevron-triple-up"
+  }
+  else if (props.publication.boostFactor >= 4) {
+    return "chevron-double-up"
+  }
+  else if (props.publication.boostFactor > 1) {
+    return "chevron-up"
+  }
+  return ""
+})
+
+let isActivating = false
+
+function activate() {
+  // Prevent recursive activation calls
+  if (isActivating) {
+    return
+  }
+  
+  isActivating = true
+  activatePublicationComponentByDoi(props.publication.doi)
+  emit("activate", props.publication.doi)
+  
+  // Reset the flag after a brief delay to allow for the activation to complete
+  setTimeout(() => {
+    isActivating = false
+  }, 100)
+}
+
+
 </script>
 
 <style lang="scss">

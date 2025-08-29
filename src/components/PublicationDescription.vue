@@ -97,75 +97,76 @@
     </div>
 </template>
 
-<script>
-import { useSessionStore } from "@/stores/session.js";
-import { useInterfaceStore } from "@/stores/interface.js";
+<script setup>
+import { computed } from 'vue'
+import { useSessionStore } from "@/stores/session.js"
+import { useInterfaceStore } from "@/stores/interface.js"
 
-export default {
-    setup() {
-        const sessionStore = useSessionStore();
-        const interfaceStore = useInterfaceStore();
-        return { sessionStore, interfaceStore };
-    },
-    props: {
-        publication: Object,
-        highlighted: String,
-        alwaysShowDetails: Boolean,
-    },
-    computed: {
-        showDetails() {
-            return this.alwaysShowDetails || this.publication.isActive;
-        }
-    },
-    methods: {
-        highlight(string) {
-            if (!string) {
-                return "";
-            }
-            if (!this.highlighted) {
-                return string;
-            }
-            const substrings = this.highlighted.split(' ');
-            let highlightedString = string;
-            substrings.forEach(substring => {
-                if (substring.length < 3)
-                    return;
-                const regex = new RegExp(substring, 'gi');
-                highlightedString = highlightedString.replace(regex, match => {
-                    return `<span class="has-background-grey-light">${match}</span>`;
-                });
-            });
-            return highlightedString;
-        },
-        showAbstract: function () {
-            this.interfaceStore.showAbstract(this.publication);
-        },
-        exportBibtex: function () {
-            this.sessionStore.exportSingleBibtex(this.publication);
-            this.refocus();
-        },
-        toggleDoi(doi) {
-            // Check if the filter menu is open
-            if (!this.interfaceStore.isFilterMenuOpen) {
-                // Open the filter menu and add the DOI
-                this.interfaceStore.openFilterMenu();
-                this.sessionStore.filter.addDoi(doi);
-            }
-            else {
-                // Menu is already open, just toggle the DOI
-                this.sessionStore.filter.toggleDoi(doi);
-            }
-        },
-        isDoiFiltered(doi) {
-            return this.sessionStore.filter.dois.includes(doi);
-        },
-        getFilterDoiTooltip(doi) {
-            return this.isDoiFiltered(doi) ? 'Active as f<span class="key">i</span>lter; click to remove DOI from filter' : 'Add DOI to f<span class="key">i</span>lter';
-        },
-        refocus: function () {
-            document.getElementById(this.publication.doi)?.focus();
-        },
-    },
+const sessionStore = useSessionStore()
+const interfaceStore = useInterfaceStore()
+
+const props = defineProps({
+    publication: Object,
+    highlighted: String,
+    alwaysShowDetails: Boolean,
+})
+
+const showDetails = computed(() => {
+    return props.alwaysShowDetails || props.publication.isActive
+})
+
+function highlight(string) {
+    if (!string) {
+        return ""
+    }
+    if (!props.highlighted) {
+        return string
+    }
+    const substrings = props.highlighted.split(' ')
+    let highlightedString = string
+    substrings.forEach(substring => {
+        if (substring.length < 3)
+            return
+        const regex = new RegExp(substring, 'gi')
+        highlightedString = highlightedString.replace(regex, match => {
+            return `<span class="has-background-grey-light">${match}</span>`
+        })
+    })
+    return highlightedString
+}
+
+function showAbstract() {
+    interfaceStore.showAbstract(props.publication)
+}
+
+function exportBibtex() {
+    sessionStore.exportSingleBibtex(props.publication)
+    refocus()
+}
+
+function toggleDoi(doi) {
+    // Check if the filter menu is open
+    if (!interfaceStore.isFilterMenuOpen) {
+        // Open the filter menu and add the DOI
+        interfaceStore.openFilterMenu()
+        sessionStore.filter.addDoi(doi)
+    }
+    else {
+        // Menu is already open, just toggle the DOI
+        sessionStore.filter.toggleDoi(doi)
+    }
+}
+
+function isDoiFiltered(doi) {
+    return sessionStore.filter.dois.includes(doi)
+}
+
+function getFilterDoiTooltip(doi) {
+    return isDoiFiltered(doi) ? 'Active as f<span class="key">i</span>lter; click to remove DOI from filter' : 'Add DOI to f<span class="key">i</span>lter'
+}
+
+function refocus() {
+    document.getElementById(props.publication.doi)?.focus()
 }
 </script>
 

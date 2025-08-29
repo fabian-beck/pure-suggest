@@ -1,4 +1,7 @@
-import { VALIDATION } from './constants/ui.js';
+const VALIDATION = {
+  MIN_YEAR: 1000,
+  MAX_YEAR: 10000
+};
 
 export default class Filter {
 

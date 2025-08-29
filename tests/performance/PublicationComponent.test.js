@@ -30,12 +30,16 @@ function createMockPublication(id = 'test-doi') {
     doi: id,
     title: 'Test Publication',
     author: 'Test Author',
+    authorOrcidHtml: 'Test Author.',
     year: 2023,
+    container: 'Test Journal',
     score: 5,
     scoreColor: '#ff0000',
     citationCount: 10,
     referenceCount: 5,
     referenceDois: ['ref1', 'ref2'],
+    citationDois: ['cite1', 'cite2', 'cite3'],
+    tooManyCitations: false,
     boostFactor: 2,
     boostMatches: 1,
     isActive: false,
@@ -80,10 +84,17 @@ describe('PublicationComponent Performance Tests', () => {
         props: { publication },
         global: {
           stubs: {
-            PublicationDescription: true,
-            CompactButton: true,
-            InlineIcon: true,
-            tippy: true
+            PublicationDescription: { template: '<div class="publication-description"><slot></slot></div>' },
+            CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
+            InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
+            tippy: { template: '<span class="tippy"><slot></slot></span>' }
+          },
+          directives: {
+            tippy: {
+              mounted() {},
+              unmounted() {},
+              updated() {}
+            }
           }
         }
       })
@@ -160,10 +171,17 @@ describe('PublicationComponent Performance Tests', () => {
         props: { publication },
         global: {
           stubs: {
-            PublicationDescription: true,
-            CompactButton: true,
-            InlineIcon: true,
-            tippy: true
+            PublicationDescription: { template: '<div class="publication-description"><slot></slot></div>' },
+            CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
+            InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
+            tippy: { template: '<span class="tippy"><slot></slot></span>' }
+          },
+          directives: {
+            tippy: {
+              mounted() {},
+              unmounted() {},
+              updated() {}
+            }
           }
         }
       })
@@ -214,10 +232,17 @@ describe('PublicationComponent Performance Tests', () => {
         props: { publication },
         global: {
           stubs: {
-            PublicationDescription: true,
-            CompactButton: true,
-            InlineIcon: true,
-            tippy: true
+            PublicationDescription: { template: '<div class="publication-description"><slot></slot></div>' },
+            CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
+            InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
+            tippy: { template: '<span class="tippy"><slot></slot></span>' }
+          },
+          directives: {
+            tippy: {
+              mounted() {},
+              unmounted() {},
+              updated() {}
+            }
           }
         }
       });

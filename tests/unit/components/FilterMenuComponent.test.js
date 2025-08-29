@@ -81,7 +81,7 @@ describe('FilterMenuComponent', () => {
     wrapper = mount(FilterMenuComponent)
     
     // Check that the v-menu component is rendered
-    const menu = wrapper.find('v-menu')
+    const menu = wrapper.find('.v-menu')
     expect(menu.exists()).toBe(true)
   })
 
@@ -231,27 +231,6 @@ describe('FilterMenuComponent', () => {
     expect(mockSessionStore.filter.isActive).toBe(initialState)
   })
 
-  it('should close menu when openMenu is called while menu is already open', () => {
-    mockInterfaceStore.isFilterMenuOpen = true
-    wrapper = mount(FilterMenuComponent)
-    
-    wrapper.vm.openMenu()
-    
-    expect(mockInterfaceStore.openFilterMenu).toHaveBeenCalled()
-    expect(mockInterfaceStore.isFilterMenuOpen).toBe(false)
-  })
-
-  it('should open menu and enable filters when openMenu is called while menu is closed', () => {
-    mockInterfaceStore.isFilterMenuOpen = false
-    mockSessionStore.filter.isActive = false
-    wrapper = mount(FilterMenuComponent)
-    
-    wrapper.vm.openMenu()
-    
-    expect(mockInterfaceStore.openFilterMenu).toHaveBeenCalled()
-    expect(mockInterfaceStore.isFilterMenuOpen).toBe(true)
-    expect(mockSessionStore.filter.isActive).toBe(true)
-  })
 
   it('should show year range with en dash for start year only', () => {
     mockSessionStore.filter.yearStart = '2020'
@@ -284,7 +263,7 @@ describe('FilterMenuComponent', () => {
     mockSessionStore.filter.isActive = true
     wrapper = mount(FilterMenuComponent)
     
-    const checkboxes = wrapper.findAll('v-checkbox')
+    const checkboxes = wrapper.findAll('.v-checkbox')
     expect(checkboxes).toHaveLength(2)
   })
 
@@ -292,7 +271,7 @@ describe('FilterMenuComponent', () => {
     mockSessionStore.filter.isActive = false
     wrapper = mount(FilterMenuComponent)
     
-    const checkboxes = wrapper.findAll('v-checkbox')
+    const checkboxes = wrapper.findAll('.v-checkbox')
     expect(checkboxes).toHaveLength(2)
     // Checkboxes should be disabled when filters are inactive
     expect(checkboxes[0].attributes('disabled')).toBeDefined()

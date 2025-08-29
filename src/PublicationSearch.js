@@ -1,7 +1,6 @@
-import _ from "lodash";
 import { cachedFetch } from "./Cache.js";
 import Publication from "./Publication.js";
-import { API_ENDPOINTS, API_PARAMS } from "./constants/api.js";
+import { API_ENDPOINTS, API_PARAMS } from "./constants/config.js";
 
 export default class PublicationSearch {
 
@@ -19,7 +18,7 @@ export default class PublicationSearch {
         // "\{|\}" necessary to read DOIs from BibTeX
         this.query.split(/ |"|%|#|\?|\{|\}|doi:|doi.org\//).forEach((doi) => {
             // cutting characters that might be included in DOI, but very unlikely at the end
-            doi = _.trim(doi, ".,;").replace("\\_", "_");
+            doi = doi.trim().replace(/^[.,;]+|[.,;]+$/g, '').replace("\\_", "_");
             if (doi.indexOf("10.") === 0 && !dois.includes(doi)) {
                 dois.push(doi);
                 const publication = new Publication(doi);

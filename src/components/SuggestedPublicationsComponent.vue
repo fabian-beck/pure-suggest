@@ -43,7 +43,7 @@
             </template>
           </tippy>
           <CompactButton icon="mdi-playlist-plus has-text-white" class="ml-2"
-            v-tippy="'Load more suggested publications.'" @click="sessionStore.loadMoreSuggestions()" :disabled="sessionStore.suggestedPublications.length ===
+            v-tippy="'Load more suggested publications.'" @click="loadMoreSuggestions()" :disabled="sessionStore.suggestedPublications.length ===
               sessionStore.suggestion.totalSuggestions
               "></CompactButton>
         </div>
@@ -53,34 +53,29 @@
   </div>
 </template>
 
-<script>
-import { useSessionStore } from "@/stores/session.js";
-import { useInterfaceStore } from "@/stores/interface.js";
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useSessionStore } from "@/stores/session.js"
+import { useAppState } from "@/composables/useAppState.js"
 
-export default {
-  name: "SuggestedPublicationsComponent",
-  setup() {
-    const sessionStore = useSessionStore();
-    const interfaceStore = useInterfaceStore();
-    return { sessionStore, interfaceStore };
-  },
-  props: {
-    title: String,
-  },
-  mounted() {
-    this.sessionStore.$onAction(({ name, after }) => {
-      after(() => {
-        if (name === "updateQueued") {
-          this.$refs.publicationList.$el.scrollTop = 0;
-        }
-      });
-    });
-  },
-  updated() {
-    this.$nextTick(() => {
-    });
-  },
-};
+defineProps({
+  title: String,
+})
+
+const sessionStore = useSessionStore()
+const { loadMoreSuggestions } = useAppState()
+
+const publicationList = ref(null)
+
+onMounted(() => {
+  sessionStore.$onAction(({ name, after }) => {
+    after(() => {
+      if (name === "updateQueued") {
+        publicationList.value.$el.scrollTop = 0
+      }
+    })
+  })
+})
 </script>
 
 <style lang="scss" scoped>

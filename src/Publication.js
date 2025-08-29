@@ -1,7 +1,85 @@
 import { cachedFetch } from "./Cache.js";
-import { SURVEY_THRESHOLDS, CITATION_THRESHOLDS, PUBLICATION_AGE, SCORING, TEXT_PROCESSING, SURVEY_KEYWORDS, ORDINAL_REGEX, ROMAN_NUMERAL_REGEX, ORCID_REGEX, CURRENT_YEAR, TITLE_WORD_MAP, PUBLICATION_TAGS } from "./constants/publication.js";
-import { API_ENDPOINTS, API_PARAMS } from "./constants/api.js";
-import { ICON_SIZES, ORCID_ICON_URL, SCORE_COLOR_THRESHOLDS, SCORE_LIGHTNESS } from "./constants/ui.js";
+import { SCORING, CURRENT_YEAR, API_ENDPOINTS, API_PARAMS } from "./constants/config.js";
+const ORCID_ICON_URL = "https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png";
+const ICON_SIZES = {
+  ORCID_WIDTH: 14,
+  ORCID_HEIGHT: 14
+};
+
+const SURVEY_THRESHOLDS = {
+  REFERENCE_COUNT_HIGH: 100,
+  REFERENCE_COUNT_MIN: 50
+};
+
+const CITATION_THRESHOLDS = {
+  HIGHLY_CITED_PER_YEAR: 10,
+  UNNOTED_PER_YEAR: 1
+};
+
+const PUBLICATION_AGE = {
+  NEW_YEARS: 2
+};
+
+const TEXT_PROCESSING = {
+  MAX_TITLE_LENGTH: 300,
+  TITLE_TRUNCATION_POINT: 295,
+  TITLE_TRUNCATION_SUFFIX: "[...]"
+};
+
+const SURVEY_KEYWORDS = /(survey|state|review|advances|future)/i;
+
+const ORDINAL_REGEX = /\d+(st|nd|rd|th)/i;
+
+const ROMAN_NUMERAL_REGEX = /^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})(\?.?)$/i;
+
+const ORCID_REGEX = /(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g;
+
+const TITLE_WORD_MAP = {
+    "a": "a",
+    "an": "an",
+    "acm": "ACM",
+    "and": "and",
+    "by": "by",
+    "chi": "CHI",
+    "during": "during",
+    "for": "for",
+    "from": "from",
+    "ieee": "IEEE",
+    "ii": "II",
+    "iii": "III",
+    "in": "in",
+    "not": "not",
+    "of": "of",
+    "or": "or",
+    "on": "on",
+    "the": "the",
+    "their": "their",
+    "through": "through",
+    "to": "to",
+    "via": "via",
+    "with": "with",
+    "within": "within",
+};
+
+const PUBLICATION_TAGS = [
+    {
+        value: "isHighlyCited",
+        name: "Highly cited"
+    },
+    {
+        value: "isSurvey",
+        name: "Literature survey"
+    },
+    {
+        value: "isNew",
+        name: "New"
+    },
+    {
+        value: "isUnnoted",
+        name: "Unnoted"
+    },
+];
+import { findKeywordMatches, highlightTitle, calculateBoostFactor, calculatePublicationScore, getScoreColor } from "./utils/scoringUtils.js";
 
 /**
  * Represents an academic publication with metadata, citations, and scoring capabilities.
@@ -29,7 +107,8 @@ export default class Publication {
      * @returns {number} Average citations per year.
      */
     get citationsPerYear() {
-        return this.citationDois.length / Math.max(1, CURRENT_YEAR - (this.year || CURRENT_YEAR));
+        const yearDiff = this.year ? CURRENT_YEAR - this.year : 1;
+        return this.citationDois.length / Math.max(1, yearDiff);
     }
 
     /**
@@ -97,7 +176,7 @@ export default class Publication {
     processTitle(data) {
         const subtitle = data.subtitle;
         if (subtitle?.length && this.title.toLowerCase().indexOf(subtitle.toLowerCase())) {
-            const cleanedTitle = this.title.replaceAll(/<[^>]*>/g, "");
+            const cleanedTitle = removeHtmlTags(this.title);
             this.title += `${cleanedTitle.match(/^.*\W$/) ? "" : ":"}  ${subtitle}`;
         }
         this.title = cleanTitle(this.title);
@@ -195,9 +274,7 @@ export default class Publication {
         // Update boost metrics
         this.boostMatches = matches.length;
         this.boostKeywords = matches.map(match => match.keyword);
-        if (isBoost) {
-            this.boostFactor = this.boostFactor * Math.pow(SCORING.BOOST_MULTIPLIER, matches.length);
-        }
+        this.boostFactor = calculateBoostFactor(matches.length, isBoost);
         
         // Generate highlighted title
         this.titleHighlighted = highlightTitle(this.title, matches);
@@ -215,7 +292,7 @@ export default class Publication {
         this.boostMatches = 0;
         this.boostFactor = SCORING.DEFAULT_BOOST_FACTOR;
         this.processKeywordMatching(boostKeywords, isBoost);
-        this.score = (this.citationCount + this.referenceCount + (this.isSelected ? 1 : 0)) * this.boostFactor;
+        this.score = calculatePublicationScore(this.citationCount, this.referenceCount, this.isSelected, this.boostFactor);
         this.scoreColor = getScoreColor(this.score);
     }
 
@@ -265,6 +342,13 @@ export default class Publication {
 }
 
 
+
+
+/**
+ * Cleans and formats publication titles with proper capitalization and punctuation.
+ * @param {string} title - Raw title string.
+ * @returns {string} Cleaned and formatted title.
+ */
 /**
  * Removes HTML tags from a string.
  * @param {string} string - Input string with HTML tags.
@@ -275,88 +359,9 @@ function removeHtmlTags(string) {
 }
 
 /**
- * Gets the color representation for a publication score.
- * @param {number} score - The publication score.
- * @returns {string} HSL color string.
- */
-function getScoreColor(score) {
-    const lightness = score >= SCORE_COLOR_THRESHOLDS.VERY_HIGH ? SCORE_LIGHTNESS.VERY_HIGH
-        : score >= SCORE_COLOR_THRESHOLDS.HIGH ? SCORE_LIGHTNESS.HIGH
-        : score >= SCORE_COLOR_THRESHOLDS.MEDIUM_HIGH ? SCORE_LIGHTNESS.MEDIUM_HIGH
-        : score >= SCORE_COLOR_THRESHOLDS.MEDIUM ? SCORE_LIGHTNESS.MEDIUM
-        : score >= SCORE_COLOR_THRESHOLDS.LOW ? SCORE_LIGHTNESS.LOW
-        : SCORE_LIGHTNESS.DEFAULT;
-    return `hsl(0, 0%, ${lightness}%)`;
-}
-
-/**
- * Finds all keyword matches in a title string.
- * @param {string} title - The title text to search in.
- * @param {string[]} boostKeywords - Keywords to search for.
- * @returns {Array} Array of match objects with keyword, position, and length.
- */
-function findKeywordMatches(title, boostKeywords) {
-    const matches = [];
-    const upperTitle = title.toUpperCase();
-    
-    boostKeywords.forEach(boostKeyword => {
-        if (!boostKeyword) return;
-        
-        let keywordMatched = false;
-        boostKeyword.split("|").forEach(alternativeKeyword => {
-            if (keywordMatched) return; // Skip if this keyword group already has a match
-            
-            const index = upperTitle.indexOf(alternativeKeyword);
-            if (index >= 0) {
-                // Check if this position is already matched
-                const overlaps = matches.some(match => 
-                    index < match.position + match.length && index + alternativeKeyword.length > match.position
-                );
-                if (!overlaps) {
-                    matches.push({
-                        keyword: boostKeyword,
-                        position: index,
-                        length: alternativeKeyword.length,
-                        text: alternativeKeyword
-                    });
-                    keywordMatched = true; // Mark this keyword group as matched
-                }
-            }
-        });
-    });
-    
-    return matches.sort((a, b) => a.position - b.position);
-}
-
-/**
- * Generates highlighted title with matched keywords underlined.
- * @param {string} title - The original title text.
- * @param {Array} matches - Array of match objects with position and length.
- * @returns {string} HTML string with highlighted keywords.
- */
-function highlightTitle(title, matches) {
-    if (matches.length === 0) return title;
-    
-    let result = "";
-    let lastPosition = 0;
-    
-    matches.forEach(match => {
-        // Add text before match
-        result += title.substring(lastPosition, match.position);
-        // Add highlighted match
-        result += `<u style='text-decoration-color: hsl(48, 100%, 67%); text-decoration-thickness: 0.25rem;'>${title.substring(match.position, match.position + match.length)}</u>`;
-        lastPosition = match.position + match.length;
-    });
-    
-    // Add remaining text
-    result += title.substring(lastPosition);
-    return result;
-}
-
-/**
- * Cleans and formats publication titles with proper capitalization and punctuation.
- * @param {string} title - Raw title string.
- * @returns {string} Cleaned and formatted title.
+ * Clean and standardize publication title
+ * @param {string} title - Raw title string
+ * @returns {string} Cleaned title
  */
 function cleanTitle(title) {
     let cleanedTitle = removeHtmlTags(title)

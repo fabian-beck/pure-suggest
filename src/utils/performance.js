@@ -74,6 +74,3 @@ class PerformanceMonitor {
 // Create global instance
 export const perfMonitor = new PerformanceMonitor();
 
-// Helper functions for common patterns
-export const withTiming = (fn, label) => perfMonitor.measureFunction(fn, label);
-export const withAsyncTiming = (asyncFn, label) => perfMonitor.measureAsyncFunction(asyncFn, label);

@@ -1,5 +1,6 @@
 import { useSessionStore } from "./stores/session.js";
 import { useInterfaceStore } from "./stores/interface.js";
+import { useAppState } from "./composables/useAppState.js";
 
 /**
  * Find the next or previous publication component, skipping section headers
@@ -31,6 +32,7 @@ function findAdjacentPublicationComponent(currentElement, direction) {
 export function onKey(e) {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
+    const { clearSession, updateQueued } = useAppState();
     if (
         e.ctrlKey ||
         e.shiftKey ||
@@ -66,7 +68,7 @@ export function onKey(e) {
     }
     if (e.key === "c") {
         e.preventDefault();
-        sessionStore.clearSession();
+        clearSession();
     } else if (e.key === "Escape") {
         e.preventDefault();
         document.activeElement.blur();
@@ -77,7 +79,7 @@ export function onKey(e) {
         document.getElementsByClassName("boost")[0].getElementsByTagName("input")[0].focus();
     } else if (e.key === "u") {
         e.preventDefault();
-        sessionStore.updateQueued();
+        updateQueued();
     } else if (e.key === "f") {
         e.preventDefault();
         // Open filter menu and focus on it

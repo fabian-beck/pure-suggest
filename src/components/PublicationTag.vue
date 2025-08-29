@@ -4,13 +4,10 @@
     </v-chip>
 </template>
 
-<script>
-export default {
-    name: "PublicationTag",
-    props: {
-        icon: String,
-    },
-};
+<script setup>
+defineProps({
+    icon: String,
+})
 </script>
 
 <style scoped lang="scss">

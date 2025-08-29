@@ -13,16 +13,11 @@
     </li>
 </template>
 
-<script>
-export default {
-    props: {
-        publication: Object,
-        searchQuery: String,
-    },
-    data() {
-        return {
-            loaded: false,
-        };
-    },
-}
+<script setup>
+
+defineProps({
+    publication: Object,
+    searchQuery: String,
+})
+
 </script>

@@ -1,4 +1,4 @@
-import { SCORING } from './constants/publication.js';
+import { SCORING } from './constants/config.js';
 
 export default class Author {
 
@@ -10,15 +10,15 @@ export default class Author {
         this.score = (isAuthorScoreEnabled ? publication.score : 1)
             * (isFirstAuthorBoostEnabled ? (authorIndex > 0 ? 1 : SCORING.FIRST_AUTHOR_BOOST) : 1)
             * (isAuthorNewBoostEnabled ? (publication.isNew ? SCORING.NEW_PUBLICATION_BOOST : 1) : 1);
-        this.keywords = publication.boostKeywords.map(keyword => ({ [keyword]: 1 })).reduce((a, b) => Object.assign(a, b), {});
+        this.keywords = publication.boostKeywords.map(keyword => ({ [keyword]: 1 })).reduce((a, b) => ({ ...a, ...b }), {});
         const orcid = authorString.match(/(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g);
         this.orcid = orcid ? orcid[0] : undefined;
         this.alternativeNames = [this.name];
         this.coauthors = publication.author?.split("; ")
-            .map(coauthor => Author.nameToId(coauthor))
+            ?.map(coauthor => Author.nameToId(coauthor))
             .filter(coauthorId => coauthorId !== this.id)
             .map(coauthorId => ({ [coauthorId]: 1 }))
-            .reduce((a, b) => Object.assign(a, b), {}); // convert array to object;
+            .reduce((a, b) => ({ ...a, ...b }), {}) ?? {}; // convert array to object;
         this.yearMin = publication.year;
         this.yearMax = publication.year;
         this.newPublication = publication.isNew;
@@ -47,8 +47,8 @@ export default class Author {
         this.orcid = this.orcid ? this.orcid : author.orcid;
         this.alternativeNames = [...new Set(this.alternativeNames.concat(author.alternativeNames))];
         this.coauthors = mergeCounts(this.coauthors, author.coauthors);
-        this.yearMin = Math.min(this.yearMin, author.yearMin);
-        this.yearMax = Math.max(this.yearMax, author.yearMax);
+        this.yearMin = Math.min(this.yearMin || Infinity, author.yearMin || Infinity) || undefined;
+        this.yearMax = Math.max(this.yearMax || -Infinity, author.yearMax || -Infinity) || undefined;
         this.newPublication = this.newPublication || author.newPublication;
         this.publicationDois = [...new Set(this.publicationDois.concat(author.publicationDois))];
     }
@@ -57,6 +57,13 @@ export default class Author {
         return str
             .normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "")
+            // Handle Nordic and other extended Latin characters not covered by NFD
+            .replace(/[øØ]/g, "o")
+            .replace(/[åÅ]/g, "a")
+            .replace(/[æÆ]/g, "ae")
+            .replace(/[ðÐ]/g, "d")
+            .replace(/[þÞ]/g, "th")
+            .replace(/[ßẞ]/g, "ss")
             .toLowerCase();
     }
 

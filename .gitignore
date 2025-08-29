@@ -23,3 +23,6 @@ yarn-error.log*
 
 # Test results
 test-results/
+
+# Development tools output
+tools/output/

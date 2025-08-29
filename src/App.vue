@@ -37,6 +37,7 @@
 import { useSessionStore } from "./stores/session.js";
 import { useInterfaceStore } from "./stores/interface.js";
 import { perfMonitor } from "./utils/performance.js";
+import { useAppState } from "./composables/useAppState.js";
 
 import { onKey } from "./Keys.js";
 
@@ -45,10 +46,11 @@ export default {
   setup() {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
+    const { isEmpty } = useAppState();
     // check if mobile 
     interfaceStore.checkMobile();
     window.addEventListener("resize", interfaceStore.checkMobile);
-    return { sessionStore, interfaceStore };
+    return { sessionStore, interfaceStore, isEmpty };
   },
   created() {
     window.addEventListener("keydown", onKey);
@@ -57,7 +59,7 @@ export default {
     window.onbeforeunload = () => {
       window.scrollTo(0, 0);
       // triggers a prompt before closing/reloading the page
-      if (!this.sessionStore.isEmpty) return "";
+      if (!this.isEmpty) return "";
       return null;
     };
     
