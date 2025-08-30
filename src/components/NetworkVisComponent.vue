@@ -12,7 +12,8 @@
             </div>
             <ul class="publication-component-list">
                 <PublicationComponent v-if="activePublication && interfaceStore.isNetworkExpanded"
-                    :publication="activePublication" :is-active="true"></PublicationComponent>
+                    :publication="activePublication" :is-active="true" 
+                    :publicationType="activePublication.isSelected ? 'selected' : 'suggested'"></PublicationComponent>
             </ul>
             <div class="controls-header-left">
                 <v-btn class="has-background-primary has-text-white" @click="updateQueued"

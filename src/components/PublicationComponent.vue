@@ -142,7 +142,7 @@
         </div>
         <div>
           <CompactButton icon="mdi-minus-thick" v-on:click="queueForExcluded(publication.doi)"
-            v-tippy="'Mark publication to be excluded for suggestions.'"></CompactButton>
+            v-tippy="minusButtonTooltip"></CompactButton>
         </div>
       </div>
     </div>
@@ -164,6 +164,11 @@ const props = defineProps({
   publication: {
     type: Object,
     required: true
+  },
+  publicationType: {
+    type: String,
+    default: 'suggested',
+    validator: (value) => ['selected', 'suggested', 'general'].includes(value)
   }
 })
 
@@ -179,6 +184,12 @@ const chevronType = computed(() => {
     return "chevron-up"
   }
   return ""
+})
+
+const minusButtonTooltip = computed(() => {
+  return props.publicationType === 'selected' 
+    ? 'Remove publication from selected and mark to stay excluded.' 
+    : 'Mark publication to be excluded for suggestions.';
 })
 
 let isActivating = false

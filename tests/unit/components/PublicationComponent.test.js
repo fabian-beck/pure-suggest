@@ -58,6 +58,10 @@ const PublicationComponentScript = {
   },
   props: {
     publication: Object,
+    publicationType: {
+      type: String,
+      default: 'suggested'
+    }
   },
   computed: {
     chevronType() {
@@ -72,6 +76,11 @@ const PublicationComponentScript = {
       }
       return "";
     },
+    minusButtonTooltip() {
+      return this.publicationType === 'selected' 
+        ? 'Remove publication from selected and mark to stay excluded.' 
+        : 'Mark publication to be excluded for suggestions.';
+    }
   },
   methods: {
     activate() {
@@ -579,6 +588,74 @@ describe('PublicationComponent', () => {
       expect(() => wrapper.vm.refocus()).not.toThrow()
       
       getElementByIdSpy.mockRestore()
+    })
+  })
+
+  describe('tooltip context based on publication type', () => {
+    it('should show correct tooltip text for minus button in selected publications context', () => {
+      // This test will fail initially as the feature doesn't exist yet
+      wrapper = mount(PublicationComponentScript, {
+        props: {
+          publication: createMockPublication(),
+          publicationType: 'selected'
+        },
+        global: {
+          stubs: {
+            'tippy': true,
+            'v-icon': true,
+            'v-btn': true
+          }
+        }
+      })
+      
+      const minusButton = wrapper.findAll('.mock-compact-button').find(btn => 
+        btn.text().includes('mdi-minus-thick')
+      )
+      
+      expect(minusButton.exists()).toBe(true)
+      // This assertion will fail because publicationType prop doesn't exist yet
+      expect(wrapper.vm.minusButtonTooltip).toBe('Remove publication from selected and mark to stay excluded.')
+    })
+
+    it('should show correct tooltip text for minus button in suggested publications context', () => {
+      wrapper = mount(PublicationComponentScript, {
+        props: {
+          publication: createMockPublication(),
+          publicationType: 'suggested'
+        },
+        global: {
+          stubs: {
+            'tippy': true,
+            'v-icon': true,
+            'v-btn': true
+          }
+        }
+      })
+      
+      const minusButton = wrapper.findAll('.mock-compact-button').find(btn => 
+        btn.text().includes('mdi-minus-thick')
+      )
+      
+      expect(minusButton.exists()).toBe(true)
+      expect(wrapper.vm.minusButtonTooltip).toBe('Mark publication to be excluded for suggestions.')
+    })
+
+    it('should default to exclude tooltip when publicationType is not specified', () => {
+      wrapper = mount(PublicationComponentScript, {
+        props: {
+          publication: createMockPublication()
+          // No publicationType prop
+        },
+        global: {
+          stubs: {
+            'tippy': true,
+            'v-icon': true,
+            'v-btn': true
+          }
+        }
+      })
+      
+      expect(wrapper.vm.minusButtonTooltip).toBe('Mark publication to be excluded for suggestions.')
     })
   })
 })
