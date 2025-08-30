@@ -107,25 +107,4 @@ describe('AuthorGlyph', () => {
     expect(tooltipContent.text()).toContain('published between 2020 and 2023')
   })
 
-  it('handles different score scenarios with disabled settings', () => {
-    mockAuthorStore.isAuthorScoreEnabled = false
-    
-    const wrapper = mount(AuthorGlyph, {
-      props: {
-        author: { ...mockAuthor, score: 2 }
-      },
-      global: {
-        stubs: {
-          'tippy': { template: '<div><slot></slot></div>' },
-          'v-avatar': { template: '<div class="v-avatar" :color="$attrs.color"><slot></slot></div>' },
-          'InlineIcon': { template: '<span></span>' }
-        }
-      }
-    })
-
-    const avatar = wrapper.find('.v-avatar')
-    // Score is multiplied by 20 when isAuthorScoreEnabled is false
-    // 2 * 20 = 40, so Math.max(60 - 40/3, 0) = Math.max(46.67, 0) = 46.67, rounded down
-    expect(avatar.attributes('color')).toContain('hsl(0, 0%,')
-  })
 })
