@@ -6,7 +6,12 @@
         class="session-state-button">
         <v-icon size="18">mdi-text-box-multiple-outline</v-icon>
         <span class="is-hidden-touch ml-2">
-          {{ sessionStateString }}
+          <template v-if="isDefaultSessionName">
+            {{ publicationCountString }}
+          </template>
+          <template v-else>
+            <b>{{ sessionStore.sessionName }}</b> ({{ publicationCountString }})
+          </template>
           <v-icon class="ml-2">
             mdi-menu-down
           </v-icon>
@@ -15,7 +20,12 @@
     </template>
     <v-list>
       <v-list-item class="is-hidden-desktop">
-        {{ sessionStateString }}
+        <template v-if="isDefaultSessionName">
+          {{ publicationCountString }}
+        </template>
+        <template v-else>
+          <b>{{ sessionStore.sessionName }}</b> ({{ publicationCountString }})
+        </template>
       </v-list-item>
       <div class="px-4 py-4" @click.stop>
         <v-text-field
@@ -56,20 +66,15 @@ const { isEmpty, clearSession } = useAppState()
 
 const sessionName = ref(sessionStore.sessionName)
 
-const sessionStateString = computed(() => {
-  const publicationCount = `${sessionStore.selectedPublicationsCount} selected${sessionStore.excludedPublicationsCount
+const publicationCountString = computed(() => {
+  return `${sessionStore.selectedPublicationsCount} selected${sessionStore.excludedPublicationsCount
     ? `; ${sessionStore.excludedPublicationsCount} excluded`
     : ""}`
-  
-  // Show session name if it's not the default and not empty/null
-  const isDefaultName = !sessionStore.sessionName || 
-                       sessionStore.sessionName === 'Untitled Session'
-  
-  if (isDefaultName) {
-    return publicationCount
-  } else {
-    return `${sessionStore.sessionName} (${publicationCount})`
-  }
+})
+
+const isDefaultSessionName = computed(() => {
+  return !sessionStore.sessionName || 
+         sessionStore.sessionName.trim() === ''
 })
 
 const updateSessionName = () => {
@@ -86,3 +91,9 @@ watch(() => sessionStore.sessionName, (newName) => {
   sessionName.value = newName
 })
 </script>
+
+<style scoped>
+.session-state-button :deep(.v-btn__content) {
+  text-transform: none;
+}
+</style>

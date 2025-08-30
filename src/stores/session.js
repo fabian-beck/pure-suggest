@@ -23,7 +23,7 @@ export const useSessionStore = defineStore('session', {
       readPublicationsDois: new Set(),
       filter: new Filter(),
       addQuery: "",
-      sessionName: "Untitled Session",
+      sessionName: "",
     }
   },
   getters: {
@@ -63,6 +63,20 @@ export const useSessionStore = defineStore('session', {
     getSelectedPublicationByDoi: (state) => (doi) => state.selectedPublications.filter(publication => publication.doi === doi)[0],
   },
   actions: {
+    
+    clear() {
+      this.selectedPublications = []
+      this.excludedPublicationsDois = []
+      this.suggestion = ""
+      this.maxSuggestions = PAGINATION.INITIAL_SUGGESTIONS_COUNT
+      this.boostKeywordString = ""
+      this.isBoost = true
+      this.activePublication = ""
+      this.readPublicationsDois = new Set()
+      this.filter = new Filter()
+      this.addQuery = ""
+      this.sessionName = ""
+    },
 
     removeFromExcludedPublication(doi) {
       this.excludedPublicationsDois = this.excludedPublicationsDois.filter(excludedDoi => excludedDoi != doi)
@@ -74,14 +88,13 @@ export const useSessionStore = defineStore('session', {
     },
 
     setSessionName(sessionName) {
-      this.sessionName = sessionName || "Untitled Session";
+      this.sessionName = sessionName || "";
     },
 
     generateFilename(extension) {
-      // Use default filename if session name is empty, null, or "Untitled Session"
+      // Use default filename if session name is empty, null
       const isDefaultName = !this.sessionName || 
-                           this.sessionName.trim() === '' ||
-                           this.sessionName === 'Untitled Session';
+                           this.sessionName.trim() === '';
       
       if (isDefaultName) {
         return extension === 'json' ? 'session.puresuggest.json' : 'publications.bib';

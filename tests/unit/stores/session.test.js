@@ -208,8 +208,8 @@ describe('Session Store - Selected Publications Filtering', () => {
     })
 
     describe('JSON Export Filenames', () => {
-      it('should use default filename when session name is "Untitled Session"', () => {
-        sessionStore.sessionName = 'Untitled Session'
+      it('should use default filename when session name is empty', () => {
+        sessionStore.sessionName = ''
         
         sessionStore.exportSession()
         
@@ -268,8 +268,8 @@ describe('Session Store - Selected Publications Filtering', () => {
     })
 
     describe('BibTeX Export Filenames', () => {
-      it('should use default filename when session name is "Untitled Session"', () => {
-        sessionStore.sessionName = 'Untitled Session'
+      it('should use default filename when session name is empty', () => {
+        sessionStore.sessionName = ''
         
         sessionStore.exportAllBibtex()
         

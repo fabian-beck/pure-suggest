@@ -295,12 +295,12 @@ describe('SessionMenuComponent', () => {
       expect(sessionStateText).toContain('My Research Session (5 selected; 2 excluded)')
     })
 
-    it('should display only publication counts when session name is default "Untitled Session"', () => {
-      mockSessionStore.sessionName = 'Untitled Session'
+    it('should display only publication counts when session name is default (empty)', () => {
+      mockSessionStore.sessionName = ''
       wrapper = createWrapper()
       const sessionStateText = wrapper.text()
       expect(sessionStateText).toContain('5 selected; 2 excluded')
-      expect(sessionStateText).not.toContain('Untitled Session')
+      expect(sessionStateText).not.toContain('(')
     })
 
     it('should display session name with only selected count when no excluded publications', () => {
@@ -313,12 +313,12 @@ describe('SessionMenuComponent', () => {
     })
 
     it('should display only selected count when session name is default and no excluded publications', () => {
-      mockSessionStore.sessionName = 'Untitled Session'
+      mockSessionStore.sessionName = ''
       mockSessionStore.excludedPublicationsCount = 0
       wrapper = createWrapper()
       const sessionStateText = wrapper.text()
       expect(sessionStateText).toContain('5 selected')
-      expect(sessionStateText).not.toContain('Untitled Session')
+      expect(sessionStateText).not.toContain('(')
       expect(sessionStateText).not.toContain('excluded')
     })
 
