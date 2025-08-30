@@ -1,6 +1,6 @@
 <template>
-  <v-menu v-if="!isEmpty" location="bottom" transition="slide-y-transition"
-    :close-on-content-click="false">
+  <v-menu v-if="!isEmpty" v-model="isMenuOpen" location="bottom" transition="slide-y-transition"
+    :close-on-content-click="false" @update:model-value="handleMenuToggle">
     <template v-slot:activator="{ props }">
       <v-btn class="boost-button" :class="interfaceStore.isMobile ? '' : 'p-1 pl-4'" 
         v-bind="props" :icon="interfaceStore.isMobile" @click="handleMenuInput(true)"
@@ -46,6 +46,8 @@ const interfaceStore = useInterfaceStore()
 const { isEmpty } = useAppState()
 
 const boost = ref(null)
+const isMenuOpen = ref(false)
+const initialKeywordString = ref('')
 
 const boostKeywordStringHtml = computed(() => {
   let html = sessionStore.boostKeywordString
@@ -64,6 +66,19 @@ function handleMenuInput(value) {
     nextTick(() => {
       boost.value?.focus()
     })
+  }
+}
+
+function handleMenuToggle(isOpen) {
+  if (isOpen) {
+    // Menu is opening - store the initial value to compare later
+    initialKeywordString.value = sessionStore.boostKeywordString
+  } else {
+    // Menu is closing - check if changes were made and update scores if needed
+    const currentKeywordString = sessionStore.boostKeywordString
+    if (currentKeywordString !== initialKeywordString.value) {
+      sessionStore.updateScores()
+    }
   }
 }
 </script>
