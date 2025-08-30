@@ -41,6 +41,7 @@ import { storeToRefs } from "pinia";
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
 import { useQueueStore } from "@/stores/queue.js";
+import { useAuthorStore } from "@/stores/author.js";
 import { useAppState } from "@/composables/useAppState.js";
 
 // Force simulation utilities
@@ -105,6 +106,7 @@ export default {
         const interfaceStore = useInterfaceStore();
         const { isNetworkClusters } = storeToRefs(interfaceStore);
         const queueStore = useQueueStore();
+        const authorStore = useAuthorStore();
         const { isEmpty, activatePublicationComponentByDoi, updateQueued } = useAppState();
 
         return {
@@ -114,6 +116,7 @@ export default {
             interfaceStore,
             isNetworkClusters,
             queueStore,
+            authorStore,
             isEmpty,
             activatePublicationComponentByDoi,
             updateQueued
@@ -293,7 +296,7 @@ export default {
                 const doiToIndex = {};
                 
                 // Filter authors based on factor
-                const allAuthors = this.sessionStore.selectedPublicationsAuthors || [];
+                const allAuthors = this.authorStore.selectedPublicationsAuthors || [];
                 const filteredAuthors = allAuthors.slice(0, this.authorNumberFactor * this.sessionStore.selectedPublications.length);
                 
                 // Get filtered publications
