@@ -17,17 +17,11 @@ export const useQueueStore = defineStore('queue', {
     removeFromQueues(doi) {
       this.selectedQueue = this.selectedQueue.filter(seletedDoi => doi != seletedDoi);
       this.excludedQueue = this.excludedQueue.filter(excludedDoi => doi != excludedDoi);
-      this.hasUpdated(`Removed ${doi} from queues.`);
     },
 
-    clearQueues() {
+    clear() {
       this.excludedQueue = [];
       this.selectedQueue = [];
-      this.hasUpdated(`Cleared queues.`);
-    },
-
-    // This method can be watched to manually trigger updates 
-    hasUpdated() {
-    },
+    }
   }
 })
