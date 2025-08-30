@@ -52,6 +52,7 @@ This command follows a systematic 6-step approach to address GitHub issues:
   - Technical implementation details
   - Test plan and verification steps
 - Reference the original issue with "Fixes #<issue-number>"
+- Switch back to main branch after PR creation
 
 ## Best Practices Followed
 
