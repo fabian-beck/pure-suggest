@@ -14,6 +14,7 @@
       <LazyPublicationComponent
         v-else
         :publication="item.publication"
+        :publicationType="publicationType"
         v-on:activate="activatePublication"
       />
     </template>

@@ -33,6 +33,7 @@
     v-else
     ref="targetRef"
     :publication="publication"
+    :publicationType="publicationType"
     v-on:activate="$emit('activate', $event)"
   />
 </template>
@@ -50,6 +51,11 @@ const props = defineProps({
   estimatedHeight: {
     type: Number,
     default: 85 // Based on typical PublicationComponent height
+  },
+  publicationType: {
+    type: String,
+    default: 'suggested',
+    validator: (value) => ['selected', 'suggested', 'general'].includes(value)
   }
 })
     const hasLoaded = ref(false);
