@@ -31,17 +31,8 @@ export function useAppState() {
    * Clears all session data and resets to initial state
    */
   const clear = () => {
-    sessionStore.selectedPublications = []
-    sessionStore.excludedPublicationsDois = []
-    sessionStore.suggestion = ""
-    sessionStore.maxSuggestions = PAGINATION.INITIAL_SUGGESTIONS_COUNT
-    sessionStore.boostKeywordString = ""
-    sessionStore.activePublication = ""
-    sessionStore.filter = new Filter()
-    sessionStore.addQuery = ""
-    // Clear queue store
-    queueStore.selectedQueue = []
-    queueStore.excludedQueue = []
+    sessionStore.clear()
+    queueStore.clear()
     // Clear author store
     authorStore.selectedPublicationsAuthors = []
     // do not reset read publications as the user might to carry this information to the next session
@@ -164,6 +155,9 @@ export function useAppState() {
     if (session.excluded) {
       sessionStore.excludedPublicationsDois = session.excluded
     }
+    if (session.name !== undefined && session.name !== null) {
+      sessionStore.setSessionName(session.name)
+    }
     sessionStore.addPublicationsToSelection(session.selected)
     
     // Mark that we're tracking a workflow
@@ -233,7 +227,7 @@ export function useAppState() {
       sessionStore.addPublicationsToSelection(queueStore.selectedQueue)
     }
     await updateSuggestions()
-    queueStore.clearQueues()
+    queueStore.clear()
   }
 
   /**
@@ -284,7 +278,6 @@ export function useAppState() {
       if (sessionStore.isSelected(doi) || queueStore.selectedQueue.includes(doi)) return;
       queueStore.selectedQueue.push(doi);
     });
-    queueStore.hasUpdated(`Queued ${dois.length} publication(s) for selection.`);
   }
 
   /**
@@ -294,7 +287,6 @@ export function useAppState() {
     if (sessionStore.isExcluded(doi) || queueStore.excludedQueue.includes(doi)) return
     queueStore.selectedQueue = queueStore.selectedQueue.filter(seletedDoi => doi != seletedDoi);
     queueStore.excludedQueue.push(doi);
-    queueStore.hasUpdated(`Queued ${doi} for exclusion.`);
   }
   
   return {

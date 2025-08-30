@@ -23,6 +23,7 @@ export const useSessionStore = defineStore('session', {
       readPublicationsDois: new Set(),
       filter: new Filter(),
       addQuery: "",
+      sessionName: "",
     }
   },
   getters: {
@@ -62,6 +63,20 @@ export const useSessionStore = defineStore('session', {
     getSelectedPublicationByDoi: (state) => (doi) => state.selectedPublications.filter(publication => publication.doi === doi)[0],
   },
   actions: {
+    
+    clear() {
+      this.selectedPublications = []
+      this.excludedPublicationsDois = []
+      this.suggestion = ""
+      this.maxSuggestions = PAGINATION.INITIAL_SUGGESTIONS_COUNT
+      this.boostKeywordString = ""
+      this.isBoost = true
+      this.activePublication = ""
+      this.readPublicationsDois = new Set()
+      this.filter = new Filter()
+      this.addQuery = ""
+      this.sessionName = ""
+    },
 
     removeFromExcludedPublication(doi) {
       this.excludedPublicationsDois = this.excludedPublicationsDois.filter(excludedDoi => excludedDoi != doi)
@@ -70,6 +85,48 @@ export const useSessionStore = defineStore('session', {
     setBoostKeywordString(boostKeywordString) {
       this.boostKeywordString = boostKeywordString;
       this.updateScores();
+    },
+
+    setSessionName(sessionName) {
+      this.sessionName = sessionName || "";
+    },
+
+    generateFilename(extension) {
+      // Use default filename if session name is empty, null
+      const isDefaultName = !this.sessionName || 
+                           this.sessionName.trim() === '';
+      
+      if (isDefaultName) {
+        return extension === 'json' ? 'session.puresuggest.json' : 'publications.bib';
+      }
+
+      // Convert to lowercase and sanitize
+      let filename = this.sessionName
+        .toLowerCase()
+        // Replace multiple whitespace with single underscore
+        .replace(/\s+/g, '_')
+        // Replace invalid filename characters and punctuation with underscores
+        .replace(/[/\\?*|<>:"'!()]/g, '_')
+        // Replace remaining non-alphanumeric characters (except underscores and hyphens) with underscores
+        .replace(/[^a-z0-9_-]/g, '_')
+        // Replace multiple underscores with single underscore
+        .replace(/_+/g, '_')
+        // Remove leading/trailing underscores
+        .replace(/^_+|_+$/g, '');
+      
+      // Handle edge case of empty filename after sanitization
+      if (!filename || filename === '_') {
+        return extension === 'json' ? 'session.puresuggest.json' : 'publications.bib';
+      }
+      
+      // Truncate if too long (leave room for extension)
+      const extensionSuffix = extension === 'json' ? '.puresuggest.json' : '.bib';
+      const maxLength = 250 - extensionSuffix.length;
+      if (filename.length > maxLength) {
+        filename = filename.substring(0, maxLength);
+      }
+      
+      return `${filename}${extensionSuffix}`;
     },
 
 
@@ -180,11 +237,13 @@ export const useSessionStore = defineStore('session', {
 
     exportSession: function () {
       let data = {
+        name: this.sessionName,
         selected: this.selectedPublicationsDois,
         excluded: this.excludedPublicationsDois,
         boost: this.uniqueBoostKeywords.join(", "),
       };
-      saveAsFile("session.json", "application/json", JSON.stringify(data));
+      const filename = this.generateFilename('json');
+      saveAsFile(filename, "application/json", JSON.stringify(data));
     },
 
 
@@ -202,7 +261,8 @@ export const useSessionStore = defineStore('session', {
       publicationList.forEach(
         (publication) => (bib += generateBibtex(publication) + "\n\n")
       );
-      saveAsFile("publications.bib", "application/x-bibtex", bib);
+      const filename = this.generateFilename('bib');
+      saveAsFile(filename, "application/x-bibtex", bib);
     },
 
   }

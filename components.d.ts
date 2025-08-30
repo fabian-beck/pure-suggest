@@ -37,6 +37,7 @@ declare module 'vue' {
     QuickAccessBar: typeof import('./src/components/QuickAccessBar.vue')['default']
     SearchModalDialog: typeof import('./src/components/modal/SearchModalDialog.vue')['default']
     SelectedPublicationsComponent: typeof import('./src/components/SelectedPublicationsComponent.vue')['default']
+    SessionMenuComponent: typeof import('./src/components/SessionMenuComponent.vue')['default']
     SuggestedPublicationsComponent: typeof import('./src/components/SuggestedPublicationsComponent.vue')['default']
   }
 }

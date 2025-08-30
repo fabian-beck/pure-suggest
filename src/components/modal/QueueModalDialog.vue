@@ -108,7 +108,7 @@ export default {
     },
     methods: {
         clearQueuesAndClose() {
-            this.queueStore.clearQueues();
+            this.queueStore.clear();
             this.interfaceStore.isQueueModalDialogShown = false;
         },
         updateQueuedAndClose() {

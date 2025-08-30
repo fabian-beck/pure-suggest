@@ -26,6 +26,9 @@ vi.mock('@/Util.js', () => ({
   saveAsFile: vi.fn()
 }))
 
+// Get reference to the mocked saveAsFile function
+import { saveAsFile } from '@/Util.js'
+
 describe('Session Store - Selected Publications Filtering', () => {
   let sessionStore
   let interfaceStore
@@ -194,6 +197,149 @@ describe('Session Store - Selected Publications Filtering', () => {
       expect(sessionStore.selectedPublicationsFiltered).toEqual([])
       expect(sessionStore.selectedPublicationsFilteredCount).toBe(0)
       expect(sessionStore.selectedPublicationsNonFilteredCount).toBe(0)
+    })
+  })
+
+  describe('Export Filename Generation', () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
+      // Set up some test publications
+      sessionStore.selectedPublications = [mockPublication1, mockPublication2]
+    })
+
+    describe('JSON Export Filenames', () => {
+      it('should use default filename when session name is empty', () => {
+        sessionStore.sessionName = ''
+        
+        sessionStore.exportSession()
+        
+        expect(saveAsFile).toHaveBeenCalledWith(
+          'session.puresuggest.json',
+          'application/json',
+          expect.any(String)
+        )
+      })
+
+      it('should use session name as filename when session has custom name', () => {
+        sessionStore.sessionName = 'My Research Project'
+        
+        sessionStore.exportSession()
+        
+        expect(saveAsFile).toHaveBeenCalledWith(
+          'my_research_project.puresuggest.json',
+          'application/json',
+          expect.any(String)
+        )
+      })
+
+      it('should handle session names with special characters', () => {
+        sessionStore.sessionName = 'Research: AI & Machine Learning (2024)'
+        
+        sessionStore.exportSession()
+        
+        expect(saveAsFile).toHaveBeenCalledWith(
+          'research_ai_machine_learning_2024.puresuggest.json',
+          'application/json',
+          expect.any(String)
+        )
+      })
+
+      it('should handle session names with multiple spaces and tabs', () => {
+        sessionStore.sessionName = '  My   Research    Project  '
+        
+        sessionStore.exportSession()
+        
+        expect(saveAsFile).toHaveBeenCalledWith(
+          'my_research_project.puresuggest.json',
+          'application/json',
+          expect.any(String)
+        )
+      })
+
+      it('should handle empty or null session names as default', () => {
+        sessionStore.sessionName = ''
+        sessionStore.exportSession()
+        expect(saveAsFile).toHaveBeenCalledWith('session.puresuggest.json', 'application/json', expect.any(String))
+
+        sessionStore.sessionName = null
+        sessionStore.exportSession()
+        expect(saveAsFile).toHaveBeenCalledWith('session.puresuggest.json', 'application/json', expect.any(String))
+      })
+    })
+
+    describe('BibTeX Export Filenames', () => {
+      it('should use default filename when session name is empty', () => {
+        sessionStore.sessionName = ''
+        
+        sessionStore.exportAllBibtex()
+        
+        expect(saveAsFile).toHaveBeenCalledWith(
+          'publications.bib',
+          'application/x-bibtex',
+          expect.any(String)
+        )
+      })
+
+      it('should use session name as filename when session has custom name', () => {
+        sessionStore.sessionName = 'Literature Review'
+        
+        sessionStore.exportAllBibtex()
+        
+        expect(saveAsFile).toHaveBeenCalledWith(
+          'literature_review.bib',
+          'application/x-bibtex',
+          expect.any(String)
+        )
+      })
+
+      it('should handle complex session names in BibTeX exports', () => {
+        sessionStore.sessionName = 'PhD Dissertation: Chapter 3 - Results!'
+        
+        sessionStore.exportAllBibtex()
+        
+        expect(saveAsFile).toHaveBeenCalledWith(
+          'phd_dissertation_chapter_3_-_results.bib',
+          'application/x-bibtex',
+          expect.any(String)
+        )
+      })
+
+      it('should handle single publication BibTeX export with session name', () => {
+        sessionStore.sessionName = 'Key References'
+        
+        sessionStore.exportSingleBibtex(mockPublication1)
+        
+        expect(saveAsFile).toHaveBeenCalledWith(
+          'key_references.bib',
+          'application/x-bibtex',
+          expect.any(String)
+        )
+      })
+    })
+
+    describe('Filename sanitization', () => {
+      it('should remove invalid filename characters', () => {
+        sessionStore.sessionName = 'Test/File\\Name?With*Invalid|Chars<>:"'
+        
+        sessionStore.exportSession()
+        
+        expect(saveAsFile).toHaveBeenCalledWith(
+          'test_file_name_with_invalid_chars.puresuggest.json',
+          'application/json',
+          expect.any(String)
+        )
+      })
+
+      it('should handle very long session names by truncating', () => {
+        const longName = 'A'.repeat(300) // Very long name
+        sessionStore.sessionName = longName
+        
+        sessionStore.exportSession()
+        
+        const [filename] = saveAsFile.mock.calls[0]
+        expect(filename.length).toBeLessThan(280) // Account for .puresuggest.json
+        expect(filename).toMatch(/^a+\.puresuggest\.json$/)
+      })
     })
   })
 })

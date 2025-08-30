@@ -43,7 +43,7 @@ describe('SelectedPublicationsComponent', () => {
     interfaceStore.showConfirmDialog = vi.fn()
     queueStore.selectedQueue = []
     queueStore.excludedQueue = []
-    queueStore.clearQueues = vi.fn()
+    queueStore.clear = vi.fn()
   })
 
   it('renders the selected publications header', () => {

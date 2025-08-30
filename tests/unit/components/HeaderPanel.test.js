@@ -29,6 +29,14 @@ vi.mock('@/stores/interface.js', () => ({
   useInterfaceStore: () => mockInterfaceStore
 }))
 
+vi.mock('@/composables/useAppState.js', () => ({
+  useAppState: () => ({
+    isEmpty: mockSessionStore.isEmpty,
+    clearSession: mockSessionStore.clearSession,
+    clearCache: mockSessionStore.clearCache
+  })
+}))
+
 // Mock child components
 vi.mock('@/components/FilterMenuComponent.vue', () => ({
   default: { template: '<div class="filter-menu">Filter Menu</div>' }
@@ -63,6 +71,7 @@ describe('HeaderPanel', () => {
           'v-list-item': { template: '<div class="v-list-item"><slot></slot></div>' },
           'BoostKeywordsComponent': { template: '<div class="boost-keywords">Boost Keywords</div>' },
           'FilterMenuComponent': { template: '<div class="filter-menu">Filter Menu</div>' },
+          'SessionMenuComponent': { template: '<div class="session-menu">Session Menu</div>' },
           'HeaderExternalLinks': { template: '<div class="header-external-links">External Links</div>' }
         }
       }
@@ -89,6 +98,7 @@ describe('HeaderPanel', () => {
           'v-list-item': { template: '<div class="v-list-item"><slot></slot></div>' },
           'BoostKeywordsComponent': { template: '<div class="boost-keywords">Boost Keywords</div>' },
           'FilterMenuComponent': { template: '<div class="filter-menu">Filter Menu</div>' },
+          'SessionMenuComponent': { template: '<div class="session-menu">Session Menu</div>' },
           'HeaderExternalLinks': { template: '<div class="header-external-links">External Links</div>' }
         }
       }
@@ -117,6 +127,7 @@ describe('HeaderPanel', () => {
           'v-list-item': { template: '<div class="v-list-item"><slot></slot></div>' },
           'BoostKeywordsComponent': { template: '<div class="boost-keywords">Boost Keywords</div>' },
           'FilterMenuComponent': { template: '<div class="filter-menu">Filter Menu</div>' },
+          'SessionMenuComponent': { template: '<div class="session-menu">Session Menu</div>' },
           'HeaderExternalLinks': { template: '<div class="header-external-links">External Links</div>' }
         }
       }
@@ -126,7 +137,7 @@ describe('HeaderPanel', () => {
     expect(wrapper.find('.intro-message-placeholder').exists()).toBe(true)
   })
 
-  it('shows session state when session is not empty', () => {
+  it('renders SessionMenuComponent when session is not empty', () => {
     mockSessionStore.isEmpty = false
     mockSessionStore.selectedPublicationsCount = 10
     mockSessionStore.excludedPublicationsCount = 3
@@ -146,41 +157,13 @@ describe('HeaderPanel', () => {
           'v-list-item': { template: '<div class="v-list-item"><slot></slot></div>' },
           'BoostKeywordsComponent': { template: '<div class="boost-keywords">Boost Keywords</div>' },
           'FilterMenuComponent': { template: '<div class="filter-menu">Filter Menu</div>' },
+          'SessionMenuComponent': { template: '<div class="session-menu">Session Menu</div>' },
           'HeaderExternalLinks': { template: '<div class="header-external-links">External Links</div>' }
         }
       }
     })
 
-    // The sessionStateString computed property should show selected and excluded counts
-    expect(wrapper.vm.sessionStateString).toBe('10 selected; 3 excluded')
-  })
-
-  it('shows session state without excluded count when none are excluded', () => {
-    mockSessionStore.isEmpty = false
-    mockSessionStore.selectedPublicationsCount = 5
-    mockSessionStore.excludedPublicationsCount = 0
-
-    const wrapper = mount(HeaderPanel, {
-      global: {
-        provide: {
-          appMeta: mockAppMeta
-        },
-        stubs: {
-          'v-app-bar': { template: '<div class="v-app-bar"><slot></slot></div>' },
-          'v-app-bar-title': { template: '<div class="v-app-bar-title"><slot></slot></div>' },
-          'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          'v-menu': { template: '<div class="v-menu"><slot></slot></div>' },
-          'v-list': { template: '<div class="v-list"><slot></slot></div>' },
-          'v-list-item': { template: '<div class="v-list-item"><slot></slot></div>' },
-          'BoostKeywordsComponent': { template: '<div class="boost-keywords">Boost Keywords</div>' },
-          'FilterMenuComponent': { template: '<div class="filter-menu">Filter Menu</div>' },
-          'HeaderExternalLinks': { template: '<div class="header-external-links">External Links</div>' }
-        }
-      }
-    })
-
-    expect(wrapper.vm.sessionStateString).toBe('5 selected')
+    expect(wrapper.find('.session-menu').exists()).toBe(true)
   })
 
   it('renders BoostKeywordsComponent and FilterMenuComponent', () => {
@@ -199,6 +182,7 @@ describe('HeaderPanel', () => {
           'v-list-item': { template: '<div class="v-list-item"><slot></slot></div>' },
           'BoostKeywordsComponent': { template: '<div class="boost-keywords">Boost Keywords</div>' },
           'FilterMenuComponent': { template: '<div class="filter-menu">Filter Menu</div>' },
+          'SessionMenuComponent': { template: '<div class="session-menu">Session Menu</div>' },
           'HeaderExternalLinks': { template: '<div class="header-external-links">External Links</div>' }
         }
       }

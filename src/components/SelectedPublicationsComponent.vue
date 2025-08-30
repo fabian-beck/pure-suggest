@@ -50,7 +50,7 @@
               <CompactButton icon="mdi-pencil" class="ml-2" v-tippy="'Edit publications in queue.'"
                 v-on:click="interfaceStore.isQueueModalDialogShown = true"></CompactButton>
               <CompactButton icon="mdi-undo" class="ml-1" v-tippy="'Remove all publications from queue again.'"
-                v-on:click="queueStore.clearQueues()"></CompactButton>
+                v-on:click="queueStore.clear()"></CompactButton>
               <v-btn class="has-background-primary has-text-white ml-2"
                 v-tippy="'Update suggested and excluded publications with queue and compute new suggestions.'"
                 @click="updateQueued" prepend-icon="mdi-update">
