@@ -116,4 +116,63 @@ describe('useAppState - Session Loading', () => {
       expect(sessionStore.sessionName).toBe('Current Session')
     })
   })
+
+  describe('importSessionWithConfirmation', () => {
+    it('should be exposed by useAppState', () => {
+      expect(appState.importSessionWithConfirmation).toBeDefined()
+      expect(typeof appState.importSessionWithConfirmation).toBe('function')
+    })
+
+    it('should show confirmation dialog with file input', () => {
+      // Mock the showConfirmDialog method
+      interfaceStore.showConfirmDialog = vi.fn()
+      
+      appState.importSessionWithConfirmation()
+      
+      expect(interfaceStore.showConfirmDialog).toHaveBeenCalled()
+      const [message, callback, title] = interfaceStore.showConfirmDialog.mock.calls[0]
+      
+      expect(message).toContain('Choose an exported session JSON file')
+      expect(message).toContain('input type="file"')
+      expect(title).toBe('Import session')
+    })
+
+    it('should show warning message when session is not empty', () => {
+      // Manually add publications to make the session non-empty
+      // (We can't use the mocked method as it doesn't actually update state)
+      sessionStore.selectedPublications = [
+        { doi: '10.1234/test1' },
+        { doi: '10.1234/test2' }
+      ]
+      
+      interfaceStore.showConfirmDialog = vi.fn()
+      
+      appState.importSessionWithConfirmation()
+      
+      expect(interfaceStore.showConfirmDialog).toHaveBeenCalled()
+      const [message] = interfaceStore.showConfirmDialog.mock.calls[0]
+      
+      expect(message).toContain('This will clear and replace the current session')
+      expect(message).toContain('Choose an exported session JSON file')
+      
+      // Clean up
+      sessionStore.clear()
+    })
+
+    it('should not show warning message when session is empty', () => {
+      // Ensure session is empty
+      sessionStore.clear()
+      queueStore.clear()
+
+      interfaceStore.showConfirmDialog = vi.fn()
+      
+      appState.importSessionWithConfirmation()
+      
+      expect(interfaceStore.showConfirmDialog).toHaveBeenCalled()
+      const [message] = interfaceStore.showConfirmDialog.mock.calls[0]
+      
+      expect(message).not.toContain('This will clear and replace the current session')
+      expect(message).toContain('Choose an exported session JSON file')
+    })
+  })
 })
