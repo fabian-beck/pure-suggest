@@ -35,7 +35,7 @@
       'is-hovered': publication.isHovered,
       'is-keyword-hovered': publication.isKeywordHovered,
       'is-author-hovered': publication.isAuthorHovered,
-    }" :id="publication.doi" tabindex="0" @focus="activate" @click.stop>
+    }" :id="publication.doi" tabindex="0" @focus="activate" @click.stop @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
       <tippy class="media-left" placement="right">
         <div class="glyph has-text-centered" v-bind:style="{ 'background-color': publication.scoreColor }"
           v-show="publication.wasFetched">
@@ -152,9 +152,11 @@
 <script setup>
 import { computed } from 'vue'
 import { useQueueStore } from "@/stores/queue.js"
+import { useSessionStore } from "@/stores/session.js"
 import { useAppState } from "@/composables/useAppState.js"
 
 const queueStore = useQueueStore()
+const sessionStore = useSessionStore()
 const { retryLoadingPublication, activatePublicationComponentByDoi, queueForSelected, queueForExcluded } = useAppState()
 
 const emit = defineEmits(['activate'])
@@ -195,6 +197,14 @@ function activate() {
   setTimeout(() => {
     isActivating = false
   }, 100)
+}
+
+function handleMouseEnter() {
+  sessionStore.hoverPublication(props.publication, true)
+}
+
+function handleMouseLeave() {
+  sessionStore.hoverPublication(props.publication, false)
 }
 
 
