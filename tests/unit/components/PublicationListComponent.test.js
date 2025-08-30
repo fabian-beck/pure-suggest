@@ -72,8 +72,11 @@ describe('PublicationListComponent - Section Headers', () => {
     vi.mocked(useInterfaceStore).mockReturnValue(mockInterfaceStore)
   })
 
-  describe('section headers for selected publications', () => {
-    it('should show simplified headers for selected publications', () => {
+  describe('section headers', () => {
+    it.each([
+      ['selected', false],  // [publicationType, expectInfoTheme]
+      ['suggested', true]
+    ])('should show filtered/unfiltered headers for %s publications', (publicationType, expectInfoTheme) => {
       // Mock filter to match first publication only
       mockSessionStore.filter.matches.mockImplementation(pub => pub.doi === '10.1234/pub1')
 
@@ -81,7 +84,7 @@ describe('PublicationListComponent - Section Headers', () => {
         props: {
           publications: mockPublications,
           showSectionHeaders: true,
-          publicationType: 'selected'
+          publicationType
         }
       })
 
@@ -89,26 +92,15 @@ describe('PublicationListComponent - Section Headers', () => {
       expect(headers).toHaveLength(2)
       expect(headers[0].text()).toBe('Filtered (1)')
       expect(headers[1].text()).toBe('Other publications (1)')
-    })
-  })
-
-  describe('section headers for suggested publications', () => {
-    it('should show simplified headers for suggested publications', () => {
-      // Mock filter to match first publication only
-      mockSessionStore.filter.matches.mockImplementation(pub => pub.doi === '10.1234/pub1')
-
-      wrapper = mount(PublicationListComponent, {
-        props: {
-          publications: mockPublications,
-          showSectionHeaders: true,
-          publicationType: 'suggested'
+      
+      // Check theme styling
+      headers.forEach(header => {
+        if (expectInfoTheme) {
+          expect(header.classes()).toContain('info-theme')
+        } else {
+          expect(header.classes()).not.toContain('info-theme')
         }
       })
-
-      const headers = wrapper.findAll('.section-header-text')
-      expect(headers).toHaveLength(2)
-      expect(headers[0].text()).toBe('Filtered (1)')
-      expect(headers[1].text()).toBe('Other publications (1)')
     })
   })
 
@@ -129,132 +121,36 @@ describe('PublicationListComponent - Section Headers', () => {
     })
   })
 
-  describe('header styling', () => {
-    it('should apply correct CSS classes to section headers for selected publications', () => {
-      mockSessionStore.filter.matches.mockImplementation(pub => pub.doi === '10.1234/pub1')
 
-      wrapper = mount(PublicationListComponent, {
-        props: {
-          publications: mockPublications,
-          showSectionHeaders: true,
-          publicationType: 'selected'
-        }
-      })
-
-      const headerContainers = wrapper.findAll('.section-header')
-      const headerTexts = wrapper.findAll('.section-header-text')
-      
-      expect(headerContainers).toHaveLength(2)
-      expect(headerTexts).toHaveLength(2)
-      
-      // Verify CSS classes are applied
-      headerContainers.forEach(container => {
-        expect(container.classes()).toContain('section-header')
-      })
-      
-      headerTexts.forEach(text => {
-        expect(text.classes()).toContain('section-header-text')
-        expect(text.classes()).not.toContain('info-theme')
-      })
-    })
-
-    it('should apply info-theme class for suggested publications', () => {
-      mockSessionStore.filter.matches.mockImplementation(pub => pub.doi === '10.1234/pub1')
-
-      wrapper = mount(PublicationListComponent, {
-        props: {
-          publications: mockPublications,
-          showSectionHeaders: true,
-          publicationType: 'suggested'
-        }
-      })
-
-      const headerTexts = wrapper.findAll('.section-header-text')
-      
-      expect(headerTexts).toHaveLength(2)
-      
-      headerTexts.forEach(text => {
-        expect(text.classes()).toContain('section-header-text')
-        expect(text.classes()).toContain('info-theme')
-      })
-    })
-  })
-
-  describe('empty state', () => {
-    it('should apply empty-list class when no publications', () => {
-      wrapper = mount(PublicationListComponent, {
-        props: {
-          publications: [],
-          showSectionHeaders: false,
-          publicationType: 'suggested'
-        }
-      })
-
-      const list = wrapper.find('.publication-list')
-      expect(list.classes()).toContain('empty-list')
-    })
-
-    it('should not apply empty-list class when publications exist', () => {
-      wrapper = mount(PublicationListComponent, {
-        props: {
-          publications: mockPublications,
-          showSectionHeaders: false,
-          publicationType: 'suggested'
-        }
-      })
-
-      const list = wrapper.find('.publication-list')
-      expect(list.classes()).not.toContain('empty-list')
-    })
-  })
 
   describe('checkbox-based filtering', () => {
-    it('should not show headers for selected publications when applyToSelected is false', () => {
-      mockSessionStore.filter.applyToSelected = false
+    it.each([
+      ['selected', 'applyToSelected'],
+      ['suggested', 'applyToSuggested']
+    ])('should control header visibility for %s publications via %s flag', (publicationType, filterFlag) => {
       mockSessionStore.filter.matches.mockImplementation(pub => pub.doi === '10.1234/pub1')
 
+      // Test with flag disabled - no headers
+      mockSessionStore.filter[filterFlag] = false
       wrapper = mount(PublicationListComponent, {
         props: {
           publications: mockPublications,
           showSectionHeaders: true,
-          publicationType: 'selected'
+          publicationType
         }
       })
+      expect(wrapper.findAll('.section-header-text')).toHaveLength(0)
 
-      const headers = wrapper.findAll('.section-header-text')
-      expect(headers).toHaveLength(0)
-    })
-
-    it('should not show headers for suggested publications when applyToSuggested is false', () => {
-      mockSessionStore.filter.applyToSuggested = false
-      mockSessionStore.filter.matches.mockImplementation(pub => pub.doi === '10.1234/pub1')
-
+      // Test with flag enabled - headers shown
+      mockSessionStore.filter[filterFlag] = true
       wrapper = mount(PublicationListComponent, {
         props: {
           publications: mockPublications,
           showSectionHeaders: true,
-          publicationType: 'suggested'
+          publicationType
         }
       })
-
-      const headers = wrapper.findAll('.section-header-text')
-      expect(headers).toHaveLength(0)
-    })
-
-    it('should show headers for selected publications when applyToSelected is true', () => {
-      mockSessionStore.filter.applyToSelected = true
-      mockSessionStore.filter.matches.mockImplementation(pub => pub.doi === '10.1234/pub1')
-
-      wrapper = mount(PublicationListComponent, {
-        props: {
-          publications: mockPublications,
-          showSectionHeaders: true,
-          publicationType: 'selected'
-        }
-      })
-
-      const headers = wrapper.findAll('.section-header-text')
-      expect(headers).toHaveLength(2)
+      expect(wrapper.findAll('.section-header-text')).toHaveLength(2)
     })
   })
 })

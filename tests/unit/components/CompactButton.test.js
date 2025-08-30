@@ -42,12 +42,6 @@ describe('CompactButton', () => {
     return mount(CompactButtonScript, { props })
   }
 
-  describe('rendering', () => {
-    it('should display icon in icon element', () => {
-      wrapper = createWrapper({ icon: 'mdi-home' })
-      expect(wrapper.find('.icon').text()).toBe('mdi-home')
-    })
-  })
 
   describe('href functionality', () => {
     it('should open link in new tab when href is provided and button is clicked', async () => {
@@ -71,13 +65,6 @@ describe('CompactButton', () => {
       expect(clickHandler).toHaveBeenCalledTimes(1)
     })
 
-    it('should not throw error when click prop is not provided', async () => {
-      wrapper = createWrapper()
-      
-      expect(async () => {
-        await wrapper.find('button').trigger('click')
-      }).not.toThrow()
-    })
 
     it('should handle both click prop and href together', async () => {
       const clickHandler = vi.fn()

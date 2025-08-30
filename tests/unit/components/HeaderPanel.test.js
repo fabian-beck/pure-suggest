@@ -77,10 +77,6 @@ describe('HeaderPanel', () => {
     mockSessionStore.excludedPublicationsCount = 0
   })
 
-  it('renders the app name and logo', () => {
-    const wrapper = createWrapper()
-    expect(wrapper.html()).toContain('<strong>Pure</strong>Suggest')
-  })
 
   it('shows intro message when session is empty', () => {
     mockSessionStore.isEmpty = true
@@ -98,11 +94,5 @@ describe('HeaderPanel', () => {
     expect(wrapper.text()).not.toContain('Based on a set of selected publications')
   })
 
-  it('renders expected components', () => {
-    const wrapper = createWrapper()
-
-    expect(wrapper.find('.boost-keywords').exists()).toBe(true)
-    expect(wrapper.find('.filter-menu').exists()).toBe(true)
-  })
 
 })

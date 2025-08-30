@@ -217,27 +217,18 @@ describe('Keys Module - Keyboard Event Handling', () => {
   })
 
   describe('Navigation (Arrow keys)', () => {
-    it('should navigate left to selected publications', () => {
+    it.each([
+      ['ArrowLeft', 'selected'],
+      ['ArrowRight', 'suggested']
+    ])('should navigate %s to %s publications', (key, targetId) => {
       // Add publications so session is not empty
       sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
       
-      const event = { key: 'ArrowLeft', preventDefault: vi.fn() }
+      const event = { key, preventDefault: vi.fn() }
       onKey(event)
       
       expect(event.preventDefault).toHaveBeenCalled()
-      expect(document.getElementById).toHaveBeenCalledWith('selected')
-      expect(interfaceStore.closeFilterMenu).toHaveBeenCalled()
-    })
-
-    it('should navigate right to suggested publications', () => {
-      // Add publications so session is not empty
-      sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
-      
-      const event = { key: 'ArrowRight', preventDefault: vi.fn() }
-      onKey(event)
-      
-      expect(event.preventDefault).toHaveBeenCalled()
-      expect(document.getElementById).toHaveBeenCalledWith('suggested')
+      expect(document.getElementById).toHaveBeenCalledWith(targetId)
       expect(interfaceStore.closeFilterMenu).toHaveBeenCalled()
     })
   })
