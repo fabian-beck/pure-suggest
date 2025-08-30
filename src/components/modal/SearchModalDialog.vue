@@ -74,10 +74,17 @@ export default {
       isLoading: false,
       loaded: 0,
       cleanedSearchQuery: "",
+      searchCancelled: false,
+      lastSearchQuery: "",
     };
   },
   computed: {
     filteredSearchResults: function () {
+      // Don't show any results if search was cancelled
+      if (this.searchCancelled) {
+        return [];
+      }
+      
       return this.searchResults.results.filter(
         (publication) =>
           !this.sessionStore.selectedPublicationsDois.includes(
@@ -99,20 +106,66 @@ export default {
         }
       },
     },
+    'interfaceStore.searchQuery': {
+      handler: function () {
+        // Cancel ongoing search when user starts typing new query
+        if (this.isLoading) {
+          this.cancelSearch();
+        }
+      },
+    },
+  },
+  mounted() {
+    document.addEventListener('keydown', this.handleKeydown);
+  },
+  beforeUnmount() {
+    document.removeEventListener('keydown', this.handleKeydown);
   },
   methods: {
-    search: async function () {
+    handleKeydown(event) {
+      if (event.key === 'Escape' && this.isLoading && this.isSearchModalDialogShown) {
+        this.cancelSearch();
+      }
+    },
+
+    cancelSearch() {
+      this.searchCancelled = true;
+      this.isLoading = false;
       this.loaded = 0;
+      this.searchResults = { results: [], type: "empty" };
+    },
+
+    search: async function () {
+      // Don't perform search if query is the same as last search
+      if (this.interfaceStore.searchQuery === this.lastSearchQuery) {
+        return;
+      }
+      
+      // Cancel any ongoing search before starting a new one
+      if (this.isLoading) {
+        this.cancelSearch();
+      }
+      
+      this.loaded = 0;
+      this.searchCancelled = false;
       if (!this.interfaceStore.searchQuery) {
         this.searchResults = { results: [], type: "empty" };
+        this.lastSearchQuery = "";
         return;
       }
       this.isLoading = true;
+      this.lastSearchQuery = this.interfaceStore.searchQuery;
       this.cleanedSearchQuery = this.interfaceStore.searchQuery.replace(/[^a-zA-Z0-9 ]/g, ' ');
       const publicationSearch = new PublicationSearch(
         this.interfaceStore.searchQuery
       );
       this.searchResults = await publicationSearch.execute();
+      
+      // Check if search was cancelled during execution
+      if (this.searchCancelled) {
+        return;
+      }
+      
       if (this.filteredSearchResults.length === 0) {
         this.interfaceStore.showErrorMessage("No matching publications found");
         this.isLoading = false;
@@ -120,6 +173,11 @@ export default {
       }
       // set a timer to check if all publications were fetched already (ugly hack - somehow it doesn't work automatically)
       const check = () => {
+        // Check if search was cancelled
+        if (this.searchCancelled) {
+          return;
+        }
+        
         let loaded = 0;
         this.filteredSearchResults.forEach((publication) => {
           if (publication.wasFetched) {
@@ -156,6 +214,9 @@ export default {
     reset() {
       this.searchResults = { results: [], type: "empty" };
       this.isLoading = false;
+      this.searchCancelled = false;
+      this.loaded = 0;
+      this.lastSearchQuery = "";
     },
   },
 };
