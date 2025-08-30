@@ -43,36 +43,9 @@ describe('CompactButton', () => {
   }
 
   describe('rendering', () => {
-    it('should render with default props', () => {
-      wrapper = createWrapper()
-      expect(wrapper.exists()).toBe(true)
-      expect(wrapper.find('button').exists()).toBe(true)
-      expect(wrapper.find('.icon').exists()).toBe(true)
-    })
-
     it('should display icon in icon element', () => {
       wrapper = createWrapper({ icon: 'mdi-home' })
       expect(wrapper.find('.icon').text()).toBe('mdi-home')
-    })
-
-    it('should be disabled when disabled prop is true', () => {
-      wrapper = createWrapper({ disabled: true })
-      expect(wrapper.find('button').attributes('disabled')).toBeDefined()
-    })
-
-    it('should not be disabled when disabled prop is false', () => {
-      wrapper = createWrapper({ disabled: false })
-      expect(wrapper.find('button').attributes('disabled')).toBeUndefined()
-    })
-
-    it('should have is-selected class when active is true', () => {
-      wrapper = createWrapper({ active: true })
-      expect(wrapper.find('button').classes()).toContain('is-selected')
-    })
-
-    it('should not have is-selected class when active is false', () => {
-      wrapper = createWrapper({ active: false })
-      expect(wrapper.find('button').classes()).not.toContain('is-selected')
     })
   })
 

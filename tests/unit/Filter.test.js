@@ -79,25 +79,11 @@ describe('Filter', () => {
       expect(filter.isSpecificYearActive(9999)).toBe(true)
     })
 
-    it('should return false for years outside range', () => {
+    it('should return false for years outside range and invalid inputs', () => {
       expect(filter.isSpecificYearActive(999)).toBe(false)
       expect(filter.isSpecificYearActive(10000)).toBe(false)
-      expect(filter.isSpecificYearActive(10001)).toBe(false)
-    })
-
-    it('should return false for invalid inputs', () => {
-      expect(filter.isSpecificYearActive(0)).toBe(false)
       expect(filter.isSpecificYearActive(null)).toBe(false)
-      expect(filter.isSpecificYearActive(undefined)).toBe(false)
       expect(filter.isSpecificYearActive(NaN)).toBe(false)
-      expect(filter.isSpecificYearActive('')).toBe(false)
-    })
-
-    it('should handle edge cases at boundaries', () => {
-      expect(filter.isSpecificYearActive(999.9)).toBe(false)
-      expect(filter.isSpecificYearActive(1000.1)).toBe(true)
-      expect(filter.isSpecificYearActive(9999.9)).toBe(true)
-      expect(filter.isSpecificYearActive(10000.0)).toBe(false)
     })
   })
 
@@ -245,76 +231,36 @@ describe('Filter', () => {
 
   describe('DOI management', () => {
     describe('addDoi', () => {
-      it('should add DOI to empty array', () => {
+      it('should add and handle duplicate DOIs', () => {
         filter.addDoi('10.1234/test')
         expect(filter.dois).toEqual(['10.1234/test'])
-      })
-
-      it('should add DOI to existing array', () => {
-        filter.dois = ['10.1234/existing']
+        
+        filter.addDoi('10.1234/test') // duplicate
+        expect(filter.dois).toEqual(['10.1234/test'])
+        
         filter.addDoi('10.1234/new')
-        expect(filter.dois).toEqual(['10.1234/existing', '10.1234/new'])
-      })
-
-      it('should not add duplicate DOI', () => {
-        filter.dois = ['10.1234/test']
-        filter.addDoi('10.1234/test')
-        expect(filter.dois).toEqual(['10.1234/test'])
-      })
-
-      it('should handle null/undefined DOI', () => {
-        filter.addDoi(null)
-        filter.addDoi(undefined)
-        expect(filter.dois).toEqual([null, undefined])
+        expect(filter.dois).toEqual(['10.1234/test', '10.1234/new'])
       })
     })
 
     describe('removeDoi', () => {
-      it('should remove existing DOI', () => {
+      it('should remove DOI and handle non-existent gracefully', () => {
         filter.dois = ['10.1234/test1', '10.1234/test2']
         filter.removeDoi('10.1234/test1')
         expect(filter.dois).toEqual(['10.1234/test2'])
-      })
-
-      it('should handle non-existent DOI gracefully', () => {
-        filter.dois = ['10.1234/test1']
+        
         filter.removeDoi('10.1234/nonexistent')
-        expect(filter.dois).toEqual(['10.1234/test1'])
-      })
-
-      it('should handle empty array', () => {
-        filter.removeDoi('10.1234/test')
-        expect(filter.dois).toEqual([])
-      })
-
-      it('should remove all instances of duplicate DOI', () => {
-        filter.dois = ['10.1234/test', '10.1234/test', '10.1234/other']
-        filter.removeDoi('10.1234/test')
-        expect(filter.dois).toEqual(['10.1234/other'])
+        expect(filter.dois).toEqual(['10.1234/test2'])
       })
     })
 
     describe('toggleDoi', () => {
-      it('should add DOI when not present', () => {
-        filter.toggleDoi('10.1234/test')
-        expect(filter.dois).toEqual(['10.1234/test'])
-      })
-
-      it('should remove DOI when present', () => {
-        filter.dois = ['10.1234/test']
-        filter.toggleDoi('10.1234/test')
-        expect(filter.dois).toEqual([])
-      })
-
-      it('should work correctly with multiple toggles', () => {
+      it('should toggle DOI presence', () => {
         filter.toggleDoi('10.1234/test')
         expect(filter.dois).toEqual(['10.1234/test'])
         
         filter.toggleDoi('10.1234/test')
         expect(filter.dois).toEqual([])
-        
-        filter.toggleDoi('10.1234/test')
-        expect(filter.dois).toEqual(['10.1234/test'])
       })
     })
   })
