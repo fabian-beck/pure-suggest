@@ -155,6 +155,9 @@ export function useAppState() {
     if (session.excluded) {
       sessionStore.excludedPublicationsDois = session.excluded
     }
+    if (session.name !== undefined && session.name !== null) {
+      sessionStore.setSessionName(session.name)
+    }
     sessionStore.addPublicationsToSelection(session.selected)
     
     // Mark that we're tracking a workflow
