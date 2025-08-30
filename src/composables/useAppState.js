@@ -190,6 +190,27 @@ export function useAppState() {
   }
 
   /**
+   * Shows import session confirmation dialog with file input
+   */
+  const importSessionWithConfirmation = () => {
+    const warningMessage = isEmpty.value 
+      ? '' 
+      : '<p style="color: #d32f2f; margin-bottom: 16px;"><strong>This will clear and replace the current session.</strong></p>'
+    
+    interfaceStore.showConfirmDialog(
+      `${warningMessage}<label>Choose an exported session JSON file:&nbsp;</label>
+      <input type="file" id="import-json-input" accept="application/JSON"/>`,
+      () => {
+        const fileInput = document.getElementById("import-json-input")
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+          importSession(fileInput.files[0])
+        }
+      },
+      "Import session"
+    )
+  }
+
+  /**
    * Loads more suggestions incrementally
    */
   const loadMoreSuggestions = () => {
@@ -299,6 +320,7 @@ export function useAppState() {
     retryLoadingPublication,
     loadSession,
     importSession,
+    importSessionWithConfirmation,
     loadMoreSuggestions,
     updateQueued,
     addPublicationsAndUpdate,

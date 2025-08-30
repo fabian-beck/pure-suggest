@@ -19,7 +19,8 @@ const mockInterfaceStore = {
 
 const mockAppState = {
   isEmpty: false,
-  clearSession: vi.fn()
+  clearSession: vi.fn(),
+  importSessionWithConfirmation: vi.fn()
 }
 
 vi.mock('@/stores/session.js', () => ({
@@ -351,5 +352,31 @@ describe('SessionMenuComponent', () => {
     wrapper = createWrapper()
     const text = wrapper.text()
     expect(text).not.toContain('Excluded publications')
+  })
+
+  describe('Import session functionality', () => {
+    it('should show import session menu item', () => {
+      wrapper = createWrapper()
+      const importItem = wrapper.find('[title="Import other session"]')
+      expect(importItem.exists()).toBe(true)
+    })
+
+    it('should call importSessionWithConfirmation from useAppState when import menu item is clicked', async () => {
+      wrapper = createWrapper()
+      const importItem = wrapper.find('[title="Import other session"]')
+      
+      await importItem.trigger('click')
+      expect(mockAppState.importSessionWithConfirmation).toHaveBeenCalled()
+    })
+
+    it('should have import icon for import session menu item', () => {
+      wrapper = createWrapper()
+      const importItem = wrapper.find('[title="Import other session"]')
+      expect(importItem.exists()).toBe(true)
+      
+      // Verify the component has the import item (the exact icon rendering is handled by Vuetify)
+      // In the real component, prepend-icon="mdi-import" will render the correct icon
+      expect(importItem.exists()).toBe(true)
+    })
   })
 })

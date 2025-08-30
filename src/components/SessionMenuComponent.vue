@@ -50,6 +50,8 @@
         title="Export selected as BibTeX" />
       <v-list-item prepend-icon="mdi-delete" @click="clearSession" class="has-text-danger"
         title="Clear session" />
+      <v-list-item prepend-icon="mdi-import" @click="importSessionWithConfirmation"
+        title="Import other session" />
     </v-list>
   </v-menu>
 </template>
@@ -62,7 +64,7 @@ import { useAppState } from "@/composables/useAppState.js"
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
-const { isEmpty, clearSession } = useAppState()
+const { isEmpty, clearSession, importSessionWithConfirmation } = useAppState()
 
 const sessionName = ref(sessionStore.sessionName)
 
