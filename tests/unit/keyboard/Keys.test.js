@@ -9,10 +9,12 @@ import Filter from '../../../src/Filter.js'
 // Mock useAppState
 const mockClearSession = vi.fn()
 const mockUpdateQueued = vi.fn()
+const mockIsEmpty = { value: false }
 vi.mock('../../../src/composables/useAppState.js', () => ({
   useAppState: () => ({
     clearSession: mockClearSession,
-    updateQueued: mockUpdateQueued
+    updateQueued: mockUpdateQueued,
+    isEmpty: mockIsEmpty
   })
 }))
 
@@ -154,12 +156,18 @@ describe('Keys Module - Keyboard Event Handling', () => {
       // Ensure session is empty
       sessionStore.selectedPublications = []
       sessionStore.excludedPublicationsDois = []
+      queueStore.selectedQueue = []
+      queueStore.excludedQueue = []
+      mockIsEmpty.value = true
       
       const event = { key: 'f', preventDefault: vi.fn() }
       onKey(event)
       
       expect(event.preventDefault).not.toHaveBeenCalled()
       expect(interfaceStore.openFilterMenu).not.toHaveBeenCalled()
+      
+      // Reset for other tests
+      mockIsEmpty.value = false
     })
 
     it('should not open filter menu when overlay is shown', () => {

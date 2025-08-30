@@ -32,7 +32,7 @@ function findAdjacentPublicationComponent(currentElement, direction) {
 export function onKey(e) {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
-    const { clearSession, updateQueued } = useAppState();
+    const { clearSession, updateQueued, isEmpty } = useAppState();
     if (
         e.ctrlKey ||
         e.shiftKey ||
@@ -60,7 +60,7 @@ export function onKey(e) {
         interfaceStore.isSearchModalDialogShown = true;
         return;
     }
-    if (sessionStore.isEmpty) return;
+    if (isEmpty.value) return;
     if (e.key === "a") {
         e.preventDefault();
         interfaceStore.isAuthorModalDialogShown = true;
@@ -76,7 +76,21 @@ export function onKey(e) {
     } else if (e.key === "b") {
         e.preventDefault();
         sessionStore.clearActivePublication("setting focus on text field");
-        document.getElementsByClassName("boost")[0].getElementsByTagName("input")[0].focus();
+        // First, try to find and click the boost button to open the menu
+        const boostButton = document.querySelector(".boost-button");
+        if (boostButton) {
+            boostButton.click();
+            // Wait a bit for the menu to open, then focus on the input
+            setTimeout(() => {
+                const boostElements = document.getElementsByClassName("boost");
+                if (boostElements.length > 0) {
+                    const inputs = boostElements[0].getElementsByTagName("input");
+                    if (inputs.length > 0) {
+                        inputs[0].focus();
+                    }
+                }
+            }, 100); // Small delay to allow menu to open
+        }
     } else if (e.key === "u") {
         e.preventDefault();
         updateQueued();
