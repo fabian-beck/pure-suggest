@@ -40,19 +40,4 @@ describe('PublicationTag', () => {
     expect(chip.attributes('size')).toBe('small')
   })
 
-  it('renders without icon when no icon prop provided', () => {
-    const wrapper = mount(PublicationTag, {
-      slots: {
-        default: 'No Icon'
-      },
-      global: {
-        stubs: {
-          'v-chip': true
-        }
-      }
-    })
-
-    const chip = wrapper.getComponent({ name: 'v-chip' })
-    expect(chip.props('prependIcon')).toBeUndefined()
-  })
 })

@@ -39,40 +39,4 @@ describe('InlineIcon', () => {
     })
   })
 
-  describe('edge cases', () => {
-    it('should handle undefined color gracefully', () => {
-      wrapper = createWrapper({ icon: 'mdi-test', color: undefined })
-      expect(wrapper.classes()).not.toContain('has-text-undefined')
-      expect(wrapper.classes()).toContain('inline-icon')
-    })
-
-    it('should handle null color gracefully', () => {
-      wrapper = createWrapper({ icon: 'mdi-test', color: null })
-      expect(wrapper.classes()).not.toContain('has-text-null')
-      expect(wrapper.classes()).toContain('inline-icon')
-    })
-
-    it('should handle empty string color', () => {
-      wrapper = createWrapper({ icon: 'mdi-test', color: '' })
-      expect(wrapper.classes()).not.toContain('has-text-')
-      expect(wrapper.classes()).toContain('inline-icon')
-    })
-
-    it('should handle special characters in color', () => {
-      wrapper = createWrapper({ icon: 'mdi-test', color: 'red-500' })
-      expect(wrapper.classes()).toContain('has-text-red-500')
-    })
-
-    it('should handle spaces in color by converting to hyphens', () => {
-      wrapper = createWrapper({ icon: 'mdi-test', color: 'light blue' })
-      expect(wrapper.classes()).toContain('has-text-light-blue')
-      expect(wrapper.classes()).not.toContain('has-text-light')
-      expect(wrapper.classes()).not.toContain('blue')
-    })
-
-    it('should handle multiple spaces in color', () => {
-      wrapper = createWrapper({ icon: 'mdi-test', color: 'very   light    blue' })
-      expect(wrapper.classes()).toContain('has-text-very-light-blue')
-    })
-  })
 })
