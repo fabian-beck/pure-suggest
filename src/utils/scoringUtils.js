@@ -43,7 +43,8 @@ export function parseUniqueBoostKeywords(boostKeywordString) {
 }
 
 /**
- * Finds all keyword matches in a title string
+ * Finds all keyword matches in a title string with word boundary matching for short keywords
+ * Each keyword (including alternatives) is matched only once - the first occurrence found
  * @param {string} title - The title text to search in
  * @param {string[]} boostKeywords - Keywords to search for
  * @returns {Array} Array of match objects with keyword, position, and length
@@ -59,26 +60,68 @@ export function findKeywordMatches(title, boostKeywords) {
     boostKeyword.split("|").forEach(alternativeKeyword => {
       if (keywordMatched) return; // Skip if this keyword group already has a match
       
-      const index = upperTitle.indexOf(alternativeKeyword);
-      if (index >= 0) {
-        // Check if this position is already matched
-        const overlaps = matches.some(match => 
-          index < match.position + match.length && index + alternativeKeyword.length > match.position
-        );
-        if (!overlaps) {
-          matches.push({
-            keyword: boostKeyword,
-            position: index,
-            length: alternativeKeyword.length,
-            text: alternativeKeyword
-          });
-          keywordMatched = true; // Mark this keyword group as matched
+      // Use word boundary matching for short keywords (3 chars or less)
+      // Use substring matching for longer keywords
+      const useWordBoundary = alternativeKeyword.length <= 3;
+      
+      if (useWordBoundary) {
+        // Find first match that starts at word boundary for short keywords
+        const wordBoundaryRegex = new RegExp(`\\b${escapeRegExp(alternativeKeyword)}`, 'gi');
+        const regexMatch = wordBoundaryRegex.exec(title);
+        
+        if (regexMatch) {
+          const index = regexMatch.index;
+          
+          // Check if this position is already matched by another keyword
+          const overlaps = matches.some(match => 
+            index < match.position + match.length && index + alternativeKeyword.length > match.position
+          );
+          
+          if (!overlaps) {
+            matches.push({
+              keyword: boostKeyword,
+              position: index,
+              length: alternativeKeyword.length,
+              text: alternativeKeyword
+            });
+            keywordMatched = true; // Mark this keyword group as matched
+          }
+        }
+      } else {
+        // Use substring matching for longer keywords - find first occurrence only
+        const upperAlternativeKeyword = alternativeKeyword.toUpperCase();
+        const index = upperTitle.indexOf(upperAlternativeKeyword);
+        
+        if (index >= 0) {
+          // Check if this position is already matched by another keyword
+          const overlaps = matches.some(match => 
+            index < match.position + match.length && index + alternativeKeyword.length > match.position
+          );
+          
+          if (!overlaps) {
+            matches.push({
+              keyword: boostKeyword,
+              position: index,
+              length: alternativeKeyword.length,
+              text: alternativeKeyword
+            });
+            keywordMatched = true; // Mark this keyword group as matched
+          }
         }
       }
     });
   });
   
   return matches.sort((a, b) => a.position - b.position);
+}
+
+/**
+ * Escapes special regex characters in a string
+ * @param {string} string - String to escape
+ * @returns {string} Escaped string safe for use in regex
+ */
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /**
