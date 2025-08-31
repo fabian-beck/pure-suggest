@@ -177,6 +177,8 @@ export default {
             tickCount: 0, // Track simulation tick count
             skipEarlyTicks: 10, // Skip DOM updates for first N ticks
             shouldSkipEarlyTicks: false, // Only skip when truly restarted with high alpha
+            // X position caching for performance optimization
+            nodeXPositionsCache: new Map(), // Cache X positions to avoid redundant calculations
         };
     },
     computed: {
@@ -551,6 +553,9 @@ export default {
                 console.log(`⏭️ TICK skipping period ended at tick ${this.tickCount} - network fading to visible`);
             }
             
+            // Pre-compute X positions for all nodes (major performance optimization)
+            this.cacheNodeXPositions();
+            
             // Check which nodes have moved significantly and get the changed nodes
             const changedNodes = this.detectChangedNodes();
 
@@ -781,8 +786,8 @@ export default {
 
             // Check each node for significant position changes
             for (const node of this.graph.nodes) {
-                // Calculate current display position
-                const currentX = getNodeXPosition(node, this.isNetworkClusters, this.yearX);
+                // Get cached X position (major performance optimization)
+                const currentX = this.getCachedNodeX(node);
                 const currentY = node.y || 0;
 
                 // Initialize last positions if not set
@@ -825,7 +830,30 @@ export default {
             this.lastNodeUpdateCount = 0;
             this.tickCount = 0; // Reset tick counter
             this.shouldSkipEarlyTicks = false; // Reset skip flag
+            this.nodeXPositionsCache.clear(); // Clear X position cache
             this.resetPositionTracking();
+        },
+
+        // X position caching optimization methods
+        cacheNodeXPositions() {
+            // Pre-compute X positions for all nodes to avoid redundant calculations
+            this.nodeXPositionsCache.clear();
+            for (const node of this.graph.nodes) {
+                const xPos = getNodeXPosition(node, this.isNetworkClusters, this.yearX);
+                this.nodeXPositionsCache.set(node.id, xPos);
+            }
+        },
+
+        getCachedNodeX(node) {
+            // Get cached X position, fallback to calculation if not cached
+            const cached = this.nodeXPositionsCache.get(node.id);
+            if (cached !== undefined) {
+                return cached;
+            }
+            // Fallback (should rarely happen)
+            const xPos = getNodeXPosition(node, this.isNetworkClusters, this.yearX);
+            this.nodeXPositionsCache.set(node.id, xPos);
+            return xPos;
         },
 
         clearExistingVisualization() {
@@ -884,8 +912,8 @@ export default {
                 return changedNodeIds.has(d.id);
             });
 
-            // Update positions of only the changed nodes
-            changedNodeSelection.attr("transform", (d) => `translate(${getNodeXPosition(d, this.isNetworkClusters, this.yearX)}, ${d.y})`);
+            // Update positions of only the changed nodes using cached X positions
+            changedNodeSelection.attr("transform", (d) => `translate(${this.getCachedNodeX(d)}, ${d.y})`);
         },
 
         updateSelectiveLinks(changedNodes) {
@@ -899,10 +927,10 @@ export default {
                 return changedNodeIds.has(d.source.id) || changedNodeIds.has(d.target.id);
             });
 
-            // Update only the affected links
+            // Update only the affected links using cached X positions
             updateLinkProperties(
                 affectedLinks,
-                (d) => getNodeXPosition(d, this.isNetworkClusters, this.yearX),
+                (d) => this.getCachedNodeX(d),
                 this.sessionStore.activePublication
             );
 
