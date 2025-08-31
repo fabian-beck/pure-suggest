@@ -13,6 +13,8 @@
                     <template v-else>
                         FPS: {{ currentFps.toFixed(1) }}
                         <br>
+                        Tick: {{ tickCount }}{{ shouldSkipEarlyTicks && tickCount <= skipEarlyTicks ? ' (skipping)' : '' }}
+                        <br>
                         Nodes: {{ graph.nodes.length }}
                         <br>
                         Links: {{ graph.links.length }}
@@ -26,7 +28,7 @@
                         Links Updated: {{ lastLinkUpdateCount }}/{{ graph.links.length }}
                     </template>
                 </div>
-                <svg id="network-svg">
+                <svg id="network-svg" :class="networkCssClasses">
                     <g></g>
                 </svg>
             </div>
@@ -171,6 +173,10 @@ export default {
             skippedUpdateCount: 0, // Track skipped updates due to minimal changes
             lastLinkUpdateCount: 0, // Track how many links were updated in last tick
             lastNodeUpdateCount: 0, // Track how many nodes were updated in last tick
+            // Skip early ticks optimization
+            tickCount: 0, // Track simulation tick count
+            skipEarlyTicks: 10, // Skip DOM updates for first N ticks
+            shouldSkipEarlyTicks: false, // Only skip when truly restarted with high alpha
         };
     },
     computed: {
@@ -185,6 +191,14 @@ export default {
         },
         showAuthorNodes: function () {
             return this.showNodes.includes("author");
+        },
+        
+        networkCssClasses: function () {
+            if (this.shouldSkipEarlyTicks && this.tickCount <= this.skipEarlyTicks) {
+                return 'network-fading';
+            } else {
+                return 'network-visible';
+            }
         },
     },
     watch: {
@@ -511,6 +525,22 @@ export default {
                 return;
             }
             
+            // Increment tick counter
+            this.tickCount++;
+            
+            // Skip DOM updates for first N ticks only if this is a true restart with high alpha
+            if (this.shouldSkipEarlyTicks && this.tickCount <= this.skipEarlyTicks) {
+                console.log(`⏭️ TICK ${this.tickCount} skipped - early simulation phase (skipping first ${this.skipEarlyTicks})`);
+                this.trackFps(); // Still track FPS for debugging
+                return;
+            }
+            
+            // Disable skipping after the skip period
+            if (this.shouldSkipEarlyTicks && this.tickCount > this.skipEarlyTicks) {
+                this.shouldSkipEarlyTicks = false;
+                console.log(`⏭️ TICK skipping period ended at tick ${this.tickCount} - network fading to visible`);
+            }
+            
             // Check which nodes have moved significantly and get the changed nodes
             const changedNodes = this.detectChangedNodes();
 
@@ -649,6 +679,17 @@ export default {
             if (this.simulation && !this.isDragging) {
                 const currentAlpha = this.simulation.alpha();
                 console.log(`🔄 RESTART called - setting alpha from ${currentAlpha.toFixed(3)} to ${alpha.toFixed(3)}, dragging=${this.isDragging}`);
+                
+                // Only skip early ticks if this is a true restart with high alpha (> 0.3)
+                if (alpha > 0.3) {
+                    this.tickCount = 0;
+                    this.shouldSkipEarlyTicks = true;
+                    console.log(`🔄 RESTART - enabling early tick skip and network fade (high alpha restart: ${alpha.toFixed(3)})`);
+                } else {
+                    this.shouldSkipEarlyTicks = false;
+                    console.log(`🔄 RESTART - no tick skip (low alpha restart: ${alpha.toFixed(3)})`);
+                }
+                
                 this.simulation.alpha(alpha).restart();
             } else {
                 console.log(`🔄 RESTART skipped - simulation=${!!this.simulation}, dragging=${this.isDragging}`);
@@ -659,6 +700,11 @@ export default {
             if (this.simulation) {
                 const currentAlpha = this.simulation.alpha();
                 console.log(`▶️ START called - current alpha: ${currentAlpha.toFixed(3)}, restarting simulation`);
+                
+                // start() is just resuming, don't skip ticks
+                this.shouldSkipEarlyTicks = false;
+                console.log(`▶️ START - no tick skip (resuming simulation)`);
+                
                 this.simulation.restart();
             } else {
                 console.log(`▶️ START skipped - no simulation object`);
@@ -767,6 +813,8 @@ export default {
             this.skippedUpdateCount = 0;
             this.lastLinkUpdateCount = 0;
             this.lastNodeUpdateCount = 0;
+            this.tickCount = 0; // Reset tick counter
+            this.shouldSkipEarlyTicks = false; // Reset skip flag
             this.resetPositionTracking();
         },
 
@@ -903,6 +951,17 @@ export default {
     width: 180px;
     text-align: left;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Network fade during early tick skipping */
+.network-fading {
+    opacity: 0.1;
+    transition: opacity 0.3s ease-out;
+}
+
+.network-visible {
+    opacity: 1;
+    transition: opacity 0.5s ease-in;
 }
 
 #network-svg {
