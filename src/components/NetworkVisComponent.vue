@@ -5,19 +5,26 @@
                 @expandNetwork="expandNetwork" />
             <div id="network-svg-container">
                 <div class="fps-display" v-if="showFpsDebug">
-                    FPS: {{ currentFps.toFixed(1) }}
-                    <br>
-                    Nodes: {{ graph.nodes.length }}
-                    <br>
-                    Links: {{ graph.links.length }}
-                    <br>
-                    DOM Updates: {{ domUpdateCount }}
-                    <br>
-                    Skipped: {{ skippedUpdateCount }}
-                    <br>
-                    Nodes Updated: {{ lastNodeUpdateCount }}/{{ graph.nodes.length }}
-                    <br>
-                    Links Updated: {{ lastLinkUpdateCount }}/{{ graph.links.length }}
+                    <span v-if="isEmpty || !sessionStore.selectedPublications?.length" style="color: orange;">
+                        SIMULATION SKIPPED<br>
+                        (Empty State)<br>
+                        Network Cleared
+                    </span>
+                    <template v-else>
+                        FPS: {{ currentFps.toFixed(1) }}
+                        <br>
+                        Nodes: {{ graph.nodes.length }}
+                        <br>
+                        Links: {{ graph.links.length }}
+                        <br>
+                        DOM Updates: {{ domUpdateCount }}
+                        <br>
+                        Skipped: {{ skippedUpdateCount }}
+                        <br>
+                        Nodes Updated: {{ lastNodeUpdateCount }}/{{ graph.nodes.length }}
+                        <br>
+                        Links Updated: {{ lastLinkUpdateCount }}/{{ graph.links.length }}
+                    </template>
                 </div>
                 <svg id="network-svg">
                     <g></g>
@@ -276,6 +283,15 @@ export default {
 
             if (this.isDragging)
                 return;
+                
+            // Early return if app state is empty - no need to run simulation
+            if (this.isEmpty || !this.sessionStore.selectedPublications?.length) {
+                this.stop(); // Stop any running simulation
+                this.clearExistingVisualization(); // Clear any existing network elements
+                this.resetOptimizationMetrics();
+                return;
+            }
+            
             try {
                 // Update simulation configuration
                 this.updateSimulation({
@@ -310,14 +326,8 @@ export default {
                 // Update graph data in simulation
                 this.updateGraphData(this.graph.nodes, this.graph.links);
 
-                // Reset position tracking when plot is called to ensure fresh tracking
-                this.resetPositionTracking();
-
-                // Reset optimization metrics
-                this.domUpdateCount = 0;
-                this.skippedUpdateCount = 0;
-                this.lastLinkUpdateCount = 0;
-                this.lastNodeUpdateCount = 0;
+                // Reset position tracking and optimization metrics when plot is called
+                this.resetOptimizationMetrics();
 
                 if (restart) {
                     this.restart(SIMULATION_ALPHA);
@@ -407,21 +417,25 @@ export default {
                     links.push(...authorLinks);
                 }
 
-                // Preserve existing node positions for smooth transitions
-                const existingNodeData = this.node?.data ? this.node.data() : null;
-                const processedNodes = this.preserveNodePositions(nodes, existingNodeData);
-                const processedLinks = links.map((d) => Object.assign({}, d));
+                // Store nodes and links for later processing (after updateNodes initializes this.node)
+                this.tempNodes = nodes;
+                this.tempLinks = links.map((d) => Object.assign({}, d));
 
                 // Update component state
                 this.doiToIndex = doiToIndex;
                 this.filteredAuthors = filteredAuthors;
+            }
+
+            function updateNodes() {
+                // Preserve existing node positions for smooth transitions
+                const existingNodeData = (this.node && typeof this.node.data === 'function') ? this.node.data() : null;
+                const processedNodes = this.preserveNodePositions(this.tempNodes, existingNodeData);
+                const processedLinks = this.tempLinks;
 
                 // Update simulation graph data
                 this.graph.nodes = processedNodes;
                 this.graph.links = processedLinks;
-            }
 
-            function updateNodes() {
                 this.node = this.node
                     .data(this.graph.nodes, (d) => d.id)
                     .join((enter) => {
@@ -468,6 +482,12 @@ export default {
             }
         },
         tick: function () {
+            // Early return if graph is empty - no nodes to update
+            if (!this.graph.nodes || this.graph.nodes.length === 0) {
+                this.trackFps(); // Still track FPS for debugging
+                return;
+            }
+            
             // Check which nodes have moved significantly and get the changed nodes
             const changedNodes = this.detectChangedNodes();
 
@@ -700,6 +720,59 @@ export default {
                     delete node._lastDisplayX;
                     delete node._lastDisplayY;
                 });
+            }
+        },
+
+        resetOptimizationMetrics() {
+            this.domUpdateCount = 0;
+            this.skippedUpdateCount = 0;
+            this.lastLinkUpdateCount = 0;
+            this.lastNodeUpdateCount = 0;
+            this.resetPositionTracking();
+        },
+
+        clearExistingVisualization() {
+            // Clear all existing network elements from the DOM
+            try {
+                if (this.node) {
+                    this.node.remove();
+                }
+                if (this.link) {
+                    this.link.remove();
+                }
+                if (this.label) {
+                    this.label.remove();
+                }
+                
+                // Clear graph data
+                this.graph = { nodes: [], links: [] };
+                
+                // Clear the SVG container
+                if (this.svg && typeof this.svg.select === 'function') {
+                    this.svg.select("g").selectAll("*").remove();
+                }
+                
+                // Reinitialize empty D3 selections (same as mounted hook)
+                if (this.svg) {
+                    this.label = this.svg.append("g").attr("class", "labels").selectAll("text");
+                    this.link = this.svg.append("g").attr("class", "links").selectAll("path");
+                    this.node = this.svg.append("g").attr("class", "nodes").selectAll("rect");
+                }
+                
+            } catch (error) {
+                console.warn("Error clearing visualization:", error.message);
+                // Ensure clean state even if clearing fails
+                this.graph = { nodes: [], links: [] };
+                // Try to reinitialize basic selections
+                if (this.svg) {
+                    try {
+                        this.label = this.svg.append("g").attr("class", "labels").selectAll("text");
+                        this.link = this.svg.append("g").attr("class", "links").selectAll("path");
+                        this.node = this.svg.append("g").attr("class", "nodes").selectAll("rect");
+                    } catch (reinitError) {
+                        console.warn("Could not reinitialize D3 selections:", reinitError.message);
+                    }
+                }
             }
         },
 
