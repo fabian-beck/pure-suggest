@@ -189,13 +189,15 @@ export default {
     },
     watch: {
         isNetworkClusters: {
-            handler: function () {
+            handler: function (newVal, oldVal) {
+                console.log(`🔍 WATCH isNetworkClusters: ${oldVal} → ${newVal}`);
                 this.plot(true);
             },
         },
         filter: {
             deep: true,
             handler: function () {
+                console.log(`🔍 WATCH filter changed: hasActiveFilters=${this.sessionStore.filter.hasActiveFilters()}`);
                 // Update "only show filtered" based on filter state
                 if (!this.sessionStore.filter.hasActiveFilters()) {
                     this.onlyShowFiltered = false;
@@ -206,7 +208,8 @@ export default {
             },
         },
         activePublication: {
-            handler: function () {
+            handler: function (newVal, oldVal) {
+                console.log(`🔍 WATCH activePublication: ${oldVal?.doi || 'null'} → ${newVal?.doi || 'null'}, isLoading=${this.interfaceStore.isLoading}`);
                 if (this.interfaceStore.isLoading)
                     return;
                 this.plot();
@@ -257,11 +260,15 @@ export default {
         this.sessionStore.$onAction(({ name, after }) => {
             after(() => {
                 if (name === "updateScores") {
+                    console.log(`🏪 STORE ACTION: ${name} - calling plot(true)`);
                     this.plot(true);
                 }
                 else if ((!this.interfaceStore.isLoading && name === "clear") ||
                     name === "hasUpdated") {
+                    console.log(`🏪 STORE ACTION: ${name} - calling plot() [isLoading=${this.interfaceStore.isLoading}]`);
                     this.plot();
+                } else {
+                    console.log(`🏪 STORE ACTION: ${name} - no plot call [isLoading=${this.interfaceStore.isLoading}]`);
                 }
             });
         });
@@ -280,12 +287,18 @@ export default {
     },
     methods: {
         plot: function (restart) {
+            const caller = new Error().stack?.split('\n')[2]?.trim() || 'unknown';
+            console.log(`🎯 PLOT called - restart=${restart}, nodes=${this.sessionStore.selectedPublications?.length || 0}, isEmpty=${this.isEmpty}`);
+            console.log(`🎯 PLOT caller: ${caller}`);
 
-            if (this.isDragging)
+            if (this.isDragging) {
+                console.log(`🎯 PLOT skipped - dragging in progress`);
                 return;
+            }
                 
             // Early return if app state is empty - no need to run simulation
             if (this.isEmpty || !this.sessionStore.selectedPublications?.length) {
+                console.log(`🎯 PLOT early return - empty state (isEmpty=${this.isEmpty}, selectedPubs=${this.sessionStore.selectedPublications?.length || 0})`);
                 this.stop(); // Stop any running simulation
                 this.clearExistingVisualization(); // Clear any existing network elements
                 this.resetOptimizationMetrics();
@@ -330,8 +343,10 @@ export default {
                 this.resetOptimizationMetrics();
 
                 if (restart) {
+                    console.log(`🎯 PLOT calling restart() with alpha=${SIMULATION_ALPHA}`);
                     this.restart(SIMULATION_ALPHA);
                 } else {
+                    console.log(`🎯 PLOT calling start()`);
                     this.start();
                 }
             }
@@ -514,18 +529,22 @@ export default {
             releaseKeywordPosition(event, d, this, SIMULATION_ALPHA);
         },
         onKeywordNodeMouseover: function (event, d) {
+            console.log(`🔍 KEYWORD mouseover: ${d.keyword} - calling plot()`);
             highlightKeywordPublications(d, this.sessionStore.publicationsFiltered || []);
             this.plot();
         },
         onKeywordNodeMouseout: function () {
+            console.log(`🔍 KEYWORD mouseout - calling plot()`);
             clearKeywordHighlight(this.sessionStore.publicationsFiltered || []);
             this.plot();
         },
         onAuthorNodeMouseover: function (event, d) {
+            console.log(`🔍 AUTHOR mouseover: ${d.author} - calling plot()`);
             highlightAuthorPublications(d, this.sessionStore.publicationsFiltered || []);
             this.plot();
         },
         onAuthorNodeMouseout: function () {
+            console.log(`🔍 AUTHOR mouseout - calling plot()`);
             clearAuthorHighlight(this.sessionStore.publicationsFiltered || []);
             this.plot();
         },
@@ -620,19 +639,31 @@ export default {
 
         restart(alpha = SIMULATION_ALPHA) {
             if (this.simulation && !this.isDragging) {
+                const currentAlpha = this.simulation.alpha();
+                console.log(`🔄 RESTART called - setting alpha from ${currentAlpha.toFixed(3)} to ${alpha.toFixed(3)}, dragging=${this.isDragging}`);
                 this.simulation.alpha(alpha).restart();
+            } else {
+                console.log(`🔄 RESTART skipped - simulation=${!!this.simulation}, dragging=${this.isDragging}`);
             }
         },
 
         start() {
             if (this.simulation) {
+                const currentAlpha = this.simulation.alpha();
+                console.log(`▶️ START called - current alpha: ${currentAlpha.toFixed(3)}, restarting simulation`);
                 this.simulation.restart();
+            } else {
+                console.log(`▶️ START skipped - no simulation object`);
             }
         },
 
         stop() {
             if (this.simulation) {
+                const currentAlpha = this.simulation.alpha();
+                console.log(`⏹️ STOP called - current alpha: ${currentAlpha.toFixed(3)}`);
                 this.simulation.stop();
+            } else {
+                console.log(`⏹️ STOP skipped - no simulation object`);
             }
         },
 
