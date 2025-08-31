@@ -274,8 +274,18 @@ export default {
         this.sessionStore.$onAction(({ name, after }) => {
             after(() => {
                 if (name === "updateScores") {
-                    console.log(`🏪 STORE ACTION: ${name} - calling plot(true)`);
-                    this.plot(true);
+                    // Prevent premature plot calls during loading workflow
+                    const hasSelectedPublications = this.sessionStore.selectedPublications?.length > 0;
+                    const hasSuggestedPublications = this.sessionStore.suggestedPublications?.length > 0;
+                    const isLoadingState = this.interfaceStore.isLoading;
+                    
+                    // Skip if still loading and don't have both selected + suggested publications ready
+                    if (isLoadingState && (!hasSelectedPublications || !hasSuggestedPublications)) {
+                        console.log(`🏪 STORE ACTION: ${name} - skipped during loading workflow (selected=${hasSelectedPublications}, suggested=${hasSuggestedPublications}, isLoading=${isLoadingState})`);
+                    } else {
+                        console.log(`🏪 STORE ACTION: ${name} - calling plot(true) (selected=${hasSelectedPublications}, suggested=${hasSuggestedPublications}, isLoading=${isLoadingState})`);
+                        this.plot(true);
+                    }
                 }
                 else if ((!this.interfaceStore.isLoading && name === "clear") ||
                     name === "hasUpdated") {
