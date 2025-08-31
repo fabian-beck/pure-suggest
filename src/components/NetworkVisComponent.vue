@@ -265,8 +265,16 @@ export default {
                 }
                 else if ((!this.interfaceStore.isLoading && name === "clear") ||
                     name === "hasUpdated") {
-                    console.log(`🏪 STORE ACTION: ${name} - calling plot() [isLoading=${this.interfaceStore.isLoading}]`);
-                    this.plot();
+                    // Prevent redundant plot calls when simulation is already active
+                    const currentAlpha = (this.simulation && typeof this.simulation.alpha === 'function') ? this.simulation.alpha() : 0;
+                    const isSimulationActive = currentAlpha > 0.01; // alphaMin threshold
+                    
+                    if (isSimulationActive && name === "hasUpdated") {
+                        console.log(`🏪 STORE ACTION: ${name} - skipped, simulation already active (alpha=${currentAlpha.toFixed(3)}) [isLoading=${this.interfaceStore.isLoading}]`);
+                    } else {
+                        console.log(`🏪 STORE ACTION: ${name} - calling plot() (alpha=${currentAlpha.toFixed(3)}) [isLoading=${this.interfaceStore.isLoading}]`);
+                        this.plot();
+                    }
                 } else {
                     console.log(`🏪 STORE ACTION: ${name} - no plot call [isLoading=${this.interfaceStore.isLoading}]`);
                 }
