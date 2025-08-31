@@ -205,15 +205,13 @@ export default {
     },
     watch: {
         isNetworkClusters: {
-            handler: function (newVal, oldVal) {
-                console.log(`🔍 WATCH isNetworkClusters: ${oldVal} → ${newVal}`);
+            handler: function () {
                 this.plot(true);
             },
         },
         filter: {
             deep: true,
             handler: function () {
-                console.log(`🔍 WATCH filter changed: hasActiveFilters=${this.sessionStore.filter.hasActiveFilters()}`);
                 // Update "only show filtered" based on filter state
                 if (!this.sessionStore.filter.hasActiveFilters()) {
                     this.onlyShowFiltered = false;
@@ -224,8 +222,7 @@ export default {
             },
         },
         activePublication: {
-            handler: function (newVal, oldVal) {
-                console.log(`🔍 WATCH activePublication: ${oldVal?.doi || 'null'} → ${newVal?.doi || 'null'}, isLoading=${this.interfaceStore.isLoading}`);
+            handler: function () {
                 if (this.interfaceStore.isLoading)
                     return;
                 this.plot();
@@ -282,10 +279,7 @@ export default {
                     const isLoadingState = this.interfaceStore.isLoading;
                     
                     // Skip if still loading and don't have both selected + suggested publications ready
-                    if (isLoadingState && (!hasSelectedPublications || !hasSuggestedPublications)) {
-                        console.log(`🏪 STORE ACTION: ${name} - skipped during loading workflow (selected=${hasSelectedPublications}, suggested=${hasSuggestedPublications}, isLoading=${isLoadingState})`);
-                    } else {
-                        console.log(`🏪 STORE ACTION: ${name} - calling plot(true) (selected=${hasSelectedPublications}, suggested=${hasSuggestedPublications}, isLoading=${isLoadingState})`);
+                    if (!(isLoadingState && (!hasSelectedPublications || !hasSuggestedPublications))) {
                         this.plot(true);
                     }
                 }
@@ -295,14 +289,9 @@ export default {
                     const currentAlpha = (this.simulation && typeof this.simulation.alpha === 'function') ? this.simulation.alpha() : 0;
                     const isSimulationActive = currentAlpha > 0.01; // alphaMin threshold
                     
-                    if (isSimulationActive && name === "hasUpdated") {
-                        console.log(`🏪 STORE ACTION: ${name} - skipped, simulation already active (alpha=${currentAlpha.toFixed(3)}) [isLoading=${this.interfaceStore.isLoading}]`);
-                    } else {
-                        console.log(`🏪 STORE ACTION: ${name} - calling plot() (alpha=${currentAlpha.toFixed(3)}) [isLoading=${this.interfaceStore.isLoading}]`);
+                    if (!(isSimulationActive && name === "hasUpdated")) {
                         this.plot();
                     }
-                } else {
-                    console.log(`🏪 STORE ACTION: ${name} - no plot call [isLoading=${this.interfaceStore.isLoading}]`);
                 }
             });
         });
@@ -321,18 +310,13 @@ export default {
     },
     methods: {
         plot: function (restart) {
-            const caller = new Error().stack?.split('\n')[2]?.trim() || 'unknown';
-            console.log(`🎯 PLOT called - restart=${restart}, nodes=${this.sessionStore.selectedPublications?.length || 0}, isEmpty=${this.isEmpty}`);
-            console.log(`🎯 PLOT caller: ${caller}`);
 
             if (this.isDragging) {
-                console.log(`🎯 PLOT skipped - dragging in progress`);
                 return;
             }
                 
             // Early return if app state is empty - no need to run simulation
             if (this.isEmpty || !this.sessionStore.selectedPublications?.length) {
-                console.log(`🎯 PLOT early return - empty state (isEmpty=${this.isEmpty}, selectedPubs=${this.sessionStore.selectedPublications?.length || 0})`);
                 this.stop(); // Stop any running simulation
                 this.clearExistingVisualization(); // Clear any existing network elements
                 this.resetOptimizationMetrics();
@@ -377,10 +361,8 @@ export default {
                 this.resetOptimizationMetrics();
 
                 if (restart) {
-                    console.log(`🎯 PLOT calling restart() with alpha=${SIMULATION_ALPHA}`);
                     this.restart(SIMULATION_ALPHA);
                 } else {
-                    console.log(`🎯 PLOT calling start()`);
                     this.start();
                 }
             }
@@ -542,7 +524,6 @@ export default {
             
             // Skip DOM updates for first N ticks only if this is a true restart with high alpha
             if (this.shouldSkipEarlyTicks && this.tickCount <= this.skipEarlyTicks) {
-                console.log(`⏭️ TICK ${this.tickCount} skipped - early simulation phase (skipping first ${this.skipEarlyTicks})`);
                 this.trackFps(); // Still track FPS for debugging
                 return;
             }
@@ -550,7 +531,6 @@ export default {
             // Disable skipping after the skip period
             if (this.shouldSkipEarlyTicks && this.tickCount > this.skipEarlyTicks) {
                 this.shouldSkipEarlyTicks = false;
-                console.log(`⏭️ TICK skipping period ended at tick ${this.tickCount} - network fading to visible`);
             }
             
             // Pre-compute X positions for all nodes (major performance optimization)
@@ -582,22 +562,18 @@ export default {
             releaseKeywordPosition(event, d, this, SIMULATION_ALPHA);
         },
         onKeywordNodeMouseover: function (event, d) {
-            console.log(`🔍 KEYWORD mouseover: ${d.keyword} - calling plot()`);
             highlightKeywordPublications(d, this.sessionStore.publicationsFiltered || []);
             this.plot();
         },
         onKeywordNodeMouseout: function () {
-            console.log(`🔍 KEYWORD mouseout - calling plot()`);
             clearKeywordHighlight(this.sessionStore.publicationsFiltered || []);
             this.plot();
         },
         onAuthorNodeMouseover: function (event, d) {
-            console.log(`🔍 AUTHOR mouseover: ${d.author} - calling plot()`);
             highlightAuthorPublications(d, this.sessionStore.publicationsFiltered || []);
             this.plot();
         },
         onAuthorNodeMouseout: function () {
-            console.log(`🔍 AUTHOR mouseout - calling plot()`);
             clearAuthorHighlight(this.sessionStore.publicationsFiltered || []);
             this.plot();
         },
@@ -692,47 +668,30 @@ export default {
 
         restart(alpha = SIMULATION_ALPHA) {
             if (this.simulation && !this.isDragging) {
-                const currentAlpha = this.simulation.alpha();
-                console.log(`🔄 RESTART called - setting alpha from ${currentAlpha.toFixed(3)} to ${alpha.toFixed(3)}, dragging=${this.isDragging}`);
-                
                 // Only skip early ticks if this is a true restart with high alpha (> 0.3)
                 if (alpha > 0.3) {
                     this.tickCount = 0;
                     this.shouldSkipEarlyTicks = true;
-                    console.log(`🔄 RESTART - enabling early tick skip and network fade (high alpha restart: ${alpha.toFixed(3)})`);
                 } else {
                     this.shouldSkipEarlyTicks = false;
-                    console.log(`🔄 RESTART - no tick skip (low alpha restart: ${alpha.toFixed(3)})`);
                 }
                 
                 this.simulation.alpha(alpha).restart();
-            } else {
-                console.log(`🔄 RESTART skipped - simulation=${!!this.simulation}, dragging=${this.isDragging}`);
             }
         },
 
         start() {
             if (this.simulation) {
-                const currentAlpha = this.simulation.alpha();
-                console.log(`▶️ START called - current alpha: ${currentAlpha.toFixed(3)}, restarting simulation`);
-                
                 // start() is just resuming, don't skip ticks
                 this.shouldSkipEarlyTicks = false;
-                console.log(`▶️ START - no tick skip (resuming simulation)`);
                 
                 this.simulation.restart();
-            } else {
-                console.log(`▶️ START skipped - no simulation object`);
             }
         },
 
         stop() {
             if (this.simulation) {
-                const currentAlpha = this.simulation.alpha();
-                console.log(`⏹️ STOP called - current alpha: ${currentAlpha.toFixed(3)}`);
                 this.simulation.stop();
-            } else {
-                console.log(`⏹️ STOP skipped - no simulation object`);
             }
         },
 
