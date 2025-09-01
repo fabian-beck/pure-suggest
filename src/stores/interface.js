@@ -106,7 +106,7 @@ export const useInterfaceStore = defineStore('interface', {
         },
 
         activatePublicationComponent: function (publicationComponent) {
-            if (publicationComponent) {
+            if (publicationComponent && typeof publicationComponent.focus === 'function') {
                 publicationComponent.focus();
             }
         },

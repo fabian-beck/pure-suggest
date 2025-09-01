@@ -169,7 +169,7 @@ function handleMenuInput(value) {
   if (value) {
     nextTick(() => {
       const switchElement = filterSwitch.value?.$el?.querySelector('input')
-      if (switchElement) {
+      if (switchElement && typeof switchElement.focus === 'function') {
         switchElement.focus()
       }
     })

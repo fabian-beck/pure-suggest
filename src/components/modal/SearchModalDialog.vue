@@ -99,7 +99,9 @@ export default {
       handler: function () {
         if (!this.isSearchModalDialogShown) return;
         setTimeout(() => {
-          this.$refs.searchInput.focus();
+          if (this.$refs.searchInput && typeof this.$refs.searchInput.focus === 'function') {
+            this.$refs.searchInput.focus();
+          }
         }, 300);
         if (this.interfaceStore.searchQuery) {
           this.search();

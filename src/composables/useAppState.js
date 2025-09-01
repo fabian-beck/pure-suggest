@@ -112,8 +112,9 @@ export function useAppState() {
       }
     })
     
-    sessionStore.updateScores()
+    // Compute author data BEFORE updating scores to ensure it's available when network plots
     authorStore.computeSelectedPublicationsAuthors(sessionStore.selectedPublications)
+    sessionStore.updateScores()
   }
 
   /**
