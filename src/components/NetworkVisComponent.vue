@@ -156,6 +156,8 @@ export default {
             shouldSkipEarlyTicks: false, // Only skip when truly restarted with high alpha
             // X position caching for performance optimization
             nodeXPositionsCache: new Map(), // Cache X positions to avoid redundant calculations
+            // Reactive tick count for CSS animation control
+            currentTickCount: 0, // Synchronized with performance monitor
         };
     },
     computed: {
@@ -173,7 +175,8 @@ export default {
         },
         
         networkCssClasses: function () {
-            if (this.shouldSkipEarlyTicks && this.tickCount <= this.skipEarlyTicks) {
+            // Check if we should show fading animation during early tick skipping
+            if (this.shouldSkipEarlyTicks && this.currentTickCount <= this.skipEarlyTicks) {
                 return 'network-fading';
             } else {
                 return 'network-visible';
@@ -498,6 +501,8 @@ export default {
             
             // Increment tick counter
             this.$refs.performanceMonitor?.incrementTick();
+            // Synchronize local tick count for CSS animation reactivity
+            this.currentTickCount = this.$refs.performanceMonitor?.tickCount || 0;
             
             // Skip DOM updates for first N ticks only if this is a true restart with high alpha
             if (this.shouldSkipEarlyTicks && this.$refs.performanceMonitor?.tickCount <= this.skipEarlyTicks) {
@@ -539,19 +544,19 @@ export default {
         },
         onKeywordNodeMouseover: function (event, d) {
             highlightKeywordPublications(d, this.sessionStore.publicationsFiltered || []);
-            this.plot();
+            this.updatePublicationHighlighting();
         },
         onKeywordNodeMouseout: function () {
             clearKeywordHighlight(this.sessionStore.publicationsFiltered || []);
-            this.plot();
+            this.updatePublicationHighlighting();
         },
         onAuthorNodeMouseover: function (event, d) {
             highlightAuthorPublications(d, this.sessionStore.publicationsFiltered || []);
-            this.plot();
+            this.updatePublicationHighlighting();
         },
         onAuthorNodeMouseout: function () {
             clearAuthorHighlight(this.sessionStore.publicationsFiltered || []);
-            this.plot();
+            this.updatePublicationHighlighting();
         },
         authorNodeClick: function (event, d) {
             this.interfaceStore.openAuthorModalDialog(d.author.id);
@@ -647,6 +652,7 @@ export default {
                 // Only skip early ticks if this is a true restart with high alpha (> 0.3)
                 if (alpha > 0.3) {
                     this.$refs.performanceMonitor?.resetMetrics();
+                    this.currentTickCount = 0; // Reset local tick count
                     this.shouldSkipEarlyTicks = true;
                 } else {
                     this.shouldSkipEarlyTicks = false;
@@ -732,6 +738,7 @@ export default {
 
         resetOptimizationMetrics() {
             this.$refs.performanceMonitor?.resetMetrics(); // Reset performance metrics
+            this.currentTickCount = 0; // Reset local tick count
             this.shouldSkipEarlyTicks = false; // Reset skip flag
             this.nodeXPositionsCache.clear(); // Clear X position cache
             this.resetPositionTracking();
@@ -839,6 +846,20 @@ export default {
 
             // Return how many links were updated
             return affectedLinks.size();
+        },
+
+        /**
+         * Lightweight method to update only publication node highlighting without full re-render.
+         * This avoids expensive plot() calls and simulation restarts for pure visual highlighting.
+         */
+        updatePublicationHighlighting() {
+            // Only update publication node highlighting if nodes exist
+            if (this.node) {
+                this.node
+                    .filter(d => d.type === "publication")
+                    .classed("is-keyword-hovered", d => d.publication.isKeywordHovered)
+                    .classed("is-author-hovered", d => d.publication.isAuthorHovered);
+            }
         },
 
     },
