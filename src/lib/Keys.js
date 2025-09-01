@@ -1,6 +1,6 @@
-import { useSessionStore } from "./stores/session.js";
-import { useInterfaceStore } from "./stores/interface.js";
-import { useAppState } from "./composables/useAppState.js";
+import { useSessionStore } from "../stores/session.js";
+import { useInterfaceStore } from "../stores/interface.js";
+import { useAppState } from "../composables/useAppState.js";
 
 /**
  * Find the next or previous publication component, skipping section headers

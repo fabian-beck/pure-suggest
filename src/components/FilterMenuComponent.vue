@@ -78,7 +78,7 @@
 import { computed, ref, nextTick } from 'vue'
 import { useSessionStore } from "@/stores/session.js"
 import { useInterfaceStore } from "@/stores/interface.js"
-import Publication from "@/Publication.js"
+import Publication from "@/core/Publication.js"
 import { useAppState } from "@/composables/useAppState.js"
 
 const sessionStore = useSessionStore()

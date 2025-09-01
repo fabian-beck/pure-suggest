@@ -56,7 +56,7 @@ import { useInterfaceStore } from "@/stores/interface.js";
 import { useQueueStore } from "@/stores/queue.js";
 import { useAppState } from "@/composables/useAppState.js";
 
-import PublicationSearch from "@/PublicationSearch.js";
+import PublicationSearch from "@/core/PublicationSearch.js";
 
 export default {
   name: "SearchModalDialog",

@@ -39,7 +39,7 @@ import { useInterfaceStore } from "./stores/interface.js";
 import { perfMonitor } from "./utils/performance.js";
 import { useAppState } from "./composables/useAppState.js";
 
-import { onKey } from "./Keys.js";
+import { onKey } from "./lib/Keys.js";
 
 export default {
   name: "App",

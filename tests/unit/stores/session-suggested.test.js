@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useSessionStore } from '@/stores/session.js'
 import { useInterfaceStore } from '@/stores/interface.js'
-import Filter from '@/Filter.js'
+import Filter from '@/core/Filter.js'
 
 // Mock the interface store
 vi.mock('@/stores/interface.js', () => ({
@@ -12,7 +12,7 @@ vi.mock('@/stores/interface.js', () => ({
 }))
 
 // Mock the Cache module to avoid indexedDB issues
-vi.mock('@/Cache.js', () => ({
+vi.mock('@/lib/Cache.js', () => ({
   clearCache: vi.fn()
 }))
 
@@ -21,7 +21,7 @@ vi.mock('@/utils/bibtex.js', () => ({
   generateBibtex: vi.fn()
 }))
 
-vi.mock('@/Util.js', () => ({
+vi.mock('@/lib/Util.js', () => ({
   shuffle: vi.fn(arr => arr),
   saveAsFile: vi.fn()
 }))

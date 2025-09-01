@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import Author from '@/Author.js'
+import Author from '@/core/Author.js'
 
 export const useAuthorStore = defineStore('author', {
   state: () => {

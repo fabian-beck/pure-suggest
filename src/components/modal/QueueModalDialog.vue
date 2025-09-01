@@ -60,7 +60,7 @@ import { useInterfaceStore } from "@/stores/interface.js";
 import { useQueueStore } from "@/stores/queue.js";
 import { useAppState } from "@/composables/useAppState.js";
 import { watch, reactive } from "vue";
-import Publication from "../../Publication";
+import Publication from "@/core/Publication.js";
 
 export default {
     setup() {
