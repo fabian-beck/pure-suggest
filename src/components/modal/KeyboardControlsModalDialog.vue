@@ -85,6 +85,10 @@
             citation network visualization between <em>timeline</em> and
             <em>clusters</em>
           </li>
+          <li>
+            <v-icon>mdi-alpha-p-box-outline</v-icon> Toggle performance 
+            panel for network debugging
+          </li>
         </ul>
       </section>
     </div>

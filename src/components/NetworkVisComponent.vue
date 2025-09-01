@@ -6,7 +6,7 @@
             <div id="network-svg-container">
                 <NetworkPerformanceMonitor 
                     ref="performanceMonitor"
-                    :show="showFpsDebug"
+                    :show="interfaceStore.showPerformancePanel"
                     :isEmpty="isEmpty || !sessionStore.selectedPublications?.length"
                     :nodeCount="graph.nodes.length"
                     :linkCount="graph.links.length"
@@ -147,8 +147,6 @@ export default {
             simulation: null,
             isDragging: false,
             graph: { nodes: [], links: [] },
-            // FPS tracking for performance debugging
-            showFpsDebug: true,
             // Position change detection for performance optimization
             positionThreshold: 1, // pixels - minimum movement to trigger DOM update
             lastUpdateTime: 0,
@@ -241,14 +239,6 @@ export default {
         // Set initial state of "only show filtered" based on whether filters are active
         this.onlyShowFiltered = this.sessionStore.filter.hasActiveFilters();
 
-        // Add keyboard shortcut to toggle FPS display (P key)
-        this.keydownHandler = (event) => {
-            if (event.key === 'p' || event.key === 'P') {
-                this.toggleFpsDebug();
-                event.preventDefault();
-            }
-        };
-        document.addEventListener('keydown', this.keydownHandler);
 
         this.sessionStore.$onAction(({ name, after }) => {
             after(() => {
@@ -283,10 +273,6 @@ export default {
             this.simulation = null;
         }
 
-        // Cleanup keyboard event listener
-        if (this.keydownHandler) {
-            document.removeEventListener('keydown', this.keydownHandler);
-        }
     },
     methods: {
         plot: function (restart) {
@@ -681,13 +667,6 @@ export default {
             this.isDragging = dragging;
         },
 
-        // FPS debugging toggle
-        toggleFpsDebug() {
-            this.showFpsDebug = !this.showFpsDebug;
-            if (!this.showFpsDebug) {
-                this.$refs.performanceMonitor?.resetMetrics();
-            }
-        },
 
         // Position change detection methods
         detectChangedNodes() {

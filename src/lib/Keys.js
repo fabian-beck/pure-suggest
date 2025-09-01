@@ -101,6 +101,10 @@ export function onKey(e) {
     } else if (e.key === "m") {
         e.preventDefault();
         interfaceStore.isNetworkClusters = !interfaceStore.isNetworkClusters;
+    } else if (e.key === "p") {
+        e.preventDefault();
+        // Toggle performance panel in network visualization
+        interfaceStore.togglePerformancePanel();
     } else if (e.key === "ArrowLeft") {
         e.preventDefault();
         // Close filter menu when navigating to publications
