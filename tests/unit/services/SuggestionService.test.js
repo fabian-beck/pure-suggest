@@ -2,17 +2,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SuggestionService } from '@/services/SuggestionService.js';
 
 // Mock dependencies - must be before imports
-vi.mock('@/Publication.js', () => ({
+vi.mock('@/core/Publication.js', () => ({
   default: vi.fn()
 }));
-vi.mock('@/Util.js', () => ({
+vi.mock('@/lib/Util.js', () => ({
   shuffle: vi.fn((arr) => arr) // Return array as-is for predictable tests
 }));
-vi.mock('@/Cache.js', () => ({
+vi.mock('@/lib/Cache.js', () => ({
   cachedFetch: vi.fn()
 }));
 
-const Publication = vi.mocked(await import('@/Publication.js')).default;
+const Publication = vi.mocked(await import('@/core/Publication.js')).default;
 
 describe('SuggestionService', () => {
   let mockSelectedPublications;

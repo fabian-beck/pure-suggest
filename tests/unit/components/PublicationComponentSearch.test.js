@@ -21,7 +21,7 @@ global.indexedDB = {
 }
 
 // Mock Cache to avoid IndexedDB issues
-vi.mock('@/Cache.js', () => ({
+vi.mock('@/lib/Cache.js', () => ({
   get: vi.fn(),
   set: vi.fn(),
   keys: vi.fn(() => Promise.resolve([])),

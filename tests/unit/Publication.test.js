@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import Publication from '@/Publication.js'
+import Publication from '@/core/Publication.js'
 
 // Mock dependencies
-vi.mock('@/Cache.js', () => ({
+vi.mock('@/lib/Cache.js', () => ({
   cachedFetch: vi.fn()
 }))
 

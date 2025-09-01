@@ -7,7 +7,7 @@ import { useAuthorStore } from '@/stores/author.js'
 import { useQueueStore } from '@/stores/queue.js'
 
 // Mock all the dependencies
-vi.mock('@/Cache.js', () => ({
+vi.mock('@/lib/Cache.js', () => ({
   clearCache: vi.fn()
 }))
 

@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { onKey } from '../../../src/Keys.js'
+import { onKey } from '../../../src/lib/Keys.js'
 import { useSessionStore } from '../../../src/stores/session.js'
 import { useInterfaceStore } from '../../../src/stores/interface.js'
 import { useQueueStore } from '../../../src/stores/queue.js'
-import Filter from '../../../src/Filter.js'
+import Filter from '../../../src/core/Filter.js'
 
 // Mock useAppState
 const mockClearSession = vi.fn()

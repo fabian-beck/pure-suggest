@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia'
 
 
-import Publication from "@/Publication.js";
+import Publication from "@/core/Publication.js";
 import { generateBibtex } from "@/utils/bibtex.js";
 import { getFilteredPublications, countFilteredPublications } from "@/utils/filterUtils.js";
 import { normalizeBoostKeywordString, parseUniqueBoostKeywords, updatePublicationScores } from "@/utils/scoringUtils.js";
-import Filter from '@/Filter.js';
-import { saveAsFile } from "@/Util.js"
+import Filter from '@/core/Filter.js';
+import { saveAsFile } from "@/lib/Util.js"
 import { PAGINATION } from "@/constants/config.js";
 
 

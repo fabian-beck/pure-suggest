@@ -22,11 +22,16 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 - `FilterMenuComponent.vue`: Advanced filtering interface
 
 ## Core Business Logic
-- `Publication.js`: Publication model with metadata fetching and scoring
-- `Author.js`: Author aggregation and scoring algorithms
-- `Filter.js`: Publication filtering logic
-- `Cache.js`: IndexedDB-based caching system
-- `PublicationSearch.js`: DOI-based search functionality
+- **Domain Models** (`src/core/`):
+  - `Publication.js`: Publication model with metadata fetching and scoring
+  - `Author.js`: Author aggregation and scoring algorithms
+  - `Filter.js`: Publication filtering logic
+  - `PublicationSearch.js`: DOI-based search functionality
+- **Infrastructure** (`src/lib/`):
+  - `Cache.js`: IndexedDB-based caching system
+  - `Keys.js`: Keyboard event handling
+  - `Util.js`: General utility functions
+  - `FpsTracker.js`: Performance monitoring utility
 
 ## Services Layer
 - `SuggestionService.js`: Dedicated service for computing publication suggestions (extracted from session store)
@@ -97,10 +102,21 @@ The codebase has undergone significant refactoring to improve separation of conc
 - **SuggestionService**: Suggestion computation logic moved to dedicated service layer
 - **Cleaner Component Integration**: Components now use useAppState instead of direct store manipulation
 
+### Directory Organization
+- **Feature-Based Structure**: Root-level classes organized into logical directories
+  - `src/core/`: Domain models and core business logic (Author, Publication, Filter, PublicationSearch)
+  - `src/lib/`: Infrastructure utilities and libraries (Cache, Keys, Util, FpsTracker)
+  - `src/components/`: Vue components organized by feature
+  - `src/stores/`: Pinia state management stores
+  - `src/composables/`: Vue 3 composables for reusable logic
+  - `src/services/`: Dedicated service classes
+  - `src/utils/`: Feature-specific utility modules
+
 ### Benefits
 - **Better Testability**: Clear separation makes unit testing more focused and reliable
 - **Improved Maintainability**: Single responsibility principle applied to stores and services
 - **Enhanced Reusability**: Composable pattern enables better code reuse across components
+- **Clear Code Organization**: Feature-based directory structure improves navigation and understanding
 
 ## Best Practices
 

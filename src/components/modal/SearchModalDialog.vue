@@ -56,7 +56,7 @@ import { useInterfaceStore } from "@/stores/interface.js";
 import { useQueueStore } from "@/stores/queue.js";
 import { useAppState } from "@/composables/useAppState.js";
 
-import PublicationSearch from "@/PublicationSearch.js";
+import PublicationSearch from "@/core/PublicationSearch.js";
 
 export default {
   name: "SearchModalDialog",
@@ -99,7 +99,9 @@ export default {
       handler: function () {
         if (!this.isSearchModalDialogShown) return;
         setTimeout(() => {
-          this.$refs.searchInput.focus();
+          if (this.$refs.searchInput && typeof this.$refs.searchInput.focus === 'function') {
+            this.$refs.searchInput.focus();
+          }
         }, 300);
         if (this.interfaceStore.searchQuery) {
           this.search();

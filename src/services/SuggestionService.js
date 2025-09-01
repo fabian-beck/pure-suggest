@@ -1,5 +1,5 @@
-import Publication from "@/Publication.js";
-import { shuffle } from "@/Util.js";
+import Publication from "@/core/Publication.js";
+import { shuffle } from "@/lib/Util.js";
 import { PAGINATION } from "@/constants/config.js";
 
 /**

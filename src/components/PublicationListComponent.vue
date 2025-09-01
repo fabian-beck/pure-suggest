@@ -23,7 +23,7 @@
 
 <script setup>
 import { computed, nextTick, watch, ref, onMounted, onBeforeUnmount } from 'vue'
-import { scrollToTargetAdjusted } from "@/Util.js"
+import { scrollToTargetAdjusted } from "@/lib/Util.js"
 import { useSessionStore } from "@/stores/session.js"
 import LazyPublicationComponent from './LazyPublicationComponent.vue'
 

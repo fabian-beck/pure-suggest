@@ -1,6 +1,6 @@
-import { useSessionStore } from "./stores/session.js";
-import { useInterfaceStore } from "./stores/interface.js";
-import { useAppState } from "./composables/useAppState.js";
+import { useSessionStore } from "../stores/session.js";
+import { useInterfaceStore } from "../stores/interface.js";
+import { useAppState } from "../composables/useAppState.js";
 
 /**
  * Find the next or previous publication component, skipping section headers
@@ -101,6 +101,10 @@ export function onKey(e) {
     } else if (e.key === "m") {
         e.preventDefault();
         interfaceStore.isNetworkClusters = !interfaceStore.isNetworkClusters;
+    } else if (e.key === "p") {
+        e.preventDefault();
+        // Toggle performance panel in network visualization
+        interfaceStore.togglePerformancePanel();
     } else if (e.key === "ArrowLeft") {
         e.preventDefault();
         // Close filter menu when navigating to publications

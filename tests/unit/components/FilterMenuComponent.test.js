@@ -10,19 +10,19 @@ vi.mock('@/stores/session.js')
 vi.mock('@/stores/interface.js')
 
 // Mock the Cache module to avoid indexedDB issues
-vi.mock('@/Cache.js', () => ({
+vi.mock('@/lib/Cache.js', () => ({
   clearCache: vi.fn()
 }))
 
 // Mock utilities
-vi.mock('@/Util.js', () => ({
+vi.mock('@/lib/Util.js', () => ({
   scrollToTargetAdjusted: vi.fn(),
   shuffle: vi.fn(arr => arr),
   saveAsFile: vi.fn()
 }))
 
 // Mock Publication
-vi.mock('@/Publication.js', () => ({
+vi.mock('@/core/Publication.js', () => ({
   default: {
     TAGS: [
       { name: 'Research', value: 'research' },

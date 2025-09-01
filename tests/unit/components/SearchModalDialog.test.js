@@ -22,7 +22,7 @@ global.indexedDB = {
 }
 
 // Mock Cache to avoid IndexedDB issues
-vi.mock('@/Cache.js', () => ({
+vi.mock('@/lib/Cache.js', () => ({
   get: vi.fn(),
   set: vi.fn(),
   keys: vi.fn(() => Promise.resolve([])),
@@ -30,7 +30,7 @@ vi.mock('@/Cache.js', () => ({
 }))
 
 // Mock PublicationSearch
-vi.mock('@/PublicationSearch.js', () => ({
+vi.mock('@/core/PublicationSearch.js', () => ({
   default: class {
     constructor() {}
     async execute() {

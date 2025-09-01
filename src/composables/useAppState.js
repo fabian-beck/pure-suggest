@@ -4,7 +4,7 @@ import { useInterfaceStore } from '@/stores/interface.js'
 import { useAuthorStore } from '@/stores/author.js'
 import { useQueueStore } from '@/stores/queue.js'
 import { PAGINATION } from '@/constants/config.js'
-import { clearCache as clearCacheUtil } from '@/Cache.js'
+import { clearCache as clearCacheUtil } from '@/lib/Cache.js'
 import { SuggestionService } from '@/services/SuggestionService.js'
 
 export function useAppState() {
@@ -112,8 +112,9 @@ export function useAppState() {
       }
     })
     
-    sessionStore.updateScores()
+    // Compute author data BEFORE updating scores to ensure it's available when network plots
     authorStore.computeSelectedPublicationsAuthors(sessionStore.selectedPublications)
+    sessionStore.updateScores()
   }
 
   /**

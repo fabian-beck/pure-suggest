@@ -1,18 +1,25 @@
 <template>
     <div class="network-of-references">
         <div class="box has-background-grey">
-            <NetworkHeader 
-                :errorMessage="errorMessage"
-                v-model:isNetworkClusters="isNetworkClusters"
+            <NetworkHeader :errorMessage="errorMessage" v-model:isNetworkClusters="isNetworkClusters"
                 @expandNetwork="expandNetwork" />
             <div id="network-svg-container">
-                <svg id="network-svg">
+                <NetworkPerformanceMonitor 
+                    ref="performanceMonitor"
+                    :show="interfaceStore.showPerformancePanel"
+                    :isEmpty="isEmpty || !sessionStore.selectedPublications?.length"
+                    :nodeCount="graph.nodes.length"
+                    :linkCount="graph.links.length"
+                    :shouldSkipEarlyTicks="shouldSkipEarlyTicks"
+                    :skipEarlyTicks="skipEarlyTicks"
+                />
+                <svg id="network-svg" :class="networkCssClasses">
                     <g></g>
                 </svg>
             </div>
             <ul class="publication-component-list">
                 <PublicationComponent v-if="activePublication && interfaceStore.isNetworkExpanded"
-                    :publication="activePublication" :is-active="true" 
+                    :publication="activePublication" :is-active="true"
                     :publicationType="activePublication.isSelected ? 'selected' : 'suggested'"></PublicationComponent>
             </ul>
             <div class="controls-header-left">
@@ -22,13 +29,9 @@
                     <span class="key">U</span>pdate
                 </v-btn>
             </div>
-            <NetworkControls 
-                v-model:showNodes="showNodes"
-                v-model:onlyShowFiltered="onlyShowFiltered"
-                v-model:suggestedNumberFactor="suggestedNumberFactor"
-                v-model:authorNumberFactor="authorNumberFactor"
-                @zoom="zoomByFactor"
-                @plot="plot" />
+            <NetworkControls v-model:showNodes="showNodes" v-model:onlyShowFiltered="onlyShowFiltered"
+                v-model:suggestedNumberFactor="suggestedNumberFactor" v-model:authorNumberFactor="authorNumberFactor"
+                @zoom="zoomByFactor" @plot="plot" />
         </div>
     </div>
 </template>
@@ -46,12 +49,12 @@ import { useAuthorStore } from "@/stores/author.js";
 import { useAppState } from "@/composables/useAppState.js";
 
 // Force simulation utilities
-import { 
-    createForceSimulation, 
+import {
+    createForceSimulation,
     initializeForces,
-    calculateYearX, 
-    SIMULATION_ALPHA, 
-    getNodeXPosition 
+    calculateYearX,
+    SIMULATION_ALPHA,
+    getNodeXPosition
 } from "@/utils/network/forces.js";
 
 // Node types
@@ -94,12 +97,14 @@ import { updateYearLabels } from "@/utils/network/yearLabels.js";
 // Components
 import NetworkControls from "@/components/NetworkControls.vue";
 import NetworkHeader from "@/components/NetworkHeader.vue";
+import NetworkPerformanceMonitor from "@/components/NetworkPerformanceMonitor.vue";
 
 export default {
     name: "NetworkVisComponent",
     components: {
         NetworkControls,
-        NetworkHeader
+        NetworkHeader,
+        NetworkPerformanceMonitor
     },
     setup() {
         const sessionStore = useSessionStore();
@@ -142,6 +147,15 @@ export default {
             simulation: null,
             isDragging: false,
             graph: { nodes: [], links: [] },
+            // Position change detection for performance optimization
+            positionThreshold: 1, // pixels - minimum movement to trigger DOM update
+            lastUpdateTime: 0,
+            skipEarlyTicks: 10, // Skip DOM updates for first N ticks
+            shouldSkipEarlyTicks: false, // Only skip when truly restarted with high alpha
+            // X position caching for performance optimization
+            nodeXPositionsCache: new Map(), // Cache X positions to avoid redundant calculations
+            // Reactive tick count for CSS animation control
+            currentTickCount: 0, // Synchronized with performance monitor
         };
     },
     computed: {
@@ -156,6 +170,15 @@ export default {
         },
         showAuthorNodes: function () {
             return this.showNodes.includes("author");
+        },
+        
+        networkCssClasses: function () {
+            // Check if we should show fading animation during early tick skipping
+            if (this.shouldSkipEarlyTicks && this.currentTickCount <= this.skipEarlyTicks) {
+                return 'network-fading';
+            } else {
+                return 'network-visible';
+            }
         },
     },
     watch: {
@@ -216,14 +239,29 @@ export default {
         // Set initial state of "only show filtered" based on whether filters are active
         this.onlyShowFiltered = this.sessionStore.filter.hasActiveFilters();
 
+
         this.sessionStore.$onAction(({ name, after }) => {
             after(() => {
                 if (name === "updateScores") {
-                    this.plot(true);
+                    // Prevent premature plot calls during loading workflow
+                    const hasSelectedPublications = this.sessionStore.selectedPublications?.length > 0;
+                    const hasSuggestedPublications = this.sessionStore.suggestedPublications?.length > 0;
+                    const isLoadingState = this.interfaceStore.isLoading;
+                    
+                    // Skip if still loading and don't have both selected + suggested publications ready
+                    if (!(isLoadingState && (!hasSelectedPublications || !hasSuggestedPublications))) {
+                        this.plot(true);
+                    }
                 }
                 else if ((!this.interfaceStore.isLoading && name === "clear") ||
                     name === "hasUpdated") {
-                    this.plot();
+                    // Prevent redundant plot calls when simulation is already active
+                    const currentAlpha = (this.simulation && typeof this.simulation.alpha === 'function') ? this.simulation.alpha() : 0;
+                    const isSimulationActive = currentAlpha > 0.01; // alphaMin threshold
+                    
+                    if (!(isSimulationActive && name === "hasUpdated")) {
+                        this.plot();
+                    }
                 }
             });
         });
@@ -234,12 +272,23 @@ export default {
             this.simulation.stop();
             this.simulation = null;
         }
+
     },
     methods: {
         plot: function (restart) {
 
-            if (this.isDragging)
+            if (this.isDragging) {
                 return;
+            }
+                
+            // Early return if app state is empty - no need to run simulation
+            if (this.isEmpty || !this.sessionStore.selectedPublications?.length) {
+                this.stop(); // Stop any running simulation
+                this.clearExistingVisualization(); // Clear any existing network elements
+                this.resetOptimizationMetrics();
+                return;
+            }
+            
             try {
                 // Update simulation configuration
                 this.updateSimulation({
@@ -260,7 +309,7 @@ export default {
                 // Update year labels
                 const hasPublications = this.sessionStore.publicationsFiltered?.length > 0;
                 const shouldShow = !this.isEmpty && !this.isNetworkClusters;
-                
+
                 this.label = updateYearLabels(
                     this.label,
                     hasPublications,
@@ -273,6 +322,9 @@ export default {
 
                 // Update graph data in simulation
                 this.updateGraphData(this.graph.nodes, this.graph.links);
+
+                // Reset position tracking and optimization metrics when plot is called
+                this.resetOptimizationMetrics();
 
                 if (restart) {
                     this.restart(SIMULATION_ALPHA);
@@ -295,14 +347,14 @@ export default {
             function initGraph() {
                 // Initialize DOI to index mapping
                 const doiToIndex = {};
-                
+
                 // Filter authors based on factor
                 const allAuthors = this.authorStore.selectedPublicationsAuthors || [];
                 const filteredAuthors = allAuthors.slice(0, this.authorNumberFactor * this.sessionStore.selectedPublications.length);
-                
+
                 // Get filtered publications
                 let publications = [];
-                
+
                 if (this.showSelectedNodes) {
                     let selectedPubs = this.sessionStore.selectedPublications || [];
                     if (this.onlyShowFiltered && this.sessionStore.filter.hasActiveFilters() && this.sessionStore.filter.applyToSelected) {
@@ -310,7 +362,7 @@ export default {
                     }
                     publications = publications.concat(selectedPubs);
                 }
-                
+
                 if (this.showSuggestedNodes) {
                     let suggestedPubs = this.sessionStore.suggestedPublications || [];
                     if (this.onlyShowFiltered && this.sessionStore.filter.hasActiveFilters() && this.sessionStore.filter.applyToSuggested) {
@@ -321,22 +373,22 @@ export default {
 
                 // Create nodes
                 let nodes = [];
-                
+
                 // Create publication nodes
                 const publicationNodes = createPublicationNodes(
-                    publications, 
-                    doiToIndex, 
-                    this.queueStore.selectedQueue || [], 
+                    publications,
+                    doiToIndex,
+                    this.queueStore.selectedQueue || [],
                     this.queueStore.excludedQueue || []
                 );
                 nodes = nodes.concat(publicationNodes);
-                
+
                 // Create keyword nodes
                 if (this.showKeywordNodes) {
                     const keywordNodes = createKeywordNodes(this.sessionStore.uniqueBoostKeywords || [], this.sessionStore.publications || []);
                     nodes = nodes.concat(keywordNodes);
                 }
-                
+
                 // Create author nodes
                 if (this.showAuthorNodes) {
                     const authorNodes = createAuthorNodes(filteredAuthors, publications);
@@ -345,38 +397,42 @@ export default {
 
                 // Create links
                 const links = [];
-                
+
                 // Create keyword links
                 if (this.showKeywordNodes) {
                     const keywordLinks = createKeywordLinks(this.sessionStore.uniqueBoostKeywords || [], publications, doiToIndex);
                     links.push(...keywordLinks);
                 }
-                
+
                 // Create citation links
                 const citationLinks = createCitationLinks(this.sessionStore.selectedPublications || [], this.sessionStore.isSelected || (() => false), doiToIndex);
                 links.push(...citationLinks);
-                
+
                 // Create author links
                 if (this.showAuthorNodes) {
                     const authorLinks = createAuthorLinks(filteredAuthors, publications, doiToIndex);
                     links.push(...authorLinks);
                 }
 
-                // Preserve existing node positions for smooth transitions
-                const existingNodeData = this.node?.data ? this.node.data() : null;
-                const processedNodes = this.preserveNodePositions(nodes, existingNodeData);
-                const processedLinks = links.map((d) => Object.assign({}, d));
+                // Store nodes and links for later processing (after updateNodes initializes this.node)
+                this.tempNodes = nodes;
+                this.tempLinks = links.map((d) => Object.assign({}, d));
 
                 // Update component state
                 this.doiToIndex = doiToIndex;
                 this.filteredAuthors = filteredAuthors;
+            }
+
+            function updateNodes() {
+                // Preserve existing node positions for smooth transitions
+                const existingNodeData = (this.node && typeof this.node.data === 'function') ? this.node.data() : null;
+                const processedNodes = this.preserveNodePositions(this.tempNodes, existingNodeData);
+                const processedLinks = this.tempLinks;
 
                 // Update simulation graph data
                 this.graph.nodes = processedNodes;
                 this.graph.links = processedLinks;
-            }
 
-            function updateNodes() {
                 this.node = this.node
                     .data(this.graph.nodes, (d) => d.id)
                     .join((enter) => {
@@ -423,11 +479,48 @@ export default {
             }
         },
         tick: function () {
-            // Update link properties using module
-            updateLinkProperties(this.link, (d) => getNodeXPosition(d, this.isNetworkClusters, this.yearX), this.sessionStore.activePublication);
+            // Early return if graph is empty - no nodes to update
+            if (!this.graph.nodes || this.graph.nodes.length === 0) {
+                this.$refs.performanceMonitor?.trackFps(); // Still track FPS for debugging
+                return;
+            }
+            
+            // Increment tick counter
+            this.$refs.performanceMonitor?.incrementTick();
+            // Synchronize local tick count for CSS animation reactivity
+            this.currentTickCount = this.$refs.performanceMonitor?.tickCount || 0;
+            
+            // Skip DOM updates for first N ticks only if this is a true restart with high alpha
+            if (this.shouldSkipEarlyTicks && this.$refs.performanceMonitor?.tickCount <= this.skipEarlyTicks) {
+                this.$refs.performanceMonitor?.trackFps(); // Still track FPS for debugging
+                return;
+            }
+            
+            // Disable skipping after the skip period
+            if (this.shouldSkipEarlyTicks && this.$refs.performanceMonitor?.tickCount > this.skipEarlyTicks) {
+                this.shouldSkipEarlyTicks = false;
+            }
+            
+            // Pre-compute X positions for all nodes (major performance optimization)
+            this.cacheNodeXPositions();
+            
+            // Check which nodes have moved significantly and get the changed nodes
+            const changedNodes = this.detectChangedNodes();
 
-            // Update node positions
-            this.node.attr("transform", (d) => `translate(${getNodeXPosition(d, this.isNetworkClusters, this.yearX)}, ${d.y})`);
+            // Only update positions of changed nodes (not all nodes)
+            if (changedNodes.length > 0) {
+                this.updateChangedNodePositions(changedNodes);
+                const linksUpdated = this.updateSelectiveLinks(changedNodes);
+                this.lastUpdateTime = performance.now();
+                
+                // Track performance metrics
+                this.$refs.performanceMonitor?.recordDomUpdate(changedNodes.length, linksUpdated);
+            } else {
+                this.$refs.performanceMonitor?.recordSkippedUpdate();
+            }
+
+            // FPS tracking (always track for debugging)
+            this.$refs.performanceMonitor?.trackFps();
         },
         keywordNodeDrag: function () {
             return createKeywordNodeDrag(this, SIMULATION_ALPHA);
@@ -437,19 +530,19 @@ export default {
         },
         onKeywordNodeMouseover: function (event, d) {
             highlightKeywordPublications(d, this.sessionStore.publicationsFiltered || []);
-            this.plot();
+            this.updatePublicationHighlighting();
         },
         onKeywordNodeMouseout: function () {
             clearKeywordHighlight(this.sessionStore.publicationsFiltered || []);
-            this.plot();
+            this.updatePublicationHighlighting();
         },
         onAuthorNodeMouseover: function (event, d) {
             highlightAuthorPublications(d, this.sessionStore.publicationsFiltered || []);
-            this.plot();
+            this.updatePublicationHighlighting();
         },
         onAuthorNodeMouseout: function () {
             clearAuthorHighlight(this.sessionStore.publicationsFiltered || []);
-            this.plot();
+            this.updatePublicationHighlighting();
         },
         authorNodeClick: function (event, d) {
             this.interfaceStore.openAuthorModalDialog(d.author.id);
@@ -477,7 +570,7 @@ export default {
                 // If no existing data, return nodes with default positions
                 return newNodes.map((d) => Object.assign({ x: 0, y: 0 }, d));
             }
-            
+
             const oldPositions = new Map(existingNodeData.map((d) => [d.id, d]));
             return newNodes.map((d) => Object.assign(oldPositions.get(d.id) || { x: 0, y: 0 }, d));
         },
@@ -542,12 +635,24 @@ export default {
 
         restart(alpha = SIMULATION_ALPHA) {
             if (this.simulation && !this.isDragging) {
+                // Only skip early ticks if this is a true restart with high alpha (> 0.3)
+                if (alpha > 0.3) {
+                    this.$refs.performanceMonitor?.resetMetrics();
+                    this.currentTickCount = 0; // Reset local tick count
+                    this.shouldSkipEarlyTicks = true;
+                } else {
+                    this.shouldSkipEarlyTicks = false;
+                }
+                
                 this.simulation.alpha(alpha).restart();
             }
         },
 
         start() {
             if (this.simulation) {
+                // start() is just resuming, don't skip ticks
+                this.shouldSkipEarlyTicks = false;
+                
                 this.simulation.restart();
             }
         },
@@ -560,6 +665,180 @@ export default {
 
         setDragging(dragging) {
             this.isDragging = dragging;
+        },
+
+
+        // Position change detection methods
+        detectChangedNodes() {
+            if (!this.graph.nodes || this.graph.nodes.length === 0) {
+                return [];
+            }
+
+            const changedNodes = [];
+
+            // Check each node for significant position changes
+            for (const node of this.graph.nodes) {
+                // Get cached X position (major performance optimization)
+                const currentX = this.getCachedNodeX(node);
+                const currentY = node.y || 0;
+
+                // Initialize last positions if not set
+                if (node._lastDisplayX === undefined || node._lastDisplayY === undefined) {
+                    node._lastDisplayX = currentX;
+                    node._lastDisplayY = currentY;
+                    changedNodes.push(node); // First render
+                    continue;
+                }
+
+                // Calculate movement distance
+                const deltaX = Math.abs(currentX - node._lastDisplayX);
+                const deltaY = Math.abs(currentY - node._lastDisplayY);
+
+                // Check if movement exceeds threshold
+                if (deltaX > this.positionThreshold || deltaY > this.positionThreshold) {
+                    changedNodes.push(node);
+                    // Update last positions
+                    node._lastDisplayX = currentX;
+                    node._lastDisplayY = currentY;
+                }
+            }
+
+            return changedNodes;
+        },
+
+        resetPositionTracking() {
+            if (this.graph.nodes) {
+                this.graph.nodes.forEach(node => {
+                    delete node._lastDisplayX;
+                    delete node._lastDisplayY;
+                });
+            }
+        },
+
+        resetOptimizationMetrics() {
+            this.$refs.performanceMonitor?.resetMetrics(); // Reset performance metrics
+            this.currentTickCount = 0; // Reset local tick count
+            this.shouldSkipEarlyTicks = false; // Reset skip flag
+            this.nodeXPositionsCache.clear(); // Clear X position cache
+            this.resetPositionTracking();
+        },
+
+        // X position caching optimization methods
+        cacheNodeXPositions() {
+            // Pre-compute X positions for all nodes to avoid redundant calculations
+            this.nodeXPositionsCache.clear();
+            for (const node of this.graph.nodes) {
+                const xPos = getNodeXPosition(node, this.isNetworkClusters, this.yearX);
+                this.nodeXPositionsCache.set(node.id, xPos);
+            }
+        },
+
+        getCachedNodeX(node) {
+            // Get cached X position, fallback to calculation if not cached
+            const cached = this.nodeXPositionsCache.get(node.id);
+            if (cached !== undefined) {
+                return cached;
+            }
+            // Fallback (should rarely happen)
+            const xPos = getNodeXPosition(node, this.isNetworkClusters, this.yearX);
+            this.nodeXPositionsCache.set(node.id, xPos);
+            return xPos;
+        },
+
+        clearExistingVisualization() {
+            // Clear all existing network elements from the DOM
+            try {
+                if (this.node) {
+                    this.node.remove();
+                }
+                if (this.link) {
+                    this.link.remove();
+                }
+                if (this.label) {
+                    this.label.remove();
+                }
+                
+                // Clear graph data
+                this.graph = { nodes: [], links: [] };
+                
+                // Clear the SVG container
+                if (this.svg && typeof this.svg.select === 'function') {
+                    this.svg.select("g").selectAll("*").remove();
+                }
+                
+                // Reinitialize empty D3 selections (same as mounted hook)
+                if (this.svg) {
+                    this.label = this.svg.append("g").attr("class", "labels").selectAll("text");
+                    this.link = this.svg.append("g").attr("class", "links").selectAll("path");
+                    this.node = this.svg.append("g").attr("class", "nodes").selectAll("rect");
+                }
+                
+            } catch (error) {
+                console.warn("Error clearing visualization:", error.message);
+                // Ensure clean state even if clearing fails
+                this.graph = { nodes: [], links: [] };
+                // Try to reinitialize basic selections
+                if (this.svg) {
+                    try {
+                        this.label = this.svg.append("g").attr("class", "labels").selectAll("text");
+                        this.link = this.svg.append("g").attr("class", "links").selectAll("path");
+                        this.node = this.svg.append("g").attr("class", "nodes").selectAll("rect");
+                    } catch (reinitError) {
+                        console.warn("Could not reinitialize D3 selections:", reinitError.message);
+                    }
+                }
+            }
+        },
+
+        updateChangedNodePositions(changedNodes) {
+            if (!changedNodes.length) return;
+
+            // Create a Set of changed node IDs for fast lookup
+            const changedNodeIds = new Set(changedNodes.map(node => node.id));
+
+            // Filter nodes that have changed and update only their positions
+            const changedNodeSelection = this.node.filter(function (d) {
+                return changedNodeIds.has(d.id);
+            });
+
+            // Update positions of only the changed nodes using cached X positions
+            changedNodeSelection.attr("transform", (d) => `translate(${this.getCachedNodeX(d)}, ${d.y})`);
+        },
+
+        updateSelectiveLinks(changedNodes) {
+            if (!changedNodes.length) return 0;
+
+            // Create a Set of changed node IDs for fast lookup
+            const changedNodeIds = new Set(changedNodes.map(node => node.id));
+
+            // Filter links that are connected to any changed node
+            const affectedLinks = this.link.filter(function (d) {
+                return changedNodeIds.has(d.source.id) || changedNodeIds.has(d.target.id);
+            });
+
+            // Update only the affected links using cached X positions
+            updateLinkProperties(
+                affectedLinks,
+                (d) => this.getCachedNodeX(d),
+                this.sessionStore.activePublication
+            );
+
+            // Return how many links were updated
+            return affectedLinks.size();
+        },
+
+        /**
+         * Lightweight method to update only publication node highlighting without full re-render.
+         * This avoids expensive plot() calls and simulation restarts for pure visual highlighting.
+         */
+        updatePublicationHighlighting() {
+            // Only update publication node highlighting if nodes exist
+            if (this.node) {
+                this.node
+                    .filter(d => d.type === "publication")
+                    .classed("is-keyword-hovered", d => d.publication.isKeywordHovered)
+                    .classed("is-author-hovered", d => d.publication.isAuthorHovered);
+            }
         },
 
     },
@@ -595,6 +874,19 @@ export default {
 
 #network-svg-container {
     overflow: hidden;
+    position: relative;
+}
+
+
+/* Network fade during early tick skipping */
+.network-fading {
+    opacity: 0.1;
+    transition: opacity 0.3s ease-out;
+}
+
+.network-visible {
+    opacity: 1;
+    transition: opacity 0.5s ease-in;
 }
 
 #network-svg {

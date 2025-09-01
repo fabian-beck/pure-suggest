@@ -13,6 +13,7 @@ export const useInterfaceStore = defineStore('interface', {
             },
             isNetworkExpanded: false,
             isNetworkClusters: true,
+            showPerformancePanel: false,
             searchQuery: "",
             isSearchModalDialogShown: false,
             isAuthorModalDialogShown: false,
@@ -106,7 +107,7 @@ export const useInterfaceStore = defineStore('interface', {
         },
 
         activatePublicationComponent: function (publicationComponent) {
-            if (publicationComponent) {
+            if (publicationComponent && typeof publicationComponent.focus === 'function') {
                 publicationComponent.focus();
             }
         },
@@ -126,6 +127,10 @@ export const useInterfaceStore = defineStore('interface', {
 
         setFilterMenuState(isOpen) {
             this.isFilterMenuOpen = isOpen
+        },
+
+        togglePerformancePanel() {
+            this.showPerformancePanel = !this.showPerformancePanel
         },
 
     }
