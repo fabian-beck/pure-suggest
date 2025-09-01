@@ -4,30 +4,15 @@
             <NetworkHeader :errorMessage="errorMessage" v-model:isNetworkClusters="isNetworkClusters"
                 @expandNetwork="expandNetwork" />
             <div id="network-svg-container">
-                <div class="fps-display" v-if="showFpsDebug">
-                    <span v-if="isEmpty || !sessionStore.selectedPublications?.length" style="color: orange;">
-                        SIMULATION SKIPPED<br>
-                        (Empty State)<br>
-                        Network Cleared
-                    </span>
-                    <template v-else>
-                        FPS: {{ currentFps.toFixed(1) }}
-                        <br>
-                        Tick: {{ tickCount }}{{ shouldSkipEarlyTicks && tickCount <= skipEarlyTicks ? ' (skipping)' : '' }}
-                        <br>
-                        Nodes: {{ graph.nodes.length }}
-                        <br>
-                        Links: {{ graph.links.length }}
-                        <br>
-                        DOM Updates: {{ domUpdateCount }}
-                        <br>
-                        Skipped: {{ skippedUpdateCount }}
-                        <br>
-                        Nodes Updated: {{ lastNodeUpdateCount }}/{{ graph.nodes.length }}
-                        <br>
-                        Links Updated: {{ lastLinkUpdateCount }}/{{ graph.links.length }}
-                    </template>
-                </div>
+                <NetworkPerformanceMonitor 
+                    ref="performanceMonitor"
+                    :show="showFpsDebug"
+                    :isEmpty="isEmpty || !sessionStore.selectedPublications?.length"
+                    :nodeCount="graph.nodes.length"
+                    :linkCount="graph.links.length"
+                    :shouldSkipEarlyTicks="shouldSkipEarlyTicks"
+                    :skipEarlyTicks="skipEarlyTicks"
+                />
                 <svg id="network-svg" :class="networkCssClasses">
                     <g></g>
                 </svg>
@@ -112,12 +97,14 @@ import { updateYearLabels } from "@/utils/network/yearLabels.js";
 // Components
 import NetworkControls from "@/components/NetworkControls.vue";
 import NetworkHeader from "@/components/NetworkHeader.vue";
+import NetworkPerformanceMonitor from "@/components/NetworkPerformanceMonitor.vue";
 
 export default {
     name: "NetworkVisComponent",
     components: {
         NetworkControls,
-        NetworkHeader
+        NetworkHeader,
+        NetworkPerformanceMonitor
     },
     setup() {
         const sessionStore = useSessionStore();
@@ -162,19 +149,9 @@ export default {
             graph: { nodes: [], links: [] },
             // FPS tracking for performance debugging
             showFpsDebug: true,
-            currentFps: 0,
-            frameCount: 0,
-            lastFpsTime: 0,
-            fpsUpdateInterval: 0.5, // Update FPS display every 500ms
             // Position change detection for performance optimization
             positionThreshold: 1, // pixels - minimum movement to trigger DOM update
             lastUpdateTime: 0,
-            domUpdateCount: 0, // Track actual DOM updates performed
-            skippedUpdateCount: 0, // Track skipped updates due to minimal changes
-            lastLinkUpdateCount: 0, // Track how many links were updated in last tick
-            lastNodeUpdateCount: 0, // Track how many nodes were updated in last tick
-            // Skip early ticks optimization
-            tickCount: 0, // Track simulation tick count
             skipEarlyTicks: 10, // Skip DOM updates for first N ticks
             shouldSkipEarlyTicks: false, // Only skip when truly restarted with high alpha
             // X position caching for performance optimization
@@ -515,21 +492,21 @@ export default {
         tick: function () {
             // Early return if graph is empty - no nodes to update
             if (!this.graph.nodes || this.graph.nodes.length === 0) {
-                this.trackFps(); // Still track FPS for debugging
+                this.$refs.performanceMonitor?.trackFps(); // Still track FPS for debugging
                 return;
             }
             
             // Increment tick counter
-            this.tickCount++;
+            this.$refs.performanceMonitor?.incrementTick();
             
             // Skip DOM updates for first N ticks only if this is a true restart with high alpha
-            if (this.shouldSkipEarlyTicks && this.tickCount <= this.skipEarlyTicks) {
-                this.trackFps(); // Still track FPS for debugging
+            if (this.shouldSkipEarlyTicks && this.$refs.performanceMonitor?.tickCount <= this.skipEarlyTicks) {
+                this.$refs.performanceMonitor?.trackFps(); // Still track FPS for debugging
                 return;
             }
             
             // Disable skipping after the skip period
-            if (this.shouldSkipEarlyTicks && this.tickCount > this.skipEarlyTicks) {
+            if (this.shouldSkipEarlyTicks && this.$refs.performanceMonitor?.tickCount > this.skipEarlyTicks) {
                 this.shouldSkipEarlyTicks = false;
             }
             
@@ -542,18 +519,17 @@ export default {
             // Only update positions of changed nodes (not all nodes)
             if (changedNodes.length > 0) {
                 this.updateChangedNodePositions(changedNodes);
-                this.updateSelectiveLinks(changedNodes);
-                this.lastNodeUpdateCount = changedNodes.length;
+                const linksUpdated = this.updateSelectiveLinks(changedNodes);
                 this.lastUpdateTime = performance.now();
-                this.domUpdateCount++;
+                
+                // Track performance metrics
+                this.$refs.performanceMonitor?.recordDomUpdate(changedNodes.length, linksUpdated);
             } else {
-                this.skippedUpdateCount++;
-                this.lastNodeUpdateCount = 0; // No nodes updated
-                this.lastLinkUpdateCount = 0; // No links updated
+                this.$refs.performanceMonitor?.recordSkippedUpdate();
             }
 
             // FPS tracking (always track for debugging)
-            this.trackFps();
+            this.$refs.performanceMonitor?.trackFps();
         },
         keywordNodeDrag: function () {
             return createKeywordNodeDrag(this, SIMULATION_ALPHA);
@@ -670,7 +646,7 @@ export default {
             if (this.simulation && !this.isDragging) {
                 // Only skip early ticks if this is a true restart with high alpha (> 0.3)
                 if (alpha > 0.3) {
-                    this.tickCount = 0;
+                    this.$refs.performanceMonitor?.resetMetrics();
                     this.shouldSkipEarlyTicks = true;
                 } else {
                     this.shouldSkipEarlyTicks = false;
@@ -699,40 +675,12 @@ export default {
             this.isDragging = dragging;
         },
 
-        // FPS tracking methods
-        trackFps() {
-            this.frameCount++;
-            const now = performance.now();
-
-            if (this.lastFpsTime === 0) {
-                this.lastFpsTime = now;
-                return;
-            }
-
-            const deltaTime = (now - this.lastFpsTime) / 1000;
-
-            if (deltaTime >= this.fpsUpdateInterval) {
-                this.currentFps = this.frameCount / deltaTime;
-                this.frameCount = 0;
-                this.lastFpsTime = now;
-            }
-        },
-
+        // FPS debugging toggle
         toggleFpsDebug() {
             this.showFpsDebug = !this.showFpsDebug;
             if (!this.showFpsDebug) {
-                this.resetFpsTracking();
+                this.$refs.performanceMonitor?.resetMetrics();
             }
-        },
-
-        resetFpsTracking() {
-            this.frameCount = 0;
-            this.lastFpsTime = 0;
-            this.currentFps = 0;
-            this.domUpdateCount = 0;
-            this.skippedUpdateCount = 0;
-            this.lastLinkUpdateCount = 0;
-            this.lastNodeUpdateCount = 0;
         },
 
         // Position change detection methods
@@ -783,11 +731,7 @@ export default {
         },
 
         resetOptimizationMetrics() {
-            this.domUpdateCount = 0;
-            this.skippedUpdateCount = 0;
-            this.lastLinkUpdateCount = 0;
-            this.lastNodeUpdateCount = 0;
-            this.tickCount = 0; // Reset tick counter
+            this.$refs.performanceMonitor?.resetMetrics(); // Reset performance metrics
             this.shouldSkipEarlyTicks = false; // Reset skip flag
             this.nodeXPositionsCache.clear(); // Clear X position cache
             this.resetPositionTracking();
@@ -876,7 +820,7 @@ export default {
         },
 
         updateSelectiveLinks(changedNodes) {
-            if (!changedNodes.length) return;
+            if (!changedNodes.length) return 0;
 
             // Create a Set of changed node IDs for fast lookup
             const changedNodeIds = new Set(changedNodes.map(node => node.id));
@@ -893,8 +837,8 @@ export default {
                 this.sessionStore.activePublication
             );
 
-            // Track how many links were updated vs total
-            this.lastLinkUpdateCount = affectedLinks.size();
+            // Return how many links were updated
+            return affectedLinks.size();
         },
 
     },
@@ -933,22 +877,6 @@ export default {
     position: relative;
 }
 
-.fps-display {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-family: monospace;
-    font-size: 12px;
-    line-height: 1.4;
-    z-index: 1000;
-    width: 180px;
-    text-align: left;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
 
 /* Network fade during early tick skipping */
 .network-fading {
