@@ -19,8 +19,8 @@
           </v-list-item>
           <v-list-item>
             <v-checkbox v-model="authorStore.isAuthorNewBoostEnabled" label="Boost new publications"
-              @change="updateAuthorScores" density="compact"
-              :hint="`Counting publications tagged as 'new' twice`" persistent-hint />
+              @change="updateAuthorScores" density="compact" :hint="`Counting publications tagged as 'new' twice`"
+              persistent-hint />
           </v-list-item>
         </v-list>
       </v-menu>
@@ -28,12 +28,12 @@
     <div class="content">
       <section>
         <ul>
-          <li v-for="author in authorStore.selectedPublicationsAuthors" :key="author.id" class="media"
-            :id="toTagId(author.id)">
+          <li v-for="author in authorStore.selectedPublicationsAuthors" :key="author.id"
+            class="media pt-3 px-0 mt-0 mb-3" :id="toTagId(author.id)">
             <AuthorGlyph :author="author" class="media-left"></AuthorGlyph>
             <div class="media-content">
               <div class="content">
-                <div class="mb-3">
+                <div class="mb-2">
                   <b>{{ author.name }}</b>&nbsp;<span v-if="author.orcid">
                     <a :href="`https://orcid.org/${author.orcid}`"><img alt="ORCID logo"
                         src="https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png" width="14"
@@ -64,7 +64,7 @@
                   )" :key="keyword" :style="keywordStyle(author.keywords[keyword])">{{ keyword }} ({{
                     author.keywords[keyword] }})</v-chip>
                 </div>
-                <div class="is-size-7">
+                <div v-if="Object.keys(author.coauthors).length > 0" class="is-size-7">
                   Co-author of
                   <v-chip label size="small" class="coauthor m-1" v-for="coauthorId in Object.keys(author.coauthors).sort(
                     (a, b) => author.coauthors[b] - author.coauthors[a]
