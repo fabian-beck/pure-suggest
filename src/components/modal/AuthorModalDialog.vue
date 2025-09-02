@@ -64,7 +64,7 @@
                   )" :key="keyword" :style="keywordStyle(author.keywords[keyword])">{{ keyword }} ({{
                     author.keywords[keyword] }})</v-chip>
                 </div>
-                <div class="is-size-7">
+                <div v-if="Object.keys(author.coauthors).length > 0" class="is-size-7">
                   Co-author of
                   <v-chip label size="small" class="coauthor m-1" v-for="coauthorId in Object.keys(author.coauthors).sort(
                     (a, b) => author.coauthors[b] - author.coauthors[a]
