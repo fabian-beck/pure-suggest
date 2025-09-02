@@ -10,13 +10,10 @@
         <h2>General</h2>
         <ul class="keys">
           <li>
-            <v-icon>mdi-alpha-b-box-outline</v-icon> Jump to "Boost" input
-          </li>
-          <li>
-            <v-icon>mdi-alpha-a-box-outline</v-icon> Jump to "Add" input
-          </li>
-          <li>
             <v-icon>mdi-alpha-s-box-outline</v-icon> Open "Search" dialog
+          </li>
+          <li>
+            <v-icon>mdi-alpha-b-box-outline</v-icon> Jump to "Boost" input
           </li>
           <li>
             <v-icon>mdi-alpha-u-box-outline</v-icon> Update selected
@@ -25,6 +22,9 @@
           <li>
             <v-icon>mdi-alpha-f-box-outline</v-icon> Switch on/off
             filtering of suggestions
+          </li>
+          <li>
+            <v-icon>mdi-alpha-a-box-outline</v-icon> Open list of authors of selected publications
           </li>
           <li>
             <v-icon>mdi-arrow-left-bold-box-outline</v-icon> Jump to first
@@ -86,7 +86,7 @@
             <em>clusters</em>
           </li>
           <li>
-            <v-icon>mdi-alpha-p-box-outline</v-icon> Toggle performance 
+            <v-icon>mdi-alpha-p-box-outline</v-icon> Toggle performance
             panel for network debugging
           </li>
         </ul>
