@@ -383,16 +383,130 @@ describe('Author Details On Demand Feature', () => {
     it('should convert author names to correct IDs', () => {
       // Test the findAuthorIdByName function
       const testCases = [
-        { input: 'John Smith', expected: 'john-smith' },
-        { input: 'Smith, J.', expected: 'smith-j' },
-        { input: 'Mary Johnson-Brown', expected: 'mary-johnson-brown' },
-        { input: 'Dr. Robert Wilson', expected: 'dr-robert-wilson' }
+        { input: 'John Smith', expected: 'john smith' },
+        { input: 'Smith, J.', expected: 'smith, j.' },
+        { input: 'Mary Johnson-Brown', expected: 'mary johnson-brown' },
+        { input: 'Dr. Robert Wilson', expected: 'dr. robert wilson' }
       ]
       
       // This test should verify the ID conversion works correctly
       testCases.forEach(testCase => {
         expect(true).toBe(true) // Placeholder - will be replaced with actual test
       })
+    })
+
+    it('should only make authors clickable in selected publications, not suggested ones', () => {
+      // Test the structure-based approach with publication type consideration
+      
+      const makeAuthorsClickableTest = (authorHtml, publicationType) => {
+        if (!authorHtml) return '';
+        
+        // Apply highlighting first (simplified for test)
+        const highlighted = authorHtml;
+        
+        // Only make clickable if it's a selected publication
+        if (publicationType !== 'selected') {
+          return highlighted; // Return as-is for non-selected publications
+        }
+        
+        // Use the same parsing logic as implementation
+        const authorSeparator = '; ';
+        
+        if (highlighted.includes(authorSeparator)) {
+            return highlighted
+                .split(authorSeparator)
+                .map(author => {
+                    const trimmedAuthor = author.trim();
+                    if (trimmedAuthor) {
+                        return `<span class="clickable-author" data-author="${trimmedAuthor}">${trimmedAuthor}</span>`;
+                    }
+                    return trimmedAuthor;
+                })
+                .join(authorSeparator);
+        }
+        
+        // Single author case
+        const trimmedHtml = highlighted.trim();
+        if (trimmedHtml) {
+            return `<span class="clickable-author" data-author="${trimmedHtml}">${trimmedHtml}</span>`;
+        }
+        
+        return highlighted;
+      }
+      
+      const testCases = [
+        // Selected publications should have clickable authors
+        {
+          input: 'John Smith; Jane Doe',
+          publicationType: 'selected',
+          expected: '<span class="clickable-author" data-author="John Smith">John Smith</span>; <span class="clickable-author" data-author="Jane Doe">Jane Doe</span>'
+        },
+        // Suggested publications should NOT have clickable authors
+        {
+          input: 'John Smith; Jane Doe',
+          publicationType: 'suggested',
+          expected: 'John Smith; Jane Doe'
+        },
+        // General publications should NOT have clickable authors
+        {
+          input: 'Single Author',
+          publicationType: 'general',
+          expected: 'Single Author'
+        }
+      ]
+      
+      testCases.forEach(testCase => {
+        const result = makeAuthorsClickableTest(testCase.input, testCase.publicationType);
+        expect(result).toBe(testCase.expected);
+      })
+    })
+
+    it('should render clickable authors in selected publications but not in suggested ones', async () => {
+      // Import the actual component
+      const { mount } = await import('@vue/test-utils')
+      const PublicationDescription = await import('@/components/PublicationDescription.vue')
+      
+      const mockPublication = {
+        doi: '10.1000/test',
+        title: 'Test Publication',
+        author: 'John Doe; Jane Smith',
+        authorOrcidHtml: 'John Doe; Jane Smith',
+        year: 2023,
+        wasFetched: true,
+        isActive: true,
+        referenceDois: ['10.1000/ref1', '10.1000/ref2'],
+        citationDois: ['10.1000/cit1'],
+        tooManyCitations: false,
+        citationsPerYear: 2.5
+      }
+      
+      // Test selected publication - should have clickable authors
+      const selectedWrapper = mount(PublicationDescription.default, {
+        props: {
+          publication: mockPublication,
+          publicationType: 'selected'
+        }
+      })
+      
+      await selectedWrapper.vm.$nextTick()
+      const selectedClickableAuthors = selectedWrapper.findAll('.clickable-author')
+      expect(selectedClickableAuthors.length).toBeGreaterThan(0)
+      
+      // Test suggested publication - should NOT have clickable authors  
+      const suggestedWrapper = mount(PublicationDescription.default, {
+        props: {
+          publication: mockPublication,
+          publicationType: 'suggested'
+        }
+      })
+      
+      await suggestedWrapper.vm.$nextTick()
+      const suggestedClickableAuthors = suggestedWrapper.findAll('.clickable-author')
+      expect(suggestedClickableAuthors.length).toBe(0)
+      
+      // Verify that the author names are still displayed (just not clickable)
+      expect(suggestedWrapper.text()).toContain('John Doe')
+      expect(suggestedWrapper.text()).toContain('Jane Smith')
     })
   })
 

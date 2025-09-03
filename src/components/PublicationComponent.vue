@@ -105,7 +105,7 @@
         </template>
       </tippy>
       <div class="media-content">
-        <PublicationDescription :publication="publication"></PublicationDescription>
+        <PublicationDescription :publication="publication" :publicationType="publicationType"></PublicationDescription>
         <div class="notification has-background-danger-light has-text-danger-dark" v-if="(!publication.year || !publication.title || !publication.author) &&
           publication.isActive
           ">

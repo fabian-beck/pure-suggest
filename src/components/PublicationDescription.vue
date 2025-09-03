@@ -109,6 +109,11 @@ const props = defineProps({
     publication: Object,
     highlighted: String,
     alwaysShowDetails: Boolean,
+    publicationType: {
+        type: String,
+        default: 'suggested',
+        validator: (value) => ['selected', 'suggested', 'general'].includes(value)
+    }
 })
 
 const showDetails = computed(() => {
@@ -174,6 +179,11 @@ function makeAuthorsClickable(authorHtml) {
     
     // Apply highlighting first to preserve existing highlighting functionality
     const highlighted = highlight(authorHtml);
+    
+    // Only make authors clickable for selected publications
+    if (props.publicationType !== 'selected') {
+        return highlighted; // Return as-is for non-selected publications
+    }
     
     // Use the same parsing logic as Publication.js - authors are separated by '; '
     // This leverages the existing well-tested structure instead of complex regex
