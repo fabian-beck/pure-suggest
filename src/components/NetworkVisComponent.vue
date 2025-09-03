@@ -206,6 +206,17 @@ export default {
                 this.plot();
             },
         },
+        'interfaceStore.networkReplotTrigger': {
+            handler: function(newValue, oldValue) {
+                // Only replot if author nodes are visible and the trigger value changed
+                if (newValue !== oldValue && this.showAuthorNodes) {
+                    this.$nextTick(() => {
+                        // Trigger a full replot with force simulation restart
+                        this.plot(true);
+                    });
+                }
+            }
+        },
     },
     mounted() {
         const that = this;

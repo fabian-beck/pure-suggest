@@ -101,6 +101,11 @@ export default {
     const interfaceStore = useInterfaceStore();
     return { sessionStore, authorStore, interfaceStore };
   },
+  data() {
+    return {
+      authorSettingsChanged: false
+    };
+  },
   expose: ["scrollToAuthor"],
   methods: {
     keywordStyle(count) {
@@ -118,7 +123,11 @@ export default {
     },
     updateAuthorScores() {
       this.authorStore.computeSelectedPublicationsAuthors(this.sessionStore.selectedPublications);
+      
+      // Mark that settings have changed during this modal session
+      this.authorSettingsChanged = true;
     },
+
     scrollToAuthor(id) {
       const tagId = this.toTagId(id);
       const authorElement = document.getElementById(tagId);
@@ -136,6 +145,19 @@ export default {
     toTagId(id) {
       return `author-${id.replace(/[^a-zA-Z0-9]/g, "-")}`;
     },
+
+    handleModalClose() {
+      // Only trigger network replot if settings were changed during this modal session
+      if (this.authorSettingsChanged) {
+        // Small delay to ensure modal is fully closed before network operations
+        this.$nextTick(() => {
+          // Use the clean interface store method to trigger network replot
+          this.interfaceStore.triggerNetworkReplot();
+          // Reset the change tracking
+          this.authorSettingsChanged = false;
+        });
+      }
+    },
   },
   watch: {
     'interfaceStore.scrollAuthorId': {
@@ -146,6 +168,18 @@ export default {
             this.scrollToAuthor(newValue);
             this.interfaceStore.scrollAuthorId = null;
           }, 1000);
+        }
+      },
+    },
+    'interfaceStore.isAuthorModalDialogShown': {
+      handler: function (newValue, oldValue) {
+        // Detect when modal is closed (was true, now false)
+        if (oldValue === true && newValue === false) {
+          this.handleModalClose();
+        }
+        // Reset change tracking when modal opens
+        else if (oldValue === false && newValue === true) {
+          this.authorSettingsChanged = false;
         }
       },
     },

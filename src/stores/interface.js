@@ -23,6 +23,8 @@ export const useInterfaceStore = defineStore('interface', {
             isQueueModalDialogShown: false,
             isAboutModalDialogShown: false,
             scrollAuthorId: null,
+            // Network replot trigger (incremented to notify NetworkVisComponent to replot)
+            networkReplotTrigger: 0,
             isKeyboardControlsModalDialogShown: false,
             confirmDialog: {
                 message: "",
@@ -168,6 +170,11 @@ export const useInterfaceStore = defineStore('interface', {
             if (publicationComponent && typeof publicationComponent.focus === 'function') {
                 publicationComponent.focus();
             }
+        },
+
+        triggerNetworkReplot() {
+            // Increment trigger counter to notify NetworkVisComponent to replot
+            this.networkReplotTrigger++;
         },
 
         openFilterMenu() {
