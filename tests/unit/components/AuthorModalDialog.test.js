@@ -54,7 +54,7 @@ describe('AuthorModalDialog', () => {
     })
   }
 
-  it('should show "Co-author of" label when author has co-authors', () => {
+  it('should show "Co-author of" label when author is activated and has co-authors', async () => {
     // Setup: author with co-authors and the co-author also in the list
     const authors = [
       {
@@ -88,8 +88,12 @@ describe('AuthorModalDialog', () => {
     ]
 
     authorStore.selectedPublicationsAuthors = authors
+    
+    // Activate an author to show co-author details
+    authorStore.setActiveAuthor('author1')
 
     const wrapper = createWrapper()
+    await wrapper.vm.$nextTick()
     const text = wrapper.text()
 
     expect(text).toContain('Co-author of')
@@ -172,6 +176,9 @@ describe('AuthorModalDialog', () => {
     ]
 
     authorStore.selectedPublicationsAuthors = authors
+    
+    // Activate an author to show co-author details
+    authorStore.setActiveAuthor('author-with-coauthors')
 
     const wrapper = createWrapper()
     const text = wrapper.text()

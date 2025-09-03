@@ -123,8 +123,17 @@ export const useInterfaceStore = defineStore('interface', {
             }
             
             this.isAuthorModalDialogShown = true;
+            
+            // If authorId is provided, try to activate that author
             if (authorId) {
-                this.scrollAuthorId = authorId;
+                // Check if author exists in the computed authors list
+                const authorExists = authorStore.selectedPublicationsAuthors.some(author => author.id === authorId)
+                if (authorExists) {
+                    authorStore.setActiveAuthor(authorId)
+                } else {
+                    // Legacy behavior: scroll to author if author not found in list
+                    this.scrollAuthorId = authorId;
+                }
             }
         },
 
