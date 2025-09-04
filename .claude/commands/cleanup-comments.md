@@ -27,7 +27,6 @@ Clean up the codebase by analyzing comments for:
 - Comments duplicating JSDoc or similar documentation
 - Repeated explanations across similar functions
 - Comments that duplicate information in nearby code
-- Section headers for obvious groupings
 
 ### **Noise Comments to Clean Up**
 - Completed TODO items: `// TODO: Add validation` when validation exists
@@ -46,6 +45,10 @@ Clean up the codebase by analyzing comments for:
 - **Bug workarounds**: Explanations of unusual code that addresses specific issues
 - **Complex regular expressions**: Pattern explanations and example matches
 - **Configuration explanations**: Why certain settings or flags are used
+- **Structural headers**: Comments that organize code sections and provide navigation
+- **Step-by-step sequences**: Comments that break down multi-step processes or algorithms
+- **Non-straightforward mechanisms**: Comments explaining code that isn't immediately clear
+- **Code organization**: Comments that improve readability by grouping related functionality
 
 ### **Comments to Improve Rather Than Remove**
 - Vague comments that could be more specific
@@ -68,5 +71,8 @@ Clean up the codebase by analyzing comments for:
 - **Consider maintenance burden**: Remove comments that require frequent updates due to code changes
 - **Focus on readability**: Ensure code remains clear and self-documenting after comment removal
 - **Be conservative with complex code**: Keep explanatory comments for intricate business logic
+- **Preserve structural comments**: Keep comments that act as section headers or organize code flow
+- **Maintain sequence clarity**: Preserve comments that explain multi-step processes or algorithm phases
+- **When in doubt, keep it**: Err on the side of preservation for comments that might aid understanding
 
 This systematic approach improves code maintainability by removing comment debt while preserving valuable documentation that aids understanding and maintenance.
