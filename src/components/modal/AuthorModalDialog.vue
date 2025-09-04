@@ -69,9 +69,9 @@
                   Co-author of
                   <v-chip label size="small" class="coauthor coauthor-chip m-1" v-for="coauthorId in Object.keys(author.coauthors).sort(
                     (a, b) => author.coauthors[b] - author.coauthors[a]
-                  )" :key="coauthorId" :style="coauthorStyle(author.coauthors[coauthorId])"
+                  )" :key="coauthorId" :style="coauthorStyle(coauthorId)"
                     @click.stop="activateAuthor(coauthorId)">
-                    {{authorStore.selectedPublicationsAuthors.filter(author => author.id === coauthorId)[0].name}}
+                    {{getCoauthorName(coauthorId)}}
                     ({{
                       author.coauthors[coauthorId] }})
                   </v-chip>
@@ -103,6 +103,7 @@ import { useSessionStore } from "@/stores/session.js";
 import { useAuthorStore } from "@/stores/author.js";
 import { useInterfaceStore } from "@/stores/interface.js";
 import PublicationComponent from "@/components/PublicationComponent.vue";
+import { calculateAuthorColor } from "@/utils/authorColor.js";
 
 export default {
   name: "AuthorModalDialog",
@@ -145,14 +146,35 @@ export default {
         (name) => name !== author.id && name !== author.name
       );
     },
+    getCoauthorName(coauthorId) {
+      const coauthor = this.authorStore.selectedPublicationsAuthors.find(author => author.id === coauthorId);
+      return coauthor ? coauthor.name : coauthorId; // Fallback to ID if coauthor not found
+    },
     keywordStyle(count) {
       return {
         backgroundColor: `hsla(48, 100%, 67%, ${0.05 + Math.min(count / 20, 0.95)})`,
       };
     },
-    coauthorStyle(count) {
+    coauthorStyle(coauthorId) {
+      // Find the co-author in the selectedPublicationsAuthors array
+      const coauthor = this.authorStore.selectedPublicationsAuthors.find(author => author.id === coauthorId);
+      if (!coauthor) {
+        // Fallback to original gray style if co-author not found
+        return {
+          backgroundColor: `hsla(0, 0%, 70%, 0.3)`,
+          color: '#000000',
+        };
+      }
+      
+      // Use the same color calculation as AuthorGlyph but with some transparency
+      const authorColor = calculateAuthorColor(coauthor.score, this.authorStore);
+      // Extract the lightness value from the HSL color and apply it with transparency
+      const lightnessMatch = authorColor.match(/hsl\(0, 0%, (\d+)%\)/);
+      const lightness = lightnessMatch ? parseInt(lightnessMatch[1]) : 70;
+      
       return {
-        backgroundColor: `hsla(0, 0%, 70%, ${0.05 + Math.min(count / 20, 0.95)})`,
+        backgroundColor: `hsla(0, 0%, ${lightness}%, 0.8)`,
+        color: '#ffffff',
       };
     },
     cancel() {
