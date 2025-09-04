@@ -2,9 +2,8 @@
   <ModalDialog headerColor="primary" :title="modalTitle" icon="mdi-account-group"
     v-model="interfaceStore.isAuthorModalDialogShown">
     <template v-slot:header-menu>
-      <CompactButton v-if="authorStore.activeAuthorId" icon="mdi-arrow-left" 
-        @click="authorStore.clearActiveAuthor()" class="back-button mr-2" 
-        v-tippy="'Back to author list'" />
+      <CompactButton v-if="authorStore.activeAuthorId" icon="mdi-arrow-left" @click="authorStore.clearActiveAuthor()"
+        class="back-button mr-2" v-tippy="'Back to author list'" />
       <v-menu :close-on-content-click="false" v-if="!authorStore.activeAuthorId">
         <template v-slot:activator="{ props }">
           <CompactButton icon="mdi-cog" v-bind="props" />
@@ -31,10 +30,8 @@
     <div class="content">
       <section>
         <ul>
-          <li v-for="author in displayedAuthors" :key="author.id"
-            class="media pt-3 px-0 mt-0 mb-3 author-item" 
-            :class="{ 'clickable-author-item': !authorStore.activeAuthorId }"
-            @click="handleAuthorItemClick(author.id)"
+          <li v-for="author in displayedAuthors" :key="author.id" class="media p-3 m-0 author-item"
+            :class="{ 'clickable-author-item': !authorStore.activeAuthorId }" @click="handleAuthorItemClick(author.id)"
             :id="toTagId(author.id)">
             <AuthorGlyph :author="author" class="media-left"></AuthorGlyph>
             <div class="media-content">
@@ -84,17 +81,16 @@
               </div>
             </div>
             <div class="media-right">
-              <CompactButton icon="mdi-school" :href="`https://scholar.google.com/scholar?q=${author.id}`"
-                @click.stop
+              <CompactButton icon="mdi-school" :href="`https://scholar.google.com/scholar?q=${author.id}`" @click.stop
                 v-tippy="'Search author on Google Scholar'"></CompactButton>
             </div>
           </li>
         </ul>
-        
+
         <!-- Show related publications when author is active -->
         <div v-if="authorStore.activeAuthorId" class="mt-4">
-          <h4 class="mb-3">Publications co-authored by {{ authorStore.activeAuthor?.name }}:</h4>
-          <div v-for="publication in authorStore.selectedPublicationsForAuthor" :key="publication.doi" 
+          <div class="mb-3">Publications co-authored by {{ authorStore.activeAuthor?.name }}:</div>
+          <div v-for="publication in authorStore.selectedPublicationsForAuthor" :key="publication.doi"
             class="author-publication mb-3">
             <PublicationComponent :publication="publication" :is-active="false" publicationType="selected" />
           </div>
@@ -173,7 +169,7 @@ export default {
 
     updateAuthorScores() {
       this.authorStore.computeSelectedPublicationsAuthors(this.sessionStore.selectedPublications);
-      
+
       // Mark that settings have changed during this modal session
       this.authorSettingsChanged = true;
     },
@@ -199,7 +195,7 @@ export default {
     handleModalClose() {
       // Clear active author when modal is closed
       this.authorStore.clearActiveAuthor();
-      
+
       // Only trigger network replot if settings were changed during this modal session
       if (this.authorSettingsChanged) {
         // Small delay to ensure modal is fully closed before network operations
@@ -283,7 +279,7 @@ export default {
     &.clickable-author-item {
       cursor: pointer;
       transition: background-color 0.2s ease;
-      
+
       &:hover {
         background-color: rgba(0, 0, 0, 0.05);
       }
@@ -291,7 +287,7 @@ export default {
 
     & .coauthor-chip {
       cursor: pointer;
-      
+
       &:hover {
         opacity: 0.8;
       }
@@ -300,7 +296,7 @@ export default {
 
   .back-button {
     background-color: rgba(0, 0, 0, 0.1);
-    
+
     &:hover {
       background-color: rgba(0, 0, 0, 0.2);
     }
