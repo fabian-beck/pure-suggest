@@ -258,4 +258,5 @@ describe('Author Modal Timing Issue', () => {
     expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalled()
     expect(authorStore.selectedPublicationsAuthors).toHaveLength(3)
   })
+
 })

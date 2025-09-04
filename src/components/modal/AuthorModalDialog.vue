@@ -280,7 +280,7 @@ export default {
       }
     }
 
-    & .clickable-author-item {
+    &.clickable-author-item {
       cursor: pointer;
       transition: background-color 0.2s ease;
       
