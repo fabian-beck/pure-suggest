@@ -4,18 +4,17 @@ description: Clean up the codebase by identifying and removing trivial, unnecess
 
 Clean up the codebase by analyzing comments for:
 
-1. **Trivial comments** - Comments that simply restate what the code obviously does
+1. **Noise comments** - TODO items that are completed, debugging comments, or temporary notes
 2. **Outdated comments** - Comments that no longer match the current implementation  
 3. **Redundant comments** - Comments that duplicate information available elsewhere
-4. **Noise comments** - TODO items that are completed, debugging comments, or temporary notes
+4. **Truly trivial comments** - Only the most obvious restatements of what code does
 
 ## Analysis Categories
 
-### **Trivial Comments to Remove**
-- Comments that restate obvious code: `// Set variable to true` above `isActive = true`
-- Variable/function name restatements: `// Get user name` above `getUserName()`
-- Basic language feature explanations: `// Loop through array` above `for` loops
-- Self-evident return statements: `// Return result` above `return result`
+### **Truly Trivial Comments to Remove** (Be Very Conservative)
+- Extremely obvious restatements: `// Return true` above `return true`
+- Direct variable assignments: `// Set x to 5` above `x = 5`
+- Only remove if the comment adds absolutely no value and the code is completely self-evident
 
 ### **Outdated Comments to Update or Remove**
 - Comments describing old implementations that have been refactored
@@ -36,7 +35,7 @@ Clean up the codebase by analyzing comments for:
 
 ## Preservation Guidelines
 
-### **Comments to Keep**
+### **Comments to Keep** (Default: Preserve Most Comments)
 - **Business logic explanations**: Why specific algorithms or approaches were chosen
 - **Non-obvious calculations**: Mathematical formulas, complex transformations
 - **Integration requirements**: API contracts, external system dependencies  
@@ -49,6 +48,10 @@ Clean up the codebase by analyzing comments for:
 - **Step-by-step sequences**: Comments that break down multi-step processes or algorithms
 - **Non-straightforward mechanisms**: Comments explaining code that isn't immediately clear
 - **Code organization**: Comments that improve readability by grouping related functionality
+- **Workflow organization**: Comments that separate logical phases like "// Clear all active states first"
+- **Section separators**: Comments that group related operations like "// Set active state for selected publications"
+- **Implementation guidance**: Comments that explain multi-step string processing operations
+- **Context provision**: Comments that explain what a block of code is doing at a high level
 
 ### **Comments to Improve Rather Than Remove**
 - Vague comments that could be more specific
@@ -66,13 +69,14 @@ Clean up the codebase by analyzing comments for:
 
 ## Best Practices
 
-- **Preserve intent over implementation**: Keep comments explaining "why", remove those explaining "what"
+- **Default to preservation**: Only remove comments that are clearly problematic or add no value
+- **Preserve structural organization**: Keep comments that organize code sections and workflows
+- **Preserve intent over implementation**: Keep comments explaining "why", be very careful removing "what"
 - **Update rather than remove** when comments serve a purpose but are outdated
-- **Consider maintenance burden**: Remove comments that require frequent updates due to code changes
-- **Focus on readability**: Ensure code remains clear and self-documenting after comment removal
-- **Be conservative with complex code**: Keep explanatory comments for intricate business logic
-- **Preserve structural comments**: Keep comments that act as section headers or organize code flow
-- **Maintain sequence clarity**: Preserve comments that explain multi-step processes or algorithm phases
-- **When in doubt, keep it**: Err on the side of preservation for comments that might aid understanding
+- **Focus on truly problematic comments**: Only target completed TODOs, debugging artifacts, and dead code comments
+- **Be extremely conservative**: If there's any doubt about a comment's value, keep it
+- **Preserve workflow clarity**: Keep comments that break down complex operations into logical steps
+- **Maintain code organization**: Keep comments that group related functionality
+- **When in doubt, keep it**: Strongly err on the side of preservation - better to have too many comments than too few
 
 This systematic approach improves code maintainability by removing comment debt while preserving valuable documentation that aids understanding and maintenance.
