@@ -42,11 +42,9 @@
                         src="https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png" width="14"
                         height="14" /></a>
                   </span>
-                  <small v-if="author.alternativeNames.length > 1">
+                  <small v-if="getFilteredAlternativeNames(author).length > 0">
                     &ensp;also listed as
-                    <v-chip v-for="alternativeName in author.alternativeNames.filter(
-                      (name) => name !== author.id
-                    )" :key="alternativeName" class="tag alternative-name">
+                    <v-chip v-for="alternativeName in getFilteredAlternativeNames(author)" :key="alternativeName" class="tag alternative-name">
                       {{ alternativeName }}
                     </v-chip>
                   </small>
@@ -142,6 +140,11 @@ export default {
   },
   expose: ["scrollToAuthor"],
   methods: {
+    getFilteredAlternativeNames(author) {
+      return author.alternativeNames.filter(
+        (name) => name !== author.id && name !== author.name
+      );
+    },
     keywordStyle(count) {
       return {
         backgroundColor: `hsla(48, 100%, 67%, ${0.05 + Math.min(count / 20, 0.95)})`,
