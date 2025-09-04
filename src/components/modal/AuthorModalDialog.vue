@@ -27,7 +27,7 @@
         </v-list>
       </v-menu>
     </template>
-    <div class="content">
+    <div class="content" @scroll="handleScroll">
       <section>
         <ul>
           <li v-for="author in displayedAuthors" :key="author.id" class="media p-3 m-0 author-item"
@@ -85,6 +85,20 @@
           </li>
         </ul>
 
+        <!-- Loading indicator for more authors -->
+        <div v-if="isLoadingMoreAuthors" class="loading-more-authors p-3 text-center">
+          <v-progress-circular indeterminate size="24" class="mr-2"></v-progress-circular>
+          <span>Loading more authors...</span>
+        </div>
+
+        <!-- Load more button (fallback if scroll detection doesn't work) -->
+        <div v-else-if="hasMoreAuthorsToShow && !authorStore.activeAuthorId" class="load-more-authors p-3 text-center">
+          <v-btn variant="outlined" @click="loadMoreAuthors" size="small">
+            <v-icon left>mdi-arrow-down</v-icon>
+            Load more authors ({{ authorStore.selectedPublicationsAuthors.length - displayedAuthorCount }} remaining)
+          </v-btn>
+        </div>
+
         <!-- Show related publications when author is active -->
         <div v-if="authorStore.activeAuthorId" class="mt-4">
           <div class="mb-3">Publications co-authored by {{ authorStore.activeAuthor?.name }}:</div>
@@ -117,7 +131,10 @@ export default {
   },
   data() {
     return {
-      authorSettingsChanged: false
+      authorSettingsChanged: false,
+      displayedAuthorCount: 20, // Initial number of authors to display
+      authorBatchSize: 20, // Number of authors to load per batch
+      isLoadingMoreAuthors: false
     };
   },
   computed: {
@@ -128,8 +145,15 @@ export default {
           author => author.id === this.authorStore.activeAuthorId
         );
       }
-      // Show all authors
-      return this.authorStore.selectedPublicationsAuthors;
+      // Show authors progressively (lazy loading)
+      const allAuthors = this.authorStore.selectedPublicationsAuthors;
+      return allAuthors.slice(0, this.displayedAuthorCount);
+    },
+    hasMoreAuthorsToShow() {
+      if (this.authorStore.activeAuthorId) {
+        return false; // No pagination needed in single author view
+      }
+      return this.displayedAuthorCount < this.authorStore.selectedPublicationsAuthors.length;
     },
     modalTitle() {
       if (this.authorStore.activeAuthorId && this.authorStore.activeAuthor) {
@@ -138,7 +162,7 @@ export default {
       return "Authors of selected";
     }
   },
-  expose: ["scrollToAuthor"],
+  expose: ["scrollToAuthor", "loadMoreAuthors", "resetPagination", "handleScroll"],
   methods: {
     getFilteredAlternativeNames(author) {
       return author.alternativeNames.filter(
@@ -210,6 +234,46 @@ export default {
         });
       }
     },
+
+    handleScroll(event) {
+      if (this.authorStore.activeAuthorId || this.isLoadingMoreAuthors || !this.hasMoreAuthorsToShow) {
+        return; // No pagination needed in single author view or when loading/no more authors
+      }
+
+      const container = event.target;
+      const scrollTop = container.scrollTop;
+      const scrollHeight = container.scrollHeight;
+      const clientHeight = container.clientHeight;
+      
+      // Load more when scrolled to 80% of the content
+      const scrollThreshold = 0.8;
+      if (scrollTop / (scrollHeight - clientHeight) >= scrollThreshold) {
+        this.loadMoreAuthors();
+      }
+    },
+
+    loadMoreAuthors() {
+      if (this.isLoadingMoreAuthors || !this.hasMoreAuthorsToShow) {
+        return;
+      }
+
+      this.isLoadingMoreAuthors = true;
+      
+      // Simulate a small delay to show the loading indicator
+      // In a real implementation with server-side pagination, this would be an API call
+      setTimeout(() => {
+        this.displayedAuthorCount = Math.min(
+          this.displayedAuthorCount + this.authorBatchSize,
+          this.authorStore.selectedPublicationsAuthors.length
+        );
+        this.isLoadingMoreAuthors = false;
+      }, 100);
+    },
+
+    resetPagination() {
+      this.displayedAuthorCount = this.authorBatchSize;
+      this.isLoadingMoreAuthors = false;
+    },
   },
   watch: {
     'interfaceStore.scrollAuthorId': {
@@ -229,12 +293,28 @@ export default {
         if (oldValue === true && newValue === false) {
           this.handleModalClose();
         }
-        // Reset change tracking when modal opens
+        // Reset change tracking and pagination when modal opens
         else if (oldValue === false && newValue === true) {
           this.authorSettingsChanged = false;
+          this.resetPagination();
         }
       },
     },
+    // Reset pagination when switching between author list and single author view
+    'authorStore.activeAuthorId': {
+      handler: function (newValue, oldValue) {
+        // Reset pagination when returning to the full author list
+        if (oldValue && !newValue) {
+          this.resetPagination();
+        }
+      },
+    },
+    // Reset pagination when author data changes
+    'authorStore.selectedPublicationsAuthors': {
+      handler: function () {
+        this.resetPagination();
+      },
+    }
   }
 };
 </script>
@@ -304,7 +384,16 @@ export default {
       background-color: rgba(0, 0, 0, 0.2);
     }
   }
+}
 
+.loading-more-authors {
+  color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
+.load-more-authors {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 </style>
