@@ -224,8 +224,11 @@ describe('Author Modal Timing Issue', () => {
     // Verify author details are correct
     expect(modalText).toContain('2 selected publications') // Jane Smith has 2 publications
     expect(modalText).toContain('1 selected publication') // John Doe and Bob Wilson have 1 each
-    expect(modalText).toContain('Co-author of')
-    expect(modalText).toContain('Related to')
+    
+    // Note: "Co-author of" and "Related to" details are only shown when a specific author is activated
+    // This test verifies the list view where these details should be hidden
+    expect(modalText).not.toContain('Co-author of')
+    expect(modalText).not.toContain('Related to')
   })
 
   it('should verify that modal automatically displays data without requiring manual updateAuthorScores', async () => {
@@ -255,4 +258,5 @@ describe('Author Modal Timing Issue', () => {
     expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalled()
     expect(authorStore.selectedPublicationsAuthors).toHaveLength(3)
   })
+
 })

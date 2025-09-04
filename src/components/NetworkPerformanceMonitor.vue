@@ -8,19 +8,18 @@
         <template v-else>
             FPS: {{ currentFps.toFixed(1) }}
             <br>
-            Tick: {{ tickCount }}{{ shouldSkipEarlyTicks && tickCount <= skipEarlyTicks ? ' (skipping)' : '' }}
-            <br>
-            Nodes: {{ nodeCount }}
-            <br>
-            Links: {{ linkCount }}
-            <br>
-            DOM Updates: {{ domUpdateCount }}
-            <br>
-            Skipped: {{ skippedUpdateCount }}
-            <br>
-            Nodes Updated: {{ lastNodeUpdateCount }}/{{ nodeCount }}
-            <br>
-            Links Updated: {{ lastLinkUpdateCount }}/{{ linkCount }}
+            Tick: {{ tickCount }}{{ shouldSkipEarlyTicks && tickCount <= skipEarlyTicks ? ' (skipping)' : '' }} <br>
+                Nodes: {{ nodeCount }}
+                <br>
+                Links: {{ linkCount }}
+                <br>
+                DOM Updates: {{ domUpdateCount }}
+                <br>
+                Skipped: {{ skippedUpdateCount }}
+                <br>
+                Nodes Updated: {{ lastNodeUpdateCount }}/{{ nodeCount }}
+                <br>
+                Links Updated: {{ lastLinkUpdateCount }}/{{ linkCount }}
         </template>
     </div>
 </template>
@@ -144,7 +143,7 @@ defineExpose({
     line-height: 1.3;
     z-index: 1000;
     pointer-events: none;
-    width: 200px;
+    width: 220px;
     text-align: left;
 }
 </style>

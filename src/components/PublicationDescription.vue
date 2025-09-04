@@ -34,9 +34,9 @@
         </div>
         <div v-if="showDetails">
             <span>
-                <span v-html="highlight(publication.authorOrcidHtml) +
+                <span v-html="makeAuthorsClickable(publication.authorOrcidHtml) +
                     (publication.authorOrcidHtml.endsWith('.') ? ' ' : '. ')
-                    " v-if="publication.author" @click.stop="refocus" @click.middle.stop="refocus"></span>
+                    " v-if="publication.author" @click.stop="handleAuthorClick" @click.middle.stop="refocus"></span>
             </span>
             <span v-if="publication.container">
                 <em v-html="` ${highlight(publication.container)}`"></em>, <span
@@ -109,6 +109,11 @@ const props = defineProps({
     publication: Object,
     highlighted: String,
     alwaysShowDetails: Boolean,
+    publicationType: {
+        type: String,
+        default: 'suggested',
+        validator: (value) => ['selected', 'suggested', 'general'].includes(value)
+    }
 })
 
 const showDetails = computed(() => {
@@ -168,6 +173,90 @@ function getFilterDoiTooltip(doi) {
 function refocus() {
     document.getElementById(props.publication.doi)?.focus()
 }
+
+function extractTextFromHtml(htmlContent) {
+    // Create a temporary DOM element to extract text content from HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlContent;
+    return (tempDiv.textContent || tempDiv.innerText || '').trim();
+}
+
+function makeAuthorsClickable(authorHtml) {
+    if (!authorHtml) return '';
+    
+    // Apply highlighting first to preserve existing highlighting functionality
+    const highlighted = highlight(authorHtml);
+    
+    // Only make authors clickable for selected publications
+    if (props.publicationType !== 'selected') {
+        return highlighted; // Return as-is for non-selected publications
+    }
+    
+    // Use the same parsing logic as Publication.js - authors are separated by '; '
+    // This leverages the existing well-tested structure instead of complex regex
+    const authorSeparator = '; ';
+    
+    // Check if this looks like a structured author list (contains the separator)
+    if (highlighted.includes(authorSeparator)) {
+        // Split by the known separator and wrap each author
+        return highlighted
+            .split(authorSeparator)
+            .map(author => {
+                const trimmedAuthor = author.trim();
+                if (trimmedAuthor) {
+                    // Extract clean text for data-author attribute (for ORCID handling)
+                    const cleanAuthorText = extractTextFromHtml(trimmedAuthor);
+                    return `<span class="clickable-author" data-author="${cleanAuthorText}">${trimmedAuthor}</span>`;
+                }
+                return trimmedAuthor;
+            })
+            .join(authorSeparator);
+    }
+    
+    // If no structured separator found, treat as single author
+    const trimmedHtml = highlighted.trim();
+    if (trimmedHtml) {
+        // Extract clean text for data-author attribute (for ORCID handling)
+        const cleanAuthorText = extractTextFromHtml(trimmedHtml);
+        return `<span class="clickable-author" data-author="${cleanAuthorText}">${trimmedHtml}</span>`;
+    }
+    
+    return highlighted;
+}
+
+function handleAuthorClick(event) {
+    // Check if clicked element or its parent has the clickable-author class
+    const authorElement = event.target.closest('.clickable-author');
+    if (authorElement) {
+        event.stopPropagation();
+        const authorName = authorElement.getAttribute('data-author');
+        if (authorName) {
+            // Convert the author name to an author ID and open modal with that ID
+            const authorId = findAuthorIdByName(authorName.trim());
+            if (authorId) {
+                interfaceStore.openAuthorModalDialog(authorId);
+            }
+        }
+        return;
+    }
+    // Fallback to original behavior
+    refocus();
+}
+
+function findAuthorIdByName(authorName) {
+    // Use the same nameToId logic as Author.js
+    return authorName
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        // Handle Nordic and other extended Latin characters not covered by NFD
+        .replace(/[øØ]/g, "o")
+        .replace(/[åÅ]/g, "a")
+        .replace(/[æÆ]/g, "ae")
+        .replace(/[ðÐ]/g, "d")
+        .replace(/[þÞ]/g, "th")
+        .replace(/[ßẞ]/g, "ss")
+        .toLowerCase();
+}
 </script>
 
 <style scoped>
@@ -187,6 +276,17 @@ label {
     &::before {
         content: "Abstract: ";
         font-weight: bold;
+    }
+}
+
+:deep(.clickable-author) {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border-radius: 2px;
+    padding: 1px 2px;
+    
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.1);
     }
 }
 
