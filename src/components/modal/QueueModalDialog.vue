@@ -92,7 +92,6 @@ export default {
         watch(() => interfaceStore.isQueueModalDialogShown,
             (newValue) => {
                 if (newValue) {
-                    console.log("Queue dialog shown");
                     updatePublications();
                 }
             });

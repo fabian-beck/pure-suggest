@@ -49,8 +49,5 @@ app.use(VueTippy, {
     allowHTML: true,
   },
 });
-// Vue.component("tippy", TippyComponent);
-
-// Vue.config.productionTip = false;
 
 app.mount('#app');

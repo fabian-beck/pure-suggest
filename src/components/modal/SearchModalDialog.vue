@@ -173,7 +173,7 @@ export default {
         this.isLoading = false;
         return;
       }
-      // set a timer to check if all publications were fetched already (ugly hack - somehow it doesn't work automatically)
+      // Poll for publication data loading completion
       const check = () => {
         // Check if search was cancelled
         if (this.searchCancelled) {
