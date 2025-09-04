@@ -174,6 +174,13 @@ function refocus() {
     document.getElementById(props.publication.doi)?.focus()
 }
 
+function extractTextFromHtml(htmlContent) {
+    // Create a temporary DOM element to extract text content from HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlContent;
+    return (tempDiv.textContent || tempDiv.innerText || '').trim();
+}
+
 function makeAuthorsClickable(authorHtml) {
     if (!authorHtml) return '';
     
@@ -197,7 +204,9 @@ function makeAuthorsClickable(authorHtml) {
             .map(author => {
                 const trimmedAuthor = author.trim();
                 if (trimmedAuthor) {
-                    return `<span class="clickable-author" data-author="${trimmedAuthor}">${trimmedAuthor}</span>`;
+                    // Extract clean text for data-author attribute (for ORCID handling)
+                    const cleanAuthorText = extractTextFromHtml(trimmedAuthor);
+                    return `<span class="clickable-author" data-author="${cleanAuthorText}">${trimmedAuthor}</span>`;
                 }
                 return trimmedAuthor;
             })
@@ -207,7 +216,9 @@ function makeAuthorsClickable(authorHtml) {
     // If no structured separator found, treat as single author
     const trimmedHtml = highlighted.trim();
     if (trimmedHtml) {
-        return `<span class="clickable-author" data-author="${trimmedHtml}">${trimmedHtml}</span>`;
+        // Extract clean text for data-author attribute (for ORCID handling)
+        const cleanAuthorText = extractTextFromHtml(trimmedHtml);
+        return `<span class="clickable-author" data-author="${cleanAuthorText}">${trimmedHtml}</span>`;
     }
     
     return highlighted;

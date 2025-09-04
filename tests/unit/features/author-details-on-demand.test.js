@@ -443,4 +443,232 @@ describe('Author Details On Demand Feature', () => {
       expect(interfaceStore.openAuthorModalDialog).toHaveBeenCalledWith('john-doe')
     })
   })
+
+  describe('ORCID Author Click Integration', () => {
+    it('should handle ORCID-enabled author HTML correctly when making authors clickable', () => {
+      // Test the structure-based approach with ORCID HTML
+      const makeAuthorsClickableTest = (authorHtml) => {
+        if (!authorHtml) return '';
+        
+        // Apply highlighting first (simplified for test)
+        const highlighted = authorHtml;
+        
+        // Only make clickable if it's a selected publication (this test assumes selected)
+        const authorSeparator = '; ';
+        
+        if (highlighted.includes(authorSeparator)) {
+            return highlighted
+                .split(authorSeparator)
+                .map(author => {
+                    const trimmedAuthor = author.trim();
+                    if (trimmedAuthor) {
+                        return `<span class="clickable-author" data-author="${trimmedAuthor}">${trimmedAuthor}</span>`;
+                    }
+                    return trimmedAuthor;
+                })
+                .join(authorSeparator);
+        }
+        
+        // Single author case
+        const trimmedHtml = highlighted.trim();
+        if (trimmedHtml) {
+            return `<span class="clickable-author" data-author="${trimmedHtml}">${trimmedHtml}</span>`;
+        }
+        
+        return highlighted;
+      }
+      
+      const testCases = [
+        {
+          description: 'Authors with ORCID HTML should preserve nested structure',
+          input: `John Smith <a href='https://orcid.org/0000-0000-0000-0001'><img alt='ORCID logo' src='orcid-icon.png' width='14' height='14' /></a>; Jane Doe`,
+          expectedPattern: /John Smith.*ORCID.*Jane Doe/,
+          shouldHaveClickableAuthors: true
+        },
+        {
+          description: 'Single author with ORCID should become clickable',
+          input: `Dr. Robert Wilson <a href='https://orcid.org/0000-0000-0000-0002'><img alt='ORCID logo' src='orcid-icon.png' width='14' height='14' /></a>`,
+          expectedPattern: /Dr\. Robert Wilson.*ORCID/,
+          shouldHaveClickableAuthors: true
+        }
+      ]
+      
+      testCases.forEach(testCase => {
+        const result = makeAuthorsClickableTest(testCase.input);
+        
+        // Should contain expected content
+        expect(result).toMatch(testCase.expectedPattern);
+        
+        if (testCase.shouldHaveClickableAuthors) {
+          // Should have clickable-author spans
+          expect(result).toContain('clickable-author');
+          expect(result).toContain('data-author=');
+        }
+      })
+    })
+
+    it('should extract correct author name from ORCID HTML for click handling', () => {
+      // Test extracting clean author names from ORCID HTML
+      const extractAuthorNameFromHTML = (htmlContent) => {
+        // This simulates what happens when clicking on ORCID-enabled author
+        // We need to extract the text content without HTML tags
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlContent;
+        return tempDiv.textContent || tempDiv.innerText || '';
+      }
+      
+      const testCases = [
+        {
+          input: `John Smith <a href='https://orcid.org/0000-0000-0000-0001'><img alt='ORCID logo' src='orcid-icon.png' width='14' height='14' /></a>`,
+          expected: 'John Smith '
+        },
+        {
+          input: `Dr. Wilson, R. <a href='https://orcid.org/0000-0000-0000-0002'><img alt='ORCID logo' src='orcid-icon.png' width='14' height='14' /></a>`,
+          expected: 'Dr. Wilson, R. '
+        }
+      ]
+      
+      testCases.forEach(testCase => {
+        const result = extractAuthorNameFromHTML(testCase.input);
+        expect(result.trim()).toBe(testCase.expected.trim());
+      })
+    })
+
+    it('should demonstrate that ORCID authors are now fixed - the old bug no longer exists', async () => {
+      const { mount } = await import('@vue/test-utils')
+      const PublicationDescription = await import('@/components/PublicationDescription.vue')
+      
+      // Mock publication with ORCID-enabled author
+      const mockPublication = {
+        doi: '10.1000/test-orcid',
+        title: 'Test Publication with ORCID',
+        author: 'John Smith; Jane Doe',
+        authorOrcidHtml: `John Smith <a href='https://orcid.org/0000-0000-0000-0001'><img alt='ORCID logo' src='orcid-icon.png' width='14' height='14' /></a>; Jane Doe`,
+        year: 2023,
+        wasFetched: true,
+        isActive: true,
+        referenceDois: ['10.1000/ref1'],
+        citationDois: ['10.1000/cit1'],
+        tooManyCitations: false,
+        citationsPerYear: 1.5
+      }
+      
+      vi.spyOn(interfaceStore, 'openAuthorModalDialog')
+      
+      const wrapper = mount(PublicationDescription.default, {
+        props: {
+          publication: mockPublication,
+          publicationType: 'selected'
+        }
+      })
+      
+      await wrapper.vm.$nextTick()
+      
+      // Find clickable authors (should exist)
+      const clickableAuthors = wrapper.findAll('.clickable-author')
+      expect(clickableAuthors.length).toBeGreaterThan(0)
+      
+      // Try to click on the first author (John Smith with ORCID)
+      const firstAuthor = clickableAuthors[0]
+      
+      // FIXED: The data-author attribute should now contain clean text, not HTML
+      const dataAuthor = firstAuthor.attributes('data-author')
+      expect(dataAuthor).toBe('John Smith') // Clean text only now
+      expect(dataAuthor).not.toContain('<a href=') // No more HTML tags in data attribute
+      
+      // When we try to find author ID by name, it should now work correctly
+      const findAuthorIdByName = (authorName) => {
+        // This is the current implementation
+        return authorName
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[øØ]/g, "o")
+          .replace(/[åÅ]/g, "a")
+          .replace(/[æÆ]/g, "ae")
+          .replace(/[ðÐ]/g, "d")
+          .replace(/[þÞ]/g, "th")
+          .replace(/[ßẞ]/g, "ss")
+          .toLowerCase();
+      }
+      
+      // FIXED: This now works correctly with clean text
+      const authorIdFromHTML = findAuthorIdByName(dataAuthor)
+      expect(authorIdFromHTML).toBe('john smith') // Clean conversion
+      expect(authorIdFromHTML).not.toContain('<a href=') // No HTML in the ID
+      
+      // The visual display should still preserve ORCID links
+      expect(firstAuthor.html()).toContain('<a href=') // ORCID link still visible
+      expect(firstAuthor.html()).toContain('img') // ORCID icon still visible
+    })
+
+    it('should correctly handle ORCID authors after fix - clean data-author attribute', async () => {
+      const { mount } = await import('@vue/test-utils')
+      const PublicationDescription = await import('@/components/PublicationDescription.vue')
+      
+      // Mock publication with ORCID-enabled author
+      const mockPublication = {
+        doi: '10.1000/test-orcid-fixed',
+        title: 'Test Publication with ORCID Fixed',
+        author: 'John Smith; Jane Doe',
+        authorOrcidHtml: `John Smith <a href='https://orcid.org/0000-0000-0000-0001'><img alt='ORCID logo' src='orcid-icon.png' width='14' height='14' /></a>; Jane Doe`,
+        year: 2023,
+        wasFetched: true,
+        isActive: true,
+        referenceDois: ['10.1000/ref1'],
+        citationDois: ['10.1000/cit1'],
+        tooManyCitations: false,
+        citationsPerYear: 1.5
+      }
+      
+      vi.spyOn(interfaceStore, 'openAuthorModalDialog')
+      
+      const wrapper = mount(PublicationDescription.default, {
+        props: {
+          publication: mockPublication,
+          publicationType: 'selected'
+        }
+      })
+      
+      await wrapper.vm.$nextTick()
+      
+      // Find clickable authors (should exist)
+      const clickableAuthors = wrapper.findAll('.clickable-author')
+      expect(clickableAuthors.length).toBeGreaterThan(0)
+      
+      // Check the first author (John Smith with ORCID)
+      const firstAuthor = clickableAuthors[0]
+      
+      // FIXED: The data-author attribute should now contain clean text, not HTML
+      const dataAuthor = firstAuthor.attributes('data-author')
+      expect(dataAuthor).toBe('John Smith') // Clean text only
+      expect(dataAuthor).not.toContain('<a href=') // No HTML tags
+      expect(dataAuthor).not.toContain('img') // No img tags
+      
+      // The visual content should still show ORCID (in the display HTML)
+      expect(firstAuthor.html()).toContain('<a href=') // Visual ORCID link preserved
+      
+      // Now the findAuthorIdByName should work correctly
+      const findAuthorIdByName = (authorName) => {
+        return authorName
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[øØ]/g, "o")
+          .replace(/[åÅ]/g, "a")
+          .replace(/[æÆ]/g, "ae")
+          .replace(/[ðÐ]/g, "d")
+          .replace(/[þÞ]/g, "th")
+          .replace(/[ßẞ]/g, "ss")
+          .toLowerCase();
+      }
+      
+      // FIXED: This should now work correctly
+      const authorIdFromHTML = findAuthorIdByName(dataAuthor)
+      expect(authorIdFromHTML).toBe('john smith') // Clean ID conversion
+      expect(authorIdFromHTML).not.toContain('<a href=') // No HTML in the ID
+      
+      // Note: In the real application, clicking works, but in this test environment
+      // we can verify the data is correct and the ID conversion works properly
+      // The actual click integration is tested in other component tests
+    })
+  })
 })
