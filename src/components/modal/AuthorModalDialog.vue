@@ -71,7 +71,7 @@
                     (a, b) => author.coauthors[b] - author.coauthors[a]
                   )" :key="coauthorId" :style="coauthorStyle(coauthorId)"
                     @click.stop="activateAuthor(coauthorId)">
-                    {{authorStore.selectedPublicationsAuthors.filter(author => author.id === coauthorId)[0].name}}
+                    {{getCoauthorName(coauthorId)}}
                     ({{
                       author.coauthors[coauthorId] }})
                   </v-chip>
@@ -146,6 +146,10 @@ export default {
         (name) => name !== author.id && name !== author.name
       );
     },
+    getCoauthorName(coauthorId) {
+      const coauthor = this.authorStore.selectedPublicationsAuthors.find(author => author.id === coauthorId);
+      return coauthor ? coauthor.name : coauthorId; // Fallback to ID if coauthor not found
+    },
     keywordStyle(count) {
       return {
         backgroundColor: `hsla(48, 100%, 67%, ${0.05 + Math.min(count / 20, 0.95)})`,
@@ -158,6 +162,7 @@ export default {
         // Fallback to original gray style if co-author not found
         return {
           backgroundColor: `hsla(0, 0%, 70%, 0.3)`,
+          color: '#000000',
         };
       }
       
@@ -169,6 +174,7 @@ export default {
       
       return {
         backgroundColor: `hsla(0, 0%, ${lightness}%, 0.8)`,
+        color: lightness < 50 ? '#ffffff' : '#000000',
       };
     },
     cancel() {
