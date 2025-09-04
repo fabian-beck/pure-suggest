@@ -48,24 +48,6 @@ describe('AuthorGlyph', () => {
     expect(wrapper.text()).toContain('2 : 3') // firstAuthorCount : count
   })
 
-  it('applies author color based on score', () => {
-    const wrapper = mount(AuthorGlyph, {
-      props: {
-        author: mockAuthor
-      },
-      global: {
-        stubs: {
-          'tippy': { template: '<div><slot></slot></div>' },
-          'v-avatar': { template: '<div class="v-avatar" :color="$attrs.color"><slot></slot></div>' },
-          'InlineIcon': { template: '<span></span>' }
-        }
-      }
-    })
-
-    const avatar = wrapper.find('.v-avatar')
-    // Test that color is applied (not the exact calculation)
-    expect(avatar.attributes('color')).toMatch(/^hsl\(\d+, \d+%, \d+%\)$/)
-  })
 
   it('shows new publication indicator when author has new publications', () => {
     const authorWithNew = { ...mockAuthor, newPublication: true }

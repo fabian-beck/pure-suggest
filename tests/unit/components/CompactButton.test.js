@@ -43,42 +43,17 @@ describe('CompactButton', () => {
   }
 
 
-  describe('href functionality', () => {
-    it('should open link in new tab when href is provided and button is clicked', async () => {
-      wrapper = createWrapper({ href: 'https://example.com' })
-      
-      await wrapper.find('button').trigger('click')
-      
-      expect(window.open).toHaveBeenCalledWith('https://example.com', '_blank')
+  it('should handle both click prop and href together', async () => {
+    const clickHandler = vi.fn()
+    wrapper = createWrapper({ 
+      click: clickHandler, 
+      href: 'https://example.com' 
     })
-
-
-  })
-
-  describe('click prop functionality', () => {
-    it('should call click function when provided and button is clicked', async () => {
-      const clickHandler = vi.fn()
-      wrapper = createWrapper({ click: clickHandler })
-      
-      await wrapper.find('button').trigger('click')
-      
-      expect(clickHandler).toHaveBeenCalledTimes(1)
-    })
-
-
-    it('should handle both click prop and href together', async () => {
-      const clickHandler = vi.fn()
-      wrapper = createWrapper({ 
-        click: clickHandler, 
-        href: 'https://example.com' 
-      })
-      
-      await wrapper.find('button').trigger('click')
-      
-      expect(clickHandler).toHaveBeenCalledTimes(1)
-      expect(window.open).toHaveBeenCalledWith('https://example.com', '_blank')
-    })
-
+    
+    await wrapper.find('button').trigger('click')
+    
+    expect(clickHandler).toHaveBeenCalledTimes(1)
+    expect(window.open).toHaveBeenCalledWith('https://example.com', '_blank')
   })
 
 

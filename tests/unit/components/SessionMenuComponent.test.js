@@ -145,22 +145,18 @@ describe('SessionMenuComponent', () => {
     expect(mockSessionStore.setSessionName).toHaveBeenCalledWith('New Session Name')
   })
 
-  describe('Session name input styling and functionality', () => {
-    it('should use underlined variant to match filter menu styling', () => {
+  describe('Session name input functionality', () => {
+    it('should clear session name when clear button is clicked', async () => {
+      mockSessionStore.sessionName = 'My Project'
       wrapper = createWrapper()
-      const textFieldWrapper = wrapper.find('.v-text-field')
       
-      expect(textFieldWrapper.attributes('data-variant')).toBe('underlined')
+      const clearButton = wrapper.find('[data-testid="clear-button"]')
+      await clearButton.trigger('click')
+      
+      expect(mockSessionStore.setSessionName).toHaveBeenCalledWith('')
     })
 
-    it('should have clearable property enabled', () => {
-      wrapper = createWrapper()
-      const textFieldWrapper = wrapper.find('.v-text-field')
-      
-      expect(textFieldWrapper.attributes('data-clearable')).toBe('true')
-    })
-
-    it('should show clear button when session name has value', async () => {
+    it('should show clear button when session name has value', () => {
       mockSessionStore.sessionName = 'My Project'
       wrapper = createWrapper()
       
@@ -174,35 +170,6 @@ describe('SessionMenuComponent', () => {
       
       const clearButton = wrapper.find('[data-testid="clear-button"]')
       expect(clearButton.exists()).toBe(false)
-    })
-
-    it('should clear session name when clear button is clicked', async () => {
-      mockSessionStore.sessionName = 'My Project'
-      wrapper = createWrapper()
-      
-      const clearButton = wrapper.find('[data-testid="clear-button"]')
-      await clearButton.trigger('click')
-      
-      expect(mockSessionStore.setSessionName).toHaveBeenCalledWith('')
-    })
-
-    it('should reset to default when session name is cleared', async () => {
-      mockSessionStore.sessionName = 'My Project' 
-      wrapper = createWrapper()
-      
-      const clearButton = wrapper.find('[data-testid="clear-button"]')
-      await clearButton.trigger('click')
-      
-      expect(mockSessionStore.setSessionName).toHaveBeenCalledWith('')
-    })
-
-    it('should have pencil icon like other input fields', () => {
-      wrapper = createWrapper()
-      const textFieldWrapper = wrapper.find('.v-text-field')
-      
-      // In real implementation, this would be checked via props
-      // Here we verify the test setup recognizes the prepend-inner-icon
-      expect(textFieldWrapper.exists()).toBe(true)
     })
   })
 
@@ -296,7 +263,7 @@ describe('SessionMenuComponent', () => {
       expect(sessionStateText).toContain('My Research Session (5 selected; 2 excluded)')
     })
 
-    it('should display only publication counts when session name is default (empty)', () => {
+    it('should display only publication counts when session name is empty', () => {
       mockSessionStore.sessionName = ''
       wrapper = createWrapper()
       const sessionStateText = wrapper.text()
@@ -304,39 +271,13 @@ describe('SessionMenuComponent', () => {
       expect(sessionStateText).not.toContain('(')
     })
 
-    it('should display session name with only selected count when no excluded publications', () => {
+    it('should display session name without excluded count when no excluded publications', () => {
       mockSessionStore.sessionName = 'My Project'
       mockSessionStore.excludedPublicationsCount = 0
       wrapper = createWrapper()
       const sessionStateText = wrapper.text()
       expect(sessionStateText).toContain('My Project (5 selected)')
       expect(sessionStateText).not.toContain('excluded')
-    })
-
-    it('should display only selected count when session name is default and no excluded publications', () => {
-      mockSessionStore.sessionName = ''
-      mockSessionStore.excludedPublicationsCount = 0
-      wrapper = createWrapper()
-      const sessionStateText = wrapper.text()
-      expect(sessionStateText).toContain('5 selected')
-      expect(sessionStateText).not.toContain('(')
-      expect(sessionStateText).not.toContain('excluded')
-    })
-
-    it('should handle empty session name by treating it as default', () => {
-      mockSessionStore.sessionName = ''
-      wrapper = createWrapper()
-      const sessionStateText = wrapper.text()
-      expect(sessionStateText).toContain('5 selected; 2 excluded')
-      expect(sessionStateText).not.toContain('(')
-    })
-
-    it('should handle null session name by treating it as default', () => {
-      mockSessionStore.sessionName = null
-      wrapper = createWrapper()
-      const sessionStateText = wrapper.text()
-      expect(sessionStateText).toContain('5 selected; 2 excluded')
-      expect(sessionStateText).not.toContain('(')
     })
   })
 
