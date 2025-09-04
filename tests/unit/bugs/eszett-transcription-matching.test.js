@@ -100,6 +100,45 @@ describe('Eszett (ß) Transcription Matching Bug Fix', () => {
       )
     })
 
+    it('should match ß, ss, s, b transcriptions including b variant', () => {
+      const publications = [
+        mockPublication1, // Weiß, Hans
+        mockPublication2, // Weiss, Hans  
+        mockPublication3, // Weis, Hans
+        {
+          doi: '10.1234/test4',
+          score: 10,
+          year: 2023,
+          isNew: false,
+          boostKeywords: [],
+          authorOrcid: 'Weib, Hans; Miller, Tom' // b transcription
+        }
+      ]
+      
+      const authors = Author.computePublicationsAuthors(publications, true, false, false)
+      
+      // After fix, all variants should be merged into one author
+      const hansAuthors = authors.filter(author => 
+        author.name.toLowerCase().includes('hans') && 
+        (author.id.includes('weis') || author.id.includes('wei') || author.id.includes('weib'))
+      )
+      
+      // We expect only 1 Hans author after merging all variants
+      expect(hansAuthors.length).toBe(1)
+      
+      // The merged author should have publications from all four variants
+      const mergedHans = hansAuthors[0]
+      expect(mergedHans.publicationDois).toHaveLength(4)
+      expect(mergedHans.publicationDois).toEqual(
+        expect.arrayContaining(['10.1234/test1', '10.1234/test2', '10.1234/test3', '10.1234/test4'])
+      )
+      
+      // Alternative names should include all variants including b
+      expect(mergedHans.alternativeNames).toEqual(
+        expect.arrayContaining(['Weiß, Hans', 'Weiss, Hans', 'Weis, Hans', 'Weib, Hans'])
+      )
+    })
+
     it('should handle complex cases with multiple eszett transcriptions', () => {
       const complexPublications = [
         {
@@ -138,6 +177,47 @@ describe('Eszett (ß) Transcription Matching Bug Fix', () => {
       
       expect(hansAuthors.length).toBe(1)
       expect(hansAuthors[0].publicationDois).toHaveLength(3)
+    })
+  })
+
+  describe('generateEszettVariants method', () => {
+    it('should generate ss, s, and b variants for names with ss', () => {
+      const variants = Author.generateEszettVariants('weiss, hans')
+      expect(variants).toEqual(expect.arrayContaining([
+        'weiss, hans',  // original
+        'weis, hans',   // s variant
+        'weib, hans'    // b variant
+      ]))
+      expect(variants).toHaveLength(3)
+    })
+
+    it('should generate ss and s variants for names with b', () => {
+      const variants = Author.generateEszettVariants('weib, hans')
+      expect(variants).toEqual(expect.arrayContaining([
+        'weib, hans',   // original
+        'weiss, hans',  // ss variant
+        'weis, hans'    // s variant
+      ]))
+      expect(variants).toHaveLength(3)
+    })
+
+    it('should generate ss and b variants for names with single s', () => {
+      const variants = Author.generateEszettVariants('weis, hans')
+      expect(variants).toEqual(expect.arrayContaining([
+        'weis, hans',   // original
+        'weiss, hans',  // ss variant
+        'weib, hans'    // b variant
+      ]))
+      expect(variants).toHaveLength(3)
+    })
+
+    it('should handle complex names with multiple potential transcriptions', () => {
+      const variants = Author.generateEszettVariants('grossmann, hans')
+      expect(variants).toEqual(expect.arrayContaining([
+        'grossmann, hans',  // original
+        'grosmann, hans',   // s variant
+        'grobmann, hans'    // b variant
+      ]))
     })
   })
 

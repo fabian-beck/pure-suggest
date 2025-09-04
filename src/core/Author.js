@@ -71,24 +71,43 @@ export default class Author {
         // Generate possible variants for Eszett transcriptions
         const variants = new Set([nameId]);
         
-        // If name contains 'ss', generate variants with 's' 
+        // If name contains 'ss', generate variants with 's' and 'b'
         if (nameId.includes('ss')) {
             // Replace 'ss' with 's' (single s transcription)
             variants.add(nameId.replace(/ss/g, 's'));
+            // Replace 'ss' with 'b' (b transcription)
+            variants.add(nameId.replace(/ss/g, 'b'));
         }
         
-        // If name contains single 's' (but not 'ss'), generate 'ss' variant
+        // If name contains 'b', generate 'ss' and 's' variants (reverse transcription)
+        if (nameId.includes('b')) {
+            // Replace 'b' with 'ss' (most common transcription)
+            variants.add(nameId.replace(/b/g, 'ss'));
+            // Replace 'b' with 's' (single s transcription)
+            variants.add(nameId.replace(/b/g, 's'));
+        }
+        
+        // If name contains single 's' (but not 'ss'), generate 'ss' and 'b' variants
         // This is more conservative - only for names that likely had 'ß' originally
-        const words = nameId.split(/[,\s]+/);
-        words.forEach(word => {
-            if (word.length > 3 && word.includes('s') && !word.includes('ss')) {
-                // Replace single 's' with 'ss' for common German patterns
-                const doubleVariant = nameId.replace(new RegExp(`\\b${word}\\b`, 'g'), word.replace(/s/g, 'ss'));
+        // Apply this only to the surname part (before the comma)
+        const nameParts = nameId.split(',');
+        if (nameParts.length >= 2) {
+            const surname = nameParts[0].trim();
+            const restOfName = nameId.substring(surname.length);
+            
+            if (surname.length > 3 && surname.includes('s') && !surname.includes('ss') && !surname.includes('b')) {
+                // Replace single 's' with 'ss' for common German patterns in surname only
+                const doubleVariant = surname.replace(/s/g, 'ss') + restOfName;
                 if (doubleVariant !== nameId) {
                     variants.add(doubleVariant);
                 }
+                // Replace single 's' with 'b' for b transcription in surname only
+                const bVariant = surname.replace(/s/g, 'b') + restOfName;
+                if (bVariant !== nameId) {
+                    variants.add(bVariant);
+                }
             }
-        });
+        }
         
         return Array.from(variants);
     }
