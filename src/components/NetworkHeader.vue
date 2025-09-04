@@ -22,10 +22,16 @@
                 <label :class="{ 'has-text-grey-light': !isNetworkClustersModel }" class="ml-4">Clusters</label>
             </div>
             <CompactButton icon="mdi-arrow-expand" v-tippy="'Expand diagram'"
-                v-show="!interfaceStore.isNetworkExpanded" v-on:click="$emit('expandNetwork', true)"
+                v-show="!interfaceStore.isNetworkExpanded && !interfaceStore.isNetworkCollapsed" v-on:click="$emit('expandNetwork', true)"
                 class="ml-4 is-hidden-touch has-text-white"></CompactButton>
             <CompactButton icon="mdi-arrow-collapse" v-tippy="'Collapse diagram'"
                 v-show="interfaceStore.isNetworkExpanded" v-on:click="$emit('expandNetwork', false)"
+                class="ml-4 is-hidden-touch has-text-white"></CompactButton>
+            <CompactButton icon="mdi-window-minimize" v-tippy="'Minimize diagram'"
+                v-show="!interfaceStore.isNetworkCollapsed" v-on:click="$emit('collapseNetwork')"
+                class="ml-4 is-hidden-touch has-text-white"></CompactButton>
+            <CompactButton icon="mdi-window-restore" v-tippy="'Restore diagram'"
+                v-show="interfaceStore.isNetworkCollapsed" v-on:click="$emit('restoreNetwork')"
                 class="ml-4 is-hidden-touch has-text-white"></CompactButton>
         </div>
     </div>
@@ -49,7 +55,7 @@ const props = defineProps({
     }
 });
 
-const emit = defineEmits(["expandNetwork", "update:isNetworkClusters"]);
+const emit = defineEmits(["expandNetwork", "update:isNetworkClusters", "collapseNetwork", "restoreNetwork"]);
 
 const interfaceStore = useInterfaceStore();
 const { isEmpty } = useAppState();
