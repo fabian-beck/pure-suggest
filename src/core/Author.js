@@ -67,6 +67,51 @@ export default class Author {
             .toLowerCase();
     }
 
+    static generateEszettVariants(nameId) {
+        // Generate possible variants for Eszett transcriptions
+        const variants = new Set([nameId]);
+        
+        // If name contains 'ss', generate variants with 's' and 'b'
+        if (nameId.includes('ss')) {
+            // Replace 'ss' with 's' (single s transcription)
+            variants.add(nameId.replace(/ss/g, 's'));
+            // Replace 'ss' with 'b' (b transcription)
+            variants.add(nameId.replace(/ss/g, 'b'));
+        }
+        
+        // If name contains 'b', generate 'ss' and 's' variants (reverse transcription)
+        if (nameId.includes('b')) {
+            // Replace 'b' with 'ss' (most common transcription)
+            variants.add(nameId.replace(/b/g, 'ss'));
+            // Replace 'b' with 's' (single s transcription)
+            variants.add(nameId.replace(/b/g, 's'));
+        }
+        
+        // If name contains single 's' (but not 'ss'), generate 'ss' and 'b' variants
+        // This is more conservative - only for names that likely had 'ß' originally
+        // Apply this only to the surname part (before the comma)
+        const nameParts = nameId.split(',');
+        if (nameParts.length >= 2) {
+            const surname = nameParts[0].trim();
+            const restOfName = nameId.substring(surname.length);
+            
+            if (surname.length > 3 && surname.includes('s') && !surname.includes('ss') && !surname.includes('b')) {
+                // Replace single 's' with 'ss' for common German patterns in surname only
+                const doubleVariant = surname.replace(/s/g, 'ss') + restOfName;
+                if (doubleVariant !== nameId) {
+                    variants.add(doubleVariant);
+                }
+                // Replace single 's' with 'b' for b transcription in surname only
+                const bVariant = surname.replace(/s/g, 'b') + restOfName;
+                if (bVariant !== nameId) {
+                    variants.add(bVariant);
+                }
+            }
+        }
+        
+        return Array.from(variants);
+    }
+
     static computePublicationsAuthors(publications, isAuthorScoreEnabled, isFirstAuthorBoostEnabled, isAuthorNewBoostEnabled) {
 
         function deleteAuthor(authorId, newAuthorId) {
@@ -123,6 +168,47 @@ export default class Author {
             if (authorMatches.length === 1 && (!author.orcid || !authorMatches[0].orcid || author.orcid === authorMatches[0].orcid)) {
                 authorMatches[0].mergeWith(author);
                 deleteAuthor(author.id, authorMatches[0].id);
+            }
+        });
+        
+        // merge authors with Eszett transcription variants
+        const remainingAuthors = Object.values(authors);
+        const processedAuthors = new Set();
+        
+        remainingAuthors.forEach((author) => {
+            if (processedAuthors.has(author.id)) return;
+            
+            const authorVariants = Author.generateEszettVariants(author.id);
+            const matchingAuthors = remainingAuthors.filter((otherAuthor) => {
+                if (otherAuthor.id === author.id || processedAuthors.has(otherAuthor.id)) return false;
+                
+                const otherVariants = Author.generateEszettVariants(otherAuthor.id);
+                
+                // Check if any variant of one author matches any variant of the other
+                return authorVariants.some(variant => otherVariants.includes(variant)) ||
+                       otherVariants.some(variant => authorVariants.includes(variant));
+            });
+            
+            if (matchingAuthors.length > 0) {
+                // Merge all matching authors into the first one found
+                // Prefer authors with longer names (more complete information)
+                const allMatches = [author, ...matchingAuthors];
+                const primaryAuthor = allMatches.reduce((best, current) => 
+                    current.id.length > best.id.length ? current : best
+                );
+                
+                allMatches.forEach((matchingAuthor) => {
+                    if (matchingAuthor.id !== primaryAuthor.id && !processedAuthors.has(matchingAuthor.id)) {
+                        // Only merge if they don't have conflicting ORCIDs
+                        if (!primaryAuthor.orcid || !matchingAuthor.orcid || primaryAuthor.orcid === matchingAuthor.orcid) {
+                            primaryAuthor.mergeWith(matchingAuthor);
+                            deleteAuthor(matchingAuthor.id, primaryAuthor.id);
+                            processedAuthors.add(matchingAuthor.id);
+                        }
+                    }
+                });
+                
+                processedAuthors.add(primaryAuthor.id);
             }
         });
         // set author initials
