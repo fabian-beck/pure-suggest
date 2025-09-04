@@ -260,8 +260,8 @@ describe('AuthorModalDialog', () => {
     expect(highScoreLightness).toBeLessThan(lowScoreLightness)
   })
 
-  it('should use white text color for dark background co-author chips', () => {
-    // Setup: author with co-authors that have high scores (dark backgrounds)
+  it('should always use white text color for co-author chips', () => {
+    // Setup: author with co-authors that have different scores 
     const authors = [
       {
         id: 'main-author',
@@ -282,7 +282,7 @@ describe('AuthorModalDialog', () => {
       {
         id: 'high-score-coauthor',
         name: 'High Score Coauthor',
-        score: 60, // Very high score - should be very dark (lightness < 50)
+        score: 60, // Very high score - should be very dark background
         count: 2,
         yearMin: 2021,
         yearMax: 2022,
@@ -297,7 +297,7 @@ describe('AuthorModalDialog', () => {
       {
         id: 'low-score-coauthor',
         name: 'Low Score Coauthor',
-        score: 3, // Low score - should be light (lightness >= 50)
+        score: 3, // Low score - should be lighter background
         count: 1,
         yearMin: 2022,
         yearMax: 2022,
@@ -324,11 +324,9 @@ describe('AuthorModalDialog', () => {
     expect(highScoreStyle).toHaveProperty('color')
     expect(lowScoreStyle).toHaveProperty('color')
     
-    // High score author with dark background should have white text
+    // All co-author chips should always have white text
     expect(highScoreStyle.color).toBe('#ffffff')
-    
-    // Low score author with light background should have black text
-    expect(lowScoreStyle.color).toBe('#000000')
+    expect(lowScoreStyle.color).toBe('#ffffff')
   })
 
   it('should use black text color for fallback gray background', () => {

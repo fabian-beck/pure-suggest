@@ -174,7 +174,7 @@ export default {
       
       return {
         backgroundColor: `hsla(0, 0%, ${lightness}%, 0.8)`,
-        color: lightness < 50 ? '#ffffff' : '#000000',
+        color: '#ffffff',
       };
     },
     cancel() {
