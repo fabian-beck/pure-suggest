@@ -21,17 +21,17 @@
                 <CompactSwitch v-model="isNetworkClustersModel"></CompactSwitch>
                 <label :class="{ 'has-text-grey-light': !isNetworkClustersModel }" class="ml-4">Clusters</label>
             </div>
-            <CompactButton icon="mdi-arrow-expand" v-tippy="'Expand diagram'"
-                v-show="!interfaceStore.isNetworkExpanded && !interfaceStore.isNetworkCollapsed" v-on:click="$emit('expandNetwork', true)"
-                class="ml-4 is-hidden-touch has-text-white"></CompactButton>
-            <CompactButton icon="mdi-arrow-collapse" v-tippy="'Collapse diagram'"
-                v-show="interfaceStore.isNetworkExpanded" v-on:click="$emit('expandNetwork', false)"
-                class="ml-4 is-hidden-touch has-text-white"></CompactButton>
-            <CompactButton icon="mdi-window-minimize" v-tippy="'Minimize diagram'"
+            <CompactButton icon="mdi-arrow-down" v-tippy="'Collapse diagram'"
                 v-show="!interfaceStore.isNetworkCollapsed" v-on:click="$emit('collapseNetwork')"
                 class="ml-4 is-hidden-touch has-text-white"></CompactButton>
-            <CompactButton icon="mdi-window-restore" v-tippy="'Restore diagram'"
+            <CompactButton icon="mdi-arrow-up" v-tippy="'Expand diagram'"
                 v-show="interfaceStore.isNetworkCollapsed" v-on:click="$emit('restoreNetwork')"
+                class="ml-4 is-hidden-touch has-text-white"></CompactButton>
+            <CompactButton icon="mdi-arrow-expand" v-tippy="'Maximize diagram'"
+                v-show="!interfaceStore.isNetworkExpanded && !interfaceStore.isNetworkCollapsed" v-on:click="$emit('expandNetwork', true)"
+                class="ml-4 is-hidden-touch has-text-white"></CompactButton>
+            <CompactButton icon="mdi-arrow-collapse" v-tippy="'Minimize diagram'"
+                v-show="interfaceStore.isNetworkExpanded" v-on:click="$emit('expandNetwork', false)"
                 class="ml-4 is-hidden-touch has-text-white"></CompactButton>
         </div>
     </div>
