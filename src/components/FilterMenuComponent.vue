@@ -161,8 +161,11 @@ const buttonColor = computed(() => {
 })
 
 function handleMenuClick() {
-  sessionStore.filter.isActive = true
-  handleMenuInput(true)
+  // Only activate filter when opening the menu (when it's currently closed)
+  if (!interfaceStore.isFilterMenuOpen) {
+    sessionStore.filter.isActive = true
+  }
+  handleMenuInput(!interfaceStore.isFilterMenuOpen)
 }
 
 function handleMenuInput(value) {

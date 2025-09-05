@@ -131,13 +131,25 @@ describe('FilterMenuComponent', () => {
     expect(wrapper.vm.displayText).toBe('[FILTERS OFF]')
   })
 
-  it('should automatically enable filters when button is clicked', () => {
+  it('should automatically enable filters when button is clicked to open menu', () => {
     mockSessionStore.filter.isActive = false
+    mockInterfaceStore.isFilterMenuOpen = false // Menu is closed
     wrapper = mount(FilterMenuComponent)
     
     wrapper.vm.handleMenuClick()
     
     expect(mockSessionStore.filter.isActive).toBe(true)
+  })
+
+  it('should NOT activate filters when button is clicked to close menu', () => {
+    mockSessionStore.filter.isActive = false
+    mockInterfaceStore.isFilterMenuOpen = true // Menu is currently open
+    wrapper = mount(FilterMenuComponent)
+    
+    wrapper.vm.handleMenuClick()
+    
+    // Filter should remain inactive when closing the menu
+    expect(mockSessionStore.filter.isActive).toBe(false)
   })
 
   it('should remove DOI chip when Enter key is pressed', () => {
