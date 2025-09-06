@@ -1,70 +1,63 @@
-# Project Tools
+# Development Tools
 
-This directory contains development and analysis tools for the PUREsuggest project.
+This directory contains utility scripts for maintaining code quality and identifying potential improvements.
 
-## Dependency Analyzer
+## find-unused-functions.js
 
-**File**: `dependency-analyzer.js`
+**Purpose:** Identifies potentially unused functions in the codebase by finding function definitions that appear only once (suggesting they may only exist in their definition but never called).
 
-Analyzes the complete project dependency structure and generates visual dependency graphs.
-
-### Features
-- Analyzes all project files (.vue, .js, .ts, .mjs)
-- Detects imports, template usage, store dependencies
-- Categorizes files by type (Components, Stores, Composables, etc.)
-- Generates GraphML output for network visualization tools
-
-### Usage
+**Usage:**
 ```bash
-cd tools
-node dependency-analyzer.js
+node tools/find-unused-functions.js
 ```
 
-### Output
-- Console analysis with dependency statistics
-- `tools/output/project-dependencies.graphml` - Network graph file for yEd/Gephi
+**What it does:**
+1. Scans all `.js`, `.vue`, and `.ts` files in `src/` and `tests/` directories
+2. Extracts function definitions using multiple patterns:
+   - `function functionName()`
+   - `const functionName = () =>`
+   - `methodName() {}`
+   - `export function functionName()`
+   - etc.
+3. Counts how many times each function name appears across all files
+4. Reports functions that appear exactly once (potentially unused)
 
-### GraphML Features
-- Color-coded nodes by file type
-- Clean black dependency arrows
-- 16pt Arial font labels
-- Optimized for yEd visualization
+**Example Output:**
+```
+🔍 Searching for potentially unused functions...
 
-### Supported File Types
-- Vue Components (.vue)
-- JavaScript/TypeScript modules (.js, .ts, .mjs)
-- Pinia stores
-- Vue composables
-- Constants and utilities
+📁 Scanning 107 files in [src, tests]
+🎯 Found 600 function definitions
 
-## Constant Usage Analyzer
+📋 POTENTIALLY UNUSED FUNCTIONS:
+==================================================
 
-**File**: `constant-usage-analyzer.js`
+📄 src/core/PublicationSearch.js:
+  • computeTitleSimilarity (line 33)
 
-Analyzes constant usage patterns across the codebase to identify candidates for decentralization or centralization.
+📄 src/stores/author.js:
+  • updateSettings (line 51)
 
-### Features
-- Scans all constants from `src/constants/` directory
-- Excludes test files from decentralization consideration
-- Categorizes constants as single-use, multi-use, or unused
-- Provides detailed usage statistics and file locations
-- Generates actionable recommendations for constant organization
-
-### Usage
-```bash
-cd tools
-node constant-usage-analyzer.js
+📊 Summary: 2 potentially unused functions found
 ```
 
-### Output
-- Console analysis with usage patterns and recommendations
-- `tools/output/constant-usage-analysis.json` - Detailed JSON report
-- Categorized lists of constants for different actions:
-  - Single-use constants (candidates for decentralization)
-  - Multi-use constants (keep centralized)
-  - Unused constants (candidates for removal)
+**Important Notes:**
+- **Manual verification required** - Results are suggestions, not definitive
+- Functions may be called dynamically via strings
+- Functions may be used in Vue templates
+- Test utilities and mocks are often only defined once
+- Public API functions may legitimately appear once
+- Consider the context before removing any code
 
-### Analysis Logic
-- **Single-use**: Constants used in only one non-test file (should be moved locally)
-- **Multi-use**: Constants used in multiple non-test files (should remain centralized)
-- **Test usage**: Tracked separately and not counted for decentralization decisions
+**Limitations:**
+- Cannot detect dynamic function calls (`obj[functionName]()`)
+- Cannot detect template usage in Vue components
+- May miss functions used in external build tools or configs
+- Does not understand complex import/export patterns
+
+**Best Practices:**
+1. Review each result manually
+2. Search codebase for string references to function names
+3. Check if function is part of public API or external interface
+4. Verify function isn't used in Vue templates or computed properties
+5. Consider if function serves as documentation or future use case
