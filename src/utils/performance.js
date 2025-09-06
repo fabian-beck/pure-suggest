@@ -1,48 +1,13 @@
 // Performance monitoring utilities
 class PerformanceMonitor {
   constructor() {
-    this.metrics = new Map();
     this.enabled = true; // Set to false in production
-  }
-
-  startTimer(label) {
-    if (!this.enabled) return;
-    this.metrics.set(label, performance.now());
-  }
-
-  endTimer(label, logLevel = 'debug') {
-    if (!this.enabled) return;
-    const startTime = this.metrics.get(label);
-    if (startTime) {
-      const duration = performance.now() - startTime;
-      console[logLevel](`[PERF] ${label}: ${duration.toFixed(2)}ms`);
-      this.metrics.delete(label);
-      return duration;
-    }
   }
 
   logMemoryUsage() {
     if (!this.enabled || !performance.memory) return;
     const memory = performance.memory;
     console.debug(`[PERF] Memory: Used ${(memory.usedJSHeapSize / 1024 / 1024).toFixed(2)}MB / Total ${(memory.totalJSHeapSize / 1024 / 1024).toFixed(2)}MB`);
-  }
-
-  measureFunction(fn, label) {
-    if (!this.enabled) return fn();
-    const startTime = performance.now();
-    const result = fn();
-    const duration = performance.now() - startTime;
-    console.debug(`[PERF] ${label}: ${duration.toFixed(2)}ms`);
-    return result;
-  }
-
-  measureAsyncFunction(asyncFn, label) {
-    if (!this.enabled) return asyncFn();
-    const startTime = performance.now();
-    return asyncFn().finally(() => {
-      const duration = performance.now() - startTime;
-      console.debug(`[PERF] ${label}: ${duration.toFixed(2)}ms`);
-    });
   }
 
   logPageMetrics() {
