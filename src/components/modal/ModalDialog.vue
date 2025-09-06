@@ -52,9 +52,6 @@ export default {
         },
     },
     methods: {
-        showDialog() {
-            this.isDialogShown = true
-        },
         hideDialog() {
             this.isDialogShown = false
         },

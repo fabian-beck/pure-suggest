@@ -2,20 +2,18 @@
   <div class="selected-publications box has-background-primary">
     <div class="level">
       <div class="level-left has-text-white">
-        <div class="level-item"
-          v-tippy="`The <b>publications selected as seeds</b> for computing the suggestions, sorted by score.`">
+        <div class="level-item" v-tippy="`The <b>publications selected as seeds</b> for computing the suggestions, sorted by score.`
+          ">
           <v-icon class="has-text-white">mdi-water-outline</v-icon>
           <h2 class="is-size-5 ml-2">Selected</h2>
         </div>
       </div>
       <div class="level-right" v-show="!isEmpty">
         <div class="level-item">
-          <CompactButton icon="mdi-account-group has-text-white"
-            v-tippy="`List <span class='key'>a</span>uthors of selected publications.`"
-            v-on:click="interfaceStore.openAuthorModalDialog()"></CompactButton>
-          <CompactButton icon="mdi-magnify" class="ml-2 has-text-white"
-            v-tippy="`<span class='key'>S</span>earch/add specific publications to be added to selected.`"
-            v-on:click="interfaceStore.openSearchModalDialog()"></CompactButton>
+          <CompactButton icon="mdi-account-group has-text-white" v-tippy="`List <span class='key'>a</span>uthors of selected publications.`
+            " v-on:click="interfaceStore.openAuthorModalDialog()"></CompactButton>
+          <CompactButton icon="mdi-magnify" class="ml-2 has-text-white" v-tippy="`<span class='key'>S</span>earch/add specific publications to be added to selected.`
+            " v-on:click="interfaceStore.openSearchModalDialog()"></CompactButton>
         </div>
       </div>
     </div>
@@ -30,17 +28,17 @@
                 <span v-show="queueStore.selectedQueue.length">
                   {{
                     queueStore.selectedQueue.length > 1
-                    ? `${queueStore.selectedQueue.length} publications`
-                    : "1 publication"
+                      ? `${queueStore.selectedQueue.length} publications`
+                      : "1 publication"
                   }}
                   to be selected</span><span v-show="queueStore.selectedQueue.length &&
-                      queueStore.excludedQueue.length
-                      ">
+                    queueStore.excludedQueue.length
+                    ">
                   and </span><span v-show="queueStore.excludedQueue.length">
                   {{
                     queueStore.excludedQueue.length > 1
-                    ? `${queueStore.excludedQueue.length} publications`
-                    : "1 publication"
+                      ? `${queueStore.excludedQueue.length} publications`
+                      : "1 publication"
                   }}
                   to be excluded</span>.
               </p>
@@ -63,20 +61,25 @@
           <p>
             <i>To start, <b>add publications</b> to selected:</i>
           </p>
-          <div class="level mt-4 mb-2">
-            <div class="level-item"></div>
-            <div class="level-item">
+          <div class="columns is-multiline is-centered mt-4 mb-2">
+            <div class="column is-narrow py-1">
               <v-btn class="has-background-primary-95" @click.stop="interfaceStore.openSearchModalDialog()">
                 <v-icon left class="mr-2">mdi-magnify</v-icon>
                 Search/add</v-btn>
             </div>
-            <div class="level-item">
+            <div class="column is-narrow py-1">
               <v-btn class="has-background-primary-95" @click.stop="importSession"> <v-icon left
                   class="mr-2">mdi-import</v-icon>
                 Import session
               </v-btn>
             </div>
-            <div class="level-item">
+            <div class="column is-narrow py-1">
+              <v-btn class="has-background-primary-95" @click.stop="importBibtex">
+                <v-icon left class="mr-2">mdi-import</v-icon>
+                Import BibTeX
+              </v-btn>
+            </div>
+            <div class="column is-narrow py-1">
               <v-btn class="has-background-primary-95" @click.stop="loadExample()">
                 <v-icon left class="mr-2">mdi-file-document</v-icon>
                 Load example
@@ -86,7 +89,8 @@
         </div>
       </div>
     </div>
-    <PublicationListComponent ref="publicationList" :publications="sessionStore.selectedPublicationsFiltered" :showSectionHeaders="true" publicationType="selected" />
+    <PublicationListComponent ref="publicationList" :publications="sessionStore.selectedPublicationsFiltered"
+      :showSectionHeaders="true" publicationType="selected" />
   </div>
 </template>
 
@@ -96,11 +100,12 @@ import { useSessionStore } from "@/stores/session.js"
 import { useInterfaceStore } from "@/stores/interface.js"
 import { useQueueStore } from "@/stores/queue.js"
 import { useAppState } from "@/composables/useAppState.js"
+import { bibtexParser } from "@/lib/Util.js"
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
 const queueStore = useQueueStore()
-const { isEmpty, importSession: importSessionFromState, loadExample, updateQueued } = useAppState()
+const { isEmpty, importSession: importSessionFromState, loadExample, updateQueued, loadSession } = useAppState()
 
 const publicationList = ref(null)
 
@@ -113,6 +118,35 @@ function importSession() {
       ),
     "Import session",
   )
+}
+
+function importBibtex() {
+  const warningMessage = isEmpty.value 
+    ? '' 
+    : '<p style="color: #d32f2f; margin-bottom: 16px;"><strong>This will clear and replace the current session.</strong></p>'
+  
+  interfaceStore.showConfirmDialog(
+    `${warningMessage}<label>Choose a BibTeX file:&nbsp;</label>
+    <input type="file" id="import-bibtex-input" accept=".bib"/>`,
+    async () => {
+      const fileInput = document.getElementById("import-bibtex-input");
+      const file = fileInput.files[0];
+
+      if (!file) {
+        console.error("No file selected");
+        return;
+      }
+
+      try {
+        const parsedData = await bibtexParser(file);
+        loadSession(parsedData);
+      } catch (error) {
+        console.error("Error parsing BibTeX file:", error);
+        interfaceStore.showErrorMessage("Error parsing BibTeX file. Please check the file format.");
+      }
+    },
+    "Import BibTeX"
+  );
 }
 
 onMounted(() => {

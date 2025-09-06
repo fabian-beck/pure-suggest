@@ -123,6 +123,63 @@ describe('scoringUtils', () => {
         expect(matches[1].keyword).toBe("AI|artificial intelligence")
       })
 
+      it('should ignore empty alternatives in keyword strings', () => {
+        const title = "Machine learning and artificial intelligence AI"
+        const keywords = ["machine|", "|learning", "artificial||intelligence", "AI|||"]
+        
+        const matches = findKeywordMatches(title, keywords)
+        
+        expect(matches).toHaveLength(4)
+        expect(matches[0].keyword).toBe("machine|")
+        expect(matches[0].text).toBe("machine") // Should match "machine" part, ignoring empty alternative
+        expect(matches[1].keyword).toBe("|learning")
+        expect(matches[1].text).toBe("learning") // Should match "learning" part, ignoring empty alternative
+        expect(matches[2].keyword).toBe("artificial||intelligence")
+        expect(matches[2].text).toBe("artificial") // Should match first valid alternative
+        expect(matches[3].keyword).toBe("AI|||")
+        expect(matches[3].text).toBe("AI") // Should match "AI" part, ignoring empty alternatives
+      })
+
+      it('should handle keywords with only empty alternatives', () => {
+        const title = "Machine learning test"
+        const keywords = ["|", "||", "|||", "test"]
+        
+        const matches = findKeywordMatches(title, keywords)
+        
+        // Should only match "test", ignore keywords with only empty alternatives
+        expect(matches).toHaveLength(1)
+        expect(matches[0].keyword).toBe("test")
+        expect(matches[0].text).toBe("test")
+      })
+
+      it('should preserve original keyword string format', () => {
+        const title = "Machine learning"
+        const keywords = ["machine|"] // Original format should be preserved in result
+        
+        const matches = findKeywordMatches(title, keywords)
+        
+        expect(matches).toHaveLength(1)
+        expect(matches[0].keyword).toBe("machine|") // Original string preserved
+        expect(matches[0].text).toBe("machine") // But only valid alternative matched
+      })
+
+      it('should make "keyword|" behave the same as "keyword"', () => {
+        const title = "Machine learning test"
+        
+        // Test both "keyword|" and "keyword" separately
+        const matchesWithPipe = findKeywordMatches(title, ["machine|"])
+        const matchesWithoutPipe = findKeywordMatches(title, ["machine"])
+        
+        // Both should have same number of matches and same positions
+        expect(matchesWithPipe).toHaveLength(matchesWithoutPipe.length)
+        expect(matchesWithPipe[0].position).toBe(matchesWithoutPipe[0].position)
+        expect(matchesWithPipe[0].text).toBe(matchesWithoutPipe[0].text)
+        
+        // But original keyword strings should be preserved as provided
+        expect(matchesWithPipe[0].keyword).toBe("machine|")
+        expect(matchesWithoutPipe[0].keyword).toBe("machine")
+      })
+
       it('should prevent overlapping matches', () => {
         const title = "Machine learning"
         const keywords = ["machine", "machine learning"]
