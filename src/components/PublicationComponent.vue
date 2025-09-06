@@ -1,5 +1,5 @@
 <template>
-  <li>
+  <div class="publication-component-wrapper">
     <div class="level is-mobile queue-controls" v-if="queueStore.isQueuingForSelected(publication.doi) ||
       queueStore.isQueuingForExcluded(publication.doi)" :class="{
         'to-be-selected': queueStore.isQueuingForSelected(publication.doi),
@@ -146,7 +146,7 @@
         </div>
       </div>
     </div>
-  </li>
+  </div>
 </template>
 
 <script setup>
@@ -222,7 +222,7 @@ function handleMouseLeave() {
 </script>
 
 <style lang="scss">
-li {
+.publication-component-wrapper {
   position: relative;
 
   .publication-component {
