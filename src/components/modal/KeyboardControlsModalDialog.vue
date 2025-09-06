@@ -10,13 +10,10 @@
         <h2>General</h2>
         <ul class="keys">
           <li>
-            <v-icon>mdi-alpha-b-box-outline</v-icon> Jump to "Boost" input
-          </li>
-          <li>
-            <v-icon>mdi-alpha-a-box-outline</v-icon> Jump to "Add" input
-          </li>
-          <li>
             <v-icon>mdi-alpha-s-box-outline</v-icon> Open "Search" dialog
+          </li>
+          <li>
+            <v-icon>mdi-alpha-b-box-outline</v-icon> Jump to "Boost" input
           </li>
           <li>
             <v-icon>mdi-alpha-u-box-outline</v-icon> Update selected
@@ -25,6 +22,9 @@
           <li>
             <v-icon>mdi-alpha-f-box-outline</v-icon> Switch on/off
             filtering of suggestions
+          </li>
+          <li>
+            <v-icon>mdi-alpha-a-box-outline</v-icon> Open list of authors of selected publications
           </li>
           <li>
             <v-icon>mdi-arrow-left-bold-box-outline</v-icon> Jump to first
@@ -74,6 +74,9 @@
             <v-icon>mdi-alpha-x-box-outline</v-icon> Export as BibTeX
             citation
           </li>
+          <li>
+            <v-icon>mdi-alpha-i-box-outline</v-icon> Toggle DOI filter
+          </li>
         </ul>
         <h2>Citation Network</h2>
         <ul class="keys">
@@ -81,6 +84,10 @@
             <v-icon>mdi-alpha-m-box-outline</v-icon> Toggle mode of
             citation network visualization between <em>timeline</em> and
             <em>clusters</em>
+          </li>
+          <li>
+            <v-icon>mdi-alpha-p-box-outline</v-icon> Toggle performance
+            panel for network debugging
           </li>
         </ul>
       </section>

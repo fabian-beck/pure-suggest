@@ -1,4 +1,6 @@
 import { defineStore } from 'pinia'
+import { useAuthorStore } from './author.js'
+import { useSessionStore } from './session.js'
 
 export const useInterfaceStore = defineStore('interface', {
     state: () => {
@@ -12,17 +14,18 @@ export const useInterfaceStore = defineStore('interface', {
                 duration: 0,
             },
             isNetworkExpanded: false,
+            isNetworkCollapsed: false,
             isNetworkClusters: true,
+            showPerformancePanel: false,
             searchQuery: "",
-            isFilterPanelShown: false,
             isSearchModalDialogShown: false,
             isAuthorModalDialogShown: false,
             isExcludedModalDialogShown: false,
             isQueueModalDialogShown: false,
             isAboutModalDialogShown: false,
-            scrollAuthorId: null,
+            // Network replot trigger (incremented to notify NetworkVisComponent to replot)
+            networkReplotTrigger: 0,
             isKeyboardControlsModalDialogShown: false,
-            feebackInvitationWasShown: false,
             confirmDialog: {
                 message: "",
                 action: () => { },
@@ -35,6 +38,7 @@ export const useInterfaceStore = defineStore('interface', {
                 title: "",
             },
             isMobile: true,
+            isFilterMenuOpen: false,
         }
     },
     getters: {
@@ -52,8 +56,8 @@ export const useInterfaceStore = defineStore('interface', {
     actions: {
         clear() {
             this.isNetworkExpanded = false;
+            this.isNetworkCollapsed = false;
             this.isNetworkClusters = true;
-            this.isFilterPanelShown = false;
             window.scrollTo(0, 0);
         },
 
@@ -101,16 +105,119 @@ export const useInterfaceStore = defineStore('interface', {
         },
 
         openAuthorModalDialog(authorId) {
+            // Ensure author data is computed before showing the modal
+            const authorStore = useAuthorStore()
+            const sessionStore = useSessionStore()
+            
+            // Check if we need to compute author data
+            if (sessionStore.selectedPublications?.length > 0 && 
+                (authorStore.selectedPublicationsAuthors.length === 0 || 
+                 this.isAuthorDataStale(sessionStore.selectedPublications, authorStore.selectedPublicationsAuthors))) {
+                
+                // IMPORTANT: Publications need to have their scores updated before computing author data
+                // Otherwise authors will have score=0 and no keywords
+                if (this.publicationsNeedScoreUpdate(sessionStore.selectedPublications)) {
+                    sessionStore.updateScores()
+                }
+                
+                authorStore.computeSelectedPublicationsAuthors(sessionStore.selectedPublications)
+            }
+            
             this.isAuthorModalDialogShown = true;
+            
+            // If authorId is provided, try to activate that author
             if (authorId) {
-                this.scrollAuthorId = authorId;
+                // Check if author exists in the computed authors list
+                const authorExists = authorStore.selectedPublicationsAuthors.some(author => author.id === authorId)
+                if (authorExists) {
+                    authorStore.setActiveAuthor(authorId)
+                }
             }
         },
 
+        isAuthorDataStale(selectedPublications, authors) {
+            // Check 1: No authors computed despite having publications with authors
+            const publicationsWithAuthors = selectedPublications.filter(pub => pub.author || pub.authorOrcid)
+            if (publicationsWithAuthors.length > 0 && authors.length === 0) {
+                return true
+            }
+            
+            // Check 2: Authors computed from publications with uncomputed scores
+            // If publications need score updates, then existing author data is likely stale
+            if (authors.length > 0 && this.publicationsNeedScoreUpdate(selectedPublications)) {
+                return true
+            }
+            
+            // Check 3: Authors have suspiciously low scores (indicating they were computed from score=0 publications)
+            if (authors.length > 0) {
+                const authorsWithZeroScore = authors.filter(author => author.score === 0 || author.score === authors.length)
+                const percentZeroScore = (authorsWithZeroScore.length / authors.length) * 100
+                
+                // If more than 80% of authors have zero or minimal scores, likely computed from unscored publications
+                if (percentZeroScore > 80) {
+                    return true
+                }
+            }
+            
+            return false
+        },
+
+        publicationsNeedScoreUpdate(publications) {
+            // Check if publications have default/uninitialized scores
+            // Publications with score=0 and empty boostKeywords likely haven't had updateScores() called
+            return publications.some(pub => 
+                pub.score === 0 && 
+                (!pub.boostKeywords || pub.boostKeywords.length === 0) &&
+                // Make sure it's not legitimately a zero score (has citation/reference data but calculated to 0)
+                (pub.citationCount === undefined || pub.referenceCount === undefined)
+            )
+        },
+
         activatePublicationComponent: function (publicationComponent) {
-            if (publicationComponent) {
+            if (publicationComponent && typeof publicationComponent.focus === 'function') {
                 publicationComponent.focus();
             }
+        },
+
+        triggerNetworkReplot() {
+            // Increment trigger counter to notify NetworkVisComponent to replot
+            this.networkReplotTrigger++;
+        },
+
+        openFilterMenu() {
+            if (this.isFilterMenuOpen) {
+                this.closeFilterMenu()
+                return false
+            }
+            this.isFilterMenuOpen = true
+            return true
+        },
+
+        closeFilterMenu() {
+            this.isFilterMenuOpen = false
+        },
+
+        setFilterMenuState(isOpen) {
+            this.isFilterMenuOpen = isOpen
+        },
+
+        togglePerformancePanel() {
+            this.showPerformancePanel = !this.showPerformancePanel
+        },
+
+        collapseNetwork() {
+            this.isNetworkExpanded = false;
+            this.isNetworkCollapsed = true;
+        },
+
+        expandNetwork() {
+            this.isNetworkExpanded = true;
+            this.isNetworkCollapsed = false;
+        },
+
+        restoreNetwork() {
+            this.isNetworkExpanded = false;
+            this.isNetworkCollapsed = false;
         },
 
     }

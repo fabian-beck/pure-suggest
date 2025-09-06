@@ -1,0 +1,49 @@
+/* 
+ * Bulma v1.0 Color Overrides
+ * 
+ * This file restores the original Bulma 0.9.4 color scheme to maintain
+ * the original visual appearance after upgrading to Bulma v1.0.4
+ * 
+ * Since we're using pre-compiled Bulma CSS, we override the base HSL 
+ * components that Bulma v1.0 uses to generate all color variants.
+ */
+
+:root {
+  /* Original Bulma 0.9.4 Primary Color (Turquoise) */
+  --bulma-primary-h: 171deg;
+  --bulma-primary-s: 100%;
+  --bulma-primary-l: 41%;
+
+  /* Original Bulma 0.9.4 Info Color (Cyan) - #3e8ed0 */
+  --bulma-info-h: 207deg;
+  --bulma-info-s: 61%;
+  --bulma-info-l: 53%;
+
+  /* Original Bulma 0.9.4 Success Color (Green) */
+  --bulma-success-h: 153deg;
+  --bulma-success-s: 53%;
+  --bulma-success-l: 53%;
+
+  /* Original Bulma 0.9.4 Warning Color (Yellow) */
+  --bulma-warning-h: 44deg;
+  --bulma-warning-s: 100%;
+  --bulma-warning-l: 77%;
+
+  /* Original Bulma 0.9.4 Danger Color (Red) */
+  --bulma-danger-h: 348deg;
+  --bulma-danger-s: 86%;
+  --bulma-danger-l: 61%;
+
+  /* Original Bulma 0.9.4 Dark Color */
+  --bulma-dark-h: 0deg;
+  --bulma-dark-s: 0%;
+  --bulma-dark-l: 21%;
+
+  /* Fix conflicting text colors between Bulma and Vuetify */
+  .has-text-white {
+    color: white !important;
+  }
+
+  .has-background-dark.has-text-white {
+    color: white !important;
+  }

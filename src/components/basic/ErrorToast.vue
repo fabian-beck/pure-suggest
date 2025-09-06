@@ -20,7 +20,7 @@ export default {
     z-index: 6001 !important;
 
     & :deep(.v-snackbar__wrapper) {
-        background-color: $danger !important;
+        background-color: var(--bulma-danger) !important;
         min-width: 300px;
 
         & .v-snackbar__content {

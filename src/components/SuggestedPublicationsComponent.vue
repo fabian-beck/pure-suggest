@@ -12,8 +12,7 @@
         <div class="level-item">
           <tippy>
             <div class="mr-2">
-              <v-icon size="18" color="white" class="mr-1" v-show="interfaceStore.isFilterPanelShown">mdi-filter</v-icon>
-              <v-badge :content="sessionStore.unreadSuggestionsCount" color="black" class="mr-3" offset-y="-4"
+              <v-badge :content="sessionStore.unreadSuggestionsCount" color="black" class="mr-5" offset-y="-4"
                 offset-x="-9" :value="sessionStore.unreadSuggestionsCount > 0" transition="scale-rotate-transition">
                 <b>{{ sessionStore.suggestedPublicationsFiltered.length }}</b>
               </v-badge>
@@ -33,13 +32,6 @@
                 <b>({{ sessionStore.unreadSuggestionsCount }}</b> of them
                 unread)
               </span>
-              <span v-if="interfaceStore.isFilterPanelShown">
-                filtered from
-                <b>{{
-                  sessionStore.suggestedPublications.length
-                }}</b>
-                loaded ones,
-              </span>
               of in total
               <b>
                 {{
@@ -51,58 +43,45 @@
             </template>
           </tippy>
           <CompactButton icon="mdi-playlist-plus has-text-white" class="ml-2"
-            v-tippy="'Load more suggested publications.'" @click="sessionStore.loadMoreSuggestions()" :disabled="sessionStore.suggestedPublications.length ===
+            v-tippy="'Load more suggested publications.'" @click="loadMoreSuggestions()" :disabled="sessionStore.suggestedPublications.length ===
               sessionStore.suggestion.totalSuggestions
               "></CompactButton>
         </div>
-        <div class="level-item" v-if="sessionStore.suggestion">
-          <CompactSwitch v-model="interfaceStore.isFilterPanelShown" class="ml-5" hide-details density="compact"
-            v-tippy="`Activate/deactivate <b>filter</b> to restrict suggested publications by different criteria.`">
-          </CompactSwitch>
-          <v-icon size="18" color="white" class="mr-1 ml-4">mdi-filter</v-icon>
-          <span class="key">F</span>ilter
-        </div>
       </div>
     </div>
-    <div>
-      <v-expand-transition>
-        <FilterPanel v-show="interfaceStore.isFilterPanelShown"/>
-      </v-expand-transition>
-    </div>
-    <PublicationListComponent ref="publicationList" :publications="sessionStore.suggestedPublicationsFiltered" />
+    <PublicationListComponent ref="publicationList" :publications="sessionStore.suggestedPublicationsFiltered" :showSectionHeaders="true" publicationType="suggested" />
   </div>
 </template>
 
-<script>
-import { useSessionStore } from "@/stores/session.js";
-import { useInterfaceStore } from "@/stores/interface.js";
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useSessionStore } from "@/stores/session.js"
+import { useAppState } from "@/composables/useAppState.js"
 
-export default {
-  name: "SuggestedPublicationsComponent",
-  setup() {
-    const sessionStore = useSessionStore();
-    const interfaceStore = useInterfaceStore();
-    return { sessionStore, interfaceStore };
-  },
-  props: {
-    title: String,
-  },
-  mounted() {
-    this.sessionStore.$onAction(({ name, after }) => {
-      after(() => {
-        if (name === "updateQueued") {
-          this.$refs.publicationList.$el.scrollTop = 0;
-        }
-      });
-    });
-  },
-};
+defineProps({
+  title: String,
+})
+
+const sessionStore = useSessionStore()
+const { loadMoreSuggestions } = useAppState()
+
+const publicationList = ref(null)
+
+onMounted(() => {
+  sessionStore.$onAction(({ name, after }) => {
+    after(() => {
+      if (name === "updateQueued") {
+        publicationList.value.$el.scrollTop = 0
+      }
+    })
+  })
+})
 </script>
 
 <style lang="scss" scoped>
 .box {
   display: grid;
-  grid-template-rows: max-content max-content auto;
+  grid-template-rows: max-content auto;
   position: relative;
 
   & .notification {

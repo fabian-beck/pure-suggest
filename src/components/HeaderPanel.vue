@@ -5,35 +5,9 @@
       <v-app-bar-title>
         <div class="app-name" v-html="appMeta.nameHtml"></div>
         <div class="session-state">
-          <v-menu v-if="!sessionStore.isEmpty" location="bottom" transition="slide-y-transition">
-            <template v-slot:activator="{ props }">
-              <v-btn v-bind="props" :icon="interfaceStore.isMobile"
-                :density="interfaceStore.isMobile ? 'compact' : 'default'">
-                <v-icon size="18">mdi-text-box-multiple-outline</v-icon>
-                <span class="is-hidden-touch ml-2">
-                  {{ sessionStateString }}
-                  <v-icon class="ml-2">
-                    mdi-menu-down
-                  </v-icon>
-                </span>
-              </v-btn>
-            </template>
-            <v-list>
-              <v-list-item class="is-hidden-desktop">
-                {{ sessionStateString }}
-              </v-list-item>
-              <v-list-item prepend-icon="mdi-minus-thick" @click="interfaceStore.isExcludedModalDialogShown = true"
-                title="Excluded publications" v-if="sessionStore.excludedPublicationsCount > 0">
-              </v-list-item>
-              <v-list-item prepend-icon="mdi-export" @click="sessionStore.exportSession"
-                title="Export selected as JSON" />
-              <v-list-item prepend-icon="mdi-export" @click="sessionStore.exportAllBibtex"
-                title="Export selected as BibTeX" />
-              <v-list-item prepend-icon="mdi-delete" @click="sessionStore.clearSession" class="has-text-danger"
-                title="Clear session" />
-            </v-list>
-          </v-menu>
+          <SessionMenuComponent />
           <BoostKeywordsComponent />
+          <FilterMenuComponent ref="filterMenuComponent" />
         </div>
       </v-app-bar-title>
       <v-menu bottom left offset-y transition="slide-y-transition">
@@ -51,19 +25,19 @@
             title="Keyboard controls" />
           <v-list-item prepend-icon="mdi-information-outline" @click="interfaceStore.isAboutModalDialogShown = true"
             title="About" />
-          <v-list-item prepend-icon="mdi-cached" @click="sessionStore.clearCache" class="has-text-danger"
+          <v-list-item prepend-icon="mdi-cached" @click="clearCache" class="has-text-danger"
             title="Clear cache (and session)" />
         </v-list>
       </v-menu>
     </v-app-bar>
-    <div class="columns intro-message" v-if="sessionStore.isEmpty">
+    <div class="columns intro-message" v-if="isEmpty">
       <div class="column">
         <div class="subtitle level-item mt-2">
-          {{ this.appMeta.subtitle }}
+          {{ appMeta.subtitle }}
         </div>
       </div>
       <div class="column is-two-thirds">
-        <div class="notification has-text-centered p-2" v-show="sessionStore.isEmpty">
+        <div class="notification has-text-centered p-2" v-show="isEmpty">
           <p>
             Based on a set of selected publications,
             <b class="has-text-info">suggest</b>ing related
@@ -77,31 +51,27 @@
   </div>
 </template>
 
-<script>
-import { useSessionStore } from "@/stores/session.js";
-import { useInterfaceStore } from "@/stores/interface.js";
+<script setup>
+import { inject, ref } from 'vue'
+import { useInterfaceStore } from "@/stores/interface.js"
+import FilterMenuComponent from "@/components/FilterMenuComponent.vue"
+import SessionMenuComponent from "@/components/SessionMenuComponent.vue"
+import { useAppState } from "@/composables/useAppState.js"
 
-export default {
-  name: "HeaderPanel",
-  inject: ["appMeta"],
-  setup() {
-    const sessionStore = useSessionStore();
-    const interfaceStore = useInterfaceStore();
-    return { sessionStore, interfaceStore };
-  },
-  computed: {
-    sessionStateString() {
-      return `${this.sessionStore.selectedPublicationsCount} selected${this.sessionStore.excludedPublicationsCount
-        ? `; ${this.sessionStore.excludedPublicationsCount} excluded`
-        : ""}`;
-    }
-  },
-};
+const appMeta = inject("appMeta")
+const interfaceStore = useInterfaceStore()
+const { isEmpty, clearCache } = useAppState()
+
+const filterMenuComponent = ref(null)
 </script>
 
 <style lang="scss" scoped>
 .v-toolbar {
+  position: relative !important;
   z-index: 3000 !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  overflow: hidden !important;
 
   & :deep(.v-toolbar__content) {
     padding: 0 0.5vw;
@@ -122,9 +92,38 @@ export default {
         & .session-state {
           margin-top: 6px;
           margin-left: 1vw;
+          display: flex;
+          align-items: center;
+          flex: 1; /* Take available space to allow natural expansion */
+          min-width: 0; /* Allow flex items to shrink below their content size */
+          overflow: hidden;
+          gap: 1vw; /* Modern gap instead of margins */
 
-          &>button {
-            margin-left: 1vw;
+          /* Session state button - never shrink, always readable */
+          & .session-state-button {
+            flex: 0 0 auto; /* Fixed size, never shrink */
+            
+            /* Reduce excess padding on desktop */
+            &:not(.v-btn--icon) {
+              padding-left: 8px !important;
+              padding-right: 8px !important;
+              min-width: auto !important;
+            }
+          }
+          
+          /* Boost keywords - can shrink when needed on desktop, fixed on mobile */
+          & .boost-button {
+            flex: 0 1 auto; /* Natural size but can shrink under pressure */
+            
+            /* Mobile: completely remove from flex layout to maintain circle */
+            &.v-btn--icon {
+              flex: none !important; /* Not part of flex layout on mobile */
+            }
+          }
+          
+          /* Filter button - fixed size */
+          &>button:last-child {
+            flex: 0 0 auto; /* Fixed size, never shrink */
           }
         }
       }
@@ -134,14 +133,14 @@ export default {
 
 .intro-message,
 .intro-message-placeholder {
-  margin-top: 48px;
+  margin-top: 0.5rem;
 
   & .column {
-    margin: $block-spacing;
+    margin: var(--bulma-block-spacing, 1.5rem);
   }
 }
 
-@include touch {
+@media screen and (max-width: 1023px) {
   :deep(.app-name) {
     font-size: 1.2rem !important;
   }

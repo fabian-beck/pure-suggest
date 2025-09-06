@@ -1,14 +1,14 @@
 <template>
   <li>
-    <div class="level is-mobile queue-controls" v-if="sessionStore.isQueuingForSelected(publication.doi) ||
-      sessionStore.isQueuingForExcluded(publication.doi)" :class="{
-        'to-be-selected': sessionStore.isQueuingForSelected(publication.doi),
+    <div class="level is-mobile queue-controls" v-if="queueStore.isQueuingForSelected(publication.doi) ||
+      queueStore.isQueuingForExcluded(publication.doi)" :class="{
+        'to-be-selected': queueStore.isQueuingForSelected(publication.doi),
       }">
         <div class="level-item">
           <span>
             <InlineIcon icon="mdi-tray-full" color="dark" />
             To be
-            <span v-if="sessionStore.isQueuingForSelected(publication.doi)"><b>selected </b>
+            <span v-if="queueStore.isQueuingForSelected(publication.doi)"><b>selected </b>
               <InlineIcon icon="mdi-plus-thick" color="primary-dark" />
             </span>
             <span v-else><b> excluded </b>
@@ -18,7 +18,7 @@
         </div>
         <div class="level-right">
           <CompactButton icon="mdi-undo" v-tippy="'Remove publication from queue again.'"
-            v-on:click="sessionStore.removeFromQueues(publication.doi)"></CompactButton>
+            v-on:click="queueStore.removeFromQueues(publication.doi)"></CompactButton>
         </div>
       </div>
     <div class="publication-component media" :class="{
@@ -30,14 +30,12 @@
         !publication.isSelected &&
         publication.wasFetched,
       'is-queuing':
-        sessionStore.isQueuingForSelected(publication.doi) ||
-        sessionStore.isQueuingForExcluded(publication.doi),
+        queueStore.isQueuingForSelected(publication.doi) ||
+        queueStore.isQueuingForExcluded(publication.doi),
       'is-hovered': publication.isHovered,
       'is-keyword-hovered': publication.isKeywordHovered,
       'is-author-hovered': publication.isAuthorHovered,
-    }" :id="publication.doi" tabindex="0" v-on:focus="activate" @click.stop="activate"
-      @mouseenter="sessionStore.hoverPublication(publication, true)"
-      @mouseleave="sessionStore.hoverPublication(publication, false)">
+    }" :id="publication.doi" tabindex="0" @focus="activate" @click.stop @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
       <tippy class="media-left" placement="right">
         <div class="glyph has-text-centered" v-bind:style="{ 'background-color': publication.scoreColor }"
           v-show="publication.wasFetched">
@@ -107,7 +105,7 @@
         </template>
       </tippy>
       <div class="media-content">
-        <PublicationDescription :publication="publication"></PublicationDescription>
+        <PublicationDescription :publication="publication" :publicationType="publicationType"></PublicationDescription>
         <div class="notification has-background-danger-light has-text-danger-dark" v-if="(!publication.year || !publication.title || !publication.author) &&
           publication.isActive
           ">
@@ -119,7 +117,7 @@
               </div>
             </div>
             <div class="level-right">
-              <v-btn v-tippy="'Retry loading metadata.'" @click.stop="sessionStore.retryLoadingPublication(publication)"
+              <v-btn v-tippy="'Retry loading metadata.'" @click.stop="retryLoadingPublication(publication)"
                 small>
                 <v-icon left>mdi-refresh</v-icon>
                 Retry
@@ -139,56 +137,88 @@
       <div class="media-right">
         <div>
           <CompactButton v-if="!publication.isSelected" icon="mdi-plus-thick"
-            v-on:click="sessionStore.queueForSelected(publication.doi)" class="has-text-primary"
+            v-on:click="queueForSelected(publication.doi)" class="has-text-primary"
             v-tippy="'Mark publication to be added to selected publications.'"></CompactButton>
         </div>
         <div>
-          <CompactButton icon="mdi-minus-thick" v-on:click="sessionStore.queueForExcluded(publication.doi)"
-            v-tippy="'Mark publication to be excluded for suggestions.'"></CompactButton>
+          <CompactButton icon="mdi-minus-thick" v-on:click="queueForExcluded(publication.doi)"
+            v-tippy="minusButtonTooltip"></CompactButton>
         </div>
       </div>
     </div>
   </li>
 </template>
 
-<script>
-import { useSessionStore } from "@/stores/session.js";
-import { useInterfaceStore } from "@/stores/interface.js";
+<script setup>
+import { computed } from 'vue'
+import { useQueueStore } from "@/stores/queue.js"
+import { useSessionStore } from "@/stores/session.js"
+import { useAppState } from "@/composables/useAppState.js"
 
-export default {
-  name: "PublicationComponent",
-  setup() {
-    const sessionStore = useSessionStore();
-    const interfaceStore = useInterfaceStore();
-    return { sessionStore, interfaceStore };
+const queueStore = useQueueStore()
+const sessionStore = useSessionStore()
+const { retryLoadingPublication, activatePublicationComponentByDoi, queueForSelected, queueForExcluded } = useAppState()
+
+const emit = defineEmits(['activate'])
+const props = defineProps({
+  publication: {
+    type: Object,
+    required: true
   },
-  props: {
-    publication: Object,
-  },
-  computed: {
-    chevronType: function () {
-      if (this.publication.boostFactor >= 8) {
-        return "chevron-triple-up";
-      }
-      else if (this.publication.boostFactor >= 4) {
-        return "chevron-double-up";
-      }
-      else if (this.publication.boostFactor > 1) {
-        return "chevron-up";
-      }
-      return "";
-    },
-  },
-  methods: {
-    activate: function () {
-      this.sessionStore.activatePublicationComponentByDoi(this.publication.doi);
-      this.$emit("activate", this.publication.doi);
-    },
-    refocus: function () {
-      document.getElementById(this.publication.doi).focus();
-    },
-  },
-};
+  publicationType: {
+    type: String,
+    default: 'suggested',
+    validator: (value) => ['selected', 'suggested', 'general'].includes(value)
+  }
+})
+
+
+const chevronType = computed(() => {
+  if (props.publication.boostFactor >= 8) {
+    return "chevron-triple-up"
+  }
+  else if (props.publication.boostFactor >= 4) {
+    return "chevron-double-up"
+  }
+  else if (props.publication.boostFactor > 1) {
+    return "chevron-up"
+  }
+  return ""
+})
+
+const minusButtonTooltip = computed(() => {
+  return props.publicationType === 'selected' 
+    ? 'Remove publication from selected and mark to stay excluded.' 
+    : 'Mark publication to be excluded for suggestions.';
+})
+
+let isActivating = false
+
+function activate() {
+  // Prevent recursive activation calls
+  if (isActivating) {
+    return
+  }
+  
+  isActivating = true
+  activatePublicationComponentByDoi(props.publication.doi)
+  emit("activate", props.publication.doi)
+  
+  // Reset the flag after a brief delay to allow for the activation to complete
+  setTimeout(() => {
+    isActivating = false
+  }, 100)
+}
+
+function handleMouseEnter() {
+  sessionStore.hoverPublication(props.publication, true)
+}
+
+function handleMouseLeave() {
+  sessionStore.hoverPublication(props.publication, false)
+}
+
+
 </script>
 
 <style lang="scss">
@@ -212,7 +242,7 @@ li {
         height: 5rem;
         margin: 0.6rem;
         border-width: 0.125rem;
-        border-color: $info;
+        border-color: var(--bulma-info);
         border-style: solid;
         @include light-shadow;
 
@@ -236,9 +266,9 @@ li {
           top: -7px;
           right: -7px;
           @include light-shadow;
-          background: $warning;
-          font-size: $size-5;
-          border: 1px solid $info;
+          background: var(--bulma-warning);
+          font-size: 1.25rem;
+          border: 1px solid var(--bulma-info);
 
           & .v-icon {
             position: relative;
@@ -291,13 +321,13 @@ li {
     }
 
     &.is-keyword-hovered .glyph {
-      box-shadow: 0 0 0.2rem 0.05rem $warning;
-      border-color: $warning-dark !important;
+      box-shadow: 0 0 0.2rem 0.05rem var(--bulma-warning);
+      border-color: hsl(var(--bulma-warning-h), var(--bulma-warning-s), calc(var(--bulma-warning-l) - 20%)) !important;
     }
 
     &.is-author-hovered .glyph {
-      box-shadow: 0 0 0.2rem 0.05rem $dark;
-      border-color: $dark !important;
+      box-shadow: 0 0 0.2rem 0.05rem var(--bulma-dark);
+      border-color: var(--bulma-dark) !important;
     }
 
     &.is-active {
@@ -306,22 +336,22 @@ li {
     }
 
     &.is-unread {
-      background: rgba($color: $info, $alpha: 0.1);
+      background: hsla(var(--bulma-info-h), var(--bulma-info-s), var(--bulma-info-l), 0.1);
 
       & .summary {
-        color: $info-dark;
+        color: hsl(var(--bulma-info-h), var(--bulma-info-s), calc(var(--bulma-info-l) - 20%));
       }
 
       & .glyph .score {
-        color: $info-dark;
+        color: hsl(var(--bulma-info-h), var(--bulma-info-s), calc(var(--bulma-info-l) - 20%));
       }
     }
 
     &.is-selected .glyph {
-      border-color: $primary;
+      border-color: var(--bulma-primary);
 
       & .boost-indicator {
-        border-color: $primary;
+        border-color: var(--bulma-primary);
       }
     }
 
@@ -331,7 +361,7 @@ li {
     }
 
     & .glyph>div:focus>div {
-      outline: 1px solid $dark;
+      outline: 1px solid var(--bulma-dark);
       outline-offset: 0.1rem;
     }
 
@@ -359,7 +389,7 @@ li {
 
     &:focus,
     &.is-active {
-      outline: 1px solid $dark;
+      outline: 1px solid var(--bulma-dark);
     }
   }
 
@@ -368,8 +398,8 @@ li {
     position: absolute;
     border-radius: 4px;
     width: 250px;
-    color: $dark;
-    border-left: 4px solid $dark;
+    color: var(--bulma-dark);
+    border-left: 4px solid var(--bulma-dark);
     padding: 0.5rem;
     background-color: white;
     top: 1.5rem;
@@ -378,15 +408,15 @@ li {
     @include light-shadow;
 
     &.to-be-selected {
-      border-color: $primary;
-      color: $primary-dark;
-      background-color: $primary-light;
+      border-color: var(--bulma-primary);
+      color: hsl(var(--bulma-primary-h), var(--bulma-primary-s), calc(var(--bulma-primary-l) - 20%));
+      background-color: var(--bulma-primary-95);
     }
 
   }
 }
 
-@include touch {
+@media screen and (max-width: 1023px) {
   .publication-component {
     & .media-content {
       padding-left: 0;

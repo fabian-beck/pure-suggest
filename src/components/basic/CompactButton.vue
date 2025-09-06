@@ -1,5 +1,7 @@
 <template>
-    <v-btn icon size="small" @click="openLink()" :disabled="disabled" flat height="30" width="30"><v-icon>{{ icon }}</v-icon></v-btn>
+    <v-btn icon size="small" @click="openLink()" :disabled="disabled" :active="active"
+        :class="{ 'is-selected': active }" flat height="30" width="30"><v-icon>{{ icon
+        }}</v-icon></v-btn>
 </template>
 
 <script>
@@ -10,9 +12,11 @@ export default {
         click: Function,
         disabled: Boolean,
         href: String,
+        active: Boolean
     },
     methods: {
         openLink() {
+            if (typeof this.click === 'function') this.click();
             if (this.href) window.open(this.href, '_blank');
         },
     }

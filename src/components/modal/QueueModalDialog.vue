@@ -1,8 +1,8 @@
 <template>
     <ModalDialog headerColor="primary" title="Queue" icon="mdi-tray-full" v-model="interfaceStore.isQueueModalDialogShown">
         <template v-slot:sticky>
-            <v-sheet class="has-background-primary-light pa-2">
-                <p class="comment" v-if="sessionStore.isUpdatable">
+            <v-sheet class="has-background-primary-95 pa-2">
+                <p class="comment" v-if="queueStore.isUpdatable">
                     These publications are maked to be selected or excluded with the next update.</p>
                 <p class="comment" v-else>
                     No publications currently in queue; you may close this dialog.
@@ -10,11 +10,11 @@
             </v-sheet>
         </template>
         <template v-slot:footer>
-            <v-card-actions class="has-background-primary-light level-right">
-                <v-btn class="has-background-primary-light has-text-dark mr-2" v-on:click="clearQueuesAndClose"
-                    v-show="sessionStore.isUpdatable" small prependIcon="mdi-undo">Clear all</v-btn>
+            <v-card-actions class="has-background-primary-95 level-right">
+                <v-btn class="has-background-primary-95 has-text-dark mr-2" v-on:click="clearQueuesAndClose"
+                    v-show="queueStore.isUpdatable" small prependIcon="mdi-undo">Clear all</v-btn>
                 <v-btn class="has-background-primary has-text-white ml-2" v-on:click="updateQueuedAndClose"
-                    v-show="sessionStore.isUpdatable" small prependIcon="mdi-update">Update</v-btn>
+                    v-show="queueStore.isUpdatable" small prependIcon="mdi-update">Update</v-btn>
             </v-card-actions>
         </template>
         <div class="content">
@@ -57,14 +57,16 @@
 
 <script>
 import { useInterfaceStore } from "@/stores/interface.js";
-import { useSessionStore } from "@/stores/session.js";
+import { useQueueStore } from "@/stores/queue.js";
+import { useAppState } from "@/composables/useAppState.js";
 import { watch, reactive } from "vue";
-import Publication from "../../Publication";
+import Publication from "@/core/Publication.js";
 
 export default {
     setup() {
         const interfaceStore = useInterfaceStore();
-        const sessionStore = useSessionStore();
+        const queueStore = useQueueStore();
+        const { updateQueued } = useAppState();
 
         const selectedQueue = reactive([]);
         const excludedQueue = reactive([]);
@@ -72,10 +74,10 @@ export default {
         function updatePublications() {
             selectedQueue.splice(0, selectedQueue.length);
             excludedQueue.splice(0, excludedQueue.length);
-            sessionStore.selectedQueue.forEach((doi) => {
+            queueStore.selectedQueue.forEach((doi) => {
                 selectedQueue.push(new Publication(doi));
             });
-            sessionStore.excludedQueue.forEach((doi) => {
+            queueStore.excludedQueue.forEach((doi) => {
                 excludedQueue.push(new Publication(doi));
             });
             // async fetch publication data
@@ -90,30 +92,30 @@ export default {
         watch(() => interfaceStore.isQueueModalDialogShown,
             (newValue) => {
                 if (newValue) {
-                    console.log("Queue dialog shown");
                     updatePublications();
                 }
             });
 
         return {
             interfaceStore,
-            sessionStore,
+            queueStore,
             selectedQueue,
             excludedQueue,
             updatePublications,
+            updateQueued
         };
     },
     methods: {
         clearQueuesAndClose() {
-            this.sessionStore.clearQueues();
+            this.queueStore.clear();
             this.interfaceStore.isQueueModalDialogShown = false;
         },
         updateQueuedAndClose() {
-            this.sessionStore.updateQueued();
+            this.updateQueued();
             this.interfaceStore.isQueueModalDialogShown = false;
         },
         removeFromQueueAndUpdatePublications(publication) {
-            this.sessionStore.removeFromQueues(publication.doi);
+            this.queueStore.removeFromQueues(publication.doi);
             this.updatePublications();
         },
     },

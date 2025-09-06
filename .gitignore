@@ -19,3 +19,13 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw?
+.claude/settings.local.json
+
+# Test results
+test-results/
+
+# Development tools output
+tools/output/
+
+# Auto-generated component types
+components.d.ts

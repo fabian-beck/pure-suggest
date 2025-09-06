@@ -2,7 +2,7 @@
   <v-app id="app" data-app>
     <HeaderPanel id="header" />
     <div id="main" @click="sessionStore.clearActivePublication('clicked anywhere')"
-      :class="{ 'network-expanded': interfaceStore.isNetworkExpanded }">
+      :class="{ 'network-expanded': interfaceStore.isNetworkExpanded, 'network-collapsed': interfaceStore.isNetworkCollapsed }">
       <SelectedPublicationsComponent id="selected" v-show="!interfaceStore.isNetworkExpanded" />
       <SuggestedPublicationsComponent id="suggested" v-show="!interfaceStore.isNetworkExpanded" />
       <NetworkVisComponent id="network" :svgWidth="1500" :svgHeight="600" />
@@ -36,18 +36,21 @@
 <script>
 import { useSessionStore } from "./stores/session.js";
 import { useInterfaceStore } from "./stores/interface.js";
+import { perfMonitor } from "./utils/performance.js";
+import { useAppState } from "./composables/useAppState.js";
 
-import { onKey } from "./Keys.js";
+import { onKey } from "./lib/Keys.js";
 
 export default {
   name: "App",
   setup() {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
+    const { isEmpty } = useAppState();
     // check if mobile 
     interfaceStore.checkMobile();
     window.addEventListener("resize", interfaceStore.checkMobile);
-    return { sessionStore, interfaceStore };
+    return { sessionStore, interfaceStore, isEmpty };
   },
   created() {
     window.addEventListener("keydown", onKey);
@@ -56,11 +59,18 @@ export default {
     window.onbeforeunload = () => {
       window.scrollTo(0, 0);
       // triggers a prompt before closing/reloading the page
-      if (!this.sessionStore.isEmpty) return "";
+      if (!this.isEmpty) return "";
       return null;
     };
+    
+    // Log page performance metrics
+    setTimeout(() => {
+      perfMonitor.logPageMetrics();
+      perfMonitor.logMemoryUsage();
+    }, 1000);
+    
   },
-  beforeDestroy() {
+  beforeUnmount() {
     document.removeEventListener("keydown", this.onKey);
   },
 };
@@ -108,6 +118,10 @@ $box-padding: 1rem;
       grid-template-rows: auto;
     }
 
+    &.network-collapsed {
+      grid-template-rows: auto max-content;
+    }
+
     & #selected {
       grid-area: selected;
       overflow-y: hidden;
@@ -140,7 +154,7 @@ $box-padding: 1rem;
 }
 
 .unknown {
-  color: $danger;
+  color: var(--bulma-danger);
 }
 
 .dialog .modal-card {
@@ -162,7 +176,7 @@ $box-padding: 1rem;
   z-index: 6000 !important;
 }
 
-@include touch {
+@media screen and (max-width: 1023px) {
   #app .v-application__wrap {
     display: block;
     margin-bottom: 5rem;

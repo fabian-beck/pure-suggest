@@ -1,7 +1,7 @@
 <template>
   <ModalDialog v-model="isSearchModalDialogShown" title="Search/add publications" icon="mdi-magnify" headerColor="primary">
     <template v-slot:sticky>
-      <form v-on:submit.prevent="search" class="has-background-primary-light">
+      <form v-on:submit.prevent="search" class="has-background-primary-95">
         <v-text-field clearable v-model="interfaceStore.searchQuery" type="input" ref="searchInput" variant="solo"
           append-icon="mdi-magnify" @click:append="search" density="compact"
           hint="Search for keywords, names, etc. or add by providing DOI(s) in any format">
@@ -9,7 +9,7 @@
       </form>
     </template>
     <template v-slot:footer>
-      <v-card-actions :class="`has-background-primary-light`">
+      <v-card-actions :class="`has-background-primary-95`">
         <p class="comment is-hidden-mobile">
           <span v-show="['doi', 'search'].includes(searchResults.type)">Showing
             <b>{{ filteredSearchResults.length }} publication{{
@@ -53,16 +53,20 @@ import { storeToRefs } from "pinia";
 
 import { useSessionStore } from "@/stores/session.js";
 import { useInterfaceStore } from "@/stores/interface.js";
+import { useQueueStore } from "@/stores/queue.js";
+import { useAppState } from "@/composables/useAppState.js";
 
-import PublicationSearch from "@/PublicationSearch.js";
+import PublicationSearch from "@/core/PublicationSearch.js";
 
 export default {
   name: "SearchModalDialog",
   setup() {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
+    const queueStore = useQueueStore();
+    const { queueForSelected } = useAppState();
     const { isSearchModalDialogShown } = storeToRefs(interfaceStore);
-    return { sessionStore, interfaceStore, isSearchModalDialogShown };
+    return { sessionStore, interfaceStore, queueStore, isSearchModalDialogShown, queueForSelected };
   },
   data() {
     return {
@@ -70,16 +74,23 @@ export default {
       isLoading: false,
       loaded: 0,
       cleanedSearchQuery: "",
+      searchCancelled: false,
+      lastSearchQuery: "",
     };
   },
   computed: {
     filteredSearchResults: function () {
+      // Don't show any results if search was cancelled
+      if (this.searchCancelled) {
+        return [];
+      }
+      
       return this.searchResults.results.filter(
         (publication) =>
           !this.sessionStore.selectedPublicationsDois.includes(
             publication.doi
           ) &&
-          !this.sessionStore.selectedQueue.includes(publication.doi) 
+          !this.queueStore.selectedQueue.includes(publication.doi) 
       );
     },
   },
@@ -88,34 +99,87 @@ export default {
       handler: function () {
         if (!this.isSearchModalDialogShown) return;
         setTimeout(() => {
-          this.$refs.searchInput.focus();
+          if (this.$refs.searchInput && typeof this.$refs.searchInput.focus === 'function') {
+            this.$refs.searchInput.focus();
+          }
         }, 300);
         if (this.interfaceStore.searchQuery) {
           this.search();
         }
       },
     },
+    'interfaceStore.searchQuery': {
+      handler: function () {
+        // Cancel ongoing search when user starts typing new query
+        if (this.isLoading) {
+          this.cancelSearch();
+        }
+      },
+    },
+  },
+  mounted() {
+    document.addEventListener('keydown', this.handleKeydown);
+  },
+  beforeUnmount() {
+    document.removeEventListener('keydown', this.handleKeydown);
   },
   methods: {
-    search: async function () {
+    handleKeydown(event) {
+      if (event.key === 'Escape' && this.isLoading && this.isSearchModalDialogShown) {
+        this.cancelSearch();
+      }
+    },
+
+    cancelSearch() {
+      this.searchCancelled = true;
+      this.isLoading = false;
       this.loaded = 0;
+      this.searchResults = { results: [], type: "empty" };
+    },
+
+    search: async function () {
+      // Don't perform search if query is the same as last search
+      if (this.interfaceStore.searchQuery === this.lastSearchQuery) {
+        return;
+      }
+      
+      // Cancel any ongoing search before starting a new one
+      if (this.isLoading) {
+        this.cancelSearch();
+      }
+      
+      this.loaded = 0;
+      this.searchCancelled = false;
       if (!this.interfaceStore.searchQuery) {
         this.searchResults = { results: [], type: "empty" };
+        this.lastSearchQuery = "";
         return;
       }
       this.isLoading = true;
+      this.lastSearchQuery = this.interfaceStore.searchQuery;
       this.cleanedSearchQuery = this.interfaceStore.searchQuery.replace(/[^a-zA-Z0-9 ]/g, ' ');
       const publicationSearch = new PublicationSearch(
         this.interfaceStore.searchQuery
       );
       this.searchResults = await publicationSearch.execute();
+      
+      // Check if search was cancelled during execution
+      if (this.searchCancelled) {
+        return;
+      }
+      
       if (this.filteredSearchResults.length === 0) {
         this.interfaceStore.showErrorMessage("No matching publications found");
         this.isLoading = false;
         return;
       }
-      // set a timer to check if all publications were fetched already (ugly hack - somehow it doesn't work automatically)
+      // Poll for publication data loading completion
       const check = () => {
+        // Check if search was cancelled
+        if (this.searchCancelled) {
+          return;
+        }
+        
         let loaded = 0;
         this.filteredSearchResults.forEach((publication) => {
           if (publication.wasFetched) {
@@ -133,7 +197,7 @@ export default {
     },
 
     addPublication(doi) {
-      this.sessionStore.queueForSelected(doi);
+      this.queueForSelected(doi);
     },
 
     addAllPublications() {
@@ -152,6 +216,9 @@ export default {
     reset() {
       this.searchResults = { results: [], type: "empty" };
       this.isLoading = false;
+      this.searchCancelled = false;
+      this.loaded = 0;
+      this.lastSearchQuery = "";
     },
   },
 };

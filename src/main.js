@@ -1,5 +1,6 @@
 import { createApp } from 'vue';
 import App from './App.vue'
+
 const app = createApp(App)
 
 // App meta data
@@ -31,6 +32,12 @@ app.use(vuetify)
 // Icons
 import '@mdi/font/css/materialdesignicons.css'
 
+// Bulma CSS
+import 'bulma/css/bulma.css'
+
+// Bulma color overrides (must be imported after Bulma)
+import './assets/bulma-color-overrides.css'
+
 // VueTippy
 import VueTippy from 'vue-tippy';
 import 'tippy.js/dist/tippy.css'
@@ -42,9 +49,5 @@ app.use(VueTippy, {
     allowHTML: true,
   },
 });
-// eslint-disable-next-line vue/multi-word-component-names
-// Vue.component("tippy", TippyComponent);
-
-// Vue.config.productionTip = false;
 
 app.mount('#app');

@@ -2,7 +2,7 @@
     <ModalDialog headerColor="primary" title="Excluded publications" icon="mdi-minus-thick"
         v-model="interfaceStore.isExcludedModalDialogShown">
         <template v-slot:sticky>
-            <v-sheet class="has-background-primary-light pa-2">
+            <v-sheet class="has-background-primary-95 pa-2">
                 <p class="comment" v-if="excludedPublications.length > 0">
                     These publications will not be suggested again unlike you remove them from this list.
                     Alternatively, you can direclty mark them to be selected.</p>
@@ -39,14 +39,16 @@
 <script>
 import { useInterfaceStore } from "@/stores/interface.js";
 import { useSessionStore } from "@/stores/session.js";
+import { useAppState } from "@/composables/useAppState.js";
 import { watch } from "vue";
-import Publication from "@/Publication.js";
+import Publication from "@/core/Publication.js";
 import { reactive } from "vue";
 
 export default {
     setup() {
         const interfaceStore = useInterfaceStore();
         const sessionStore = useSessionStore();
+        const { updateSuggestions, queueForSelected } = useAppState();
 
         const excludedPublications = reactive([]);
 
@@ -65,22 +67,21 @@ export default {
             () => interfaceStore.isExcludedModalDialogShown,
             (newValue) => {
                 if (newValue) {
-                    console.log("Excluded publications dialog shown");
                     updateExcludedPublications();
                 }
             }
         );
 
-        return { interfaceStore, sessionStore, excludedPublications, updateExcludedPublications };
+        return { interfaceStore, sessionStore, excludedPublications, updateExcludedPublications, updateSuggestions, queueForSelected };
     },
     methods: {
         removeFromExcluded(publication) {
             this.sessionStore.removeFromExcludedPublication(publication.doi)
-            this.sessionStore.updateSuggestions();
+            this.updateSuggestions();
             this.updateExcludedPublications();
         },
         removeFromExcludedAndAddToSelected(publication) {
-            this.sessionStore.queueForSelected([publication.doi]);
+            this.queueForSelected(publication.doi);
             this.removeFromExcluded(publication);
         },
     },

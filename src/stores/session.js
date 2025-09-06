@@ -1,33 +1,29 @@
 import { defineStore } from 'pinia'
 
-import { useInterfaceStore } from "./interface.js";
 
-import Publication from "@/Publication.js";
-import Filter from '@/Filter.js';
-import Author from '@/Author.js';
-import { shuffle, saveAsFile } from "@/Util.js"
-import { clearCache } from "@/Cache.js";
+import Publication from "@/core/Publication.js";
+import { generateBibtex } from "@/utils/bibtex.js";
+import { getFilteredPublications, countFilteredPublications } from "@/utils/filterUtils.js";
+import { normalizeBoostKeywordString, parseUniqueBoostKeywords, updatePublicationScores } from "@/utils/scoringUtils.js";
+import Filter from '@/core/Filter.js';
+import { saveAsFile } from "@/lib/Util.js"
+import { PAGINATION } from "@/constants/config.js";
+
 
 export const useSessionStore = defineStore('session', {
   state: () => {
     return {
-      interfaceStore: useInterfaceStore(),
       selectedPublications: [],
-      selectedPublicationsAuthors: [],
-      selectedQueue: [],
       excludedPublicationsDois: [],
-      excludedQueue: [],
       suggestion: "",
-      maxSuggestions: 50,
+      maxSuggestions: PAGINATION.INITIAL_SUGGESTIONS_COUNT,
       boostKeywordString: "",
       isBoost: true,
       activePublication: "",
       readPublicationsDois: new Set(),
       filter: new Filter(),
       addQuery: "",
-      isAuthorScoreEnabled: true,
-      isFirstAuthorBoostEnabled: true,
-      isAuthorNewBoostEnabled: true,
+      sessionName: "",
     }
   },
   getters: {
@@ -35,9 +31,24 @@ export const useSessionStore = defineStore('session', {
     selectedPublicationsCount: (state) => state.selectedPublications.length,
     excludedPublicationsCount: (state) => state.excludedPublicationsDois.length,
     suggestedPublications: (state) => state.suggestion ? state.suggestion.publications : [],
-    suggestedPublicationsFiltered: (state) =>
-      state.interfaceStore.isFilterPanelShown ?
-        state.suggestedPublications.filter(publication => state.filter.matches(publication)) : state.suggestedPublications,
+    suggestedPublicationsFiltered: (state) => {
+      return getFilteredPublications(state.suggestedPublications, state.filter, state.filter.applyToSuggested);
+    },
+    selectedPublicationsFiltered: (state) => {
+      return getFilteredPublications(state.selectedPublications, state.filter, state.filter.applyToSelected);
+    },
+    selectedPublicationsFilteredCount: (state) => {
+      return countFilteredPublications(state.selectedPublications, state.filter, true);
+    },
+    selectedPublicationsNonFilteredCount: (state) => {
+      return countFilteredPublications(state.selectedPublications, state.filter, false);
+    },
+    suggestedPublicationsFilteredCount: (state) => {
+      return countFilteredPublications(state.suggestedPublications, state.filter, true);
+    },
+    suggestedPublicationsNonFilteredCount: (state) => {
+      return countFilteredPublications(state.suggestedPublications, state.filter, false);
+    },
     publications: (state) => state.selectedPublications.concat(state.suggestedPublications),
     publicationsFiltered: (state) => state.selectedPublications.concat(state.suggestedPublicationsFiltered),
     yearMax: (state) => Math.max(...state.publicationsFiltered.filter(publication => publication.year).map(publication => Number(publication.year))),
@@ -46,34 +57,25 @@ export const useSessionStore = defineStore('session', {
       (publication) => !publication.isRead
     ).length,
     isKeywordLinkedToActive: (state) => (keyword) => state.activePublication && state.activePublication.boostKeywords.includes(keyword),
-    uniqueBoostKeywords: (state) => [...new Set(state.boostKeywordString.toUpperCase().split(/,\s*/).map(keyword => keyword.trim()))],
-    isUpdatable: (state) => state.selectedQueue.length > 0 || state.excludedQueue.length > 0,
-    isEmpty: (state) =>
-      state.selectedPublicationsCount === 0
-      && state.excludedPublicationsCount === 0
-      && state.selectedQueue.length === 0
-      && !state.isUpdatable,
+    uniqueBoostKeywords: (state) => parseUniqueBoostKeywords(state.boostKeywordString),
     isSelected: (state) => (doi) => state.selectedPublicationsDois.includes(doi),
     isExcluded: (state) => (doi) => state.excludedPublicationsDois.includes(doi),
-    isQueuingForSelected: (state) => (doi) => state.selectedQueue.includes(doi),
-    isQueuingForExcluded: (state) => (doi) => state.excludedQueue.includes(doi),
     getSelectedPublicationByDoi: (state) => (doi) => state.selectedPublications.filter(publication => publication.doi === doi)[0],
   },
   actions: {
+    
     clear() {
-      this.selectedPublications = [];
-      this.selectedPublicationsAuthors = [];
-      this.selectedQueue = [];
-      this.excludedPublicationsDois = [];
-      this.excludedQueue = [];
-      this.suggestion = "";
-      this.maxSuggestions = 50;
-      this.boostKeywordString = "";
-      this.activePublication = "";
-      this.filter = new Filter();
-      this.addQuery = "";
-      // do not reset read publications as the user might to carry this information to the next session
-      this.interfaceStore.clear();
+      this.selectedPublications = []
+      this.excludedPublicationsDois = []
+      this.suggestion = ""
+      this.maxSuggestions = PAGINATION.INITIAL_SUGGESTIONS_COUNT
+      this.boostKeywordString = ""
+      this.isBoost = true
+      this.activePublication = ""
+      this.readPublicationsDois = new Set()
+      this.filter = new Filter()
+      this.addQuery = ""
+      this.sessionName = ""
     },
 
     removeFromExcludedPublication(doi) {
@@ -85,60 +87,50 @@ export const useSessionStore = defineStore('session', {
       this.updateScores();
     },
 
-    queueForSelected(dois) {
-      if (!Array.isArray(dois)) dois = [dois];
-      this.excludedQueue = this.excludedQueue.filter(excludedDoi => !dois.includes(excludedDoi));
-      dois.forEach(doi => {
-        if (this.isSelected(doi) || this.selectedQueue.includes(doi)) return;
-        this.selectedQueue.push(doi);
-      });
-      this.hasUpdated(`Queued ${dois.length} publication(s) for selection.`);
+    setSessionName(sessionName) {
+      this.sessionName = sessionName || "";
     },
 
-    queueForExcluded(doi) {
-      if (this.isExcluded(doi) || this.excludedQueue.includes(doi)) return
-      this.selectedQueue = this.selectedQueue.filter(seletedDoi => doi != seletedDoi);
-      this.excludedQueue.push(doi);
-      this.hasUpdated(`Queued ${doi} for exclusion.`);
-    },
-
-    removeFromQueues(doi) {
-      this.selectedQueue = this.selectedQueue.filter(seletedDoi => doi != seletedDoi);
-      this.excludedQueue = this.excludedQueue.filter(excludedDoi => doi != excludedDoi);
-      this.hasUpdated(`Removed ${doi} from queues.`);
-    },
-
-    clearQueues() {
-      this.excludedQueue = [];
-      this.selectedQueue = [];
-      this.hasUpdated(`Cleared queues.`);
-    },
-
-    async updateQueued() {
-      this.clearActivePublication();
-      if (this.excludedQueue.length) {
-        this.excludedPublicationsDois = this.excludedPublicationsDois.concat(this.excludedQueue);
+    generateFilename(extension) {
+      // Use default filename if session name is empty, null
+      const isDefaultName = !this.sessionName || 
+                           this.sessionName.trim() === '';
+      
+      if (isDefaultName) {
+        return extension === 'json' ? 'session.puresuggest.json' : 'publications.bib';
       }
-      this.selectedPublications = this.selectedPublications.filter(
-        publication => !this.excludedQueue.includes(publication.doi)
-      );
-      if (this.suggestion) {
-        this.suggestion.publications = this.suggestion.publications.filter(
-          publication => (!this.selectedQueue.includes(publication.doi) && !this.excludedQueue.includes(publication.doi))
-        );
+
+      // Convert to lowercase and sanitize
+      let filename = this.sessionName
+        .toLowerCase()
+        // Replace multiple whitespace with single underscore
+        .replace(/\s+/g, '_')
+        // Replace invalid filename characters and punctuation with underscores
+        .replace(/[/\\?*|<>:"'!()]/g, '_')
+        // Replace remaining non-alphanumeric characters (except underscores and hyphens) with underscores
+        .replace(/[^a-z0-9_-]/g, '_')
+        // Replace multiple underscores with single underscore
+        .replace(/_+/g, '_')
+        // Remove leading/trailing underscores
+        .replace(/^_+|_+$/g, '');
+      
+      // Handle edge case of empty filename after sanitization
+      if (!filename || filename === '_') {
+        return extension === 'json' ? 'session.puresuggest.json' : 'publications.bib';
       }
-      if (this.selectedQueue.length) {
-        this.addPublicationsToSelection(this.selectedQueue);
+      
+      // Truncate if too long (leave room for extension)
+      const extensionSuffix = extension === 'json' ? '.puresuggest.json' : '.bib';
+      const maxLength = 250 - extensionSuffix.length;
+      if (filename.length > maxLength) {
+        filename = filename.substring(0, maxLength);
       }
-      await this.updateSuggestions();
-      this.clearQueues();
+      
+      return `${filename}${extensionSuffix}`;
     },
 
-    async addPublicationsAndUpdate(dois) {
-      dois.forEach((doi) => this.removeFromQueues(doi));
-      await this.addPublicationsToSelection(dois);
-      await this.updateSuggestions();
-    },
+
+
 
     async addPublicationsToSelection(dois) {
       console.log(`Adding to selection publications with DOIs: ${dois}.`);
@@ -153,142 +145,34 @@ export const useSessionStore = defineStore('session', {
       });
     },
 
-    async updateSuggestions(maxSuggestions = 50) {
-      this.maxSuggestions = maxSuggestions;
-      this.interfaceStore.startLoading();
-      let publicationsLoaded = 0;
-      this.interfaceStore.loadingMessage =
-        `${publicationsLoaded}/${this.selectedPublicationsCount} selected publications loaded`;
-      await Promise.all(
-        this.selectedPublications.map(async (publication) => {
-          await publication.fetchData();
-          publication.isSelected = true;
-          publicationsLoaded++;
-          this.interfaceStore.loadingMessage = `${publicationsLoaded}/${this.selectedPublicationsCount} selected publications loaded`;
-        })
-      );
-      await this.computeSuggestions();
-      this.interfaceStore.endLoading();
-    },
 
-    computeSelectedPublicationsAuthors() {
-      this.selectedPublicationsAuthors = Author.computePublicationsAuthors(
-        this.selectedPublications, this.isAuthorScoreEnabled, this.isFirstAuthorBoostEnabled, this.isAuthorNewBoostEnabled);
-    },
 
-    async computeSuggestions() {
-
-      function incrementSuggestedPublicationCounter(
-        _this,
-        doi,
-        counter,
-        doiList,
-        sourceDoi
-      ) {
-        if (!_this.isExcluded(doi)) {
-          if (!_this.isSelected(doi)) {
-            if (!suggestedPublications[doi]) {
-              const citingPublication = new Publication(doi);
-              suggestedPublications[doi] = citingPublication;
-            }
-            suggestedPublications[doi][doiList].push(sourceDoi);
-            suggestedPublications[doi][counter]++;
-          } else {
-            _this.getSelectedPublicationByDoi(doi)[counter]++;
-          }
-        }
-      }
-
-      console.log(`Starting to compute new suggestions based on ${this.selectedPublicationsCount} selected (and ${this.excludedPublicationsCount} excluded).`);
-      this.clearActivePublication("updating suggestions");
-      const suggestedPublications = {};
-      this.selectedPublications.forEach((publication) => {
-        publication.citationCount = 0;
-        publication.referenceCount = 0;
-      });
-      this.selectedPublications.forEach((publication) => {
-        publication.citationDois.forEach((citationDoi) => {
-          incrementSuggestedPublicationCounter(
-            this,
-            citationDoi,
-            "citationCount",
-            "referenceDois",
-            publication.doi
-          );
-        });
-        publication.referenceDois.forEach((referenceDoi) => {
-          incrementSuggestedPublicationCounter(
-            this,
-            referenceDoi,
-            "referenceCount",
-            "citationDois",
-            publication.doi
-          );
-        });
-      });
-      let filteredSuggestions = Object.values(suggestedPublications);
-      filteredSuggestions = shuffle(filteredSuggestions, 0);
-      console.log(`Identified ${filteredSuggestions.length} publications as suggestions.`);
-      // titles not yet fetched, that is why sorting can be only done on citations/references
-      filteredSuggestions.sort(
-        (a, b) =>
-          b.citationCount + b.referenceCount - (a.citationCount + a.referenceCount)
-      );
-      const preloadSuggestions = filteredSuggestions.slice(this.maxSuggestions, this.maxSuggestions + 50);
-      filteredSuggestions = filteredSuggestions.slice(0, this.maxSuggestions);
-      console.log(`Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`);
-      let publicationsLoadedCount = 0;
-      this.interfaceStore.loadingMessage = `${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`, "info";
-      await Promise.all(filteredSuggestions.map(async (suggestedPublication) => {
-        await suggestedPublication.fetchData()
-        publicationsLoadedCount++;
-        this.interfaceStore.loadingMessage = `${publicationsLoadedCount}/${filteredSuggestions.length} suggestions loaded`;
-      }));
-      filteredSuggestions.forEach((publication) => {
-        publication.isRead = this.readPublicationsDois.has(publication.doi);
-      });
-      console.log("Completed computing and loading of new suggestions.");
-      preloadSuggestions.forEach(publication => {
-        publication.fetchData()
-      });
-      this.suggestion = {
-        publications: Object.values(filteredSuggestions),
-        totalSuggestions: Object.values(suggestedPublications).length
-      };
-      this.updateScores();
-    },
 
     updateScores() {
       console.log("Updating scores of publications and reordering them.");
-      // treat spaces before/after commas
-      this.boostKeywordString = this.boostKeywordString.replace(/\s*,\s*/g, ", ");
-      // remove spaces before/after vertical line
-      this.boostKeywordString = this.boostKeywordString.replace(/\s*\|\s*/g, "|");
-      // upper case
-      this.boostKeywordString = this.boostKeywordString.toUpperCase();
-      this.publications.forEach((publication) => {
-        publication.updateScore(this.uniqueBoostKeywords, this.isBoost);
-      });
+
+      // Normalize boost keyword string
+      this.boostKeywordString = normalizeBoostKeywordString(this.boostKeywordString);
+
+      // Update scores for all publications
+      updatePublicationScores(this.publications, this.uniqueBoostKeywords, this.isBoost);
+
       Publication.sortPublications(this.selectedPublications);
       Publication.sortPublications(this.suggestedPublications);
-      this.computeSelectedPublicationsAuthors();
     },
 
-    loadMoreSuggestions() {
-      console.log("Loading more suggestions.");
-      this.updateSuggestions(
-        this.maxSuggestions + 50
-      );
-    },
 
     setActivePublication(doi) {
+      // Clear all active states first
       this.publications.forEach((publication) => {
         publication.isActive = false;
         publication.isLinkedToActive = false;
       });
+      // Set active state for selected publications
       this.selectedPublications.forEach((selectedPublication) => {
-        selectedPublication.isActive = selectedPublication.doi === doi;
-        if (selectedPublication.isActive) {
+        const isActive = selectedPublication.doi === doi
+        selectedPublication.isActive = isActive;
+        if (isActive) {
           this.activePublication = selectedPublication;
           this.selectedPublications.forEach((publication) => {
             publication.isLinkedToActive =
@@ -302,9 +186,11 @@ export const useSessionStore = defineStore('session', {
           });
         }
       });
+      // Set active state for suggested publications
       this.suggestedPublications.forEach((suggestedPublication) => {
-        suggestedPublication.isActive = suggestedPublication.doi === doi;
-        if (suggestedPublication.isActive) {
+        const isActive = suggestedPublication.doi === doi
+        suggestedPublication.isActive = isActive;
+        if (isActive) {
           suggestedPublication.isRead = true;
           this.readPublicationsDois.add(doi);
           this.activePublication = suggestedPublication;
@@ -318,22 +204,20 @@ export const useSessionStore = defineStore('session', {
       console.log(`Highlighted as active publication with DOI ${doi}.`);
     },
 
-    activatePublicationComponentByDoi: function (doi) {
-      if (doi !== this.activePublication?.doi) {
-        this.interfaceStore.activatePublicationComponent(document.getElementById(doi));
-        this.setActivePublication(doi);
-      }
-    },
 
     clearActivePublication(source) {
-      if (!this.activePublication) return;
+      if (!this.activePublication) {
+        return;
+      }
+
+      const previousDoi = this.activePublication.doi
       this.activePublication = undefined;
       this.publications.forEach((publication) => {
         publication.isActive = false;
         publication.isLinkedToActive = false;
       });
       console.log(
-        `Cleared any highlighted active publication, triggered by "${source}".`
+        `Cleared active publication ${previousDoi}, triggered by "${source}".`
       );
     },
 
@@ -344,76 +228,25 @@ export const useSessionStore = defineStore('session', {
       }
     },
 
-    async retryLoadingPublication(publication) {
-      this.interfaceStore.startLoading();
-      this.interfaceStore.loadingMessage = "Retrying to load metadata";
-      await publication.fetchData(true);
-      await this.updateSuggestions();
-      this.activatePublicationComponentByDoi(publication.doi);
-    },
 
     // This method can be watched to manually trigger updates 
     hasUpdated() {
     },
 
-    loadSession(session) {
-      console.log(`Loading session ${JSON.stringify(session)}`);
-      if (!session || !session.selected) {
-        this.interfaceStore.showErrorMessage(
-          "Cannot read session state from JSON."
-        );
-        return;
-      }
-      if (session.boost) {
-        this.setBoostKeywordString(session.boost);
-      }
-      if (session.excluded) {
-        this.excludedPublicationsDois = session.excluded;
-      }
-      this.addPublicationsToSelection(session.selected);
-      this.updateSuggestions();
-    },
 
-    clearSession: function () {
-      this.interfaceStore.showConfirmDialog(
-        "You are going to clear all selected and excluded articles and jump back to the initial state.", this.clear);
-    },
 
     exportSession: function () {
       let data = {
+        name: this.sessionName,
         selected: this.selectedPublicationsDois,
         excluded: this.excludedPublicationsDois,
         boost: this.uniqueBoostKeywords.join(", "),
       };
-      saveAsFile("session.json", "application/json", JSON.stringify(data));
+      const filename = this.generateFilename('json');
+      saveAsFile(filename, "application/json", JSON.stringify(data));
     },
 
-    importSession: function (file) {
-      const fileReader = new FileReader();
-      fileReader.onload = () => {
-        try {
-          const content = fileReader.result;
-          const session = JSON.parse(content);
-          this.loadSession(session);
-        } catch {
-          this.interfaceStore.showErrorMessage(`Cannot read JSON from file.`);
-        }
-      };
-      fileReader.readAsText(file);
-    },
 
-    loadExample: function () {
-      const session = {
-        selected: [
-          "10.1109/tvcg.2015.2467757",
-          "10.1109/tvcg.2015.2467621",
-          "10.1002/asi.24171",
-          "10.2312/evp.20221110"
-        ],
-        boost: "cit, visual, map, publi|literat",
-      };
-      this.loadSession(session);
-    },
 
     exportAllBibtex: function () {
       this.exportBibtex(this.selectedPublications);
@@ -426,21 +259,16 @@ export const useSessionStore = defineStore('session', {
     exportBibtex: function (publicationList) {
       let bib = "";
       publicationList.forEach(
-        (publication) => (bib += publication.toBibtex() + "\n\n")
+        (publication) => (bib += generateBibtex(publication) + "\n\n")
       );
-      saveAsFile("publications.bib", "application/x-bibtex", bib);
+      const filename = this.generateFilename('bib');
+      saveAsFile(filename, "application/x-bibtex", bib);
     },
 
-    clearCache: function () {
-      this.interfaceStore.showConfirmDialog(
-        "You are going to clear the cache, as well as all selected and excluded articles and jump back to the initial state.", () => {
-          this.clear();
-          clearCache();
-        });
-    },
   }
 })
 
 function asDois(publications) {
   return publications.map((publication) => publication.doi);
 }
+
