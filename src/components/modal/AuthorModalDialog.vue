@@ -44,7 +44,8 @@
                   </span>
                   <small v-if="getFilteredAlternativeNames(author).length > 0">
                     &ensp;also listed as
-                    <v-chip v-for="alternativeName in getFilteredAlternativeNames(author)" :key="alternativeName" class="tag alternative-name">
+                    <v-chip v-for="alternativeName in getFilteredAlternativeNames(author)" :key="alternativeName"
+                      class="tag alternative-name">
                       {{ alternativeName }}
                     </v-chip>
                   </small>
@@ -69,9 +70,8 @@
                   Co-author of
                   <v-chip label size="small" class="coauthor coauthor-chip m-1" v-for="coauthorId in Object.keys(author.coauthors).sort(
                     (a, b) => author.coauthors[b] - author.coauthors[a]
-                  )" :key="coauthorId" :style="coauthorStyle(coauthorId)"
-                    @click.stop="activateAuthor(coauthorId)">
-                    {{getCoauthorName(coauthorId)}}
+                  )" :key="coauthorId" :style="coauthorStyle(coauthorId)" @click.stop="activateAuthor(coauthorId)">
+                    {{ getCoauthorName(coauthorId) }}
                     ({{
                       author.coauthors[coauthorId] }})
                   </v-chip>
@@ -189,13 +189,13 @@ export default {
           color: '#000000',
         };
       }
-      
+
       // Use the same color calculation as AuthorGlyph but with some transparency
       const authorColor = calculateAuthorColor(coauthor.score, this.authorStore);
       // Extract the lightness value from the HSL color and apply it with transparency
       const lightnessMatch = authorColor.match(/hsl\(0, 0%, (\d+)%\)/);
       const lightness = lightnessMatch ? parseInt(lightnessMatch[1]) : 70;
-      
+
       return {
         backgroundColor: `hsla(0, 0%, ${lightness}%, 0.8)`,
         color: '#ffffff',
@@ -252,7 +252,7 @@ export default {
       const scrollTop = container.scrollTop;
       const scrollHeight = container.scrollHeight;
       const clientHeight = container.clientHeight;
-      
+
       // Load more when scrolled to 80% of the content
       const scrollThreshold = 0.8;
       if (scrollTop / (scrollHeight - clientHeight) >= scrollThreshold) {
@@ -266,7 +266,7 @@ export default {
       }
 
       this.isLoadingMoreAuthors = true;
-      
+
       // Simulate a small delay to show the loading indicator
       // In a real implementation with server-side pagination, this would be an API call
       setTimeout(() => {
