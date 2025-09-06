@@ -2,7 +2,7 @@
   <v-app id="app" data-app>
     <HeaderPanel id="header" />
     <div id="main" @click="sessionStore.clearActivePublication('clicked anywhere')"
-      :class="{ 'network-expanded': interfaceStore.isNetworkExpanded }">
+      :class="{ 'network-expanded': interfaceStore.isNetworkExpanded, 'network-collapsed': interfaceStore.isNetworkCollapsed }">
       <SelectedPublicationsComponent id="selected" v-show="!interfaceStore.isNetworkExpanded" />
       <SuggestedPublicationsComponent id="suggested" v-show="!interfaceStore.isNetworkExpanded" />
       <NetworkVisComponent id="network" :svgWidth="1500" :svgHeight="600" />
@@ -116,6 +116,10 @@ $box-padding: 1rem;
       grid-template-areas: "vis";
       grid-template-columns: auto;
       grid-template-rows: auto;
+    }
+
+    &.network-collapsed {
+      grid-template-rows: auto max-content;
     }
 
     & #selected {
