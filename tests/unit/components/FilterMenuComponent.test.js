@@ -97,7 +97,7 @@ describe('FilterMenuComponent', () => {
       mockSessionStore.filter.isActive = false
       wrapper = mount(FilterMenuComponent)
       
-      wrapper.vm.handleMenuClick()
+      wrapper.vm.handleMenuToggle(true) // Opening menu
       
       expect(mockSessionStore.filter.isActive).toBe(true)
     })
@@ -186,6 +186,27 @@ describe('FilterMenuComponent', () => {
       wrapper = mount(FilterMenuComponent)
       
       expect(wrapper.vm.buttonColor).toBe('grey-darken-1')
+    })
+  })
+
+  describe('Menu Toggle Behavior (Issue #550 Fix)', () => {
+    it('should activate filters when menu is opened', () => {
+      mockSessionStore.filter.isActive = false
+      wrapper = mount(FilterMenuComponent)
+      
+      wrapper.vm.handleMenuToggle(true) // Opening menu
+      
+      expect(mockSessionStore.filter.isActive).toBe(true)
+    })
+
+    it('should NOT activate filters when menu is closed', () => {
+      mockSessionStore.filter.isActive = false
+      wrapper = mount(FilterMenuComponent)
+      
+      wrapper.vm.handleMenuToggle(false) // Closing menu
+      
+      // Filter should remain inactive when closing the menu
+      expect(mockSessionStore.filter.isActive).toBe(false)
     })
   })
 

@@ -96,8 +96,12 @@ export function onKey(e) {
         updateQueued();
     } else if (e.key === "f") {
         e.preventDefault();
-        // Open filter menu and focus on it
-        interfaceStore.openFilterMenu();
+        // Open filter menu and activate filter (same behavior as clicking button)
+        const wasOpened = interfaceStore.openFilterMenu();
+        if (wasOpened) {
+            // Only activate filter when opening the menu (not when closing)
+            sessionStore.filter.isActive = true;
+        }
     } else if (e.key === "m") {
         e.preventDefault();
         interfaceStore.isNetworkClusters = !interfaceStore.isNetworkClusters;
