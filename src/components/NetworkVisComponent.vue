@@ -26,7 +26,7 @@
             </div>
             <NetworkControls v-model:showNodes="showNodes" v-model:onlyShowFiltered="onlyShowFiltered"
                 v-model:suggestedNumberFactor="suggestedNumberFactor" v-model:authorNumberFactor="authorNumberFactor"
-                @zoom="zoomByFactor" @plot="plot" v-show="!interfaceStore.isNetworkCollapsed" />
+                @zoom="zoomByFactor" @reset="resetZoom" @plot="plot" v-show="!interfaceStore.isNetworkCollapsed" />
         </div>
     </div>
 </template>
@@ -591,6 +591,11 @@ export default {
             const transform = d3.zoomTransform(this.svg.node());
             transform.k = transform.k * factor;
             this.svg.attr("transform", transform);
+        },
+        resetZoom() {
+            const svg = d3.select("#network-svg");
+            const transform = d3.zoomIdentity;
+            svg.transition().duration(750).call(this.zoom.transform, transform);
         },
         preserveNodePositions(newNodes, existingNodeData) {
             if (!existingNodeData || typeof existingNodeData.map !== 'function') {

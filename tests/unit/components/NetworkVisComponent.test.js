@@ -36,6 +36,11 @@ const createMockSelection = () => {
     on: vi.fn(() => createMockSelection()),
     classed: vi.fn(() => createMockSelection()),
     filter: vi.fn(() => createMockSelection()),
+    transition: vi.fn(() => ({
+      duration: vi.fn(() => ({
+        call: vi.fn(() => createMockSelection())
+      }))
+    })),
     node: vi.fn(() => ({ getBoundingClientRect: () => ({ x: 0, y: 0, width: 100, height: 100 }) })),
     nodes: vi.fn(() => [])
   };
@@ -64,9 +69,11 @@ vi.mock('d3', () => ({
   select: vi.fn(() => createMockSelection()),
   selectAll: vi.fn(() => createMockSelection()),
   zoom: vi.fn(() => ({
-    on: vi.fn(() => createMockSelection())
+    on: vi.fn(() => createMockSelection()),
+    transform: vi.fn()
   })),
   zoomTransform: vi.fn(() => ({ k: 1, x: 0, y: 0 })),
+  zoomIdentity: { k: 1, x: 0, y: 0 },
   drag: vi.fn(() => {
     const mockDrag = {
       on: vi.fn(() => mockDrag)
@@ -726,6 +733,12 @@ describe('NetworkVisComponent', () => {
     it('handles zoom out correctly', () => {
       expect(() => {
         wrapper.vm.zoomByFactor(0.8)
+      }).not.toThrow()
+    })
+
+    it('handles zoom reset correctly', () => {
+      expect(() => {
+        wrapper.vm.resetZoom()
       }).not.toThrow()
     })
   })
