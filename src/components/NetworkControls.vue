@@ -5,6 +5,9 @@
                 class="mr-2" color="white">
             </CompactButton>
             <CompactButton icon="mdi-minus" v-tippy="'Zoom out'" v-on:click="$emit('zoom', 0.8)" elevation="1"
+                class="mr-2" color="white">
+            </CompactButton>
+            <CompactButton icon="mdi-backup-restore" v-tippy="'Reset zoom and pan'" v-on:click="$emit('reset')" elevation="1"
                 color="white">
             </CompactButton>
         </span>
@@ -74,7 +77,7 @@ const props = defineProps({
     }
 });
 
-const emit = defineEmits(["zoom", "plot", "update:showNodes", "update:onlyShowFiltered", "update:suggestedNumberFactor", "update:authorNumberFactor"]);
+const emit = defineEmits(["zoom", "reset", "plot", "update:showNodes", "update:onlyShowFiltered", "update:suggestedNumberFactor", "update:authorNumberFactor"]);
 
 const sessionStore = useSessionStore();
 const { isEmpty } = useAppState();
