@@ -237,7 +237,20 @@ const getComponentStubs = () => ({
   'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
   'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
   'NetworkHeader': { template: '<div class="network-header"><slot></slot></div>' },
-  'NetworkPerformanceMonitor': { template: '<div class="network-performance-monitor"><slot></slot></div>' },
+  'NetworkPerformanceMonitor': {
+    template: '<div class="network-performance-monitor"><slot></slot></div>',
+    methods: {
+      resetMetrics: vi.fn(),
+      trackFps: vi.fn(),
+      incrementTick: vi.fn(),
+      recordDomUpdate: vi.fn(),
+      recordSkippedUpdate: vi.fn(),
+      recordTickSkipped: vi.fn()
+    },
+    computed: {
+      tickCount: () => 0
+    }
+  },
   'NetworkControls': { template: '<div class="network-controls"><slot></slot></div>' },
   'PublicationComponent': { template: '<div class="publication-component"><slot></slot></div>' }
 })
