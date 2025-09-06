@@ -131,11 +131,15 @@ export default class Author {
             });
         });
         // merge author with same ORCID
-        const orcidAuthors = Object.values(authors).filter((author) => author.orcid);
+        // Sort authors to ensure deterministic processing order
+        const orcidAuthors = Object.values(authors)
+            .filter((author) => author.orcid)
+            .sort((a, b) => a.id.localeCompare(b.id));
         orcidAuthors.forEach((author) => {
             const authorMatches = orcidAuthors.filter((author2) => author2.orcid === author.orcid);
             if (authorMatches.length > 1) {
-                authorMatches.forEach((author2) => {
+                // Sort matches to ensure deterministic processing order
+                authorMatches.sort((a, b) => a.id.localeCompare(b.id)).forEach((author2) => {
                     if (author.id.length > author2.id.length) {
                         author.mergeWith(author2);
                         deleteAuthor(author2.id, author.id);
@@ -144,25 +148,36 @@ export default class Author {
             }
         });
         // match authors with abbreviated names and merge them
-        let authorsWithAbbreviatedNames = Object.values(authors).filter((author) => author.id.match(/^\w+,\s\w\.?(\s\w\.?)?$/));
-        Object.values(authors).filter(author => !authorsWithAbbreviatedNames.includes(author)).forEach((author) => {
-            // check if author has version with additional first name
-            if (Object.values(authors).filter((author2) => author2.id.startsWith(author.id)).length > 1) {
-                authorsWithAbbreviatedNames.push(author);
-            }
-        });
-        const authorsWithoutAbbreviatedNames = Object.values(authors).filter((author) => !authorsWithAbbreviatedNames.includes(author));
-        authorsWithAbbreviatedNames.forEach((author) => {
-            const authorId = author.id.replace(/^(\w+,\s\w)\.?(\s\w\.?)?$/, "$1")
-            const authorMatches = authorsWithoutAbbreviatedNames.filter((author2) => author2.id.startsWith(authorId));
-            if (authorMatches.length === 1 && (!author.orcid || !authorMatches[0].orcid || author.orcid === authorMatches[0].orcid)) {
-                authorMatches[0].mergeWith(author);
-                deleteAuthor(author.id, authorMatches[0].id);
-            }
-        });
+        // Sort authors to ensure deterministic processing order
+        let authorsWithAbbreviatedNames = Object.values(authors)
+            .filter((author) => author.id.match(/^\w+,\s\w\.?(\s\w\.?)?$/))
+            .sort((a, b) => a.id.localeCompare(b.id));
+        Object.values(authors)
+            .filter(author => !authorsWithAbbreviatedNames.includes(author))
+            .sort((a, b) => a.id.localeCompare(b.id))
+            .forEach((author) => {
+                // check if author has version with additional first name
+                if (Object.values(authors).filter((author2) => author2.id.startsWith(author.id)).length > 1) {
+                    authorsWithAbbreviatedNames.push(author);
+                }
+            });
+        const authorsWithoutAbbreviatedNames = Object.values(authors)
+            .filter((author) => !authorsWithAbbreviatedNames.includes(author))
+            .sort((a, b) => a.id.localeCompare(b.id));
+        authorsWithAbbreviatedNames
+            .sort((a, b) => a.id.localeCompare(b.id))
+            .forEach((author) => {
+                const authorId = author.id.replace(/^(\w+,\s\w)\.?(\s\w\.?)?$/, "$1")
+                const authorMatches = authorsWithoutAbbreviatedNames.filter((author2) => author2.id.startsWith(authorId));
+                if (authorMatches.length === 1 && (!author.orcid || !authorMatches[0].orcid || author.orcid === authorMatches[0].orcid)) {
+                    authorMatches[0].mergeWith(author);
+                    deleteAuthor(author.id, authorMatches[0].id);
+                }
+            });
         
         // merge authors with Eszett transcription variants
-        const remainingAuthors = Object.values(authors);
+        // Sort authors by ID to ensure deterministic processing order
+        const remainingAuthors = Object.values(authors).sort((a, b) => a.id.localeCompare(b.id));
         const processedAuthors = new Set();
         
         remainingAuthors.forEach((author) => {
@@ -182,10 +197,13 @@ export default class Author {
             if (matchingAuthors.length > 0) {
                 // Merge all matching authors into the first one found
                 // Prefer authors with longer names (more complete information)
-                const allMatches = [author, ...matchingAuthors];
-                const primaryAuthor = allMatches.reduce((best, current) => 
-                    current.id.length > best.id.length ? current : best
-                );
+                // Sort by name length first, then by ID for deterministic order
+                const allMatches = [author, ...matchingAuthors].sort((a, b) => {
+                    const lengthDiff = b.id.length - a.id.length;
+                    if (lengthDiff !== 0) return lengthDiff;
+                    return a.id.localeCompare(b.id);
+                });
+                const primaryAuthor = allMatches[0]; // First after sorting is the best
                 
                 allMatches.forEach((matchingAuthor) => {
                     if (matchingAuthor.id !== primaryAuthor.id && !processedAuthors.has(matchingAuthor.id)) {
@@ -203,9 +221,25 @@ export default class Author {
         });
         // set author initials
         Object.values(authors).forEach((author) => { author.initials = author.name.split(" ").map((word) => word[0]).join("") });
-        // sort by score
-        return Object.values(authors).sort(
-            (a, b) => b.score + b.firstAuthorCount / 100 + b.count / 1000 - (a.score + a.firstAuthorCount / 100 + a.count / 1000)
-        );
+        
+        // Ensure deterministic processing order for author merging and result consistency
+        // Convert to array and sort by ID to ensure consistent processing order
+        const authorArray = Object.values(authors);
+        
+        // Sort by score with deterministic tiebreaker for identical scores
+        return authorArray.sort((a, b) => {
+            const scoreA = a.score + a.firstAuthorCount / 100 + a.count / 1000;
+            const scoreB = b.score + b.firstAuthorCount / 100 + b.count / 1000;
+            const scoreDiff = scoreB - scoreA;
+            
+            // If scores are different, use score comparison
+            if (scoreDiff !== 0) {
+                return scoreDiff;
+            }
+            
+            // For identical scores, use lexicographic order of author ID as tiebreaker
+            // This ensures deterministic sorting when composite scores are equal
+            return a.id.localeCompare(b.id);
+        });
     }
 }
