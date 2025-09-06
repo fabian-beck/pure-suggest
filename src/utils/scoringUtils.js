@@ -57,7 +57,13 @@ export function findKeywordMatches(title, boostKeywords) {
     if (!boostKeyword) return;
     
     let keywordMatched = false;
-    boostKeyword.split("|").forEach(alternativeKeyword => {
+    // Filter out empty alternatives when splitting by "|"
+    const alternatives = boostKeyword.split("|").filter(alt => alt.trim());
+    
+    // Skip if no valid alternatives remain
+    if (alternatives.length === 0) return;
+    
+    alternatives.forEach(alternativeKeyword => {
       if (keywordMatched) return; // Skip if this keyword group already has a match
       
       // Use word boundary matching for short keywords (3 chars or less)
