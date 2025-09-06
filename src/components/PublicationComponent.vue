@@ -317,6 +317,7 @@ li {
 
       & .glyph {
         transform: scale(1.05);
+        animation: glyph-pulse 1.2s ease-in-out infinite;
       }
     }
 
@@ -413,6 +414,15 @@ li {
       background-color: var(--bulma-primary-95);
     }
 
+  }
+}
+
+@keyframes glyph-pulse {
+  0%, 100% {
+    transform: scale(1.05);
+  }
+  50% {
+    transform: scale(1.15);
   }
 }
 

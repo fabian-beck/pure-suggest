@@ -969,6 +969,7 @@ export default {
             & rect,
             & circle {
                 transform: scale(1.1);
+                animation: node-pulse 1.2s ease-in-out infinite;
             }
         }
 
@@ -1084,6 +1085,7 @@ export default {
         &:hover {
             & circle {
                 transform: scale(1.1);
+                animation: author-node-pulse 1.2s ease-in-out infinite;
             }
         }
     }
@@ -1133,6 +1135,24 @@ export default {
             opacity: 0.05;
         }
     }
+}
+
+@keyframes node-pulse {
+  0%, 100% {
+    transform: scale(1.1);
+  }
+  50% {
+    transform: scale(1.25);
+  }
+}
+
+@keyframes author-node-pulse {
+  0%, 100% {
+    transform: scale(1.1);
+  }
+  50% {
+    transform: scale(1.25);
+  }
 }
 
 @media screen and (max-width: 1023px) {
