@@ -89,7 +89,9 @@ vi.mock('d3', () => ({
     }))
   })),
   forceManyBody: vi.fn(() => ({
-    strength: vi.fn(() => ({}))
+    strength: vi.fn(() => ({
+      theta: vi.fn(() => ({}))
+    }))
   })),
   forceX: vi.fn(() => ({
     x: vi.fn(() => ({
