@@ -833,8 +833,10 @@ export default {
                 return changedNodeIds.has(d.id);
             });
 
-            // Update positions of only the changed nodes using cached X positions
-            changedNodeSelection.attr("transform", (d) => `translate(${this.getCachedNodeX(d)}, ${d.y})`);
+            // Update positions of only the changed nodes
+            // In timeline mode: use simulation x-position for author nodes (force attraction), 
+            // calculated x-position for publication/keyword nodes (strict positioning)
+            changedNodeSelection.attr("transform", (d) => `translate(${this.getNodeDisplayX(d)}, ${d.y})`);
         },
 
         updateSelectiveLinks(changedNodes) {
@@ -848,15 +850,27 @@ export default {
                 return changedNodeIds.has(d.source.id) || changedNodeIds.has(d.target.id);
             });
 
-            // Update only the affected links using cached X positions
+            // Update only the affected links using appropriate X positions
             updateLinkProperties(
                 affectedLinks,
-                (d) => this.getCachedNodeX(d),
+                (d) => this.getNodeDisplayX(d),
                 this.sessionStore.activePublication
             );
 
             // Return how many links were updated
             return affectedLinks.size();
+        },
+
+        /**
+         * Get the appropriate X position for display, respecting force simulation for author nodes in timeline mode
+         */
+        getNodeDisplayX(node) {
+            if (!this.isNetworkClusters && node.type === "author") {
+                // Use simulation x-position for author nodes in timeline mode (force attraction)
+                return node.x || 0;
+            }
+            // Use calculated x-position for other nodes (strict positioning)
+            return this.getCachedNodeX(node);
         },
 
         /**
