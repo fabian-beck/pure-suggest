@@ -145,7 +145,7 @@ export default {
             // Position change detection for performance optimization
             positionThreshold: 1, // pixels - minimum movement to trigger DOM update
             lastUpdateTime: 0,
-            skipEarlyTicks: 10, // Skip DOM updates for first N ticks
+            skipEarlyTicks: 50, // Skip DOM updates for first N ticks
             shouldSkipEarlyTicks: false, // Only skip when truly restarted with high alpha
             // X position caching for performance optimization
             nodeXPositionsCache: new Map(), // Cache X positions to avoid redundant calculations
@@ -517,6 +517,13 @@ export default {
                 this.shouldSkipEarlyTicks = false;
             }
 
+            // Skip every second DOM update tick for performance (but not when dragging)
+            if (!this.isDragging && this.currentTickCount % 2 === 0) {
+                this.$refs.performanceMonitor?.recordTickSkipped();
+                this.$refs.performanceMonitor?.trackFps(); // Still track FPS for debugging
+                return;
+            }
+
             // Pre-compute X positions for all nodes (major performance optimization)
             this.cacheNodeXPositions();
 
@@ -529,9 +536,10 @@ export default {
                 const linksUpdated = this.updateSelectiveLinks(changedNodes);
                 this.lastUpdateTime = performance.now();
 
-                // Track performance metrics
+                // Track performance metrics - only count actual DOM updates
                 this.$refs.performanceMonitor?.recordDomUpdate(changedNodes.length, linksUpdated);
             } else {
+                // No nodes moved significantly, but we still processed the tick
                 this.$refs.performanceMonitor?.recordSkippedUpdate();
             }
 

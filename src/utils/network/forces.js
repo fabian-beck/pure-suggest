@@ -9,7 +9,7 @@
 import * as d3 from "d3";
 import { CURRENT_YEAR } from "@/constants/config.js";
 
-export const SIMULATION_ALPHA = 0.5;
+export const SIMULATION_ALPHA = 0.7;
 
 /**
  * Calculate link distance based on link type and network mode
@@ -148,8 +148,8 @@ export function initializeForces(simulation, config) {
 export function createForceSimulation(config) {
   const simulation = d3.forceSimulation();
 
-  // Set default alpha decay and minimum
-  simulation.alphaDecay(0.015).alphaMin(0.01);
+  // Set alpha decay and minimum for faster convergence
+  simulation.alphaDecay(0.03).alphaMin(0.02);
 
   // Initialize forces
   return initializeForces(simulation, config);

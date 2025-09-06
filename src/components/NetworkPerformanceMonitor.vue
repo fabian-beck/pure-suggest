@@ -99,6 +99,15 @@ const recordSkippedUpdate = () => {
 };
 
 /**
+ * Records when entire ticks are skipped (alternating tick optimization)
+ * without resetting node/link display counts
+ */
+const recordTickSkipped = () => {
+    skippedUpdateCount.value++;
+    // Don't reset lastNodeUpdateCount/lastLinkUpdateCount to avoid flickering
+};
+
+/**
  * Resets all optimization metrics
  */
 const resetMetrics = () => {
@@ -117,6 +126,7 @@ defineExpose({
     incrementTick,
     recordDomUpdate,
     recordSkippedUpdate,
+    recordTickSkipped,
     resetMetrics,
     // Also expose data for testing
     tickCount,
