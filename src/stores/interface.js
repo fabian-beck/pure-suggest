@@ -14,6 +14,7 @@ export const useInterfaceStore = defineStore('interface', {
                 duration: 0,
             },
             isNetworkExpanded: false,
+            isNetworkCollapsed: false,
             isNetworkClusters: true,
             showPerformancePanel: false,
             searchQuery: "",
@@ -22,7 +23,6 @@ export const useInterfaceStore = defineStore('interface', {
             isExcludedModalDialogShown: false,
             isQueueModalDialogShown: false,
             isAboutModalDialogShown: false,
-            scrollAuthorId: null,
             // Network replot trigger (incremented to notify NetworkVisComponent to replot)
             networkReplotTrigger: 0,
             isKeyboardControlsModalDialogShown: false,
@@ -56,6 +56,7 @@ export const useInterfaceStore = defineStore('interface', {
     actions: {
         clear() {
             this.isNetworkExpanded = false;
+            this.isNetworkCollapsed = false;
             this.isNetworkClusters = true;
             window.scrollTo(0, 0);
         },
@@ -130,9 +131,6 @@ export const useInterfaceStore = defineStore('interface', {
                 const authorExists = authorStore.selectedPublicationsAuthors.some(author => author.id === authorId)
                 if (authorExists) {
                     authorStore.setActiveAuthor(authorId)
-                } else {
-                    // Legacy behavior: scroll to author if author not found in list
-                    this.scrollAuthorId = authorId;
                 }
             }
         },
@@ -205,6 +203,21 @@ export const useInterfaceStore = defineStore('interface', {
 
         togglePerformancePanel() {
             this.showPerformancePanel = !this.showPerformancePanel
+        },
+
+        collapseNetwork() {
+            this.isNetworkExpanded = false;
+            this.isNetworkCollapsed = true;
+        },
+
+        expandNetwork() {
+            this.isNetworkExpanded = true;
+            this.isNetworkCollapsed = false;
+        },
+
+        restoreNetwork() {
+            this.isNetworkExpanded = false;
+            this.isNetworkCollapsed = false;
         },
 
     }
