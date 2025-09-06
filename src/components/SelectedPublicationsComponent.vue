@@ -61,25 +61,25 @@
           <p>
             <i>To start, <b>add publications</b> to selected:</i>
           </p>
-          <div class="level mt-4 mb-2">
-            <div class="level-item">
+          <div class="columns is-multiline is-centered mt-4 mb-2">
+            <div class="column is-narrow">
               <v-btn class="has-background-primary-95" @click.stop="interfaceStore.openSearchModalDialog()">
                 <v-icon left class="mr-2">mdi-magnify</v-icon>
                 Search/add</v-btn>
             </div>
-            <div class="level-item">
+            <div class="column is-narrow">
               <v-btn class="has-background-primary-95" @click.stop="importSession"> <v-icon left
                   class="mr-2">mdi-import</v-icon>
                 Import session
               </v-btn>
             </div>
-            <div class="level-item">
+            <div class="column is-narrow">
               <v-btn class="has-background-primary-95" @click.stop="importBibtex">
-                <v-icon left class="mr-2">mdi-file-document</v-icon>
+                <v-icon left class="mr-2">mdi-import</v-icon>
                 Import BibTeX
               </v-btn>
             </div>
-            <div class="level-item">
+            <div class="column is-narrow">
               <v-btn class="has-background-primary-95" @click.stop="loadExample()">
                 <v-icon left class="mr-2">mdi-file-document</v-icon>
                 Load example
