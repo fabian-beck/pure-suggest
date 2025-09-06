@@ -4,23 +4,23 @@
       queueStore.isQueuingForExcluded(publication.doi)" :class="{
         'to-be-selected': queueStore.isQueuingForSelected(publication.doi),
       }">
-        <div class="level-item">
-          <span>
-            <InlineIcon icon="mdi-tray-full" color="dark" />
-            To be
-            <span v-if="queueStore.isQueuingForSelected(publication.doi)"><b>selected </b>
-              <InlineIcon icon="mdi-plus-thick" color="primary-dark" />
-            </span>
-            <span v-else><b> excluded </b>
-              <InlineIcon icon="mdi-minus-thick" color="black" />
-            </span>
+      <div class="level-item">
+        <span>
+          <InlineIcon icon="mdi-tray-full" color="dark" />
+          To be
+          <span v-if="queueStore.isQueuingForSelected(publication.doi)"><b>selected </b>
+            <InlineIcon icon="mdi-plus-thick" color="primary-dark" />
           </span>
-        </div>
-        <div class="level-right">
-          <CompactButton icon="mdi-undo" v-tippy="'Remove publication from queue again.'"
-            v-on:click="queueStore.removeFromQueues(publication.doi)"></CompactButton>
-        </div>
+          <span v-else><b> excluded </b>
+            <InlineIcon icon="mdi-minus-thick" color="black" />
+          </span>
+        </span>
       </div>
+      <div class="level-right">
+        <CompactButton icon="mdi-undo" v-tippy="'Remove publication from queue again.'"
+          v-on:click="queueStore.removeFromQueues(publication.doi)"></CompactButton>
+      </div>
+    </div>
     <div class="publication-component media" :class="{
       'is-active': publication.isActive,
       'is-selected': publication.isSelected,
@@ -35,7 +35,8 @@
       'is-hovered': publication.isHovered,
       'is-keyword-hovered': publication.isKeywordHovered,
       'is-author-hovered': publication.isAuthorHovered,
-    }" :id="publication.doi" tabindex="0" @focus="activate" @click.stop @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
+    }" :id="publication.doi" tabindex="0" @focus="activate" @click.stop @mouseenter="handleMouseEnter"
+      @mouseleave="handleMouseLeave">
       <tippy class="media-left" placement="right">
         <div class="glyph has-text-centered" v-bind:style="{ 'background-color': publication.scoreColor }"
           v-show="publication.wasFetched">
@@ -51,7 +52,7 @@
             <div class="is-pulled-left">
               <span v-if="publication.citationCount > 0 ||
                 publication.referenceDois.length === 0
-                " :class="publication.referenceDois.length ? '' : 'unknown'">
+              " :class="publication.referenceDois.length ? '' : 'unknown'">
                 <InlineIcon icon="mdi-arrow-bottom-left-thick"
                   :color="publication.referenceDois.length ? '' : 'danger'" />
                 {{
@@ -74,7 +75,7 @@
               <span v-if="publication.boostFactor != 1">(</span>{{ publication.citationCount }} + {{
                 publication.referenceCount
               }}<span v-if="publication.isSelected"> + 1</span><span v-if="publication.boostFactor != 1">) &middot; {{
-  publication.boostFactor }}</span></b>,<br />
+                publication.boostFactor }}</span></b>,<br />
             citing <b>{{ publication.citationCount }}</b> (
             <InlineIcon icon="mdi-arrow-bottom-left-thick"
               :color="publication.referenceDois.length ? 'white' : 'danger'" />
@@ -82,8 +83,8 @@
             by
             <b>{{ publication.referenceCount }}</b> (
             <InlineIcon icon="mdi-arrow-top-left-thick" color="white" />) selected
-            publications<span v-if="publication.isSelected">, <b>1</b> as self-reference being selected itself</span><span
-              v-if="publication.boostFactor != 1">; multiplied by a boost factor of
+            publications<span v-if="publication.isSelected">, <b>1</b> as self-reference being selected
+              itself</span><span v-if="publication.boostFactor != 1">; multiplied by a boost factor of
               <b>{{ publication.boostFactor }} = 2<sup>{{
                 publication.boostMatches
               }}</sup>
@@ -108,7 +109,7 @@
         <PublicationDescription :publication="publication" :publicationType="publicationType"></PublicationDescription>
         <div class="notification has-background-danger-light has-text-danger-dark" v-if="(!publication.year || !publication.title || !publication.author) &&
           publication.isActive
-          ">
+        ">
           <div class="level">
             <div class="level-left">
               <div class="level-item">
@@ -117,8 +118,7 @@
               </div>
             </div>
             <div class="level-right">
-              <v-btn v-tippy="'Retry loading metadata.'" @click.stop="retryLoadingPublication(publication)"
-                small>
+              <v-btn v-tippy="'Retry loading metadata.'" @click.stop="retryLoadingPublication(publication)" small>
                 <v-icon left>mdi-refresh</v-icon>
                 Retry
               </v-btn>
@@ -142,7 +142,8 @@
         </div>
         <div>
           <CompactButton icon="mdi-minus-thick" v-on:click="queueForExcluded(publication.doi)"
-            v-tippy="minusButtonTooltip"></CompactButton>
+            v-tippy="minusButtonTooltip">
+          </CompactButton>
         </div>
       </div>
     </div>
@@ -187,8 +188,8 @@ const chevronType = computed(() => {
 })
 
 const minusButtonTooltip = computed(() => {
-  return props.publicationType === 'selected' 
-    ? 'Remove publication from selected and mark to stay excluded.' 
+  return props.publicationType === 'selected'
+    ? 'Remove publication from selected and mark to stay excluded.'
     : 'Mark publication to be excluded for suggestions.';
 })
 
@@ -199,11 +200,11 @@ function activate() {
   if (isActivating) {
     return
   }
-  
+
   isActivating = true
   activatePublicationComponentByDoi(props.publication.doi)
   emit("activate", props.publication.doi)
-  
+
   // Reset the flag after a brief delay to allow for the activation to complete
   setTimeout(() => {
     isActivating = false
@@ -317,7 +318,7 @@ li {
 
       & .glyph {
         transform: scale(1.05);
-        animation: glyph-pulse 1.2s ease-in-out infinite;
+        animation: glyph-pulse 2s ease-in-out infinite;
       }
     }
 
@@ -418,11 +419,14 @@ li {
 }
 
 @keyframes glyph-pulse {
-  0%, 100% {
-    transform: scale(1.05);
+
+  0%,
+  100% {
+    transform: scale(0.95);
   }
+
   50% {
-    transform: scale(1.15);
+    transform: scale(1.1);
   }
 }
 

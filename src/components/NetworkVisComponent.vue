@@ -4,15 +4,10 @@
             <NetworkHeader :errorMessage="errorMessage" v-model:isNetworkClusters="isNetworkClusters"
                 @expandNetwork="expandNetwork" @collapseNetwork="collapseNetwork" @restoreNetwork="restoreNetwork" />
             <div id="network-svg-container" v-show="!interfaceStore.isNetworkCollapsed">
-                <NetworkPerformanceMonitor 
-                    ref="performanceMonitor"
-                    :show="interfaceStore.showPerformancePanel"
-                    :isEmpty="isEmpty || !sessionStore.selectedPublications?.length"
-                    :nodeCount="graph.nodes.length"
-                    :linkCount="graph.links.length"
-                    :shouldSkipEarlyTicks="shouldSkipEarlyTicks"
-                    :skipEarlyTicks="skipEarlyTicks"
-                />
+                <NetworkPerformanceMonitor ref="performanceMonitor" :show="interfaceStore.showPerformancePanel"
+                    :isEmpty="isEmpty || !sessionStore.selectedPublications?.length" :nodeCount="graph.nodes.length"
+                    :linkCount="graph.links.length" :shouldSkipEarlyTicks="shouldSkipEarlyTicks"
+                    :skipEarlyTicks="skipEarlyTicks" />
                 <svg id="network-svg" :class="networkCssClasses">
                     <g></g>
                 </svg>
@@ -171,7 +166,7 @@ export default {
         showAuthorNodes: function () {
             return this.showNodes.includes("author");
         },
-        
+
         networkCssClasses: function () {
             // Check if we should show fading animation during early tick skipping
             if (this.shouldSkipEarlyTicks && this.currentTickCount <= this.skipEarlyTicks) {
@@ -207,7 +202,7 @@ export default {
             },
         },
         'interfaceStore.networkReplotTrigger': {
-            handler: function(newValue, oldValue) {
+            handler: function (newValue, oldValue) {
                 // Only replot if author nodes are visible and the trigger value changed
                 if (newValue !== oldValue && this.showAuthorNodes) {
                     this.$nextTick(() => {
@@ -258,7 +253,7 @@ export default {
                     const hasSelectedPublications = this.sessionStore.selectedPublications?.length > 0;
                     const hasSuggestedPublications = this.sessionStore.suggestedPublications?.length > 0;
                     const isLoadingState = this.interfaceStore.isLoading;
-                    
+
                     // Skip if still loading and don't have both selected + suggested publications ready
                     if (!(isLoadingState && (!hasSelectedPublications || !hasSuggestedPublications))) {
                         this.plot(true);
@@ -269,7 +264,7 @@ export default {
                     // Prevent redundant plot calls when simulation is already active
                     const currentAlpha = (this.simulation && typeof this.simulation.alpha === 'function') ? this.simulation.alpha() : 0;
                     const isSimulationActive = currentAlpha > 0.01; // alphaMin threshold
-                    
+
                     if (!(isSimulationActive && name === "hasUpdated")) {
                         this.plot();
                     }
@@ -296,7 +291,7 @@ export default {
             if (this.interfaceStore.isNetworkCollapsed) {
                 return;
             }
-                
+
             // Early return if app state is empty - no need to run simulation
             if (this.isEmpty || !this.sessionStore.selectedPublications?.length) {
                 this.stop(); // Stop any running simulation
@@ -304,7 +299,7 @@ export default {
                 this.resetOptimizationMetrics();
                 return;
             }
-            
+
             try {
                 // Update simulation configuration
                 this.updateSimulation({
@@ -505,26 +500,26 @@ export default {
                 this.$refs.performanceMonitor?.trackFps(); // Still track FPS for debugging
                 return;
             }
-            
+
             // Increment tick counter
             this.$refs.performanceMonitor?.incrementTick();
             // Synchronize local tick count for CSS animation reactivity
             this.currentTickCount = this.$refs.performanceMonitor?.tickCount || 0;
-            
+
             // Skip DOM updates for first N ticks only if this is a true restart with high alpha
             if (this.shouldSkipEarlyTicks && this.$refs.performanceMonitor?.tickCount <= this.skipEarlyTicks) {
                 this.$refs.performanceMonitor?.trackFps(); // Still track FPS for debugging
                 return;
             }
-            
+
             // Disable skipping after the skip period
             if (this.shouldSkipEarlyTicks && this.$refs.performanceMonitor?.tickCount > this.skipEarlyTicks) {
                 this.shouldSkipEarlyTicks = false;
             }
-            
+
             // Pre-compute X positions for all nodes (major performance optimization)
             this.cacheNodeXPositions();
-            
+
             // Check which nodes have moved significantly and get the changed nodes
             const changedNodes = this.detectChangedNodes();
 
@@ -533,7 +528,7 @@ export default {
                 this.updateChangedNodePositions(changedNodes);
                 const linksUpdated = this.updateSelectiveLinks(changedNodes);
                 this.lastUpdateTime = performance.now();
-                
+
                 // Track performance metrics
                 this.$refs.performanceMonitor?.recordDomUpdate(changedNodes.length, linksUpdated);
             } else {
@@ -675,7 +670,7 @@ export default {
                 } else {
                     this.shouldSkipEarlyTicks = false;
                 }
-                
+
                 this.simulation.alpha(alpha).restart();
             }
         },
@@ -684,7 +679,7 @@ export default {
             if (this.simulation) {
                 // start() is just resuming, don't skip ticks
                 this.shouldSkipEarlyTicks = false;
-                
+
                 this.simulation.restart();
             }
         },
@@ -789,22 +784,22 @@ export default {
                 if (this.label) {
                     this.label.remove();
                 }
-                
+
                 // Clear graph data
                 this.graph = { nodes: [], links: [] };
-                
+
                 // Clear the SVG container
                 if (this.svg && typeof this.svg.select === 'function') {
                     this.svg.select("g").selectAll("*").remove();
                 }
-                
+
                 // Reinitialize empty D3 selections (same as mounted hook)
                 if (this.svg) {
                     this.label = this.svg.append("g").attr("class", "labels").selectAll("text");
                     this.link = this.svg.append("g").attr("class", "links").selectAll("path");
                     this.node = this.svg.append("g").attr("class", "nodes").selectAll("rect");
                 }
-                
+
             } catch (error) {
                 console.warn("Error clearing visualization:", error.message);
                 // Ensure clean state even if clearing fails
@@ -969,7 +964,7 @@ export default {
             & rect,
             & circle {
                 transform: scale(1.1);
-                animation: node-pulse 1.2s ease-in-out infinite;
+                animation: node-pulse 2s ease-in-out infinite;
             }
         }
 
@@ -1085,7 +1080,7 @@ export default {
         &:hover {
             & circle {
                 transform: scale(1.1);
-                animation: author-node-pulse 1.2s ease-in-out infinite;
+                animation: author-node-pulse 2s ease-in-out infinite;
             }
         }
     }
@@ -1138,21 +1133,27 @@ export default {
 }
 
 @keyframes node-pulse {
-  0%, 100% {
-    transform: scale(1.1);
-  }
-  50% {
-    transform: scale(1.25);
-  }
+
+    0%,
+    100% {
+        transform: scale(0.9);
+    }
+
+    50% {
+        transform: scale(1.15);
+    }
 }
 
 @keyframes author-node-pulse {
-  0%, 100% {
-    transform: scale(1.1);
-  }
-  50% {
-    transform: scale(1.25);
-  }
+
+    0%,
+    100% {
+        transform: scale(0.9);
+    }
+
+    50% {
+        transform: scale(1.15);
+    }
 }
 
 @media screen and (max-width: 1023px) {
