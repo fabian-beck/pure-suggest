@@ -66,54 +66,35 @@ export function findKeywordMatches(title, boostKeywords) {
     alternatives.forEach(alternativeKeyword => {
       if (keywordMatched) return; // Skip if this keyword group already has a match
       
-      // Use word boundary matching for short keywords (3 chars or less)
-      // Use substring matching for longer keywords
-      const useWordBoundary = alternativeKeyword.length <= 3;
+      // Helper function to add match if no overlap
+      const addMatchIfNoOverlap = (index) => {
+        if (index >= 0) {
+          const overlaps = matches.some(match => 
+            index < match.position + match.length && index + alternativeKeyword.length > match.position
+          );
+          
+          if (!overlaps) {
+            matches.push({
+              keyword: boostKeyword,
+              position: index,
+              length: alternativeKeyword.length,
+              text: alternativeKeyword
+            });
+            keywordMatched = true;
+          }
+        }
+      };
       
-      if (useWordBoundary) {
-        // Find first match that starts at word boundary for short keywords
+      // Use word boundary matching for short keywords (3 chars or less)
+      if (alternativeKeyword.length <= 3) {
         const wordBoundaryRegex = new RegExp(`\\b${escapeRegExp(alternativeKeyword)}`, 'gi');
         const regexMatch = wordBoundaryRegex.exec(title);
-        
-        if (regexMatch) {
-          const index = regexMatch.index;
-          
-          // Check if this position is already matched by another keyword
-          const overlaps = matches.some(match => 
-            index < match.position + match.length && index + alternativeKeyword.length > match.position
-          );
-          
-          if (!overlaps) {
-            matches.push({
-              keyword: boostKeyword,
-              position: index,
-              length: alternativeKeyword.length,
-              text: alternativeKeyword
-            });
-            keywordMatched = true; // Mark this keyword group as matched
-          }
-        }
+        addMatchIfNoOverlap(regexMatch?.index ?? -1);
       } else {
-        // Use substring matching for longer keywords - find first occurrence only
+        // Use substring matching for longer keywords
         const upperAlternativeKeyword = alternativeKeyword.toUpperCase();
         const index = upperTitle.indexOf(upperAlternativeKeyword);
-        
-        if (index >= 0) {
-          // Check if this position is already matched by another keyword
-          const overlaps = matches.some(match => 
-            index < match.position + match.length && index + alternativeKeyword.length > match.position
-          );
-          
-          if (!overlaps) {
-            matches.push({
-              keyword: boostKeyword,
-              position: index,
-              length: alternativeKeyword.length,
-              text: alternativeKeyword
-            });
-            keywordMatched = true; // Mark this keyword group as matched
-          }
-        }
+        addMatchIfNoOverlap(index);
       }
     });
   });
