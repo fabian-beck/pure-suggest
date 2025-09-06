@@ -31,6 +31,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useAuthorStore } from "@/stores/author.js"
+import { calculateAuthorColor } from "@/utils/authorColor.js"
 
 const authorStore = useAuthorStore()
 
@@ -39,17 +40,7 @@ const props = defineProps({
 })
 
 const authorColor = computed(() => {
-    let score = props.author.score
-    if (!authorStore.isAuthorScoreEnabled) {
-        score = score * 20
-    }
-    if (!authorStore.isFirstAuthorBoostEnabled) {
-        score = score * 1.5
-    }
-    if (!authorStore.isAuthorNewBoostEnabled) {
-        score = score * 1.5
-    }
-    return `hsl(0, 0%, ${Math.max(60 - score / 3, 0)}%)`
+    return calculateAuthorColor(props.author.score, authorStore)
 })
 
 </script>

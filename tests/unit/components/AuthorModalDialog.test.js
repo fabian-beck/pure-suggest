@@ -186,4 +186,181 @@ describe('AuthorModalDialog', () => {
     expect(text).toContain('Co-author of')
     expect(text).toContain('Collaborator One (2)')
   })
+
+  it('should apply score-based coloring to co-author chips instead of count-based gray coloring', () => {
+    // Setup: author with co-authors that have different scores
+    const authors = [
+      {
+        id: 'main-author',
+        name: 'Main Author',
+        score: 15, // Higher score
+        count: 3,
+        yearMin: 2020,
+        yearMax: 2023,
+        alternativeNames: ['Main Author'],
+        keywords: {},
+        coauthors: {
+          'high-score-coauthor': 2,
+          'low-score-coauthor': 1
+        },
+        orcid: undefined,
+        newPublication: false
+      },
+      {
+        id: 'high-score-coauthor',
+        name: 'High Score Coauthor',
+        score: 20, // Very high score - should be darker
+        count: 2,
+        yearMin: 2021,
+        yearMax: 2022,
+        alternativeNames: ['High Score Coauthor'],
+        keywords: {},
+        coauthors: {
+          'main-author': 2
+        },
+        orcid: undefined,
+        newPublication: false
+      },
+      {
+        id: 'low-score-coauthor',
+        name: 'Low Score Coauthor',
+        score: 5, // Lower score - should be lighter
+        count: 1,
+        yearMin: 2022,
+        yearMax: 2022,
+        alternativeNames: ['Low Score Coauthor'],
+        keywords: {},
+        coauthors: {
+          'main-author': 1
+        },
+        orcid: undefined,
+        newPublication: false
+      }
+    ]
+
+    authorStore.selectedPublicationsAuthors = authors
+    authorStore.setActiveAuthor('main-author')
+
+    const wrapper = createWrapper()
+    
+    // Get the coauthor style for both authors
+    const highScoreStyle = wrapper.vm.coauthorStyle('high-score-coauthor')
+    const lowScoreStyle = wrapper.vm.coauthorStyle('low-score-coauthor')
+    
+    // Both should have backgroundColor property
+    expect(highScoreStyle).toHaveProperty('backgroundColor')
+    expect(lowScoreStyle).toHaveProperty('backgroundColor')
+    
+    // Higher score author should have a darker color (lower lightness percentage)
+    // Extract lightness values from hsla colors
+    const highScoreLightness = parseInt(highScoreStyle.backgroundColor.match(/hsla\(0, 0%, (\d+)%/)[1])
+    const lowScoreLightness = parseInt(lowScoreStyle.backgroundColor.match(/hsla\(0, 0%, (\d+)%/)[1])
+    
+    // Higher score should result in lower lightness (darker color)
+    expect(highScoreLightness).toBeLessThan(lowScoreLightness)
+  })
+
+  it('should always use white text color for co-author chips', () => {
+    // Setup: author with co-authors that have different scores 
+    const authors = [
+      {
+        id: 'main-author',
+        name: 'Main Author',
+        score: 15,
+        count: 3,
+        yearMin: 2020,
+        yearMax: 2023,
+        alternativeNames: ['Main Author'],
+        keywords: {},
+        coauthors: {
+          'high-score-coauthor': 2,
+          'low-score-coauthor': 1
+        },
+        orcid: undefined,
+        newPublication: false
+      },
+      {
+        id: 'high-score-coauthor',
+        name: 'High Score Coauthor',
+        score: 60, // Very high score - should be very dark background
+        count: 2,
+        yearMin: 2021,
+        yearMax: 2022,
+        alternativeNames: ['High Score Coauthor'],
+        keywords: {},
+        coauthors: {
+          'main-author': 2
+        },
+        orcid: undefined,
+        newPublication: false
+      },
+      {
+        id: 'low-score-coauthor',
+        name: 'Low Score Coauthor',
+        score: 3, // Low score - should be lighter background
+        count: 1,
+        yearMin: 2022,
+        yearMax: 2022,
+        alternativeNames: ['Low Score Coauthor'],
+        keywords: {},
+        coauthors: {
+          'main-author': 1
+        },
+        orcid: undefined,
+        newPublication: false
+      }
+    ]
+
+    authorStore.selectedPublicationsAuthors = authors
+    authorStore.setActiveAuthor('main-author')
+
+    const wrapper = createWrapper()
+    
+    // Get the coauthor style for both authors
+    const highScoreStyle = wrapper.vm.coauthorStyle('high-score-coauthor')
+    const lowScoreStyle = wrapper.vm.coauthorStyle('low-score-coauthor')
+    
+    // Both should have color property
+    expect(highScoreStyle).toHaveProperty('color')
+    expect(lowScoreStyle).toHaveProperty('color')
+    
+    // All co-author chips should always have white text
+    expect(highScoreStyle.color).toBe('#ffffff')
+    expect(lowScoreStyle.color).toBe('#ffffff')
+  })
+
+  it('should use black text color for fallback gray background', () => {
+    // Setup: author with co-author that doesn't exist in the selectedPublicationsAuthors
+    const authors = [
+      {
+        id: 'main-author',
+        name: 'Main Author',
+        score: 15,
+        count: 3,
+        yearMin: 2020,
+        yearMax: 2023,
+        alternativeNames: ['Main Author'],
+        keywords: {},
+        coauthors: {
+          'nonexistent-coauthor': 2
+        },
+        orcid: undefined,
+        newPublication: false
+      }
+    ]
+
+    authorStore.selectedPublicationsAuthors = authors
+    authorStore.setActiveAuthor('main-author')
+
+    const wrapper = createWrapper()
+    
+    // Get the coauthor style for nonexistent author (fallback case) - just test the method directly
+    const fallbackStyle = wrapper.vm.coauthorStyle('nonexistent-coauthor')
+    
+    // Should have color property
+    expect(fallbackStyle).toHaveProperty('color')
+    
+    // Fallback gray background should have black text
+    expect(fallbackStyle.color).toBe('#000000')
+  })
 })

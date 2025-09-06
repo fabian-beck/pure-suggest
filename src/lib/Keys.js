@@ -63,7 +63,7 @@ export function onKey(e) {
     if (isEmpty.value) return;
     if (e.key === "a") {
         e.preventDefault();
-        interfaceStore.isAuthorModalDialogShown = true;
+        interfaceStore.openAuthorModalDialog();
         return;
     }
     if (e.key === "c") {
