@@ -26,34 +26,7 @@ export function measureMemoryUsage() {
   return null;
 }
 
-export function measureAsyncOperation(asyncFn) {
-  return async (...args) => {
-    const start = performance.now();
-    const result = await asyncFn(...args);
-    const end = performance.now();
-    return { result, executionTime: end - start };
-  };
-}
 
-export function createPerformanceObserver(entryTypes = ['measure']) {
-  const entries = [];
-  
-  if (typeof PerformanceObserver !== 'undefined') {
-    const observer = new PerformanceObserver((list) => {
-      entries.push(...list.getEntries());
-    });
-    
-    observer.observe({ entryTypes });
-    
-    return {
-      observer,
-      getEntries: () => [...entries],
-      disconnect: () => observer.disconnect()
-    };
-  }
-  
-  return null;
-}
 
 export function measureFPS(duration = 1000) {
   return new Promise((resolve) => {
@@ -114,16 +87,6 @@ export function createMockPublications(count, baseProps = {}) {
   );
 }
 
-export function logPerformanceMetrics(testName, metrics) {
-  console.log(`\n=== ${testName} Performance Metrics ===`);
-  Object.entries(metrics).forEach(([key, value]) => {
-    const unit = key.includes('Time') ? 'ms' : 
-                 key.includes('Memory') ? 'bytes' :
-                 key.includes('FPS') ? 'fps' : '';
-    console.log(`${key}: ${value}${unit}`);
-  });
-  console.log('=====================================\n');
-}
 
 export class PerformanceProfiler {
   constructor(name) {

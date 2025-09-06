@@ -57,18 +57,5 @@ export const useAuthorStore = defineStore('author', {
 
     clearActiveAuthor() {
       this.activeAuthorId = null
-    },
-
-    updateSettings(settings) {
-      if (Object.prototype.hasOwnProperty.call(settings, 'isAuthorScoreEnabled')) {
-        this.isAuthorScoreEnabled = settings.isAuthorScoreEnabled
-      }
-      if (Object.prototype.hasOwnProperty.call(settings, 'isFirstAuthorBoostEnabled')) {
-        this.isFirstAuthorBoostEnabled = settings.isFirstAuthorBoostEnabled
-      }
-      if (Object.prototype.hasOwnProperty.call(settings, 'isAuthorNewBoostEnabled')) {
-        this.isAuthorNewBoostEnabled = settings.isAuthorNewBoostEnabled
-      }
-    }
-  }
+    }  }
 })
