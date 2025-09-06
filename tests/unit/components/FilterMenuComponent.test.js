@@ -131,22 +131,20 @@ describe('FilterMenuComponent', () => {
     expect(wrapper.vm.displayText).toBe('[FILTERS OFF]')
   })
 
-  it('should automatically enable filters when button is clicked to open menu', () => {
+  it('should automatically enable filters when menu is opened', () => {
     mockSessionStore.filter.isActive = false
-    mockInterfaceStore.isFilterMenuOpen = false // Menu is closed
     wrapper = mount(FilterMenuComponent)
     
-    wrapper.vm.handleMenuClick()
+    wrapper.vm.handleMenuToggle(true) // Opening menu
     
     expect(mockSessionStore.filter.isActive).toBe(true)
   })
 
-  it('should NOT activate filters when button is clicked to close menu', () => {
+  it('should NOT activate filters when menu is closed', () => {
     mockSessionStore.filter.isActive = false
-    mockInterfaceStore.isFilterMenuOpen = true // Menu is currently open
     wrapper = mount(FilterMenuComponent)
     
-    wrapper.vm.handleMenuClick()
+    wrapper.vm.handleMenuToggle(false) // Closing menu
     
     // Filter should remain inactive when closing the menu
     expect(mockSessionStore.filter.isActive).toBe(false)

@@ -1,9 +1,9 @@
 <template>
   <v-menu v-if="!isEmpty" v-model="interfaceStore.isFilterMenuOpen" ref="filterMenu" location="bottom"
-    transition="slide-y-transition" :close-on-content-click="false">
+    transition="slide-y-transition" :close-on-content-click="false" @update:model-value="handleMenuToggle">
     <template v-slot:activator="{ props }">
       <v-btn class="filter-button" :class="interfaceStore.isMobile ? '' : 'p-1 pl-4'" 
-        v-bind="props" :icon="interfaceStore.isMobile" @click="handleMenuClick"
+        v-bind="props" :icon="interfaceStore.isMobile"
         :density="interfaceStore.isMobile ? 'compact' : 'default'" :color="buttonColor">
         <v-icon size="18">mdi-filter</v-icon>
         <span class="is-hidden-touch ml-2">
@@ -160,12 +160,12 @@ const buttonColor = computed(() => {
   }
 })
 
-function handleMenuClick() {
-  // Only activate filter when opening the menu (when it's currently closed)
-  if (!interfaceStore.isFilterMenuOpen) {
+function handleMenuToggle(isOpen) {
+  // Only activate filter when opening the menu
+  if (isOpen) {
     sessionStore.filter.isActive = true
   }
-  handleMenuInput(!interfaceStore.isFilterMenuOpen)
+  handleMenuInput(isOpen)
 }
 
 function handleMenuInput(value) {
