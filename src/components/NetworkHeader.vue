@@ -1,5 +1,5 @@
 <template>
-    <div class="level">
+    <div class="level" :class="{ 'mb-0': interfaceStore.isNetworkCollapsed }">
         <div class="level-left has-text-white">
             <div class="level-item" v-tippy="`Showing publications as nodes (<b class='has-text-primary'>selected</b>; 
         <b class='has-text-info'>suggested</b>) with citations as links.<br><br>
@@ -11,7 +11,7 @@
             </div>
         </div>
         <div class="level-right" v-show="!isEmpty">
-            <div class="level-item has-text-white mr-4 mb-0"
+            <div class=" level-item has-text-white mr-4 mb-0" v-show="!interfaceStore.isNetworkCollapsed"
                 v-tippy="`There are two display <span class='key'>m</span>odes:<br><br><b>Timeline:</b> 
         The diagram places publications from left to right based on year, and vertically tries to group linked publications close to each other.<br><br>
         <b>Clusters:</b> The diagram groups linked publications close to each other, irrespective of publication year.`">
@@ -21,18 +21,17 @@
                 <CompactSwitch v-model="isNetworkClustersModel"></CompactSwitch>
                 <label :class="{ 'has-text-grey-light': !isNetworkClustersModel }" class="ml-4">Clusters</label>
             </div>
-            <CompactButton icon="mdi-arrow-down" v-tippy="'Collapse diagram'"
-                v-show="!interfaceStore.isNetworkCollapsed" v-on:click="$emit('collapseNetwork')"
-                class="ml-4 is-hidden-touch has-text-white"></CompactButton>
-            <CompactButton icon="mdi-arrow-up" v-tippy="'Expand diagram'"
-                v-show="interfaceStore.isNetworkCollapsed" v-on:click="$emit('restoreNetwork')"
-                class="ml-4 is-hidden-touch has-text-white"></CompactButton>
+            <CompactButton icon="mdi-arrow-down" v-tippy="'Hide diagram'" v-show="!interfaceStore.isNetworkCollapsed"
+                v-on:click="$emit('collapseNetwork')" class="ml-4 is-hidden-touch has-text-white"></CompactButton>
+            <CompactButton icon="mdi-arrow-up" v-tippy="'Show diagram'" v-show="interfaceStore.isNetworkCollapsed"
+                v-on:click="$emit('restoreNetwork')" class="ml-4 is-hidden-touch has-text-white"></CompactButton>
             <CompactButton icon="mdi-arrow-expand" v-tippy="'Maximize diagram'"
-                v-show="!interfaceStore.isNetworkExpanded && !interfaceStore.isNetworkCollapsed" v-on:click="$emit('expandNetwork', true)"
-                class="ml-4 is-hidden-touch has-text-white"></CompactButton>
-            <CompactButton icon="mdi-arrow-collapse" v-tippy="'Minimize diagram'"
+                v-show="!interfaceStore.isNetworkExpanded"
+                v-on:click="() => { if (interfaceStore.isNetworkCollapsed) $emit('restoreNetwork'); $emit('expandNetwork', true); }"
+                class="is-hidden-touch has-text-white"></CompactButton>
+            <CompactButton icon="mdi-arrow-collapse" v-tippy="'Return to normal size'"
                 v-show="interfaceStore.isNetworkExpanded" v-on:click="$emit('expandNetwork', false)"
-                class="ml-4 is-hidden-touch has-text-white"></CompactButton>
+                class="is-hidden-touch has-text-white"></CompactButton>
         </div>
     </div>
 </template>
