@@ -105,36 +105,40 @@ describe('Author Modal Timing Fix', () => {
     expect(interfaceStore.isAuthorModalDialogShown).toBe(true)
   })
 
-  it('should identify stale author data correctly', () => {
-    const publications = [
-      { doi: '10.1234/test1', author: 'John Doe', authorOrcid: 'John Doe' }
+  it('should only recompute when no authors exist or publications need score updates', () => {
+    // SETUP: Publications with scores already computed
+    sessionStore.selectedPublications = [
+      { doi: '10.1234/test1', author: 'John Doe', authorOrcid: 'John Doe', score: 10, boostKeywords: ['test'] }
     ]
-
-    // Test with no authors (stale)
-    expect(interfaceStore.isAuthorDataStale(publications, [])).toBe(true)
-
-    // Test with authors present (not stale)
-    const authors = [{ id: 'john-doe', name: 'John Doe', count: 1 }]
-    expect(interfaceStore.isAuthorDataStale(publications, authors)).toBe(false)
-
-    // Test with no publications with authors (not stale)
-    const publicationsNoAuthors = [{ doi: '10.1234/test1' }] // no author field
-    expect(interfaceStore.isAuthorDataStale(publicationsNoAuthors, [])).toBe(false)
+    
+    // Case 1: No authors exist - should recompute
+    authorStore.selectedPublicationsAuthors = []
+    interfaceStore.openAuthorModalDialog()
+    expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(sessionStore.selectedPublications)
+    
+    // Reset mock
+    authorStore.computeSelectedPublicationsAuthors.mockClear()
+    
+    // Case 2: Authors exist and publications have scores - should NOT recompute
+    authorStore.selectedPublicationsAuthors = [{ id: 'john-doe', name: 'John Doe', count: 1 }]
+    interfaceStore.openAuthorModalDialog()
+    expect(authorStore.computeSelectedPublicationsAuthors).not.toHaveBeenCalled()
   })
 
-  it('should recompute when author data is identified as stale', () => {
-    // SETUP: Author store with some data (not empty, but stale)
-    const initialAuthors = [{ id: 'old-author', name: 'Old Author', count: 1 }]
-    authorStore.selectedPublicationsAuthors = initialAuthors
+  it('should recompute when publications need score updates even if authors exist', () => {
+    // SETUP: Publications that need score updates
+    sessionStore.selectedPublications = [
+      { doi: '10.1234/test1', title: 'Test Publication', author: 'John Doe', authorOrcid: 'John Doe', score: 0, boostKeywords: [] }
+    ]
+    authorStore.selectedPublicationsAuthors = [{ id: 'john-doe', name: 'John Doe', count: 1 }]
     
-    // Mock isAuthorDataStale to return true (simulating stale data)
-    const staleSpy = vi.spyOn(interfaceStore, 'isAuthorDataStale').mockReturnValue(true)
+    // Mock publicationsNeedScoreUpdate to return true
+    vi.spyOn(interfaceStore, 'publicationsNeedScoreUpdate').mockReturnValue(true)
 
     // USER ACTION: Open modal
     interfaceStore.openAuthorModalDialog()
 
-    // VERIFICATION: Should check staleness and trigger recomputation 
-    expect(staleSpy).toHaveBeenCalled()
+    // VERIFICATION: Should trigger recomputation even though authors exist
     expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(sessionStore.selectedPublications)
   })
 

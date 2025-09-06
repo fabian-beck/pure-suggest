@@ -110,17 +110,20 @@ export const useInterfaceStore = defineStore('interface', {
             const sessionStore = useSessionStore()
             
             // Check if we need to compute author data
-            if (sessionStore.selectedPublications?.length > 0 && 
-                (authorStore.selectedPublicationsAuthors.length === 0 || 
-                 this.isAuthorDataStale(sessionStore.selectedPublications, authorStore.selectedPublicationsAuthors))) {
+            if (sessionStore.selectedPublications?.length > 0) {
+                // Only recompute if no authors exist OR publications need score updates
+                const needsRecomputation = authorStore.selectedPublicationsAuthors.length === 0 || 
+                                          this.publicationsNeedScoreUpdate(sessionStore.selectedPublications)
                 
-                // IMPORTANT: Publications need to have their scores updated before computing author data
-                // Otherwise authors will have score=0 and no keywords
-                if (this.publicationsNeedScoreUpdate(sessionStore.selectedPublications)) {
-                    sessionStore.updateScores()
+                if (needsRecomputation) {
+                    // IMPORTANT: Publications need to have their scores updated before computing author data
+                    // Otherwise authors will have score=0 and no keywords
+                    if (this.publicationsNeedScoreUpdate(sessionStore.selectedPublications)) {
+                        sessionStore.updateScores()
+                    }
+                    
+                    authorStore.computeSelectedPublicationsAuthors(sessionStore.selectedPublications)
                 }
-                
-                authorStore.computeSelectedPublicationsAuthors(sessionStore.selectedPublications)
             }
             
             this.isAuthorModalDialogShown = true;
@@ -135,32 +138,6 @@ export const useInterfaceStore = defineStore('interface', {
             }
         },
 
-        isAuthorDataStale(selectedPublications, authors) {
-            // Check 1: No authors computed despite having publications with authors
-            const publicationsWithAuthors = selectedPublications.filter(pub => pub.author || pub.authorOrcid)
-            if (publicationsWithAuthors.length > 0 && authors.length === 0) {
-                return true
-            }
-            
-            // Check 2: Authors computed from publications with uncomputed scores
-            // If publications need score updates, then existing author data is likely stale
-            if (authors.length > 0 && this.publicationsNeedScoreUpdate(selectedPublications)) {
-                return true
-            }
-            
-            // Check 3: Authors have suspiciously low scores (indicating they were computed from score=0 publications)
-            if (authors.length > 0) {
-                const authorsWithZeroScore = authors.filter(author => author.score === 0 || author.score === authors.length)
-                const percentZeroScore = (authorsWithZeroScore.length / authors.length) * 100
-                
-                // If more than 80% of authors have zero or minimal scores, likely computed from unscored publications
-                if (percentZeroScore > 80) {
-                    return true
-                }
-            }
-            
-            return false
-        },
 
         publicationsNeedScoreUpdate(publications) {
             // Check if publications have default/uninitialized scores
