@@ -118,6 +118,7 @@ export function initializeForces(simulation, config) {
   simulation.force("charge", d3
     .forceManyBody()
     .strength(getChargeStrength(selectedPublicationsCount))
+    .theta(0.7) // Optimized Barnes-Hut parameter for better performance
   );
 
   // Configure X positioning force
