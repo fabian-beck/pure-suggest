@@ -213,9 +213,20 @@ export default class Author {
         });
         // set author initials
         Object.values(authors).forEach((author) => { author.initials = author.name.split(" ").map((word) => word[0]).join("") });
-        // sort by score
-        return Object.values(authors).sort(
-            (a, b) => b.score + b.firstAuthorCount / 100 + b.count / 1000 - (a.score + a.firstAuthorCount / 100 + a.count / 1000)
-        );
+        // sort by score with deterministic tiebreaker
+        return Object.values(authors).sort((a, b) => {
+            const scoreA = a.score + a.firstAuthorCount / 100 + a.count / 1000;
+            const scoreB = b.score + b.firstAuthorCount / 100 + b.count / 1000;
+            const scoreDiff = scoreB - scoreA;
+            
+            // If scores are different, use score comparison
+            if (scoreDiff !== 0) {
+                return scoreDiff;
+            }
+            
+            // For identical scores, use lexicographic order of author ID as tiebreaker
+            // This ensures deterministic sorting when composite scores are equal
+            return a.id.localeCompare(b.id);
+        });
     }
 }
