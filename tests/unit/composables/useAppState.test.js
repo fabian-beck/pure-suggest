@@ -76,8 +76,8 @@ describe('useAppState - Session Loading', () => {
       // Act: Load session without name property
       appState.loadSession(sessionData)
       
-      // Assert: Should not change current session name
-      expect(sessionStore.sessionName).toBe('Current Session')
+      // Assert: Should clear session name when not provided in import data (complete session replacement)
+      expect(sessionStore.sessionName).toBe('')
     })
 
     it('should set empty session name when name property is empty string', () => {
@@ -112,8 +112,40 @@ describe('useAppState - Session Loading', () => {
       // Act: Load session with null name
       appState.loadSession(sessionData)
       
-      // Assert: Should not change current session name when null
-      expect(sessionStore.sessionName).toBe('Current Session')
+      // Assert: Should clear session name when null (complete session replacement)
+      expect(sessionStore.sessionName).toBe('')
+    })
+
+    it('should clear previous session before importing new session', () => {
+      // Arrange: Set up an existing session with selected publications
+      sessionStore.selectedPublicationsDois = ['10.1234/existing1', '10.1234/existing2']
+      sessionStore.excludedPublicationsDois = ['10.1234/excluded1']
+      sessionStore.setBoostKeywordString('existing keywords')
+      sessionStore.setSessionName('Existing Session')
+      
+      // Create a spy for sessionStore.clear to verify it's called
+      const clearSpy = vi.spyOn(sessionStore, 'clear')
+      
+      const newSessionData = {
+        name: 'New Imported Session',
+        selected: ['10.1234/new1', '10.1234/new2'],
+        excluded: ['10.1234/newExcluded1'],
+        boost: 'new keywords'
+      }
+      
+      // Act: Load the new session
+      appState.loadSession(newSessionData)
+      
+      // Assert: Clear should be called to ensure previous session is cleared
+      expect(clearSpy).toHaveBeenCalled()
+      
+      // Assert: Session properties should be set correctly
+      expect(sessionStore.sessionName).toBe('New Imported Session')
+      expect(sessionStore.boostKeywordString).toBe('NEW KEYWORDS')
+      expect(sessionStore.excludedPublicationsDois).toEqual(['10.1234/newExcluded1'])
+      
+      // Assert: addPublicationsToSelection should be called with new publications
+      expect(sessionStore.addPublicationsToSelection).toHaveBeenCalledWith(['10.1234/new1', '10.1234/new2'])
     })
   })
 

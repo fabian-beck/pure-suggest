@@ -149,6 +149,10 @@ export function useAppState() {
       )
       return
     }
+    
+    // Clear current session before loading new one
+    clear()
+    
     if (session.boost) {
       sessionStore.setBoostKeywordString(session.boost)
     }

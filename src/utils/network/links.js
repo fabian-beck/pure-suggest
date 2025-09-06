@@ -6,43 +6,6 @@
  * including citations, keywords, and authors.
  */
 
-import { createKeywordLinks } from "./keywordNodes.js";
-import { createAuthorLinks } from "./authorNodes.js";
-
-/**
- * Create all links for the network visualization
- */
-export function createNetworkLinks(
-    uniqueBoostKeywords,
-    publicationsFiltered, 
-    selectedPublications,
-    isSelectedFn,
-    doiToIndex, 
-    filteredAuthors, 
-    publications, 
-    showKeywordNodes, 
-    showAuthorNodes
-) {
-    const links = [];
-    
-    // Create keyword links
-    if (showKeywordNodes) {
-        const keywordLinks = createKeywordLinks(uniqueBoostKeywords, publicationsFiltered, doiToIndex);
-        links.push(...keywordLinks);
-    }
-    
-    // Create citation links
-    const citationLinks = createCitationLinks(selectedPublications, isSelectedFn, doiToIndex);
-    links.push(...citationLinks);
-    
-    // Create author links
-    if (showAuthorNodes) {
-        const authorLinks = createAuthorLinks(filteredAuthors, publications, doiToIndex);
-        links.push(...authorLinks);
-    }
-    
-    return links;
-}
 
 /**
  * Create citation links between publications
