@@ -22,7 +22,6 @@ export const useInterfaceStore = defineStore('interface', {
             isExcludedModalDialogShown: false,
             isQueueModalDialogShown: false,
             isAboutModalDialogShown: false,
-            scrollAuthorId: null,
             // Network replot trigger (incremented to notify NetworkVisComponent to replot)
             networkReplotTrigger: 0,
             isKeyboardControlsModalDialogShown: false,
@@ -130,9 +129,6 @@ export const useInterfaceStore = defineStore('interface', {
                 const authorExists = authorStore.selectedPublicationsAuthors.some(author => author.id === authorId)
                 if (authorExists) {
                     authorStore.setActiveAuthor(authorId)
-                } else {
-                    // Legacy behavior: scroll to author if author not found in list
-                    this.scrollAuthorId = authorId;
                 }
             }
         },
