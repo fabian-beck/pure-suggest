@@ -2,8 +2,8 @@
     <div class="network-of-references">
         <div class="box has-background-grey">
             <NetworkHeader :errorMessage="errorMessage" v-model:isNetworkClusters="isNetworkClusters"
-                @expandNetwork="expandNetwork" />
-            <div id="network-svg-container">
+                @expandNetwork="expandNetwork" @collapseNetwork="collapseNetwork" @restoreNetwork="restoreNetwork" />
+            <div id="network-svg-container" v-show="!interfaceStore.isNetworkCollapsed">
                 <NetworkPerformanceMonitor 
                     ref="performanceMonitor"
                     :show="interfaceStore.showPerformancePanel"
@@ -17,12 +17,12 @@
                     <g></g>
                 </svg>
             </div>
-            <ul class="publication-component-list">
+            <ul class="publication-component-list" v-show="!interfaceStore.isNetworkCollapsed">
                 <PublicationComponent v-if="activePublication && interfaceStore.isNetworkExpanded"
                     :publication="activePublication" :is-active="true"
                     :publicationType="activePublication.isSelected ? 'selected' : 'suggested'"></PublicationComponent>
             </ul>
-            <div class="controls-header-left">
+            <div class="controls-header-left" v-show="!interfaceStore.isNetworkCollapsed">
                 <v-btn class="has-background-primary has-text-white" @click="updateQueued"
                     v-show="queueStore.isUpdatable && interfaceStore.isNetworkExpanded" id="quick-access-update">
                     <v-icon left>mdi-update</v-icon>
@@ -31,7 +31,7 @@
             </div>
             <NetworkControls v-model:showNodes="showNodes" v-model:onlyShowFiltered="onlyShowFiltered"
                 v-model:suggestedNumberFactor="suggestedNumberFactor" v-model:authorNumberFactor="authorNumberFactor"
-                @zoom="zoomByFactor" @plot="plot" />
+                @zoom="zoomByFactor" @plot="plot" v-show="!interfaceStore.isNetworkCollapsed" />
         </div>
     </div>
 </template>
@@ -291,6 +291,11 @@ export default {
             if (this.isDragging) {
                 return;
             }
+
+            // Skip plotting when network is collapsed for performance
+            if (this.interfaceStore.isNetworkCollapsed) {
+                return;
+            }
                 
             // Early return if app state is empty - no need to run simulation
             if (this.isEmpty || !this.sessionStore.selectedPublications?.length) {
@@ -490,6 +495,11 @@ export default {
             }
         },
         tick: function () {
+            // Skip when network is collapsed for performance
+            if (this.interfaceStore.isNetworkCollapsed) {
+                return;
+            }
+
             // Early return if graph is empty - no nodes to update
             if (!this.graph.nodes || this.graph.nodes.length === 0) {
                 this.$refs.performanceMonitor?.trackFps(); // Still track FPS for debugging
@@ -570,6 +580,17 @@ export default {
         },
         expandNetwork(isNetworkExpanded) {
             this.interfaceStore.isNetworkExpanded = isNetworkExpanded;
+        },
+        collapseNetwork() {
+            this.interfaceStore.collapseNetwork();
+        },
+        restoreNetwork() {
+            this.interfaceStore.restoreNetwork();
+            // Trigger a plot update when restoring from collapsed state
+            // to ensure the network is up to date
+            this.$nextTick(() => {
+                this.plot(true);
+            });
         },
         zoomByFactor(factor) {
             const transform = d3.zoomTransform(this.svg.node());

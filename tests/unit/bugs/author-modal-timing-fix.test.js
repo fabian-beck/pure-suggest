@@ -85,10 +85,9 @@ describe('Author Modal Timing Fix', () => {
     // USER ACTION: Open modal with specific author ID
     interfaceStore.openAuthorModalDialog('jane-smith')
 
-    // VERIFICATION: Author computation triggered and author ID set for scrolling
+    // VERIFICATION: Author computation triggered
     expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(sessionStore.selectedPublications)
     expect(interfaceStore.isAuthorModalDialogShown).toBe(true)
-    expect(interfaceStore.scrollAuthorId).toBe('jane-smith')
   })
 
   it('should handle case when no selected publications exist', () => {

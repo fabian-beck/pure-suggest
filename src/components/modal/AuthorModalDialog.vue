@@ -139,7 +139,6 @@ export default {
       return "Authors of selected";
     }
   },
-  expose: ["scrollToAuthor"],
   methods: {
     getFilteredAlternativeNames(author) {
       return author.alternativeNames.filter(
@@ -199,20 +198,6 @@ export default {
       this.authorSettingsChanged = true;
     },
 
-    scrollToAuthor(id) {
-      const tagId = this.toTagId(id);
-      const authorElement = document.getElementById(tagId);
-      authorElement.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-        inline: "center",
-      });
-      const authorElementClasses = authorElement.classList;
-      authorElementClasses.add("highlight");
-      setTimeout(() => {
-        authorElementClasses.remove("highlight");
-      }, 3000);
-    },
     toTagId(id) {
       return `author-${id.replace(/[^a-zA-Z0-9]/g, "-")}`;
     },
@@ -234,17 +219,6 @@ export default {
     },
   },
   watch: {
-    'interfaceStore.scrollAuthorId': {
-      handler: function (newValue) {
-        if (newValue) {
-          // wait for 1 second to ensure that the author list is rendered
-          setTimeout(() => {
-            this.scrollToAuthor(newValue);
-            this.interfaceStore.scrollAuthorId = null;
-          }, 1000);
-        }
-      },
-    },
     'interfaceStore.isAuthorModalDialogShown': {
       handler: function (newValue, oldValue) {
         // Detect when modal is closed (was true, now false)
