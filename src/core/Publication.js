@@ -174,6 +174,11 @@ export default class Publication {
      * @param {Object} data - Raw publication data from API.
      */
     processTitle(data) {
+        // Set basic title first
+        this.title = data.title || "";
+        this.abstract = data.abstract;
+        this.year = data.year;
+        
         const subtitle = data.subtitle;
         if (subtitle?.length && this.title.toLowerCase().indexOf(subtitle.toLowerCase())) {
             const cleanedTitle = removeHtmlTags(this.title);
@@ -199,6 +204,11 @@ export default class Publication {
      * @param {Object} data - Raw publication data from API.
      */
     processContainer(data) {
+        // Set basic metadata
+        this.volume = data.volume;
+        this.issue = data.issue;
+        this.page = data.page;
+        
         this.container = "";
         data.container?.split(" ").forEach(word => {
             let mappedWord = "";
@@ -250,12 +260,7 @@ export default class Publication {
      * @param {Object} data - Raw publication data from API.
      */
     processData(data) {
-        // Map each data property to the publication object
-        Object.keys(data).forEach(key => {
-            this[key] = data[key];
-        });
-        
-        // Process different aspects of the publication data
+        // Process specific aspects of the publication data
         this.processTitle(data);
         this.processAuthor(data);
         this.processContainer(data);
