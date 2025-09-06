@@ -27,15 +27,9 @@ export default class Author {
 
     mergeWith(author) {
         function mergeCounts(counts1, counts2) {
-            const counts = {};
-            Object.keys(counts1).forEach((key) => {
-                counts[key] = counts1[key];
-            });
-            Object.keys(counts2).forEach((key) => {
-                if (!counts[key]) {
-                    counts[key] = 0;
-                }
-                counts[key] += counts2[key];
+            const counts = { ...counts1 };
+            Object.entries(counts2).forEach(([key, value]) => {
+                counts[key] = (counts[key] || 0) + value;
             });
             return counts;
         }
@@ -71,41 +65,37 @@ export default class Author {
         // Generate possible variants for Eszett transcriptions
         const variants = new Set([nameId]);
         
-        // If name contains 'ss', generate variants with 's' and 'b'
+        // Helper function to add variant if different from original
+        const addVariant = (variant) => {
+            if (variant !== nameId) variants.add(variant);
+        };
+        
+        // Handle 'ss' transcriptions
         if (nameId.includes('ss')) {
-            // Replace 'ss' with 's' (single s transcription)
-            variants.add(nameId.replace(/ss/g, 's'));
-            // Replace 'ss' with 'b' (b transcription)
-            variants.add(nameId.replace(/ss/g, 'b'));
+            addVariant(nameId.replace(/ss/g, 's'));
+            addVariant(nameId.replace(/ss/g, 'b'));
         }
         
-        // If name contains 'b', generate 'ss' and 's' variants (reverse transcription)
+        // Handle 'b' transcriptions
         if (nameId.includes('b')) {
-            // Replace 'b' with 'ss' (most common transcription)
-            variants.add(nameId.replace(/b/g, 'ss'));
-            // Replace 'b' with 's' (single s transcription)
-            variants.add(nameId.replace(/b/g, 's'));
+            addVariant(nameId.replace(/b/g, 'ss'));
+            addVariant(nameId.replace(/b/g, 's'));
         }
         
-        // If name contains single 's' (but not 'ss'), generate 'ss' and 'b' variants
-        // This is more conservative - only for names that likely had 'ß' originally
-        // Apply this only to the surname part (before the comma)
+        // Handle single 's' in surname for names with 'ß' patterns
         const nameParts = nameId.split(',');
         if (nameParts.length >= 2) {
             const surname = nameParts[0].trim();
             const restOfName = nameId.substring(surname.length);
             
-            if (surname.length > 3 && surname.includes('s') && !surname.includes('ss') && !surname.includes('b')) {
-                // Replace single 's' with 'ss' for common German patterns in surname only
-                const doubleVariant = surname.replace(/s/g, 'ss') + restOfName;
-                if (doubleVariant !== nameId) {
-                    variants.add(doubleVariant);
-                }
-                // Replace single 's' with 'b' for b transcription in surname only
-                const bVariant = surname.replace(/s/g, 'b') + restOfName;
-                if (bVariant !== nameId) {
-                    variants.add(bVariant);
-                }
+            const hasEszettPattern = surname.length > 3 && 
+                                   surname.includes('s') && 
+                                   !surname.includes('ss') && 
+                                   !surname.includes('b');
+            
+            if (hasEszettPattern) {
+                addVariant(surname.replace(/s/g, 'ss') + restOfName);
+                addVariant(surname.replace(/s/g, 'b') + restOfName);
             }
         }
         

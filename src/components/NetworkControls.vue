@@ -123,4 +123,10 @@ const authorNumberFactorModel = computed({
     right: max(1vw, 1rem);
     z-index: 1;
 }
+
+// Fix for slider thumb being cut off when at minimum and maximum values
+.v-list-item .v-slider {
+    padding-left: 16px;
+    padding-right: 16px;
+}
 </style>

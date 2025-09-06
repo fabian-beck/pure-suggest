@@ -1,8 +1,17 @@
 ---
-description: Find and clean unused legacy code by identifying dead code, unused imports, obsolete functions, and deprecated patterns.
+description: Find and clean unused legacy code by identifying dead code, unused imports, obsolete functions, and deprecated patterns using automated tools.
 ---
 
-Find and clean unused legacy code by analyzing the codebase for:
+Find and clean unused legacy code using the automated unused function detection tool:
+
+## Quick Analysis
+
+Run the automated unused function finder:
+```bash
+node tools/find-unused-functions.js
+```
+
+This tool analyzes the codebase for:
 
 1. **Dead code** - Functions, methods, or classes that are never called or imported
 2. **Unused imports** - Import statements that don't have corresponding usage
@@ -11,17 +20,31 @@ Find and clean unused legacy code by analyzing the codebase for:
 5. **Unreferenced files** - Files that are no longer imported or used anywhere in the project
 6. **Commented-out code** - Old code blocks that are commented out and no longer needed
 
-Focus on:
-- Vue components and composables in `src/components/` and `src/composables/`
-- Utility functions in `src/lib/` and `src/core/`
-- CSS/SCSS files for unused styles
-- Store modules that may have unused getters/actions
-- Test files that test removed functionality
+## Manual Verification Required
 
-For each identified unused piece, verify it's truly unused by checking:
+The tool provides candidates that need manual verification. For each identified unused piece, verify it's truly unused by checking:
 - Import statements across the codebase
 - Dynamic imports or string-based references
 - Template usage in Vue components
 - Test file references
+- Vue component method calls via `$refs`
+- Store method calls from components
 
-Provide a summary of findings and suggest safe removal candidates, prioritizing files/functions with the highest confidence of being unused.
+## Focus Areas
+
+The analysis covers:
+- Vue components and composables in `src/components/` and `src/composables/`
+- Utility functions in `src/lib/` and `src/core/`
+- Store modules that may have unused getters/actions
+- Test files that test removed functionality
+
+## Safe Removal Guidelines
+
+Prioritize removal candidates with highest confidence:
+1. **Test utilities never imported** - Safe to remove
+2. **Private methods with single occurrence** - Usually safe
+3. **Legacy helper functions** - Check for string-based calls first
+4. **Store methods never called** - Verify no dynamic access
+5. **Component methods** - Check template usage and ref calls
+
+After verification, remove unused code and commit changes with descriptive messages.

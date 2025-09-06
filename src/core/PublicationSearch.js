@@ -45,22 +45,4 @@ export default class PublicationSearch {
         return {results: results, type: "search"};
     }
 
-    computeTitleSimilarity(query, title) {
-        const stopwords = ["the", "for", "with", "and"]; // for words with length > 2
-        let equivalentWordCounter = 0;
-        let wordCounter = 0;
-        let normalizedTitle = " " + title.replace(/\W+/g, " ").toLowerCase() + " "
-        query.split("+").forEach((word) => {
-            if (word.length > 2 && stopwords.indexOf(word) === -1) {
-                wordCounter++;
-                if (normalizedTitle.indexOf(" " + word + " ") >= 0) {
-                    equivalentWordCounter++;
-                }
-            }
-        });
-        return (
-            equivalentWordCounter / wordCounter
-        );
-    }
-
 }

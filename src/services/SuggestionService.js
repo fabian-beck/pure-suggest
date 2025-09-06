@@ -39,30 +39,24 @@ export class SuggestionService {
     // Build suggestions from citation network
     const suggestedPublications = {};
     
+    // Helper function to process DOI arrays with the same pattern
+    const processDoisArray = (dois, counterType, listType, sourceDoi) => {
+      dois.forEach((doi) => {
+        this._incrementSuggestedPublicationCounter(
+          suggestedPublications,
+          doi,
+          counterType,
+          listType,
+          sourceDoi,
+          { isExcluded, isSelected, getSelectedPublicationByDoi }
+        );
+      });
+    };
+    
     selectedPublications.forEach((publication) => {
-      // Process citations
-      publication.citationDois.forEach((citationDoi) => {
-        this._incrementSuggestedPublicationCounter(
-          suggestedPublications,
-          citationDoi,
-          "citationCount",
-          "referenceDois",
-          publication.doi,
-          { isExcluded, isSelected, getSelectedPublicationByDoi }
-        );
-      });
-      
-      // Process references
-      publication.referenceDois.forEach((referenceDoi) => {
-        this._incrementSuggestedPublicationCounter(
-          suggestedPublications,
-          referenceDoi,
-          "referenceCount",
-          "citationDois",
-          publication.doi,
-          { isExcluded, isSelected, getSelectedPublicationByDoi }
-        );
-      });
+      // Process citations and references using the helper
+      processDoisArray(publication.citationDois, "citationCount", "referenceDois", publication.doi);
+      processDoisArray(publication.referenceDois, "referenceCount", "citationDois", publication.doi);
     });
     
     // Process and rank suggestions

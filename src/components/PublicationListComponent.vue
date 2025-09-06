@@ -1,22 +1,13 @@
 <template>
-  <ul 
-    class="publication-list has-background-white"
-    :class="{ 'empty-list': publications.length === 0 }"
-    @click="handleDelegatedClick"
-    @mouseenter="handleDelegatedMouseEnter"
-    @mouseleave="handleDelegatedMouseLeave"
-  >
+  <ul class="publication-list has-background-white" :class="{ 'empty-list': publications.length === 0 }"
+    @click="handleDelegatedClick" @mouseenter="handleDelegatedMouseEnter" @mouseleave="handleDelegatedMouseLeave">
     <template v-for="item in publicationsWithHeaders" :key="item.key">
       <li v-if="item.type === 'header'" class="section-header">
         <h3 class="section-header-text" :class="{ 'info-theme': publicationType === 'suggested' }" v-html="item.text">
         </h3>
       </li>
-      <LazyPublicationComponent
-        v-else
-        :publication="item.publication"
-        :publicationType="publicationType"
-        v-on:activate="activatePublication"
-      />
+      <LazyPublicationComponent v-else :publication="item.publication" :publicationType="publicationType"
+        v-on:activate="activatePublication" />
     </template>
   </ul>
 </template>
@@ -46,8 +37,8 @@ const publicationsWithHeaders = computed(() => {
   // Don't show headers if filtering is not active for this publication type
   const isFilteringApplied = sessionStore.filter.hasActiveFilters() &&
     ((props.publicationType === 'selected' && sessionStore.filter.applyToSelected) ||
-     (props.publicationType === 'suggested' && sessionStore.filter.applyToSuggested))
-     
+      (props.publicationType === 'suggested' && sessionStore.filter.applyToSuggested))
+
   if (!props.showSectionHeaders || !isFilteringApplied) {
     return props.publications.map(publication => ({
       type: 'publication',
@@ -58,8 +49,8 @@ const publicationsWithHeaders = computed(() => {
 
   // Use composable for complex header logic
   const result = []
-  const filteredCount = props.publicationType === 'selected' 
-    ? sessionStore.selectedPublicationsFilteredCount 
+  const filteredCount = props.publicationType === 'selected'
+    ? sessionStore.selectedPublicationsFilteredCount
     : sessionStore.suggestedPublicationsFilteredCount
   const nonFilteredCount = props.publicationType === 'selected'
     ? sessionStore.selectedPublicationsNonFilteredCount
@@ -72,7 +63,7 @@ const publicationsWithHeaders = computed(() => {
       text: `<i class="mdi mdi-filter"></i> Filtered (${filteredCount})`,
       key: 'filtered-header'
     })
-    
+
     props.publications
       .filter(pub => sessionStore.filter.matches(pub))
       .forEach(publication => {
@@ -91,7 +82,7 @@ const publicationsWithHeaders = computed(() => {
       text: `Other publications (${nonFilteredCount})`,
       key: 'non-filtered-header'
     })
-    
+
     props.publications
       .filter(pub => !sessionStore.filter.matches(pub))
       .forEach(publication => {
@@ -131,13 +122,13 @@ onMounted(() => {
   scrollHandler = () => {
     userIsScrolling.value = true
     lastScrollTime.value = Date.now()
-    
+
     clearTimeout(scrollTimeout)
     scrollTimeout = setTimeout(() => {
       userIsScrolling.value = false
     }, 150)
   }
-  
+
   window.addEventListener('scroll', scrollHandler)
 })
 
@@ -231,7 +222,7 @@ function scrollToActivated() {
   z-index: 10;
   margin: 0;
   padding: 0;
-  
+
   .section-header-text {
     margin: 0;
     padding: 0.5rem 0.75rem;
@@ -244,7 +235,7 @@ function scrollToActivated() {
     text-transform: uppercase;
     letter-spacing: 0.05em;
     @include light-shadow;
-    
+
     &.info-theme {
       color: var(--bulma-info-dark);
       background: linear-gradient(135deg, var(--bulma-info-95) 0%, var(--bulma-info-90) 100%);
@@ -255,7 +246,6 @@ function scrollToActivated() {
 }
 
 .publication-list.empty-list {
-  min-height: 200px;
   height: 100%;
   flex: 1;
 }

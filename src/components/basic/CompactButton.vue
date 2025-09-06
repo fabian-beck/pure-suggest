@@ -16,7 +16,7 @@ export default {
     },
     methods: {
         openLink() {
-            if (typeof this.click === 'function') this.click();
+            this.click?.();
             if (this.href) window.open(this.href, '_blank');
         },
     }
