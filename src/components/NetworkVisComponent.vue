@@ -179,6 +179,9 @@ export default {
     watch: {
         isNetworkClusters: {
             handler: function () {
+                // Skip plotting during loading to prevent premature network rendering
+                if (this.interfaceStore.isLoading)
+                    return;
                 this.plot(true);
             },
         },
@@ -191,6 +194,9 @@ export default {
                 } else {
                     this.onlyShowFiltered = true;
                 }
+                // Skip plotting during loading to prevent premature network rendering
+                if (this.interfaceStore.isLoading)
+                    return;
                 this.plot(true);
             },
         },
