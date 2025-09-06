@@ -121,8 +121,12 @@ function importSession() {
 }
 
 function importBibtex() {
+  const warningMessage = isEmpty.value 
+    ? '' 
+    : '<p style="color: #d32f2f; margin-bottom: 16px;"><strong>This will clear and replace the current session.</strong></p>'
+  
   interfaceStore.showConfirmDialog(
-    `<label>Choose a BibTeX file:&nbsp;</label>
+    `${warningMessage}<label>Choose a BibTeX file:&nbsp;</label>
     <input type="file" id="import-bibtex-input" accept=".bib"/>`,
     async () => {
       const fileInput = document.getElementById("import-bibtex-input");
