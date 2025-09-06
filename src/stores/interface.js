@@ -14,6 +14,7 @@ export const useInterfaceStore = defineStore('interface', {
                 duration: 0,
             },
             isNetworkExpanded: false,
+            isNetworkCollapsed: false,
             isNetworkClusters: true,
             showPerformancePanel: false,
             searchQuery: "",
@@ -56,6 +57,7 @@ export const useInterfaceStore = defineStore('interface', {
     actions: {
         clear() {
             this.isNetworkExpanded = false;
+            this.isNetworkCollapsed = false;
             this.isNetworkClusters = true;
             window.scrollTo(0, 0);
         },
@@ -205,6 +207,21 @@ export const useInterfaceStore = defineStore('interface', {
 
         togglePerformancePanel() {
             this.showPerformancePanel = !this.showPerformancePanel
+        },
+
+        collapseNetwork() {
+            this.isNetworkExpanded = false;
+            this.isNetworkCollapsed = true;
+        },
+
+        expandNetwork() {
+            this.isNetworkExpanded = true;
+            this.isNetworkCollapsed = false;
+        },
+
+        restoreNetwork() {
+            this.isNetworkExpanded = false;
+            this.isNetworkCollapsed = false;
         },
 
     }
