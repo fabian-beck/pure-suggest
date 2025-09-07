@@ -16,6 +16,7 @@
     <QueueModalDialog />
     <AboutModalDialog />
     <KeyboardControlsModalDialog />
+    <ShareSessionModalDialog />
     <!-- Other dialogs and overlays -->
     <v-overlay v-model="interfaceStore.isLoading" class="align-center justify-center main-overlay" persistent>
       <div class="d-flex flex-column align-center justify-center">
@@ -52,6 +53,26 @@ export default {
     window.addEventListener("resize", interfaceStore.checkMobile);
     return { sessionStore, interfaceStore, isEmpty };
   },
+  methods: {
+    checkAndLoadSessionFromUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sessionParam = urlParams.get('session');
+      
+      if (sessionParam) {
+        console.log("Found session parameter in URL, attempting to load...");
+        const success = this.sessionStore.loadSessionFromUrl(sessionParam);
+        
+        if (success) {
+          // Remove the session parameter from URL without reloading the page
+          const newUrl = window.location.pathname;
+          window.history.replaceState({}, document.title, newUrl);
+          console.log("Session loaded successfully and URL cleaned");
+        } else {
+          console.error("Failed to load session from URL parameter");
+        }
+      }
+    }
+  },
   created() {
     window.addEventListener("keydown", onKey);
   },
@@ -62,6 +83,9 @@ export default {
       if (!this.isEmpty) return "";
       return null;
     };
+    
+    // Check for session parameter in URL and load if present
+    this.checkAndLoadSessionFromUrl();
     
     // Log page performance metrics
     setTimeout(() => {

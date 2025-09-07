@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import LZString from 'lz-string'
 
 
 import Publication from "@/core/Publication.js";
@@ -263,6 +264,63 @@ export const useSessionStore = defineStore('session', {
       );
       const filename = this.generateFilename('bib');
       saveAsFile(filename, "application/x-bibtex", bib);
+    },
+
+    generateSessionUrl: function () {
+      // Create session data (same as exportSession)
+      let data = {
+        name: this.sessionName,
+        selected: this.selectedPublicationsDois,
+        excluded: this.excludedPublicationsDois,
+        boost: this.uniqueBoostKeywords.join(", "),
+      };
+      
+      // Compress and encode the data
+      const jsonString = JSON.stringify(data);
+      const compressed = LZString.compressToEncodedURIComponent(jsonString);
+      
+      // Generate URL with session parameter
+      const baseUrl = window.location.origin + window.location.pathname;
+      return `${baseUrl}?session=${compressed}`;
+    },
+
+    loadSessionFromUrl: function (sessionParam) {
+      try {
+        // Decompress and parse the session data
+        const decompressed = LZString.decompressFromEncodedURIComponent(sessionParam);
+        if (!decompressed) {
+          console.error("Failed to decompress session data");
+          return false;
+        }
+        
+        const sessionData = JSON.parse(decompressed);
+        
+        // Clear current session
+        this.clear();
+        
+        // Load the session data
+        if (sessionData.name) {
+          this.setSessionName(sessionData.name);
+        }
+        
+        if (sessionData.selected && Array.isArray(sessionData.selected)) {
+          this.addPublicationsToSelection(sessionData.selected);
+        }
+        
+        if (sessionData.excluded && Array.isArray(sessionData.excluded)) {
+          this.excludedPublicationsDois = [...sessionData.excluded];
+        }
+        
+        if (sessionData.boost) {
+          this.setBoostKeywordString(sessionData.boost);
+        }
+        
+        console.log("Session loaded from URL successfully");
+        return true;
+      } catch (error) {
+        console.error("Error loading session from URL:", error);
+        return false;
+      }
     },
 
   }
