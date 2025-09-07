@@ -179,15 +179,19 @@ export default {
     watch: {
         isNetworkClusters: {
             handler: function () {
+                console.log(`[NETWORK PLOT] isNetworkClusters changed to: ${this.isNetworkClusters}`);
                 // Skip plotting during loading to prevent premature network rendering
-                if (this.interfaceStore.isLoading)
+                if (this.interfaceStore.isLoading) {
+                    console.log(`[NETWORK PLOT] Skipping plot() - interface is loading`);
                     return;
+                }
                 this.plot(true);
             },
         },
         filter: {
             deep: true,
             handler: function () {
+                console.log(`[NETWORK PLOT] filter changed, hasActiveFilters: ${this.sessionStore.filter.hasActiveFilters()}`);
                 // Update "only show filtered" based on filter state
                 if (!this.sessionStore.filter.hasActiveFilters()) {
                     this.onlyShowFiltered = false;
@@ -195,26 +199,35 @@ export default {
                     this.onlyShowFiltered = true;
                 }
                 // Skip plotting during loading to prevent premature network rendering
-                if (this.interfaceStore.isLoading)
+                if (this.interfaceStore.isLoading) {
+                    console.log(`[NETWORK PLOT] Skipping plot() - interface is loading`);
                     return;
+                }
                 this.plot(true);
             },
         },
         activePublication: {
             handler: function () {
-                if (this.interfaceStore.isLoading)
+                console.log(`[NETWORK PLOT] activePublication changed to: ${this.activePublication?.doi || 'none'}`);
+                if (this.interfaceStore.isLoading) {
+                    console.log(`[NETWORK PLOT] Skipping plot() - interface is loading`);
                     return;
+                }
                 this.plot();
             },
         },
         'interfaceStore.networkReplotTrigger': {
             handler: function (newValue, oldValue) {
+                console.log(`[NETWORK PLOT] networkReplotTrigger changed from ${oldValue} to ${newValue}, showAuthorNodes: ${this.showAuthorNodes}`);
                 // Only replot if author nodes are visible and the trigger value changed
                 if (newValue !== oldValue && this.showAuthorNodes) {
+                    console.log(`[NETWORK PLOT] Triggering replot due to networkReplotTrigger`);
                     this.$nextTick(() => {
                         // Trigger a full replot with force simulation restart
                         this.plot(true);
                     });
+                } else {
+                    console.log(`[NETWORK PLOT] Skipping replot - trigger unchanged or author nodes not visible`);
                 }
             }
         },
@@ -254,9 +267,13 @@ export default {
 
         this.sessionStore.$onAction(({ name, after }) => {
             after(() => {
+                console.log(`[NETWORK PLOT] sessionStore action '${name}' completed, isLoading: ${this.interfaceStore.isLoading}`);
                 if ((!this.interfaceStore.isLoading && name === "clear") ||
                     name === "hasUpdated") {
+                    console.log(`[NETWORK PLOT] Calling plot() due to sessionStore action: ${name}`);
                     this.plot();
+                } else {
+                    console.log(`[NETWORK PLOT] Skipping plot() for action '${name}' - conditions not met`);
                 }
             });
         });
@@ -271,25 +288,36 @@ export default {
     },
     methods: {
         plot: function (restart) {
+            // Log every plot() call with stack trace to identify the source
+            const stack = new Error().stack;
+            const caller = stack.split('\n')[2]?.trim() || 'unknown caller';
+            console.log(`[NETWORK PLOT] plot(restart=${restart}) called from: ${caller}`);
+            console.log(`[NETWORK PLOT] State: isDragging=${this.isDragging}, isCollapsed=${this.interfaceStore.isNetworkCollapsed}, isEmpty=${this.isEmpty}, selectedCount=${this.sessionStore.selectedPublications?.length || 0}`);
 
             if (this.isDragging) {
+                console.log(`[NETWORK PLOT] Skipping plot() - currently dragging`);
                 return;
             }
 
             // Skip plotting when network is collapsed for performance
             if (this.interfaceStore.isNetworkCollapsed) {
+                console.log(`[NETWORK PLOT] Skipping plot() - network is collapsed`);
                 return;
             }
 
             // Early return if app state is empty - no need to run simulation
             if (this.isEmpty || !this.sessionStore.selectedPublications?.length) {
+                console.log(`[NETWORK PLOT] Clearing visualization - empty state`);
                 this.stop(); // Stop any running simulation
                 this.clearExistingVisualization(); // Clear any existing network elements
                 this.resetOptimizationMetrics();
                 return;
             }
 
+            console.log(`[NETWORK PLOT] Starting plot execution...`);
+            
             try {
+                console.log(`[NETWORK PLOT] Updating simulation configuration...`);
                 // Update simulation configuration
                 this.updateSimulation({
                     svgWidth: this.svgWidth,
@@ -300,15 +328,22 @@ export default {
                     tickHandler: this.tick
                 });
 
+                console.log(`[NETWORK PLOT] Initializing graph...`);
                 initGraph.call(this);
+                
+                console.log(`[NETWORK PLOT] Updating nodes...`);
                 updateNodes.call(this);
+                
+                console.log(`[NETWORK PLOT] Updating links...`);
                 this.link = updateNetworkLinks(
                     this.link,
                     this.graph.links
                 );
+                
                 // Update year labels
                 const hasPublications = this.sessionStore.publicationsFiltered?.length > 0;
                 const shouldShow = !this.isEmpty && !this.isNetworkClusters;
+                console.log(`[NETWORK PLOT] Updating year labels (hasPublications: ${hasPublications}, shouldShow: ${shouldShow})...`);
 
                 this.label = updateYearLabels(
                     this.label,
@@ -320,6 +355,7 @@ export default {
                     this.svgHeight
                 );
 
+                console.log(`[NETWORK PLOT] Updating graph data with ${this.graph.nodes.length} nodes and ${this.graph.links.length} links...`);
                 // Update graph data in simulation
                 this.updateGraphData(this.graph.nodes, this.graph.links);
 
@@ -327,10 +363,14 @@ export default {
                 this.resetOptimizationMetrics();
 
                 if (restart) {
+                    console.log(`[NETWORK PLOT] Restarting simulation with alpha=${SIMULATION_ALPHA}...`);
                     this.restart(SIMULATION_ALPHA);
                 } else {
+                    console.log(`[NETWORK PLOT] Starting simulation...`);
                     this.start();
                 }
+                
+                console.log(`[NETWORK PLOT] Plot execution completed successfully`);
             }
             catch (error) {
                 console.error("Cannot plot network: " + error.message);
@@ -577,6 +617,7 @@ export default {
             this.interfaceStore.collapseNetwork();
         },
         restoreNetwork() {
+            console.log(`[NETWORK PLOT] restoreNetwork() called - triggering plot with restart`);
             this.interfaceStore.restoreNetwork();
             // Trigger a plot update when restoring from collapsed state
             // to ensure the network is up to date
