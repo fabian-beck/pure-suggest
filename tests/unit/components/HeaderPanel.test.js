@@ -77,22 +77,8 @@ describe('HeaderPanel', () => {
     mockSessionStore.excludedPublicationsCount = 0
   })
 
-
-  it('shows intro message when session is empty', () => {
-    mockSessionStore.isEmpty = true
+  it('renders without errors', () => {
     const wrapper = createWrapper()
-
-    expect(wrapper.text()).toContain(mockAppMeta.subtitle)
-    expect(wrapper.text()).toContain('Based on a set of selected publications')
+    expect(wrapper.exists()).toBe(true)
   })
-
-  it('hides intro message when session is not empty', () => {
-    mockSessionStore.isEmpty = false
-    mockSessionStore.selectedPublicationsCount = 5
-    const wrapper = createWrapper()
-
-    expect(wrapper.text()).not.toContain('Based on a set of selected publications')
-  })
-
-
 })

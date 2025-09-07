@@ -145,7 +145,7 @@ export default {
             // Position change detection for performance optimization
             positionThreshold: 1, // pixels - minimum movement to trigger DOM update
             lastUpdateTime: 0,
-            skipEarlyTicks: 10, // Skip DOM updates for first N ticks
+            skipEarlyTicks: 50, // Skip DOM updates for first N ticks
             shouldSkipEarlyTicks: false, // Only skip when truly restarted with high alpha
             // X position caching for performance optimization
             nodeXPositionsCache: new Map(), // Cache X positions to avoid redundant calculations
@@ -254,26 +254,9 @@ export default {
 
         this.sessionStore.$onAction(({ name, after }) => {
             after(() => {
-                if (name === "updateScores") {
-                    // Prevent premature plot calls during loading workflow
-                    const hasSelectedPublications = this.sessionStore.selectedPublications?.length > 0;
-                    const hasSuggestedPublications = this.sessionStore.suggestedPublications?.length > 0;
-                    const isLoadingState = this.interfaceStore.isLoading;
-
-                    // Skip if still loading and don't have both selected + suggested publications ready
-                    if (!(isLoadingState && (!hasSelectedPublications || !hasSuggestedPublications))) {
-                        this.plot(true);
-                    }
-                }
-                else if ((!this.interfaceStore.isLoading && name === "clear") ||
+                if ((!this.interfaceStore.isLoading && name === "clear") ||
                     name === "hasUpdated") {
-                    // Prevent redundant plot calls when simulation is already active
-                    const currentAlpha = (this.simulation && typeof this.simulation.alpha === 'function') ? this.simulation.alpha() : 0;
-                    const isSimulationActive = currentAlpha > 0.01; // alphaMin threshold
-
-                    if (!(isSimulationActive && name === "hasUpdated")) {
-                        this.plot();
-                    }
+                    this.plot();
                 }
             });
         });
@@ -523,6 +506,13 @@ export default {
                 this.shouldSkipEarlyTicks = false;
             }
 
+            // Skip every second DOM update tick for performance (but not when dragging)
+            if (!this.isDragging && this.currentTickCount % 2 === 0) {
+                this.$refs.performanceMonitor?.recordTickSkipped();
+                this.$refs.performanceMonitor?.trackFps(); // Still track FPS for debugging
+                return;
+            }
+
             // Pre-compute X positions for all nodes (major performance optimization)
             this.cacheNodeXPositions();
 
@@ -535,9 +525,10 @@ export default {
                 const linksUpdated = this.updateSelectiveLinks(changedNodes);
                 this.lastUpdateTime = performance.now();
 
-                // Track performance metrics
+                // Track performance metrics - only count actual DOM updates
                 this.$refs.performanceMonitor?.recordDomUpdate(changedNodes.length, linksUpdated);
             } else {
+                // No nodes moved significantly, but we still processed the tick
                 this.$refs.performanceMonitor?.recordSkippedUpdate();
             }
 
@@ -839,8 +830,10 @@ export default {
                 return changedNodeIds.has(d.id);
             });
 
-            // Update positions of only the changed nodes using cached X positions
-            changedNodeSelection.attr("transform", (d) => `translate(${this.getCachedNodeX(d)}, ${d.y})`);
+            // Update positions of only the changed nodes
+            // In timeline mode: use simulation x-position for author nodes (force attraction), 
+            // calculated x-position for publication/keyword nodes (strict positioning)
+            changedNodeSelection.attr("transform", (d) => `translate(${this.getNodeDisplayX(d)}, ${d.y})`);
         },
 
         updateSelectiveLinks(changedNodes) {
@@ -854,15 +847,27 @@ export default {
                 return changedNodeIds.has(d.source.id) || changedNodeIds.has(d.target.id);
             });
 
-            // Update only the affected links using cached X positions
+            // Update only the affected links using appropriate X positions
             updateLinkProperties(
                 affectedLinks,
-                (d) => this.getCachedNodeX(d),
+                (d) => this.getNodeDisplayX(d),
                 this.sessionStore.activePublication
             );
 
             // Return how many links were updated
             return affectedLinks.size();
+        },
+
+        /**
+         * Get the appropriate X position for display, respecting force simulation for author nodes in timeline mode
+         */
+        getNodeDisplayX(node) {
+            if (!this.isNetworkClusters && node.type === "author") {
+                // Use simulation x-position for author nodes in timeline mode (force attraction)
+                return node.x || 0;
+            }
+            // Use calculated x-position for other nodes (strict positioning)
+            return this.getCachedNodeX(node);
         },
 
         /**

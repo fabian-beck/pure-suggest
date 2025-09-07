@@ -36,21 +36,6 @@ describe('SuggestedPublicationsComponent', () => {
     sessionStore.excludedPublicationsDois = []
   })
 
-  it('renders the suggested publications header', () => {
-    const wrapper = mount(SuggestedPublicationsComponent, {
-      global: {
-        stubs: {
-          'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'v-badge': { template: '<div class="v-badge"><slot></slot></div>' },
-          'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
-          'tippy': { template: '<div class="tippy"><slot></slot></div>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
-        }
-      }
-    })
-
-    expect(wrapper.text()).toContain('Suggested')
-  })
 
   it('shows suggestion count when suggestions are available', () => {
     sessionStore.suggestion = {

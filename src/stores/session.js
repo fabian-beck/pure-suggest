@@ -84,7 +84,7 @@ export const useSessionStore = defineStore('session', {
 
     setBoostKeywordString(boostKeywordString) {
       this.boostKeywordString = boostKeywordString;
-      this.updateScores();
+      this.updatePublicationScores();
     },
 
     setSessionName(sessionName) {
@@ -148,7 +148,7 @@ export const useSessionStore = defineStore('session', {
 
 
 
-    updateScores() {
+    updatePublicationScores() {
       console.log("Updating scores of publications and reordering them.");
 
       // Normalize boost keyword string

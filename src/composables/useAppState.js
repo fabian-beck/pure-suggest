@@ -9,17 +9,17 @@ import { SuggestionService } from '@/services/SuggestionService.js'
 
 export function useAppState() {
   // This composable will gradually receive functionality from the session store
-  
+
   const sessionStore = useSessionStore()
   const interfaceStore = useInterfaceStore()
   const authorStore = useAuthorStore()
   const queueStore = useQueueStore()
-  
+
   /**
    * Computes whether the session is empty (no publications selected/excluded/queued)
    * @returns {ComputedRef<boolean>} True if session is empty
    */
-  const isEmpty = computed(() => 
+  const isEmpty = computed(() =>
     sessionStore.selectedPublicationsCount === 0
     && sessionStore.excludedPublicationsCount === 0
     && queueStore.selectedQueue.length === 0
@@ -43,7 +43,7 @@ export function useAppState() {
    */
   const clearSession = () => {
     interfaceStore.showConfirmDialog(
-      "You are going to clear all selected and excluded articles and jump back to the initial state.", 
+      "You are going to clear all selected and excluded articles and jump back to the initial state.",
       clear
     )
   }
@@ -53,7 +53,7 @@ export function useAppState() {
    */
   const clearCache = () => {
     interfaceStore.showConfirmDialog(
-      "You are going to clear the cache, as well as all selected and excluded articles and jump back to the initial state.", 
+      "You are going to clear the cache, as well as all selected and excluded articles and jump back to the initial state.",
       () => {
         clear()
         clearCacheUtil()
@@ -69,7 +69,7 @@ export function useAppState() {
     interfaceStore.startLoading()
     let publicationsLoaded = 0
     interfaceStore.loadingMessage = `${publicationsLoaded}/${sessionStore.selectedPublicationsCount} selected publications loaded`
-    
+
     await Promise.all(
       sessionStore.selectedPublications.map(async (publication) => {
         await publication.fetchData()
@@ -78,19 +78,29 @@ export function useAppState() {
         interfaceStore.loadingMessage = `${publicationsLoaded}/${sessionStore.selectedPublicationsCount} selected publications loaded`
       })
     )
-    
+
     await computeSuggestions()
     interfaceStore.endLoading()
-    
+
     // Log end-to-end workflow timing if we're tracking one
     if (sessionStore._isTrackingWorkflow && sessionStore._workflowStartTime) {
       const totalDuration = performance.now() - sessionStore._workflowStartTime
-      console.log(`[PERF] 🎯 END-TO-END WORKFLOW COMPLETED: ${totalDuration.toFixed(0)}ms (${(totalDuration/1000).toFixed(2)}s)`)
-      
+      console.log(`[PERF] 🎯 END-TO-END WORKFLOW COMPLETED: ${totalDuration.toFixed(0)}ms (${(totalDuration / 1000).toFixed(2)}s)`)
+
       // Reset tracking flags
       sessionStore._isTrackingWorkflow = false
       sessionStore._workflowStartTime = null
     }
+  }
+
+  /**
+   * Updates both publication and author scores in the correct sequence
+   * Also triggers network visualization updates
+   */
+  const updateScores = () => {
+    sessionStore.updatePublicationScores()
+    authorStore.computeSelectedPublicationsAuthors(sessionStore.selectedPublications)
+    interfaceStore.triggerNetworkReplot();
   }
 
   /**
@@ -99,7 +109,7 @@ export function useAppState() {
   const computeSuggestions = async () => {
     console.log(`Starting to compute new suggestions based on ${sessionStore.selectedPublicationsCount} selected (and ${sessionStore.excludedPublicationsCount} excluded).`)
     sessionStore.clearActivePublication("updating suggestions")
-    
+
     sessionStore.suggestion = await SuggestionService.computeSuggestions({
       selectedPublications: sessionStore.selectedPublications,
       isExcluded: sessionStore.isExcluded,
@@ -111,10 +121,8 @@ export function useAppState() {
         interfaceStore.loadingMessage = message
       }
     })
-    
-    // Compute author data BEFORE updating scores to ensure it's available when network plots
-    authorStore.computeSelectedPublicationsAuthors(sessionStore.selectedPublications)
-    sessionStore.updateScores()
+
+    updateScores()
   }
 
   /**
@@ -149,10 +157,10 @@ export function useAppState() {
       )
       return
     }
-    
+
     // Clear current session before loading new one
     clear()
-    
+
     if (session.boost) {
       sessionStore.setBoostKeywordString(session.boost)
     }
@@ -163,7 +171,7 @@ export function useAppState() {
       sessionStore.setSessionName(session.name)
     }
     sessionStore.addPublicationsToSelection(session.selected)
-    
+
     // Mark that we're tracking a workflow
     sessionStore._isTrackingWorkflow = true
     updateSuggestions()
@@ -175,7 +183,7 @@ export function useAppState() {
   const importSession = (file) => {
     const startTime = performance.now()
     console.log("[PERF] Starting session import workflow")
-    
+
     const fileReader = new FileReader()
     fileReader.onload = () => {
       let content
@@ -198,10 +206,10 @@ export function useAppState() {
    * Shows import session confirmation dialog with file input
    */
   const importSessionWithConfirmation = () => {
-    const warningMessage = isEmpty.value 
-      ? '' 
+    const warningMessage = isEmpty.value
+      ? ''
       : '<p style="color: #d32f2f; margin-bottom: 16px;"><strong>This will clear and replace the current session.</strong></p>'
-    
+
     interfaceStore.showConfirmDialog(
       `${warningMessage}<label>Choose an exported session JSON file:&nbsp;</label>
       <input type="file" id="import-json-input" accept="application/JSON"/>`,
@@ -231,11 +239,11 @@ export function useAppState() {
   const updateQueued = async () => {
     const startTime = performance.now()
     console.log(`[PERF] Starting queue update workflow (${queueStore.selectedQueue.length} to add, ${queueStore.excludedQueue.length} to exclude)`)
-    
+
     // Store the start time for end-to-end measurement
     sessionStore._workflowStartTime = startTime
     sessionStore._isTrackingWorkflow = true
-    
+
     sessionStore.clearActivePublication()
     if (queueStore.excludedQueue.length) {
       sessionStore.excludedPublicationsDois = sessionStore.excludedPublicationsDois.concat(queueStore.excludedQueue)
@@ -261,11 +269,11 @@ export function useAppState() {
   const addPublicationsAndUpdate = async (dois) => {
     const startTime = performance.now()
     console.log(`[PERF] Starting manual publication add workflow for ${dois.length} publications`)
-    
+
     // Store the start time for end-to-end measurement
     sessionStore._workflowStartTime = startTime
     sessionStore._isTrackingWorkflow = true
-    
+
     dois.forEach((doi) => queueStore.removeFromQueues(doi))
     await sessionStore.addPublicationsToSelection(dois)
     await updateSuggestions()
@@ -277,7 +285,7 @@ export function useAppState() {
   const loadExample = () => {
     const startTime = performance.now()
     console.log("[PERF] Starting example load workflow")
-    
+
     const session = {
       selected: [
         "10.1109/tvcg.2015.2467757",
@@ -287,7 +295,7 @@ export function useAppState() {
       ],
       boost: "cit, visual, map, publi|literat",
     }
-    
+
     // Store the start time for end-to-end measurement
     sessionStore._workflowStartTime = startTime
     loadSession(session)
@@ -313,13 +321,14 @@ export function useAppState() {
     queueStore.selectedQueue = queueStore.selectedQueue.filter(seletedDoi => doi != seletedDoi);
     queueStore.excludedQueue.push(doi);
   }
-  
+
   return {
     isEmpty,
     clear,
     clearSession,
     clearCache,
     updateSuggestions,
+    updateScores,
     computeSuggestions,
     activatePublicationComponentByDoi,
     retryLoadingPublication,

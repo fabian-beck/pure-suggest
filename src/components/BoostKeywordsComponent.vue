@@ -16,20 +16,20 @@
       </v-btn>
     </template>
     <v-sheet class="has-background-warning-95 p-2 pt-4">
-      <form @submit.prevent="sessionStore.updateScores">
+      <form @submit.prevent="updateScores">
         <v-text-field ref="boost" class="boost" density="compact" v-model="sessionStore.boostKeywordString"
           label="Keywords" variant="solo" append-inner-icon="mdi-close"
           @click:append-inner="sessionStore.setBoostKeywordString('')"
           hint="Use ',' to separate keywords, use '|' to discern alternatives/synonyms." persistent-hint>
           <template v-slot:append>
-            <v-btn class="has-background-warning" @click="sessionStore.updateScores" height="47">
+            <v-btn class="has-background-warning" @click="updateScores" height="47">
               <v-icon>mdi-chevron-double-up</v-icon>
             </v-btn>
           </template>
         </v-text-field>
         <v-checkbox v-model="sessionStore.isBoost" label="Boost scores" density="compact"
           hint="Each matched keyword in a title will double the score of a publication" persistent-hint
-          @change="sessionStore.updateScores"></v-checkbox>
+          @change="updateScores"></v-checkbox>
       </form>
     </v-sheet>
   </v-menu>
@@ -43,7 +43,7 @@ import { useAppState } from "@/composables/useAppState.js"
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
-const { isEmpty } = useAppState()
+const { isEmpty, updateScores } = useAppState()
 
 const boost = ref(null)
 const isMenuOpen = ref(false)
@@ -77,7 +77,7 @@ function handleMenuToggle(isOpen) {
     // Menu is closing - check if changes were made and update scores if needed
     const currentKeywordString = sessionStore.boostKeywordString
     if (currentKeywordString !== initialKeywordString.value) {
-      sessionStore.updateScores()
+      updateScores()
     }
   }
 }

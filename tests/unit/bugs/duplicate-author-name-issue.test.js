@@ -76,7 +76,7 @@ describe('Author Alternative Names Issue #540', () => {
     ]
 
     authorStore.selectedPublicationsAuthors = authors
-    sessionStore.uniqueBoostKeywords = []
+    sessionStore.boostKeywordString = ''
     interfaceStore.isAuthorModalDialogShown = true
 
     const wrapper = createWrapper()
@@ -114,7 +114,7 @@ describe('Author Alternative Names Issue #540', () => {
     ]
 
     authorStore.selectedPublicationsAuthors = authors
-    sessionStore.uniqueBoostKeywords = []
+    sessionStore.boostKeywordString = ''
     interfaceStore.isAuthorModalDialogShown = true
 
     const wrapper = createWrapper()
@@ -151,7 +151,7 @@ describe('Author Alternative Names Issue #540', () => {
     ]
 
     authorStore.selectedPublicationsAuthors = authors
-    sessionStore.uniqueBoostKeywords = []
+    sessionStore.boostKeywordString = ''
     interfaceStore.isAuthorModalDialogShown = true
 
     const wrapper = createWrapper()

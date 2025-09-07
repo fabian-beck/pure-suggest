@@ -193,13 +193,15 @@ describe('SessionMenuComponent', () => {
 
     it('should close menu when clicking on export JSON option', async () => {
       wrapper = createWrapper()
-      const exportItems = wrapper.findAll('.v-list-item')
       
-      // Find the export JSON item (should be one of the list items)
+      // Find export session item by looking for the click handler that calls exportSession
+      const exportItems = wrapper.findAll('.v-list-item')
       let exportJsonItem = null
+      
+      // Look for the item that calls exportSession when clicked
       for (const item of exportItems) {
-        if (item.text().includes('Export selected as JSON') || 
-            item.attributes('title') === 'Export selected as JSON') {
+        const clickHandler = item.attributes('onclick') || item.element.onclick
+        if (item.attributes('title')?.includes('Export') && !item.attributes('title')?.includes('BibTeX')) {
           exportJsonItem = item
           break
         }
@@ -216,11 +218,10 @@ describe('SessionMenuComponent', () => {
       wrapper = createWrapper()
       const exportItems = wrapper.findAll('.v-list-item')
       
-      // Find the export BibTeX item
+      // Find the export BibTeX item by looking for BibTeX in title
       let exportBibtexItem = null
       for (const item of exportItems) {
-        if (item.text().includes('Export selected as BibTeX') || 
-            item.attributes('title') === 'Export selected as BibTeX') {
+        if (item.attributes('title')?.includes('BibTeX') && item.attributes('title')?.includes('Export')) {
           exportBibtexItem = item
           break
         }
@@ -298,26 +299,34 @@ describe('SessionMenuComponent', () => {
   describe('Import session functionality', () => {
     it('should show import session menu item', () => {
       wrapper = createWrapper()
-      const importItem = wrapper.find('[title="Import other session"]')
-      expect(importItem.exists()).toBe(true)
+      // Look for import item by title containing "Import" and "session"
+      const importItem = wrapper.findAll('.v-list-item').find(item => 
+        item.attributes('title')?.includes('Import') && item.attributes('title')?.includes('session')
+      )
+      expect(importItem).toBeTruthy()
     })
 
     it('should call importSessionWithConfirmation from useAppState when import menu item is clicked', async () => {
       wrapper = createWrapper()
-      const importItem = wrapper.find('[title="Import other session"]')
+      const importItem = wrapper.findAll('.v-list-item').find(item => 
+        item.attributes('title')?.includes('Import') && item.attributes('title')?.includes('session')
+      )
       
+      expect(importItem).toBeTruthy()
       await importItem.trigger('click')
       expect(mockAppState.importSessionWithConfirmation).toHaveBeenCalled()
     })
 
     it('should have import icon for import session menu item', () => {
       wrapper = createWrapper()
-      const importItem = wrapper.find('[title="Import other session"]')
-      expect(importItem.exists()).toBe(true)
+      const importItem = wrapper.findAll('.v-list-item').find(item => 
+        item.attributes('title')?.includes('Import') && item.attributes('title')?.includes('session')
+      )
+      expect(importItem).toBeTruthy()
       
       // Verify the component has the import item (the exact icon rendering is handled by Vuetify)
       // In the real component, prepend-icon="mdi-import" will render the correct icon
-      expect(importItem.exists()).toBe(true)
+      expect(importItem).toBeTruthy()
     })
   })
 })

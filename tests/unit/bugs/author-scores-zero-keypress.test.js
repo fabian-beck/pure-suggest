@@ -20,7 +20,7 @@ describe('Author Scores Zero on Keypress Bug', () => {
 
     // Spy on the methods
     vi.spyOn(authorStore, 'computeSelectedPublicationsAuthors')
-    vi.spyOn(sessionStore, 'updateScores')
+    vi.spyOn(sessionStore, 'updatePublicationScores')
   })
 
   it('should reproduce the bug: pressing "a" key shows authors with score 0', () => {
@@ -59,7 +59,7 @@ describe('Author Scores Zero on Keypress Bug', () => {
     
     // VERIFICATION: Authors are not computed at all
     expect(authorStore.computeSelectedPublicationsAuthors).not.toHaveBeenCalled()
-    expect(sessionStore.updateScores).not.toHaveBeenCalled()
+    expect(sessionStore.updatePublicationScores).not.toHaveBeenCalled()
     
     // Authors list should be empty (no computation happened)
     expect(authorStore.selectedPublicationsAuthors).toHaveLength(0)
@@ -95,8 +95,8 @@ describe('Author Scores Zero on Keypress Bug', () => {
       }
     ]
 
-    // Mock updateScores to simulate proper score computation
-    sessionStore.updateScores.mockImplementation(() => {
+    // Mock updatePublicationScores to simulate proper score computation
+    sessionStore.updatePublicationScores.mockImplementation(() => {
       sessionStore.selectedPublications.forEach(pub => {
         pub.score = Math.random() * 3 + 0.5
         pub.boostKeywords = ['machine learning']
@@ -109,7 +109,7 @@ describe('Author Scores Zero on Keypress Bug', () => {
     interfaceStore.openAuthorModalDialog()
 
     // VERIFICATION: Both updates are triggered in correct order
-    expect(sessionStore.updateScores).toHaveBeenCalled()
+    expect(sessionStore.updatePublicationScores).toHaveBeenCalled()
     expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(sessionStore.selectedPublications)
     
     // Modal should be shown with computed data
@@ -184,8 +184,8 @@ describe('Author Scores Zero on Keypress Bug', () => {
       }
     ]
 
-    // Mock updateScores to simulate proper score computation
-    sessionStore.updateScores.mockImplementation(() => {
+    // Mock updatePublicationScores to simulate proper score computation
+    sessionStore.updatePublicationScores.mockImplementation(() => {
       sessionStore.selectedPublications.forEach(pub => {
         pub.score = Math.random() * 3 + 0.5
         pub.boostKeywords = ['machine learning']
@@ -199,7 +199,7 @@ describe('Author Scores Zero on Keypress Bug', () => {
     interfaceStore.openAuthorModalDialog()
 
     // VERIFICATION: With the fix, both score updates and author computation are triggered
-    expect(sessionStore.updateScores).toHaveBeenCalled()
+    expect(sessionStore.updatePublicationScores).toHaveBeenCalled()
     expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(sessionStore.selectedPublications)
     
     // Modal is shown with properly computed data

@@ -44,7 +44,7 @@ describe('Author Modal Timing Fix', () => {
 
     // Spy on the methods
     vi.spyOn(authorStore, 'computeSelectedPublicationsAuthors')
-    vi.spyOn(sessionStore, 'updateScores')
+    vi.spyOn(sessionStore, 'updatePublicationScores')
   })
 
   it('should automatically compute author data when modal is opened with empty author store', () => {
@@ -164,9 +164,9 @@ describe('Author Modal Timing Fix', () => {
     // USER ACTION: Open modal right after session load
     interfaceStore.openAuthorModalDialog()
 
-    // VERIFICATION: Should trigger updateScores first, then author computation
+    // VERIFICATION: Should trigger updatePublicationScores first, then author computation
     expect(interfaceStore.publicationsNeedScoreUpdate).toHaveBeenCalledWith(sessionStore.selectedPublications)
-    expect(sessionStore.updateScores).toHaveBeenCalled()
+    expect(sessionStore.updatePublicationScores).toHaveBeenCalled()
     expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(sessionStore.selectedPublications)
     
     // Modal should be shown

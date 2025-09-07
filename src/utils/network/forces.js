@@ -9,7 +9,7 @@
 import * as d3 from "d3";
 import { CURRENT_YEAR } from "@/constants/config.js";
 
-export const SIMULATION_ALPHA = 0.5;
+export const SIMULATION_ALPHA = 0.7;
 
 /**
  * Calculate link distance based on link type and network mode
@@ -17,8 +17,8 @@ export const SIMULATION_ALPHA = 0.5;
 export function getLinkDistance(link, isNetworkClusters, selectedPublicationsCount) {
   switch (link.type) {
     case "citation":
-      return (isNetworkClusters && link.internal) 
-        ? 1500 / selectedPublicationsCount 
+      return (isNetworkClusters && link.internal)
+        ? 1500 / selectedPublicationsCount
         : 10;
     case "keyword":
       return 0;
@@ -33,10 +33,10 @@ export function getLinkDistance(link, isNetworkClusters, selectedPublicationsCou
  * Calculate link strength based on link type and network mode
  */
 export function getLinkStrength(link, isNetworkClusters) {
-  const internalFactor = link.type === "citation" 
+  const internalFactor = link.type === "citation"
     ? (link.internal ? 1 : 1.5)
     : (link.type === "keyword" ? 0.5 : 2.5); // author
-  
+
   const clustersFactor = isNetworkClusters ? 1 : 0.5;
   return 0.05 * clustersFactor * internalFactor;
 }
@@ -64,7 +64,7 @@ export function getNodeXPosition(node, isNetworkClusters, yearXCalculator) {
   if (isNetworkClusters) {
     return node.x || 0;
   }
-  
+
   switch (node.type) {
     case "publication":
       return yearXCalculator(node.publication.year);
@@ -84,7 +84,7 @@ export function getXForceStrength(node, isNetworkClusters) {
   if (isNetworkClusters) {
     return 0.05;
   }
-  
+
   return node.type === "author" ? 0.2 : 10;
 }
 
@@ -118,6 +118,7 @@ export function initializeForces(simulation, config) {
   simulation.force("charge", d3
     .forceManyBody()
     .strength(getChargeStrength(selectedPublicationsCount))
+    .theta(0.7) // Optimized Barnes-Hut parameter for better performance
   );
 
   // Configure X positioning force
@@ -147,10 +148,10 @@ export function initializeForces(simulation, config) {
  */
 export function createForceSimulation(config) {
   const simulation = d3.forceSimulation();
-  
-  // Set default alpha decay and minimum
-  simulation.alphaDecay(0.015).alphaMin(0.01);
-  
+
+  // Set alpha decay and minimum for faster convergence
+  simulation.alphaDecay(0.03).alphaMin(0.02);
+
   // Initialize forces
   return initializeForces(simulation, config);
 }

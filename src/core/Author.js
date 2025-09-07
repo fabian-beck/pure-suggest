@@ -7,9 +7,11 @@ export default class Author {
         this.id = Author.nameToId(this.name);
         this.count = 1;
         this.firstAuthorCount = authorIndex === 0 ? 1 : 0;
+        
         this.score = (isAuthorScoreEnabled ? publication.score : 1)
             * (isFirstAuthorBoostEnabled ? (authorIndex > 0 ? 1 : SCORING.FIRST_AUTHOR_BOOST) : 1)
             * (isAuthorNewBoostEnabled ? (publication.isNew ? SCORING.NEW_PUBLICATION_BOOST : 1) : 1);
+        
         this.keywords = publication.boostKeywords.map(keyword => ({ [keyword]: 1 })).reduce((a, b) => ({ ...a, ...b }), {});
         const orcid = authorString.match(/(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g);
         this.orcid = orcid ? orcid[0] : undefined;

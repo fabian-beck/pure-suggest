@@ -117,7 +117,7 @@ describe('AuthorModalDialog', () => {
       }
     ]
 
-    sessionStore.uniqueBoostKeywords = []
+    sessionStore.boostKeywordString = ''
     interfaceStore.isAuthorModalDialogShown = true
 
     const wrapper = createWrapper()

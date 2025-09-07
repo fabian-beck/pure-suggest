@@ -49,7 +49,7 @@ describe('Author Details On Demand Feature', () => {
     ]
     
     authorStore.selectedPublicationsAuthors = mockAuthors
-    sessionStore.uniqueBoostKeywords = ['machine learning', 'AI', 'deep learning']
+    sessionStore.boostKeywordString = 'machine learning, AI, deep learning'
   })
 
   describe('Author Store - Active Author State', () => {
