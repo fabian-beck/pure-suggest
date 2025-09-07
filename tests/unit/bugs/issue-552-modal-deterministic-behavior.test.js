@@ -29,7 +29,7 @@ describe('Issue #552: Modal Deterministic Behavior', () => {
     
     // Mock the stores
     vi.spyOn(authorStore, 'computeSelectedPublicationsAuthors').mockReturnValue()
-    vi.spyOn(sessionStore, 'updateScores').mockImplementation(() => {
+    vi.spyOn(sessionStore, 'updatePublicationScores').mockImplementation(() => {
       // Mark publications as having scores to avoid repeated updates
       sessionStore.selectedPublications.forEach(pub => {
         pub.score = 10  // Some non-zero score

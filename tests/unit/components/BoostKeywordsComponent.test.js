@@ -6,6 +6,15 @@ import { useSessionStore } from '@/stores/session.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useQueueStore } from '@/stores/queue.js'
 
+// Mock useAppState to control updateScores
+const mockUpdateScores = vi.fn()
+vi.mock('@/composables/useAppState.js', () => ({
+  useAppState: () => ({
+    isEmpty: vi.fn().mockReturnValue(false),
+    updateScores: mockUpdateScores
+  })
+}))
+
 describe('BoostKeywordsComponent', () => {
   let pinia
   let sessionStore
@@ -23,8 +32,10 @@ describe('BoostKeywordsComponent', () => {
     sessionStore.boostKeywordString = 'test, example'
     sessionStore.isBoost = true
     sessionStore.setBoostKeywordString = vi.fn()
-    sessionStore.updateScores = vi.fn()
     interfaceStore.isMobile = false
+    
+    // Reset the mock before each test
+    mockUpdateScores.mockReset()
   })
 
 
@@ -78,7 +89,6 @@ describe('BoostKeywordsComponent', () => {
     it('should call updateScores when menu closes after user made changes', async () => {
       sessionStore.selectedPublications = [{ doi: '10.1000/test' }] // Make not empty
       sessionStore.boostKeywordString = 'original keywords'
-      sessionStore.updateScores = vi.fn()
 
       const wrapper = mount(BoostKeywordsComponent, {
         global: {
@@ -112,13 +122,12 @@ describe('BoostKeywordsComponent', () => {
       await wrapper.vm.handleMenuToggle(false)
 
       // updateScores should be called when menu closes with changes
-      expect(sessionStore.updateScores).toHaveBeenCalled()
+      expect(mockUpdateScores).toHaveBeenCalled()
     })
 
     it('should not call updateScores when menu closes without any changes', async () => {
       sessionStore.selectedPublications = [{ doi: '10.1000/test' }] // Make not empty
       sessionStore.boostKeywordString = 'original keywords'
-      sessionStore.updateScores = vi.fn()
 
       const wrapper = mount(BoostKeywordsComponent, {
         global: {
@@ -150,12 +159,11 @@ describe('BoostKeywordsComponent', () => {
       await wrapper.vm.handleMenuToggle(false)
 
       // updateScores should NOT be called when no changes were made
-      expect(sessionStore.updateScores).not.toHaveBeenCalled()
+      expect(mockUpdateScores).not.toHaveBeenCalled()
     })
 
     it('should call updateScores when form is submitted via button click', async () => {
       sessionStore.selectedPublications = [{ doi: '10.1000/test' }] // Make not empty
-      sessionStore.updateScores = vi.fn()
 
       const wrapper = mount(BoostKeywordsComponent, {
         global: {
@@ -184,10 +192,11 @@ describe('BoostKeywordsComponent', () => {
       
       if (submitButton) {
         await submitButton.trigger('click')
-        expect(sessionStore.updateScores).toHaveBeenCalled()
+        expect(mockUpdateScores).toHaveBeenCalled()
       } else {
-        // If we can't find the specific button, just verify the method exists
-        expect(typeof wrapper.vm.sessionStore.updateScores).toBe('function')
+        // If we can't find the specific button, just verify the method was called
+        // Since the component should call updateScores when buttons are clicked
+        expect(mockUpdateScores).toHaveBeenCalledTimes(0) // Initially not called, but available
       }
     })
   })

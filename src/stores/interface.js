@@ -119,7 +119,7 @@ export const useInterfaceStore = defineStore('interface', {
                     // IMPORTANT: Publications need to have their scores updated before computing author data
                     // Otherwise authors will have score=0 and no keywords
                     if (this.publicationsNeedScoreUpdate(sessionStore.selectedPublications)) {
-                        sessionStore.updateScores()
+                        sessionStore.updatePublicationScores()
                     }
                     
                     authorStore.computeSelectedPublicationsAuthors(sessionStore.selectedPublications)
@@ -141,7 +141,7 @@ export const useInterfaceStore = defineStore('interface', {
 
         publicationsNeedScoreUpdate(publications) {
             // Check if publications have default/uninitialized scores
-            // Publications with score=0 and empty boostKeywords likely haven't had updateScores() called
+            // Publications with score=0 and empty boostKeywords likely haven't had updatePublicationScores() called
             return publications.some(pub => 
                 pub.score === 0 && 
                 (!pub.boostKeywords || pub.boostKeywords.length === 0) &&

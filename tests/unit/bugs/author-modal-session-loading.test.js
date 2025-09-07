@@ -20,7 +20,7 @@ describe('Author Modal Session Loading Issue', () => {
 
     // Spy on the methods
     vi.spyOn(authorStore, 'computeSelectedPublicationsAuthors')
-    vi.spyOn(sessionStore, 'updateScores')
+    vi.spyOn(sessionStore, 'updatePublicationScores')
   })
 
   it('should identify publications that need score updates after session loading', () => {
@@ -94,7 +94,7 @@ describe('Author Modal Session Loading Issue', () => {
     expect(interfaceStore.publicationsNeedScoreUpdate(publicationsWithLegitimateZeroScore)).toBe(false)
   })
 
-  it('should trigger updateScores and then compute authors when opening modal after session load', () => {
+  it('should trigger updatePublicationScores and then compute authors when opening modal after session load', () => {
     // SCENARIO: Session just loaded, publications have uncomputed scores
     sessionStore.selectedPublications = [
       { 
@@ -121,8 +121,8 @@ describe('Author Modal Session Loading Issue', () => {
       }
     ]
 
-    // Mock updateScores to simulate score computation
-    sessionStore.updateScores.mockImplementation(() => {
+    // Mock updatePublicationScores to simulate score computation
+    sessionStore.updatePublicationScores.mockImplementation(() => {
       sessionStore.selectedPublications.forEach(pub => {
         pub.score = Math.random() * 3 + 0.5  // Random score between 0.5-3.5
         pub.boostKeywords = ['machine learning']  // Add some keywords
@@ -138,19 +138,19 @@ describe('Author Modal Session Loading Issue', () => {
     interfaceStore.openAuthorModalDialog()
 
     // VERIFICATION: Should trigger score updates first, then author computation
-    expect(sessionStore.updateScores).toHaveBeenCalled()
+    expect(sessionStore.updatePublicationScores).toHaveBeenCalled()
     expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(sessionStore.selectedPublications)
     
-    // Should be called in the correct order: updateScores before computeSelectedPublicationsAuthors
-    const updateScoresCallOrder = sessionStore.updateScores.mock.invocationCallOrder[0]
+    // Should be called in the correct order: updatePublicationScores before computeSelectedPublicationsAuthors
+    const updatePublicationScoresCallOrder = sessionStore.updatePublicationScores.mock.invocationCallOrder[0]
     const computeAuthorsCallOrder = authorStore.computeSelectedPublicationsAuthors.mock.invocationCallOrder[0]
-    expect(updateScoresCallOrder).toBeLessThan(computeAuthorsCallOrder)
+    expect(updatePublicationScoresCallOrder).toBeLessThan(computeAuthorsCallOrder)
 
     // Modal should be shown
     expect(interfaceStore.isAuthorModalDialogShown).toBe(true)
   })
 
-  it('should not trigger unnecessary updateScores when publications already have valid scores', () => {
+  it('should not trigger unnecessary updatePublicationScores when publications already have valid scores', () => {
     // SCENARIO: Publications already have computed scores (normal operation)
     sessionStore.selectedPublications = [
       { 
@@ -183,8 +183,8 @@ describe('Author Modal Session Loading Issue', () => {
     // USER ACTION: Open author modal
     interfaceStore.openAuthorModalDialog()
 
-    // VERIFICATION: Should NOT trigger updateScores since scores are already valid
-    expect(sessionStore.updateScores).not.toHaveBeenCalled()
+    // VERIFICATION: Should NOT trigger updatePublicationScores since scores are already valid
+    expect(sessionStore.updatePublicationScores).not.toHaveBeenCalled()
     
     // Should still compute authors
     expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(sessionStore.selectedPublications)
@@ -223,8 +223,8 @@ describe('Author Modal Session Loading Issue', () => {
     // USER ACTION: Open author modal
     interfaceStore.openAuthorModalDialog()
 
-    // VERIFICATION: Should trigger updateScores because at least one publication needs it
-    expect(sessionStore.updateScores).toHaveBeenCalled()
+    // VERIFICATION: Should trigger updatePublicationScores because at least one publication needs it
+    expect(sessionStore.updatePublicationScores).toHaveBeenCalled()
     expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalled()
   })
 
@@ -236,7 +236,7 @@ describe('Author Modal Session Loading Issue', () => {
     interfaceStore.openAuthorModalDialog()
 
     // VERIFICATION: Should not trigger any computation
-    expect(sessionStore.updateScores).not.toHaveBeenCalled()
+    expect(sessionStore.updatePublicationScores).not.toHaveBeenCalled()
     expect(authorStore.computeSelectedPublicationsAuthors).not.toHaveBeenCalled()
 
     // Modal should still be shown (user might want to see empty state)

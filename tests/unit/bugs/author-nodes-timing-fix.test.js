@@ -11,7 +11,8 @@ const mockSessionStore = {
   excludedPublicationsCount: 0,
   selectedPublicationsCount: 2,
   clearActivePublication: vi.fn(),
-  updateScores: vi.fn(),
+  updatePublicationScores: vi.fn(),
+  hasUpdated: vi.fn(),
   suggestion: null,
   maxSuggestions: 50,
   readPublicationsDois: [],
@@ -52,7 +53,8 @@ const mockAuthorStore = {
 const mockInterfaceStore = {
   isLoading: false,
   endLoading: vi.fn(),
-  loadingMessage: null
+  loadingMessage: null,
+  triggerNetworkReplot: vi.fn()
 }
 
 // Mock the stores
@@ -100,20 +102,20 @@ describe('Author Nodes Timing Fix', () => {
     mockAuthorStore.selectedPublicationsAuthors = []
   })
 
-  it('should compute author data BEFORE calling updateScores to fix timing issue', async () => {
+  it('should call updatePublicationScores BEFORE computing author data to fix timing issue', async () => {
     const { computeSuggestions } = useAppState()
     
     // Verify initial state: no author data
     expect(mockAuthorStore.selectedPublicationsAuthors).toHaveLength(0)
     
-    // Call computeSuggestions which internally calls both computeSelectedPublicationsAuthors and updateScores
+    // Call computeSuggestions which internally calls both computeSelectedPublicationsAuthors and updatePublicationScores
     await computeSuggestions()
     
-    // Verify the fix: computeSelectedPublicationsAuthors was called BEFORE updateScores
+    // Verify the fix: updatePublicationScores was called BEFORE computeSelectedPublicationsAuthors (correct order)
+    const updatePublicationScoresCallOrder = mockSessionStore.updatePublicationScores.mock.invocationCallOrder[0]
     const computeAuthorDataCallOrder = mockAuthorStore.computeSelectedPublicationsAuthors.mock.invocationCallOrder[0]
-    const updateScoresCallOrder = mockSessionStore.updateScores.mock.invocationCallOrder[0]
     
-    expect(computeAuthorDataCallOrder).toBeLessThan(updateScoresCallOrder)
+    expect(updatePublicationScoresCallOrder).toBeLessThan(computeAuthorDataCallOrder)
     
     // Verify author data is now populated
     expect(mockAuthorStore.selectedPublicationsAuthors).toHaveLength(2)
@@ -126,28 +128,32 @@ describe('Author Nodes Timing Fix', () => {
     expect(mockAuthorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(
       mockSessionStore.selectedPublications
     )
-    expect(mockSessionStore.updateScores).toHaveBeenCalled()
+    expect(mockSessionStore.updatePublicationScores).toHaveBeenCalled()
   })
 
-  it('should ensure author data is available when updateScores triggers network plotting', async () => {
+  it('should ensure author data is available after both score updates complete', async () => {
     const { computeSuggestions } = useAppState()
     
-    // Create a spy to track when updateScores is called and what author data is available
-    let authorDataAtUpdateScoresTime = null
-    mockSessionStore.updateScores = vi.fn(() => {
-      // Capture the state of author data when updateScores is called
-      authorDataAtUpdateScoresTime = [...mockAuthorStore.selectedPublicationsAuthors]
+    // Track that updatePublicationScores is called before author computation
+    let publicationScoresUpdated = false
+    mockSessionStore.updatePublicationScores = vi.fn(() => {
+      // At this point, author data should still be empty since it's computed after
+      expect(mockAuthorStore.selectedPublicationsAuthors).toHaveLength(0)
+      publicationScoresUpdated = true
     })
     
     await computeSuggestions()
     
-    // Verify that when updateScores was called, author data was already available
-    expect(authorDataAtUpdateScoresTime).toHaveLength(2)
-    expect(authorDataAtUpdateScoresTime[0]).toMatchObject({
+    // Verify that publication scores were updated first
+    expect(publicationScoresUpdated).toBe(true)
+    
+    // Verify that author data is now available after the complete sequence
+    expect(mockAuthorStore.selectedPublicationsAuthors).toHaveLength(2)
+    expect(mockAuthorStore.selectedPublicationsAuthors[0]).toMatchObject({
       id: 'author1',
       name: 'John Doe'
     })
-    expect(authorDataAtUpdateScoresTime[1]).toMatchObject({
+    expect(mockAuthorStore.selectedPublicationsAuthors[1]).toMatchObject({
       id: 'author2',
       name: 'Jane Smith'
     })

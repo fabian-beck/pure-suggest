@@ -248,26 +248,9 @@ export default {
 
         this.sessionStore.$onAction(({ name, after }) => {
             after(() => {
-                if (name === "updateScores") {
-                    // Prevent premature plot calls during loading workflow
-                    const hasSelectedPublications = this.sessionStore.selectedPublications?.length > 0;
-                    const hasSuggestedPublications = this.sessionStore.suggestedPublications?.length > 0;
-                    const isLoadingState = this.interfaceStore.isLoading;
-
-                    // Skip if still loading and don't have both selected + suggested publications ready
-                    if (!(isLoadingState && (!hasSelectedPublications || !hasSuggestedPublications))) {
-                        this.plot(true);
-                    }
-                }
-                else if ((!this.interfaceStore.isLoading && name === "clear") ||
+                if ((!this.interfaceStore.isLoading && name === "clear") ||
                     name === "hasUpdated") {
-                    // Prevent redundant plot calls when simulation is already active
-                    const currentAlpha = (this.simulation && typeof this.simulation.alpha === 'function') ? this.simulation.alpha() : 0;
-                    const isSimulationActive = currentAlpha > 0.01; // alphaMin threshold
-
-                    if (!(isSimulationActive && name === "hasUpdated")) {
-                        this.plot();
-                    }
+                    this.plot();
                 }
             });
         });
