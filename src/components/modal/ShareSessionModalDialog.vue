@@ -3,29 +3,19 @@
     icon="mdi-share-variant" header-color="primary">
     <div class="content">
       <p class="mb-4">
-        <strong>Share your current session:</strong> This link contains your selected publications, excluded publications, boost keywords, and session name. 
-        <em>Note: Any future changes to your session will require generating a new link.</em>
+        <strong>Share your current session:</strong> This link contains your selections and keyword settings.
+        <em>Note: Changes require generating a new link.</em>
       </p>
-      
+
       <div class="field">
         <label class="label">Shareable Link:</label>
         <div class="field has-addons">
           <div class="control is-expanded">
-            <input 
-              ref="linkInput"
-              class="input" 
-              type="text" 
-              :value="shareableUrl" 
-              readonly
-              @focus="$refs.linkInput.select()"
-            />
+            <input ref="linkInput" class="input" type="text" :value="shareableUrl" readonly
+              @focus="$refs.linkInput.select()" />
           </div>
           <div class="control">
-            <button 
-              class="button is-info" 
-              @click="copyToClipboard"
-              :class="{ 'is-success': copySuccess }"
-            >
+            <button class="button is-light" @click="copyToClipboard" :class="{ 'is-success': copySuccess }">
               <span class="icon">
                 <i class="mdi" :class="copySuccess ? 'mdi-check' : 'mdi-content-copy'"></i>
               </span>
@@ -34,10 +24,11 @@
           </div>
         </div>
       </div>
-      
-      <div class="notification is-info is-light">
-        <p class="is-size-7">
-          <strong>Tip:</strong> You can bookmark this link or share it with others to let them view your current publication selection and settings.
+
+      <div class="notification is-light">
+        <p class="is-size-6">
+          <strong>Tip:</strong> You can bookmark this link or share it with others to let them view your current
+          publication selection and settings.
         </p>
       </div>
     </div>
