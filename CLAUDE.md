@@ -102,3 +102,11 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 - Don't run dev mode yourself (npm run dev)
 - Make sure to adapt tests along with changes in the project.
 - Use Vue 3 Composition API for new components
+
+## UI Framework Guidelines
+
+- **Primary UI**: Use Vuetify 3 components over Bulma CSS when possible
+- **Text Fields**: Use default variant (no variant attribute) for standard inputs
+- **Button Alignment**: Use `v-slot:append-inner` for buttons inside text fields, not `v-slot:append`
+- **Density**: Use `density="compact"` for space-efficient layouts
+- **Neutral Styling**: Use neutral colors (`is-light`, `default`) instead of accent colors for secondary actions

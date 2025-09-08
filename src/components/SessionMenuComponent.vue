@@ -36,6 +36,7 @@
       </v-list-item>
       <v-list-item prepend-icon="mdi-export" @click="sessionStore.exportSession" title="Export session" />
       <v-list-item prepend-icon="mdi-export" @click="sessionStore.exportAllBibtex" title="Export BibTeX" />
+      <v-list-item prepend-icon="mdi-share-variant" @click="interfaceStore.isShareSessionModalDialogShown = true" title="Share session as link" />
       <v-list-item prepend-icon="mdi-delete" @click="clearSession" class="has-text-danger" title="Clear session" />
       <v-list-item prepend-icon="mdi-import" @click="importSessionWithConfirmation" title="Import session" />
       <v-list-item prepend-icon="mdi-import" @click="importBibtex" title="Import BibTeX " />
