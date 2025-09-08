@@ -4,13 +4,12 @@ import { createPinia, setActivePinia } from 'pinia'
 import SuggestedPublicationsComponent from '@/components/SuggestedPublicationsComponent.vue'
 import { useSessionStore } from '@/stores/session.js'
 import { useInterfaceStore } from '@/stores/interface.js'
+import { commonComponentStubs } from '../../helpers/testUtils.js'
 
-// Mock useAppState
+// Simplified useAppState mock
 const mockLoadMoreSuggestions = vi.fn()
 vi.mock('@/composables/useAppState.js', () => ({
-  useAppState: () => ({
-    loadMoreSuggestions: mockLoadMoreSuggestions
-  })
+  useAppState: () => ({ loadMoreSuggestions: mockLoadMoreSuggestions })
 }))
 
 describe('SuggestedPublicationsComponent', () => {
@@ -50,13 +49,11 @@ describe('SuggestedPublicationsComponent', () => {
       global: {
         plugins: [pinia],
         stubs: {
-          'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
+          ...commonComponentStubs,
           'v-badge': { 
             template: '<div class="v-badge" :content="content"><slot></slot></div>',
             props: ['content', 'color', 'offset-y', 'offset-x', 'value', 'transition']
           },
-          'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
-          'tippy': { template: '<div class="tippy"><slot></slot></div>' },
           'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
         }
       }
