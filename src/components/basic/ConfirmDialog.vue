@@ -1,5 +1,5 @@
 <template>
-    <v-dialog width="500" persistent v-model="interfaceStore.confirmDialog.isShown">
+    <v-dialog width="500" persistent v-model="interfaceStore.confirmDialog.isShown" :z-index="9000" overlay-class="confirm-dialog-overlay">
         <v-card>
             <v-card-title v-if="interfaceStore.confirmDialog.title">
                 {{ interfaceStore.confirmDialog.title }}

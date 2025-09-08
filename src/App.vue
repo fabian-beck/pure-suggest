@@ -291,11 +291,47 @@ html, body {
 
 /* Ensure only modal dialogs (not confirm dialogs) appear above header */
 .modal-dialog-overlay {
-  z-index: 6000 !important;
+  z-index: 9000 !important;
 }
 
 .modal-dialog-overlay .v-overlay__scrim {
-  z-index: 6000 !important;
+  z-index: 8999 !important;
+}
+
+.modal-dialog-overlay .v-overlay__content {
+  z-index: 9001 !important;
+}
+
+/* Ensure confirm dialogs also appear above header */
+.confirm-dialog-overlay {
+  z-index: 9000 !important;
+}
+
+.confirm-dialog-overlay .v-overlay__scrim {
+  z-index: 8999 !important;
+  /* Ensure the dark overlay covers the full viewport including header */
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  position: fixed !important;
+}
+
+.confirm-dialog-overlay .v-overlay__content {
+  z-index: 9001 !important;
+}
+
+/* Fallback: Ensure ALL dialogs appear above header menus */
+.v-dialog {
+  z-index: 9000 !important;
+}
+
+.v-dialog .v-overlay__scrim {
+  z-index: 8999 !important;
+}
+
+.v-dialog .v-overlay__content {
+  z-index: 9001 !important;
 }
 
 
