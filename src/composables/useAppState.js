@@ -295,7 +295,7 @@ export function useAppState() {
         "10.1002/asi.24171",
         "10.2312/evp.20221110"
       ],
-      boost: "cit, visual, map, publi|literat",
+      boost: "cit, visual, publi|literat",
     }
 
     // Store the start time for end-to-end measurement
