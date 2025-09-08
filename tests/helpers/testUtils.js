@@ -1,0 +1,158 @@
+import { vi } from 'vitest'
+
+/**
+ * Test utilities following clean mocking patterns established during refactoring
+ * Focus on behavior testing rather than implementation details
+ */
+
+// Simplified D3 mock - chainable behavior without implementation complexity
+export const createD3ChainableMock = (returnData = null) => {
+  const mock = vi.fn(() => returnData || createD3ChainableMock())
+  
+  // Common D3 methods that return chainable objects
+  const chainableMethods = [
+    'append', 'attr', 'select', 'selectAll', 'call', 'join', 'enter', 'exit', 
+    'remove', 'merge', 'style', 'text', 'on', 'classed', 'filter', 'transition', 'duration'
+  ]
+  
+  chainableMethods.forEach(method => {
+    mock[method] = vi.fn(() => createD3ChainableMock())
+  })
+  
+  // Special D3 cases
+  mock.data = vi.fn((data) => data ? { map: vi.fn(fn => data.map(fn)), ...mock } : [])
+  mock.node = vi.fn(() => ({ getBoundingClientRect: () => ({ x: 0, y: 0, width: 100, height: 100 }) }))
+  mock.nodes = vi.fn(() => [])
+  
+  return mock
+}
+
+// Simplified D3 simulation mock
+export const createD3SimulationMock = () => ({
+  alphaDecay: vi.fn(() => createD3SimulationMock()),
+  alphaMin: vi.fn(() => createD3SimulationMock()),
+  nodes: vi.fn(() => createD3SimulationMock()),
+  force: vi.fn(() => createD3SimulationMock()),
+  alpha: vi.fn(() => createD3SimulationMock()),
+  restart: vi.fn(() => createD3SimulationMock()),
+  stop: vi.fn(() => createD3SimulationMock()),
+  on: vi.fn(() => createD3SimulationMock())
+})
+
+// Standard store mocks - essential state only
+export const createMockSessionStore = (overrides = {}) => ({
+  isEmpty: false,
+  selectedPublications: [],
+  suggestedPublications: [],
+  selectedPublicationsAuthors: [],
+  boostKeywords: [],
+  filter: {
+    string: '',
+    yearStart: '',
+    yearEnd: '',
+    tag: '',
+    dois: [],
+    isActive: true,
+    applyToSelected: true,
+    applyToSuggested: true,
+    hasActiveFilters: vi.fn(() => false),
+    removeDoi: vi.fn()
+  },
+  activePublication: null,
+  updateQueued: vi.fn(),
+  $onAction: vi.fn(),
+  getSelectedPublicationByDoi: vi.fn(() => ({
+    title: 'Test Publication',
+    authorShort: 'Author',
+    year: 2023
+  })),
+  ...overrides
+})
+
+export const createMockInterfaceStore = (overrides = {}) => ({
+  isMobile: false,
+  isFilterMenuOpen: false,
+  isNetworkExpanded: false,
+  isNetworkClusters: false,
+  isLoading: false,
+  openFilterMenu: vi.fn(),
+  closeFilterMenu: vi.fn(),
+  setFilterMenuState: vi.fn(),
+  openAuthorModalDialog: vi.fn(),
+  activatePublicationComponent: vi.fn(),
+  ...overrides
+})
+
+// Common external dependency mocks
+export const mockExternalDependencies = {
+  Cache: {
+    clearCache: vi.fn(),
+    get: vi.fn(),
+    set: vi.fn(),
+    keys: vi.fn(() => Promise.resolve([]))
+  },
+  
+  Util: {
+    scrollToTargetAdjusted: vi.fn(),
+    shuffle: vi.fn(arr => arr),
+    saveAsFile: vi.fn()
+  },
+  
+  Publication: {
+    default: {
+      TAGS: [
+        { name: 'Research', value: 'research' },
+        { name: 'Review', value: 'review' }
+      ]
+    }
+  }
+}
+
+// Common Vuetify component stubs for consistent testing
+export const vuetifyStubs = {
+  'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
+  'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
+  'v-btn-toggle': { template: '<div class="v-btn-toggle"><slot></slot></div>' },
+  'v-menu': { template: '<div class="v-menu"><slot></slot></div>' },
+  'v-list': { template: '<div class="v-list"><slot></slot></div>' },
+  'v-list-item': { template: '<div class="v-list-item"><slot></slot></div>' },
+  'v-list-item-title': { template: '<div class="v-list-item-title"><slot></slot></div>' },
+  'v-checkbox': { template: '<input type="checkbox" class="v-checkbox">' },
+  'v-slider': { template: '<input type="range" class="v-slider">' }
+}
+
+// Mock a publication object with common properties
+export const createMockPublication = (overrides = {}) => ({
+  doi: '10.1234/test',
+  title: 'Test Publication',
+  author: 'Test Author',
+  year: 2023,
+  score: 5,
+  boostFactor: 1,
+  scoreColor: '#blue',
+  citationCount: 2,
+  referenceCount: 3,
+  referenceDois: ['10.1234/ref1'],
+  isActive: false,
+  isSelected: false,
+  isRead: true,
+  wasFetched: true,
+  isLinkedToActive: false,
+  isHovered: false,
+  isKeywordHovered: false,
+  isAuthorHovered: false,
+  ...overrides
+})
+
+// Standard DOM element mock
+export const createMockElement = (id, nodeName = 'DIV') => ({
+  id,
+  nodeName,
+  focus: vi.fn(),
+  blur: vi.fn(),
+  getBoundingClientRect: () => ({ x: 0, y: 0, width: 100, height: 100 }),
+  getElementsByClassName: vi.fn(() => []),
+  nextElementSibling: null,
+  previousElementSibling: null,
+  parentNode: null
+})
