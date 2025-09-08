@@ -9,8 +9,11 @@ const mockQueueStore = {
   removeFromQueues: vi.fn()
 }
 
-const mockSessionStore = {
-  hoverPublication: vi.fn()
+const mockSessionStore = {}
+
+const mockInterfaceStore = {
+  setHoveredPublication: vi.fn(),
+  hoveredPublication: null
 }
 
 // Mock composables
@@ -28,6 +31,10 @@ vi.mock('@/stores/queue.js', () => ({
 
 vi.mock('@/stores/session.js', () => ({
   useSessionStore: () => mockSessionStore
+}))
+
+vi.mock('@/stores/interface.js', () => ({
+  useInterfaceStore: () => mockInterfaceStore
 }))
 
 vi.mock('@/composables/useAppState.js', () => ({
@@ -106,7 +113,7 @@ describe('PublicationComponent Hover Bug', () => {
     }
   })
 
-  it('should call sessionStore.hoverPublication on mouseenter', async () => {
+  it('should call interfaceStore.setHoveredPublication on mouseenter', async () => {
     wrapper = mount(PublicationComponent, {
       props: { publication: mockPublication },
       global: {
@@ -123,10 +130,10 @@ describe('PublicationComponent Hover Bug', () => {
     const publicationDiv = wrapper.find('.publication-component')
     await publicationDiv.trigger('mouseenter')
 
-    expect(mockSessionStore.hoverPublication).toHaveBeenCalledWith(mockPublication, true)
+    expect(mockInterfaceStore.setHoveredPublication).toHaveBeenCalledWith(mockPublication)
   })
 
-  it('should call sessionStore.hoverPublication on mouseleave', async () => {
+  it('should call interfaceStore.setHoveredPublication on mouseleave', async () => {
     wrapper = mount(PublicationComponent, {
       props: { publication: mockPublication },
       global: {
@@ -143,6 +150,6 @@ describe('PublicationComponent Hover Bug', () => {
     const publicationDiv = wrapper.find('.publication-component')
     await publicationDiv.trigger('mouseleave')
 
-    expect(mockSessionStore.hoverPublication).toHaveBeenCalledWith(mockPublication, false)
+    expect(mockInterfaceStore.setHoveredPublication).toHaveBeenCalledWith(null)
   })
 })

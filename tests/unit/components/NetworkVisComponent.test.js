@@ -515,31 +515,6 @@ describe('NetworkVisComponent', () => {
       expect(wrapper.vm.onlyShowFiltered).toBe(true)
     })
 
-    it('sets up session store action listeners', () => {
-      const mockOnAction = vi.fn()
-      vi.mocked(useSessionStore).mockReturnValue({
-        isEmpty: false,
-        isUpdatable: false,
-        selectedPublications: [],
-        suggestedPublications: [],
-        boostKeywords: [],
-        updateQueued: vi.fn(),
-        $onAction: mockOnAction,
-        filter: {
-          hasActiveFilters: vi.fn(() => false)
-        },
-        activePublication: null
-      })
-
-      mount(NetworkVisComponent, {
-        global: {
-          stubs: getComponentStubs()
-        }
-      })
-
-      // Should set up action listeners for store updates
-      expect(mockOnAction).toHaveBeenCalled()
-    })
   })
 
   describe('Computed Properties', () => {
@@ -662,14 +637,22 @@ describe('NetworkVisComponent', () => {
       wrapper.vm.node.data = originalNodeData
     })
 
-    it('skips plotting when dragging', () => {
+    it('allows simulation restart during dragging for responsive layout', () => {
       wrapper.vm.setDragging(true)
       
-      const spy = vi.spyOn(wrapper.vm, 'restart')
-      wrapper.vm.plot()
+      const restartSpy = vi.spyOn(wrapper.vm, 'restart')
+      const startSpy = vi.spyOn(wrapper.vm, 'start')
       
-      // Should not call simulation restart when dragging
-      expect(spy).not.toHaveBeenCalled()
+      // Test with restart=true (should call restart during dragging)
+      wrapper.vm.plot(true)
+      expect(restartSpy).toHaveBeenCalled()
+      
+      restartSpy.mockClear()
+      startSpy.mockClear()
+      
+      // Test with restart=false (should call start during dragging)  
+      wrapper.vm.plot(false)
+      expect(startSpy).toHaveBeenCalled()
     })
 
     it('updates simulation with graph data', () => {

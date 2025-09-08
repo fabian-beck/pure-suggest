@@ -36,6 +36,7 @@ export function useAppState() {
     authorStore.selectedPublicationsAuthors = []
     // do not reset read publications as the user might to carry this information to the next session
     interfaceStore.clear()
+    // Network will naturally clear when it detects empty state, no need for expensive replot
   }
 
   /**
@@ -293,7 +294,7 @@ export function useAppState() {
         "10.1002/asi.24171",
         "10.2312/evp.20221110"
       ],
-      boost: "cit, visual, map, publi|literat",
+      boost: "cit, visual, publi|literat",
     }
 
     // Store the start time for end-to-end measurement

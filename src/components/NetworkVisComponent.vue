@@ -168,8 +168,8 @@ export default {
         },
 
         networkCssClasses: function () {
-            // Check if we should show fading animation during early tick skipping
-            if (this.shouldSkipEarlyTicks && this.currentTickCount <= this.skipEarlyTicks) {
+            // Check if we should show fading animation during early tick skipping (but not when dragging)
+            if (this.shouldSkipEarlyTicks && !this.isDragging && this.currentTickCount <= this.skipEarlyTicks) {
                 return 'network-fading';
             } else {
                 return 'network-visible';
@@ -179,6 +179,10 @@ export default {
     watch: {
         isNetworkClusters: {
             handler: function () {
+                // Skip plotting during loading to prevent premature network rendering
+                if (this.interfaceStore.isLoading) {
+                    return;
+                }
                 this.plot(true);
             },
         },
@@ -191,13 +195,18 @@ export default {
                 } else {
                     this.onlyShowFiltered = true;
                 }
+                // Skip plotting during loading to prevent premature network rendering
+                if (this.interfaceStore.isLoading) {
+                    return;
+                }
                 this.plot(true);
             },
         },
         activePublication: {
             handler: function () {
-                if (this.interfaceStore.isLoading)
+                if (this.interfaceStore.isLoading) {
                     return;
+                }
                 this.plot();
             },
         },
@@ -244,16 +253,6 @@ export default {
 
         // Set initial state of "only show filtered" based on whether filters are active
         this.onlyShowFiltered = this.sessionStore.filter.hasActiveFilters();
-
-
-        this.sessionStore.$onAction(({ name, after }) => {
-            after(() => {
-                if ((!this.interfaceStore.isLoading && name === "clear") ||
-                    name === "hasUpdated") {
-                    this.plot();
-                }
-            });
-        });
     },
     beforeUnmount() {
         // Cleanup D3 simulation (moved from useNetworkSimulation)
@@ -265,8 +264,14 @@ export default {
     },
     methods: {
         plot: function (restart) {
-
             if (this.isDragging) {
+                // During dragging, we want full simulation restart for responsive layout
+                // Skip the expensive graph reconstruction but restart simulation with current graph
+                if (restart) {
+                    this.restart(SIMULATION_ALPHA);
+                } else {
+                    this.start();
+                }
                 return;
             }
 
@@ -295,11 +300,14 @@ export default {
                 });
 
                 initGraph.call(this);
+
                 updateNodes.call(this);
+
                 this.link = updateNetworkLinks(
                     this.link,
                     this.graph.links
                 );
+
                 // Update year labels
                 const hasPublications = this.sessionStore.publicationsFiltered?.length > 0;
                 const shouldShow = !this.isEmpty && !this.isNetworkClusters;
@@ -435,7 +443,14 @@ export default {
                             .attr("class", (d) => `node-container ${d.type}`);
 
                         // Initialize publication nodes using module
-                        initializePublicationNodes(g, this.activatePublication, (publication, isHovered) => this.sessionStore.hoverPublication(publication, isHovered));
+                        initializePublicationNodes(g, this.activatePublication, (publication, isHovered) => {
+                            if (isHovered) {
+                                this.interfaceStore.setHoveredPublication(publication);
+                            } else {
+                                this.interfaceStore.setHoveredPublication(null);
+                            }
+                            this.updatePublicationHighlighting();
+                        });
 
                         // Initialize keyword nodes using module
                         initializeKeywordNodes(g, this.keywordNodeDrag, this.keywordNodeClick, this.onKeywordNodeMouseover, this.onKeywordNodeMouseout);
@@ -489,8 +504,8 @@ export default {
             // Synchronize local tick count for CSS animation reactivity
             this.currentTickCount = this.$refs.performanceMonitor?.tickCount || 0;
 
-            // Skip DOM updates for first N ticks only if this is a true restart with high alpha
-            if (this.shouldSkipEarlyTicks && this.$refs.performanceMonitor?.tickCount <= this.skipEarlyTicks) {
+            // Skip DOM updates for first N ticks only if this is a true restart with high alpha (but not when dragging)
+            if (this.shouldSkipEarlyTicks && !this.isDragging && this.$refs.performanceMonitor?.tickCount <= this.skipEarlyTicks) {
                 this.$refs.performanceMonitor?.trackFps(); // Still track FPS for debugging
                 return;
             }
@@ -657,9 +672,9 @@ export default {
         },
 
         restart(alpha = SIMULATION_ALPHA) {
-            if (this.simulation && !this.isDragging) {
-                // Only skip early ticks if this is a true restart with high alpha (> 0.3)
-                if (alpha > 0.3) {
+            if (this.simulation) {
+                // Only skip early ticks if this is a true restart with high alpha (> 0.3) and not dragging
+                if (alpha > 0.3 && !this.isDragging) {
                     this.$refs.performanceMonitor?.resetMetrics();
                     this.currentTickCount = 0; // Reset local tick count
                     this.shouldSkipEarlyTicks = true;
@@ -873,6 +888,7 @@ export default {
             if (this.node) {
                 this.node
                     .filter(d => d.type === "publication")
+                    .classed("is-hovered", d => this.interfaceStore.hoveredPublication === d.publication.doi)
                     .classed("is-keyword-hovered", d => d.publication.isKeywordHovered)
                     .classed("is-author-hovered", d => d.publication.isAuthorHovered);
             }

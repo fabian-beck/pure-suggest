@@ -148,11 +148,7 @@ export function initializeForces(simulation, config) {
  */
 export function createForceSimulation(config) {
   const simulation = d3.forceSimulation();
-
-  // Set alpha decay and minimum for faster convergence
-  simulation.alphaDecay(0.03).alphaMin(0.02);
-
-  // Initialize forces
+  simulation.alphaDecay(0.015).alphaMin(0.015);
   return initializeForces(simulation, config);
 }
 
