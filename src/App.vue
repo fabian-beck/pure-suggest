@@ -82,6 +82,17 @@ export default {
 $block-spacing: 0.5rem;
 $box-padding: 1rem;
 
+/* Chrome scrollbar fix #566 - hide scrollbars at document level */
+html, body {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+}
+
+
 #app .v-application__wrap {
   display: grid;
   grid-template-areas:
@@ -90,6 +101,15 @@ $box-padding: 1rem;
   height: 100vh;
   grid-template-rows: max-content auto;
   font-family: BlinkMacSystemFont, -apple-system, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, Helvetica, Arial, sans-serif !important;
+  
+  /* Hide the main application-level scrollbar that causes Chrome issue #566 */
+  overflow: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
 
   & p {
     margin: 0;
