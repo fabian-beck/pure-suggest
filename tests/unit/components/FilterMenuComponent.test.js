@@ -5,23 +5,20 @@ import FilterMenuComponent from '@/components/FilterMenuComponent.vue'
 import { useSessionStore } from '@/stores/session.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 
-// Mock the stores
+// Mock stores and external dependencies
 vi.mock('@/stores/session.js')
 vi.mock('@/stores/interface.js')
-
-// Mock the Cache module to avoid indexedDB issues
 vi.mock('@/lib/Cache.js', () => ({
-  clearCache: vi.fn()
+  clearCache: vi.fn(),
+  get: vi.fn(),
+  set: vi.fn(),
+  keys: vi.fn(() => Promise.resolve([]))
 }))
-
-// Mock utilities
 vi.mock('@/lib/Util.js', () => ({
   scrollToTargetAdjusted: vi.fn(),
   shuffle: vi.fn(arr => arr),
   saveAsFile: vi.fn()
 }))
-
-// Mock Publication
 vi.mock('@/core/Publication.js', () => ({
   default: {
     TAGS: [
@@ -39,6 +36,7 @@ describe('FilterMenuComponent', () => {
   beforeEach(async () => {
     setActivePinia(createPinia())
     
+    // Simplified inline store mocks
     mockSessionStore = {
       isEmpty: false,
       filter: {

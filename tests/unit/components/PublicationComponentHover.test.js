@@ -1,22 +1,21 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import PublicationComponent from '@/components/PublicationComponent.vue'
+import { createMockSessionStore, createMockInterfaceStore } from '../../helpers/testUtils.js'
 
-// Mock stores
+// Simplified store mocks using testUtils
 const mockQueueStore = {
   isQueuingForSelected: vi.fn(() => false),
   isQueuingForExcluded: vi.fn(() => false),
   removeFromQueues: vi.fn()
 }
 
-const mockSessionStore = {}
-
-const mockInterfaceStore = {
+const mockSessionStore = createMockSessionStore()
+const mockInterfaceStore = createMockInterfaceStore({
   setHoveredPublication: vi.fn(),
   hoveredPublication: null
-}
+})
 
-// Mock composables
 const mockAppState = {
   retryLoadingPublication: vi.fn(),
   activatePublicationComponentByDoi: vi.fn(),
@@ -24,22 +23,11 @@ const mockAppState = {
   queueForExcluded: vi.fn()
 }
 
-// Mock the store and composable imports
-vi.mock('@/stores/queue.js', () => ({
-  useQueueStore: () => mockQueueStore
-}))
-
-vi.mock('@/stores/session.js', () => ({
-  useSessionStore: () => mockSessionStore
-}))
-
-vi.mock('@/stores/interface.js', () => ({
-  useInterfaceStore: () => mockInterfaceStore
-}))
-
-vi.mock('@/composables/useAppState.js', () => ({
-  useAppState: () => mockAppState
-}))
+// Mock store and composable imports
+vi.mock('@/stores/queue.js', () => ({ useQueueStore: () => mockQueueStore }))
+vi.mock('@/stores/session.js', () => ({ useSessionStore: () => mockSessionStore }))
+vi.mock('@/stores/interface.js', () => ({ useInterfaceStore: () => mockInterfaceStore }))
+vi.mock('@/composables/useAppState.js', () => ({ useAppState: () => mockAppState }))
 
 // Mock child components to avoid complex dependencies
 vi.mock('@/components/PublicationDescription.vue', () => ({

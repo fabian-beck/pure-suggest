@@ -2,26 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 
-// Mock IndexedDB for this test
-global.indexedDB = {
-  open: vi.fn(() => ({
-    onsuccess: null,
-    onerror: null,
-    result: {
-      createObjectStore: vi.fn(() => ({})),
-      transaction: vi.fn(() => ({
-        objectStore: vi.fn(() => ({
-          add: vi.fn(() => ({})),
-          get: vi.fn(() => ({})),
-          getAll: vi.fn(() => ({})),
-          delete: vi.fn(() => ({}))
-        }))
-      }))
-    }
-  }))
-}
-
-// Mock Cache to avoid IndexedDB issues
+// Simplified external dependency mocking
 vi.mock('@/lib/Cache.js', () => ({
   get: vi.fn(),
   set: vi.fn(),
@@ -29,25 +10,14 @@ vi.mock('@/lib/Cache.js', () => ({
   clearCache: vi.fn()
 }))
 
-// Mock PublicationSearch
+// Simplified PublicationSearch mock
 vi.mock('@/core/PublicationSearch.js', () => ({
   default: class {
-    constructor() {}
     async execute() {
       return {
         results: [
-          {
-            doi: '10.1234/test-publication-1',
-            title: 'Test Publication 1',
-            year: 2023,
-            wasFetched: true
-          },
-          {
-            doi: '10.1234/test-publication-2', 
-            title: 'Test Publication 2',
-            year: 2022,
-            wasFetched: true
-          }
+          { doi: '10.1234/test-1', title: 'Test Publication 1', year: 2023, wasFetched: true },
+          { doi: '10.1234/test-2', title: 'Test Publication 2', year: 2022, wasFetched: true }
         ],
         type: 'search'
       }

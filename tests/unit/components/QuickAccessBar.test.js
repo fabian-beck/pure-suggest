@@ -4,7 +4,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import QuickAccessBar from '@/components/QuickAccessBar.vue'
 import { useQueueStore } from '@/stores/queue.js'
 
-// Mock scroll utility
+// Mock external dependencies with simplified approach
 vi.mock('@/lib/Util.js', () => ({
   scrollToTargetAdjusted: vi.fn()
 }))

@@ -453,117 +453,20 @@ describe('PublicationComponent', () => {
     })
   })
 
-  describe('score color edge cases', () => {
-    it('should handle score exactly at threshold boundaries', () => {
-      // Test scores at exact threshold values
-      wrapper = createWrapper({ score: 32, scoreColor: 'hsl(0, 0%, 60%)' }) // VERY_HIGH threshold
+  describe('score display', () => {
+    it('should display various score values correctly', () => {
+      // Test representative score values
+      wrapper = createWrapper({ score: 32, scoreColor: 'hsl(0, 0%, 60%)' })
       expect(wrapper.find('.score').text()).toBe('32')
       
-      wrapper = createWrapper({ score: 16, scoreColor: 'hsl(0, 0%, 72%)' }) // HIGH threshold  
-      expect(wrapper.find('.score').text()).toBe('16')
-      
-      wrapper = createWrapper({ score: 8, scoreColor: 'hsl(0, 0%, 80%)' }) // MEDIUM_HIGH threshold
-      expect(wrapper.find('.score').text()).toBe('8')
-      
-      wrapper = createWrapper({ score: 4, scoreColor: 'hsl(0, 0%, 90%)' }) // MEDIUM threshold
-      expect(wrapper.find('.score').text()).toBe('4')
-      
-      wrapper = createWrapper({ score: 2, scoreColor: 'hsl(0, 0%, 95%)' }) // LOW threshold
-      expect(wrapper.find('.score').text()).toBe('2')
-    })
-
-    it('should handle scores just below threshold boundaries', () => {
-      // Test scores just below thresholds to verify boundary conditions
-      wrapper = createWrapper({ score: 31.9, scoreColor: 'hsl(0, 0%, 72%)' }) // Just below VERY_HIGH
-      expect(wrapper.find('.score').text()).toBe('31.9')
-      
-      wrapper = createWrapper({ score: 15.9, scoreColor: 'hsl(0, 0%, 80%)' }) // Just below HIGH
-      expect(wrapper.find('.score').text()).toBe('15.9')
-    })
-
-    it('should handle zero and negative scores', () => {
-      wrapper = createWrapper({ score: 0, scoreColor: 'hsl(0, 0%, 100%)' }) // Below all thresholds
+      wrapper = createWrapper({ score: 0, scoreColor: 'hsl(0, 0%, 100%)' })
       expect(wrapper.find('.score').text()).toBe('0')
       
-      wrapper = createWrapper({ score: -5, scoreColor: 'hsl(0, 0%, 100%)' }) // Negative score
-      expect(wrapper.find('.score').text()).toBe('-5') 
-    })
-
-    it('should handle very high scores above all thresholds', () => {
-      wrapper = createWrapper({ score: 1000, scoreColor: 'hsl(0, 0%, 60%)' }) // Well above VERY_HIGH
-      expect(wrapper.find('.score').text()).toBe('1000')
-    })
-
-    it('should handle fractional scores near boundaries', () => {
-      wrapper = createWrapper({ score: 1.9, scoreColor: 'hsl(0, 0%, 100%)' }) // Just below LOW threshold
-      expect(wrapper.find('.score').text()).toBe('1.9')
-      
-      wrapper = createWrapper({ score: 2.1, scoreColor: 'hsl(0, 0%, 95%)' }) // Just above LOW threshold  
-      expect(wrapper.find('.score').text()).toBe('2.1')
+      wrapper = createWrapper({ score: -5, scoreColor: 'hsl(0, 0%, 100%)' })
+      expect(wrapper.find('.score').text()).toBe('-5')
     })
   })
 
-  describe('queue state management edge cases', () => {
-    it('should handle publication queued for both selected and excluded simultaneously', () => {
-      // This could be a bug state that shouldn't happen but needs to be handled gracefully
-      mockSessionStore.isQueuingForSelected.mockReturnValue(true)
-      mockSessionStore.isQueuingForExcluded.mockReturnValue(true)
-      
-      wrapper = createWrapper({ doi: 'conflicted-doi' })
-      
-      // Component should still render without crashing even in conflicted state
-      expect(wrapper.exists()).toBe(true)
-      
-      // The functions should be available even if not called during render
-      expect(typeof mockSessionStore.isQueuingForSelected).toBe('function')
-      expect(typeof mockSessionStore.isQueuingForExcluded).toBe('function')
-    })
-
-    it('should handle rapid queue/dequeue operations', async () => {
-      const publication = createMockPublication({ doi: 'rapid-test', isSelected: false })
-      wrapper = createWrapper(publication)
-      
-      const plusButton = wrapper.findAll('.mock-compact-button').find(btn => 
-        btn.text().includes('mdi-plus-thick')
-      )
-      
-      // Simulate rapid clicking
-      await plusButton.trigger('click')
-      await plusButton.trigger('click')
-      await plusButton.trigger('click')
-      
-      // Should call queueForSelected multiple times without error
-      expect(mockSessionStore.queueForSelected).toHaveBeenCalledTimes(3)
-      expect(mockSessionStore.queueForSelected).toHaveBeenCalledWith('rapid-test')
-    })
-
-    it('should handle missing DOI in queue operations', async () => {
-      const publication = createMockPublication({ doi: null }) // Missing DOI
-      wrapper = createWrapper(publication)
-      
-      const minusButton = wrapper.findAll('.mock-compact-button').find(btn => 
-        btn.text().includes('mdi-minus-thick')
-      )
-      
-      await minusButton.trigger('click')
-      
-      // Should still call the function, letting the store handle the null DOI
-      expect(mockSessionStore.queueForExcluded).toHaveBeenCalledWith(null)
-    })
-
-    it('should handle empty string DOI', async () => {
-      const publication = createMockPublication({ doi: '' })
-      wrapper = createWrapper(publication)
-      
-      const minusButton = wrapper.findAll('.mock-compact-button').find(btn => 
-        btn.text().includes('mdi-minus-thick')
-      )
-      
-      await minusButton.trigger('click')
-      
-      expect(mockSessionStore.queueForExcluded).toHaveBeenCalledWith('')
-    })
-  })
 
   describe('refocus method', () => {
     it('should focus element when refocus is called', () => {

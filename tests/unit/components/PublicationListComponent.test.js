@@ -5,28 +5,24 @@ import PublicationListComponent from '@/components/PublicationListComponent.vue'
 import { useSessionStore } from '@/stores/session.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 
-// Mock the stores
+// Mock stores and external dependencies
 vi.mock('@/stores/session.js')
 vi.mock('@/stores/interface.js')
-
-// Mock the Cache module to avoid indexedDB issues
 vi.mock('@/lib/Cache.js', () => ({
   clearCache: vi.fn()
 }))
-
-// Mock utilities
 vi.mock('@/lib/Util.js', () => ({
   scrollToTargetAdjusted: vi.fn(),
   shuffle: vi.fn(arr => arr),
   saveAsFile: vi.fn()
 }))
 
-// Mock LazyPublicationComponent
+// Mock LazyPublicationComponent with simplified approach
 vi.mock('@/components/LazyPublicationComponent.vue', () => ({
   default: {
     name: 'LazyPublicationComponent',
     props: ['publication'],
-    template: '<div class="mock-publication">{{ publication.doi }}</div>'
+    template: '<div class="publication-item" data-testid="publication-{{ publication.doi }}">{{ publication.doi }}</div>'
   }
 }))
 
@@ -39,6 +35,7 @@ describe('PublicationListComponent - Section Headers', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     
+    // Simplified mock publications
     mockPublications = [
       {
         doi: '10.1234/pub1',
@@ -52,6 +49,7 @@ describe('PublicationListComponent - Section Headers', () => {
       }
     ]
 
+    // Simplified store mocking
     mockSessionStore = {
       filter: {
         matches: vi.fn(),
@@ -65,8 +63,7 @@ describe('PublicationListComponent - Section Headers', () => {
       suggestedPublicationsNonFilteredCount: 1
     }
 
-    mockInterfaceStore = {
-    }
+    mockInterfaceStore = {}
 
     vi.mocked(useSessionStore).mockReturnValue(mockSessionStore)
     vi.mocked(useInterfaceStore).mockReturnValue(mockInterfaceStore)

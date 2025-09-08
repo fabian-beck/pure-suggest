@@ -1,21 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import SessionMenuComponent from '@/components/SessionMenuComponent.vue'
+import { createMockSessionStore, createMockInterfaceStore } from '../../helpers/testUtils.js'
 
-// Mock stores and composables
-const mockSessionStore = {
+// Simplified mock stores using testUtils
+const mockSessionStore = createMockSessionStore({
   sessionName: 'Test Session',
   selectedPublicationsCount: 5,
   excludedPublicationsCount: 2,
   exportSession: vi.fn(),
   exportAllBibtex: vi.fn(),
   setSessionName: vi.fn()
-}
+})
 
-const mockInterfaceStore = {
+const mockInterfaceStore = createMockInterfaceStore({
   isMobile: false,
   isExcludedModalDialogShown: false
-}
+})
 
 const mockAppState = {
   isEmpty: false,
