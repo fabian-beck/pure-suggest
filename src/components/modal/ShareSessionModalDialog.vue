@@ -1,6 +1,6 @@
 <template>
   <ModalDialog v-model="interfaceStore.isShareSessionModalDialogShown" title="Share Session as Link"
-    icon="mdi-share-variant" header-color="info">
+    icon="mdi-share-variant" header-color="primary">
     <div class="content">
       <p class="mb-4">
         <strong>Share your current session:</strong> This link contains your selected publications, excluded publications, boost keywords, and session name. 

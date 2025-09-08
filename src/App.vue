@@ -39,19 +39,27 @@ import { useSessionStore } from "./stores/session.js";
 import { useInterfaceStore } from "./stores/interface.js";
 import { perfMonitor } from "./utils/performance.js";
 import { useAppState } from "./composables/useAppState.js";
+import LZString from 'lz-string';
 
 import { onKey } from "./lib/Keys.js";
 
 export default {
   name: "App",
+  data() {
+    return {
+      hasLoadedFromUrl: false, // Track if we loaded session from URL
+      originalUrlWithSession: null, // Store the original URL with session parameter
+      isInitialLoadComplete: false, // Track if initial load is complete
+    };
+  },
   setup() {
     const sessionStore = useSessionStore();
     const interfaceStore = useInterfaceStore();
-    const { isEmpty } = useAppState();
+    const { isEmpty, loadSession } = useAppState();
     // check if mobile 
     interfaceStore.checkMobile();
     window.addEventListener("resize", interfaceStore.checkMobile);
-    return { sessionStore, interfaceStore, isEmpty };
+    return { sessionStore, interfaceStore, isEmpty, loadSession };
   },
   methods: {
     checkAndLoadSessionFromUrl() {
@@ -60,21 +68,75 @@ export default {
       
       if (sessionParam) {
         console.log("Found session parameter in URL, attempting to load...");
-        const success = this.sessionStore.loadSessionFromUrl(sessionParam);
-        
-        if (success) {
-          // Remove the session parameter from URL without reloading the page
-          const newUrl = window.location.pathname;
-          window.history.replaceState({}, document.title, newUrl);
-          console.log("Session loaded successfully and URL cleaned");
-        } else {
-          console.error("Failed to load session from URL parameter");
+        try {
+          // Decompress and parse the session data
+          const decompressed = LZString.decompressFromEncodedURIComponent(sessionParam);
+          if (!decompressed) {
+            console.error("Failed to decompress session data");
+            return;
+          }
+          
+          const sessionData = JSON.parse(decompressed);
+          
+          // Store the original URL and set tracking flag
+          this.originalUrlWithSession = window.location.href;
+          this.hasLoadedFromUrl = true;
+          
+          // Use the loadSession method from useAppState which properly fetches metadata
+          this.loadSession(sessionData);
+          
+          console.log("Session loaded successfully from URL (URL will be cleaned on first update)");
+        } catch (error) {
+          console.error("Error loading session from URL:", error);
         }
+      }
+    },
+    
+    cleanUrlIfNeeded() {
+      if (this.hasLoadedFromUrl) {
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+        console.log("URL cleaned after first session update");
+        this.hasLoadedFromUrl = false;
+        this.originalUrlWithSession = null;
       }
     }
   },
   created() {
     window.addEventListener("keydown", onKey);
+  },
+  watch: {
+    // Watch for any changes to session state and clean URL if we loaded from URL
+    'sessionStore.selectedPublications': {
+      handler() {
+        if (this.isInitialLoadComplete) {
+          this.cleanUrlIfNeeded();
+        }
+      },
+      deep: true
+    },
+    'sessionStore.excludedPublicationsDois': {
+      handler() {
+        if (this.isInitialLoadComplete) {
+          this.cleanUrlIfNeeded();
+        }
+      },
+      deep: true
+    },
+    'sessionStore.boostKeywordString': {
+      handler() {
+        if (this.isInitialLoadComplete) {
+          this.cleanUrlIfNeeded();
+        }
+      }
+    },
+    'sessionStore.sessionName': {
+      handler() {
+        if (this.isInitialLoadComplete) {
+          this.cleanUrlIfNeeded();
+        }
+      }
+    }
   },
   mounted() {
     window.onbeforeunload = () => {
@@ -86,6 +148,13 @@ export default {
     
     // Check for session parameter in URL and load if present
     this.checkAndLoadSessionFromUrl();
+    
+    // Mark initial load as complete after a short delay to allow session loading to finish
+    this.$nextTick(() => {
+      setTimeout(() => {
+        this.isInitialLoadComplete = true;
+      }, 1000);
+    });
     
     // Log page performance metrics
     setTimeout(() => {
