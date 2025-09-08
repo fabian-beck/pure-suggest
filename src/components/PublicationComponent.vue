@@ -32,7 +32,7 @@
       'is-queuing':
         queueStore.isQueuingForSelected(publication.doi) ||
         queueStore.isQueuingForExcluded(publication.doi),
-      'is-hovered': publication.isHovered,
+      'is-hovered': interfaceStore.hoveredPublication === publication.doi,
       'is-keyword-hovered': publication.isKeywordHovered,
       'is-author-hovered': publication.isAuthorHovered,
     }" :id="publication.doi" tabindex="0" @focus="activate" @click.stop @mouseenter="handleMouseEnter"
@@ -154,10 +154,12 @@
 import { computed } from 'vue'
 import { useQueueStore } from "@/stores/queue.js"
 import { useSessionStore } from "@/stores/session.js"
+import { useInterfaceStore } from "@/stores/interface.js"
 import { useAppState } from "@/composables/useAppState.js"
 
 const queueStore = useQueueStore()
 const sessionStore = useSessionStore()
+const interfaceStore = useInterfaceStore()
 const { retryLoadingPublication, activatePublicationComponentByDoi, queueForSelected, queueForExcluded } = useAppState()
 
 const emit = defineEmits(['activate'])
@@ -212,11 +214,11 @@ function activate() {
 }
 
 function handleMouseEnter() {
-  sessionStore.hoverPublication(props.publication, true)
+  interfaceStore.setHoveredPublication(props.publication)
 }
 
 function handleMouseLeave() {
-  sessionStore.hoverPublication(props.publication, false)
+  interfaceStore.setHoveredPublication(null)
 }
 
 

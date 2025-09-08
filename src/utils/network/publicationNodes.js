@@ -92,7 +92,6 @@ export function updatePublicationNodes(nodeSelection, activePublication, existin
         .classed("non-active", (d) => activePublication && !d.publication.isActive && !d.publication.isLinkedToActive)
         .classed("queuingForSelected", (d) => d.isQueuingForSelected)
         .classed("queuingForExcluded", (d) => d.isQueuingForExcluded)
-        .classed("is-hovered", (d) => d.publication.isHovered)
         .classed("is-keyword-hovered", (d) => d.publication.isKeywordHovered)
         .classed("is-author-hovered", (d) => d.publication.isAuthorHovered);
 

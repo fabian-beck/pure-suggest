@@ -267,13 +267,9 @@ export default {
 
         this.sessionStore.$onAction(({ name, after }) => {
             after(() => {
-                console.log(`[NETWORK PLOT] sessionStore action '${name}' completed, isLoading: ${this.interfaceStore.isLoading}`);
-                if ((!this.interfaceStore.isLoading && name === "clear") ||
-                    name === "hasUpdated") {
+                if (!this.interfaceStore.isLoading && name === "clear") {
                     console.log(`[NETWORK PLOT] Calling plot() due to sessionStore action: ${name}`);
                     this.plot();
-                } else {
-                    console.log(`[NETWORK PLOT] Skipping plot() for action '${name}' - conditions not met`);
                 }
             });
         });
@@ -315,7 +311,7 @@ export default {
             }
 
             console.log(`[NETWORK PLOT] Starting plot execution...`);
-            
+
             try {
                 console.log(`[NETWORK PLOT] Updating simulation configuration...`);
                 // Update simulation configuration
@@ -330,16 +326,16 @@ export default {
 
                 console.log(`[NETWORK PLOT] Initializing graph...`);
                 initGraph.call(this);
-                
+
                 console.log(`[NETWORK PLOT] Updating nodes...`);
                 updateNodes.call(this);
-                
+
                 console.log(`[NETWORK PLOT] Updating links...`);
                 this.link = updateNetworkLinks(
                     this.link,
                     this.graph.links
                 );
-                
+
                 // Update year labels
                 const hasPublications = this.sessionStore.publicationsFiltered?.length > 0;
                 const shouldShow = !this.isEmpty && !this.isNetworkClusters;
@@ -369,7 +365,7 @@ export default {
                     console.log(`[NETWORK PLOT] Starting simulation...`);
                     this.start();
                 }
-                
+
                 console.log(`[NETWORK PLOT] Plot execution completed successfully`);
             }
             catch (error) {
@@ -481,7 +477,14 @@ export default {
                             .attr("class", (d) => `node-container ${d.type}`);
 
                         // Initialize publication nodes using module
-                        initializePublicationNodes(g, this.activatePublication, (publication, isHovered) => this.sessionStore.hoverPublication(publication, isHovered));
+                        initializePublicationNodes(g, this.activatePublication, (publication, isHovered) => {
+                            if (isHovered) {
+                                this.interfaceStore.setHoveredPublication(publication);
+                            } else {
+                                this.interfaceStore.setHoveredPublication(null);
+                            }
+                            this.updatePublicationHighlighting();
+                        });
 
                         // Initialize keyword nodes using module
                         initializeKeywordNodes(g, this.keywordNodeDrag, this.keywordNodeClick, this.onKeywordNodeMouseover, this.onKeywordNodeMouseout);
@@ -920,6 +923,7 @@ export default {
             if (this.node) {
                 this.node
                     .filter(d => d.type === "publication")
+                    .classed("is-hovered", d => this.interfaceStore.hoveredPublication === d.publication.doi)
                     .classed("is-keyword-hovered", d => d.publication.isKeywordHovered)
                     .classed("is-author-hovered", d => d.publication.isAuthorHovered);
             }

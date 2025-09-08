@@ -179,8 +179,8 @@ describe('NetworkVisComponent - Loading State Behavior', () => {
       // Clear previous plot calls
       plotSpy.mockClear()
       
-      // Trigger updateScores during loading - this should NOT trigger plot
-      wrapper.vm.sessionStore.updateScores()
+      // Trigger updatePublicationScores during loading - this should NOT trigger plot
+      wrapper.vm.sessionStore.updatePublicationScores()
       await wrapper.vm.$nextTick()
       
       // Verify plot was NOT called during loading

@@ -221,17 +221,6 @@ export const useSessionStore = defineStore('session', {
       );
     },
 
-    hoverPublication(publication, isHovered) {
-      if (publication.isHovered !== isHovered) {
-        publication.isHovered = isHovered;
-        this.hasUpdated();
-      }
-    },
-
-
-    // This method can be watched to manually trigger updates 
-    hasUpdated() {
-    },
 
 
 

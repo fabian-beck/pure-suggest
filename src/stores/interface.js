@@ -39,6 +39,8 @@ export const useInterfaceStore = defineStore('interface', {
             },
             isMobile: true,
             isFilterMenuOpen: false,
+            // Hover state management
+            hoveredPublication: null, // DOI of currently hovered publication
         }
     },
     getters: {
@@ -195,6 +197,11 @@ export const useInterfaceStore = defineStore('interface', {
         restoreNetwork() {
             this.isNetworkExpanded = false;
             this.isNetworkCollapsed = false;
+        },
+
+        setHoveredPublication(publication) {
+            // Set the DOI of the hovered publication, or null if no publication is hovered
+            this.hoveredPublication = publication?.doi || null;
         },
 
     }
