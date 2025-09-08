@@ -43,16 +43,30 @@
         </p>
         <ul>
           <li>
-            Beck, F. and Krause, C., 2022. Visually Explaining Publication
-            Ranks in Citation-based Literature Search with PURE suggest. In
-            EuroVis 2022 - Posters. DOI:
-            <a href="https://diglib.eg.org/handle/10.2312/evp20221110">10.2312/evp.20221110</a>. [<a
-              href="https://diglib.eg.org/bitstream/handle/10.2312/evp20221110/019-021.pdf">PDF</a>]
+            <strong>[Main Publication]</strong> Beck, F., 2025. 
+            <em>PUREsuggest: Citation-Based Literature Search and Visual Exploration with Keyword-Controlled Rankings.</em> 
+            In IEEE Transactions on Visualization and Computer Graphics, 31(1), 316-326. DOI:
+            <a href="https://doi.org/10.1109/TVCG.2024.3456199">10.1109/TVCG.2024.3456199</a>. 
+            [<a href="https://arxiv.org/pdf/2408.02508">PDF</a>]
           </li>
           <li>
-            Beck, F., 2022. Assessing Discussions of Related Work through
-            Citation-based Recommendations and Network Visualization.
-            <a href="https://doi.org/10.5281/zenodo.7123500">https://doi.org/10.5281/zenodo.7123500</a>
+            Rabsahl, S. and Beck, F., 2024. 
+            <em>A Multi-layer Event Visualization for Exploring User Search Patterns in Literature Discovery with PUREsuggest.</em> 
+            In Proceedings of Mensch und Computer 2024. DOI:
+            <a href="https://doi.org/10.1145/3670653.3677502">10.1145/3670653.3677502</a>
+          </li>
+          <li>
+            Beck, F., 2022. 
+            <em>Assessing Discussions of Related Work through Citation-based Recommendations and Network Visualization.</em> 
+            In Workshop on Open Citations and Open Scholarly Metadata 2022. DOI:
+            <a href="https://doi.org/10.5281/zenodo.7123500">10.5281/zenodo.7123500</a>
+          </li>
+          <li>
+            Beck, F. and Krause, C., 2022. 
+            <em>Visually Explaining Publication Ranks in Citation-based Literature Search with PURE suggest.</em> 
+            In EuroVis 2022 - Posters. DOI:
+            <a href="https://diglib.eg.org/handle/10.2312/evp20221110">10.2312/evp.20221110</a>. 
+            [<a href="https://diglib.eg.org/bitstream/handle/10.2312/evp20221110/019-021.pdf">PDF</a>]
           </li>
         </ul>
         <h2><v-icon>mdi-database</v-icon>&ensp;Data Sources</h2>
