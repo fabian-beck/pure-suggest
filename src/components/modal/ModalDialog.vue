@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="isDialogShown" scrollable :fullscreen="interfaceStore.isMobile" :z-index="6000" overlay-class="modal-dialog-overlay">
+    <v-dialog v-model="isDialogShown" scrollable :fullscreen="interfaceStore.isMobile" :z-index="9000" overlay-class="modal-dialog-overlay">
         <v-card>
             <v-card-title
                 :class="`has-background-${headerColor} ${headerColor.startsWith('light') ? 'has-text-dark' : 'has-text-light'}`">
@@ -64,11 +64,12 @@ export default {
 // Ensure modal overlay covers the entire viewport including header
 // Target only modal dialogs with the specific overlay class to avoid affecting confirm dialogs
 :deep(.modal-dialog-overlay) {
-    z-index: 6000 !important; // Much higher than default Vuetify z-indexes (dialog: 2400, menu: 2410)
+    z-index: 9000 !important; // Much higher than default Vuetify z-indexes (dialog: 2400, menu: 2410)
 }
 
 :deep(.modal-dialog-overlay .v-overlay__scrim) {
     // Ensure the dark overlay covers the full viewport including header
+    z-index: 8999 !important;
     top: 0 !important;
     left: 0 !important;
     width: 100vw !important;
@@ -80,7 +81,7 @@ export default {
     margin-top: 48px !important;
     height: calc(100vh - 48px) !important;
     // Ensure content is also above header and any menus
-    z-index: 6001 !important;
+    z-index: 9001 !important;
 
     & .v-card-title {
         margin-bottom: 0;

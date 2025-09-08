@@ -321,16 +321,22 @@ html, body {
   z-index: 9001 !important;
 }
 
-/* Fallback: Ensure ALL dialogs appear above header menus */
-.v-dialog {
+/* Alternative approach: Target confirm dialogs by their simple structure */
+.v-dialog:has(.v-card-actions) {
   z-index: 9000 !important;
 }
 
-.v-dialog .v-overlay__scrim {
+.v-dialog:has(.v-card-actions) .v-overlay__scrim {
   z-index: 8999 !important;
+  /* Ensure the dark overlay covers the full viewport including header */
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  position: fixed !important;
 }
 
-.v-dialog .v-overlay__content {
+.v-dialog:has(.v-card-actions) .v-overlay__content {
   z-index: 9001 !important;
 }
 
