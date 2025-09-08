@@ -35,7 +35,7 @@ We publish news as part of our blog on Medium.com: https://medium.com/@pure_sugg
 
 If you want to learn more on the background of the tool or cite it, you can refer to the following publication:
 
-* **[Main Publication]** Beck, F., 2024 (Early Access). *PUREsuggest: Citation-based Literature Search and Visual Exploration with Keyword-controlled Rankings.* In IEEE Transactions on Visualization and Computer Graphics: DOI: [10.1109/TVCG.2024.3456199](https://doi.org/10.1109/TVCG.2024.3456199). [[PDF](https://arxiv.org/pdf/2408.02508)]
+* **[Main Publication]** Beck, F., 2025. *PUREsuggest: Citation-Based Literature Search and Visual Exploration with Keyword-Controlled Rankings.* In IEEE Transactions on Visualization and Computer Graphics, 31(1), 316-326. DOI: [10.1109/TVCG.2024.3456199](https://doi.org/10.1109/TVCG.2024.3456199). [[PDF](https://arxiv.org/pdf/2408.02508)]
 * Rabsahl, S. and Beck, F., 2024. *A Multi-layer Event Visualization for Exploring User Search Patterns in Literature Discovery with PUREsuggest.* In Proceedings of Mensch und Computer 2024. DOI: [10.1145/3670653.3677502](https://doi.org/10.1145/3670653.3677502)
 * Beck, F., 2022. *Assessing Discussions of Related Work through Citation-based Recommendations and Network Visualization.* In Workshop on Open Citations and Open Scholarly Metadata 2022. DOI: [10.5281/zenodo.7123500](https://doi.org/10.5281/zenodo.7123500).
 * Beck, F. and Krause, C., 2022. *Visually Explaining Publication Ranks in Citation-based Literature Search with PURE suggest.* In EuroVis 2022 - Posters. DOI: [10.2312/evp.20221110](https://diglib.eg.org/handle/10.2312/evp20221110). [[PDF](https://diglib.eg.org/bitstream/handle/10.2312/evp20221110/019-021.pdf)]
