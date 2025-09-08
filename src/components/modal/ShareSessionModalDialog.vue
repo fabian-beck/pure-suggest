@@ -7,23 +7,29 @@
         <em>Note: Changes require generating a new link.</em>
       </p>
 
-      <div class="field">
-        <label class="label">Shareable Link:</label>
-        <div class="field has-addons">
-          <div class="control is-expanded">
-            <input ref="linkInput" class="input" type="text" :value="shareableUrl" readonly
-              @focus="$refs.linkInput.select()" />
-          </div>
-          <div class="control">
-            <button class="button is-light" @click="copyToClipboard" :class="{ 'is-success': copySuccess }">
-              <span class="icon">
-                <i class="mdi" :class="copySuccess ? 'mdi-check' : 'mdi-content-copy'"></i>
-              </span>
-              <span>{{ copySuccess ? 'Copied!' : 'Copy' }}</span>
-            </button>
-          </div>
-        </div>
-      </div>
+      <v-text-field
+        ref="linkInput"
+        label="Shareable Link"
+        :model-value="shareableUrl"
+        readonly
+        variant="outlined"
+        density="compact"
+        style="font-family: monospace; font-size: 0.85rem;"
+        @focus="$refs.linkInput.select()"
+      >
+        <template v-slot:append-inner>
+          <v-btn
+            @click="copyToClipboard"
+            :color="copySuccess ? 'success' : 'default'"
+            variant="text"
+            density="compact"
+            size="small"
+          >
+            <v-icon size="small">{{ copySuccess ? 'mdi-check' : 'mdi-content-copy' }}</v-icon>
+            {{ copySuccess ? 'Copied!' : 'Copy' }}
+          </v-btn>
+        </template>
+      </v-text-field>
 
       <div class="notification is-light">
         <p class="is-size-6">
@@ -77,12 +83,5 @@ watch(() => interfaceStore.isShareSessionModalDialogShown, (isShown) => {
 </script>
 
 <style scoped>
-.field .control.is-expanded .input {
-  font-family: monospace;
-  font-size: 0.85rem;
-}
-
-.button.is-success {
-  transition: all 0.3s ease;
-}
+/* No custom styles needed - Vuetify handles alignment automatically */
 </style>
