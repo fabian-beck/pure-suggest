@@ -36,6 +36,8 @@ export function useAppState() {
     authorStore.selectedPublicationsAuthors = []
     // do not reset read publications as the user might to carry this information to the next session
     interfaceStore.clear()
+    // Trigger network replot to reflect the cleared state
+    interfaceStore.triggerNetworkReplot()
   }
 
   /**

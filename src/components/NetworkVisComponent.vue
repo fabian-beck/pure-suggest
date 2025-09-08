@@ -263,16 +263,6 @@ export default {
 
         // Set initial state of "only show filtered" based on whether filters are active
         this.onlyShowFiltered = this.sessionStore.filter.hasActiveFilters();
-
-
-        this.sessionStore.$onAction(({ name, after }) => {
-            after(() => {
-                if (!this.interfaceStore.isLoading && name === "clear") {
-                    console.log(`[NETWORK PLOT] Calling plot() due to sessionStore action: ${name}`);
-                    this.plot();
-                }
-            });
-        });
     },
     beforeUnmount() {
         // Cleanup D3 simulation (moved from useNetworkSimulation)

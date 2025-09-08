@@ -515,31 +515,6 @@ describe('NetworkVisComponent', () => {
       expect(wrapper.vm.onlyShowFiltered).toBe(true)
     })
 
-    it('sets up session store action listeners', () => {
-      const mockOnAction = vi.fn()
-      vi.mocked(useSessionStore).mockReturnValue({
-        isEmpty: false,
-        isUpdatable: false,
-        selectedPublications: [],
-        suggestedPublications: [],
-        boostKeywords: [],
-        updateQueued: vi.fn(),
-        $onAction: mockOnAction,
-        filter: {
-          hasActiveFilters: vi.fn(() => false)
-        },
-        activePublication: null
-      })
-
-      mount(NetworkVisComponent, {
-        global: {
-          stubs: getComponentStubs()
-        }
-      })
-
-      // Should set up action listeners for store updates
-      expect(mockOnAction).toHaveBeenCalled()
-    })
   })
 
   describe('Computed Properties', () => {
