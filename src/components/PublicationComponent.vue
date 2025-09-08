@@ -153,12 +153,10 @@
 <script setup>
 import { computed } from 'vue'
 import { useQueueStore } from "@/stores/queue.js"
-import { useSessionStore } from "@/stores/session.js"
 import { useInterfaceStore } from "@/stores/interface.js"
 import { useAppState } from "@/composables/useAppState.js"
 
 const queueStore = useQueueStore()
-const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
 const { retryLoadingPublication, activatePublicationComponentByDoi, queueForSelected, queueForExcluded } = useAppState()
 
