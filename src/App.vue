@@ -124,12 +124,12 @@ $box-padding: 1rem;
 
     & #selected {
       grid-area: selected;
-      overflow-y: hidden;
+      overflow-y: auto;
     }
 
     & #suggested {
       grid-area: suggested;
-      overflow-y: hidden;
+      overflow-y: auto;
     }
 
     & #network {
@@ -184,8 +184,7 @@ $box-padding: 1rem;
     & #main {
       display: block;
       margin: 0;
-      overflow-y: auto;
-      overflow-x: hidden;
+      overflow: scroll;
       height: auto;
 
       & .box {
