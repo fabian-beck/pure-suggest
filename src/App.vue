@@ -107,7 +107,7 @@ $box-padding: 1rem;
       "selected suggested"
       "vis vis";
     height: calc(100% - 1vw);
-    overflow: auto;
+    overflow: hidden;
     grid-template-columns: 50fr 50fr;
     grid-template-rows: auto 35vh;
     gap: 0.5vw;
@@ -184,7 +184,8 @@ $box-padding: 1rem;
     & #main {
       display: block;
       margin: 0;
-      overflow: scroll;
+      overflow-y: auto;
+      overflow-x: hidden;
       height: auto;
 
       & .box {
