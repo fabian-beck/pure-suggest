@@ -108,8 +108,9 @@ export const mockExternalDependencies = {
   }
 }
 
-// Common Vuetify component stubs for consistent testing
-export const vuetifyStubs = {
+// Common component stubs for consistent testing
+export const commonComponentStubs = {
+  // Vuetify components
   'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
   'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
   'v-btn-toggle': { template: '<div class="v-btn-toggle"><slot></slot></div>' },
@@ -118,8 +119,30 @@ export const vuetifyStubs = {
   'v-list-item': { template: '<div class="v-list-item"><slot></slot></div>' },
   'v-list-item-title': { template: '<div class="v-list-item-title"><slot></slot></div>' },
   'v-checkbox': { template: '<input type="checkbox" class="v-checkbox">' },
-  'v-slider': { template: '<input type="range" class="v-slider">' }
+  'v-slider': { template: '<input type="range" class="v-slider">' },
+  
+  // Custom components commonly mocked
+  'InlineIcon': { 
+    props: ['icon', 'color'], 
+    template: '<span class="inline-icon">{{ icon }}</span>' 
+  },
+  'CompactButton': { 
+    props: ['icon'], 
+    emits: ['click'], 
+    template: '<button class="compact-button" @click="$emit(\'click\')" data-testid="compact-btn">{{ icon }}</button>' 
+  },
+  'PublicationDescription': { 
+    props: ['publication'], 
+    template: '<div class="publication-description">{{ publication.title || "Mock Publication" }}</div>' 
+  },
+  'Tippy': { 
+    props: ['class', 'placement'], 
+    template: '<div class="tippy-tooltip"><slot /></div>' 
+  }
 }
+
+// Legacy alias for backward compatibility
+export const vuetifyStubs = commonComponentStubs
 
 // Mock a publication object with common properties
 export const createMockPublication = (overrides = {}) => ({
