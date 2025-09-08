@@ -168,8 +168,8 @@ export default {
         },
 
         networkCssClasses: function () {
-            // Check if we should show fading animation during early tick skipping
-            if (this.shouldSkipEarlyTicks && this.currentTickCount <= this.skipEarlyTicks) {
+            // Check if we should show fading animation during early tick skipping (but not when dragging)
+            if (this.shouldSkipEarlyTicks && !this.isDragging && this.currentTickCount <= this.skipEarlyTicks) {
                 return 'network-fading';
             } else {
                 return 'network-visible';
@@ -281,7 +281,14 @@ export default {
             console.log(`[NETWORK PLOT] State: isDragging=${this.isDragging}, isCollapsed=${this.interfaceStore.isNetworkCollapsed}, isEmpty=${this.isEmpty}, selectedCount=${this.sessionStore.selectedPublications?.length || 0}`);
 
             if (this.isDragging) {
-                console.log(`[NETWORK PLOT] Skipping plot() - currently dragging`);
+                console.log(`[NETWORK PLOT] Plot() during drag - restarting simulation for responsive layout`);
+                // During dragging, we want full simulation restart for responsive layout
+                // Skip the expensive graph reconstruction but restart simulation with current graph
+                if (restart) {
+                    this.restart(SIMULATION_ALPHA);
+                } else {
+                    this.start();
+                }
                 return;
             }
 
@@ -528,8 +535,8 @@ export default {
             // Synchronize local tick count for CSS animation reactivity
             this.currentTickCount = this.$refs.performanceMonitor?.tickCount || 0;
 
-            // Skip DOM updates for first N ticks only if this is a true restart with high alpha
-            if (this.shouldSkipEarlyTicks && this.$refs.performanceMonitor?.tickCount <= this.skipEarlyTicks) {
+            // Skip DOM updates for first N ticks only if this is a true restart with high alpha (but not when dragging)
+            if (this.shouldSkipEarlyTicks && !this.isDragging && this.$refs.performanceMonitor?.tickCount <= this.skipEarlyTicks) {
                 this.$refs.performanceMonitor?.trackFps(); // Still track FPS for debugging
                 return;
             }
@@ -697,9 +704,9 @@ export default {
         },
 
         restart(alpha = SIMULATION_ALPHA) {
-            if (this.simulation && !this.isDragging) {
-                // Only skip early ticks if this is a true restart with high alpha (> 0.3)
-                if (alpha > 0.3) {
+            if (this.simulation) {
+                // Only skip early ticks if this is a true restart with high alpha (> 0.3) and not dragging
+                if (alpha > 0.3 && !this.isDragging) {
                     this.$refs.performanceMonitor?.resetMetrics();
                     this.currentTickCount = 0; // Reset local tick count
                     this.shouldSkipEarlyTicks = true;
