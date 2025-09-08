@@ -289,15 +289,16 @@ html, body {
   z-index: 6000 !important;
 }
 
-/* Ensure modal dialogs appear above header and any other UI elements */
-.v-overlay.v-dialog {
+/* Ensure only modal dialogs (not confirm dialogs) appear above header */
+.modal-dialog-overlay {
   z-index: 6000 !important;
 }
 
-/* Also override any Vuetify menu that might appear over modals */
-.v-overlay.v-dialog .v-overlay__scrim {
+.modal-dialog-overlay .v-overlay__scrim {
   z-index: 6000 !important;
 }
+
+
 
 @media screen and (max-width: 1023px) {
   #app .v-application__wrap {
