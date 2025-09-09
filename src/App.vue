@@ -318,14 +318,47 @@ html, body {
 
 
 @media screen and (max-width: 1023px) {
+  /* Re-enable scrolling for mobile but keep scrollbars hidden */
+  html, body {
+    overflow: visible !important; /* Allow scrolling but hide scrollbars */
+  }
+
   #app .v-application__wrap {
     display: block;
     margin-bottom: 5rem;
+    overflow: visible !important;
+
+    & #header {
+      position: static; /* Change to static so intro message flows naturally */
+      top: auto;
+      left: auto;
+      right: auto;
+      z-index: 1000;
+      background: white;
+      
+      /* Keep header toolbar fixed but intro message flows */
+      & .v-app-bar {
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+      }
+      
+      /* Intro message flows naturally after fixed toolbar */
+      & .intro-message {
+        margin-top: 3rem; /* Space for fixed toolbar */
+        position: relative;
+        background: white;
+        z-index: 500;
+      }
+    }
 
     & #main {
       display: block;
       margin: 0;
-      overflow: scroll;
+      padding-top: 3rem; /* Account for fixed header height */
+      overflow: visible; /* Let document handle scrolling, not main element */
       height: auto;
 
       & .box {
