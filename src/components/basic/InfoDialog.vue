@@ -1,5 +1,5 @@
 <template>
-    <v-dialog width="700" v-model="interfaceStore.infoDialog.isShown">
+    <v-dialog width="700" v-model="interfaceStore.infoDialog.isShown" :z-index="9000" class="info-dialog-overlay">
         <v-card>
             <v-card-title v-if="interfaceStore.infoDialog.title">
                 {{ interfaceStore.infoDialog.title }}

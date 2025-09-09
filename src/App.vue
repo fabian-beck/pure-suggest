@@ -289,25 +289,17 @@ html, body {
   z-index: 6000 !important;
 }
 
-/* Ensure only modal dialogs (not confirm dialogs) appear above header */
-.modal-dialog-overlay {
-  z-index: 9000 !important;
+/* Global modal dialog overlay styles - ensures all modals appear above header and block interaction */
+/* Use attribute selectors to target the specific dialog classes we set */
+.v-overlay.v-dialog.modal-dialog-overlay,
+.v-overlay.v-dialog.info-dialog-overlay, 
+.v-overlay.v-dialog.confirm-dialog-overlay {
+  z-index: 9000 !important; /* Much higher than default Vuetify z-indexes */
 }
 
-.modal-dialog-overlay .v-overlay__scrim {
-  z-index: 8999 !important;
-}
-
-.modal-dialog-overlay .v-overlay__content {
-  z-index: 9001 !important;
-}
-
-/* Ensure confirm dialogs also appear above header */
-.confirm-dialog-overlay {
-  z-index: 9000 !important;
-}
-
-.confirm-dialog-overlay .v-overlay__scrim {
+.v-overlay.v-dialog.modal-dialog-overlay .v-overlay__scrim,
+.v-overlay.v-dialog.info-dialog-overlay .v-overlay__scrim,
+.v-overlay.v-dialog.confirm-dialog-overlay .v-overlay__scrim {
   z-index: 8999 !important;
   /* Ensure the dark overlay covers the full viewport including header */
   top: 0 !important;
@@ -317,26 +309,9 @@ html, body {
   position: fixed !important;
 }
 
-.confirm-dialog-overlay .v-overlay__content {
-  z-index: 9001 !important;
-}
-
-/* Alternative approach: Target confirm dialogs by their simple structure */
-.v-dialog:has(.v-card-actions) {
-  z-index: 9000 !important;
-}
-
-.v-dialog:has(.v-card-actions) .v-overlay__scrim {
-  z-index: 8999 !important;
-  /* Ensure the dark overlay covers the full viewport including header */
-  top: 0 !important;
-  left: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  position: fixed !important;
-}
-
-.v-dialog:has(.v-card-actions) .v-overlay__content {
+.v-overlay.v-dialog.modal-dialog-overlay .v-overlay__content,
+.v-overlay.v-dialog.info-dialog-overlay .v-overlay__content,
+.v-overlay.v-dialog.confirm-dialog-overlay .v-overlay__content {
   z-index: 9001 !important;
 }
 
