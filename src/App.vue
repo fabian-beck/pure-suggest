@@ -289,6 +289,34 @@ html, body {
   z-index: 6000 !important;
 }
 
+/* Global modal dialog overlay styles - ensures all modals appear above header and block interaction */
+/* Use attribute selectors to target the specific dialog classes we set */
+.v-overlay.v-dialog.modal-dialog-overlay,
+.v-overlay.v-dialog.info-dialog-overlay, 
+.v-overlay.v-dialog.confirm-dialog-overlay {
+  z-index: 9000 !important; /* Much higher than default Vuetify z-indexes */
+}
+
+.v-overlay.v-dialog.modal-dialog-overlay .v-overlay__scrim,
+.v-overlay.v-dialog.info-dialog-overlay .v-overlay__scrim,
+.v-overlay.v-dialog.confirm-dialog-overlay .v-overlay__scrim {
+  z-index: 8999 !important;
+  /* Ensure the dark overlay covers the full viewport including header */
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  position: fixed !important;
+}
+
+.v-overlay.v-dialog.modal-dialog-overlay .v-overlay__content,
+.v-overlay.v-dialog.info-dialog-overlay .v-overlay__content,
+.v-overlay.v-dialog.confirm-dialog-overlay .v-overlay__content {
+  z-index: 9001 !important;
+}
+
+
+
 @media screen and (max-width: 1023px) {
   #app .v-application__wrap {
     display: block;

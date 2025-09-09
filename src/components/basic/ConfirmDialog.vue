@@ -1,5 +1,5 @@
 <template>
-    <v-dialog width="500" persistent v-model="interfaceStore.confirmDialog.isShown">
+    <v-dialog width="500" persistent v-model="interfaceStore.confirmDialog.isShown" :z-index="9000" class="confirm-dialog-overlay">
         <v-card>
             <v-card-title v-if="interfaceStore.confirmDialog.title">
                 {{ interfaceStore.confirmDialog.title }}
@@ -31,3 +31,11 @@ export default {
     },
 };
 </script>
+
+<style scoped lang="scss">
+:deep(.v-overlay__content){
+    margin-top: 60px !important;
+    margin-bottom: 20px !important;
+    max-height: calc(100vh - 80px) !important;
+}
+</style>

@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="isDialogShown" scrollable :fullscreen="interfaceStore.isMobile">
+    <v-dialog v-model="isDialogShown" scrollable :fullscreen="interfaceStore.isMobile" :z-index="9000" class="modal-dialog-overlay">
         <v-card>
             <v-card-title
                 :class="`has-background-${headerColor} ${headerColor.startsWith('light') ? 'has-text-dark' : 'has-text-light'}`">
