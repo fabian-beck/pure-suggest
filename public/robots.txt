@@ -1,0 +1,39 @@
+# Robots.txt for PUREsuggest - Citation-based literature search tool
+# https://fabian-beck.github.io/pure-suggest/
+
+User-agent: *
+
+# Allow main application files
+Allow: /
+Allow: /index.html
+Allow: /favicon.ico
+Allow: /pure_suggest.png
+Allow: /assets/
+
+# Disallow development and build directories
+# (Most won't be deployed to GitHub Pages anyway, but explicit for clarity)
+Disallow: /node_modules/
+Disallow: /src/
+Disallow: /tests/
+Disallow: /tools/
+Disallow: /dist/
+Disallow: /.github/
+Disallow: /.claude/
+
+# Disallow development files
+Disallow: /package.json
+Disallow: /package-lock.json
+Disallow: /.gitignore
+Disallow: /vite.config.*
+Disallow: /eslint.config.*
+Disallow: /components.d.ts
+Disallow: /deploy*.ps1
+
+# Allow session sharing URLs (query parameters are fine)
+Allow: /*?session=*
+
+# Crawl delay (be nice to the server)
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://fabian-beck.github.io/pure-suggest/sitemap.xml
