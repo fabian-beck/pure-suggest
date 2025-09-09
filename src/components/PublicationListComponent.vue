@@ -7,7 +7,7 @@
         </h3>
       </li>
       <LazyPublicationComponent v-else :publication="item.publication" :publicationType="publicationType"
-        v-on:activate="activatePublication" />
+        :isMobile="interfaceStore.isMobile" v-on:activate="activatePublication" />
     </template>
   </ul>
 </template>
@@ -16,9 +16,11 @@
 import { computed, nextTick, watch, ref, onMounted, onBeforeUnmount } from 'vue'
 import { scrollToTargetAdjusted } from "@/lib/Util.js"
 import { useSessionStore } from "@/stores/session.js"
+import { useInterfaceStore } from "@/stores/interface.js"
 import LazyPublicationComponent from './LazyPublicationComponent.vue'
 
 const sessionStore = useSessionStore()
+const interfaceStore = useInterfaceStore()
 
 const props = defineProps({
   publications: Array,
