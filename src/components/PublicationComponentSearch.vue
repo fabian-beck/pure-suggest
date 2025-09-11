@@ -34,4 +34,6 @@ defineProps({
     default: ''
   }
 })
+
+defineEmits(['activate'])
 </script>
