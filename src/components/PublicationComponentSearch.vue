@@ -25,7 +25,13 @@
 
 <script setup>
 defineProps({
-  publication: Object,
-  searchQuery: String
+  publication: {
+    type: Object,
+    default: () => ({})
+  },
+  searchQuery: {
+    type: String,
+    default: ''
+  }
 })
 </script>

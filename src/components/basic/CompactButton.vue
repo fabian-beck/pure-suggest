@@ -17,10 +17,19 @@
 export default {
   name: 'CompactButton',
   props: {
-    icon: String,
-    click: Function,
+    icon: {
+      type: String,
+      default: ''
+    },
+    click: {
+      type: Function,
+      default: null
+    },
     disabled: Boolean,
-    href: String,
+    href: {
+      type: String,
+      default: ''
+    },
     active: Boolean
   },
   methods: {

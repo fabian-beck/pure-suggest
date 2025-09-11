@@ -11,7 +11,10 @@
 
 <script setup>
 defineProps({
-  icon: String
+  icon: {
+    type: String,
+    default: ''
+  }
 })
 </script>
 

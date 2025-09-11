@@ -74,7 +74,10 @@ import { useSessionStore } from '@/stores/session.js'
 import { useAppState } from '@/composables/useAppState.js'
 
 defineProps({
-  title: String
+  title: {
+    type: String,
+    default: ''
+  }
 })
 
 const sessionStore = useSessionStore()

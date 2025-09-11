@@ -8,8 +8,14 @@
 export default {
   name: 'InlineIcon',
   props: {
-    icon: String,
-    color: String
+    icon: {
+      type: String,
+      default: ''
+    },
+    color: {
+      type: String,
+      default: ''
+    }
   }
 }
 </script>

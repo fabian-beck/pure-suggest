@@ -36,7 +36,10 @@ const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
 
 const props = defineProps({
-  publications: Array,
+  publications: {
+    type: Array,
+    default: () => []
+  },
   showSectionHeaders: {
     type: Boolean,
     default: false

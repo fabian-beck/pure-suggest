@@ -37,9 +37,18 @@ export default {
   name: 'ModalDialog',
   props: {
     modelValue: Boolean,
-    headerColor: String,
-    title: String,
-    icon: String
+    headerColor: {
+      type: String,
+      default: ''
+    },
+    title: {
+      type: String,
+      default: ''
+    },
+    icon: {
+      type: String,
+      default: ''
+    }
   },
   data() {
     return {

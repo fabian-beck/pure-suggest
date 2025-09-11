@@ -35,7 +35,10 @@ import { calculateAuthorColor } from '@/utils/authorColor.js'
 const authorStore = useAuthorStore()
 
 const props = defineProps({
-  author: Object
+  author: {
+    type: Object,
+    default: () => ({})
+  }
 })
 
 const authorColor = computed(() => {

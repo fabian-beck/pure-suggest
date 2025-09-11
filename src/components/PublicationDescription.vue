@@ -170,8 +170,14 @@ const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
 
 const props = defineProps({
-  publication: Object,
-  highlighted: String,
+  publication: {
+    type: Object,
+    default: () => ({})
+  },
+  highlighted: {
+    type: String,
+    default: ''
+  },
   alwaysShowDetails: Boolean,
   publicationType: {
     type: String,
