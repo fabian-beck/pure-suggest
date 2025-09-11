@@ -17,7 +17,7 @@ describe('generateBibtex', () => {
 
       const result = generateBibtex(publication)
 
-      expect(result).toContain('@article{10.1109/TSE.2023.123456')
+      expect(result).toContain('@article{Doe2023Machine,')
       expect(result).toContain('title = {Machine Learning in Software Engineering}')
       expect(result).toContain('author = {John Doe and Jane Smith}')
       expect(result).toContain('year = {2023}')
@@ -40,7 +40,7 @@ describe('generateBibtex', () => {
 
       const result = generateBibtex(publication)
 
-      expect(result).toContain('@inproceedings{10.1145/conference.2022.456')
+      expect(result).toContain('@inproceedings{Johnson2022A,')
       expect(result).toContain('booktitle = {Proceedings of the International Conference on Software Testing}')
       expect(result).not.toContain('journal =')
       expect(result).not.toContain('volume =')
@@ -54,7 +54,7 @@ describe('generateBibtex', () => {
 
       const result = generateBibtex(publication)
 
-      expect(result).toContain('@misc{10.1234/minimal.123')
+      expect(result).toContain('@misc{Minimal,')
       expect(result).toContain('title = {Minimal Publication}')
       expect(result).toContain('doi = {10.1234/minimal.123}')
     })
@@ -136,7 +136,7 @@ describe('generateBibtex', () => {
       expect(result).toContain('title = {{API} Testing with {REST} Services}')
     })
 
-    it('should generate clean citation keys from DOIs', () => {
+    it('should generate clean citation keys from publication metadata', () => {
       const publication = {
         title: 'Test Paper',
         doi: '10.1234/test_paper_2023'
@@ -144,7 +144,7 @@ describe('generateBibtex', () => {
 
       const result = generateBibtex(publication)
 
-      expect(result).toContain('@misc{10.1234/testpaper2023,')
+      expect(result).toContain('@misc{Test,')
       expect(result).toContain('doi = {10.1234/test_paper_2023}')
     })
 
@@ -161,6 +161,122 @@ describe('generateBibtex', () => {
       // Should not include empty fields
       expect(result).not.toContain('author = {}')
       expect(result).not.toContain('year = {}')
+    })
+  })
+
+  describe('BibTeX Key Generation Edge Cases', () => {
+    it('should handle special characters in author names', () => {
+      const publication = {
+        title: 'Software Testing',
+        author: 'José García-López;María O\'Connor',
+        year: '2023',
+        doi: '10.1234/test.789'
+      }
+
+      const result = generateBibtex(publication)
+      expect(result).toContain('@misc{GarcaLpez2023Software,')
+    })
+
+    it('should handle missing author field', () => {
+      const publication = {
+        title: 'Anonymous Paper',
+        year: '2023',
+        doi: '10.1234/anon.123'
+      }
+
+      const result = generateBibtex(publication)
+      expect(result).toContain('@misc{2023Anonymous,')
+    })
+
+    it('should handle missing year field', () => {
+      const publication = {
+        title: 'Undated Paper',
+        author: 'John Smith',
+        doi: '10.1234/undated.456'
+      }
+
+      const result = generateBibtex(publication)
+      expect(result).toContain('@misc{SmithUndated,')
+    })
+
+    it('should handle missing title field', () => {
+      const publication = {
+        author: 'Jane Doe',
+        year: '2022',
+        doi: '10.1234/notitle.789'
+      }
+
+      const result = generateBibtex(publication)
+      expect(result).toContain('@misc{Doe2022,')
+    })
+
+    it('should handle all missing fields with DOI fallback', () => {
+      const publication = {
+        doi: '10.1234/fallback.test-case'
+      }
+
+      const result = generateBibtex(publication)
+      expect(result).toContain('@misc{101234fallbacktestcase,')
+    })
+
+    it('should handle title with special characters and punctuation', () => {
+      const publication = {
+        title: '"A Study of (Modern) Testing: What\'s Next?"',
+        author: 'Alice Wonder',
+        year: '2024',
+        doi: '10.1234/special.456'
+      }
+
+      const result = generateBibtex(publication)
+      expect(result).toContain('@misc{Wonder2024A,')
+    })
+
+    it('should handle multiple author names correctly', () => {
+      const publication = {
+        title: 'Collaborative Research',
+        author: 'Dr. First Author;Prof. Second Author-Hyphenated;Third J. Author Jr.',
+        year: '2023',
+        doi: '10.1234/multi.789'
+      }
+
+      const result = generateBibtex(publication)
+      expect(result).toContain('@misc{Author2023Collaborative,')
+    })
+
+    it('should handle very short names and titles', () => {
+      const publication = {
+        title: 'AI',
+        author: 'A B',
+        year: '2023',
+        doi: '10.1234/short.123'
+      }
+
+      const result = generateBibtex(publication)
+      expect(result).toContain('@misc{B2023Ai,')
+    })
+
+    it('should handle numeric-only title words', () => {
+      const publication = {
+        title: '2023 Survey of Machine Learning',
+        author: 'John Smith',
+        year: '2023',
+        doi: '10.1234/numeric.456'
+      }
+
+      const result = generateBibtex(publication)
+      expect(result).toContain('@misc{Smith20232023,')
+    })
+
+    it('should handle title starting with non-alphabetic characters', () => {
+      const publication = {
+        title: '(Re)thinking Software Architecture',
+        author: 'Jane Doe',
+        year: '2022',
+        doi: '10.1234/nonalpha.789'
+      }
+
+      const result = generateBibtex(publication)
+      expect(result).toContain('@misc{Doe2022Re,')
     })
   })
 })
