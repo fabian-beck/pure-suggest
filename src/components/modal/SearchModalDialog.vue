@@ -1,26 +1,48 @@
 <template>
-  <ModalDialog v-model="isSearchModalDialogShown" title="Search/add publications" icon="mdi-magnify" headerColor="primary">
+  <ModalDialog
+    v-model="isSearchModalDialogShown"
+    title="Search/add publications"
+    icon="mdi-magnify"
+    headerColor="primary"
+  >
     <template v-slot:sticky>
       <form v-on:submit.prevent="search" class="has-background-primary-95">
-        <v-text-field clearable v-model="interfaceStore.searchQuery" type="input" ref="searchInput" variant="solo"
-          append-icon="mdi-magnify" @click:append="search" density="compact"
-          hint="Search for keywords, names, etc. or add by providing DOI(s) in any format">
+        <v-text-field
+          clearable
+          v-model="interfaceStore.searchQuery"
+          type="input"
+          ref="searchInput"
+          variant="solo"
+          append-icon="mdi-magnify"
+          @click:append="search"
+          density="compact"
+          hint="Search for keywords, names, etc. or add by providing DOI(s) in any format"
+        >
         </v-text-field>
       </form>
     </template>
     <template v-slot:footer>
       <v-card-actions :class="`has-background-primary-95`">
         <p class="comment is-hidden-mobile">
-          <span v-show="['doi', 'search'].includes(searchResults.type)">Showing
-            <b>{{ filteredSearchResults.length }} publication{{
-              filteredSearchResults.length != 1 ? "s" : ""
-            }}</b>
+          <span v-show="['doi', 'search'].includes(searchResults.type)"
+            >Showing
+            <b
+              >{{ filteredSearchResults.length }} publication{{
+                filteredSearchResults.length != 1 ? 's' : ''
+              }}</b
+            >
             based on
-            <span v-show="searchResults.type === 'doi'">detected <b>DOIs</b></span><span
-              v-show="searchResults.type === 'search'"><b>search</b></span>.</span>
+            <span v-show="searchResults.type === 'doi'">detected <b>DOIs</b></span
+            ><span v-show="searchResults.type === 'search'"><b>search</b></span
+            >.</span
+          >
         </p>
-        <v-btn class="has-background-primary has-text-white mr-2 is-hidden-mobile" v-on:click="addAllPublications"
-          v-show="searchResults.type === 'doi' && filteredSearchResults.length > 0" small>
+        <v-btn
+          class="has-background-primary has-text-white mr-2 is-hidden-mobile"
+          v-on:click="addAllPublications"
+          v-show="searchResults.type === 'doi' && filteredSearchResults.length > 0"
+          small
+        >
           <v-icon left>mdi-plus-thick</v-icon> Add all
         </v-btn>
       </v-card-actions>
@@ -28,18 +50,31 @@
     <div class="content">
       <section>
         <ul class="publication-list">
-          <PublicationComponentSearch v-for="publication in filteredSearchResults" :key="publication.doi"
-            :publication="publication" :searchQuery="searchResults.type === 'search' ? cleanedSearchQuery : ''"
-            v-on:activate="addPublication(publication.doi)" class="pb-4 pt-4" v-show="!this.isLoading">
+          <PublicationComponentSearch
+            v-for="publication in filteredSearchResults"
+            :key="publication.doi"
+            :publication="publication"
+            :searchQuery="searchResults.type === 'search' ? cleanedSearchQuery : ''"
+            v-on:activate="addPublication(publication.doi)"
+            class="pb-4 pt-4"
+            v-show="!this.isLoading"
+          >
           </PublicationComponentSearch>
-          <v-overlay :model-value="isLoading" contained class="align-center justify-center" persistent theme="dark">
+          <v-overlay
+            :model-value="isLoading"
+            contained
+            class="align-center justify-center"
+            persistent
+            theme="dark"
+          >
             <div class="d-flex flex-column align-center justify-center">
               <div>
                 <v-progress-circular indeterminate size="64"></v-progress-circular>
               </div>
               <div class="comment" v-if="this.searchResults.type === 'empty'">Searching</div>
-              <div class="comment" v-else>Loading {{ loaded }}/{{
-                filteredSearchResults.length }}</div>
+              <div class="comment" v-else>
+                Loading {{ loaded }}/{{ filteredSearchResults.length }}
+              </div>
             </div>
           </v-overlay>
         </ul>
@@ -49,179 +84,175 @@
 </template>
 
 <script>
-import { storeToRefs } from "pinia";
+import { storeToRefs } from 'pinia'
 
-import { useSessionStore } from "@/stores/session.js";
-import { useInterfaceStore } from "@/stores/interface.js";
-import { useQueueStore } from "@/stores/queue.js";
-import { useAppState } from "@/composables/useAppState.js";
+import { useSessionStore } from '@/stores/session.js'
+import { useInterfaceStore } from '@/stores/interface.js'
+import { useQueueStore } from '@/stores/queue.js'
+import { useAppState } from '@/composables/useAppState.js'
 
-import PublicationSearch from "@/core/PublicationSearch.js";
+import PublicationSearch from '@/core/PublicationSearch.js'
 
 export default {
-  name: "SearchModalDialog",
+  name: 'SearchModalDialog',
   setup() {
-    const sessionStore = useSessionStore();
-    const interfaceStore = useInterfaceStore();
-    const queueStore = useQueueStore();
-    const { queueForSelected } = useAppState();
-    const { isSearchModalDialogShown } = storeToRefs(interfaceStore);
-    return { sessionStore, interfaceStore, queueStore, isSearchModalDialogShown, queueForSelected };
+    const sessionStore = useSessionStore()
+    const interfaceStore = useInterfaceStore()
+    const queueStore = useQueueStore()
+    const { queueForSelected } = useAppState()
+    const { isSearchModalDialogShown } = storeToRefs(interfaceStore)
+    return { sessionStore, interfaceStore, queueStore, isSearchModalDialogShown, queueForSelected }
   },
   data() {
     return {
-      searchResults: { results: [], type: "empty" },
+      searchResults: { results: [], type: 'empty' },
       isLoading: false,
       loaded: 0,
-      cleanedSearchQuery: "",
+      cleanedSearchQuery: '',
       searchCancelled: false,
-      lastSearchQuery: "",
-    };
+      lastSearchQuery: ''
+    }
   },
   computed: {
     filteredSearchResults: function () {
       // Don't show any results if search was cancelled
       if (this.searchCancelled) {
-        return [];
+        return []
       }
-      
+
       return this.searchResults.results.filter(
         (publication) =>
-          !this.sessionStore.selectedPublicationsDois.includes(
-            publication.doi
-          ) &&
-          !this.queueStore.selectedQueue.includes(publication.doi) 
-      );
-    },
+          !this.sessionStore.selectedPublicationsDois.includes(publication.doi) &&
+          !this.queueStore.selectedQueue.includes(publication.doi)
+      )
+    }
   },
   watch: {
     isSearchModalDialogShown: {
       handler: function () {
-        if (!this.isSearchModalDialogShown) return;
+        if (!this.isSearchModalDialogShown) return
         setTimeout(() => {
           if (this.$refs.searchInput && typeof this.$refs.searchInput.focus === 'function') {
-            this.$refs.searchInput.focus();
+            this.$refs.searchInput.focus()
           }
-        }, 300);
+        }, 300)
         if (this.interfaceStore.searchQuery) {
-          this.search();
+          this.search()
         }
-      },
+      }
     },
     'interfaceStore.searchQuery': {
       handler: function () {
         // Cancel ongoing search when user starts typing new query
         if (this.isLoading) {
-          this.cancelSearch();
+          this.cancelSearch()
         }
-      },
-    },
+      }
+    }
   },
   mounted() {
-    document.addEventListener('keydown', this.handleKeydown);
+    document.addEventListener('keydown', this.handleKeydown)
   },
   beforeUnmount() {
-    document.removeEventListener('keydown', this.handleKeydown);
+    document.removeEventListener('keydown', this.handleKeydown)
   },
   methods: {
     handleKeydown(event) {
       if (event.key === 'Escape' && this.isLoading && this.isSearchModalDialogShown) {
-        this.cancelSearch();
+        this.cancelSearch()
       }
     },
 
     cancelSearch() {
-      this.searchCancelled = true;
-      this.isLoading = false;
-      this.loaded = 0;
-      this.searchResults = { results: [], type: "empty" };
+      this.searchCancelled = true
+      this.isLoading = false
+      this.loaded = 0
+      this.searchResults = { results: [], type: 'empty' }
     },
 
     search: async function () {
       // Don't perform search if query is the same as last search
       if (this.interfaceStore.searchQuery === this.lastSearchQuery) {
-        return;
+        return
       }
-      
+
       // Cancel any ongoing search before starting a new one
       if (this.isLoading) {
-        this.cancelSearch();
+        this.cancelSearch()
       }
-      
-      this.loaded = 0;
-      this.searchCancelled = false;
+
+      this.loaded = 0
+      this.searchCancelled = false
       if (!this.interfaceStore.searchQuery) {
-        this.searchResults = { results: [], type: "empty" };
-        this.lastSearchQuery = "";
-        return;
+        this.searchResults = { results: [], type: 'empty' }
+        this.lastSearchQuery = ''
+        return
       }
-      this.isLoading = true;
-      this.lastSearchQuery = this.interfaceStore.searchQuery;
-      this.cleanedSearchQuery = this.interfaceStore.searchQuery.replace(/[^a-zA-Z0-9 ]/g, ' ');
-      const publicationSearch = new PublicationSearch(
-        this.interfaceStore.searchQuery
-      );
-      this.searchResults = await publicationSearch.execute();
-      
+      this.isLoading = true
+      this.lastSearchQuery = this.interfaceStore.searchQuery
+      this.cleanedSearchQuery = this.interfaceStore.searchQuery.replace(/[^a-zA-Z0-9 ]/g, ' ')
+      const publicationSearch = new PublicationSearch(this.interfaceStore.searchQuery)
+      this.searchResults = await publicationSearch.execute()
+
       // Check if search was cancelled during execution
       if (this.searchCancelled) {
-        return;
+        return
       }
-      
+
       if (this.filteredSearchResults.length === 0) {
-        this.interfaceStore.showErrorMessage("No matching publications found");
-        this.isLoading = false;
-        return;
+        this.interfaceStore.showErrorMessage('No matching publications found')
+        this.isLoading = false
+        return
       }
       // Poll for publication data loading completion
       const check = () => {
         // Check if search was cancelled
         if (this.searchCancelled) {
-          return;
+          return
         }
-        
-        let loaded = 0;
+
+        let loaded = 0
         this.filteredSearchResults.forEach((publication) => {
           if (publication.wasFetched) {
-            loaded++;
+            loaded++
           }
-        });
-        this.loaded = loaded;
+        })
+        this.loaded = loaded
         if (loaded === this.filteredSearchResults.length) {
-          this.isLoading = false;
-          return;
+          this.isLoading = false
+          return
         }
-        setTimeout(check.bind(this), 200);
-      };
-      check.bind(this)();
+        setTimeout(check.bind(this), 200)
+      }
+      check.bind(this)()
     },
 
     addPublication(doi) {
-      this.queueForSelected(doi);
+      this.queueForSelected(doi)
     },
 
     addAllPublications() {
       this.filteredSearchResults.forEach((publication) => {
-        this.addPublication(publication.doi);
-      });
-      this.searchResults = { results: [], type: "empty" };
-      this.interfaceStore.searchQuery = "";
+        this.addPublication(publication.doi)
+      })
+      this.searchResults = { results: [], type: 'empty' }
+      this.interfaceStore.searchQuery = ''
     },
 
     close() {
-      this.interfaceStore.isSearchModalDialogShown = false;
-      this.reset();
+      this.interfaceStore.isSearchModalDialogShown = false
+      this.reset()
     },
 
     reset() {
-      this.searchResults = { results: [], type: "empty" };
-      this.isLoading = false;
-      this.searchCancelled = false;
-      this.loaded = 0;
-      this.lastSearchQuery = "";
-    },
-  },
-};
+      this.searchResults = { results: [], type: 'empty' }
+      this.isLoading = false
+      this.searchCancelled = false
+      this.loaded = 0
+      this.lastSearchQuery = ''
+    }
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -231,7 +262,6 @@ form {
 }
 
 .content {
-
   & .publication-list {
     padding: 0;
     margin: 0;

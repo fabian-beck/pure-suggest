@@ -6,7 +6,7 @@ import NetworkVisComponent from '@/components/NetworkVisComponent.vue'
 
 // Mock D3.js with chainable methods
 const createMockSelection = () => {
-  const mockData = [];
+  const mockData = []
   const selection = {
     append: vi.fn(() => createMockSelection()),
     attr: vi.fn(() => createMockSelection()),
@@ -21,9 +21,9 @@ const createMockSelection = () => {
           enter: vi.fn(() => createMockSelection()),
           exit: vi.fn(() => createMockSelection()),
           remove: vi.fn(() => createMockSelection())
-        };
+        }
       }
-      return mockData;
+      return mockData
     }),
     join: vi.fn(() => createMockSelection()),
     enter: vi.fn(() => createMockSelection()),
@@ -37,8 +37,8 @@ const createMockSelection = () => {
     filter: vi.fn(() => createMockSelection()),
     node: vi.fn(() => ({ getBoundingClientRect: () => ({ x: 0, y: 0, width: 100, height: 100 }) })),
     nodes: vi.fn(() => [])
-  };
-  return selection;
+  }
+  return selection
 }
 
 const createMockForce = () => ({
@@ -118,9 +118,7 @@ vi.mock('@/stores/session.js', () => ({
   useSessionStore: vi.fn(() => ({
     isEmpty: false,
     isUpdatable: false,
-    selectedPublications: [
-      { doi: '10.1234/test1', title: 'Test Publication 1', year: 2020 }
-    ],
+    selectedPublications: [{ doi: '10.1234/test1', title: 'Test Publication 1', year: 2020 }],
     suggestedPublications: [],
     selectedPublicationsAuthors: [],
     boostKeywords: [],
@@ -143,16 +141,16 @@ let mockInterfaceStore = {
   openAuthorModalDialog: vi.fn(),
   activatePublicationComponent: vi.fn(),
   collapseNetwork: vi.fn(() => {
-    mockInterfaceStore.isNetworkExpanded = false;
-    mockInterfaceStore.isNetworkCollapsed = true;
+    mockInterfaceStore.isNetworkExpanded = false
+    mockInterfaceStore.isNetworkCollapsed = true
   }),
   expandNetwork: vi.fn(() => {
-    mockInterfaceStore.isNetworkExpanded = true;
-    mockInterfaceStore.isNetworkCollapsed = false;
+    mockInterfaceStore.isNetworkExpanded = true
+    mockInterfaceStore.isNetworkCollapsed = false
   }),
   restoreNetwork: vi.fn(() => {
-    mockInterfaceStore.isNetworkExpanded = false;
-    mockInterfaceStore.isNetworkCollapsed = false;
+    mockInterfaceStore.isNetworkExpanded = false
+    mockInterfaceStore.isNetworkCollapsed = false
   })
 }
 
@@ -160,7 +158,7 @@ vi.mock('@/stores/interface.js', () => ({
   useInterfaceStore: vi.fn(() => mockInterfaceStore)
 }))
 
-// Mock composables  
+// Mock composables
 vi.mock('@/utils/network/forces.js', () => ({
   createForceSimulation: vi.fn(() => createMockSimulation()),
   initializeForces: vi.fn(),
@@ -168,12 +166,12 @@ vi.mock('@/utils/network/forces.js', () => ({
   SIMULATION_ALPHA: 0.5,
   getNodeXPosition: vi.fn((node, isNetworkClusters, yearXFunc) => {
     if (isNetworkClusters && node.x !== undefined) {
-      return node.x;
+      return node.x
     }
     if (node.publication?.year && yearXFunc) {
-      return yearXFunc(node.publication.year);
+      return yearXFunc(node.publication.year)
     }
-    return 100;
+    return 100
   })
 }))
 
@@ -232,11 +230,11 @@ import { useSessionStore } from '@/stores/session.js'
 // Helper function for consistent component stubs
 const getComponentStubs = () => ({
   'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-  'CompactSwitch': { template: '<div class="compact-switch"><slot></slot></div>' },
-  'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
+  CompactSwitch: { template: '<div class="compact-switch"><slot></slot></div>' },
+  CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
   'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-  'NetworkHeader': { template: '<div class="network-header"><slot></slot></div>' },
-  'NetworkPerformanceMonitor': {
+  NetworkHeader: { template: '<div class="network-header"><slot></slot></div>' },
+  NetworkPerformanceMonitor: {
     template: '<div class="network-performance-monitor"><slot></slot></div>',
     methods: {
       resetMetrics: vi.fn(),
@@ -250,13 +248,13 @@ const getComponentStubs = () => ({
       tickCount: () => 0
     }
   },
-  'NetworkControls': { template: '<div class="network-controls"><slot></slot></div>' },
-  'PublicationComponent': { template: '<div class="publication-component"><slot></slot></div>' }
+  NetworkControls: { template: '<div class="network-controls"><slot></slot></div>' },
+  PublicationComponent: { template: '<div class="publication-component"><slot></slot></div>' }
 })
 
 describe('NetworkVisComponent - Collapse Functionality', () => {
   let pinia
-  
+
   beforeAll(() => {
     // Mock DOM methods that D3 uses
     global.document.getElementById = vi.fn((id) => {
@@ -461,7 +459,7 @@ describe('NetworkVisComponent - Collapse Functionality', () => {
       expect(wrapper.find('#network-svg-container').exists()).toBe(true)
       expect(wrapper.find('.publication-component-list').exists()).toBe(true)
       expect(wrapper.find('.controls-header-left').exists()).toBe(true)
-      
+
       // The v-show directives are compiled and controlled by the interface store
       // The important thing is that the methods and state management work correctly
       expect(wrapper.vm.interfaceStore).toBeDefined()

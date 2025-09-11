@@ -26,14 +26,14 @@ describe('QuickAccessBar', () => {
     pinia = createPinia()
     setActivePinia(pinia)
     queueStore = useQueueStore()
-    
+
     // Set up queue state for updatable behavior
     queueStore.selectedQueue = ['test-doi-1']
     queueStore.excludedQueue = []
-    
+
     vi.clearAllMocks()
     mockUpdateQueued.mockClear()
-    
+
     // Mock document.getElementById
     global.document.getElementById = vi.fn((id) => ({
       getBoundingClientRect: vi.fn(() => ({
@@ -41,7 +41,7 @@ describe('QuickAccessBar', () => {
         bottom: id === 'selected' ? 150 : 300
       }))
     }))
-    
+
     // Mock document properties
     Object.defineProperty(document, 'documentElement', {
       value: {
@@ -72,7 +72,7 @@ describe('QuickAccessBar', () => {
       global: {
         plugins: [pinia],
         stubs: {
-          'v-btn': { 
+          'v-btn': {
             template: '<button class="v-btn" v-show="$attrs[\'v-show\']"><slot></slot></button>',
             props: ['vShow']
           },
@@ -82,9 +82,7 @@ describe('QuickAccessBar', () => {
       }
     })
 
-    const updateBtn = wrapper.findAll('.v-btn').find(btn => 
-      btn.text().includes('Update')
-    )
+    const updateBtn = wrapper.findAll('.v-btn').find((btn) => btn.text().includes('Update'))
     expect(updateBtn.exists()).toBe(true)
   })
 
@@ -97,7 +95,7 @@ describe('QuickAccessBar', () => {
       global: {
         plugins: [pinia],
         stubs: {
-          'v-btn': { 
+          'v-btn': {
             template: '<button class="v-btn" v-show="$attrs[\'v-show\']"><slot></slot></button>',
             props: ['vShow']
           },
@@ -107,9 +105,7 @@ describe('QuickAccessBar', () => {
       }
     })
 
-    const updateBtn = wrapper.findAll('.v-btn').find(btn => 
-      btn.text().includes('Update')
-    )
+    const updateBtn = wrapper.findAll('.v-btn').find((btn) => btn.text().includes('Update'))
     // Button exists but is hidden via v-show
     expect(updateBtn.exists()).toBe(true)
   })
@@ -156,8 +152,9 @@ describe('QuickAccessBar', () => {
       global: {
         plugins: [pinia],
         stubs: {
-          'v-btn': { 
-            template: '<button class="v-btn" @click="$emit(\'click\')" v-show="$attrs[\'v-show\']"><slot></slot></button>',
+          'v-btn': {
+            template:
+              '<button class="v-btn" @click="$emit(\'click\')" v-show="$attrs[\'v-show\']"><slot></slot></button>',
             emits: ['click']
           },
           'v-btn-toggle': { template: '<div class="v-btn-toggle"><slot></slot></div>' },
@@ -166,10 +163,8 @@ describe('QuickAccessBar', () => {
       }
     })
 
-    const updateBtn = wrapper.findAll('.v-btn').find(btn => 
-      btn.text().includes('Update')
-    )
-    
+    const updateBtn = wrapper.findAll('.v-btn').find((btn) => btn.text().includes('Update'))
+
     await updateBtn.trigger('click')
     expect(mockUpdateQueued).toHaveBeenCalled()
   })

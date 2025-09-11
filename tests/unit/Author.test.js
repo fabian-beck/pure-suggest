@@ -68,9 +68,9 @@ describe('Author Bug Regression Tests', () => {
       author1.yearMax = 2022
       author2.yearMin = undefined
       author2.yearMax = undefined
-      
+
       author1.mergeWith(author2)
-      
+
       // Should preserve valid years, not become NaN
       expect(author1.yearMin).toBe(2020)
       expect(author1.yearMax).toBe(2022)
@@ -83,9 +83,9 @@ describe('Author Bug Regression Tests', () => {
       author1.yearMax = undefined
       author2.yearMin = undefined
       author2.yearMax = undefined
-      
+
       author1.mergeWith(author2)
-      
+
       // With our fix, when both are undefined: Math.min(Infinity, Infinity) || undefined = Infinity
       // The key is that they're NOT NaN (the original bug)
       expect(author1.yearMin).toBe(Infinity) // This is the actual behavior of our fix

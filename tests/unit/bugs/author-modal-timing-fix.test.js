@@ -13,27 +13,27 @@ describe('Author Modal Timing Fix', () => {
   beforeEach(() => {
     pinia = createPinia()
     setActivePinia(pinia)
-    
+
     interfaceStore = useInterfaceStore()
     authorStore = useAuthorStore()
     sessionStore = useSessionStore()
 
     // Set up test data
     sessionStore.selectedPublications = [
-      { 
-        doi: '10.1234/test1', 
-        title: 'Test Publication 1', 
-        year: 2020, 
+      {
+        doi: '10.1234/test1',
+        title: 'Test Publication 1',
+        year: 2020,
         author: 'John Doe; Jane Smith',
         authorOrcid: 'John Doe; Jane Smith',
         score: 0.8,
         isNew: false,
         boostKeywords: ['machine learning']
       },
-      { 
-        doi: '10.1234/test2', 
-        title: 'Test Publication 2', 
-        year: 2021, 
+      {
+        doi: '10.1234/test2',
+        title: 'Test Publication 2',
+        year: 2021,
         author: 'Jane Smith; Bob Wilson',
         authorOrcid: 'Jane Smith; Bob Wilson',
         score: 0.9,
@@ -56,8 +56,10 @@ describe('Author Modal Timing Fix', () => {
     interfaceStore.openAuthorModalDialog()
 
     // VERIFICATION: Author computation should be triggered automatically
-    expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(sessionStore.selectedPublications)
-    
+    expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(
+      sessionStore.selectedPublications
+    )
+
     // Modal should be shown
     expect(interfaceStore.isAuthorModalDialogShown).toBe(true)
   })
@@ -74,7 +76,7 @@ describe('Author Modal Timing Fix', () => {
 
     // VERIFICATION: Author computation should NOT be triggered since data already exists
     expect(authorStore.computeSelectedPublicationsAuthors).not.toHaveBeenCalled()
-    
+
     // Modal should still be shown
     expect(interfaceStore.isAuthorModalDialogShown).toBe(true)
   })
@@ -86,7 +88,9 @@ describe('Author Modal Timing Fix', () => {
     interfaceStore.openAuthorModalDialog('jane-smith')
 
     // VERIFICATION: Author computation triggered
-    expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(sessionStore.selectedPublications)
+    expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(
+      sessionStore.selectedPublications
+    )
     expect(interfaceStore.isAuthorModalDialogShown).toBe(true)
   })
 
@@ -95,12 +99,12 @@ describe('Author Modal Timing Fix', () => {
     sessionStore.selectedPublications = []
     expect(authorStore.selectedPublicationsAuthors).toHaveLength(0)
 
-    // USER ACTION: Open modal 
+    // USER ACTION: Open modal
     interfaceStore.openAuthorModalDialog()
 
     // VERIFICATION: No author computation should be triggered since no publications
     expect(authorStore.computeSelectedPublicationsAuthors).not.toHaveBeenCalled()
-    
+
     // Modal should still be shown (user might want to see empty state)
     expect(interfaceStore.isAuthorModalDialogShown).toBe(true)
   })
@@ -108,17 +112,25 @@ describe('Author Modal Timing Fix', () => {
   it('should only recompute when no authors exist or publications need score updates', () => {
     // SETUP: Publications with scores already computed
     sessionStore.selectedPublications = [
-      { doi: '10.1234/test1', author: 'John Doe', authorOrcid: 'John Doe', score: 10, boostKeywords: ['test'] }
+      {
+        doi: '10.1234/test1',
+        author: 'John Doe',
+        authorOrcid: 'John Doe',
+        score: 10,
+        boostKeywords: ['test']
+      }
     ]
-    
+
     // Case 1: No authors exist - should recompute
     authorStore.selectedPublicationsAuthors = []
     interfaceStore.openAuthorModalDialog()
-    expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(sessionStore.selectedPublications)
-    
+    expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(
+      sessionStore.selectedPublications
+    )
+
     // Reset mock
     authorStore.computeSelectedPublicationsAuthors.mockClear()
-    
+
     // Case 2: Authors exist and publications have scores - should NOT recompute
     authorStore.selectedPublicationsAuthors = [{ id: 'john-doe', name: 'John Doe', count: 1 }]
     interfaceStore.openAuthorModalDialog()
@@ -128,10 +140,17 @@ describe('Author Modal Timing Fix', () => {
   it('should recompute when publications need score updates even if authors exist', () => {
     // SETUP: Publications that need score updates
     sessionStore.selectedPublications = [
-      { doi: '10.1234/test1', title: 'Test Publication', author: 'John Doe', authorOrcid: 'John Doe', score: 0, boostKeywords: [] }
+      {
+        doi: '10.1234/test1',
+        title: 'Test Publication',
+        author: 'John Doe',
+        authorOrcid: 'John Doe',
+        score: 0,
+        boostKeywords: []
+      }
     ]
     authorStore.selectedPublicationsAuthors = [{ id: 'john-doe', name: 'John Doe', count: 1 }]
-    
+
     // Mock publicationsNeedScoreUpdate to return true
     vi.spyOn(interfaceStore, 'publicationsNeedScoreUpdate').mockReturnValue(true)
 
@@ -139,21 +158,23 @@ describe('Author Modal Timing Fix', () => {
     interfaceStore.openAuthorModalDialog()
 
     // VERIFICATION: Should trigger recomputation even though authors exist
-    expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(sessionStore.selectedPublications)
+    expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(
+      sessionStore.selectedPublications
+    )
   })
 
   it('should handle session loading scenario: publications with uncomputed scores', () => {
     // SETUP: Simulate session loading with uncomputed publication scores
     sessionStore.selectedPublications = [
-      { 
-        doi: '10.1234/test1', 
+      {
+        doi: '10.1234/test1',
         title: 'Session Publication 1',
         author: 'John Doe; Jane Smith',
         authorOrcid: 'John Doe; Jane Smith',
         year: 2020,
-        score: 0,  // Default - not yet computed
-        boostKeywords: [],  // Empty - not processed
-        citationCount: undefined,  // No citation data loaded yet
+        score: 0, // Default - not yet computed
+        boostKeywords: [], // Empty - not processed
+        citationCount: undefined, // No citation data loaded yet
         referenceCount: undefined
       }
     ]
@@ -165,10 +186,14 @@ describe('Author Modal Timing Fix', () => {
     interfaceStore.openAuthorModalDialog()
 
     // VERIFICATION: Should trigger updatePublicationScores first, then author computation
-    expect(interfaceStore.publicationsNeedScoreUpdate).toHaveBeenCalledWith(sessionStore.selectedPublications)
+    expect(interfaceStore.publicationsNeedScoreUpdate).toHaveBeenCalledWith(
+      sessionStore.selectedPublications
+    )
     expect(sessionStore.updatePublicationScores).toHaveBeenCalled()
-    expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(sessionStore.selectedPublications)
-    
+    expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(
+      sessionStore.selectedPublications
+    )
+
     // Modal should be shown
     expect(interfaceStore.isAuthorModalDialogShown).toBe(true)
   })

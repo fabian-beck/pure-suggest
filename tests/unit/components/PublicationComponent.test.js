@@ -28,11 +28,12 @@ vi.mock('@/stores/interface.js', () => ({
 const MockPublicationDescription = {
   name: 'PublicationDescription',
   props: ['publication'],
-  template: '<div class="mock-publication-description">{{ publication.title || "Mock Publication" }}</div>'
+  template:
+    '<div class="mock-publication-description">{{ publication.title || "Mock Publication" }}</div>'
 }
 
 const MockInlineIcon = {
-  name: 'InlineIcon', 
+  name: 'InlineIcon',
   props: ['icon', 'color'],
   template: '<span class="mock-inline-icon">{{ icon }}</span>'
 }
@@ -46,7 +47,7 @@ const MockCompactButton = {
 
 // Test component script without template complexity
 const PublicationComponentScript = {
-  name: "PublicationComponent",
+  name: 'PublicationComponent',
   components: {
     PublicationDescription: MockPublicationDescription,
     InlineIcon: MockInlineIcon,
@@ -65,31 +66,29 @@ const PublicationComponentScript = {
   computed: {
     chevronType() {
       if (this.publication.boostFactor >= 8) {
-        return "chevron-triple-up";
+        return 'chevron-triple-up'
+      } else if (this.publication.boostFactor >= 4) {
+        return 'chevron-double-up'
+      } else if (this.publication.boostFactor > 1) {
+        return 'chevron-up'
       }
-      else if (this.publication.boostFactor >= 4) {
-        return "chevron-double-up";
-      }
-      else if (this.publication.boostFactor > 1) {
-        return "chevron-up";
-      }
-      return "";
+      return ''
     },
     minusButtonTooltip() {
-      return this.publicationType === 'selected' 
-        ? 'Remove publication from selected and mark to stay excluded.' 
-        : 'Mark publication to be excluded for suggestions.';
+      return this.publicationType === 'selected'
+        ? 'Remove publication from selected and mark to stay excluded.'
+        : 'Mark publication to be excluded for suggestions.'
     }
   },
   methods: {
     activate() {
-      this.sessionStore.activatePublicationComponentByDoi(this.publication.doi);
-      this.$emit("activate", this.publication.doi);
+      this.sessionStore.activatePublicationComponentByDoi(this.publication.doi)
+      this.$emit('activate', this.publication.doi)
     },
     refocus() {
-      const element = document.getElementById(this.publication.doi);
-      if (element) element.focus();
-    },
+      const element = document.getElementById(this.publication.doi)
+      if (element) element.focus()
+    }
   },
   template: `
     <div class="publication-component" 
@@ -160,7 +159,7 @@ describe('PublicationComponent', () => {
       },
       global: {
         stubs: {
-          'tippy': true,
+          tippy: true,
           'v-icon': true,
           'v-btn': true
         }
@@ -181,7 +180,7 @@ describe('PublicationComponent', () => {
     it('should return chevron-up for boostFactor > 1 and < 4', () => {
       wrapper = createWrapper({ boostFactor: 2 })
       expect(wrapper.vm.chevronType).toBe('chevron-up')
-      
+
       wrapper = createWrapper({ boostFactor: 3.9 })
       expect(wrapper.vm.chevronType).toBe('chevron-up')
     })
@@ -189,7 +188,7 @@ describe('PublicationComponent', () => {
     it('should return chevron-double-up for boostFactor >= 4 and < 8', () => {
       wrapper = createWrapper({ boostFactor: 4 })
       expect(wrapper.vm.chevronType).toBe('chevron-double-up')
-      
+
       wrapper = createWrapper({ boostFactor: 7.9 })
       expect(wrapper.vm.chevronType).toBe('chevron-double-up')
     })
@@ -197,7 +196,7 @@ describe('PublicationComponent', () => {
     it('should return chevron-triple-up for boostFactor >= 8', () => {
       wrapper = createWrapper({ boostFactor: 8 })
       expect(wrapper.vm.chevronType).toBe('chevron-triple-up')
-      
+
       wrapper = createWrapper({ boostFactor: 100 })
       expect(wrapper.vm.chevronType).toBe('chevron-triple-up')
     })
@@ -205,13 +204,13 @@ describe('PublicationComponent', () => {
     it('should handle edge case boostFactor exactly at boundaries', () => {
       wrapper = createWrapper({ boostFactor: 1.0 })
       expect(wrapper.vm.chevronType).toBe('')
-      
+
       wrapper = createWrapper({ boostFactor: 1.1 })
       expect(wrapper.vm.chevronType).toBe('chevron-up')
-      
+
       wrapper = createWrapper({ boostFactor: 4.0 })
       expect(wrapper.vm.chevronType).toBe('chevron-double-up')
-      
+
       wrapper = createWrapper({ boostFactor: 8.0 })
       expect(wrapper.vm.chevronType).toBe('chevron-triple-up')
     })
@@ -229,37 +228,37 @@ describe('PublicationComponent', () => {
     })
 
     it('should apply is-unread class for unread, unselected, fetched publications', () => {
-      wrapper = createWrapper({ 
-        isRead: false, 
-        isSelected: false, 
-        wasFetched: true 
+      wrapper = createWrapper({
+        isRead: false,
+        isSelected: false,
+        wasFetched: true
       })
       expect(wrapper.classes()).toContain('is-unread')
     })
 
     it('should NOT apply is-unread class when publication is read', () => {
-      wrapper = createWrapper({ 
-        isRead: true, 
-        isSelected: false, 
-        wasFetched: true 
+      wrapper = createWrapper({
+        isRead: true,
+        isSelected: false,
+        wasFetched: true
       })
       expect(wrapper.classes()).not.toContain('is-unread')
     })
 
     it('should NOT apply is-unread class when publication is selected', () => {
-      wrapper = createWrapper({ 
-        isRead: false, 
-        isSelected: true, 
-        wasFetched: true 
+      wrapper = createWrapper({
+        isRead: false,
+        isSelected: true,
+        wasFetched: true
       })
       expect(wrapper.classes()).not.toContain('is-unread')
     })
 
     it('should NOT apply is-unread class when publication was not fetched', () => {
-      wrapper = createWrapper({ 
-        isRead: false, 
-        isSelected: false, 
-        wasFetched: false 
+      wrapper = createWrapper({
+        isRead: false,
+        isSelected: false,
+        wasFetched: false
       })
       expect(wrapper.classes()).not.toContain('is-unread')
     })
@@ -269,9 +268,9 @@ describe('PublicationComponent', () => {
     it('should call activate method when clicked', async () => {
       const publication = createMockPublication({ doi: 'test-doi' })
       wrapper = createWrapper(publication)
-      
+
       await wrapper.trigger('click')
-      
+
       expect(mockSessionStore.activatePublicationComponentByDoi).toHaveBeenCalledWith('test-doi')
       expect(wrapper.emitted('activate')[0]).toEqual(['test-doi'])
     })
@@ -279,52 +278,52 @@ describe('PublicationComponent', () => {
     it('should call hoverPublication on mouseenter', async () => {
       const publication = createMockPublication()
       wrapper = createWrapper(publication)
-      
+
       await wrapper.trigger('mouseenter')
-      
+
       expect(mockSessionStore.hoverPublication).toHaveBeenCalledWith(publication, true)
     })
 
     it('should call hoverPublication on mouseleave', async () => {
       const publication = createMockPublication()
       wrapper = createWrapper(publication)
-      
+
       await wrapper.trigger('mouseleave')
-      
+
       expect(mockSessionStore.hoverPublication).toHaveBeenCalledWith(publication, false)
     })
 
     it('should queue for selected when plus button clicked', async () => {
       wrapper = createWrapper({ doi: 'test-doi', isSelected: false })
-      
-      const plusButton = wrapper.findAll('.mock-compact-button').find(btn => 
-        btn.text().includes('mdi-plus-thick')
-      )
-      
+
+      const plusButton = wrapper
+        .findAll('.mock-compact-button')
+        .find((btn) => btn.text().includes('mdi-plus-thick'))
+
       await plusButton.trigger('click')
-      
+
       expect(mockSessionStore.queueForSelected).toHaveBeenCalledWith('test-doi')
     })
 
     it('should queue for excluded when minus button clicked', async () => {
       wrapper = createWrapper({ doi: 'test-doi' })
-      
-      const minusButton = wrapper.findAll('.mock-compact-button').find(btn => 
-        btn.text().includes('mdi-minus-thick')
-      )
-      
+
+      const minusButton = wrapper
+        .findAll('.mock-compact-button')
+        .find((btn) => btn.text().includes('mdi-minus-thick'))
+
       await minusButton.trigger('click')
-      
+
       expect(mockSessionStore.queueForExcluded).toHaveBeenCalledWith('test-doi')
     })
 
     it('should NOT show plus button for selected publications', () => {
       wrapper = createWrapper({ isSelected: true })
-      
-      const plusButton = wrapper.findAll('.mock-compact-button').find(btn => 
-        btn.text().includes('mdi-plus-thick')
-      )
-      
+
+      const plusButton = wrapper
+        .findAll('.mock-compact-button')
+        .find((btn) => btn.text().includes('mdi-plus-thick'))
+
       expect(plusButton).toBeUndefined()
     })
   })
@@ -337,7 +336,7 @@ describe('PublicationComponent', () => {
         author: '',
         year: null
       })
-      
+
       expect(wrapper.find('.error-notification').exists()).toBe(true)
       expect(wrapper.text()).toContain('No or only partial metadata could be retrieved')
     })
@@ -349,7 +348,7 @@ describe('PublicationComponent', () => {
         author: '',
         year: null
       })
-      
+
       expect(wrapper.find('.error-notification').exists()).toBe(false)
     })
 
@@ -361,17 +360,17 @@ describe('PublicationComponent', () => {
         year: null
       })
       wrapper = createWrapper(publication)
-      
+
       const refreshButton = wrapper.find('.error-notification .mock-compact-button')
       await refreshButton.trigger('click')
-      
+
       expect(mockSessionStore.retryLoadingPublication).toHaveBeenCalledWith(publication)
     })
 
     it('should handle publications with zero or negative scores', () => {
       wrapper = createWrapper({ score: 0 })
       expect(wrapper.find('.score').text()).toBe('0')
-      
+
       wrapper = createWrapper({ score: -5 })
       expect(wrapper.find('.score').text()).toBe('-5')
     })
@@ -384,7 +383,7 @@ describe('PublicationComponent', () => {
     it('should handle publications with decimal boost factors', () => {
       wrapper = createWrapper({ boostFactor: 1.5 })
       expect(wrapper.vm.chevronType).toBe('chevron-up')
-      
+
       wrapper = createWrapper({ boostFactor: 0.5 })
       expect(wrapper.vm.chevronType).toBe('')
     })
@@ -393,7 +392,7 @@ describe('PublicationComponent', () => {
   describe('boost indicator display', () => {
     it('should show boost indicator when boostFactor > 1', () => {
       wrapper = createWrapper({ boostFactor: 2 })
-      
+
       const boostIndicator = wrapper.find('.boost-indicator')
       expect(boostIndicator.exists()).toBe(true)
       expect(boostIndicator.classes()).toContain('chevron-up')
@@ -401,13 +400,13 @@ describe('PublicationComponent', () => {
 
     it('should NOT show boost indicator when boostFactor = 1', () => {
       wrapper = createWrapper({ boostFactor: 1 })
-      
+
       expect(wrapper.find('.boost-indicator').exists()).toBe(false)
     })
 
     it('should NOT show boost indicator when boostFactor < 1', () => {
       wrapper = createWrapper({ boostFactor: 0.8 })
-      
+
       expect(wrapper.find('.boost-indicator').exists()).toBe(false)
     })
   })
@@ -416,16 +415,16 @@ describe('PublicationComponent', () => {
     it('should not trigger parent click when button is clicked', async () => {
       const publication = createMockPublication({ doi: 'test-doi', isSelected: false })
       wrapper = createWrapper(publication)
-      
+
       const activateSpy = vi.spyOn(wrapper.vm, 'activate')
-      
+
       // Find the plus button and click it
-      const plusButton = wrapper.findAll('.mock-compact-button').find(btn => 
-        btn.text().includes('mdi-plus-thick')
-      )
-      
+      const plusButton = wrapper
+        .findAll('.mock-compact-button')
+        .find((btn) => btn.text().includes('mdi-plus-thick'))
+
       await plusButton.trigger('click')
-      
+
       // The activate method should NOT be called when a button is clicked
       // This would indicate a bug where button clicks bubble up to the parent
       expect(activateSpy).not.toHaveBeenCalled()
@@ -440,12 +439,12 @@ describe('PublicationComponent', () => {
         year: null
       })
       wrapper = createWrapper(publication)
-      
+
       const activateSpy = vi.spyOn(wrapper.vm, 'activate')
-      
+
       const refreshButton = wrapper.find('.error-notification .mock-compact-button')
       await refreshButton.trigger('click')
-      
+
       // The activate method should NOT be called when refresh button is clicked
       expect(activateSpy).not.toHaveBeenCalled()
       expect(mockSessionStore.retryLoadingPublication).toHaveBeenCalled()
@@ -457,38 +456,37 @@ describe('PublicationComponent', () => {
       // Test representative score values
       wrapper = createWrapper({ score: 32, scoreColor: 'hsl(0, 0%, 60%)' })
       expect(wrapper.find('.score').text()).toBe('32')
-      
+
       wrapper = createWrapper({ score: 0, scoreColor: 'hsl(0, 0%, 100%)' })
       expect(wrapper.find('.score').text()).toBe('0')
-      
+
       wrapper = createWrapper({ score: -5, scoreColor: 'hsl(0, 0%, 100%)' })
       expect(wrapper.find('.score').text()).toBe('-5')
     })
   })
 
-
   describe('refocus method', () => {
     it('should focus element when refocus is called', () => {
       const mockElement = { focus: vi.fn() }
       const getElementByIdSpy = vi.spyOn(document, 'getElementById').mockReturnValue(mockElement)
-      
+
       wrapper = createWrapper({ doi: 'test-doi' })
       wrapper.vm.refocus()
-      
+
       expect(getElementByIdSpy).toHaveBeenCalledWith('test-doi')
       expect(mockElement.focus).toHaveBeenCalled()
-      
+
       getElementByIdSpy.mockRestore()
     })
 
     it('should handle missing element gracefully in refocus', () => {
       const getElementByIdSpy = vi.spyOn(document, 'getElementById').mockReturnValue(null)
-      
+
       wrapper = createWrapper({ doi: 'test-doi' })
-      
+
       // Should not throw error
       expect(() => wrapper.vm.refocus()).not.toThrow()
-      
+
       getElementByIdSpy.mockRestore()
     })
   })
@@ -503,20 +501,22 @@ describe('PublicationComponent', () => {
         },
         global: {
           stubs: {
-            'tippy': true,
+            tippy: true,
             'v-icon': true,
             'v-btn': true
           }
         }
       })
-      
-      const minusButton = wrapper.findAll('.mock-compact-button').find(btn => 
-        btn.text().includes('mdi-minus-thick')
-      )
-      
+
+      const minusButton = wrapper
+        .findAll('.mock-compact-button')
+        .find((btn) => btn.text().includes('mdi-minus-thick'))
+
       expect(minusButton.exists()).toBe(true)
       // This assertion will fail because publicationType prop doesn't exist yet
-      expect(wrapper.vm.minusButtonTooltip).toBe('Remove publication from selected and mark to stay excluded.')
+      expect(wrapper.vm.minusButtonTooltip).toBe(
+        'Remove publication from selected and mark to stay excluded.'
+      )
     })
 
     it('should show correct tooltip text for minus button in suggested publications context', () => {
@@ -527,17 +527,17 @@ describe('PublicationComponent', () => {
         },
         global: {
           stubs: {
-            'tippy': true,
+            tippy: true,
             'v-icon': true,
             'v-btn': true
           }
         }
       })
-      
-      const minusButton = wrapper.findAll('.mock-compact-button').find(btn => 
-        btn.text().includes('mdi-minus-thick')
-      )
-      
+
+      const minusButton = wrapper
+        .findAll('.mock-compact-button')
+        .find((btn) => btn.text().includes('mdi-minus-thick'))
+
       expect(minusButton.exists()).toBe(true)
       expect(wrapper.vm.minusButtonTooltip).toBe('Mark publication to be excluded for suggestions.')
     })
@@ -550,13 +550,13 @@ describe('PublicationComponent', () => {
         },
         global: {
           stubs: {
-            'tippy': true,
+            tippy: true,
             'v-icon': true,
             'v-btn': true
           }
         }
       })
-      
+
       expect(wrapper.vm.minusButtonTooltip).toBe('Mark publication to be excluded for suggestions.')
     })
   })

@@ -22,19 +22,18 @@ describe('SuggestedPublicationsComponent', () => {
     setActivePinia(pinia)
     sessionStore = useSessionStore()
     interfaceStore = useInterfaceStore()
-    
+
     // Set up default store state
     interfaceStore.isMobile = false
-    
+
     vi.clearAllMocks()
     mockLoadMoreSuggestions.mockClear()
-    
+
     // Set up default session store state
     sessionStore.suggestion = null
     sessionStore.selectedPublications = []
     sessionStore.excludedPublicationsDois = []
   })
-
 
   it('shows suggestion count when suggestions are available', () => {
     sessionStore.suggestion = {
@@ -50,11 +49,11 @@ describe('SuggestedPublicationsComponent', () => {
         plugins: [pinia],
         stubs: {
           ...commonComponentStubs,
-          'v-badge': { 
+          'v-badge': {
             template: '<div class="v-badge" :content="content"><slot></slot></div>',
             props: ['content', 'color', 'offset-y', 'offset-x', 'value', 'transition']
           },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -67,9 +66,7 @@ describe('SuggestedPublicationsComponent', () => {
   it('shows load more button when suggestions are available', () => {
     sessionStore.suggestion = {
       totalSuggestions: 1000,
-      publications: [
-        { doi: 'test-doi-1', title: 'Test Publication 1' }
-      ]
+      publications: [{ doi: 'test-doi-1', title: 'Test Publication 1' }]
     }
 
     const wrapper = mount(SuggestedPublicationsComponent, {
@@ -78,12 +75,12 @@ describe('SuggestedPublicationsComponent', () => {
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'v-badge': { template: '<div class="v-badge"><slot></slot></div>' },
-          'CompactButton': { 
+          CompactButton: {
             template: '<button class="compact-button" :disabled="disabled"><slot></slot></button>',
             props: ['disabled']
           },
-          'tippy': { template: '<div class="tippy"><slot></slot></div>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          tippy: { template: '<div class="tippy"><slot></slot></div>' },
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -97,9 +94,7 @@ describe('SuggestedPublicationsComponent', () => {
   it('disables load more button when all suggestions are loaded', () => {
     sessionStore.suggestion = {
       totalSuggestions: 1,
-      publications: [
-        { doi: 'test-doi-1', title: 'Test Publication 1' }
-      ]
+      publications: [{ doi: 'test-doi-1', title: 'Test Publication 1' }]
     }
 
     const wrapper = mount(SuggestedPublicationsComponent, {
@@ -108,12 +103,12 @@ describe('SuggestedPublicationsComponent', () => {
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'v-badge': { template: '<div class="v-badge"><slot></slot></div>' },
-          'CompactButton': { 
+          CompactButton: {
             template: '<button class="compact-button" :disabled="disabled"><slot></slot></button>',
             props: ['disabled']
           },
-          'tippy': { template: '<div class="tippy"><slot></slot></div>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          tippy: { template: '<div class="tippy"><slot></slot></div>' },
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -127,9 +122,7 @@ describe('SuggestedPublicationsComponent', () => {
   it('calls loadMoreSuggestions when load more button is clicked', async () => {
     sessionStore.suggestion = {
       totalSuggestions: 1000,
-      publications: [
-        { doi: 'test-doi-1', title: 'Test Publication 1' }
-      ]
+      publications: [{ doi: 'test-doi-1', title: 'Test Publication 1' }]
     }
 
     const wrapper = mount(SuggestedPublicationsComponent, {
@@ -138,13 +131,14 @@ describe('SuggestedPublicationsComponent', () => {
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'v-badge': { template: '<div class="v-badge"><slot></slot></div>' },
-          'CompactButton': { 
-            template: '<button class="compact-button" @click="$emit(\'click\')" :disabled="disabled"><slot></slot></button>',
+          CompactButton: {
+            template:
+              '<button class="compact-button" @click="$emit(\'click\')" :disabled="disabled"><slot></slot></button>',
             emits: ['click'],
             props: ['disabled']
           },
-          'tippy': { template: '<div class="tippy"><slot></slot></div>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          tippy: { template: '<div class="tippy"><slot></slot></div>' },
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -167,9 +161,9 @@ describe('SuggestedPublicationsComponent', () => {
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'v-badge': { template: '<div class="v-badge"><slot></slot></div>' },
-          'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
-          'tippy': { template: '<div class="tippy"><slot></slot></div>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
+          tippy: { template: '<div class="tippy"><slot></slot></div>' },
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -187,9 +181,9 @@ describe('SuggestedPublicationsComponent', () => {
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'v-badge': { template: '<div class="v-badge"><slot></slot></div>' },
-          'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
-          'tippy': { template: '<div class="tippy"><slot></slot></div>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
+          tippy: { template: '<div class="tippy"><slot></slot></div>' },
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })

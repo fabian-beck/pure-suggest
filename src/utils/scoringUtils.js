@@ -1,4 +1,4 @@
-import { SCORING } from "@/constants/config.js";
+import { SCORING } from '@/constants/config.js'
 
 const SCORE_COLOR_THRESHOLDS = {
   VERY_HIGH: 32,
@@ -6,7 +6,7 @@ const SCORE_COLOR_THRESHOLDS = {
   MEDIUM_HIGH: 8,
   MEDIUM: 4,
   LOW: 2
-};
+}
 
 const SCORE_LIGHTNESS = {
   VERY_HIGH: 60,
@@ -15,7 +15,7 @@ const SCORE_LIGHTNESS = {
   MEDIUM: 90,
   LOW: 95,
   DEFAULT: 100
-};
+}
 
 /**
  * Utility functions for publication scoring and keyword matching
@@ -28,9 +28,9 @@ const SCORE_LIGHTNESS = {
  */
 export function normalizeBoostKeywordString(boostKeywordString) {
   return boostKeywordString
-    .replace(/\s*,\s*/g, ", ") // treat spaces before/after commas
-    .replace(/\s*\|\s*/g, "|") // remove spaces before/after vertical line
-    .toUpperCase(); // upper case
+    .replace(/\s*,\s*/g, ', ') // treat spaces before/after commas
+    .replace(/\s*\|\s*/g, '|') // remove spaces before/after vertical line
+    .toUpperCase() // upper case
 }
 
 /**
@@ -39,7 +39,14 @@ export function normalizeBoostKeywordString(boostKeywordString) {
  * @returns {string[]} Array of unique keywords
  */
 export function parseUniqueBoostKeywords(boostKeywordString) {
-  return [...new Set(boostKeywordString.toUpperCase().split(/,\s*/).map(keyword => keyword.trim()))];
+  return [
+    ...new Set(
+      boostKeywordString
+        .toUpperCase()
+        .split(/,\s*/)
+        .map((keyword) => keyword.trim())
+    )
+  ]
 }
 
 /**
@@ -50,56 +57,58 @@ export function parseUniqueBoostKeywords(boostKeywordString) {
  * @returns {Array} Array of match objects with keyword, position, and length
  */
 export function findKeywordMatches(title, boostKeywords) {
-  const matches = [];
-  const upperTitle = title.toUpperCase();
-  
-  boostKeywords.forEach(boostKeyword => {
-    if (!boostKeyword) return;
-    
-    let keywordMatched = false;
+  const matches = []
+  const upperTitle = title.toUpperCase()
+
+  boostKeywords.forEach((boostKeyword) => {
+    if (!boostKeyword) return
+
+    let keywordMatched = false
     // Filter out empty alternatives when splitting by "|"
-    const alternatives = boostKeyword.split("|").filter(alt => alt.trim());
-    
+    const alternatives = boostKeyword.split('|').filter((alt) => alt.trim())
+
     // Skip if no valid alternatives remain
-    if (alternatives.length === 0) return;
-    
-    alternatives.forEach(alternativeKeyword => {
-      if (keywordMatched) return; // Skip if this keyword group already has a match
-      
+    if (alternatives.length === 0) return
+
+    alternatives.forEach((alternativeKeyword) => {
+      if (keywordMatched) return // Skip if this keyword group already has a match
+
       // Helper function to add match if no overlap
       const addMatchIfNoOverlap = (index) => {
         if (index >= 0) {
-          const overlaps = matches.some(match => 
-            index < match.position + match.length && index + alternativeKeyword.length > match.position
-          );
-          
+          const overlaps = matches.some(
+            (match) =>
+              index < match.position + match.length &&
+              index + alternativeKeyword.length > match.position
+          )
+
           if (!overlaps) {
             matches.push({
               keyword: boostKeyword,
               position: index,
               length: alternativeKeyword.length,
               text: alternativeKeyword
-            });
-            keywordMatched = true;
+            })
+            keywordMatched = true
           }
         }
-      };
-      
+      }
+
       // Use word boundary matching for short keywords (3 chars or less)
       if (alternativeKeyword.length <= 3) {
-        const wordBoundaryRegex = new RegExp(`\\b${escapeRegExp(alternativeKeyword)}`, 'gi');
-        const regexMatch = wordBoundaryRegex.exec(title);
-        addMatchIfNoOverlap(regexMatch?.index ?? -1);
+        const wordBoundaryRegex = new RegExp(`\\b${escapeRegExp(alternativeKeyword)}`, 'gi')
+        const regexMatch = wordBoundaryRegex.exec(title)
+        addMatchIfNoOverlap(regexMatch?.index ?? -1)
       } else {
         // Use substring matching for longer keywords
-        const upperAlternativeKeyword = alternativeKeyword.toUpperCase();
-        const index = upperTitle.indexOf(upperAlternativeKeyword);
-        addMatchIfNoOverlap(index);
+        const upperAlternativeKeyword = alternativeKeyword.toUpperCase()
+        const index = upperTitle.indexOf(upperAlternativeKeyword)
+        addMatchIfNoOverlap(index)
       }
-    });
-  });
-  
-  return matches.sort((a, b) => a.position - b.position);
+    })
+  })
+
+  return matches.sort((a, b) => a.position - b.position)
 }
 
 /**
@@ -108,7 +117,7 @@ export function findKeywordMatches(title, boostKeywords) {
  * @returns {string} Escaped string safe for use in regex
  */
 function escapeRegExp(string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
 /**
@@ -118,22 +127,22 @@ function escapeRegExp(string) {
  * @returns {string} HTML string with highlighted keywords
  */
 export function highlightTitle(title, matches) {
-  if (matches.length === 0) return title;
-  
-  let result = "";
-  let lastPosition = 0;
-  
-  matches.forEach(match => {
+  if (matches.length === 0) return title
+
+  let result = ''
+  let lastPosition = 0
+
+  matches.forEach((match) => {
     // Add text before match
-    result += title.substring(lastPosition, match.position);
+    result += title.substring(lastPosition, match.position)
     // Add highlighted match
-    result += `<u style='text-decoration-color: hsl(48, 100%, 67%); text-decoration-thickness: 0.25rem;'>${title.substring(match.position, match.position + match.length)}</u>`;
-    lastPosition = match.position + match.length;
-  });
-  
+    result += `<u style='text-decoration-color: hsl(48, 100%, 67%); text-decoration-thickness: 0.25rem;'>${title.substring(match.position, match.position + match.length)}</u>`
+    lastPosition = match.position + match.length
+  })
+
   // Add remaining text
-  result += title.substring(lastPosition);
-  return result;
+  result += title.substring(lastPosition)
+  return result
 }
 
 /**
@@ -144,21 +153,21 @@ export function highlightTitle(title, matches) {
  */
 export function calculateBoostFactor(matchCount, isBoost) {
   if (!isBoost || matchCount === 0) {
-    return SCORING.DEFAULT_BOOST_FACTOR;
+    return SCORING.DEFAULT_BOOST_FACTOR
   }
-  return SCORING.DEFAULT_BOOST_FACTOR * Math.pow(SCORING.BOOST_MULTIPLIER, matchCount);
+  return SCORING.DEFAULT_BOOST_FACTOR * Math.pow(SCORING.BOOST_MULTIPLIER, matchCount)
 }
 
 /**
  * Calculates publication score based on citations, references, and boost
  * @param {number} citationCount - Number of citations
- * @param {number} referenceCount - Number of references  
+ * @param {number} referenceCount - Number of references
  * @param {boolean} isSelected - Whether publication is selected
  * @param {number} boostFactor - Boost multiplier factor
  * @returns {number} Calculated score
  */
 export function calculatePublicationScore(citationCount, referenceCount, isSelected, boostFactor) {
-  return (citationCount + referenceCount + (isSelected ? 1 : 0)) * boostFactor;
+  return (citationCount + referenceCount + (isSelected ? 1 : 0)) * boostFactor
 }
 
 /**
@@ -167,13 +176,19 @@ export function calculatePublicationScore(citationCount, referenceCount, isSelec
  * @returns {string} HSL color string
  */
 export function getScoreColor(score) {
-  const lightness = score >= SCORE_COLOR_THRESHOLDS.VERY_HIGH ? SCORE_LIGHTNESS.VERY_HIGH
-    : score >= SCORE_COLOR_THRESHOLDS.HIGH ? SCORE_LIGHTNESS.HIGH
-    : score >= SCORE_COLOR_THRESHOLDS.MEDIUM_HIGH ? SCORE_LIGHTNESS.MEDIUM_HIGH
-    : score >= SCORE_COLOR_THRESHOLDS.MEDIUM ? SCORE_LIGHTNESS.MEDIUM
-    : score >= SCORE_COLOR_THRESHOLDS.LOW ? SCORE_LIGHTNESS.LOW
-    : SCORE_LIGHTNESS.DEFAULT;
-  return `hsl(0, 0%, ${lightness}%)`;
+  const lightness =
+    score >= SCORE_COLOR_THRESHOLDS.VERY_HIGH
+      ? SCORE_LIGHTNESS.VERY_HIGH
+      : score >= SCORE_COLOR_THRESHOLDS.HIGH
+        ? SCORE_LIGHTNESS.HIGH
+        : score >= SCORE_COLOR_THRESHOLDS.MEDIUM_HIGH
+          ? SCORE_LIGHTNESS.MEDIUM_HIGH
+          : score >= SCORE_COLOR_THRESHOLDS.MEDIUM
+            ? SCORE_LIGHTNESS.MEDIUM
+            : score >= SCORE_COLOR_THRESHOLDS.LOW
+              ? SCORE_LIGHTNESS.LOW
+              : SCORE_LIGHTNESS.DEFAULT
+  return `hsl(0, 0%, ${lightness}%)`
 }
 
 /**
@@ -183,26 +198,26 @@ export function getScoreColor(score) {
  * @param {boolean} isBoost - Whether boost is enabled
  */
 export function updatePublicationScores(publications, uniqueBoostKeywords, isBoost) {
-  publications.forEach(publication => {
-    const matches = findKeywordMatches(publication.title, uniqueBoostKeywords);
-    
+  publications.forEach((publication) => {
+    const matches = findKeywordMatches(publication.title, uniqueBoostKeywords)
+
     // Update boost metrics
-    publication.boostMatches = matches.length;
-    publication.boostKeywords = matches.map(match => match.keyword);
-    publication.boostFactor = calculateBoostFactor(matches.length, isBoost);
-    
+    publication.boostMatches = matches.length
+    publication.boostKeywords = matches.map((match) => match.keyword)
+    publication.boostFactor = calculateBoostFactor(matches.length, isBoost)
+
     // Generate highlighted title
-    publication.titleHighlighted = highlightTitle(publication.title, matches);
-    
+    publication.titleHighlighted = highlightTitle(publication.title, matches)
+
     // Calculate score
     publication.score = calculatePublicationScore(
-      publication.citationCount, 
-      publication.referenceCount, 
+      publication.citationCount,
+      publication.referenceCount,
       publication.isSelected,
       publication.boostFactor
-    );
-    
+    )
+
     // Set score color
-    publication.scoreColor = getScoreColor(publication.score);
-  });
+    publication.scoreColor = getScoreColor(publication.score)
+  })
 }

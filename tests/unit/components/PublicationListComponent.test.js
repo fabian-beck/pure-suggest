@@ -13,7 +13,7 @@ vi.mock('@/lib/Cache.js', () => ({
 }))
 vi.mock('@/lib/Util.js', () => ({
   scrollToTargetAdjusted: vi.fn(),
-  shuffle: vi.fn(arr => arr),
+  shuffle: vi.fn((arr) => arr),
   saveAsFile: vi.fn()
 }))
 
@@ -22,7 +22,8 @@ vi.mock('@/components/LazyPublicationComponent.vue', () => ({
   default: {
     name: 'LazyPublicationComponent',
     props: ['publication'],
-    template: '<div class="publication-item" data-testid="publication-{{ publication.doi }}">{{ publication.doi }}</div>'
+    template:
+      '<div class="publication-item" data-testid="publication-{{ publication.doi }}">{{ publication.doi }}</div>'
   }
 }))
 
@@ -34,7 +35,7 @@ describe('PublicationListComponent - Section Headers', () => {
 
   beforeEach(() => {
     setActivePinia(createPinia())
-    
+
     // Simplified mock publications
     mockPublications = [
       {
@@ -43,7 +44,7 @@ describe('PublicationListComponent - Section Headers', () => {
         getMetaString: () => 'Machine Learning Paper'
       },
       {
-        doi: '10.1234/pub2', 
+        doi: '10.1234/pub2',
         score: 5,
         getMetaString: () => 'Deep Learning Research'
       }
@@ -71,34 +72,37 @@ describe('PublicationListComponent - Section Headers', () => {
 
   describe('section headers', () => {
     it.each([
-      ['selected', false],  // [publicationType, expectInfoTheme]
+      ['selected', false], // [publicationType, expectInfoTheme]
       ['suggested', true]
-    ])('should show filtered/unfiltered headers for %s publications', (publicationType, expectInfoTheme) => {
-      // Mock filter to match first publication only
-      mockSessionStore.filter.matches.mockImplementation(pub => pub.doi === '10.1234/pub1')
+    ])(
+      'should show filtered/unfiltered headers for %s publications',
+      (publicationType, expectInfoTheme) => {
+        // Mock filter to match first publication only
+        mockSessionStore.filter.matches.mockImplementation((pub) => pub.doi === '10.1234/pub1')
 
-      wrapper = mount(PublicationListComponent, {
-        props: {
-          publications: mockPublications,
-          showSectionHeaders: true,
-          publicationType
-        }
-      })
+        wrapper = mount(PublicationListComponent, {
+          props: {
+            publications: mockPublications,
+            showSectionHeaders: true,
+            publicationType
+          }
+        })
 
-      const headers = wrapper.findAll('.section-header-text')
-      expect(headers).toHaveLength(2)
-      expect(headers[0].text()).toBe('Filtered (1)')
-      expect(headers[1].text()).toBe('Other publications (1)')
-      
-      // Check theme styling
-      headers.forEach(header => {
-        if (expectInfoTheme) {
-          expect(header.classes()).toContain('info-theme')
-        } else {
-          expect(header.classes()).not.toContain('info-theme')
-        }
-      })
-    })
+        const headers = wrapper.findAll('.section-header-text')
+        expect(headers).toHaveLength(2)
+        expect(headers[0].text()).toBe('Filtered (1)')
+        expect(headers[1].text()).toBe('Other publications (1)')
+
+        // Check theme styling
+        headers.forEach((header) => {
+          if (expectInfoTheme) {
+            expect(header.classes()).toContain('info-theme')
+          } else {
+            expect(header.classes()).not.toContain('info-theme')
+          }
+        })
+      }
+    )
   })
 
   describe('no section headers when filters inactive', () => {
@@ -118,36 +122,37 @@ describe('PublicationListComponent - Section Headers', () => {
     })
   })
 
-
-
   describe('checkbox-based filtering', () => {
     it.each([
       ['selected', 'applyToSelected'],
       ['suggested', 'applyToSuggested']
-    ])('should control header visibility for %s publications via %s flag', (publicationType, filterFlag) => {
-      mockSessionStore.filter.matches.mockImplementation(pub => pub.doi === '10.1234/pub1')
+    ])(
+      'should control header visibility for %s publications via %s flag',
+      (publicationType, filterFlag) => {
+        mockSessionStore.filter.matches.mockImplementation((pub) => pub.doi === '10.1234/pub1')
 
-      // Test with flag disabled - no headers
-      mockSessionStore.filter[filterFlag] = false
-      wrapper = mount(PublicationListComponent, {
-        props: {
-          publications: mockPublications,
-          showSectionHeaders: true,
-          publicationType
-        }
-      })
-      expect(wrapper.findAll('.section-header-text')).toHaveLength(0)
+        // Test with flag disabled - no headers
+        mockSessionStore.filter[filterFlag] = false
+        wrapper = mount(PublicationListComponent, {
+          props: {
+            publications: mockPublications,
+            showSectionHeaders: true,
+            publicationType
+          }
+        })
+        expect(wrapper.findAll('.section-header-text')).toHaveLength(0)
 
-      // Test with flag enabled - headers shown
-      mockSessionStore.filter[filterFlag] = true
-      wrapper = mount(PublicationListComponent, {
-        props: {
-          publications: mockPublications,
-          showSectionHeaders: true,
-          publicationType
-        }
-      })
-      expect(wrapper.findAll('.section-header-text')).toHaveLength(2)
-    })
+        // Test with flag enabled - headers shown
+        mockSessionStore.filter[filterFlag] = true
+        wrapper = mount(PublicationListComponent, {
+          props: {
+            publications: mockPublications,
+            showSectionHeaders: true,
+            publicationType
+          }
+        })
+        expect(wrapper.findAll('.section-header-text')).toHaveLength(2)
+      }
+    )
   })
 })

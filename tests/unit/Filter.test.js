@@ -20,11 +20,11 @@ describe('Filter', () => {
 
   describe('constructor', () => {
     it('should initialize with default values', () => {
-      expect(filter.string).toBe("")
+      expect(filter.string).toBe('')
       expect(filter.yearStart).toBeUndefined()
       expect(filter.yearEnd).toBeUndefined()
-      expect(filter.tag).toBe("")
-      expect(filter.doi).toBe("")
+      expect(filter.tag).toBe('')
+      expect(filter.doi).toBe('')
       expect(filter.dois).toEqual([])
       expect(filter.isActive).toBe(true)
       expect(filter.applyToSelected).toBe(true)
@@ -34,40 +34,40 @@ describe('Filter', () => {
 
   describe('matchesString', () => {
     it('should return true when filter string is empty', () => {
-      filter.string = ""
+      filter.string = ''
       expect(filter.matchesString(mockPublication)).toBe(true)
     })
 
     it('should match case-insensitively', () => {
-      filter.string = "MACHINE learning"
+      filter.string = 'MACHINE learning'
       expect(filter.matchesString(mockPublication)).toBe(true)
     })
 
     it('should match partial strings', () => {
-      filter.string = "Test Paper"
+      filter.string = 'Test Paper'
       expect(filter.matchesString(mockPublication)).toBe(true)
     })
 
     it('should return false when no match found', () => {
-      filter.string = "Quantum Physics"
+      filter.string = 'Quantum Physics'
       expect(filter.matchesString(mockPublication)).toBe(false)
     })
 
     it('should handle special characters in search', () => {
       mockPublication.getMetaString = vi.fn(() => 'C++ Programming & Development')
-      filter.string = "C++"
+      filter.string = 'C++'
       expect(filter.matchesString(mockPublication)).toBe(true)
     })
 
     it('should handle empty meta string', () => {
       mockPublication.getMetaString = vi.fn(() => '')
-      filter.string = "anything"
+      filter.string = 'anything'
       expect(filter.matchesString(mockPublication)).toBe(false)
     })
 
     it('should handle null/undefined meta string', () => {
       mockPublication.getMetaString = vi.fn(() => null)
-      filter.string = "anything"
+      filter.string = 'anything'
       expect(() => filter.matchesString(mockPublication)).toThrow()
     })
   })
@@ -177,10 +177,10 @@ describe('Filter', () => {
     it('should return false when publication has no year', () => {
       mockPublication.year = null
       expect(filter.matchesYear(mockPublication)).toBe(false)
-      
+
       mockPublication.year = undefined
       expect(filter.matchesYear(mockPublication)).toBe(false)
-      
+
       mockPublication.year = ''
       expect(filter.matchesYear(mockPublication)).toBe(false)
     })
@@ -209,22 +209,22 @@ describe('Filter', () => {
 
   describe('matchesTag', () => {
     it('should return true when tag filter is empty', () => {
-      filter.tag = ""
+      filter.tag = ''
       expect(filter.matchesTag(mockPublication)).toBe(true)
     })
 
     it('should return true when publication has truthy tag value', () => {
-      filter.tag = "someTag"
+      filter.tag = 'someTag'
       expect(filter.matchesTag(mockPublication)).toBe(true)
     })
 
     it('should return false when publication has falsy tag value', () => {
-      filter.tag = "otherTag"
+      filter.tag = 'otherTag'
       expect(filter.matchesTag(mockPublication)).toBe(false)
     })
 
     it('should return false when publication does not have tag property', () => {
-      filter.tag = "nonExistentTag"
+      filter.tag = 'nonExistentTag'
       expect(filter.matchesTag(mockPublication)).toBe(false)
     })
   })
@@ -234,10 +234,10 @@ describe('Filter', () => {
       it('should add and handle duplicate DOIs', () => {
         filter.addDoi('10.1234/test')
         expect(filter.dois).toEqual(['10.1234/test'])
-        
+
         filter.addDoi('10.1234/test') // duplicate
         expect(filter.dois).toEqual(['10.1234/test'])
-        
+
         filter.addDoi('10.1234/new')
         expect(filter.dois).toEqual(['10.1234/test', '10.1234/new'])
       })
@@ -248,7 +248,7 @@ describe('Filter', () => {
         filter.dois = ['10.1234/test1', '10.1234/test2']
         filter.removeDoi('10.1234/test1')
         expect(filter.dois).toEqual(['10.1234/test2'])
-        
+
         filter.removeDoi('10.1234/nonexistent')
         expect(filter.dois).toEqual(['10.1234/test2'])
       })
@@ -258,7 +258,7 @@ describe('Filter', () => {
       it('should toggle DOI presence', () => {
         filter.toggleDoi('10.1234/test')
         expect(filter.dois).toEqual(['10.1234/test'])
-        
+
         filter.toggleDoi('10.1234/test')
         expect(filter.dois).toEqual([])
       })
@@ -313,8 +313,8 @@ describe('Filter', () => {
   describe('matches (integration)', () => {
     beforeEach(() => {
       // Reset to passing state
-      filter.string = ""
-      filter.tag = ""
+      filter.string = ''
+      filter.tag = ''
       filter.dois = []
       mockPublication.year = '2023'
     })
@@ -324,12 +324,12 @@ describe('Filter', () => {
     })
 
     it('should return false when string filter fails', () => {
-      filter.string = "nonexistent"
+      filter.string = 'nonexistent'
       expect(filter.matches(mockPublication)).toBe(false)
     })
 
     it('should return false when tag filter fails', () => {
-      filter.tag = "nonExistentTag"
+      filter.tag = 'nonExistentTag'
       expect(filter.matches(mockPublication)).toBe(false)
     })
 
@@ -344,12 +344,12 @@ describe('Filter', () => {
     })
 
     it('should handle complex combined filters', () => {
-      filter.string = "Machine"
-      filter.tag = "someTag"
+      filter.string = 'Machine'
+      filter.tag = 'someTag'
       filter.yearStart = '2020'
       filter.yearEnd = '2025'
       filter.dois = ['10.1234/citation1']
-      
+
       expect(filter.matches(mockPublication)).toBe(true)
     })
   })
@@ -360,12 +360,12 @@ describe('Filter', () => {
     })
 
     it('should return true when string filter is set', () => {
-      filter.string = "test"
+      filter.string = 'test'
       expect(filter.hasActiveFilters()).toBe(true)
     })
 
     it('should return true when tag filter is set', () => {
-      filter.tag = "someTag"
+      filter.tag = 'someTag'
       expect(filter.hasActiveFilters()).toBe(true)
     })
 
@@ -386,16 +386,16 @@ describe('Filter', () => {
     })
 
     it('should return true when multiple filters are active', () => {
-      filter.string = "test"
-      filter.tag = "someTag"
+      filter.string = 'test'
+      filter.tag = 'someTag'
       filter.yearStart = '2020'
       filter.dois = ['10.1234/test']
       expect(filter.hasActiveFilters()).toBe(true)
     })
 
     it('should return false when filters are set but isActive is false', () => {
-      filter.string = "test"
-      filter.tag = "someTag"
+      filter.string = 'test'
+      filter.tag = 'someTag'
       filter.yearStart = '2020'
       filter.dois = ['10.1234/test']
       filter.isActive = false
@@ -403,7 +403,7 @@ describe('Filter', () => {
     })
 
     it('should return false when filters are active but neither publication type is selected', () => {
-      filter.string = "test"
+      filter.string = 'test'
       filter.isActive = true
       filter.applyToSelected = false
       filter.applyToSuggested = false
@@ -411,7 +411,7 @@ describe('Filter', () => {
     })
 
     it('should return true when filters are active and at least one publication type is selected', () => {
-      filter.string = "test"
+      filter.string = 'test'
       filter.isActive = true
       filter.applyToSelected = true
       filter.applyToSuggested = false
@@ -421,29 +421,29 @@ describe('Filter', () => {
 
   describe('isActive toggle functionality', () => {
     it('should return true for all publications when isActive is false', () => {
-      filter.string = "nonmatching"
-      filter.tag = "nonmatching"
+      filter.string = 'nonmatching'
+      filter.tag = 'nonmatching'
       filter.yearStart = '1800'
       filter.yearEnd = '1850'
       filter.isActive = false
-      
+
       expect(filter.matches(mockPublication)).toBe(true)
     })
 
     it('should apply filters normally when isActive is true', () => {
-      filter.string = "nonmatching"
+      filter.string = 'nonmatching'
       filter.isActive = true
-      
+
       expect(filter.matches(mockPublication)).toBe(false)
     })
 
     it('should toggle filtering behavior when isActive changes', () => {
-      filter.string = "nonmatching"
-      
+      filter.string = 'nonmatching'
+
       // With isActive true, should not match
       filter.isActive = true
       expect(filter.matches(mockPublication)).toBe(false)
-      
+
       // With isActive false, should match all
       filter.isActive = false
       expect(filter.matches(mockPublication)).toBe(true)

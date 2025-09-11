@@ -6,7 +6,7 @@ import NetworkVisComponent from '@/components/NetworkVisComponent.vue'
 
 // Mock D3.js with chainable methods (reused from main test)
 const createMockSelection = () => {
-  const mockData = [];
+  const mockData = []
   const selection = {
     append: vi.fn(() => createMockSelection()),
     attr: vi.fn(() => createMockSelection()),
@@ -21,9 +21,9 @@ const createMockSelection = () => {
           enter: vi.fn(() => createMockSelection()),
           exit: vi.fn(() => createMockSelection()),
           remove: vi.fn(() => createMockSelection())
-        };
+        }
       }
-      return mockData;
+      return mockData
     }),
     join: vi.fn(() => createMockSelection()),
     enter: vi.fn(() => createMockSelection()),
@@ -42,19 +42,19 @@ const createMockSelection = () => {
           { type: 'publication', id: 'pub1' },
           { type: 'author', id: 'author1', author: { name: 'Test Author' } },
           { type: 'keyword', id: 'keyword1' }
-        ];
-        const filteredData = testData.filter(filterFn);
+        ]
+        const filteredData = testData.filter(filterFn)
         return {
           ...createMockSelection(),
           data: () => filteredData
-        };
+        }
       }
-      return createMockSelection();
+      return createMockSelection()
     }),
     node: vi.fn(() => ({ getBoundingClientRect: () => ({ x: 0, y: 0, width: 100, height: 100 }) })),
     nodes: vi.fn(() => [])
-  };
-  return selection;
+  }
+  return selection
 }
 
 const createMockSimulation = () => ({
@@ -143,7 +143,7 @@ vi.mock('@/stores/session.js', () => ({
       applyToSuggested: true,
       matches: vi.fn(() => true)
     },
-    activePublication: null,
+    activePublication: null
     // NOTE: selectedPublicationsAuthors is missing here (moved to author store)
   }))
 }))
@@ -152,22 +152,22 @@ vi.mock('@/stores/session.js', () => ({
 vi.mock('@/stores/author.js', () => ({
   useAuthorStore: vi.fn(() => ({
     selectedPublicationsAuthors: [
-      { 
-        id: 'author1', 
-        name: 'John Doe', 
+      {
+        id: 'author1',
+        name: 'John Doe',
         initials: 'JD',
-        yearMin: 2019, 
-        yearMax: 2021, 
+        yearMin: 2019,
+        yearMax: 2021,
         score: 0.85,
         count: 2,
         publicationDois: ['10.1234/test1', '10.1234/test2']
       },
-      { 
-        id: 'author2', 
-        name: 'Jane Smith', 
+      {
+        id: 'author2',
+        name: 'Jane Smith',
         initials: 'JS',
-        yearMin: 2020, 
-        yearMax: 2022, 
+        yearMin: 2020,
+        yearMax: 2022,
         score: 0.92,
         count: 1,
         publicationDois: ['10.1234/test2']
@@ -202,12 +202,12 @@ vi.mock('@/utils/network/forces.js', () => ({
   SIMULATION_ALPHA: 0.5,
   getNodeXPosition: vi.fn((node, isNetworkClusters, yearXFunc) => {
     if (isNetworkClusters && node.x !== undefined) {
-      return node.x;
+      return node.x
     }
     if (node.publication?.year && yearXFunc) {
-      return yearXFunc(node.publication.year);
+      return yearXFunc(node.publication.year)
     }
-    return 100;
+    return 100
   })
 }))
 
@@ -215,11 +215,11 @@ vi.mock('@/utils/network/publicationNodes.js', () => ({
   initializePublicationNodes: vi.fn(),
   updatePublicationNodes: vi.fn(() => ({ tooltips: [] })),
   createPublicationNodes: vi.fn((publications, _doiToIndex, _selectedQueue, _excludedQueue) => {
-    return publications.map(pub => ({
+    return publications.map((pub) => ({
       id: pub.doi,
       type: 'publication',
       publication: pub
-    }));
+    }))
   })
 }))
 
@@ -241,13 +241,13 @@ vi.mock('@/utils/network/authorNodes.js', () => {
   const mockCreateAuthorNodes = vi.fn((authors, _publications) => {
     // This should create author nodes if authors are provided
     if (!authors || authors.length === 0) {
-      return [];
+      return []
     }
-    return authors.map(author => ({
+    return authors.map((author) => ({
       id: author.id,
       type: 'author',
       author: author
-    }));
+    }))
   })
   const mockCreateAuthorLinks = vi.fn(() => [])
 
@@ -331,9 +331,9 @@ describe('Author Nodes Visibility Bug', () => {
         stubs: {
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'NetworkControls': { template: '<div class="network-controls"></div>' },
-          'NetworkHeader': { template: '<div class="network-header"></div>' },
-          'PublicationComponent': { template: '<div class="publication-component"></div>' }
+          NetworkControls: { template: '<div class="network-controls"></div>' },
+          NetworkHeader: { template: '<div class="network-header"></div>' },
+          PublicationComponent: { template: '<div class="publication-component"></div>' }
         }
       }
     })
@@ -344,14 +344,14 @@ describe('Author Nodes Visibility Bug', () => {
     // The fix: NetworkVisComponent now accesses selectedPublicationsAuthors from authorStore
     const sessionStore = useSessionStore()
     const authorStore = useAuthorStore()
-    
+
     // Verify the fix:
     // 1. sessionStore doesn't have selectedPublicationsAuthors (as expected after refactor)
     expect(sessionStore.selectedPublicationsAuthors).toBeUndefined()
-    
+
     // 2. authorStore DOES have the authors
     expect(authorStore.selectedPublicationsAuthors).toHaveLength(2)
-    
+
     // 3. createAuthorNodes now gets called with the actual authors array from authorStore
     expect(createAuthorNodes).toHaveBeenCalledWith(
       expect.arrayContaining([
@@ -362,7 +362,7 @@ describe('Author Nodes Visibility Bug', () => {
       ]), // Authors are now properly passed from authorStore
       expect.any(Array) // publications array
     )
-    
+
     // 4. As a result, author nodes ARE created
     const createAuthorNodesCall = vi.mocked(createAuthorNodes).mock.calls[0]
     const authorNodes = createAuthorNodes(createAuthorNodesCall[0], createAuthorNodesCall[1])
@@ -381,12 +381,12 @@ describe('Author Nodes Visibility Bug', () => {
     const sessionStoreWithAuthors = {
       ...useSessionStore(),
       selectedPublicationsAuthors: [
-        { 
-          id: 'author1', 
-          name: 'John Doe', 
+        {
+          id: 'author1',
+          name: 'John Doe',
           initials: 'JD',
-          yearMin: 2019, 
-          yearMax: 2021, 
+          yearMin: 2019,
+          yearMax: 2021,
           score: 0.85,
           count: 2,
           publicationDois: ['10.1234/test1', '10.1234/test2']
@@ -401,9 +401,9 @@ describe('Author Nodes Visibility Bug', () => {
         stubs: {
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'NetworkControls': { template: '<div class="network-controls"></div>' },
-          'NetworkHeader': { template: '<div class="network-header"></div>' },
-          'PublicationComponent': { template: '<div class="publication-component"></div>' }
+          NetworkControls: { template: '<div class="network-controls"></div>' },
+          NetworkHeader: { template: '<div class="network-header"></div>' },
+          PublicationComponent: { template: '<div class="publication-component"></div>' }
         }
       }
     })
@@ -440,9 +440,9 @@ describe('Author Nodes Visibility Bug', () => {
         stubs: {
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'NetworkControls': { template: '<div class="network-controls"></div>' },
-          'NetworkHeader': { template: '<div class="network-header"></div>' },
-          'PublicationComponent': { template: '<div class="publication-component"></div>' }
+          NetworkControls: { template: '<div class="network-controls"></div>' },
+          NetworkHeader: { template: '<div class="network-header"></div>' },
+          PublicationComponent: { template: '<div class="publication-component"></div>' }
         }
       }
     })

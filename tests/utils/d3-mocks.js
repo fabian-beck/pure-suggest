@@ -10,7 +10,7 @@ import { vi } from 'vitest'
  * @returns {Object} Mock selection object
  */
 export const createMockSelection = () => {
-  const mockData = [];
+  const mockData = []
   const selection = {
     append: vi.fn(() => createMockSelection()),
     attr: vi.fn(() => createMockSelection()),
@@ -26,9 +26,9 @@ export const createMockSelection = () => {
           enter: vi.fn(() => createMockSelection()),
           exit: vi.fn(() => createMockSelection()),
           remove: vi.fn(() => createMockSelection())
-        };
+        }
       }
-      return mockData;
+      return mockData
     }),
     join: vi.fn(() => createMockSelection()),
     enter: vi.fn(() => createMockSelection()),
@@ -47,19 +47,19 @@ export const createMockSelection = () => {
           { type: 'publication', id: 'pub1' },
           { type: 'author', id: 'author1', author: { name: 'Test Author' } },
           { type: 'keyword', id: 'keyword1' }
-        ];
-        const filteredData = testData.filter(filterFn);
+        ]
+        const filteredData = testData.filter(filterFn)
         return {
           ...createMockSelection(),
           data: () => filteredData
-        };
+        }
       }
-      return createMockSelection();
+      return createMockSelection()
     }),
     node: vi.fn(() => ({ getBoundingClientRect: () => ({ x: 0, y: 0, width: 100, height: 100 }) })),
     nodes: vi.fn(() => [])
-  };
-  return selection;
+  }
+  return selection
 }
 
 /**
@@ -141,23 +141,23 @@ export const createNetworkUtilMocks = () => ({
     SIMULATION_ALPHA: 0.5,
     getNodeXPosition: vi.fn((node, isNetworkClusters, yearXFunc) => {
       if (isNetworkClusters && node.x !== undefined) {
-        return node.x;
+        return node.x
       }
       if (node.publication?.year && yearXFunc) {
-        return yearXFunc(node.publication.year);
+        return yearXFunc(node.publication.year)
       }
-      return 100;
+      return 100
     })
   },
   publicationNodes: {
     initializePublicationNodes: vi.fn(),
     updatePublicationNodes: vi.fn(() => ({ tooltips: [] })),
     createPublicationNodes: vi.fn((publications) => {
-      return publications.map(pub => ({
+      return publications.map((pub) => ({
         id: pub.doi,
         type: 'publication',
         publication: pub
-      }));
+      }))
     })
   },
   authorNodes: {
@@ -165,13 +165,13 @@ export const createNetworkUtilMocks = () => ({
     updateAuthorNodes: vi.fn(() => ({ tooltips: [] })),
     createAuthorNodes: vi.fn((authors) => {
       if (!authors || authors.length === 0) {
-        return [];
+        return []
       }
-      return authors.map(author => ({
+      return authors.map((author) => ({
         id: author.id,
         type: 'author',
         author: author
-      }));
+      }))
     }),
     createAuthorLinks: vi.fn(() => []),
     highlightAuthorPublications: vi.fn(),
@@ -196,4 +196,3 @@ export const createNetworkUtilMocks = () => ({
     updateYearLabels: vi.fn(() => createMockSelection())
   }
 })
-

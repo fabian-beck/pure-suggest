@@ -8,13 +8,33 @@ import NetworkVisComponent from '@/components/NetworkVisComponent.vue'
 const createChainableMock = (returnData = null) => {
   const mock = vi.fn(() => returnData || createChainableMock())
   // Add common D3 methods that return chainable objects
-  const chainableMethods = ['append', 'attr', 'select', 'selectAll', 'call', 'join', 'enter', 'exit', 'remove', 'merge', 'style', 'text', 'on', 'classed', 'filter', 'transition', 'duration']
-  chainableMethods.forEach(method => {
+  const chainableMethods = [
+    'append',
+    'attr',
+    'select',
+    'selectAll',
+    'call',
+    'join',
+    'enter',
+    'exit',
+    'remove',
+    'merge',
+    'style',
+    'text',
+    'on',
+    'classed',
+    'filter',
+    'transition',
+    'duration'
+  ]
+  chainableMethods.forEach((method) => {
     mock[method] = vi.fn(() => createChainableMock())
   })
   // Special cases
-  mock.data = vi.fn((data) => data ? { map: vi.fn(fn => data.map(fn)), ...mock } : [])
-  mock.node = vi.fn(() => ({ getBoundingClientRect: () => ({ x: 0, y: 0, width: 100, height: 100 }) }))
+  mock.data = vi.fn((data) => (data ? { map: vi.fn((fn) => data.map(fn)), ...mock } : []))
+  mock.node = vi.fn(() => ({
+    getBoundingClientRect: () => ({ x: 0, y: 0, width: 100, height: 100 })
+  }))
   mock.nodes = vi.fn(() => [])
   return mock
 }
@@ -46,7 +66,9 @@ vi.mock('d3', () => ({
   zoomIdentity: { k: 1, x: 0, y: 0 },
   drag: vi.fn(() => ({ on: vi.fn() })),
   forceSimulation: vi.fn(() => mockSimulation),
-  forceLink: vi.fn(() => ({ id: vi.fn(() => ({ distance: vi.fn(() => ({ strength: vi.fn() })) })) })),
+  forceLink: vi.fn(() => ({
+    id: vi.fn(() => ({ distance: vi.fn(() => ({ strength: vi.fn() })) }))
+  })),
   forceManyBody: vi.fn(() => ({ strength: vi.fn(() => ({ theta: vi.fn() })) })),
   forceX: vi.fn(() => ({ x: vi.fn(() => ({ strength: vi.fn() })) })),
   forceY: vi.fn(() => ({ y: vi.fn(() => ({ strength: vi.fn() })) }))
@@ -56,7 +78,12 @@ vi.mock('d3', () => ({
 vi.mock('tippy.js', () => ({ default: vi.fn(() => ({})) }))
 vi.mock('pinia', async () => {
   const actual = await vi.importActual('pinia')
-  return { ...actual, storeToRefs: vi.fn(store => Object.fromEntries(Object.keys(store).map(key => [key, ref(store[key])]))) }
+  return {
+    ...actual,
+    storeToRefs: vi.fn((store) =>
+      Object.fromEntries(Object.keys(store).map((key) => [key, ref(store[key])]))
+    )
+  }
 })
 
 // Simplified store mocks - focus on essential state
@@ -94,21 +121,25 @@ const mockSimulationComposable = {
   updateGraphData: vi.fn(),
   restart: vi.fn(),
   stop: vi.fn(),
-  setDragging: vi.fn((value) => { mockSimulationComposable.isDragging.value = value })
+  setDragging: vi.fn((value) => {
+    mockSimulationComposable.isDragging.value = value
+  })
 }
 
 // Mock all network-related composables with minimal setup
-vi.mock('@/composables/useNetworkSimulation.js', () => ({ useNetworkSimulation: vi.fn(() => mockSimulationComposable) }))
-vi.mock('@/composables/networkForces.js', () => ({ 
-  calculateYearX: vi.fn(year => year * 10),
+vi.mock('@/composables/useNetworkSimulation.js', () => ({
+  useNetworkSimulation: vi.fn(() => mockSimulationComposable)
+}))
+vi.mock('@/composables/networkForces.js', () => ({
+  calculateYearX: vi.fn((year) => year * 10),
   getNodeXPosition: vi.fn(() => 100),
   SIMULATION_ALPHA: 0.5
 }))
-vi.mock('@/composables/publicationNodes.js', () => ({ 
+vi.mock('@/composables/publicationNodes.js', () => ({
   initializePublicationNodes: vi.fn(() => createChainableMock()),
   updatePublicationNodes: vi.fn(() => ({ nodes: createChainableMock(), tooltips: [] }))
 }))
-vi.mock('@/composables/keywordNodes.js', () => ({ 
+vi.mock('@/composables/keywordNodes.js', () => ({
   initializeKeywordNodes: vi.fn(() => createChainableMock()),
   updateKeywordNodes: vi.fn(() => ({ nodes: createChainableMock(), tooltips: [] })),
   releaseKeywordPosition: vi.fn(),
@@ -132,7 +163,9 @@ vi.mock('@/composables/useGraphData.js', () => ({
 }))
 
 // Mock other components and composables
-vi.mock('@/components/PublicationComponent.vue', () => ({ default: { name: 'PublicationComponent' } }))
+vi.mock('@/components/PublicationComponent.vue', () => ({
+  default: { name: 'PublicationComponent' }
+}))
 vi.mock('@/composables/useAppState.js', () => ({
   useAppState: vi.fn(() => ({
     isEmpty: false,
@@ -147,8 +180,8 @@ import { useInterfaceStore } from '@/stores/interface.js'
 // Helper function for consistent component stubs
 const getComponentStubs = () => ({
   'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-  'CompactSwitch': { template: '<div class="compact-switch"><slot></slot></div>' },
-  'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
+  CompactSwitch: { template: '<div class="compact-switch"><slot></slot></div>' },
+  CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
   'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
   'v-btn-toggle': { template: '<div class="v-btn-toggle"><slot></slot></div>' },
   'v-menu': { template: '<div class="v-menu"><slot></slot></div>' },
@@ -157,12 +190,12 @@ const getComponentStubs = () => ({
   'v-list-item-title': { template: '<div class="v-list-item-title"><slot></slot></div>' },
   'v-checkbox': { template: '<input type="checkbox" class="v-checkbox">' },
   'v-slider': { template: '<input type="range" class="v-slider">' },
-  'PublicationComponent': { template: '<div class="publication-component"><slot></slot></div>' }
+  PublicationComponent: { template: '<div class="publication-component"><slot></slot></div>' }
 })
 
 describe('NetworkVisComponent', () => {
   let pinia
-  
+
   beforeAll(() => {
     // Mock DOM methods that D3 uses
     global.document.getElementById = vi.fn((id) => {
@@ -174,7 +207,7 @@ describe('NetworkVisComponent', () => {
       }
       return null
     })
-    
+
     // Mock getBoundingClientRect for SVG elements
     Element.prototype.getBoundingClientRect = vi.fn(() => ({
       width: 800,
@@ -243,13 +276,15 @@ describe('NetworkVisComponent', () => {
       const _interfaceStore = useInterfaceStore()
       sessionStore.selectedPublications = []
       sessionStore.excludedPublicationsDois = []
-      
+
       // Add isEmpty computed property
       Object.defineProperty(sessionStore, 'isEmpty', {
-        get() { return sessionStore.selectedPublications.length === 0 },
+        get() {
+          return sessionStore.selectedPublications.length === 0
+        },
         configurable: true
       })
-      
+
       const wrapper = mount(NetworkVisComponent, {
         global: {
           plugins: [pinia],
@@ -351,7 +386,6 @@ describe('NetworkVisComponent', () => {
 
       expect(wrapper.vm.onlyShowFiltered).toBe(true)
     })
-
   })
 
   describe('Computed Properties', () => {
@@ -363,7 +397,7 @@ describe('NetworkVisComponent', () => {
       })
 
       expect(wrapper.vm.showSelectedNodes).toBe(true)
-      
+
       wrapper.vm.showNodes = ['suggested', 'keyword', 'author']
       expect(wrapper.vm.showSelectedNodes).toBe(false)
     })
@@ -376,7 +410,7 @@ describe('NetworkVisComponent', () => {
       })
 
       expect(wrapper.vm.showSuggestedNodes).toBe(true)
-      
+
       wrapper.vm.showNodes = ['selected', 'keyword', 'author']
       expect(wrapper.vm.showSuggestedNodes).toBe(false)
     })
@@ -389,7 +423,7 @@ describe('NetworkVisComponent', () => {
       })
 
       expect(wrapper.vm.showKeywordNodes).toBe(true)
-      
+
       wrapper.vm.showNodes = ['selected', 'suggested', 'author']
       expect(wrapper.vm.showKeywordNodes).toBe(false)
     })
@@ -402,7 +436,7 @@ describe('NetworkVisComponent', () => {
       })
 
       expect(wrapper.vm.showAuthorNodes).toBe(true)
-      
+
       wrapper.vm.showNodes = ['selected', 'suggested', 'keyword']
       expect(wrapper.vm.showAuthorNodes).toBe(false)
     })
@@ -423,9 +457,7 @@ describe('NetworkVisComponent', () => {
         suggestedPublications: [
           { doi: '10.1234/suggested1', title: 'Suggested Publication 1', year: 2019 }
         ],
-        boostKeywords: [
-          { name: 'machine learning', weight: 0.8 }
-        ],
+        boostKeywords: [{ name: 'machine learning', weight: 0.8 }],
         updateQueued: vi.fn(),
         $onAction: vi.fn(),
         filter: {
@@ -465,8 +497,10 @@ describe('NetworkVisComponent', () => {
       wrapper.vm.plot()
 
       // Should set error message
-      expect(wrapper.vm.errorMessage).toBe('Sorry, an error occurred while plotting the citation network.')
-      
+      expect(wrapper.vm.errorMessage).toBe(
+        'Sorry, an error occurred while plotting the citation network.'
+      )
+
       // Should clear error after timeout (we can't easily test the timeout, but can check it's set)
       expect(wrapper.vm.errorTimer).toBeDefined()
 
@@ -476,18 +510,18 @@ describe('NetworkVisComponent', () => {
 
     it('allows simulation restart during dragging for responsive layout', () => {
       wrapper.vm.setDragging(true)
-      
+
       const restartSpy = vi.spyOn(wrapper.vm, 'restart')
       const startSpy = vi.spyOn(wrapper.vm, 'start')
-      
+
       // Test with restart=true (should call restart during dragging)
       wrapper.vm.plot(true)
       expect(restartSpy).toHaveBeenCalled()
-      
+
       restartSpy.mockClear()
       startSpy.mockClear()
-      
-      // Test with restart=false (should call start during dragging)  
+
+      // Test with restart=false (should call start during dragging)
       wrapper.vm.plot(false)
       expect(startSpy).toHaveBeenCalled()
     })
@@ -497,11 +531,11 @@ describe('NetworkVisComponent', () => {
       // we just verify the plot method runs without throwing to the test
       wrapper.vm.graph.nodes = [{ id: 'test-node' }]
       wrapper.vm.graph.links = [{ source: 'node1', target: 'node2' }]
-      
+
       expect(() => {
         wrapper.vm.plot()
       }).not.toThrow()
-      
+
       // Verify graph data is set
       expect(wrapper.vm.graph.nodes).toHaveLength(1)
       expect(wrapper.vm.graph.links).toHaveLength(1)
@@ -512,7 +546,7 @@ describe('NetworkVisComponent', () => {
       expect(() => {
         wrapper.vm.plot(true)
       }).not.toThrow()
-      
+
       expect(() => {
         wrapper.vm.plot(false)
       }).not.toThrow()
@@ -532,17 +566,17 @@ describe('NetworkVisComponent', () => {
 
     it('expands network when expandNetwork(true) is called', () => {
       const mockInterfaceStore = vi.mocked(useInterfaceStore)()
-      
+
       wrapper.vm.expandNetwork(true)
-      
+
       expect(mockInterfaceStore.isNetworkExpanded).toBe(true)
     })
 
     it('collapses network when expandNetwork(false) is called', () => {
       const mockInterfaceStore = vi.mocked(useInterfaceStore)()
-      
+
       wrapper.vm.expandNetwork(false)
-      
+
       expect(mockInterfaceStore.isNetworkExpanded).toBe(false)
     })
 
@@ -585,8 +619,18 @@ describe('NetworkVisComponent', () => {
         },
         activePublication: { doi: '10.1234/active', title: 'Active Publication' },
         publicationsFiltered: [
-          { doi: '10.1234/pub1', boostKeywords: ['machine learning'], isKeywordHovered: false, isAuthorHovered: false },
-          { doi: '10.1234/pub2', boostKeywords: ['AI'], isKeywordHovered: false, isAuthorHovered: false }
+          {
+            doi: '10.1234/pub1',
+            boostKeywords: ['machine learning'],
+            isKeywordHovered: false,
+            isAuthorHovered: false
+          },
+          {
+            doi: '10.1234/pub2',
+            boostKeywords: ['AI'],
+            isKeywordHovered: false,
+            isAuthorHovered: false
+          }
         ],
         isKeywordLinkedToActive: vi.fn(() => true)
       }
@@ -613,9 +657,9 @@ describe('NetworkVisComponent', () => {
       it('handles keyword node click correctly', () => {
         const mockEvent = { target: { parentNode: { classList: { remove: vi.fn() } } } }
         const mockData = { id: 'machine learning', fx: 100, fy: 50 }
-        
+
         wrapper.vm.keywordNodeClick(mockEvent, mockData)
-        
+
         // Should remove fixed position
         expect(mockData.fx).toBeUndefined()
         expect(mockData.fy).toBeUndefined()
@@ -624,9 +668,9 @@ describe('NetworkVisComponent', () => {
       it('handles keyword node mouseover correctly', () => {
         const mockEvent = {}
         const mockData = { id: 'machine learning' }
-        
+
         wrapper.vm.onKeywordNodeMouseover(mockEvent, mockData)
-        
+
         // Should set isKeywordHovered for matching publications
         expect(mockSessionStore.publicationsFiltered[0].isKeywordHovered).toBe(true)
         expect(mockSessionStore.publicationsFiltered[1].isKeywordHovered).toBe(false)
@@ -635,11 +679,11 @@ describe('NetworkVisComponent', () => {
       it('handles keyword node mouseout correctly', () => {
         // First set hover state
         mockSessionStore.publicationsFiltered[0].isKeywordHovered = true
-        
+
         const mockEvent = {}
         const mockData = { id: 'machine learning' }
         wrapper.vm.onKeywordNodeMouseout(mockEvent, mockData)
-        
+
         // Should clear hover state for all publications
         expect(mockSessionStore.publicationsFiltered[0].isKeywordHovered).toBe(false)
         expect(mockSessionStore.publicationsFiltered[1].isKeywordHovered).toBe(false)
@@ -648,9 +692,9 @@ describe('NetworkVisComponent', () => {
       it('creates keyword drag behavior correctly', () => {
         // Mock the method if not available
         wrapper.vm.keywordNodeDrag = vi.fn(() => ({ on: vi.fn(() => ({ on: vi.fn() })) }))
-        
+
         const dragBehavior = wrapper.vm.keywordNodeDrag()
-        
+
         expect(dragBehavior).toBeDefined()
         expect(typeof dragBehavior.on).toBe('function')
       })
@@ -659,14 +703,14 @@ describe('NetworkVisComponent', () => {
     describe('Author Node Interactions', () => {
       it('handles author node mouseover correctly', () => {
         const mockEvent = {}
-        const mockData = { 
-          author: { 
-            publicationDois: ['10.1234/pub2'] 
-          } 
+        const mockData = {
+          author: {
+            publicationDois: ['10.1234/pub2']
+          }
         }
-        
+
         wrapper.vm.onAuthorNodeMouseover(mockEvent, mockData)
-        
+
         // Should set isAuthorHovered for matching publications
         expect(mockSessionStore.publicationsFiltered[0].isAuthorHovered).toBe(false)
         expect(mockSessionStore.publicationsFiltered[1].isAuthorHovered).toBe(true)
@@ -675,15 +719,15 @@ describe('NetworkVisComponent', () => {
       it('handles author node mouseout correctly', () => {
         // First set hover state
         mockSessionStore.publicationsFiltered[1].isAuthorHovered = true
-        
+
         const mockEvent = {}
-        const mockData = { 
-          author: { 
-            publicationDois: ['10.1234/pub2'] 
-          } 
+        const mockData = {
+          author: {
+            publicationDois: ['10.1234/pub2']
+          }
         }
         wrapper.vm.onAuthorNodeMouseout(mockEvent, mockData)
-        
+
         // Should clear hover state for all publications
         expect(mockSessionStore.publicationsFiltered[0].isAuthorHovered).toBe(false)
         expect(mockSessionStore.publicationsFiltered[1].isAuthorHovered).toBe(false)
@@ -693,9 +737,9 @@ describe('NetworkVisComponent', () => {
         const mockEvent = {}
         const mockData = { author: { id: 'author123' } }
         const mockInterfaceStore = vi.mocked(useInterfaceStore)()
-        
+
         wrapper.vm.authorNodeClick(mockEvent, mockData)
-        
+
         // Should open author modal dialog
         expect(mockInterfaceStore.openAuthorModalDialog).toHaveBeenCalledWith('author123')
       })
@@ -704,11 +748,11 @@ describe('NetworkVisComponent', () => {
     describe('Drag Behavior', () => {
       it('sets dragging state correctly during drag operations', () => {
         expect(wrapper.vm.isDragging).toBe(false)
-        
+
         // Simulate drag start
         wrapper.vm.setDragging(true)
         expect(wrapper.vm.isDragging).toBe(true)
-        
+
         // Simulate drag end
         wrapper.vm.setDragging(false)
         expect(wrapper.vm.isDragging).toBe(false)
@@ -716,10 +760,10 @@ describe('NetworkVisComponent', () => {
 
       it('prevents plotting during drag operations', () => {
         const plotSpy = vi.spyOn(wrapper.vm, 'plot').mockImplementation(() => {})
-        
+
         wrapper.vm.setDragging(true)
         wrapper.vm.plot()
-        
+
         // Plot should return early when dragging
         expect(plotSpy).toHaveBeenCalled()
         plotSpy.mockRestore()
@@ -736,29 +780,29 @@ describe('NetworkVisComponent', () => {
         isEmpty: false,
         isUpdatable: false,
         selectedPublications: [
-          { 
-            doi: '10.1234/selected1', 
-            title: 'Selected Publication 1', 
+          {
+            doi: '10.1234/selected1',
+            title: 'Selected Publication 1',
             year: 2020,
             boostKeywords: ['machine learning', 'AI']
           },
-          { 
-            doi: '10.1234/selected2', 
-            title: 'Selected Publication 2', 
+          {
+            doi: '10.1234/selected2',
+            title: 'Selected Publication 2',
             year: 2021,
             boostKeywords: ['deep learning']
           }
         ],
         suggestedPublications: [
-          { 
-            doi: '10.1234/suggested1', 
-            title: 'Suggested Publication 1', 
+          {
+            doi: '10.1234/suggested1',
+            title: 'Suggested Publication 1',
             year: 2019,
             boostKeywords: ['machine learning']
           },
-          { 
-            doi: '10.1234/suggested2', 
-            title: 'Suggested Publication 2', 
+          {
+            doi: '10.1234/suggested2',
+            title: 'Suggested Publication 2',
             year: 2022,
             boostKeywords: ['neural networks']
           }
@@ -769,29 +813,29 @@ describe('NetworkVisComponent', () => {
         ],
         uniqueBoostKeywords: ['machine learning', 'AI', 'deep learning', 'neural networks'],
         publications: [
-          { 
-            doi: '10.1234/selected1', 
-            title: 'Selected Publication 1', 
+          {
+            doi: '10.1234/selected1',
+            title: 'Selected Publication 1',
             year: 2020,
             boostKeywords: ['machine learning', 'AI']
           },
-          { 
-            doi: '10.1234/selected2', 
-            title: 'Selected Publication 2', 
+          {
+            doi: '10.1234/selected2',
+            title: 'Selected Publication 2',
             year: 2021,
             boostKeywords: ['deep learning']
           }
         ],
         publicationsFiltered: [
-          { 
-            doi: '10.1234/selected1', 
-            title: 'Selected Publication 1', 
+          {
+            doi: '10.1234/selected1',
+            title: 'Selected Publication 1',
             year: 2020,
             boostKeywords: ['machine learning', 'AI']
           },
-          { 
-            doi: '10.1234/selected2', 
-            title: 'Selected Publication 2', 
+          {
+            doi: '10.1234/selected2',
+            title: 'Selected Publication 2',
             year: 2021,
             boostKeywords: ['deep learning']
           }
@@ -826,7 +870,7 @@ describe('NetworkVisComponent', () => {
     it('handles node visibility settings correctly', () => {
       // Test default node visibility
       expect(wrapper.vm.showSelectedNodes).toBe(true)
-      expect(wrapper.vm.showSuggestedNodes).toBe(true) 
+      expect(wrapper.vm.showSuggestedNodes).toBe(true)
       expect(wrapper.vm.showKeywordNodes).toBe(true)
       expect(wrapper.vm.showAuthorNodes).toBe(true)
 
@@ -855,14 +899,14 @@ describe('NetworkVisComponent', () => {
 
     it('respects suggested number factor settings', () => {
       expect(wrapper.vm.suggestedNumberFactor).toBe(0.3)
-      
+
       wrapper.vm.suggestedNumberFactor = 0.8
       expect(wrapper.vm.suggestedNumberFactor).toBe(0.8)
     })
 
     it('respects author number factor settings', () => {
       expect(wrapper.vm.authorNumberFactor).toBe(0.5)
-      
+
       wrapper.vm.authorNumberFactor = 1.2
       expect(wrapper.vm.authorNumberFactor).toBe(1.2)
     })
@@ -902,7 +946,7 @@ describe('NetworkVisComponent', () => {
       // isNetworkClusters comes from the interface store, not component data
       // Just verify that the component can access the property
       expect(wrapper.vm.isNetworkClusters).toBeDefined()
-      
+
       // Test that the cluster mode can be toggled via interface store mock
       const mockInterfaceStore = vi.mocked(useInterfaceStore)()
       mockInterfaceStore.isNetworkClusters = true
@@ -912,7 +956,7 @@ describe('NetworkVisComponent', () => {
     it('updates onlyShowFiltered based on filter state changes', async () => {
       // Initially false when no filters active
       expect(wrapper.vm.onlyShowFiltered).toBe(false)
-      
+
       // Can be manually set
       await wrapper.setData({ onlyShowFiltered: true })
       expect(wrapper.vm.onlyShowFiltered).toBe(true)
@@ -922,15 +966,15 @@ describe('NetworkVisComponent', () => {
       // Set an error message directly
       wrapper.vm.errorMessage = 'Test error'
       expect(wrapper.vm.errorMessage).toBe('Test error')
-      
+
       // Simulate setting timeout (just verify it can be set)
       const timeoutId = setTimeout(() => {}, 100)
       wrapper.vm.errorTimer = timeoutId
       expect(wrapper.vm.errorTimer).toBeDefined()
-      
+
       // Clear the timeout to avoid memory leaks
       clearTimeout(timeoutId)
-      
+
       // Clear error
       wrapper.vm.errorMessage = ''
       expect(wrapper.vm.errorMessage).toBe('')
@@ -950,11 +994,11 @@ describe('NetworkVisComponent', () => {
 
     it('calculates year X coordinate correctly for desktop', () => {
       const _currentYear = new Date().getFullYear()
-      
+
       // Test with default non-mobile width (800) and height (160)
       const yearX2020 = wrapper.vm.yearX(2020)
       const yearX2021 = wrapper.vm.yearX(2021)
-      
+
       expect(typeof yearX2020).toBe('number')
       expect(typeof yearX2021).toBe('number')
       expect(yearX2021).toBeGreaterThan(yearX2020) // Later years should be further right
@@ -982,19 +1026,19 @@ describe('NetworkVisComponent', () => {
     it('calculates node X position correctly in timeline mode', async () => {
       // Import the composable function directly
       const { getNodeXPosition } = await import('@/utils/network/forces.js')
-      
+
       const publicationNode = {
         type: 'publication',
         publication: { year: 2020 }
       }
-      
+
       const keywordNode = {
         type: 'keyword'
       }
-      
+
       const nodeX1 = getNodeXPosition(publicationNode, false, wrapper.vm.yearX)
       const nodeX2 = getNodeXPosition(keywordNode, false, wrapper.vm.yearX)
-      
+
       expect(typeof nodeX1).toBe('number')
       expect(typeof nodeX2).toBe('number')
     })
@@ -1002,7 +1046,7 @@ describe('NetworkVisComponent', () => {
     it('calculates node X position correctly in clusters mode', async () => {
       // Import the composable function directly
       const { getNodeXPosition } = await import('@/utils/network/forces.js')
-      
+
       // Mock clusters mode
       vi.mocked(useInterfaceStore).mockReturnValue({
         isMobile: false,
@@ -1019,7 +1063,7 @@ describe('NetworkVisComponent', () => {
 
       const nodeWithPosition = { type: 'publication', x: 100, y: 50 }
       const nodeX = getNodeXPosition(nodeWithPosition, true, clustersWrapper.vm.yearX)
-      
+
       // In clusters mode, should return the node's x position
       expect(nodeX).toBe(100)
     })
@@ -1032,15 +1076,15 @@ describe('NetworkVisComponent', () => {
           stubs: getComponentStubs()
         }
       })
-      
+
       const mockEvent = { stopPropagation: vi.fn() }
       const mockData = { publication: { doi: '10.1234/test' } }
-      
+
       // Simply test that the method exists and can be called without throwing
       expect(() => {
         wrapper.vm.activatePublication(mockEvent, mockData)
       }).not.toThrow()
-      
+
       // Verify the event was handled
       expect(mockEvent.stopPropagation).toHaveBeenCalled()
     })
@@ -1048,7 +1092,7 @@ describe('NetworkVisComponent', () => {
     it('handles simulation alpha and restart correctly', () => {
       // The simulation should be initialized with proper alpha decay and min values
       expect(wrapper.vm.simulation).toBeDefined()
-      
+
       // Test that simulation methods exist and can be called
       expect(() => {
         wrapper.vm.simulation.alpha(0.5)
@@ -1058,9 +1102,9 @@ describe('NetworkVisComponent', () => {
 
     it('toggles network mode correctly', () => {
       const initialClusters = wrapper.vm.isNetworkClusters
-      
+
       wrapper.vm.toggleMode()
-      
+
       expect(wrapper.vm.isNetworkClusters).toBe(!initialClusters)
     })
   })

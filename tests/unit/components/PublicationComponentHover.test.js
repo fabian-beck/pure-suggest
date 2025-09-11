@@ -34,7 +34,8 @@ vi.mock('@/components/PublicationDescription.vue', () => ({
   default: {
     name: 'PublicationDescription',
     props: ['publication'],
-    template: '<div class="mock-publication-description">{{ publication.title || "Mock Publication" }}</div>'
+    template:
+      '<div class="mock-publication-description">{{ publication.title || "Mock Publication" }}</div>'
   }
 }))
 
@@ -46,7 +47,7 @@ const MockInlineIcon = {
 }
 
 const MockCompactButton = {
-  name: 'CompactButton', 
+  name: 'CompactButton',
   props: ['icon'],
   emits: ['click'],
   template: '<button class="mock-compact-button" @click="$emit(\'click\')">{{ icon }}</button>'
@@ -78,7 +79,7 @@ describe('PublicationComponent Hover Bug', () => {
   beforeEach(() => {
     // Reset mocks
     vi.clearAllMocks()
-    
+
     mockPublication = {
       doi: 'test-doi',
       title: 'Test Publication',

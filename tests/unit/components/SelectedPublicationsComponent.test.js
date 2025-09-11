@@ -51,10 +51,10 @@ describe('SelectedPublicationsComponent', () => {
       global: {
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
-          'InlineIcon': { template: '<i class="inline-icon"><slot></slot></i>' },
+          CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
+          InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -74,10 +74,10 @@ describe('SelectedPublicationsComponent', () => {
         plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
-          'InlineIcon': { template: '<i class="inline-icon"><slot></slot></i>' },
+          CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
+          InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -98,10 +98,10 @@ describe('SelectedPublicationsComponent', () => {
         plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
-          'InlineIcon': { template: '<i class="inline-icon"><slot></slot></i>' },
+          CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
+          InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -118,14 +118,15 @@ describe('SelectedPublicationsComponent', () => {
         plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'CompactButton': { 
-            template: '<button class="compact-button" @click="$emit(\'click\')" :icon="icon"><slot></slot></button>',
+          CompactButton: {
+            template:
+              '<button class="compact-button" @click="$emit(\'click\')" :icon="icon"><slot></slot></button>',
             emits: ['click'],
             props: ['icon']
           },
-          'InlineIcon': { template: '<i class="inline-icon"><slot></slot></i>' },
+          InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -142,14 +143,15 @@ describe('SelectedPublicationsComponent', () => {
         plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'CompactButton': { 
-            template: '<button class="compact-button" @click="$emit(\'click\')" :icon="icon"><slot></slot></button>',
+          CompactButton: {
+            template:
+              '<button class="compact-button" @click="$emit(\'click\')" :icon="icon"><slot></slot></button>',
             emits: ['click'],
             props: ['icon']
           },
-          'InlineIcon': { template: '<i class="inline-icon"><slot></slot></i>' },
+          InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -172,10 +174,10 @@ describe('SelectedPublicationsComponent', () => {
         plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
-          'InlineIcon': { template: '<i class="inline-icon"><slot></slot></i>' },
+          CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
+          InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -194,10 +196,10 @@ describe('SelectedPublicationsComponent', () => {
         plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
-          'InlineIcon': { template: '<i class="inline-icon"><slot></slot></i>' },
+          CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
+          InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          'PublicationListComponent': { 
+          PublicationListComponent: {
             template: '<div class="publication-list">Publications</div>',
             props: ['publications', 'showSectionHeaders', 'publicationType']
           }

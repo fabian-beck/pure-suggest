@@ -47,8 +47,8 @@ describe('PublicationComponentSearch', () => {
       },
       global: {
         stubs: {
-          'PublicationDescription': true,
-          'CompactButton': true
+          PublicationDescription: true,
+          CompactButton: true
         }
       }
     })
@@ -66,8 +66,8 @@ describe('PublicationComponentSearch', () => {
       },
       global: {
         stubs: {
-          'PublicationDescription': true,
-          'CompactButton': true
+          PublicationDescription: true,
+          CompactButton: true
         }
       }
     })
@@ -77,5 +77,4 @@ describe('PublicationComponentSearch', () => {
     expect(description.props('highlighted')).toBe('Test Query')
     expect(description.props('alwaysShowDetails')).toBe(true)
   })
-
 })

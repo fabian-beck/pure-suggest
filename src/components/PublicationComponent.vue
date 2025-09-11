@@ -1,45 +1,64 @@
 <template>
   <div class="publication-component-wrapper">
-    <div class="level is-mobile queue-controls" v-if="queueStore.isQueuingForSelected(publication.doi) ||
-      queueStore.isQueuingForExcluded(publication.doi)" :class="{
-        'to-be-selected': queueStore.isQueuingForSelected(publication.doi),
-      }">
+    <div
+      class="level is-mobile queue-controls"
+      v-if="
+        queueStore.isQueuingForSelected(publication.doi) ||
+        queueStore.isQueuingForExcluded(publication.doi)
+      "
+      :class="{
+        'to-be-selected': queueStore.isQueuingForSelected(publication.doi)
+      }"
+    >
       <div class="level-item">
         <span>
           <InlineIcon icon="mdi-tray-full" color="dark" />
           To be
-          <span v-if="queueStore.isQueuingForSelected(publication.doi)"><b>selected </b>
+          <span v-if="queueStore.isQueuingForSelected(publication.doi)"
+            ><b>selected </b>
             <InlineIcon icon="mdi-plus-thick" color="primary-dark" />
           </span>
-          <span v-else><b> excluded </b>
+          <span v-else
+            ><b> excluded </b>
             <InlineIcon icon="mdi-minus-thick" color="black" />
           </span>
         </span>
       </div>
       <div class="level-right">
-        <CompactButton icon="mdi-undo" v-tippy="'Remove publication from queue again.'"
-          v-on:click="queueStore.removeFromQueues(publication.doi)"></CompactButton>
+        <CompactButton
+          icon="mdi-undo"
+          v-tippy="'Remove publication from queue again.'"
+          v-on:click="queueStore.removeFromQueues(publication.doi)"
+        ></CompactButton>
       </div>
     </div>
-    <div class="publication-component media" :class="{
-      'is-active': publication.isActive,
-      'is-selected': publication.isSelected,
-      'is-linked-to-active': publication.isLinkedToActive,
-      'is-unread':
-        !publication.isRead &&
-        !publication.isSelected &&
-        publication.wasFetched,
-      'is-queuing':
-        queueStore.isQueuingForSelected(publication.doi) ||
-        queueStore.isQueuingForExcluded(publication.doi),
-      'is-hovered': interfaceStore.hoveredPublication === publication.doi,
-      'is-keyword-hovered': publication.isKeywordHovered,
-      'is-author-hovered': publication.isAuthorHovered,
-    }" :id="publication.doi" tabindex="0" @focus="activate" @click.stop @mouseenter="handleMouseEnter"
-      @mouseleave="handleMouseLeave">
+    <div
+      class="publication-component media"
+      :class="{
+        'is-active': publication.isActive,
+        'is-selected': publication.isSelected,
+        'is-linked-to-active': publication.isLinkedToActive,
+        'is-unread': !publication.isRead && !publication.isSelected && publication.wasFetched,
+        'is-queuing':
+          queueStore.isQueuingForSelected(publication.doi) ||
+          queueStore.isQueuingForExcluded(publication.doi),
+        'is-hovered': interfaceStore.hoveredPublication === publication.doi,
+        'is-keyword-hovered': publication.isKeywordHovered,
+        'is-author-hovered': publication.isAuthorHovered
+      }"
+      :id="publication.doi"
+      tabindex="0"
+      @focus="activate"
+      @click.stop
+      @mouseenter="handleMouseEnter"
+      @mouseleave="handleMouseLeave"
+    >
       <tippy class="media-left" placement="right">
-        <div class="glyph has-text-centered" v-bind:style="{ 'background-color': publication.scoreColor }"
-          v-show="publication.wasFetched">
+        <div
+          class="glyph has-text-centered"
+          v-bind:style="{ 'background-color': publication.scoreColor }"
+          v-show="publication.wasFetched"
+        >
           <div class="tooltip-target">
             <div class="is-size-3 is-inline-block score">
               {{ publication.score }}
@@ -50,14 +69,15 @@
           </div>
           <div class="reference-counts is-size-6">
             <div class="is-pulled-left">
-              <span v-if="publication.citationCount > 0 ||
-                publication.referenceDois.length === 0
-              " :class="publication.referenceDois.length ? '' : 'unknown'">
-                <InlineIcon icon="mdi-arrow-bottom-left-thick"
-                  :color="publication.referenceDois.length ? '' : 'danger'" />
-                {{
-                  publication.citationCount ? publication.citationCount : "-"
-                }}
+              <span
+                v-if="publication.citationCount > 0 || publication.referenceDois.length === 0"
+                :class="publication.referenceDois.length ? '' : 'unknown'"
+              >
+                <InlineIcon
+                  icon="mdi-arrow-bottom-left-thick"
+                  :color="publication.referenceDois.length ? '' : 'danger'"
+                />
+                {{ publication.citationCount ? publication.citationCount : '-' }}
               </span>
             </div>
             <div class="is-pulled-right">
@@ -71,29 +91,37 @@
         <template #content>
           <div>
             Score of
-            <b>{{ publication.score }} =
-              <span v-if="publication.boostFactor != 1">(</span>{{ publication.citationCount }} + {{
-                publication.referenceCount
-              }}<span v-if="publication.isSelected"> + 1</span><span v-if="publication.boostFactor != 1">) &middot; {{
-                publication.boostFactor }}</span></b>,<br />
+            <b
+              >{{ publication.score }} = <span v-if="publication.boostFactor != 1">(</span
+              >{{ publication.citationCount }} + {{ publication.referenceCount
+              }}<span v-if="publication.isSelected"> + 1</span
+              ><span v-if="publication.boostFactor != 1"
+                >) &middot; {{ publication.boostFactor }}</span
+              ></b
+            >,<br />
             citing <b>{{ publication.citationCount }}</b> (
-            <InlineIcon icon="mdi-arrow-bottom-left-thick"
-              :color="publication.referenceDois.length ? 'white' : 'danger'" />
-            <span v-if="!publication.referenceDois.length" class="unknown">, citing data not available</span>) and cited
-            by
-            <b>{{ publication.referenceCount }}</b> (
-            <InlineIcon icon="mdi-arrow-top-left-thick" color="white" />) selected
-            publications<span v-if="publication.isSelected">, <b>1</b> as self-reference being selected
-              itself</span><span v-if="publication.boostFactor != 1">; multiplied by a boost factor of
-              <b>{{ publication.boostFactor }} = 2<sup>{{
-                publication.boostMatches
-              }}</sup>
+            <InlineIcon
+              icon="mdi-arrow-bottom-left-thick"
+              :color="publication.referenceDois.length ? 'white' : 'danger'"
+            />
+            <span v-if="!publication.referenceDois.length" class="unknown"
+              >, citing data not available</span
+            >) and cited by <b>{{ publication.referenceCount }}</b> (
+            <InlineIcon icon="mdi-arrow-top-left-thick" color="white" />) selected publications<span
+              v-if="publication.isSelected"
+              >, <b>1</b> as self-reference being selected itself</span
+            ><span v-if="publication.boostFactor != 1"
+              >; multiplied by a boost factor of
+              <b
+                >{{ publication.boostFactor }} = 2<sup>{{ publication.boostMatches }}</sup>
               </b>
               (
               <InlineIcon :icon="`mdi-${chevronType}`" color="white" />;
-              {{ publication.boostMatches }} keyword<span v-if="publication.boostMatches > 1">s</span>
-              matched)
-            </span>.
+              {{ publication.boostMatches }} keyword<span v-if="publication.boostMatches > 1"
+                >s</span
+              >
+              matched) </span
+            >.
           </div>
           <div v-if="publication.isLinkedToActive">
             <br />
@@ -106,43 +134,63 @@
         </template>
       </tippy>
       <div class="media-content">
-        <PublicationDescription :publication="publication" :publicationType="publicationType"></PublicationDescription>
-        <div class="notification has-background-danger-light has-text-danger-dark" v-if="(!publication.year || !publication.title || !publication.author) &&
-          publication.isActive
-        ">
+        <PublicationDescription
+          :publication="publication"
+          :publicationType="publicationType"
+        ></PublicationDescription>
+        <div
+          class="notification has-background-danger-light has-text-danger-dark"
+          v-if="
+            (!publication.year || !publication.title || !publication.author) && publication.isActive
+          "
+        >
           <div class="level">
             <div class="level-left">
               <div class="level-item">
-                No or only partial metadata could be retrieved for the
-                publication.
+                No or only partial metadata could be retrieved for the publication.
               </div>
             </div>
             <div class="level-right">
-              <v-btn v-tippy="'Retry loading metadata.'" @click.stop="retryLoadingPublication(publication)" small>
+              <v-btn
+                v-tippy="'Retry loading metadata.'"
+                @click.stop="retryLoadingPublication(publication)"
+                small
+              >
                 <v-icon left>mdi-refresh</v-icon>
                 Retry
               </v-btn>
             </div>
           </div>
           <div v-if="publication.score === 0">
-            Also, it is not cited by another selected publication&mdash;<b>please check if the DOI is correct.</b>
+            Also, it is not cited by another selected publication&mdash;<b
+              >please check if the DOI is correct.</b
+            >
           </div>
         </div>
-        <div class="notification has-background-danger-light has-text-danger-dark"
-          v-if="!publication.year && publication.isActive">
-          The publication cannot be shown in the citation network visualization
-          because of the unknown publication year.
+        <div
+          class="notification has-background-danger-light has-text-danger-dark"
+          v-if="!publication.year && publication.isActive"
+        >
+          The publication cannot be shown in the citation network visualization because of the
+          unknown publication year.
         </div>
       </div>
       <div class="media-right">
         <div>
-          <CompactButton v-if="!publication.isSelected" icon="mdi-plus-thick"
-            v-on:click="queueForSelected(publication.doi)" class="has-text-primary"
-            v-tippy="'Mark publication to be added to selected publications.'"></CompactButton>
+          <CompactButton
+            v-if="!publication.isSelected"
+            icon="mdi-plus-thick"
+            v-on:click="queueForSelected(publication.doi)"
+            class="has-text-primary"
+            v-tippy="'Mark publication to be added to selected publications.'"
+          ></CompactButton>
         </div>
         <div>
-          <CompactButton icon="mdi-minus-thick" v-on:click="queueForExcluded(publication.doi)"
-            v-tippy="minusButtonTooltip">
+          <CompactButton
+            icon="mdi-minus-thick"
+            v-on:click="queueForExcluded(publication.doi)"
+            v-tippy="minusButtonTooltip"
+          >
           </CompactButton>
         </div>
       </div>
@@ -152,13 +200,18 @@
 
 <script setup>
 import { computed } from 'vue'
-import { useQueueStore } from "@/stores/queue.js"
-import { useInterfaceStore } from "@/stores/interface.js"
-import { useAppState } from "@/composables/useAppState.js"
+import { useQueueStore } from '@/stores/queue.js'
+import { useInterfaceStore } from '@/stores/interface.js'
+import { useAppState } from '@/composables/useAppState.js'
 
 const queueStore = useQueueStore()
 const interfaceStore = useInterfaceStore()
-const { retryLoadingPublication, activatePublicationComponentByDoi, queueForSelected, queueForExcluded } = useAppState()
+const {
+  retryLoadingPublication,
+  activatePublicationComponentByDoi,
+  queueForSelected,
+  queueForExcluded
+} = useAppState()
 
 const emit = defineEmits(['activate'])
 const props = defineProps({
@@ -173,24 +226,21 @@ const props = defineProps({
   }
 })
 
-
 const chevronType = computed(() => {
   if (props.publication.boostFactor >= 8) {
-    return "chevron-triple-up"
+    return 'chevron-triple-up'
+  } else if (props.publication.boostFactor >= 4) {
+    return 'chevron-double-up'
+  } else if (props.publication.boostFactor > 1) {
+    return 'chevron-up'
   }
-  else if (props.publication.boostFactor >= 4) {
-    return "chevron-double-up"
-  }
-  else if (props.publication.boostFactor > 1) {
-    return "chevron-up"
-  }
-  return ""
+  return ''
 })
 
 const minusButtonTooltip = computed(() => {
   return props.publicationType === 'selected'
     ? 'Remove publication from selected and mark to stay excluded.'
-    : 'Mark publication to be excluded for suggestions.';
+    : 'Mark publication to be excluded for suggestions.'
 })
 
 let isActivating = false
@@ -203,7 +253,7 @@ function activate() {
 
   isActivating = true
   activatePublicationComponentByDoi(props.publication.doi)
-  emit("activate", props.publication.doi)
+  emit('activate', props.publication.doi)
 
   // Reset the flag after a brief delay to allow for the activation to complete
   setTimeout(() => {
@@ -218,8 +268,6 @@ function handleMouseEnter() {
 function handleMouseLeave() {
   interfaceStore.setHoveredPublication(null)
 }
-
-
 </script>
 
 <style lang="scss">
@@ -324,7 +372,11 @@ function handleMouseLeave() {
 
     &.is-keyword-hovered .glyph {
       box-shadow: 0 0 0.2rem 0.05rem var(--bulma-warning);
-      border-color: hsl(var(--bulma-warning-h), var(--bulma-warning-s), calc(var(--bulma-warning-l) - 20%)) !important;
+      border-color: hsl(
+        var(--bulma-warning-h),
+        var(--bulma-warning-s),
+        calc(var(--bulma-warning-l) - 20%)
+      ) !important;
     }
 
     &.is-author-hovered .glyph {
@@ -362,7 +414,7 @@ function handleMouseLeave() {
       border-width: 0.3rem;
     }
 
-    & .glyph>div:focus>div {
+    & .glyph > div:focus > div {
       outline: 1px solid var(--bulma-dark);
       outline-offset: 0.1rem;
     }
@@ -411,15 +463,17 @@ function handleMouseLeave() {
 
     &.to-be-selected {
       border-color: var(--bulma-primary);
-      color: hsl(var(--bulma-primary-h), var(--bulma-primary-s), calc(var(--bulma-primary-l) - 20%));
+      color: hsl(
+        var(--bulma-primary-h),
+        var(--bulma-primary-s),
+        calc(var(--bulma-primary-l) - 20%)
+      );
       background-color: var(--bulma-primary-95);
     }
-
   }
 }
 
 @keyframes glyph-pulse {
-
   0%,
   100% {
     transform: scale(0.95);

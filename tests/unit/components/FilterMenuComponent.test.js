@@ -16,7 +16,7 @@ vi.mock('@/lib/Cache.js', () => ({
 }))
 vi.mock('@/lib/Util.js', () => ({
   scrollToTargetAdjusted: vi.fn(),
-  shuffle: vi.fn(arr => arr),
+  shuffle: vi.fn((arr) => arr),
   saveAsFile: vi.fn()
 }))
 vi.mock('@/core/Publication.js', () => ({
@@ -35,7 +35,7 @@ describe('FilterMenuComponent', () => {
 
   beforeEach(async () => {
     setActivePinia(createPinia())
-    
+
     // Simplified inline store mocks
     mockSessionStore = {
       isEmpty: false,
@@ -78,7 +78,7 @@ describe('FilterMenuComponent', () => {
   describe('Core Functionality', () => {
     it('renders filter menu when session has data', () => {
       wrapper = mount(FilterMenuComponent)
-      
+
       const menu = wrapper.find('.v-menu')
       expect(menu.exists()).toBe(true)
     })
@@ -86,7 +86,7 @@ describe('FilterMenuComponent', () => {
     it('hides filter menu when session is empty', () => {
       mockSessionStore.isEmpty = true
       wrapper = mount(FilterMenuComponent)
-      
+
       const button = wrapper.find('.filter-button')
       expect(button.exists()).toBe(false)
     })
@@ -94,9 +94,9 @@ describe('FilterMenuComponent', () => {
     it('enables filters automatically when user interacts with menu', () => {
       mockSessionStore.filter.isActive = false
       wrapper = mount(FilterMenuComponent)
-      
+
       wrapper.vm.handleMenuToggle(true) // Opening menu
-      
+
       expect(mockSessionStore.filter.isActive).toBe(true)
     })
   })
@@ -107,9 +107,9 @@ describe('FilterMenuComponent', () => {
       mockSessionStore.filter.yearStart = '2020'
       mockSessionStore.filter.tag = 'research'
       mockSessionStore.filter.hasActiveFilters.mockReturnValue(true)
-      
+
       wrapper = mount(FilterMenuComponent)
-      
+
       const summary = wrapper.vm.filterSummaryHtml
       expect(summary).toContain('text: "machine learning"')
       expect(summary).toContain('year: 2020')
@@ -118,7 +118,7 @@ describe('FilterMenuComponent', () => {
 
     it('shows empty summary when no filters active', () => {
       wrapper = mount(FilterMenuComponent)
-      
+
       const summary = wrapper.vm.filterSummaryHtml
       expect(summary).toBe('')
     })
@@ -126,9 +126,9 @@ describe('FilterMenuComponent', () => {
     it('indicates when filters are disabled', () => {
       mockSessionStore.filter.string = 'test'
       mockSessionStore.filter.isActive = false
-      
+
       wrapper = mount(FilterMenuComponent)
-      
+
       expect(wrapper.vm.displayText).toBe('[FILTERS OFF]')
     })
   })
@@ -137,7 +137,7 @@ describe('FilterMenuComponent', () => {
     it('removes DOI when user closes chip', () => {
       mockSessionStore.filter.dois = ['10.1234/test']
       wrapper = mount(FilterMenuComponent)
-      
+
       wrapper.vm.removeDoi('10.1234/test')
       expect(mockSessionStore.filter.removeDoi).toHaveBeenCalledWith('10.1234/test')
     })
@@ -145,7 +145,7 @@ describe('FilterMenuComponent', () => {
     it('shows publication details for DOI chips', () => {
       mockSessionStore.filter.dois = ['10.1234/test']
       wrapper = mount(FilterMenuComponent)
-      
+
       // Component should display publication info for DOI chips
       expect(mockSessionStore.getSelectedPublicationByDoi).toHaveBeenCalledWith('10.1234/test')
     })
@@ -157,8 +157,10 @@ describe('FilterMenuComponent', () => {
       mockSessionStore.filter.applyToSelected = true
       mockSessionStore.filter.applyToSuggested = false
       wrapper = mount(FilterMenuComponent)
-      
-      expect(wrapper.vm.buttonColor).toBe('hsl(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l))')
+
+      expect(wrapper.vm.buttonColor).toBe(
+        'hsl(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l))'
+      )
     })
 
     it('uses info color when filtering only suggested publications', () => {
@@ -166,8 +168,10 @@ describe('FilterMenuComponent', () => {
       mockSessionStore.filter.applyToSelected = false
       mockSessionStore.filter.applyToSuggested = true
       wrapper = mount(FilterMenuComponent)
-      
-      expect(wrapper.vm.buttonColor).toBe('hsl(var(--bulma-info-h), var(--bulma-info-s), var(--bulma-info-l))')
+
+      expect(wrapper.vm.buttonColor).toBe(
+        'hsl(var(--bulma-info-h), var(--bulma-info-s), var(--bulma-info-l))'
+      )
     })
 
     it('uses default color when filtering both publication types', () => {
@@ -175,14 +179,14 @@ describe('FilterMenuComponent', () => {
       mockSessionStore.filter.applyToSelected = true
       mockSessionStore.filter.applyToSuggested = true
       wrapper = mount(FilterMenuComponent)
-      
+
       expect(wrapper.vm.buttonColor).toBe('default')
     })
 
     it('uses grey color when no filters are active', () => {
       mockSessionStore.filter.hasActiveFilters.mockReturnValue(false)
       wrapper = mount(FilterMenuComponent)
-      
+
       expect(wrapper.vm.buttonColor).toBe('grey-darken-1')
     })
   })
@@ -191,18 +195,18 @@ describe('FilterMenuComponent', () => {
     it('should activate filters when menu is opened', () => {
       mockSessionStore.filter.isActive = false
       wrapper = mount(FilterMenuComponent)
-      
+
       wrapper.vm.handleMenuToggle(true) // Opening menu
-      
+
       expect(mockSessionStore.filter.isActive).toBe(true)
     })
 
     it('should NOT activate filters when menu is closed', () => {
       mockSessionStore.filter.isActive = false
       wrapper = mount(FilterMenuComponent)
-      
+
       wrapper.vm.handleMenuToggle(false) // Closing menu
-      
+
       // Filter should remain inactive when closing the menu
       expect(mockSessionStore.filter.isActive).toBe(false)
     })
@@ -215,13 +219,13 @@ describe('FilterMenuComponent', () => {
         { yearStart: '', yearEnd: '2025', expected: 'year: –2025' },
         { yearStart: '2020', yearEnd: '2025', expected: 'year: 2020–2025' }
       ]
-      
+
       testCases.forEach(({ yearStart, yearEnd, expected }) => {
         mockSessionStore.filter.yearStart = yearStart
         mockSessionStore.filter.yearEnd = yearEnd
         mockSessionStore.filter.isActive = true
         wrapper = mount(FilterMenuComponent)
-        
+
         expect(wrapper.vm.filterSummaryHtml).toContain(expected)
       })
     })

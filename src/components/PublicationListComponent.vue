@@ -1,22 +1,35 @@
 <template>
-  <ul class="publication-list has-background-white" :class="{ 'empty-list': publications.length === 0 }"
-    @click="handleDelegatedClick" @mouseenter="handleDelegatedMouseEnter" @mouseleave="handleDelegatedMouseLeave">
+  <ul
+    class="publication-list has-background-white"
+    :class="{ 'empty-list': publications.length === 0 }"
+    @click="handleDelegatedClick"
+    @mouseenter="handleDelegatedMouseEnter"
+    @mouseleave="handleDelegatedMouseLeave"
+  >
     <template v-for="item in publicationsWithHeaders" :key="item.key">
       <li v-if="item.type === 'header'" class="section-header">
-        <h3 class="section-header-text" :class="{ 'info-theme': publicationType === 'suggested' }" v-html="item.text">
-        </h3>
+        <h3
+          class="section-header-text"
+          :class="{ 'info-theme': publicationType === 'suggested' }"
+          v-html="item.text"
+        ></h3>
       </li>
-      <LazyPublicationComponent v-else :publication="item.publication" :publicationType="publicationType"
-        :isMobile="interfaceStore.isMobile" v-on:activate="activatePublication" />
+      <LazyPublicationComponent
+        v-else
+        :publication="item.publication"
+        :publicationType="publicationType"
+        :isMobile="interfaceStore.isMobile"
+        v-on:activate="activatePublication"
+      />
     </template>
   </ul>
 </template>
 
 <script setup>
 import { computed, nextTick, watch, ref, onMounted, onBeforeUnmount } from 'vue'
-import { scrollToTargetAdjusted } from "@/lib/Util.js"
-import { useSessionStore } from "@/stores/session.js"
-import { useInterfaceStore } from "@/stores/interface.js"
+import { scrollToTargetAdjusted } from '@/lib/Util.js'
+import { useSessionStore } from '@/stores/session.js'
+import { useInterfaceStore } from '@/stores/interface.js'
 import LazyPublicationComponent from './LazyPublicationComponent.vue'
 
 const sessionStore = useSessionStore()
@@ -37,12 +50,13 @@ const props = defineProps({
 
 const publicationsWithHeaders = computed(() => {
   // Don't show headers if filtering is not active for this publication type
-  const isFilteringApplied = sessionStore.filter.hasActiveFilters() &&
+  const isFilteringApplied =
+    sessionStore.filter.hasActiveFilters() &&
     ((props.publicationType === 'selected' && sessionStore.filter.applyToSelected) ||
       (props.publicationType === 'suggested' && sessionStore.filter.applyToSuggested))
 
   if (!props.showSectionHeaders || !isFilteringApplied) {
-    return props.publications.map(publication => ({
+    return props.publications.map((publication) => ({
       type: 'publication',
       publication,
       key: publication.doi
@@ -51,12 +65,14 @@ const publicationsWithHeaders = computed(() => {
 
   // Use composable for complex header logic
   const result = []
-  const filteredCount = props.publicationType === 'selected'
-    ? sessionStore.selectedPublicationsFilteredCount
-    : sessionStore.suggestedPublicationsFilteredCount
-  const nonFilteredCount = props.publicationType === 'selected'
-    ? sessionStore.selectedPublicationsNonFilteredCount
-    : sessionStore.suggestedPublicationsNonFilteredCount
+  const filteredCount =
+    props.publicationType === 'selected'
+      ? sessionStore.selectedPublicationsFilteredCount
+      : sessionStore.suggestedPublicationsFilteredCount
+  const nonFilteredCount =
+    props.publicationType === 'selected'
+      ? sessionStore.selectedPublicationsNonFilteredCount
+      : sessionStore.suggestedPublicationsNonFilteredCount
 
   // Add filtered publications with header
   if (filteredCount > 0) {
@@ -67,8 +83,8 @@ const publicationsWithHeaders = computed(() => {
     })
 
     props.publications
-      .filter(pub => sessionStore.filter.matches(pub))
-      .forEach(publication => {
+      .filter((pub) => sessionStore.filter.matches(pub))
+      .forEach((publication) => {
         result.push({
           type: 'publication',
           publication,
@@ -86,8 +102,8 @@ const publicationsWithHeaders = computed(() => {
     })
 
     props.publications
-      .filter(pub => !sessionStore.filter.matches(pub))
-      .forEach(publication => {
+      .filter((pub) => !sessionStore.filter.matches(pub))
+      .forEach((publication) => {
         result.push({
           type: 'publication',
           publication,
@@ -160,7 +176,7 @@ function handleDelegatedMouseEnter(event) {
   const publicationElement = findPublicationElement(event.target)
   if (publicationElement) {
     const doi = publicationElement.id
-    const publication = props.publications.find(p => p.doi === doi)
+    const publication = props.publications.find((p) => p.doi === doi)
     if (publication) {
       sessionStore.hoverPublication(publication, true)
     }
@@ -171,7 +187,7 @@ function handleDelegatedMouseLeave(event) {
   const publicationElement = findPublicationElement(event.target)
   if (publicationElement) {
     const doi = publicationElement.id
-    const publication = props.publications.find(p => p.doi === doi)
+    const publication = props.publications.find((p) => p.doi === doi)
     if (publication) {
       sessionStore.hoverPublication(publication, false)
     }
@@ -198,15 +214,15 @@ function scrollToActivated() {
 
   if (onNextActivatedScroll.value) {
     setTimeout(() => {
-      const publicationComponent = document.getElementsByClassName("is-active")[0]
+      const publicationComponent = document.getElementsByClassName('is-active')[0]
       if (publicationComponent) {
         if (window.innerWidth <= 1023) {
           scrollToTargetAdjusted(publicationComponent, 65)
         } else {
           publicationComponent.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-            inline: "nearest",
+            behavior: 'smooth',
+            block: 'start',
+            inline: 'nearest'
           })
         }
       }

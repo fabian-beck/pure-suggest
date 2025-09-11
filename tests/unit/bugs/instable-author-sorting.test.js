@@ -25,7 +25,7 @@ describe('Instable Author Sorting Bug', () => {
         authorOrcid: 'Smith, Alice; Doe, Bob'
       },
       {
-        doi: '10.1234/test2', 
+        doi: '10.1234/test2',
         score: 10,
         year: 2023,
         isNew: false,
@@ -42,12 +42,12 @@ describe('Instable Author Sorting Bug', () => {
       const results = []
       for (let i = 0; i < 10; i++) {
         const authors = Author.computePublicationsAuthors(
-          publications, 
-          true,  // isAuthorScoreEnabled
+          publications,
+          true, // isAuthorScoreEnabled
           false, // isFirstAuthorBoostEnabled
-          false  // isAuthorNewBoostEnabled
+          false // isAuthorNewBoostEnabled
         )
-        results.push(authors.map(author => author.id))
+        results.push(authors.map((author) => author.id))
       }
 
       // All results should be identical
@@ -95,11 +95,11 @@ describe('Instable Author Sorting Bug', () => {
       for (let i = 0; i < 20; i++) {
         const authors = Author.computePublicationsAuthors(
           identicalScorePublications,
-          true,  // isAuthorScoreEnabled
+          true, // isAuthorScoreEnabled
           false, // isFirstAuthorBoostEnabled
-          false  // isAuthorNewBoostEnabled
+          false // isAuthorNewBoostEnabled
         )
-        results.push(authors.map(author => author.id))
+        results.push(authors.map((author) => author.id))
       }
 
       // Verify all results are identical
@@ -111,14 +111,16 @@ describe('Instable Author Sorting Bug', () => {
       // Verify that when scores are identical, names are ordered lexicographically
       const authors = Author.computePublicationsAuthors(
         identicalScorePublications,
-        true, false, false
+        true,
+        false,
+        false
       )
-      const scores = authors.map(a => a.score + a.firstAuthorCount / 100 + a.count / 1000)
-      const allScoresEqual = scores.every(score => score === scores[0])
-      
+      const scores = authors.map((a) => a.score + a.firstAuthorCount / 100 + a.count / 1000)
+      const allScoresEqual = scores.every((score) => score === scores[0])
+
       if (allScoresEqual) {
         // When scores are equal, names should be in lexicographic order
-        const names = authors.map(a => a.id)
+        const names = authors.map((a) => a.id)
         const sortedNames = [...names].sort()
         expect(names).toEqual(sortedNames)
       }
@@ -161,11 +163,11 @@ describe('Instable Author Sorting Bug', () => {
       for (let i = 0; i < 5; i++) {
         const authors = Author.computePublicationsAuthors(
           complexPublications,
-          true,  // isAuthorScoreEnabled
+          true, // isAuthorScoreEnabled
           false, // isFirstAuthorBoostEnabled
-          false  // isAuthorNewBoostEnabled
+          false // isAuthorNewBoostEnabled
         )
-        results.push(authors.map(author => author.id))
+        results.push(authors.map((author) => author.id))
       }
 
       // All results should be identical
