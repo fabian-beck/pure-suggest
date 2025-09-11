@@ -69,6 +69,26 @@ function addToMemoryCache(url, data) {
   }
 }
 
+/**
+ * Handle cache cleanup when storage is full and retry setting cache object
+ * @param {string} url - The URL key for caching
+ * @param {object} cacheObject - The cache object to store
+ */
+async function handleCacheCleanupAndRetry(url, cacheObject) {
+  const keysArray = await keys()
+  console.log(`Cache full (#elements: ${keysArray.length})! Removing elements...`)
+  try {
+    // local storage cache full, delete random elements
+    for (let i = 0; i < CACHE_CONFIG.CLEANUP_BATCH_SIZE; i++) {
+      const randomStoredUrl = keysArray[Math.floor(Math.random() * keysArray.length)]
+      del(randomStoredUrl)
+    }
+    await set(url, cacheObject)
+  } catch (error2) {
+    console.error(`Unable to locally cache information for "${url}": ${error2}`)
+  }
+}
+
 export async function cachedFetch(url, processData, fetchParameters = {}, noCache = false) {
   try {
     if (noCache) throw new Error('No cache')
@@ -124,18 +144,7 @@ export async function cachedFetch(url, processData, fetchParameters = {}, noCach
         }
         await set(url, cacheObject)
       } catch {
-        const keysArray = await keys()
-        console.log(`Cache full (#elements: ${keysArray.length})! Removing elements...`)
-        try {
-          // local storage cache full, delete random elements
-          for (let i = 0; i < CACHE_CONFIG.CLEANUP_BATCH_SIZE; i++) {
-            const randomStoredUrl = keysArray[Math.floor(Math.random() * keysArray.length)]
-            del(randomStoredUrl)
-          }
-          await set(url, cacheObject)
-        } catch (error2) {
-          console.error(`Unable to locally cache information for "${url}": ${error2}`)
-        }
+        await handleCacheCleanupAndRetry(url, cacheObject)
       }
       console.log(`Successfully fetched data for "${url}"`)
 

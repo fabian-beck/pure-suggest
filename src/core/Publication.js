@@ -82,9 +82,7 @@ const PUBLICATION_TAGS = [
 import {
   findKeywordMatches,
   highlightTitle,
-  calculateBoostFactor,
-  calculatePublicationScore,
-  getScoreColor
+  calculateBoostFactor
 } from '../utils/scoringUtils.js'
 
 /**
