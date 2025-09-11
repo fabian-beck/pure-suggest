@@ -1,9 +1,11 @@
 # PUREsuggest Project Overview
 
 ## Project Description
+
 PUREsuggest is a Vue 3 scientific literature search tool that suggests publications through citation-based recommendations. Users start with seed papers and receive ranked suggestions based on citations, references, and keyword boosting. Features a responsive design with network visualization, filtering capabilities, and BibTeX export.
 
 ## Architecture
+
 - **Framework**: Vue 3 with Composition API
 - **State Management**: Pinia stores (`session.js`, `interface.js`, `queue.js`, `author.js`)
 - **UI Framework**: Vuetify 3 + Bulma CSS hybrid approach
@@ -12,6 +14,7 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 - **Testing**: Vitest with Happy DOM
 
 ## Key Components
+
 - `App.vue`: Main application layout with grid-based responsive design
 - `NetworkVisComponent.vue`: D3-powered citation network visualization
 - `SelectedPublicationsComponent.vue`: User's selected publications list
@@ -20,6 +23,7 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 - `FilterMenuComponent.vue`: Advanced filtering interface
 
 ## Core Business Logic
+
 - **Domain Models** (`src/core/`):
   - `Publication.js`: Publication model with metadata fetching and scoring
   - `Author.js`: Author aggregation and scoring algorithms
@@ -29,31 +33,35 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
   - `Cache.js`: IndexedDB-based caching system
   - `Keys.js`: Keyboard event handling
   - `Util.js`: General utility functions
-  - `FpsTracker.js`: Performance monitoring utility
 
 ## Services Layer
+
 - `SuggestionService.js`: Dedicated service for computing publication suggestions (extracted from session store)
 
 ## Composables (Vue 3)
+
 - `useAppState.js`: Core application logic extracted from stores (session management, suggestions, queuing)
 
 ## Testing Strategy
+
 - **Unit Tests**: `tests/unit/` - Component and utility testing
 - **Performance Tests**: `tests/performance/` - Load and rendering benchmarks
 - **Browser Testing**: Use Playwright for UI and mobile interface testing
-- **Test Commands**: 
+- **Test Commands**:
   - `npm test` - Run unit tests
   - `npm run test:perf` - Run performance tests
   - `npm run test:all` - Run both test suites
 - **Development Server**: Usually running at http://localhost:8080/ for testing
 
 ## Development Commands
+
 - `npm run dev` - Development server (port 8080)
 - `npm run build` - Production build
 - `npm run lint` - ESLint code checking
 - `npm run preview` - Preview production build
 
 ## Data Flow
+
 1. **Selection**: Users select publications via DOI or search
 2. **Citation Fetching**: Publications fetch citation/reference metadata
 3. **Suggestion Generation**: Algorithm computes ranked suggestions based on citation overlap
@@ -63,6 +71,7 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 7. **Export**: Session state and BibTeX export capabilities
 
 ## State Management (Refactored Architecture)
+
 - **Session Store**: Selected publications, excluded publications, suggestions, filters, boost keywords, active publication
 - **Queue Store**: Temporary queues for batch operations (add/exclude publications)
 - **Author Store**: Independent author aggregation and scoring (extracted from session store)
@@ -70,6 +79,7 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 - **useAppState Composable**: Business logic layer coordinating between stores (session management, suggestion computation, queuing operations)
 
 ## Performance Features
+
 - Lazy loading of publication metadata
 - Pagination for suggestions (`PAGINATION.LOAD_MORE_INCREMENT`)
 - IndexedDB caching with LZ-string compression
@@ -77,6 +87,7 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 - Memory usage tracking
 
 ## API Integration
+
 - Multiple publication databases via DOI resolution
 - Fallback strategies for metadata fetching
 - Rate limiting and error handling
@@ -86,7 +97,7 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 
 - Keep commit or PR messages short and concise, avoid to comment on things that were tested but then not considered
 - Avoid functions of minimal size and unnecessary redirection layers
-- Don't add comments if something is fixed or not done anymore 
+- Don't add comments if something is fixed or not done anymore
 - Add tests whenever appropriate, but try to keep them concise and focused on the most important issues
 - Always clean up obsolete code or unnecessary comments
 - Act on failing tests immediately to prevent technical debt and maintain code quality
