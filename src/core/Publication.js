@@ -311,32 +311,7 @@ export default class Publication {
     this.titleHighlighted = highlightTitle(this.title, matches)
   }
 
-  /**
-   * Updates the publication score based on keyword matches.
-   * @param {string[]} boostKeywords - Keywords to boost score.
-   * @param {boolean} isBoost - Whether to apply boost multiplier.
-   */
-  updateScore(boostKeywords, isBoost) {
-    this.boostKeywords = []
-    this.boostMatches = 0
-    this.boostFactor = SCORING.DEFAULT_BOOST_FACTOR
-    this.processKeywordMatching(boostKeywords, isBoost)
-    this.score = calculatePublicationScore(
-      this.citationCount,
-      this.referenceCount,
-      this.isSelected,
-      this.boostFactor
-    )
-    this.scoreColor = getScoreColor(this.score)
-  }
 
-  /**
-   * Checks if the publication has any classification tags.
-   * @returns {boolean} True if publication has any tags.
-   */
-  hasTag() {
-    return Publication.TAGS.some((tag) => this[tag.value])
-  }
 
   /**
    * Returns concatenated metadata for search purposes.
@@ -346,13 +321,6 @@ export default class Publication {
     return `${[this.title, this.author, this.container].filter(Boolean).join(' ')  } `
   }
 
-  /**
-   * Sets the hover state for UI interactions.
-   * @param {boolean} isHovered - Whether the publication is hovered.
-   */
-  setHover(isHovered) {
-    this.isHovered = isHovered
-  }
 
   /**
    * Gets the available publication tag definitions.

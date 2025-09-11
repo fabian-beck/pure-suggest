@@ -278,44 +278,6 @@ export const useSessionStore = defineStore('session', {
       return `${baseUrl}?session=${compressed}`
     },
 
-    loadSessionFromUrl (sessionParam) {
-      try {
-        // Decompress and parse the session data
-        const decompressed = LZString.decompressFromEncodedURIComponent(sessionParam)
-        if (!decompressed) {
-          console.error('Failed to decompress session data')
-          return false
-        }
-
-        const sessionData = JSON.parse(decompressed)
-
-        // Clear current session
-        this.clear()
-
-        // Load the session data
-        if (sessionData.name) {
-          this.setSessionName(sessionData.name)
-        }
-
-        if (sessionData.selected && Array.isArray(sessionData.selected)) {
-          this.addPublicationsToSelection(sessionData.selected)
-        }
-
-        if (sessionData.excluded && Array.isArray(sessionData.excluded)) {
-          this.excludedPublicationsDois = [...sessionData.excluded]
-        }
-
-        if (sessionData.boost) {
-          this.setBoostKeywordString(sessionData.boost)
-        }
-
-        console.log('Session loaded from URL successfully')
-        return true
-      } catch (error) {
-        console.error('Error loading session from URL:', error)
-        return false
-      }
-    }
   }
 })
 
