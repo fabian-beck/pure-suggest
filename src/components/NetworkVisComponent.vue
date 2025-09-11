@@ -232,6 +232,205 @@ export default {
     }
   },
   methods: {
+    /**
+     * Collect and filter publications based on current settings
+     * @returns {Array} Array of filtered publications
+     */
+    collectFilteredPublications () {
+      let publications = []
+
+      if (this.showSelectedNodes) {
+        let selectedPubs = this.sessionStore.selectedPublications || []
+        if (
+          this.onlyShowFiltered &&
+          this.sessionStore.filter.hasActiveFilters() &&
+          this.sessionStore.filter.applyToSelected
+        ) {
+          selectedPubs = selectedPubs.filter((pub) => this.sessionStore.filter.matches(pub))
+        }
+        publications = publications.concat(selectedPubs)
+      }
+
+      if (this.showSuggestedNodes) {
+        let suggestedPubs = this.sessionStore.suggestedPublications || []
+        if (
+          this.onlyShowFiltered &&
+          this.sessionStore.filter.hasActiveFilters() &&
+          this.sessionStore.filter.applyToSuggested
+        ) {
+          suggestedPubs = suggestedPubs.filter((pub) => this.sessionStore.filter.matches(pub))
+        }
+        publications = publications.concat(
+          suggestedPubs.slice(0, Math.round(this.suggestedNumberFactor * 50))
+        )
+      }
+
+      return publications
+    },
+    
+    /**
+     * Initialize graph nodes and links
+     */
+    initNetworkGraph () {
+      // Initialize DOI to index mapping
+      const doiToIndex = {}
+
+      // Filter authors based on factor
+      const allAuthors = this.authorStore.selectedPublicationsAuthors || []
+      const filteredAuthors = allAuthors.slice(
+        0,
+        this.authorNumberFactor * this.sessionStore.selectedPublications.length
+      )
+
+      // Get filtered publications
+      const publications = this.collectFilteredPublications()
+
+      // Create nodes
+      let nodes = []
+
+      // Create publication nodes
+      const publicationNodes = createPublicationNodes(
+        publications,
+        doiToIndex,
+        this.queueStore.selectedQueue || [],
+        this.queueStore.excludedQueue || []
+      )
+      nodes = nodes.concat(publicationNodes)
+
+      // Create keyword nodes
+      if (this.showKeywordNodes) {
+        const keywordNodes = createKeywordNodes(
+          this.sessionStore.uniqueBoostKeywords || [],
+          this.sessionStore.publications || []
+        )
+        nodes = nodes.concat(keywordNodes)
+      }
+
+      // Create author nodes
+      if (this.showAuthorNodes) {
+        const authorNodes = createAuthorNodes(filteredAuthors, publications)
+        nodes = nodes.concat(authorNodes)
+      }
+
+      // Create links
+      const links = []
+
+      // Create keyword links
+      if (this.showKeywordNodes) {
+        const keywordLinks = createKeywordLinks(
+          this.sessionStore.uniqueBoostKeywords || [],
+          publications,
+          doiToIndex
+        )
+        links.push(...keywordLinks)
+      }
+
+      // Create citation links
+      const citationLinks = createCitationLinks(
+        this.sessionStore.selectedPublications || [],
+        this.sessionStore.isSelected || (() => false),
+        doiToIndex
+      )
+      links.push(...citationLinks)
+
+      // Create author links
+      if (this.showAuthorNodes) {
+        const authorLinks = createAuthorLinks(filteredAuthors, publications, doiToIndex)
+        links.push(...authorLinks)
+      }
+
+      // Store nodes and links for later processing (after updateNodes initializes this.node)
+      this.tempNodes = nodes
+      this.tempLinks = links.map((d) => Object.assign({}, d))
+
+      // Update component state
+      this.doiToIndex = doiToIndex
+      this.filteredAuthors = filteredAuthors
+    },
+
+    /**
+     * Update network nodes with current data
+     */
+    updateNetworkNodes () {
+      // Preserve existing node positions for smooth transitions
+      const existingNodeData =
+        this.node && typeof this.node.data === 'function' ? this.node.data() : null
+      const processedNodes = this.preserveNodePositions(this.tempNodes, existingNodeData)
+      const processedLinks = this.tempLinks
+
+      // Update simulation graph data
+      this.graph.nodes = processedNodes
+      this.graph.links = processedLinks
+
+      this.node = this.node
+        .data(this.graph.nodes, (d) => d.id)
+        .join((enter) => {
+          const g = enter.append('g').attr('class', (d) => `node-container ${d.type}`)
+
+          // Initialize publication nodes using module
+          initializePublicationNodes(g, this.activatePublication, (publication, isHovered) => {
+            if (isHovered) {
+              this.interfaceStore.setHoveredPublication(publication)
+            } else {
+              this.interfaceStore.setHoveredPublication(null)
+            }
+            this.updatePublicationHighlighting()
+          })
+
+          // Initialize keyword nodes using module
+          initializeKeywordNodes(
+            g,
+            this.keywordNodeDrag,
+            this.keywordNodeClick,
+            this.onKeywordNodeMouseover,
+            this.onKeywordNodeMouseout
+          )
+
+          // Initialize author nodes using module
+          initializeAuthorNodes(
+            g,
+            this.onAuthorNodeMouseover,
+            this.onAuthorNodeMouseout,
+            this.authorNodeClick
+          )
+
+          return g
+        })
+      try {
+        // Update publication nodes using module
+        const publicationResult = updatePublicationNodes(
+          this.node,
+          this.sessionStore.activePublication,
+          this.publicationTooltips
+        )
+        this.publicationTooltips = publicationResult.tooltips
+      } catch (error) {
+        throw new Error(`Cannot update publication nodes in network: ${error.message}`)
+      }
+      try {
+        // Update keyword nodes using module
+        const keywordResult = updateKeywordNodes(
+          this.node,
+          this.sessionStore.activePublication,
+          this.keywordTooltips
+        )
+        this.keywordTooltips = keywordResult.tooltips
+      } catch (error) {
+        throw new Error(`Cannot update keyword nodes in network: ${error.message}`)
+      }
+      try {
+        // Update author nodes using module
+        const authorResult = updateAuthorNodes(
+          this.node,
+          this.sessionStore.activePublication,
+          this.authorTooltips
+        )
+        this.authorTooltips = authorResult.tooltips
+      } catch (error) {
+        throw new Error(`Cannot update author nodes in network: ${error.message}`)
+      }
+    },
+
     plot (restart) {
       if (this.isDragging) {
         // During dragging, we want full simulation restart for responsive layout
@@ -268,9 +467,9 @@ export default {
           tickHandler: this.tick
         })
 
-        initGraph.call(this)
+        this.initNetworkGraph()
 
-        updateNodes.call(this)
+        this.updateNetworkNodes()
 
         this.link = updateNetworkLinks(this.link, this.graph.links)
 
@@ -310,199 +509,6 @@ export default {
         }, 10000)
       }
 
-      /**
-       * Collect and filter publications based on current settings
-       * @returns {Array} Array of filtered publications
-       */
-      function collectFilteredPublications() {
-        let publications = []
-
-        if (this.showSelectedNodes) {
-          let selectedPubs = this.sessionStore.selectedPublications || []
-          if (
-            this.onlyShowFiltered &&
-            this.sessionStore.filter.hasActiveFilters() &&
-            this.sessionStore.filter.applyToSelected
-          ) {
-            selectedPubs = selectedPubs.filter((pub) => this.sessionStore.filter.matches(pub))
-          }
-          publications = publications.concat(selectedPubs)
-        }
-
-        if (this.showSuggestedNodes) {
-          let suggestedPubs = this.sessionStore.suggestedPublications || []
-          if (
-            this.onlyShowFiltered &&
-            this.sessionStore.filter.hasActiveFilters() &&
-            this.sessionStore.filter.applyToSuggested
-          ) {
-            suggestedPubs = suggestedPubs.filter((pub) => this.sessionStore.filter.matches(pub))
-          }
-          publications = publications.concat(
-            suggestedPubs.slice(0, Math.round(this.suggestedNumberFactor * 50))
-          )
-        }
-
-        return publications
-      }
-
-      function initGraph() {
-        // Initialize DOI to index mapping
-        const doiToIndex = {}
-
-        // Filter authors based on factor
-        const allAuthors = this.authorStore.selectedPublicationsAuthors || []
-        const filteredAuthors = allAuthors.slice(
-          0,
-          this.authorNumberFactor * this.sessionStore.selectedPublications.length
-        )
-
-        // Get filtered publications
-        const publications = collectFilteredPublications.call(this)
-
-        // Create nodes
-        let nodes = []
-
-        // Create publication nodes
-        const publicationNodes = createPublicationNodes(
-          publications,
-          doiToIndex,
-          this.queueStore.selectedQueue || [],
-          this.queueStore.excludedQueue || []
-        )
-        nodes = nodes.concat(publicationNodes)
-
-        // Create keyword nodes
-        if (this.showKeywordNodes) {
-          const keywordNodes = createKeywordNodes(
-            this.sessionStore.uniqueBoostKeywords || [],
-            this.sessionStore.publications || []
-          )
-          nodes = nodes.concat(keywordNodes)
-        }
-
-        // Create author nodes
-        if (this.showAuthorNodes) {
-          const authorNodes = createAuthorNodes(filteredAuthors, publications)
-          nodes = nodes.concat(authorNodes)
-        }
-
-        // Create links
-        const links = []
-
-        // Create keyword links
-        if (this.showKeywordNodes) {
-          const keywordLinks = createKeywordLinks(
-            this.sessionStore.uniqueBoostKeywords || [],
-            publications,
-            doiToIndex
-          )
-          links.push(...keywordLinks)
-        }
-
-        // Create citation links
-        const citationLinks = createCitationLinks(
-          this.sessionStore.selectedPublications || [],
-          this.sessionStore.isSelected || (() => false),
-          doiToIndex
-        )
-        links.push(...citationLinks)
-
-        // Create author links
-        if (this.showAuthorNodes) {
-          const authorLinks = createAuthorLinks(filteredAuthors, publications, doiToIndex)
-          links.push(...authorLinks)
-        }
-
-        // Store nodes and links for later processing (after updateNodes initializes this.node)
-        this.tempNodes = nodes
-        this.tempLinks = links.map((d) => Object.assign({}, d))
-
-        // Update component state
-        this.doiToIndex = doiToIndex
-        this.filteredAuthors = filteredAuthors
-      }
-
-      function updateNodes() {
-        // Preserve existing node positions for smooth transitions
-        const existingNodeData =
-          this.node && typeof this.node.data === 'function' ? this.node.data() : null
-        const processedNodes = this.preserveNodePositions(this.tempNodes, existingNodeData)
-        const processedLinks = this.tempLinks
-
-        // Update simulation graph data
-        this.graph.nodes = processedNodes
-        this.graph.links = processedLinks
-
-        this.node = this.node
-          .data(this.graph.nodes, (d) => d.id)
-          .join((enter) => {
-            const g = enter.append('g').attr('class', (d) => `node-container ${d.type}`)
-
-            // Initialize publication nodes using module
-            initializePublicationNodes(g, this.activatePublication, (publication, isHovered) => {
-              if (isHovered) {
-                this.interfaceStore.setHoveredPublication(publication)
-              } else {
-                this.interfaceStore.setHoveredPublication(null)
-              }
-              this.updatePublicationHighlighting()
-            })
-
-            // Initialize keyword nodes using module
-            initializeKeywordNodes(
-              g,
-              this.keywordNodeDrag,
-              this.keywordNodeClick,
-              this.onKeywordNodeMouseover,
-              this.onKeywordNodeMouseout
-            )
-
-            // Initialize author nodes using module
-            initializeAuthorNodes(
-              g,
-              this.onAuthorNodeMouseover,
-              this.onAuthorNodeMouseout,
-              this.authorNodeClick
-            )
-
-            return g
-          })
-        try {
-          // Update publication nodes using module
-          const publicationResult = updatePublicationNodes(
-            this.node,
-            this.sessionStore.activePublication,
-            this.publicationTooltips
-          )
-          this.publicationTooltips = publicationResult.tooltips
-        } catch (error) {
-          throw new Error(`Cannot update publication nodes in network: ${  error.message}`)
-        }
-        try {
-          // Update keyword nodes using module
-          const keywordResult = updateKeywordNodes(
-            this.node,
-            this.sessionStore.activePublication,
-            this.keywordTooltips
-          )
-          this.keywordTooltips = keywordResult.tooltips
-        } catch (error) {
-          throw new Error(`Cannot update keyword nodes in network: ${  error.message}`)
-        }
-        try {
-          // Update author nodes using module
-          const authorResult = updateAuthorNodes(
-            this.node,
-            this.sessionStore.activePublication,
-            this.authorTooltips
-          )
-          this.authorTooltips = authorResult.tooltips
-        } catch (error) {
-          throw new Error(`Cannot update author nodes in network: ${  error.message}`)
-        }
-        // Old helper functions removed - now handled by modules
-      }
     },
     /**
      * Check if current tick should be skipped for performance optimization
