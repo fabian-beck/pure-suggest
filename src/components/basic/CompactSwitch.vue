@@ -9,7 +9,9 @@
 
 <script>
 export default {
-  props: ['modelValue'],
+  props: {
+    modelValue: Boolean
+  },
   emits: ['update:modelValue']
 }
 </script>
