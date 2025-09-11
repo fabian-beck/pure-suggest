@@ -88,7 +88,10 @@ export default [
       }
     },
     rules: {
-      'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }]
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      // Disable length warnings for tests - they often need longer functions for comprehensive testing
+      'max-lines-per-function': 'off',
+      'complexity': 'off'
     }
   },
   {
