@@ -19,14 +19,14 @@ describe('BoostKeywordsComponent', () => {
   let pinia
   let sessionStore
   let interfaceStore
-  let queueStore
+  let _queueStore
 
   beforeEach(() => {
     pinia = createPinia()
     setActivePinia(pinia)
     sessionStore = useSessionStore()
     interfaceStore = useInterfaceStore()
-    queueStore = useQueueStore()
+    _queueStore = useQueueStore()
     
     // Set up default values
     sessionStore.boostKeywordString = 'test, example'

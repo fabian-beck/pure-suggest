@@ -18,7 +18,7 @@ vi.mock('@/composables/useAppState.js', () => ({
 }))
 
 describe('QuickAccessBar', () => {
-  let scrollEventListener
+  let _scrollEventListener
   let pinia
   let queueStore
 
@@ -54,7 +54,7 @@ describe('QuickAccessBar', () => {
     const originalAddEventListener = document.addEventListener
     document.addEventListener = vi.fn((event, handler) => {
       if (event === 'scroll') {
-        scrollEventListener = handler
+        _scrollEventListener = handler
       }
       return originalAddEventListener.call(document, event, handler)
     })

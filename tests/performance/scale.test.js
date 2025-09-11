@@ -28,7 +28,7 @@ const SCALE_THRESHOLDS = {
 function createMountWrapper(publications) {
   return () => {
     const wrappers = [];
-    publications.forEach((publication, index) => {
+    publications.forEach((publication, _index) => {
       const wrapper = mount(PublicationComponent, {
         props: { publication },
         global: {

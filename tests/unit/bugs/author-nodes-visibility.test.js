@@ -198,7 +198,7 @@ vi.mock('@/stores/queue.js', () => ({
 vi.mock('@/utils/network/forces.js', () => ({
   createForceSimulation: vi.fn(() => createMockSimulation()),
   initializeForces: vi.fn(),
-  calculateYearX: vi.fn((year, width, height, isMobile) => year * 10),
+  calculateYearX: vi.fn((year, _width, _height, _isMobile) => year * 10),
   SIMULATION_ALPHA: 0.5,
   getNodeXPosition: vi.fn((node, isNetworkClusters, yearXFunc) => {
     if (isNetworkClusters && node.x !== undefined) {
@@ -214,7 +214,7 @@ vi.mock('@/utils/network/forces.js', () => ({
 vi.mock('@/utils/network/publicationNodes.js', () => ({
   initializePublicationNodes: vi.fn(),
   updatePublicationNodes: vi.fn(() => ({ tooltips: [] })),
-  createPublicationNodes: vi.fn((publications, doiToIndex, selectedQueue, excludedQueue) => {
+  createPublicationNodes: vi.fn((publications, _doiToIndex, _selectedQueue, _excludedQueue) => {
     return publications.map(pub => ({
       id: pub.doi,
       type: 'publication',
@@ -238,7 +238,7 @@ vi.mock('@/utils/network/keywordNodes.js', () => ({
 vi.mock('@/utils/network/authorNodes.js', () => {
   const mockInitializeAuthorNodes = vi.fn()
   const mockUpdateAuthorNodes = vi.fn(() => ({ tooltips: [] }))
-  const mockCreateAuthorNodes = vi.fn((authors, publications) => {
+  const mockCreateAuthorNodes = vi.fn((authors, _publications) => {
     // This should create author nodes if authors are provided
     if (!authors || authors.length === 0) {
       return [];

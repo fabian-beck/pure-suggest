@@ -17,7 +17,7 @@ describe('Browser Performance Tests', () => {
         if (response.ok) {
           return true;
         }
-      } catch (error) {
+      } catch {
         // Server not ready yet, continue waiting
       }
       

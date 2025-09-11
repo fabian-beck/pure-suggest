@@ -162,7 +162,7 @@ describe('useAppState - Session Loading', () => {
       appState.importSessionWithConfirmation()
       
       expect(interfaceStore.showConfirmDialog).toHaveBeenCalled()
-      const [message, callback, title] = interfaceStore.showConfirmDialog.mock.calls[0]
+      const [message, _callback, title] = interfaceStore.showConfirmDialog.mock.calls[0]
       
       expect(message).toContain('Choose an exported session JSON file')
       expect(message).toContain('input type="file"')

@@ -137,7 +137,7 @@ export const createNetworkUtilMocks = () => ({
   forces: {
     createForceSimulation: vi.fn(() => createMockSimulation()),
     initializeForces: vi.fn(),
-    calculateYearX: vi.fn((year, width, height, isMobile) => year * 10),
+    calculateYearX: vi.fn((year, _width, _height, _isMobile) => year * 10),
     SIMULATION_ALPHA: 0.5,
     getNodeXPosition: vi.fn((node, isNetworkClusters, yearXFunc) => {
       if (isNetworkClusters && node.x !== undefined) {

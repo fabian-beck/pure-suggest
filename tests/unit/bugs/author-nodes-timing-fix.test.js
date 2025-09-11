@@ -23,7 +23,7 @@ const mockSessionStore = {
 
 const mockAuthorStore = {
   selectedPublicationsAuthors: [],
-  computeSelectedPublicationsAuthors: vi.fn((publications) => {
+  computeSelectedPublicationsAuthors: vi.fn((_publications) => {
     // Simulate computing authors from publications
     mockAuthorStore.selectedPublicationsAuthors = [
       { 

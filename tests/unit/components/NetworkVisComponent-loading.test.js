@@ -90,17 +90,17 @@ vi.mock('@/composables/useAppState.js', () => ({
 describe('NetworkVisComponent - Loading State Behavior', () => {
   let wrapper
   let sessionStore
-  let interfaceStore
-  let queueStore
-  let authorStore
+  let _interfaceStore
+  let _queueStore
+  let _authorStore
   let plotSpy
 
   beforeEach(() => {
     setActivePinia(createPinia())
     sessionStore = useSessionStore()
-    interfaceStore = useInterfaceStore()
-    queueStore = useQueueStore()
-    authorStore = useAuthorStore()
+    _interfaceStore = useInterfaceStore()
+    _queueStore = useQueueStore()
+    _authorStore = useAuthorStore()
 
     // Set up initial state with publications
     const publication1 = new Publication('10.1234/test1')

@@ -143,7 +143,6 @@ vi.mock('@/composables/useAppState.js', () => ({
 
 import { useSessionStore } from '@/stores/session.js'
 import { useInterfaceStore } from '@/stores/interface.js'
-import { useAppState } from '@/composables/useAppState.js'
 
 // Helper function for consistent component stubs
 const getComponentStubs = () => ({
@@ -241,7 +240,7 @@ describe('NetworkVisComponent', () => {
     it('hides controls when session is empty', () => {
       // Setup empty session state
       const sessionStore = useSessionStore()
-      const interfaceStore = useInterfaceStore()
+      const _interfaceStore = useInterfaceStore()
       sessionStore.selectedPublications = []
       sessionStore.excludedPublicationsDois = []
       
@@ -950,7 +949,7 @@ describe('NetworkVisComponent', () => {
     })
 
     it('calculates year X coordinate correctly for desktop', () => {
-      const currentYear = new Date().getFullYear()
+      const _currentYear = new Date().getFullYear()
       
       // Test with default non-mobile width (800) and height (160)
       const yearX2020 = wrapper.vm.yearX(2020)

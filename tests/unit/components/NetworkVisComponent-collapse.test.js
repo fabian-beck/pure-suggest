@@ -164,7 +164,7 @@ vi.mock('@/stores/interface.js', () => ({
 vi.mock('@/utils/network/forces.js', () => ({
   createForceSimulation: vi.fn(() => createMockSimulation()),
   initializeForces: vi.fn(),
-  calculateYearX: vi.fn((year, width, height, isMobile) => year * 10),
+  calculateYearX: vi.fn((year, _width, _height, _isMobile) => year * 10),
   SIMULATION_ALPHA: 0.5,
   getNodeXPosition: vi.fn((node, isNetworkClusters, yearXFunc) => {
     if (isNetworkClusters && node.x !== undefined) {
@@ -228,7 +228,6 @@ vi.mock('@/composables/useAppState.js', () => ({
 }))
 
 import { useSessionStore } from '@/stores/session.js'
-import { useInterfaceStore } from '@/stores/interface.js'
 
 // Helper function for consistent component stubs
 const getComponentStubs = () => ({

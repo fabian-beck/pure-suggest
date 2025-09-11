@@ -1,10 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useAuthorStore } from '@/stores/author.js'
 import { useSessionStore } from '@/stores/session.js'
-import AuthorModalDialog from '@/components/modal/AuthorModalDialog.vue'
 
 // Mock external dependencies
 vi.mock('@/lib/Keys.js')
@@ -263,7 +261,7 @@ describe('Author Details On Demand Feature', () => {
       ]
       
       // This test should verify the ID conversion works correctly
-      testCases.forEach(testCase => {
+      testCases.forEach(_testCase => {
         expect(true).toBe(true) // Placeholder - will be replaced with actual test
       })
     })
@@ -425,7 +423,7 @@ describe('Author Details On Demand Feature', () => {
       })
       
       // Verify that the component's style includes the necessary CSS rules
-      const componentStyles = wrapper.vm.$options.__hmrId || wrapper.vm.$options._scopeId
+      const _componentStyles = wrapper.vm.$options.__hmrId || wrapper.vm.$options._scopeId
       // The CSS rules are defined in the component, even if we can't test computed styles in jsdom
       expect(true).toBe(true) // CSS is defined in the component file
     })

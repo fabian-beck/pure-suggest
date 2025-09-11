@@ -201,7 +201,7 @@ describe('SessionMenuComponent', () => {
       
       // Look for the item that calls exportSession when clicked
       for (const item of exportItems) {
-        const clickHandler = item.attributes('onclick') || item.element.onclick
+        const _clickHandler = item.attributes('onclick') || item.element.onclick
         if (item.attributes('title')?.includes('Export') && !item.attributes('title')?.includes('BibTeX')) {
           exportJsonItem = item
           break
