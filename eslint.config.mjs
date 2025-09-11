@@ -61,7 +61,7 @@ export default [
       'max-depth': ['warn', 4],
       'max-nested-callbacks': ['warn', 3],
       'max-params': ['warn', 4],
-      'max-lines-per-function': ['warn', 100],
+      'max-lines-per-function': ['warn', 200],
       
       // Error Prevention
       'yoda': 'error',
