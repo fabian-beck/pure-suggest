@@ -2,9 +2,8 @@
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
 import { useAppState } from '@/composables/useAppState.js'
-import { watch } from 'vue'
+import { watch, reactive } from 'vue'
 import Publication from '@/core/Publication.js'
-import { reactive } from 'vue'
 
 export default {
   setup() {

@@ -22,7 +22,8 @@ import {
 // Node types
 import {
   initializePublicationNodes,
-  updatePublicationNodes
+  updatePublicationNodes,
+  createPublicationNodes
 } from '@/utils/network/publicationNodes.js'
 import {
   initializeKeywordNodes,
@@ -31,14 +32,16 @@ import {
   highlightKeywordPublications,
   clearKeywordHighlight,
   createKeywordNodeDrag,
-  createKeywordLinks
+  createKeywordLinks,
+  createKeywordNodes
 } from '@/utils/network/keywordNodes.js'
 import {
   initializeAuthorNodes,
   updateAuthorNodes,
   highlightAuthorPublications,
   clearAuthorHighlight,
-  createAuthorLinks
+  createAuthorLinks,
+  createAuthorNodes
 } from '@/utils/network/authorNodes.js'
 
 // Links
@@ -47,11 +50,6 @@ import {
   updateLinkProperties,
   createCitationLinks
 } from '@/utils/network/links.js'
-
-// Additional node utilities
-import { createPublicationNodes } from '@/utils/network/publicationNodes.js'
-import { createKeywordNodes } from '@/utils/network/keywordNodes.js'
-import { createAuthorNodes } from '@/utils/network/authorNodes.js'
 
 // Year labels
 import { updateYearLabels } from '@/utils/network/yearLabels.js'
