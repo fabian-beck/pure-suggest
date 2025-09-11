@@ -137,7 +137,6 @@ function getDoiTooltip(doi) {
   <v-menu
     v-if="!isEmpty"
     v-model="interfaceStore.isFilterMenuOpen"
-    ref="filterMenu"
     location="bottom"
     transition="slide-y-transition"
     :close-on-content-click="false"
