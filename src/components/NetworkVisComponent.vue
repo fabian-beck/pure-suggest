@@ -494,16 +494,20 @@ export default {
         // Old helper functions removed - now handled by modules
       }
     },
-    tick () {
+    /**
+     * Check if current tick should be skipped for performance optimization
+     * @returns {boolean} true if tick should be skipped, false otherwise
+     */
+    shouldSkipCurrentTick() {
       // Skip when network is collapsed for performance
       if (this.interfaceStore.isNetworkCollapsed) {
-        return
+        return true
       }
 
       // Early return if graph is empty - no nodes to update
       if (!this.graph.nodes || this.graph.nodes.length === 0) {
         this.$refs.performanceMonitor?.trackFps() // Still track FPS for debugging
-        return
+        return true
       }
 
       // Increment tick counter
@@ -518,7 +522,7 @@ export default {
         this.$refs.performanceMonitor?.tickCount <= this.skipEarlyTicks
       ) {
         this.$refs.performanceMonitor?.trackFps() // Still track FPS for debugging
-        return
+        return true
       }
 
       // Disable skipping after the skip period
@@ -533,6 +537,15 @@ export default {
       if (!this.isDragging && this.currentTickCount % 2 === 0) {
         this.$refs.performanceMonitor?.recordTickSkipped()
         this.$refs.performanceMonitor?.trackFps() // Still track FPS for debugging
+        return true
+      }
+
+      return false // Don't skip this tick
+    },
+
+    tick () {
+      // Check if this tick should be skipped for performance
+      if (this.shouldSkipCurrentTick()) {
         return
       }
 
