@@ -174,37 +174,3 @@ function getBoostIndicatorSize(d) {
 
 // Color is handled by d.publication.scoreColor from the original logic
 
-/**
- * Get filtered publications based on visibility settings and filters
- */
-export function getFilteredPublications(
-  selectedPublications,
-  suggestedPublications,
-  showSelectedNodes,
-  showSuggestedNodes,
-  suggestedNumberFactor,
-  onlyShowFiltered,
-  filterConfig
-) {
-  let publications = []
-
-  if (showSelectedNodes) {
-    let selectedPubs = selectedPublications
-    if (onlyShowFiltered && filterConfig.hasActiveFilters && filterConfig.applyToSelected) {
-      selectedPubs = selectedPubs.filter(filterConfig.matches)
-    }
-    publications = publications.concat(selectedPubs)
-  }
-
-  if (showSuggestedNodes) {
-    let suggestedPubs = suggestedPublications
-    if (onlyShowFiltered && filterConfig.hasActiveFilters && filterConfig.applyToSuggested) {
-      suggestedPubs = suggestedPubs.filter(filterConfig.matches)
-    }
-    publications = publications.concat(
-      suggestedPubs.slice(0, Math.round(suggestedNumberFactor * 50))
-    )
-  }
-
-  return publications
-}
