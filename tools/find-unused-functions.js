@@ -13,8 +13,8 @@ const fs = require('fs')
 const path = require('path')
 const { execSync: _execSync } = require('child_process')
 
-// Configuration
-const SOURCE_DIRS = ['src', 'tests']
+// Configuration  
+const SOURCE_DIRS = [path.join(__dirname, '..', 'src'), path.join(__dirname, '..', 'tests')]
 const FILE_EXTENSIONS = ['.js', '.vue', '.ts']
 const EXCLUDE_PATTERNS = ['node_modules', '.git', 'dist', 'build']
 
