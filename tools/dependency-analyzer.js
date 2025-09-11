@@ -328,7 +328,7 @@ function generateGraphML() {
           let targetName = imp.replace(/^\.\/|^@\//, '');
           targetName = path.basename(targetName, path.extname(targetName));
           
-          const edgeType = imp.includes('(dynamic)') ? 'dynamic-import' : 'import';
+          const _edgeType = imp.includes('(dynamic)') ? 'dynamic-import' : 'import';
           
           // Only add edge if target node exists
           if (nodeMap.has(targetName)) {

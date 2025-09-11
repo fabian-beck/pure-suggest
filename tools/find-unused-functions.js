@@ -11,7 +11,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { execSync: _execSync } = require('child_process');
 
 // Configuration
 const SOURCE_DIRS = ['src', 'tests'];
@@ -139,7 +139,7 @@ function countFunctionUsage(functionName, sourceFiles) {
       if (matches) {
         totalCount += matches.length;
       }
-    } catch (error) {
+    } catch {
       // Skip files that can't be read
       continue;
     }
