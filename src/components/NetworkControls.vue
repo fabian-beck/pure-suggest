@@ -66,13 +66,13 @@
     </v-btn-toggle>
     <span>
       <v-menu :close-on-content-click="false">
-        <template #activator="{ props }">
+        <template #activator="{ props: activatorProps }">
           <CompactButton
             icon="mdi-cog"
             v-tippy="'Visualization settings'"
             elevation="1"
             color="white"
-            v-bind="props"
+            v-bind="activatorProps"
           ></CompactButton>
         </template>
         <v-list>
