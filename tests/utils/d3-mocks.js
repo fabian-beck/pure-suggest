@@ -197,8 +197,3 @@ export const createNetworkUtilMocks = () => ({
   }
 })
 
-/**
- * Get mock configurations for specific network utilities
- * Use these in vi.mock() calls since they need to be hoisted
- */
-export const getMockConfigs = () => createNetworkUtilMocks()
