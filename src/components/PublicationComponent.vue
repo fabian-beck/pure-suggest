@@ -28,7 +28,7 @@
         <CompactButton
           icon="mdi-undo"
           v-tippy="'Remove publication from queue again.'"
-          v-on:click="queueStore.removeFromQueues(publication.doi)"
+          @click="queueStore.removeFromQueues(publication.doi)"
         ></CompactButton>
       </div>
     </div>
@@ -56,7 +56,7 @@
       <tippy class="media-left" placement="right">
         <div
           class="glyph has-text-centered"
-          v-bind:style="{ 'background-color': publication.scoreColor }"
+          :style="{ 'background-color': publication.scoreColor }"
           v-show="publication.wasFetched"
         >
           <div class="tooltip-target">
@@ -136,7 +136,7 @@
       <div class="media-content">
         <PublicationDescription
           :publication="publication"
-          :publicationType="publicationType"
+          :publication-type="publicationType"
         ></PublicationDescription>
         <div
           class="notification has-background-danger-light has-text-danger-dark"
@@ -180,7 +180,7 @@
           <CompactButton
             v-if="!publication.isSelected"
             icon="mdi-plus-thick"
-            v-on:click="queueForSelected(publication.doi)"
+            @click="queueForSelected(publication.doi)"
             class="has-text-primary"
             v-tippy="'Mark publication to be added to selected publications.'"
           ></CompactButton>
@@ -188,7 +188,7 @@
         <div>
           <CompactButton
             icon="mdi-minus-thick"
-            v-on:click="queueForExcluded(publication.doi)"
+            @click="queueForExcluded(publication.doi)"
             v-tippy="minusButtonTooltip"
           >
           </CompactButton>

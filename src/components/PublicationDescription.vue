@@ -129,7 +129,7 @@
             icon="mdi-text"
             class="ml-5"
             v-if="publication.abstract && !alwaysShowDetails"
-            v-on:click="showAbstract"
+            @click="showAbstract"
             v-tippy="`Abs<span class='key'>t</span>ract`"
           ></CompactButton>
           <CompactButton
@@ -141,7 +141,7 @@
           <CompactButton
             icon="mdi-format-quote-close"
             class="ml-5"
-            v-on:click="exportBibtex"
+            @click="exportBibtex"
             v-if="!alwaysShowDetails"
             v-tippy="`Export as BibTe<span class='key'>X</span> citation`"
           >

@@ -3,10 +3,10 @@
     v-model="isSearchModalDialogShown"
     title="Search/add publications"
     icon="mdi-magnify"
-    headerColor="primary"
+    header-color="primary"
   >
-    <template v-slot:sticky>
-      <form v-on:submit.prevent="search" class="has-background-primary-95">
+    <template #sticky>
+      <form @submit.prevent="search" class="has-background-primary-95">
         <v-text-field
           clearable
           v-model="interfaceStore.searchQuery"
@@ -21,7 +21,7 @@
         </v-text-field>
       </form>
     </template>
-    <template v-slot:footer>
+    <template #footer>
       <v-card-actions :class="`has-background-primary-95`">
         <p class="comment is-hidden-mobile">
           <span v-show="['doi', 'search'].includes(searchResults.type)"
@@ -39,7 +39,7 @@
         </p>
         <v-btn
           class="has-background-primary has-text-white mr-2 is-hidden-mobile"
-          v-on:click="addAllPublications"
+          @click="addAllPublications"
           v-show="searchResults.type === 'doi' && filteredSearchResults.length > 0"
           small
         >
@@ -54,8 +54,8 @@
             v-for="publication in filteredSearchResults"
             :key="publication.doi"
             :publication="publication"
-            :searchQuery="searchResults.type === 'search' ? cleanedSearchQuery : ''"
-            v-on:activate="addPublication(publication.doi)"
+            :search-query="searchResults.type === 'search' ? cleanedSearchQuery : ''"
+            @activate="addPublication(publication.doi)"
             class="pb-4 pt-4"
             v-show="!this.isLoading"
           >

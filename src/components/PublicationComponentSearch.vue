@@ -4,7 +4,7 @@
       <PublicationDescription
         :publication="publication"
         :highlighted="searchQuery"
-        :alwaysShowDetails="true"
+        :always-show-details="true"
         v-show="publication.wasFetched"
       >
       </PublicationDescription>

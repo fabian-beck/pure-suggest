@@ -8,7 +8,7 @@
     :close-on-content-click="false"
     @update:model-value="handleMenuToggle"
   >
-    <template v-slot:activator="{ props }">
+    <template #activator="{ props }">
       <v-btn
         class="filter-button"
         :class="interfaceStore.isMobile ? '' : 'p-1 pl-4'"

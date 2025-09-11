@@ -11,7 +11,7 @@
     >
       <SelectedPublicationsComponent id="selected" v-show="!interfaceStore.isNetworkExpanded" />
       <SuggestedPublicationsComponent id="suggested" v-show="!interfaceStore.isNetworkExpanded" />
-      <NetworkVisComponent id="network" :svgWidth="1500" :svgHeight="600" />
+      <NetworkVisComponent id="network" :svg-width="1500" :svg-height="600" />
     </div>
     <QuickAccessBar
       id="quick-access"

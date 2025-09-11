@@ -1,7 +1,7 @@
 <template>
   <ModalDialog
     v-model="interfaceStore.isAboutModalDialogShown"
-    headerColor="light"
+    header-color="light"
     title="About"
     icon="mdi-information-outline"
   >

@@ -39,21 +39,21 @@
         icon="mdi-arrow-down"
         v-tippy="'Hide diagram'"
         v-show="!interfaceStore.isNetworkCollapsed"
-        v-on:click="$emit('collapseNetwork')"
+        @click="$emit('collapseNetwork')"
         class="ml-4 is-hidden-touch has-text-white"
       ></CompactButton>
       <CompactButton
         icon="mdi-arrow-up"
         v-tippy="'Show diagram'"
         v-show="interfaceStore.isNetworkCollapsed"
-        v-on:click="$emit('restoreNetwork')"
+        @click="$emit('restoreNetwork')"
         class="ml-4 is-hidden-touch has-text-white"
       ></CompactButton>
       <CompactButton
         icon="mdi-arrow-expand"
         v-tippy="'Maximize diagram'"
         v-show="!interfaceStore.isNetworkExpanded"
-        v-on:click="
+        @click="
           () => {
             if (interfaceStore.isNetworkCollapsed) $emit('restoreNetwork')
             $emit('expandNetwork', true)
@@ -65,7 +65,7 @@
         icon="mdi-arrow-collapse"
         v-tippy="'Return to normal size'"
         v-show="interfaceStore.isNetworkExpanded"
-        v-on:click="$emit('expandNetwork', false)"
+        @click="$emit('expandNetwork', false)"
         class="is-hidden-touch has-text-white"
       ></CompactButton>
     </div>

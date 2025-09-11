@@ -1,11 +1,11 @@
 <template>
   <ModalDialog
-    headerColor="primary"
+    header-color="primary"
     title="Excluded publications"
     icon="mdi-minus-thick"
     v-model="interfaceStore.isExcludedModalDialogShown"
   >
-    <template v-slot:sticky>
+    <template #sticky>
       <v-sheet class="has-background-primary-95 pa-2">
         <p class="comment" v-if="excludedPublications.length > 0">
           These publications will not be suggested again unlike you remove them from this list.
@@ -23,19 +23,19 @@
             :key="publication.doi"
           >
             <div class="media-content">
-              <PublicationDescription :publication="publication" :alwaysShowDetails="true">
+              <PublicationDescription :publication="publication" :always-show-details="true">
               </PublicationDescription>
             </div>
             <div class="media-right">
               <CompactButton
                 icon="mdi-undo"
                 v-tippy="'Remove proublication from list of excluded publications again.'"
-                v-on:click="removeFromExcluded(publication)"
+                @click="removeFromExcluded(publication)"
               ></CompactButton>
               <CompactButton
                 icon="mdi-plus-thick"
                 v-tippy="'Mark publication to be added to selected publications.'"
-                v-on:click="removeFromExcludedAndAddToSelected(publication)"
+                @click="removeFromExcludedAndAddToSelected(publication)"
                 class="has-text-primary"
               >
               </CompactButton>

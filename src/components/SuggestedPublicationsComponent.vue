@@ -62,8 +62,8 @@
     <PublicationListComponent
       ref="publicationList"
       :publications="sessionStore.suggestedPublicationsFiltered"
-      :showSectionHeaders="true"
-      publicationType="suggested"
+      :show-section-headers="true"
+      publication-type="suggested"
     />
   </div>
 </template>

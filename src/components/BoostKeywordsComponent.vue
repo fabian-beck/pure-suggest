@@ -7,7 +7,7 @@
     :close-on-content-click="false"
     @update:model-value="handleMenuToggle"
   >
-    <template v-slot:activator="{ props }">
+    <template #activator="{ props }">
       <v-btn
         class="boost-button"
         :class="interfaceStore.isMobile ? '' : 'p-1 pl-4'"
@@ -41,7 +41,7 @@
           hint="Use ',' to separate keywords, use '|' to discern alternatives/synonyms."
           persistent-hint
         >
-          <template v-slot:append>
+          <template #append>
             <v-btn class="has-background-warning" @click="updateScores" height="47">
               <v-icon>mdi-chevron-double-up</v-icon>
             </v-btn>

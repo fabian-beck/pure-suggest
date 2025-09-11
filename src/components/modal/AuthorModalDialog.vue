@@ -1,11 +1,11 @@
 <template>
   <ModalDialog
-    headerColor="primary"
+    header-color="primary"
     :title="modalTitle"
     icon="mdi-account-group"
     v-model="interfaceStore.isAuthorModalDialogShown"
   >
-    <template v-slot:header-menu>
+    <template #header-menu>
       <CompactButton
         v-if="authorStore.activeAuthorId"
         icon="mdi-arrow-left"
@@ -14,7 +14,7 @@
         v-tippy="'Back to author list'"
       />
       <v-menu :close-on-content-click="false" v-if="!authorStore.activeAuthorId">
-        <template v-slot:activator="{ props }">
+        <template #activator="{ props }">
           <CompactButton icon="mdi-cog" v-bind="props" />
         </template>
         <v-list>
@@ -179,7 +179,7 @@
             <PublicationComponent
               :publication="publication"
               :is-active="false"
-              publicationType="selected"
+              publication-type="selected"
             />
           </div>
         </div>

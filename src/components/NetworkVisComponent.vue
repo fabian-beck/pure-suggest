@@ -2,21 +2,21 @@
   <div class="network-of-references">
     <div class="box has-background-grey">
       <NetworkHeader
-        :errorMessage="errorMessage"
-        v-model:isNetworkClusters="isNetworkClusters"
-        @expandNetwork="expandNetwork"
-        @collapseNetwork="collapseNetwork"
-        @restoreNetwork="restoreNetwork"
+        :error-message="errorMessage"
+        v-model:is-network-clusters="isNetworkClusters"
+        @expand-network="expandNetwork"
+        @collapse-network="collapseNetwork"
+        @restore-network="restoreNetwork"
       />
       <div id="network-svg-container" v-show="!interfaceStore.isNetworkCollapsed">
         <NetworkPerformanceMonitor
           ref="performanceMonitor"
           :show="interfaceStore.showPerformancePanel"
-          :isEmpty="isEmpty || !sessionStore.selectedPublications?.length"
-          :nodeCount="graph.nodes.length"
-          :linkCount="graph.links.length"
-          :shouldSkipEarlyTicks="shouldSkipEarlyTicks"
-          :skipEarlyTicks="skipEarlyTicks"
+          :is-empty="isEmpty || !sessionStore.selectedPublications?.length"
+          :node-count="graph.nodes.length"
+          :link-count="graph.links.length"
+          :should-skip-early-ticks="shouldSkipEarlyTicks"
+          :skip-early-ticks="skipEarlyTicks"
         />
         <svg id="network-svg" :class="networkCssClasses">
           <g></g>
@@ -27,7 +27,7 @@
           v-if="activePublication && interfaceStore.isNetworkExpanded"
           :publication="activePublication"
           :is-active="true"
-          :publicationType="activePublication.isSelected ? 'selected' : 'suggested'"
+          :publication-type="activePublication.isSelected ? 'selected' : 'suggested'"
         ></PublicationComponent>
       </ul>
       <div class="controls-header-left" v-show="!interfaceStore.isNetworkCollapsed">
@@ -42,10 +42,10 @@
         </v-btn>
       </div>
       <NetworkControls
-        v-model:showNodes="showNodes"
-        v-model:onlyShowFiltered="onlyShowFiltered"
-        v-model:suggestedNumberFactor="suggestedNumberFactor"
-        v-model:authorNumberFactor="authorNumberFactor"
+        v-model:show-nodes="showNodes"
+        v-model:only-show-filtered="onlyShowFiltered"
+        v-model:suggested-number-factor="suggestedNumberFactor"
+        v-model:author-number-factor="authorNumberFactor"
         @zoom="zoomByFactor"
         @reset="resetZoom"
         @plot="plot"

@@ -11,7 +11,7 @@
         </div>
       </v-app-bar-title>
       <v-menu bottom left offset-y transition="slide-y-transition">
-        <template v-slot:activator="{ props }">
+        <template #activator="{ props }">
           <v-btn icon v-bind="props" class="mr-1" density="compact">
             <v-icon>mdi-dots-vertical</v-icon>
           </v-btn>

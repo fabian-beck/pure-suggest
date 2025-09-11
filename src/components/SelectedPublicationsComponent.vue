@@ -17,7 +17,7 @@
           <CompactButton
             icon="mdi-account-group has-text-white"
             v-tippy="`List <span class='key'>a</span>uthors of selected publications.`"
-            v-on:click="interfaceStore.openAuthorModalDialog()"
+            @click="interfaceStore.openAuthorModalDialog()"
           ></CompactButton>
           <CompactButton
             icon="mdi-magnify"
@@ -25,7 +25,7 @@
             v-tippy="
               `<span class='key'>S</span>earch/add specific publications to be added to selected.`
             "
-            v-on:click="interfaceStore.openSearchModalDialog()"
+            @click="interfaceStore.openSearchModalDialog()"
           ></CompactButton>
         </div>
       </div>
@@ -68,13 +68,13 @@
                 icon="mdi-pencil"
                 class="ml-2"
                 v-tippy="'Edit publications in queue.'"
-                v-on:click="interfaceStore.isQueueModalDialogShown = true"
+                @click="interfaceStore.isQueueModalDialogShown = true"
               ></CompactButton>
               <CompactButton
                 icon="mdi-undo"
                 class="ml-1"
                 v-tippy="'Remove all publications from queue again.'"
-                v-on:click="queueStore.clear()"
+                @click="queueStore.clear()"
               ></CompactButton>
               <v-btn
                 class="has-background-primary has-text-white ml-2"
@@ -128,8 +128,8 @@
     <PublicationListComponent
       ref="publicationList"
       :publications="sessionStore.selectedPublicationsFiltered"
-      :showSectionHeaders="true"
-      publicationType="selected"
+      :show-section-headers="true"
+      publication-type="selected"
     />
   </div>
 </template>

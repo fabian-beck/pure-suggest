@@ -29,8 +29,8 @@
     v-else
     ref="targetRef"
     :publication="publication"
-    :publicationType="publicationType"
-    v-on:activate="$emit('activate', $event)"
+    :publication-type="publicationType"
+    @activate="$emit('activate', $event)"
   />
 </template>
 

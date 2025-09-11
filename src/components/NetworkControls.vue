@@ -4,7 +4,7 @@
       <CompactButton
         icon="mdi-plus"
         v-tippy="'Zoom in'"
-        v-on:click="$emit('zoom', 1.2)"
+        @click="$emit('zoom', 1.2)"
         elevation="1"
         class="mr-2"
         color="white"
@@ -13,7 +13,7 @@
       <CompactButton
         icon="mdi-minus"
         v-tippy="'Zoom out'"
-        v-on:click="$emit('zoom', 0.8)"
+        @click="$emit('zoom', 0.8)"
         elevation="1"
         class="mr-2"
         color="white"
@@ -22,7 +22,7 @@
       <CompactButton
         icon="mdi-backup-restore"
         v-tippy="'Reset zoom and pan'"
-        v-on:click="$emit('reset')"
+        @click="$emit('reset')"
         elevation="1"
         color="white"
       >
@@ -66,7 +66,7 @@
     </v-btn-toggle>
     <span>
       <v-menu :close-on-content-click="false">
-        <template v-slot:activator="{ props }">
+        <template #activator="{ props }">
           <CompactButton
             icon="mdi-cog"
             v-tippy="'Visualization settings'"
@@ -81,7 +81,7 @@
               v-model="onlyShowFilteredModel"
               label="Only show filtered"
               :disabled="!sessionStore.filter.hasActiveFilters()"
-              @update:modelValue="$emit('plot', true)"
+              @update:model-value="$emit('plot', true)"
               hide-details
               class="mt-0"
             ></v-checkbox>
@@ -93,7 +93,7 @@
               :max="1"
               :min="0.1"
               step="0.05"
-              @update:modelValue="$emit('plot', true)"
+              @update:model-value="$emit('plot', true)"
             />
           </v-list-item>
           <v-list-item prepend-icon="mdi-account">
@@ -103,7 +103,7 @@
               :max="2"
               :min="0.1"
               step="0.1"
-              @update:modelValue="$emit('plot', true)"
+              @update:model-value="$emit('plot', true)"
             />
           </v-list-item>
         </v-list>

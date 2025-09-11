@@ -1,7 +1,7 @@
 <template>
   <v-switch
-    :modelValue="modelValue"
-    @update:modelValue="$emit('update:modelValue', !modelValue)"
+    :model-value="modelValue"
+    @update:model-value="$emit('update:modelValue', !modelValue)"
     hide-details
     density="compact"
   ></v-switch>

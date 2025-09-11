@@ -3,7 +3,7 @@
     v-model="interfaceStore.isKeyboardControlsModalDialogShown"
     title="Keyboard Controls"
     icon="mdi-keyboard-outline"
-    headerColor="light"
+    header-color="light"
   >
     <div class="content">
       <section>

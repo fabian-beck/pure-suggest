@@ -22,7 +22,7 @@
         style="font-family: monospace; font-size: 0.85rem"
         @focus="$refs.linkInput.select()"
       >
-        <template v-slot:append-inner>
+        <template #append-inner>
           <v-btn
             @click="copyToClipboard"
             :color="copySuccess ? 'success' : 'default'"

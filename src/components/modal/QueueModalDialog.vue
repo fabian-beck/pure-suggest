@@ -1,11 +1,11 @@
 <template>
   <ModalDialog
-    headerColor="primary"
+    header-color="primary"
     title="Queue"
     icon="mdi-tray-full"
     v-model="interfaceStore.isQueueModalDialogShown"
   >
-    <template v-slot:sticky>
+    <template #sticky>
       <v-sheet class="has-background-primary-95 pa-2">
         <p class="comment" v-if="queueStore.isUpdatable">
           These publications are maked to be selected or excluded with the next update.
@@ -13,22 +13,22 @@
         <p class="comment" v-else>No publications currently in queue; you may close this dialog.</p>
       </v-sheet>
     </template>
-    <template v-slot:footer>
+    <template #footer>
       <v-card-actions class="has-background-primary-95 level-right">
         <v-btn
           class="has-background-primary-95 has-text-dark mr-2"
-          v-on:click="clearQueuesAndClose"
+          @click="clearQueuesAndClose"
           v-show="queueStore.isUpdatable"
           small
-          prependIcon="mdi-undo"
+          prepend-icon="mdi-undo"
           >Clear all</v-btn
         >
         <v-btn
           class="has-background-primary has-text-white ml-2"
-          v-on:click="updateQueuedAndClose"
+          @click="updateQueuedAndClose"
           v-show="queueStore.isUpdatable"
           small
-          prependIcon="mdi-update"
+          prepend-icon="mdi-update"
           >Update</v-btn
         >
       </v-card-actions>
@@ -46,14 +46,14 @@
               :key="publication.doi"
             >
               <div class="media-content">
-                <PublicationDescription :publication="publication" :alwaysShowDetails="true">
+                <PublicationDescription :publication="publication" :always-show-details="true">
                 </PublicationDescription>
               </div>
               <div class="media-right">
                 <CompactButton
                   icon="mdi-undo"
                   v-tippy="'Remove publication from queue.'"
-                  v-on:click="removeFromQueueAndUpdatePublications(publication)"
+                  @click="removeFromQueueAndUpdatePublications(publication)"
                 ></CompactButton>
               </div>
             </li>
@@ -69,14 +69,14 @@
               :key="publication.doi"
             >
               <div class="media-content">
-                <PublicationDescription :publication="publication" :alwaysShowDetails="true">
+                <PublicationDescription :publication="publication" :always-show-details="true">
                 </PublicationDescription>
               </div>
               <div class="media-right">
                 <CompactButton
                   icon="mdi-undo"
                   v-tippy="'Remove publication from queue.'"
-                  v-on:click="removeFromQueueAndUpdatePublications(publication)"
+                  @click="removeFromQueueAndUpdatePublications(publication)"
                 ></CompactButton>
               </div>
             </li>

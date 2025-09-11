@@ -1,6 +1,6 @@
 <template>
   <v-menu v-if="!isEmpty" location="bottom" transition="slide-y-transition">
-    <template v-slot:activator="{ props }">
+    <template #activator="{ props }">
       <v-btn
         v-bind="props"
         :icon="interfaceStore.isMobile"

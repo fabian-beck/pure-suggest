@@ -17,9 +17,9 @@
       <LazyPublicationComponent
         v-else
         :publication="item.publication"
-        :publicationType="publicationType"
-        :isMobile="interfaceStore.isMobile"
-        v-on:activate="activatePublication"
+        :publication-type="publicationType"
+        :is-mobile="interfaceStore.isMobile"
+        @activate="activatePublication"
       />
     </template>
   </ul>
