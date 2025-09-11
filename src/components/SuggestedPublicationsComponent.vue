@@ -90,7 +90,7 @@ onMounted(() => {
     <PublicationListComponent
       ref="publicationList"
       :publications="sessionStore.suggestedPublicationsFiltered"
-      :show-section-headers="true"
+      show-section-headers
       publication-type="suggested"
     />
   </div>

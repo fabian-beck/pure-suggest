@@ -115,7 +115,7 @@ export default {
               :key="publication.doi"
             >
               <div class="media-content">
-                <PublicationDescription :publication="publication" :always-show-details="true">
+                <PublicationDescription :publication="publication" always-show-details>
                 </PublicationDescription>
               </div>
               <div class="media-right">
@@ -138,7 +138,7 @@ export default {
               :key="publication.doi"
             >
               <div class="media-content">
-                <PublicationDescription :publication="publication" :always-show-details="true">
+                <PublicationDescription :publication="publication" always-show-details>
                 </PublicationDescription>
               </div>
               <div class="media-right">

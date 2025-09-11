@@ -940,7 +940,7 @@ export default {
         <PublicationComponent
           v-if="activePublication && interfaceStore.isNetworkExpanded"
           :publication="activePublication"
-          :is-active="true"
+          is-active
           :publication-type="activePublication.isSelected ? 'selected' : 'suggested'"
         ></PublicationComponent>
       </ul>

@@ -19,7 +19,7 @@ defineEmits(['activate'])
       <PublicationDescription
         :publication="publication"
         :highlighted="searchQuery"
-        :always-show-details="true"
+        always-show-details
         v-show="publication.wasFetched"
       >
       </PublicationDescription>
