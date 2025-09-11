@@ -171,7 +171,6 @@ function handleActivePublicationShortcuts(e) {
 }
 
 export function onKey(e) {
-  const sessionStore = useSessionStore()
   const interfaceStore = useInterfaceStore()
   const { isEmpty } = useAppState()
 
