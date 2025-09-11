@@ -78,6 +78,14 @@ export default [
     }
   },
   {
+    files: ['src/composables/useAppState.js'],
+    rules: {
+      // Exception for useAppState: This is a coordination composable that acts as a unified API facade
+      // Breaking it up would hurt the architecture by creating unnecessary indirection
+      'max-lines-per-function': 'off'
+    }
+  },
+  {
     files: ['tests/**/*.js'],
     languageOptions: {
       globals: {

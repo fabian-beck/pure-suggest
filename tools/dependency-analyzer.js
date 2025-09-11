@@ -306,12 +306,14 @@ sortedConnections.forEach(([fileName, count], index) => {
   console.log(`   ${index + 1}. ${fileName}: ${count} dependencies`)
 })
 
-// Generate GraphML export for yEd
-function generateGraphML() {
-  const nodeMap = new Map()
-  const edges = []
+// Helper functions for GraphML generation
 
-  // Create store name mapping (sessionStore -> session, interfaceStore -> interface)
+/**
+ * Creates a mapping of store references to actual store files
+ * @param {Map} dependencies - The dependencies map
+ * @returns {Map} Store file mapping
+ */
+function createStoreFileMapping(dependencies) {
   const storeFileMapping = new Map()
   dependencies.forEach((deps, filePath) => {
     if (deps.type === 'Store') {
@@ -319,26 +321,45 @@ function generateGraphML() {
       storeFileMapping.set(`${fileName}Store`, fileName)
     }
   })
+  return storeFileMapping
+}
 
-  // First pass: collect all actual nodes
+/**
+ * Collects all nodes from dependencies
+ * @param {Map} dependencies - The dependencies map
+ * @returns {Map} Node map with all collected nodes
+ */
+function collectNodes(dependencies) {
+  const nodeMap = new Map()
+  
   dependencies.forEach((deps, filePath) => {
-    const fileName = path.basename(filePath, path.extname(filePath)) // Remove extension
+    const fileName = path.basename(filePath, path.extname(filePath))
     const nodeType = deps.type
 
     nodeMap.set(fileName, {
       id: fileName,
-      label: `${path.basename(filePath)} (${deps.lineCount})`, // Add line count to label
+      label: `${path.basename(filePath)} (${deps.lineCount})`,
       type: nodeType,
       path: filePath,
       lineCount: deps.lineCount
     })
   })
+  
+  return nodeMap
+}
 
-  // Second pass: collect edges, only add targets that exist as nodes
+/**
+ * Collects all edges from dependencies
+ * @param {Map} dependencies - The dependencies map
+ * @param {Map} nodeMap - The node map to check for valid targets
+ * @param {Map} storeFileMapping - Store file mapping
+ * @returns {Array} Array of edge objects
+ */
+function collectEdges(dependencies, nodeMap, storeFileMapping) {
+  const edges = []
+  
   dependencies.forEach((deps, filePath) => {
     const sourceFileName = path.basename(filePath, path.extname(filePath))
-
-    // Keep track of what this file imports to avoid duplicate store edges
     const importedFiles = new Set()
 
     // Add import edges
@@ -348,9 +369,6 @@ function generateGraphML() {
           let targetName = imp.replace(/^\.\/|^@\//, '')
           targetName = path.basename(targetName, path.extname(targetName))
 
-          const _edgeType = imp.includes('(dynamic)') ? 'dynamic-import' : 'import'
-
-          // Only add edge if target node exists
           if (nodeMap.has(targetName)) {
             importedFiles.add(targetName)
             edges.push({
@@ -364,10 +382,9 @@ function generateGraphML() {
       })
     }
 
-    // Add template component edges - these might reference components not in our file list
+    // Add template component edges
     if (deps.templateComponents) {
       deps.templateComponents.forEach((comp) => {
-        // Try to find the component in our node list (might be CompactButton.vue -> CompactButton)
         let targetId = comp
         if (!nodeMap.has(comp)) {
           // Try to find by partial match
@@ -378,7 +395,7 @@ function generateGraphML() {
             }
           }
 
-          // If still not found, create a virtual node for template components
+          // Create virtual node if not found
           if (!nodeMap.has(targetId)) {
             nodeMap.set(comp, {
               id: comp,
@@ -399,31 +416,26 @@ function generateGraphML() {
       })
     }
 
-    // Add store usage edges - map to actual store files
-    // Skip if already imported (avoid duplicates)
+    // Add store usage edges
     if (deps.stores) {
       deps.stores.forEach((store) => {
-        // Map store reference to actual file (sessionStore -> session)
         let targetId = storeFileMapping.get(store) || store
 
-        // Skip if this file already imports the store file
+        // Skip if already imported
         if (importedFiles.has(targetId)) {
-          return // Already have import edge, skip store access edge
+          return
         }
 
-        // Only create virtual node if we can't map to an actual store file
+        // Handle missing store mappings
         if (!nodeMap.has(targetId)) {
-          // Check if it's a known store pattern we missed
           if (store.endsWith('Store')) {
             const baseStoreName = store.replace('Store', '')
             if (nodeMap.has(baseStoreName)) {
               targetId = baseStoreName
-              // Skip if already imported
               if (importedFiles.has(targetId)) {
                 return
               }
             } else {
-              // Create virtual node as last resort
               nodeMap.set(store, {
                 id: store,
                 label: store,
@@ -433,7 +445,6 @@ function generateGraphML() {
               targetId = store
             }
           } else {
-            // Create virtual node for non-standard store references
             nodeMap.set(store, {
               id: store,
               label: store,
@@ -453,9 +464,16 @@ function generateGraphML() {
       })
     }
   })
+  
+  return edges
+}
 
-  // Convert to GraphML format with yEd extensions
-  let graphml = `<?xml version="1.0" encoding="UTF-8"?>
+/**
+ * Generates the GraphML header with schema definitions
+ * @returns {string} GraphML header XML
+ */
+function generateGraphMLHeader() {
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <graphml xmlns="http://graphml.graphdrawing.org/xmlns"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
          xmlns:y="http://www.yworks.com/xml/graphml"
@@ -474,8 +492,14 @@ function generateGraphML() {
   
   <graph id="dependency-graph" edgedefault="directed">
 `
+}
 
-  // Add nodes with colors based on type
+/**
+ * Generates XML for all nodes with styling
+ * @param {Map} nodeMap - Map of nodes to generate
+ * @returns {string} Nodes XML
+ */
+function generateNodesXML(nodeMap) {
   const typeColors = {
     'Vue Component': '#42B883',
     Store: '#FF6B6B',
@@ -488,7 +512,7 @@ function generateGraphML() {
     'Store Reference': '#FF6B6B'
   }
 
-  // Calculate border width based on line count (1.0 to 5.0 range)
+  // Calculate border width based on line count
   const lineCounts = Array.from(nodeMap.values())
     .filter((node) => node.lineCount)
     .map((node) => node.lineCount)
@@ -497,17 +521,17 @@ function generateGraphML() {
 
   function getBorderWidth(lineCount) {
     if (!lineCount || minLines === maxLines) return 1.0
-    // Scale from 1.0 to 5.0 based on line count
     const normalized = (lineCount - minLines) / (maxLines - minLines)
     return 1.0 + normalized * 4.0
   }
 
+  let nodesXML = ''
   nodeMap.forEach((node) => {
     const color = typeColors[node.type] || '#CCCCCC'
-    const cleanLabel = node.label.trim() // Remove any whitespace/tabs
+    const cleanLabel = node.label.trim()
     const borderWidth = getBorderWidth(node.lineCount)
 
-    graphml += `    <node id="${node.id}">
+    nodesXML += `    <node id="${node.id}">
       <data key="d0">
         <y:ShapeNode>
           <y:Geometry height="50.0" width="150.0"/>
@@ -528,15 +552,23 @@ function generateGraphML() {
     </node>
 `
   })
+  
+  return nodesXML
+}
 
-  // Add edges with single black color
+/**
+ * Generates XML for all edges
+ * @param {Array} edges - Array of edge objects
+ * @returns {string} Edges XML
+ */
+function generateEdgesXML(edges) {
+  let edgesXML = ''
   edges.forEach((edge, index) => {
-    const color = '#000000' // All edges black
-    graphml += `    <edge id="e${index}" source="${edge.source}" target="${edge.target}">
+    edgesXML += `    <edge id="e${index}" source="${edge.source}" target="${edge.target}">
       <data key="d1">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
-          <y:LineStyle color="${color}" type="line" width="1.0"/>
+          <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="standard"/>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
@@ -545,11 +577,23 @@ function generateGraphML() {
     </edge>
 `
   })
+  
+  return edgesXML
+}
 
-  graphml += `  </graph>
-</graphml>`
+// Generate GraphML export for yEd
+function generateGraphML() {
+  // Create store mapping and collect graph data
+  const storeFileMapping = createStoreFileMapping(dependencies)
+  const nodeMap = collectNodes(dependencies)
+  const edges = collectEdges(dependencies, nodeMap, storeFileMapping)
 
-  return graphml
+  // Generate GraphML XML
+  const header = generateGraphMLHeader()
+  const nodesXML = generateNodesXML(nodeMap)
+  const edgesXML = generateEdgesXML(edges)
+  
+  return `${header}${nodesXML}${edgesXML}  </graph>\n</graphml>`
 }
 
 // Export GraphML file
