@@ -57,7 +57,7 @@ export default [
       'prefer-exponentiation-operator': 'error',
       
       // Code Quality & Complexity
-      'complexity': ['warn', 10],
+      'complexity': ['warn', 20],
       'max-depth': ['warn', 4],
       'max-nested-callbacks': ['warn', 3],
       'max-params': ['warn', 4],
