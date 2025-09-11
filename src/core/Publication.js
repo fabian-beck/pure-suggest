@@ -237,7 +237,7 @@ export default class Publication {
       } else {
         mappedWord = TITLE_WORD_MAP[word.toLowerCase()]
       }
-      this.container += (mappedWord ? mappedWord : word) + ' '
+      this.container += `${mappedWord ? mappedWord : word  } `
     })
     this.container = this.container.trim().replace(/^[. ]+|[. ]+$/g, '')
     this.container = cleanTitle(this.container)
@@ -343,7 +343,7 @@ export default class Publication {
    * @returns {string} Combined title, author, and container string.
    */
   getMetaString() {
-    return [this.title, this.author, this.container].filter(Boolean).join(' ') + ' '
+    return `${[this.title, this.author, this.container].filter(Boolean).join(' ')  } `
   }
 
   /**

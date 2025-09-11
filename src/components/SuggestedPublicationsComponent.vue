@@ -1,3 +1,31 @@
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useSessionStore } from '@/stores/session.js'
+import { useAppState } from '@/composables/useAppState.js'
+
+defineProps({
+  title: {
+    type: String,
+    default: ''
+  }
+})
+
+const sessionStore = useSessionStore()
+const { loadMoreSuggestions } = useAppState()
+
+const publicationList = ref(null)
+
+onMounted(() => {
+  sessionStore.$onAction(({ name, after }) => {
+    after(() => {
+      if (name === 'updateQueued') {
+        publicationList.value.$el.scrollTop = 0
+      }
+    })
+  })
+})
+</script>
+
 <template>
   <div class="suggested-publications box has-background-info">
     <div class="level box-header">
@@ -67,34 +95,6 @@
     />
   </div>
 </template>
-
-<script setup>
-import { ref, onMounted } from 'vue'
-import { useSessionStore } from '@/stores/session.js'
-import { useAppState } from '@/composables/useAppState.js'
-
-defineProps({
-  title: {
-    type: String,
-    default: ''
-  }
-})
-
-const sessionStore = useSessionStore()
-const { loadMoreSuggestions } = useAppState()
-
-const publicationList = ref(null)
-
-onMounted(() => {
-  sessionStore.$onAction(({ name, after }) => {
-    after(() => {
-      if (name === 'updateQueued') {
-        publicationList.value.$el.scrollTop = 0
-      }
-    })
-  })
-})
-</script>
 
 <style lang="scss" scoped>
 .box {

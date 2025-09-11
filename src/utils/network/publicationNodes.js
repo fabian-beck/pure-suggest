@@ -23,7 +23,7 @@ export function createPublicationNodes(publications, doiToIndex, selectedQueue, 
       doiToIndex[publication.doi] = i
       nodes.push({
         id: publication.doi,
-        publication: publication,
+        publication,
         isQueuingForSelected: selectedQueue.includes(publication.doi),
         isQueuingForExcluded: excludedQueue.includes(publication.doi),
         type: 'publication'
@@ -109,7 +109,7 @@ export function updatePublicationNodes(nodeSelection, activePublication, existin
         : ''
 
     return `<b>${d.publication.title ? d.publication.title : '[unknown title]'}</b> (${
-      d.publication.authorShort ? d.publication.authorShort + ', ' : ''
+      d.publication.authorShort ? `${d.publication.authorShort  }, ` : ''
     }${d.publication.year ? d.publication.year : '[unknown year]'})
         <br><br>
         The publication is <b>${d.publication.isSelected ? 'selected' : 'suggested'}</b>${queueStatus}.`

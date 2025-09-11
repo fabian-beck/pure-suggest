@@ -16,8 +16,8 @@ describe('calculateAuthorColor', () => {
     const lowScoreColor = calculateAuthorColor(lowScore, mockAuthorStore)
 
     // Extract lightness values
-    const highScoreLightness = parseInt(highScoreColor.match(/hsl\(0, 0%, (\d+)%/)[1])
-    const lowScoreLightness = parseInt(lowScoreColor.match(/hsl\(0, 0%, (\d+)%/)[1])
+    const highScoreLightness = parseInt(highScoreColor.match(/hsl\(0, 0%, (\d+)%/)[1], 10)
+    const lowScoreLightness = parseInt(lowScoreColor.match(/hsl\(0, 0%, (\d+)%/)[1], 10)
 
     // Higher score should result in lower lightness (darker color)
     expect(highScoreLightness).toBeLessThan(lowScoreLightness)
@@ -62,7 +62,7 @@ describe('calculateAuthorColor', () => {
     const veryHighScore = 1000
     const color = calculateAuthorColor(veryHighScore, mockAuthorStore)
 
-    const lightness = parseInt(color.match(/hsl\(0, 0%, (\d+)%/)[1])
+    const lightness = parseInt(color.match(/hsl\(0, 0%, (\d+)%/)[1], 10)
     expect(lightness).toBeGreaterThanOrEqual(0)
   })
 })

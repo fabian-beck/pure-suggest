@@ -1,52 +1,3 @@
-<template>
-  <ModalDialog
-    header-color="primary"
-    title="Excluded publications"
-    icon="mdi-minus-thick"
-    v-model="interfaceStore.isExcludedModalDialogShown"
-  >
-    <template #sticky>
-      <v-sheet class="has-background-primary-95 pa-2">
-        <p class="comment" v-if="excludedPublications.length > 0">
-          These publications will not be suggested again unlike you remove them from this list.
-          Alternatively, you can direclty mark them to be selected.
-        </p>
-        <p class="comment" v-else>No publications currently excluded; you may close this dialog.</p>
-      </v-sheet>
-    </template>
-    <div class="content">
-      <section>
-        <ul class="publication-list">
-          <li
-            class="publication-component media"
-            v-for="publication in excludedPublications"
-            :key="publication.doi"
-          >
-            <div class="media-content">
-              <PublicationDescription :publication="publication" :always-show-details="true">
-              </PublicationDescription>
-            </div>
-            <div class="media-right">
-              <CompactButton
-                icon="mdi-undo"
-                v-tippy="'Remove proublication from list of excluded publications again.'"
-                @click="removeFromExcluded(publication)"
-              ></CompactButton>
-              <CompactButton
-                icon="mdi-plus-thick"
-                v-tippy="'Mark publication to be added to selected publications.'"
-                @click="removeFromExcludedAndAddToSelected(publication)"
-                class="has-text-primary"
-              >
-              </CompactButton>
-            </div>
-          </li>
-        </ul>
-      </section>
-    </div>
-  </ModalDialog>
-</template>
-
 <script>
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
@@ -105,6 +56,55 @@ export default {
   }
 }
 </script>
+
+<template>
+  <ModalDialog
+    header-color="primary"
+    title="Excluded publications"
+    icon="mdi-minus-thick"
+    v-model="interfaceStore.isExcludedModalDialogShown"
+  >
+    <template #sticky>
+      <v-sheet class="has-background-primary-95 pa-2">
+        <p class="comment" v-if="excludedPublications.length > 0">
+          These publications will not be suggested again unlike you remove them from this list.
+          Alternatively, you can direclty mark them to be selected.
+        </p>
+        <p class="comment" v-else>No publications currently excluded; you may close this dialog.</p>
+      </v-sheet>
+    </template>
+    <div class="content">
+      <section>
+        <ul class="publication-list">
+          <li
+            class="publication-component media"
+            v-for="publication in excludedPublications"
+            :key="publication.doi"
+          >
+            <div class="media-content">
+              <PublicationDescription :publication="publication" :always-show-details="true">
+              </PublicationDescription>
+            </div>
+            <div class="media-right">
+              <CompactButton
+                icon="mdi-undo"
+                v-tippy="'Remove proublication from list of excluded publications again.'"
+                @click="removeFromExcluded(publication)"
+              ></CompactButton>
+              <CompactButton
+                icon="mdi-plus-thick"
+                v-tippy="'Mark publication to be added to selected publications.'"
+                @click="removeFromExcludedAndAddToSelected(publication)"
+                class="has-text-primary"
+              >
+              </CompactButton>
+            </div>
+          </li>
+        </ul>
+      </section>
+    </div>
+  </ModalDialog>
+</template>
 
 <style scoped lang="scss">
 @include comment;

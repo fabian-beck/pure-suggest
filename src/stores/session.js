@@ -234,8 +234,8 @@ export const useSessionStore = defineStore('session', {
       console.log(`Cleared active publication ${previousDoi}, triggered by "${source}".`)
     },
 
-    exportSession: function () {
-      let data = {
+    exportSession () {
+      const data = {
         name: this.sessionName,
         selected: this.selectedPublicationsDois,
         excluded: this.excludedPublicationsDois,
@@ -245,24 +245,24 @@ export const useSessionStore = defineStore('session', {
       saveAsFile(filename, 'application/json', JSON.stringify(data))
     },
 
-    exportAllBibtex: function () {
+    exportAllBibtex () {
       this.exportBibtex(this.selectedPublications)
     },
 
-    exportSingleBibtex: function (publication) {
+    exportSingleBibtex (publication) {
       this.exportBibtex([publication])
     },
 
-    exportBibtex: function (publicationList) {
+    exportBibtex (publicationList) {
       let bib = ''
-      publicationList.forEach((publication) => (bib += generateBibtex(publication) + '\n\n'))
+      publicationList.forEach((publication) => (bib += `${generateBibtex(publication)  }\n\n`))
       const filename = this.generateFilename('bib')
       saveAsFile(filename, 'application/x-bibtex', bib)
     },
 
-    generateSessionUrl: function () {
+    generateSessionUrl () {
       // Create session data (same as exportSession)
-      let data = {
+      const data = {
         name: this.sessionName,
         selected: this.selectedPublicationsDois,
         excluded: this.excludedPublicationsDois,
@@ -278,7 +278,7 @@ export const useSessionStore = defineStore('session', {
       return `${baseUrl}?session=${compressed}`
     },
 
-    loadSessionFromUrl: function (sessionParam) {
+    loadSessionFromUrl (sessionParam) {
       try {
         // Decompress and parse the session data
         const decompressed = LZString.decompressFromEncodedURIComponent(sessionParam)

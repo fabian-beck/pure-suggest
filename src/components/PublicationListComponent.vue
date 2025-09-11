@@ -1,39 +1,9 @@
-<template>
-  <ul
-    class="publication-list has-background-white"
-    :class="{ 'empty-list': publications.length === 0 }"
-    @click="handleDelegatedClick"
-    @mouseenter="handleDelegatedMouseEnter"
-    @mouseleave="handleDelegatedMouseLeave"
-  >
-    <template v-for="item in publicationsWithHeaders" :key="item.key">
-      <li v-if="item.type === 'header'" class="section-header">
-        <h3
-          class="section-header-text"
-          :class="{ 'info-theme': publicationType === 'suggested' }"
-          v-html="item.text"
-        ></h3>
-      </li>
-      <LazyPublicationComponent
-        v-else
-        :publication="item.publication"
-        :publication-type="publicationType"
-        :is-mobile="interfaceStore.isMobile"
-        @activate="activatePublication"
-      />
-    </template>
-  </ul>
-</template>
-
 <script setup>
 import { computed, nextTick, watch, ref, onMounted, onBeforeUnmount } from 'vue'
 import { scrollToTargetAdjusted } from '@/lib/Util.js'
 import { useSessionStore } from '@/stores/session.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import LazyPublicationComponent from './LazyPublicationComponent.vue'
-
-const sessionStore = useSessionStore()
-const interfaceStore = useInterfaceStore()
 
 const props = defineProps({
   publications: {
@@ -50,6 +20,9 @@ const props = defineProps({
     validator: (value) => ['selected', 'suggested', 'general'].includes(value)
   }
 })
+const emit = defineEmits(['activate'])
+const sessionStore = useSessionStore()
+const interfaceStore = useInterfaceStore()
 
 const publicationsWithHeaders = computed(() => {
   // Don't show headers if filtering is not active for this publication type
@@ -122,8 +95,6 @@ const publicationsWithHeaders = computed(() => {
 const onNextActivatedScroll = ref(true)
 const lastScrollTime = ref(0)
 const userIsScrolling = ref(false)
-
-const emit = defineEmits(['activate'])
 
 // Watch for publications changes
 watch(
@@ -235,6 +206,33 @@ function scrollToActivated() {
   }
 }
 </script>
+
+<template>
+  <ul
+    class="publication-list has-background-white"
+    :class="{ 'empty-list': publications.length === 0 }"
+    @click="handleDelegatedClick"
+    @mouseenter="handleDelegatedMouseEnter"
+    @mouseleave="handleDelegatedMouseLeave"
+  >
+    <template v-for="item in publicationsWithHeaders" :key="item.key">
+      <li v-if="item.type === 'header'" class="section-header">
+        <h3
+          class="section-header-text"
+          :class="{ 'info-theme': publicationType === 'suggested' }"
+          v-html="item.text"
+        ></h3>
+      </li>
+      <LazyPublicationComponent
+        v-else
+        :publication="item.publication"
+        :publication-type="publicationType"
+        :is-mobile="interfaceStore.isMobile"
+        @activate="activatePublication"
+      />
+    </template>
+  </ul>
+</template>
 
 <style lang="scss" scoped>
 .section-header {

@@ -1,3 +1,22 @@
+<script setup>
+import { computed } from 'vue'
+import { useAuthorStore } from '@/stores/author.js'
+import { calculateAuthorColor } from '@/utils/authorColor.js'
+
+const props = defineProps({
+  author: {
+    type: Object,
+    default: () => ({})
+  }
+})
+
+const authorStore = useAuthorStore()
+
+const authorColor = computed(() => {
+  return calculateAuthorColor(props.author.score, authorStore)
+})
+</script>
+
 <template>
   <tippy class="d-flex flex-column">
     <div>
@@ -26,25 +45,6 @@
     </template>
   </tippy>
 </template>
-
-<script setup>
-import { computed } from 'vue'
-import { useAuthorStore } from '@/stores/author.js'
-import { calculateAuthorColor } from '@/utils/authorColor.js'
-
-const authorStore = useAuthorStore()
-
-const props = defineProps({
-  author: {
-    type: Object,
-    default: () => ({})
-  }
-})
-
-const authorColor = computed(() => {
-  return calculateAuthorColor(props.author.score, authorStore)
-})
-</script>
 
 <style scoped>
 .v-avatar {

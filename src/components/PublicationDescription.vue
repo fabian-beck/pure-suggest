@@ -1,3 +1,172 @@
+<script setup>
+import { computed } from 'vue'
+import { useSessionStore } from '@/stores/session.js'
+import { useInterfaceStore } from '@/stores/interface.js'
+
+const props = defineProps({
+  publication: {
+    type: Object,
+    default: () => ({})
+  },
+  highlighted: {
+    type: String,
+    default: ''
+  },
+  alwaysShowDetails: Boolean,
+  publicationType: {
+    type: String,
+    default: 'suggested',
+    validator: (value) => ['selected', 'suggested', 'general'].includes(value)
+  }
+})
+const sessionStore = useSessionStore()
+const interfaceStore = useInterfaceStore()
+
+const showDetails = computed(() => {
+  return props.alwaysShowDetails || props.publication.isActive
+})
+
+function highlight(string) {
+  if (!string) {
+    return ''
+  }
+  if (!props.highlighted) {
+    return string
+  }
+  const substrings = props.highlighted.split(' ')
+  let highlightedString = string
+  substrings.forEach((substring) => {
+    if (substring.length < 3) return
+    const regex = new RegExp(substring, 'gi')
+    highlightedString = highlightedString.replace(regex, (match) => {
+      return `<span class="has-background-grey-light">${match}</span>`
+    })
+  })
+  return highlightedString
+}
+
+function showAbstract() {
+  interfaceStore.showAbstract(props.publication)
+}
+
+function exportBibtex() {
+  sessionStore.exportSingleBibtex(props.publication)
+  refocus()
+}
+
+function toggleDoi(doi) {
+  // Check if the filter menu is open
+  if (!interfaceStore.isFilterMenuOpen) {
+    // Open the filter menu and add the DOI
+    interfaceStore.openFilterMenu()
+    sessionStore.filter.addDoi(doi)
+  } else {
+    // Menu is already open, just toggle the DOI
+    sessionStore.filter.toggleDoi(doi)
+  }
+}
+
+function isDoiFiltered(doi) {
+  return sessionStore.filter.dois.includes(doi)
+}
+
+function getFilterDoiTooltip(doi) {
+  return isDoiFiltered(doi)
+    ? 'Active as f<span class="key">i</span>lter; click to remove DOI from filter'
+    : 'Add DOI to f<span class="key">i</span>lter'
+}
+
+function refocus() {
+  document.getElementById(props.publication.doi)?.focus()
+}
+
+function extractTextFromHtml(htmlContent) {
+  // Create a temporary DOM element to extract text content from HTML
+  const tempDiv = document.createElement('div')
+  tempDiv.innerHTML = htmlContent
+  return (tempDiv.textContent || tempDiv.innerText || '').trim()
+}
+
+function makeAuthorsClickable(authorHtml) {
+  if (!authorHtml) return ''
+
+  // Apply highlighting first to preserve existing highlighting functionality
+  const highlighted = highlight(authorHtml)
+
+  // Only make authors clickable for selected publications
+  if (props.publicationType !== 'selected') {
+    return highlighted // Return as-is for non-selected publications
+  }
+
+  // Use the same parsing logic as Publication.js - authors are separated by '; '
+  // This leverages the existing well-tested structure instead of complex regex
+  const authorSeparator = '; '
+
+  // Check if this looks like a structured author list (contains the separator)
+  if (highlighted.includes(authorSeparator)) {
+    // Split by the known separator and wrap each author
+    return highlighted
+      .split(authorSeparator)
+      .map((author) => {
+        const trimmedAuthor = author.trim()
+        if (trimmedAuthor) {
+          // Extract clean text for data-author attribute (for ORCID handling)
+          const cleanAuthorText = extractTextFromHtml(trimmedAuthor)
+          return `<span class="clickable-author" data-author="${cleanAuthorText}">${trimmedAuthor}</span>`
+        }
+        return trimmedAuthor
+      })
+      .join(authorSeparator)
+  }
+
+  // If no structured separator found, treat as single author
+  const trimmedHtml = highlighted.trim()
+  if (trimmedHtml) {
+    // Extract clean text for data-author attribute (for ORCID handling)
+    const cleanAuthorText = extractTextFromHtml(trimmedHtml)
+    return `<span class="clickable-author" data-author="${cleanAuthorText}">${trimmedHtml}</span>`
+  }
+
+  return highlighted
+}
+
+function handleAuthorClick(event) {
+  // Check if clicked element or its parent has the clickable-author class
+  const authorElement = event.target.closest('.clickable-author')
+  if (authorElement) {
+    event.stopPropagation()
+    const authorName = authorElement.getAttribute('data-author')
+    if (authorName) {
+      // Convert the author name to an author ID and open modal with that ID
+      const authorId = findAuthorIdByName(authorName.trim())
+      if (authorId) {
+        interfaceStore.openAuthorModalDialog(authorId)
+      }
+    }
+    return
+  }
+  // Fallback to original behavior
+  refocus()
+}
+
+function findAuthorIdByName(authorName) {
+  // Use the same nameToId logic as Author.js
+  return (
+    authorName
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      // Handle Nordic and other extended Latin characters not covered by NFD
+      .replace(/[øØ]/g, 'o')
+      .replace(/[åÅ]/g, 'a')
+      .replace(/[æÆ]/g, 'ae')
+      .replace(/[ðÐ]/g, 'd')
+      .replace(/[þÞ]/g, 'th')
+      .replace(/[ßẞ]/g, 'ss')
+      .toLowerCase()
+  )
+}
+</script>
+
 <template>
   <div>
     <div class="summary" v-show="publication.wasFetched">
@@ -160,176 +329,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { computed } from 'vue'
-import { useSessionStore } from '@/stores/session.js'
-import { useInterfaceStore } from '@/stores/interface.js'
-
-const sessionStore = useSessionStore()
-const interfaceStore = useInterfaceStore()
-
-const props = defineProps({
-  publication: {
-    type: Object,
-    default: () => ({})
-  },
-  highlighted: {
-    type: String,
-    default: ''
-  },
-  alwaysShowDetails: Boolean,
-  publicationType: {
-    type: String,
-    default: 'suggested',
-    validator: (value) => ['selected', 'suggested', 'general'].includes(value)
-  }
-})
-
-const showDetails = computed(() => {
-  return props.alwaysShowDetails || props.publication.isActive
-})
-
-function highlight(string) {
-  if (!string) {
-    return ''
-  }
-  if (!props.highlighted) {
-    return string
-  }
-  const substrings = props.highlighted.split(' ')
-  let highlightedString = string
-  substrings.forEach((substring) => {
-    if (substring.length < 3) return
-    const regex = new RegExp(substring, 'gi')
-    highlightedString = highlightedString.replace(regex, (match) => {
-      return `<span class="has-background-grey-light">${match}</span>`
-    })
-  })
-  return highlightedString
-}
-
-function showAbstract() {
-  interfaceStore.showAbstract(props.publication)
-}
-
-function exportBibtex() {
-  sessionStore.exportSingleBibtex(props.publication)
-  refocus()
-}
-
-function toggleDoi(doi) {
-  // Check if the filter menu is open
-  if (!interfaceStore.isFilterMenuOpen) {
-    // Open the filter menu and add the DOI
-    interfaceStore.openFilterMenu()
-    sessionStore.filter.addDoi(doi)
-  } else {
-    // Menu is already open, just toggle the DOI
-    sessionStore.filter.toggleDoi(doi)
-  }
-}
-
-function isDoiFiltered(doi) {
-  return sessionStore.filter.dois.includes(doi)
-}
-
-function getFilterDoiTooltip(doi) {
-  return isDoiFiltered(doi)
-    ? 'Active as f<span class="key">i</span>lter; click to remove DOI from filter'
-    : 'Add DOI to f<span class="key">i</span>lter'
-}
-
-function refocus() {
-  document.getElementById(props.publication.doi)?.focus()
-}
-
-function extractTextFromHtml(htmlContent) {
-  // Create a temporary DOM element to extract text content from HTML
-  const tempDiv = document.createElement('div')
-  tempDiv.innerHTML = htmlContent
-  return (tempDiv.textContent || tempDiv.innerText || '').trim()
-}
-
-function makeAuthorsClickable(authorHtml) {
-  if (!authorHtml) return ''
-
-  // Apply highlighting first to preserve existing highlighting functionality
-  const highlighted = highlight(authorHtml)
-
-  // Only make authors clickable for selected publications
-  if (props.publicationType !== 'selected') {
-    return highlighted // Return as-is for non-selected publications
-  }
-
-  // Use the same parsing logic as Publication.js - authors are separated by '; '
-  // This leverages the existing well-tested structure instead of complex regex
-  const authorSeparator = '; '
-
-  // Check if this looks like a structured author list (contains the separator)
-  if (highlighted.includes(authorSeparator)) {
-    // Split by the known separator and wrap each author
-    return highlighted
-      .split(authorSeparator)
-      .map((author) => {
-        const trimmedAuthor = author.trim()
-        if (trimmedAuthor) {
-          // Extract clean text for data-author attribute (for ORCID handling)
-          const cleanAuthorText = extractTextFromHtml(trimmedAuthor)
-          return `<span class="clickable-author" data-author="${cleanAuthorText}">${trimmedAuthor}</span>`
-        }
-        return trimmedAuthor
-      })
-      .join(authorSeparator)
-  }
-
-  // If no structured separator found, treat as single author
-  const trimmedHtml = highlighted.trim()
-  if (trimmedHtml) {
-    // Extract clean text for data-author attribute (for ORCID handling)
-    const cleanAuthorText = extractTextFromHtml(trimmedHtml)
-    return `<span class="clickable-author" data-author="${cleanAuthorText}">${trimmedHtml}</span>`
-  }
-
-  return highlighted
-}
-
-function handleAuthorClick(event) {
-  // Check if clicked element or its parent has the clickable-author class
-  const authorElement = event.target.closest('.clickable-author')
-  if (authorElement) {
-    event.stopPropagation()
-    const authorName = authorElement.getAttribute('data-author')
-    if (authorName) {
-      // Convert the author name to an author ID and open modal with that ID
-      const authorId = findAuthorIdByName(authorName.trim())
-      if (authorId) {
-        interfaceStore.openAuthorModalDialog(authorId)
-      }
-    }
-    return
-  }
-  // Fallback to original behavior
-  refocus()
-}
-
-function findAuthorIdByName(authorName) {
-  // Use the same nameToId logic as Author.js
-  return (
-    authorName
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      // Handle Nordic and other extended Latin characters not covered by NFD
-      .replace(/[øØ]/g, 'o')
-      .replace(/[åÅ]/g, 'a')
-      .replace(/[æÆ]/g, 'ae')
-      .replace(/[ðÐ]/g, 'd')
-      .replace(/[þÞ]/g, 'th')
-      .replace(/[ßẞ]/g, 'ss')
-      .toLowerCase()
-  )
-}
-</script>
 
 <style scoped>
 div.summary {

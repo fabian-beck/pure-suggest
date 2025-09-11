@@ -246,7 +246,7 @@ vi.mock('@/utils/network/authorNodes.js', () => {
     return authors.map((author) => ({
       id: author.id,
       type: 'author',
-      author: author
+      author
     }))
   })
   const mockCreateAuthorLinks = vi.fn(() => [])

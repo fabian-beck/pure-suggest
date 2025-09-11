@@ -1,3 +1,12 @@
+<script setup>
+defineProps({
+  icon: {
+    type: String,
+    default: ''
+  }
+})
+</script>
+
 <template>
   <v-chip
     class="has-background-dark has-text-white"
@@ -8,15 +17,6 @@
     <slot></slot>
   </v-chip>
 </template>
-
-<script setup>
-defineProps({
-  icon: {
-    type: String,
-    default: ''
-  }
-})
-</script>
 
 <style scoped lang="scss">
 .v-chip {

@@ -1,9 +1,3 @@
-<template>
-  <v-icon size="x-small" :class="color ? `has-text-${color.replace(/\s+/g, '-')}` : ''">{{
-    icon
-  }}</v-icon>
-</template>
-
 <script>
 export default {
   name: 'InlineIcon',
@@ -19,6 +13,12 @@ export default {
   }
 }
 </script>
+
+<template>
+  <v-icon size="x-small" :class="color ? `has-text-${color.replace(/\s+/g, '-')}` : ''">{{
+    icon
+  }}</v-icon>
+</template>
 
 <style scoped lang="scss">
 .v-icon {

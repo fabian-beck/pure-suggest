@@ -176,7 +176,7 @@ export default class Author {
     })
     // match authors with abbreviated names and merge them
     // Sort authors to ensure deterministic processing order
-    let authorsWithAbbreviatedNames = Object.values(authors)
+    const authorsWithAbbreviatedNames = Object.values(authors)
       .filter((author) => author.id.match(/^\w+,\s\w\.?(\s\w\.?)?$/))
       .sort((a, b) => a.id.localeCompare(b.id))
     Object.values(authors)

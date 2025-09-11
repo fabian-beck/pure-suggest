@@ -128,7 +128,7 @@ async function main() {
       testUsageCount,
       testFileCount,
       usages: actualUsages,
-      testUsages: testUsages
+      testUsages
     })
   }
 

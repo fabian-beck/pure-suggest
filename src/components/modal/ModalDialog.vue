@@ -1,35 +1,3 @@
-<template>
-  <v-dialog
-    v-model="isDialogShown"
-    scrollable
-    :fullscreen="interfaceStore.isMobile"
-    :z-index="9000"
-    class="modal-dialog-overlay"
-  >
-    <v-card>
-      <v-card-title
-        :class="`has-background-${headerColor} ${headerColor.startsWith('light') ? 'has-text-dark' : 'has-text-light'}`"
-      >
-        <v-toolbar color="transparent" density="compact">
-          <v-icon class="title-icon ml-2">{{ icon }}</v-icon>
-          <v-toolbar-title>{{ title }}</v-toolbar-title>
-          <slot name="header-menu"></slot>
-          <v-btn icon @click="hideDialog">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-toolbar>
-      </v-card-title>
-      <div class="sticky">
-        <slot name="sticky"></slot>
-      </div>
-      <v-card-text>
-        <slot></slot>
-      </v-card-text>
-      <slot name="footer"></slot>
-    </v-card>
-  </v-dialog>
-</template>
-
 <script>
 import { useInterfaceStore } from '@/stores/interface.js'
 
@@ -75,6 +43,38 @@ export default {
   }
 }
 </script>
+
+<template>
+  <v-dialog
+    v-model="isDialogShown"
+    scrollable
+    :fullscreen="interfaceStore.isMobile"
+    :z-index="9000"
+    class="modal-dialog-overlay"
+  >
+    <v-card>
+      <v-card-title
+        :class="`has-background-${headerColor} ${headerColor.startsWith('light') ? 'has-text-dark' : 'has-text-light'}`"
+      >
+        <v-toolbar color="transparent" density="compact">
+          <v-icon class="title-icon ml-2">{{ icon }}</v-icon>
+          <v-toolbar-title>{{ title }}</v-toolbar-title>
+          <slot name="header-menu"></slot>
+          <v-btn icon @click="hideDialog">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-toolbar>
+      </v-card-title>
+      <div class="sticky">
+        <slot name="sticky"></slot>
+      </div>
+      <v-card-text>
+        <slot></slot>
+      </v-card-text>
+      <slot name="footer"></slot>
+    </v-card>
+  </v-dialog>
+</template>
 
 <style scoped lang="scss">
 :deep(.v-overlay__content:has(.v-card)) {

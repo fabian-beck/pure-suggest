@@ -1,88 +1,3 @@
-<template>
-  <ModalDialog
-    v-model="isSearchModalDialogShown"
-    title="Search/add publications"
-    icon="mdi-magnify"
-    header-color="primary"
-  >
-    <template #sticky>
-      <form @submit.prevent="search" class="has-background-primary-95">
-        <v-text-field
-          clearable
-          v-model="interfaceStore.searchQuery"
-          type="input"
-          ref="searchInput"
-          variant="solo"
-          append-icon="mdi-magnify"
-          @click:append="search"
-          density="compact"
-          hint="Search for keywords, names, etc. or add by providing DOI(s) in any format"
-        >
-        </v-text-field>
-      </form>
-    </template>
-    <template #footer>
-      <v-card-actions :class="`has-background-primary-95`">
-        <p class="comment is-hidden-mobile">
-          <span v-show="['doi', 'search'].includes(searchResults.type)"
-            >Showing
-            <b
-              >{{ filteredSearchResults.length }} publication{{
-                filteredSearchResults.length != 1 ? 's' : ''
-              }}</b
-            >
-            based on
-            <span v-show="searchResults.type === 'doi'">detected <b>DOIs</b></span
-            ><span v-show="searchResults.type === 'search'"><b>search</b></span
-            >.</span
-          >
-        </p>
-        <v-btn
-          class="has-background-primary has-text-white mr-2 is-hidden-mobile"
-          @click="addAllPublications"
-          v-show="searchResults.type === 'doi' && filteredSearchResults.length > 0"
-          small
-        >
-          <v-icon left>mdi-plus-thick</v-icon> Add all
-        </v-btn>
-      </v-card-actions>
-    </template>
-    <div class="content">
-      <section>
-        <ul class="publication-list">
-          <PublicationComponentSearch
-            v-for="publication in filteredSearchResults"
-            :key="publication.doi"
-            :publication="publication"
-            :search-query="searchResults.type === 'search' ? cleanedSearchQuery : ''"
-            @activate="addPublication(publication.doi)"
-            class="pb-4 pt-4"
-            v-show="!this.isLoading"
-          >
-          </PublicationComponentSearch>
-          <v-overlay
-            :model-value="isLoading"
-            contained
-            class="align-center justify-center"
-            persistent
-            theme="dark"
-          >
-            <div class="d-flex flex-column align-center justify-center">
-              <div>
-                <v-progress-circular indeterminate size="64"></v-progress-circular>
-              </div>
-              <div class="comment" v-if="this.searchResults.type === 'empty'">Searching</div>
-              <div class="comment" v-else>
-                Loading {{ loaded }}/{{ filteredSearchResults.length }}
-              </div>
-            </div>
-          </v-overlay>
-        </ul>
-      </section>
-    </div>
-  </ModalDialog>
-</template>
-
 <script>
 import { storeToRefs } from 'pinia'
 
@@ -114,7 +29,7 @@ export default {
     }
   },
   computed: {
-    filteredSearchResults: function () {
+    filteredSearchResults () {
       // Don't show any results if search was cancelled
       if (this.searchCancelled) {
         return []
@@ -129,7 +44,7 @@ export default {
   },
   watch: {
     isSearchModalDialogShown: {
-      handler: function () {
+      handler () {
         if (!this.isSearchModalDialogShown) return
         setTimeout(() => {
           if (this.$refs.searchInput && typeof this.$refs.searchInput.focus === 'function') {
@@ -142,7 +57,7 @@ export default {
       }
     },
     'interfaceStore.searchQuery': {
-      handler: function () {
+      handler () {
         // Cancel ongoing search when user starts typing new query
         if (this.isLoading) {
           this.cancelSearch()
@@ -170,7 +85,7 @@ export default {
       this.searchResults = { results: [], type: 'empty' }
     },
 
-    search: async function () {
+    async search () {
       // Don't perform search if query is the same as last search
       if (this.interfaceStore.searchQuery === this.lastSearchQuery) {
         return
@@ -254,6 +169,91 @@ export default {
   }
 }
 </script>
+
+<template>
+  <ModalDialog
+    v-model="isSearchModalDialogShown"
+    title="Search/add publications"
+    icon="mdi-magnify"
+    header-color="primary"
+  >
+    <template #sticky>
+      <form @submit.prevent="search" class="has-background-primary-95">
+        <v-text-field
+          clearable
+          v-model="interfaceStore.searchQuery"
+          type="input"
+          ref="searchInput"
+          variant="solo"
+          append-icon="mdi-magnify"
+          @click:append="search"
+          density="compact"
+          hint="Search for keywords, names, etc. or add by providing DOI(s) in any format"
+        >
+        </v-text-field>
+      </form>
+    </template>
+    <template #footer>
+      <v-card-actions class="has-background-primary-95">
+        <p class="comment is-hidden-mobile">
+          <span v-show="['doi', 'search'].includes(searchResults.type)"
+            >Showing
+            <b
+              >{{ filteredSearchResults.length }} publication{{
+                filteredSearchResults.length != 1 ? 's' : ''
+              }}</b
+            >
+            based on
+            <span v-show="searchResults.type === 'doi'">detected <b>DOIs</b></span
+            ><span v-show="searchResults.type === 'search'"><b>search</b></span
+            >.</span
+          >
+        </p>
+        <v-btn
+          class="has-background-primary has-text-white mr-2 is-hidden-mobile"
+          @click="addAllPublications"
+          v-show="searchResults.type === 'doi' && filteredSearchResults.length > 0"
+          small
+        >
+          <v-icon left>mdi-plus-thick</v-icon> Add all
+        </v-btn>
+      </v-card-actions>
+    </template>
+    <div class="content">
+      <section>
+        <ul class="publication-list">
+          <PublicationComponentSearch
+            v-for="publication in filteredSearchResults"
+            :key="publication.doi"
+            :publication="publication"
+            :search-query="searchResults.type === 'search' ? cleanedSearchQuery : ''"
+            @activate="addPublication(publication.doi)"
+            class="pb-4 pt-4"
+            v-show="!this.isLoading"
+          >
+          </PublicationComponentSearch>
+          <v-overlay
+            :model-value="isLoading"
+            contained
+            class="align-center justify-center"
+            persistent
+            theme="dark"
+          >
+            <div class="d-flex flex-column align-center justify-center">
+              <div>
+                <v-progress-circular indeterminate size="64"></v-progress-circular>
+              </div>
+              <div class="comment" v-if="this.searchResults.type === 'empty'">Searching</div>
+              <div class="comment" v-else>
+                Loading {{ loaded }}/{{ filteredSearchResults.length }}
+              </div>
+            </div>
+          </v-overlay>
+        </ul>
+      </section>
+    </div>
+  </ModalDialog>
+</template>
 
 <style lang="scss" scoped>
 form {

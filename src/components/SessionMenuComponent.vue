@@ -1,3 +1,75 @@
+<script setup>
+import { computed, ref, watch } from 'vue'
+import { useSessionStore } from '@/stores/session.js'
+import { useInterfaceStore } from '@/stores/interface.js'
+import { useAppState } from '@/composables/useAppState.js'
+import { bibtexParser } from '@/lib/Util.js'
+
+const sessionStore = useSessionStore()
+const interfaceStore = useInterfaceStore()
+const { isEmpty, clearSession, importSessionWithConfirmation, loadSession } = useAppState()
+
+const sessionName = ref(sessionStore.sessionName)
+
+const publicationCountString = computed(() => {
+  return `${sessionStore.selectedPublicationsCount} selected${
+    sessionStore.excludedPublicationsCount
+      ? `; ${sessionStore.excludedPublicationsCount} excluded`
+      : ''
+  }`
+})
+
+const isDefaultSessionName = computed(() => {
+  return !sessionStore.sessionName || sessionStore.sessionName.trim() === ''
+})
+
+const updateSessionName = () => {
+  sessionStore.setSessionName(sessionName.value)
+}
+
+const clearSessionName = () => {
+  sessionName.value = ''
+  sessionStore.setSessionName('')
+}
+
+const importBibtex = () => {
+  const warningMessage = isEmpty.value
+    ? ''
+    : '<p style="color: #d32f2f; margin-bottom: 16px;"><strong>This will clear and replace the current session.</strong></p>'
+
+  interfaceStore.showConfirmDialog(
+    `${warningMessage}<label>Choose a BibTeX file:&nbsp;</label>
+    <input type="file" id="import-bibtex-input" accept=".bib"/>`,
+    async () => {
+      const fileInput = document.getElementById('import-bibtex-input')
+      const file = fileInput.files[0]
+
+      if (!file) {
+        console.error('No file selected')
+        return
+      }
+
+      try {
+        const parsedData = await bibtexParser(file)
+        loadSession(parsedData)
+      } catch (error) {
+        console.error('Error parsing BibTeX file:', error)
+        interfaceStore.showErrorMessage('Error parsing BibTeX file. Please check the file format.')
+      }
+    },
+    'Import BibTeX'
+  )
+}
+
+// Watch for changes in the store to keep the local ref in sync
+watch(
+  () => sessionStore.sessionName,
+  (newName) => {
+    sessionName.value = newName
+  }
+)
+</script>
+
 <template>
   <v-menu v-if="!isEmpty" location="bottom" transition="slide-y-transition">
     <template #activator="{ props }">
@@ -79,78 +151,6 @@
     </v-list>
   </v-menu>
 </template>
-
-<script setup>
-import { computed, ref, watch } from 'vue'
-import { useSessionStore } from '@/stores/session.js'
-import { useInterfaceStore } from '@/stores/interface.js'
-import { useAppState } from '@/composables/useAppState.js'
-import { bibtexParser } from '@/lib/Util.js'
-
-const sessionStore = useSessionStore()
-const interfaceStore = useInterfaceStore()
-const { isEmpty, clearSession, importSessionWithConfirmation, loadSession } = useAppState()
-
-const sessionName = ref(sessionStore.sessionName)
-
-const publicationCountString = computed(() => {
-  return `${sessionStore.selectedPublicationsCount} selected${
-    sessionStore.excludedPublicationsCount
-      ? `; ${sessionStore.excludedPublicationsCount} excluded`
-      : ''
-  }`
-})
-
-const isDefaultSessionName = computed(() => {
-  return !sessionStore.sessionName || sessionStore.sessionName.trim() === ''
-})
-
-const updateSessionName = () => {
-  sessionStore.setSessionName(sessionName.value)
-}
-
-const clearSessionName = () => {
-  sessionName.value = ''
-  sessionStore.setSessionName('')
-}
-
-const importBibtex = () => {
-  const warningMessage = isEmpty.value
-    ? ''
-    : '<p style="color: #d32f2f; margin-bottom: 16px;"><strong>This will clear and replace the current session.</strong></p>'
-
-  interfaceStore.showConfirmDialog(
-    `${warningMessage}<label>Choose a BibTeX file:&nbsp;</label>
-    <input type="file" id="import-bibtex-input" accept=".bib"/>`,
-    async () => {
-      const fileInput = document.getElementById('import-bibtex-input')
-      const file = fileInput.files[0]
-
-      if (!file) {
-        console.error('No file selected')
-        return
-      }
-
-      try {
-        const parsedData = await bibtexParser(file)
-        loadSession(parsedData)
-      } catch (error) {
-        console.error('Error parsing BibTeX file:', error)
-        interfaceStore.showErrorMessage('Error parsing BibTeX file. Please check the file format.')
-      }
-    },
-    'Import BibTeX'
-  )
-}
-
-// Watch for changes in the store to keep the local ref in sync
-watch(
-  () => sessionStore.sessionName,
-  (newName) => {
-    sessionName.value = newName
-  }
-)
-</script>
 
 <style scoped>
 .session-state-button :deep(.v-btn__content) {

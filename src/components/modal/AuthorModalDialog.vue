@@ -1,3 +1,213 @@
+<script>
+import { useSessionStore } from '@/stores/session.js'
+import { useAuthorStore } from '@/stores/author.js'
+import { useInterfaceStore } from '@/stores/interface.js'
+import PublicationComponent from '@/components/PublicationComponent.vue'
+import { calculateAuthorColor } from '@/utils/authorColor.js'
+
+export default {
+  name: 'AuthorModalDialog',
+  components: {
+    PublicationComponent
+  },
+  setup() {
+    const sessionStore = useSessionStore()
+    const authorStore = useAuthorStore()
+    const interfaceStore = useInterfaceStore()
+    return { sessionStore, authorStore, interfaceStore }
+  },
+  data() {
+    return {
+      authorSettingsChanged: false,
+      displayedAuthorCount: 20, // Initial number of authors to display
+      authorBatchSize: 20, // Number of authors to load per batch
+      isLoadingMoreAuthors: false
+    }
+  },
+  computed: {
+    displayedAuthors() {
+      if (this.authorStore.activeAuthorId) {
+        // Show only the active author
+        return this.authorStore.selectedPublicationsAuthors.filter(
+          (author) => author.id === this.authorStore.activeAuthorId
+        )
+      }
+      // Show authors progressively (lazy loading)
+      const allAuthors = this.authorStore.selectedPublicationsAuthors
+      return allAuthors.slice(0, this.displayedAuthorCount)
+    },
+    hasMoreAuthorsToShow() {
+      if (this.authorStore.activeAuthorId) {
+        return false // No pagination needed in single author view
+      }
+      return this.displayedAuthorCount < this.authorStore.selectedPublicationsAuthors.length
+    },
+    modalTitle() {
+      if (this.authorStore.activeAuthorId && this.authorStore.activeAuthor) {
+        return this.authorStore.activeAuthor.name
+      }
+      return 'Authors of selected'
+    }
+  },
+  expose: ['scrollToAuthor', 'loadMoreAuthors', 'resetPagination', 'handleScroll'],
+  methods: {
+    getFilteredAlternativeNames(author) {
+      return author.alternativeNames.filter((name) => name !== author.id && name !== author.name)
+    },
+    getCoauthorName(coauthorId) {
+      const coauthor = this.authorStore.selectedPublicationsAuthors.find(
+        (author) => author.id === coauthorId
+      )
+      return coauthor ? coauthor.name : coauthorId // Fallback to ID if coauthor not found
+    },
+    keywordStyle(count) {
+      return {
+        backgroundColor: `hsla(48, 100%, 67%, ${0.05 + Math.min(count / 20, 0.95)})`
+      }
+    },
+    coauthorStyle(coauthorId) {
+      // Find the co-author in the selectedPublicationsAuthors array
+      const coauthor = this.authorStore.selectedPublicationsAuthors.find(
+        (author) => author.id === coauthorId
+      )
+      if (!coauthor) {
+        // Fallback to original gray style if co-author not found
+        return {
+          backgroundColor: `hsla(0, 0%, 70%, 0.3)`,
+          color: '#000000'
+        }
+      }
+
+      // Use the same color calculation as AuthorGlyph but with some transparency
+      const authorColor = calculateAuthorColor(coauthor.score, this.authorStore)
+      // Extract the lightness value from the HSL color and apply it with transparency
+      const lightnessMatch = authorColor.match(/hsl\(0, 0%, (\d+)%\)/)
+      const lightness = lightnessMatch ? parseInt(lightnessMatch[1], 10) : 70
+
+      return {
+        backgroundColor: `hsla(0, 0%, ${lightness}%, 0.8)`,
+        color: '#ffffff'
+      }
+    },
+    cancel() {
+      this.interfaceStore.isAuthorModalDialogShown = false
+    },
+    handleAuthorItemClick(authorId) {
+      // Only activate if not already in single-author view
+      if (!this.authorStore.activeAuthorId) {
+        this.authorStore.setActiveAuthor(authorId)
+      }
+    },
+
+    activateAuthor(authorId) {
+      // Used for coauthor chip clicks - always switch to that author
+      this.authorStore.setActiveAuthor(authorId)
+    },
+
+    updateAuthorScores() {
+      this.authorStore.computeSelectedPublicationsAuthors(this.sessionStore.selectedPublications)
+
+      // Mark that settings have changed during this modal session
+      this.authorSettingsChanged = true
+    },
+
+    toTagId(id) {
+      return `author-${id.replace(/[^a-zA-Z0-9]/g, '-')}`
+    },
+
+    handleModalClose() {
+      // Clear active author when modal is closed
+      this.authorStore.clearActiveAuthor()
+
+      // Only trigger network replot if settings were changed during this modal session
+      if (this.authorSettingsChanged) {
+        // Small delay to ensure modal is fully closed before network operations
+        this.$nextTick(() => {
+          // Use the clean interface store method to trigger network replot
+          this.interfaceStore.triggerNetworkReplot()
+          // Reset the change tracking
+          this.authorSettingsChanged = false
+        })
+      }
+    },
+
+    handleScroll(event) {
+      if (
+        this.authorStore.activeAuthorId ||
+        this.isLoadingMoreAuthors ||
+        !this.hasMoreAuthorsToShow
+      ) {
+        return // No pagination needed in single author view or when loading/no more authors
+      }
+
+      const container = event.target
+      const scrollTop = container.scrollTop
+      const scrollHeight = container.scrollHeight
+      const clientHeight = container.clientHeight
+
+      // Load more when scrolled to 80% of the content
+      const scrollThreshold = 0.8
+      if (scrollTop / (scrollHeight - clientHeight) >= scrollThreshold) {
+        this.loadMoreAuthors()
+      }
+    },
+
+    loadMoreAuthors() {
+      if (this.isLoadingMoreAuthors || !this.hasMoreAuthorsToShow) {
+        return
+      }
+
+      this.isLoadingMoreAuthors = true
+
+      // Simulate a small delay to show the loading indicator
+      // In a real implementation with server-side pagination, this would be an API call
+      setTimeout(() => {
+        this.displayedAuthorCount = Math.min(
+          this.displayedAuthorCount + this.authorBatchSize,
+          this.authorStore.selectedPublicationsAuthors.length
+        )
+        this.isLoadingMoreAuthors = false
+      }, 100)
+    },
+
+    resetPagination() {
+      this.displayedAuthorCount = this.authorBatchSize
+      this.isLoadingMoreAuthors = false
+    }
+  },
+  watch: {
+    'interfaceStore.isAuthorModalDialogShown': {
+      handler (newValue, oldValue) {
+        // Detect when modal is closed (was true, now false)
+        if (oldValue === true && newValue === false) {
+          this.handleModalClose()
+        }
+        // Reset change tracking and pagination when modal opens
+        else if (oldValue === false && newValue === true) {
+          this.authorSettingsChanged = false
+          this.resetPagination()
+        }
+      }
+    },
+    // Reset pagination when switching between author list and single author view
+    'authorStore.activeAuthorId': {
+      handler (newValue, oldValue) {
+        // Reset pagination when returning to the full author list
+        if (oldValue && !newValue) {
+          this.resetPagination()
+        }
+      }
+    },
+    // Reset pagination when author data changes
+    'authorStore.selectedPublicationsAuthors': {
+      handler () {
+        this.resetPagination()
+      }
+    }
+  }
+}
+</script>
+
 <template>
   <ModalDialog
     header-color="primary"
@@ -44,7 +254,7 @@
               label="Boost new publications"
               @change="updateAuthorScores"
               density="compact"
-              :hint="`Counting publications tagged as 'new' twice`"
+              hint="Counting publications tagged as 'new' twice"
               persistent-hint
             />
           </v-list-item>
@@ -187,216 +397,6 @@
     </div>
   </ModalDialog>
 </template>
-
-<script>
-import { useSessionStore } from '@/stores/session.js'
-import { useAuthorStore } from '@/stores/author.js'
-import { useInterfaceStore } from '@/stores/interface.js'
-import PublicationComponent from '@/components/PublicationComponent.vue'
-import { calculateAuthorColor } from '@/utils/authorColor.js'
-
-export default {
-  name: 'AuthorModalDialog',
-  components: {
-    PublicationComponent
-  },
-  setup() {
-    const sessionStore = useSessionStore()
-    const authorStore = useAuthorStore()
-    const interfaceStore = useInterfaceStore()
-    return { sessionStore, authorStore, interfaceStore }
-  },
-  data() {
-    return {
-      authorSettingsChanged: false,
-      displayedAuthorCount: 20, // Initial number of authors to display
-      authorBatchSize: 20, // Number of authors to load per batch
-      isLoadingMoreAuthors: false
-    }
-  },
-  computed: {
-    displayedAuthors() {
-      if (this.authorStore.activeAuthorId) {
-        // Show only the active author
-        return this.authorStore.selectedPublicationsAuthors.filter(
-          (author) => author.id === this.authorStore.activeAuthorId
-        )
-      }
-      // Show authors progressively (lazy loading)
-      const allAuthors = this.authorStore.selectedPublicationsAuthors
-      return allAuthors.slice(0, this.displayedAuthorCount)
-    },
-    hasMoreAuthorsToShow() {
-      if (this.authorStore.activeAuthorId) {
-        return false // No pagination needed in single author view
-      }
-      return this.displayedAuthorCount < this.authorStore.selectedPublicationsAuthors.length
-    },
-    modalTitle() {
-      if (this.authorStore.activeAuthorId && this.authorStore.activeAuthor) {
-        return this.authorStore.activeAuthor.name
-      }
-      return 'Authors of selected'
-    }
-  },
-  expose: ['scrollToAuthor', 'loadMoreAuthors', 'resetPagination', 'handleScroll'],
-  methods: {
-    getFilteredAlternativeNames(author) {
-      return author.alternativeNames.filter((name) => name !== author.id && name !== author.name)
-    },
-    getCoauthorName(coauthorId) {
-      const coauthor = this.authorStore.selectedPublicationsAuthors.find(
-        (author) => author.id === coauthorId
-      )
-      return coauthor ? coauthor.name : coauthorId // Fallback to ID if coauthor not found
-    },
-    keywordStyle(count) {
-      return {
-        backgroundColor: `hsla(48, 100%, 67%, ${0.05 + Math.min(count / 20, 0.95)})`
-      }
-    },
-    coauthorStyle(coauthorId) {
-      // Find the co-author in the selectedPublicationsAuthors array
-      const coauthor = this.authorStore.selectedPublicationsAuthors.find(
-        (author) => author.id === coauthorId
-      )
-      if (!coauthor) {
-        // Fallback to original gray style if co-author not found
-        return {
-          backgroundColor: `hsla(0, 0%, 70%, 0.3)`,
-          color: '#000000'
-        }
-      }
-
-      // Use the same color calculation as AuthorGlyph but with some transparency
-      const authorColor = calculateAuthorColor(coauthor.score, this.authorStore)
-      // Extract the lightness value from the HSL color and apply it with transparency
-      const lightnessMatch = authorColor.match(/hsl\(0, 0%, (\d+)%\)/)
-      const lightness = lightnessMatch ? parseInt(lightnessMatch[1]) : 70
-
-      return {
-        backgroundColor: `hsla(0, 0%, ${lightness}%, 0.8)`,
-        color: '#ffffff'
-      }
-    },
-    cancel() {
-      this.interfaceStore.isAuthorModalDialogShown = false
-    },
-    handleAuthorItemClick(authorId) {
-      // Only activate if not already in single-author view
-      if (!this.authorStore.activeAuthorId) {
-        this.authorStore.setActiveAuthor(authorId)
-      }
-    },
-
-    activateAuthor(authorId) {
-      // Used for coauthor chip clicks - always switch to that author
-      this.authorStore.setActiveAuthor(authorId)
-    },
-
-    updateAuthorScores() {
-      this.authorStore.computeSelectedPublicationsAuthors(this.sessionStore.selectedPublications)
-
-      // Mark that settings have changed during this modal session
-      this.authorSettingsChanged = true
-    },
-
-    toTagId(id) {
-      return `author-${id.replace(/[^a-zA-Z0-9]/g, '-')}`
-    },
-
-    handleModalClose() {
-      // Clear active author when modal is closed
-      this.authorStore.clearActiveAuthor()
-
-      // Only trigger network replot if settings were changed during this modal session
-      if (this.authorSettingsChanged) {
-        // Small delay to ensure modal is fully closed before network operations
-        this.$nextTick(() => {
-          // Use the clean interface store method to trigger network replot
-          this.interfaceStore.triggerNetworkReplot()
-          // Reset the change tracking
-          this.authorSettingsChanged = false
-        })
-      }
-    },
-
-    handleScroll(event) {
-      if (
-        this.authorStore.activeAuthorId ||
-        this.isLoadingMoreAuthors ||
-        !this.hasMoreAuthorsToShow
-      ) {
-        return // No pagination needed in single author view or when loading/no more authors
-      }
-
-      const container = event.target
-      const scrollTop = container.scrollTop
-      const scrollHeight = container.scrollHeight
-      const clientHeight = container.clientHeight
-
-      // Load more when scrolled to 80% of the content
-      const scrollThreshold = 0.8
-      if (scrollTop / (scrollHeight - clientHeight) >= scrollThreshold) {
-        this.loadMoreAuthors()
-      }
-    },
-
-    loadMoreAuthors() {
-      if (this.isLoadingMoreAuthors || !this.hasMoreAuthorsToShow) {
-        return
-      }
-
-      this.isLoadingMoreAuthors = true
-
-      // Simulate a small delay to show the loading indicator
-      // In a real implementation with server-side pagination, this would be an API call
-      setTimeout(() => {
-        this.displayedAuthorCount = Math.min(
-          this.displayedAuthorCount + this.authorBatchSize,
-          this.authorStore.selectedPublicationsAuthors.length
-        )
-        this.isLoadingMoreAuthors = false
-      }, 100)
-    },
-
-    resetPagination() {
-      this.displayedAuthorCount = this.authorBatchSize
-      this.isLoadingMoreAuthors = false
-    }
-  },
-  watch: {
-    'interfaceStore.isAuthorModalDialogShown': {
-      handler: function (newValue, oldValue) {
-        // Detect when modal is closed (was true, now false)
-        if (oldValue === true && newValue === false) {
-          this.handleModalClose()
-        }
-        // Reset change tracking and pagination when modal opens
-        else if (oldValue === false && newValue === true) {
-          this.authorSettingsChanged = false
-          this.resetPagination()
-        }
-      }
-    },
-    // Reset pagination when switching between author list and single author view
-    'authorStore.activeAuthorId': {
-      handler: function (newValue, oldValue) {
-        // Reset pagination when returning to the full author list
-        if (oldValue && !newValue) {
-          this.resetPagination()
-        }
-      }
-    },
-    // Reset pagination when author data changes
-    'authorStore.selectedPublicationsAuthors': {
-      handler: function () {
-        this.resetPagination()
-      }
-    }
-  }
-}
-</script>
 
 <style scoped lang="scss">
 .content ul {

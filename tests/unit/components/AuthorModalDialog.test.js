@@ -254,10 +254,12 @@ describe('AuthorModalDialog', () => {
     // Higher score author should have a darker color (lower lightness percentage)
     // Extract lightness values from hsla colors
     const highScoreLightness = parseInt(
-      highScoreStyle.backgroundColor.match(/hsla\(0, 0%, (\d+)%/)[1]
+      highScoreStyle.backgroundColor.match(/hsla\(0, 0%, (\d+)%/)[1],
+      10
     )
     const lowScoreLightness = parseInt(
-      lowScoreStyle.backgroundColor.match(/hsla\(0, 0%, (\d+)%/)[1]
+      lowScoreStyle.backgroundColor.match(/hsla\(0, 0%, (\d+)%/)[1],
+      10
     )
 
     // Higher score should result in lower lightness (darker color)

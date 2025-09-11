@@ -1,3 +1,18 @@
+<script setup>
+defineProps({
+  publication: {
+    type: Object,
+    default: () => ({})
+  },
+  searchQuery: {
+    type: String,
+    default: ''
+  }
+})
+
+defineEmits(['activate'])
+</script>
+
 <template>
   <li class="publication-component media">
     <div class="media-content">
@@ -22,18 +37,3 @@
     </div>
   </li>
 </template>
-
-<script setup>
-defineProps({
-  publication: {
-    type: Object,
-    default: () => ({})
-  },
-  searchQuery: {
-    type: String,
-    default: ''
-  }
-})
-
-defineEmits(['activate'])
-</script>

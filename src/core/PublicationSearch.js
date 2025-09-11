@@ -8,8 +8,8 @@ export default class PublicationSearch {
   }
 
   async execute() {
-    let dois = []
-    let results = []
+    const dois = []
+    const results = []
     // removing whitespace (e.g., through line breaks) in DOIs
     this.query = this.query.replace(/(10\.\d+\/)\s?(\S{0,12})\s([^[])/g, '$1$2$3')
     // splitting query by characters that must (or partly: should) be encoded differently in DOIs or by typical prefixes
@@ -30,7 +30,7 @@ export default class PublicationSearch {
     })
     if (dois.length) {
       console.log(`Identified ${results.length} DOI(s) in input; do not perform search.`)
-      return { results: results, type: 'doi' }
+      return { results, type: 'doi' }
     }
     const simplifiedQuery = this.query.replace(/\W+/g, '+').toLowerCase()
     console.log(`Searching for publications matching '${this.query}'.`)
@@ -46,6 +46,6 @@ export default class PublicationSearch {
           })
       }
     )
-    return { results: results, type: 'search' }
+    return { results, type: 'search' }
   }
 }

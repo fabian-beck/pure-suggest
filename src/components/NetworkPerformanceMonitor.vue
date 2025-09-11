@@ -1,30 +1,3 @@
-<template>
-  <div class="fps-display" v-if="show">
-    <span v-if="isEmpty" style="color: orange">
-      SIMULATION SKIPPED<br />
-      (Empty State)<br />
-      Network Cleared
-    </span>
-    <template v-else>
-      FPS: {{ currentFps.toFixed(1) }}
-      <br />
-      Tick: {{ tickCount
-      }}{{ shouldSkipEarlyTicks && tickCount <= skipEarlyTicks ? ' (skipping)' : '' }} <br />
-      Nodes: {{ nodeCount }}
-      <br />
-      Links: {{ linkCount }}
-      <br />
-      DOM Updates: {{ domUpdateCount }}
-      <br />
-      Skipped: {{ skippedUpdateCount }}
-      <br />
-      Nodes Updated: {{ lastNodeUpdateCount }}/{{ nodeCount }}
-      <br />
-      Links Updated: {{ lastLinkUpdateCount }}/{{ linkCount }}
-    </template>
-  </div>
-</template>
-
 <script setup>
 import { ref } from 'vue'
 import { FpsTracker } from '@/lib/FpsTracker.js'
@@ -139,6 +112,33 @@ defineExpose({
   fpsTracker
 })
 </script>
+
+<template>
+  <div class="fps-display" v-if="show">
+    <span v-if="isEmpty" style="color: orange">
+      SIMULATION SKIPPED<br />
+      (Empty State)<br />
+      Network Cleared
+    </span>
+    <template v-else>
+      FPS: {{ currentFps.toFixed(1) }}
+      <br />
+      Tick: {{ tickCount
+      }}{{ shouldSkipEarlyTicks && tickCount <= skipEarlyTicks ? ' (skipping)' : '' }} <br />
+      Nodes: {{ nodeCount }}
+      <br />
+      Links: {{ linkCount }}
+      <br />
+      DOM Updates: {{ domUpdateCount }}
+      <br />
+      Skipped: {{ skippedUpdateCount }}
+      <br />
+      Nodes Updated: {{ lastNodeUpdateCount }}/{{ nodeCount }}
+      <br />
+      Links Updated: {{ lastLinkUpdateCount }}/{{ linkCount }}
+    </template>
+  </div>
+</template>
 
 <style scoped>
 .fps-display {

@@ -98,10 +98,10 @@ export const useInterfaceStore = defineStore('interface', {
 
     showConfirmDialog(message, confirm, title = 'Confirm') {
       this.confirmDialog = {
-        message: message,
+        message,
         action: confirm,
         isShown: true,
-        title: title
+        title
       }
     },
 
@@ -159,7 +159,7 @@ export const useInterfaceStore = defineStore('interface', {
       )
     },
 
-    activatePublicationComponent: function (publicationComponent) {
+    activatePublicationComponent (publicationComponent) {
       if (publicationComponent && typeof publicationComponent.focus === 'function') {
         publicationComponent.focus()
       }

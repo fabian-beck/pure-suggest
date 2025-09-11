@@ -1,12 +1,3 @@
-<template>
-  <v-switch
-    :model-value="modelValue"
-    @update:model-value="$emit('update:modelValue', !modelValue)"
-    hide-details
-    density="compact"
-  ></v-switch>
-</template>
-
 <script>
 export default {
   props: {
@@ -15,6 +6,15 @@ export default {
   emits: ['update:modelValue']
 }
 </script>
+
+<template>
+  <v-switch
+    :model-value="modelValue"
+    @update:model-value="$emit('update:modelValue', !modelValue)"
+    hide-details
+    density="compact"
+  ></v-switch>
+</template>
 
 <style scoped lang="scss">
 .v-input {

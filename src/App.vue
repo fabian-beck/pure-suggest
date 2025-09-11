@@ -1,55 +1,3 @@
-<template>
-  <v-app id="app" data-app>
-    <HeaderPanel id="header" />
-    <div
-      id="main"
-      @click="sessionStore.clearActivePublication('clicked anywhere')"
-      :class="{
-        'network-expanded': interfaceStore.isNetworkExpanded,
-        'network-collapsed': interfaceStore.isNetworkCollapsed
-      }"
-    >
-      <SelectedPublicationsComponent id="selected" v-show="!interfaceStore.isNetworkExpanded" />
-      <SuggestedPublicationsComponent id="suggested" v-show="!interfaceStore.isNetworkExpanded" />
-      <NetworkVisComponent id="network" :svg-width="1500" :svg-height="600" />
-    </div>
-    <QuickAccessBar
-      id="quick-access"
-      class="is-hidden-desktop"
-      v-show="!interfaceStore.isAnyOverlayShown"
-    >
-    </QuickAccessBar>
-    <!-- Modal dialogs -->
-    <SearchModalDialog />
-    <AuthorModalDialog />
-    <ExcludedModalDialog />
-    <QueueModalDialog />
-    <AboutModalDialog />
-    <KeyboardControlsModalDialog />
-    <ShareSessionModalDialog />
-    <!-- Other dialogs and overlays -->
-    <v-overlay
-      v-model="interfaceStore.isLoading"
-      class="align-center justify-center main-overlay"
-      persistent
-    >
-      <div class="d-flex flex-column align-center justify-center">
-        <div>
-          <v-progress-circular color="white" indeterminate size="64"></v-progress-circular>
-        </div>
-        <div class="has-text-white mt-4" v-if="interfaceStore.loadingMessage">
-          {{ interfaceStore.loadingMessage }}
-        </div>
-      </div>
-    </v-overlay>
-    <ConfirmDialog />
-    <InfoDialog />
-    <ErrorToast />
-  </v-app>
-</template>
-
-<!---------------------------------------------------------------------------------->
-
 <script>
 import { useSessionStore } from './stores/session.js'
 import { useInterfaceStore } from './stores/interface.js'
@@ -183,6 +131,58 @@ export default {
   }
 }
 </script>
+
+<!---------------------------------------------------------------------------------->
+
+<template>
+  <v-app id="app" data-app>
+    <HeaderPanel id="header" />
+    <div
+      id="main"
+      @click="sessionStore.clearActivePublication('clicked anywhere')"
+      :class="{
+        'network-expanded': interfaceStore.isNetworkExpanded,
+        'network-collapsed': interfaceStore.isNetworkCollapsed
+      }"
+    >
+      <SelectedPublicationsComponent id="selected" v-show="!interfaceStore.isNetworkExpanded" />
+      <SuggestedPublicationsComponent id="suggested" v-show="!interfaceStore.isNetworkExpanded" />
+      <NetworkVisComponent id="network" :svg-width="1500" :svg-height="600" />
+    </div>
+    <QuickAccessBar
+      id="quick-access"
+      class="is-hidden-desktop"
+      v-show="!interfaceStore.isAnyOverlayShown"
+    >
+    </QuickAccessBar>
+    <!-- Modal dialogs -->
+    <SearchModalDialog />
+    <AuthorModalDialog />
+    <ExcludedModalDialog />
+    <QueueModalDialog />
+    <AboutModalDialog />
+    <KeyboardControlsModalDialog />
+    <ShareSessionModalDialog />
+    <!-- Other dialogs and overlays -->
+    <v-overlay
+      v-model="interfaceStore.isLoading"
+      class="align-center justify-center main-overlay"
+      persistent
+    >
+      <div class="d-flex flex-column align-center justify-center">
+        <div>
+          <v-progress-circular color="white" indeterminate size="64"></v-progress-circular>
+        </div>
+        <div class="has-text-white mt-4" v-if="interfaceStore.loadingMessage">
+          {{ interfaceStore.loadingMessage }}
+        </div>
+      </div>
+    </v-overlay>
+    <ConfirmDialog />
+    <InfoDialog />
+    <ErrorToast />
+  </v-app>
+</template>
 
 <!---------------------------------------------------------------------------------->
 

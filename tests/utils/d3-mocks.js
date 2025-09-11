@@ -170,7 +170,7 @@ export const createNetworkUtilMocks = () => ({
       return authors.map((author) => ({
         id: author.id,
         type: 'author',
-        author: author
+        author
       }))
     }),
     createAuthorLinks: vi.fn(() => []),

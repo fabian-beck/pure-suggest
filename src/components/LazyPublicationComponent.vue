@@ -1,44 +1,7 @@
-<template>
-  <!-- Skeleton/placeholder when not loaded -->
-  <li v-if="!hasLoaded" ref="targetRef" class="publication-skeleton-wrapper">
-    <div
-      class="publication-skeleton publication-component"
-      :class="{
-        'is-active': publication.isActive,
-        'is-selected': publication.isSelected,
-        'is-linked-to-active': publication.isLinkedToActive
-      }"
-      :style="{ height: `${estimatedHeight}px` }"
-      tabindex="0"
-      :id="publication.doi"
-      @focus="handleFocus"
-      @click="handleClick"
-      @keydown="handleKeyDown"
-    >
-      <div class="skeleton-glyph"></div>
-      <div class="skeleton-content">
-        <div class="skeleton-line skeleton-title"></div>
-        <div class="skeleton-line skeleton-author"></div>
-        <div class="skeleton-line skeleton-year"></div>
-      </div>
-    </div>
-  </li>
-
-  <!-- Actual component when loaded (PublicationComponent has its own <li>) -->
-  <PublicationComponent
-    v-else
-    ref="targetRef"
-    :publication="publication"
-    :publication-type="publicationType"
-    @activate="$emit('activate', $event)"
-  />
-</template>
-
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import PublicationComponent from './PublicationComponent.vue'
 
-const emit = defineEmits(['activate'])
 const props = defineProps({
   publication: {
     type: Object,
@@ -58,6 +21,7 @@ const props = defineProps({
     default: false
   }
 })
+const emit = defineEmits(['activate'])
 const hasLoaded = ref(false)
 const targetRef = ref(null)
 let observer = null
@@ -200,6 +164,42 @@ function handleKeyDown(event) {
   }
 }
 </script>
+
+<template>
+  <!-- Skeleton/placeholder when not loaded -->
+  <li v-if="!hasLoaded" ref="targetRef" class="publication-skeleton-wrapper">
+    <div
+      class="publication-skeleton publication-component"
+      :class="{
+        'is-active': publication.isActive,
+        'is-selected': publication.isSelected,
+        'is-linked-to-active': publication.isLinkedToActive
+      }"
+      :style="{ height: `${estimatedHeight}px` }"
+      tabindex="0"
+      :id="publication.doi"
+      @focus="handleFocus"
+      @click="handleClick"
+      @keydown="handleKeyDown"
+    >
+      <div class="skeleton-glyph"></div>
+      <div class="skeleton-content">
+        <div class="skeleton-line skeleton-title"></div>
+        <div class="skeleton-line skeleton-author"></div>
+        <div class="skeleton-line skeleton-year"></div>
+      </div>
+    </div>
+  </li>
+
+  <!-- Actual component when loaded (PublicationComponent has its own <li>) -->
+  <PublicationComponent
+    v-else
+    ref="targetRef"
+    :publication="publication"
+    :publication-type="publicationType"
+    @activate="$emit('activate', $event)"
+  />
+</template>
 
 <style lang="scss" scoped>
 .publication-skeleton-wrapper {

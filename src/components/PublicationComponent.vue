@@ -1,3 +1,74 @@
+<script setup>
+import { computed } from 'vue'
+import { useQueueStore } from '@/stores/queue.js'
+import { useInterfaceStore } from '@/stores/interface.js'
+import { useAppState } from '@/composables/useAppState.js'
+
+const props = defineProps({
+  publication: {
+    type: Object,
+    required: true
+  },
+  publicationType: {
+    type: String,
+    default: 'suggested',
+    validator: (value) => ['selected', 'suggested', 'general'].includes(value)
+  }
+})
+const emit = defineEmits(['activate'])
+const queueStore = useQueueStore()
+const interfaceStore = useInterfaceStore()
+const {
+  retryLoadingPublication,
+  activatePublicationComponentByDoi,
+  queueForSelected,
+  queueForExcluded
+} = useAppState()
+
+const chevronType = computed(() => {
+  if (props.publication.boostFactor >= 8) {
+    return 'chevron-triple-up'
+  } else if (props.publication.boostFactor >= 4) {
+    return 'chevron-double-up'
+  } else if (props.publication.boostFactor > 1) {
+    return 'chevron-up'
+  }
+  return ''
+})
+
+const minusButtonTooltip = computed(() => {
+  return props.publicationType === 'selected'
+    ? 'Remove publication from selected and mark to stay excluded.'
+    : 'Mark publication to be excluded for suggestions.'
+})
+
+let isActivating = false
+
+function activate() {
+  // Prevent recursive activation calls
+  if (isActivating) {
+    return
+  }
+
+  isActivating = true
+  activatePublicationComponentByDoi(props.publication.doi)
+  emit('activate', props.publication.doi)
+
+  // Reset the flag after a brief delay to allow for the activation to complete
+  setTimeout(() => {
+    isActivating = false
+  }, 100)
+}
+
+function handleMouseEnter() {
+  interfaceStore.setHoveredPublication(props.publication)
+}
+
+function handleMouseLeave() {
+  interfaceStore.setHoveredPublication(null)
+}
+</script>
+
 <template>
   <div class="publication-component-wrapper">
     <div
@@ -197,78 +268,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { computed } from 'vue'
-import { useQueueStore } from '@/stores/queue.js'
-import { useInterfaceStore } from '@/stores/interface.js'
-import { useAppState } from '@/composables/useAppState.js'
-
-const queueStore = useQueueStore()
-const interfaceStore = useInterfaceStore()
-const {
-  retryLoadingPublication,
-  activatePublicationComponentByDoi,
-  queueForSelected,
-  queueForExcluded
-} = useAppState()
-
-const emit = defineEmits(['activate'])
-const props = defineProps({
-  publication: {
-    type: Object,
-    required: true
-  },
-  publicationType: {
-    type: String,
-    default: 'suggested',
-    validator: (value) => ['selected', 'suggested', 'general'].includes(value)
-  }
-})
-
-const chevronType = computed(() => {
-  if (props.publication.boostFactor >= 8) {
-    return 'chevron-triple-up'
-  } else if (props.publication.boostFactor >= 4) {
-    return 'chevron-double-up'
-  } else if (props.publication.boostFactor > 1) {
-    return 'chevron-up'
-  }
-  return ''
-})
-
-const minusButtonTooltip = computed(() => {
-  return props.publicationType === 'selected'
-    ? 'Remove publication from selected and mark to stay excluded.'
-    : 'Mark publication to be excluded for suggestions.'
-})
-
-let isActivating = false
-
-function activate() {
-  // Prevent recursive activation calls
-  if (isActivating) {
-    return
-  }
-
-  isActivating = true
-  activatePublicationComponentByDoi(props.publication.doi)
-  emit('activate', props.publication.doi)
-
-  // Reset the flag after a brief delay to allow for the activation to complete
-  setTimeout(() => {
-    isActivating = false
-  }, 100)
-}
-
-function handleMouseEnter() {
-  interfaceStore.setHoveredPublication(props.publication)
-}
-
-function handleMouseLeave() {
-  interfaceStore.setHoveredPublication(null)
-}
-</script>
 
 <style lang="scss">
 .publication-component-wrapper {

@@ -59,13 +59,13 @@ export function calculateLinkPath(d, nodeX) {
 
   // Curved link for citations
   if (d.type === 'citation') {
-    const dr = Math.pow(dx * dx + dy * dy, 0.6)
+    const dr = (dx * dx + dy * dy)**0.6
     return `M${nodeX(d.target)},${d.target.y}A${dr},${dr} 0 0,1 ${nodeX(d.source)},${d.source.y}`
   }
 
   // Tapered links for keywords and authors:
   // Drawing a triangle as part of a circle segment with its center at the target node
-  const r = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2))
+  const r = Math.sqrt(dx**2 + dy**2)
   const alpha = Math.acos(dx / r)
   const beta = 2 / r
   const x1 = r * Math.cos(alpha + beta)

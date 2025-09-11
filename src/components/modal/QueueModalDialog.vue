@@ -1,3 +1,72 @@
+<script>
+import { useInterfaceStore } from '@/stores/interface.js'
+import { useQueueStore } from '@/stores/queue.js'
+import { useAppState } from '@/composables/useAppState.js'
+import { watch, reactive } from 'vue'
+import Publication from '@/core/Publication.js'
+
+export default {
+  setup() {
+    const interfaceStore = useInterfaceStore()
+    const queueStore = useQueueStore()
+    const { updateQueued } = useAppState()
+
+    const selectedQueue = reactive([])
+    const excludedQueue = reactive([])
+
+    function updatePublications() {
+      selectedQueue.splice(0, selectedQueue.length)
+      excludedQueue.splice(0, excludedQueue.length)
+      queueStore.selectedQueue.forEach((doi) => {
+        selectedQueue.push(new Publication(doi))
+      })
+      queueStore.excludedQueue.forEach((doi) => {
+        excludedQueue.push(new Publication(doi))
+      })
+      // async fetch publication data
+      selectedQueue.forEach((publication) => {
+        publication.fetchData()
+      })
+      excludedQueue.forEach((publication) => {
+        publication.fetchData()
+      })
+    }
+
+    watch(
+      () => interfaceStore.isQueueModalDialogShown,
+      (newValue) => {
+        if (newValue) {
+          updatePublications()
+        }
+      }
+    )
+
+    return {
+      interfaceStore,
+      queueStore,
+      selectedQueue,
+      excludedQueue,
+      updatePublications,
+      updateQueued
+    }
+  },
+  methods: {
+    clearQueuesAndClose() {
+      this.queueStore.clear()
+      this.interfaceStore.isQueueModalDialogShown = false
+    },
+    updateQueuedAndClose() {
+      this.updateQueued()
+      this.interfaceStore.isQueueModalDialogShown = false
+    },
+    removeFromQueueAndUpdatePublications(publication) {
+      this.queueStore.removeFromQueues(publication.doi)
+      this.updatePublications()
+    }
+  }
+}
+</script>
+
 <template>
   <ModalDialog
     header-color="primary"
@@ -86,75 +155,6 @@
     </div>
   </ModalDialog>
 </template>
-
-<script>
-import { useInterfaceStore } from '@/stores/interface.js'
-import { useQueueStore } from '@/stores/queue.js'
-import { useAppState } from '@/composables/useAppState.js'
-import { watch, reactive } from 'vue'
-import Publication from '@/core/Publication.js'
-
-export default {
-  setup() {
-    const interfaceStore = useInterfaceStore()
-    const queueStore = useQueueStore()
-    const { updateQueued } = useAppState()
-
-    const selectedQueue = reactive([])
-    const excludedQueue = reactive([])
-
-    function updatePublications() {
-      selectedQueue.splice(0, selectedQueue.length)
-      excludedQueue.splice(0, excludedQueue.length)
-      queueStore.selectedQueue.forEach((doi) => {
-        selectedQueue.push(new Publication(doi))
-      })
-      queueStore.excludedQueue.forEach((doi) => {
-        excludedQueue.push(new Publication(doi))
-      })
-      // async fetch publication data
-      selectedQueue.forEach((publication) => {
-        publication.fetchData()
-      })
-      excludedQueue.forEach((publication) => {
-        publication.fetchData()
-      })
-    }
-
-    watch(
-      () => interfaceStore.isQueueModalDialogShown,
-      (newValue) => {
-        if (newValue) {
-          updatePublications()
-        }
-      }
-    )
-
-    return {
-      interfaceStore,
-      queueStore,
-      selectedQueue,
-      excludedQueue,
-      updatePublications,
-      updateQueued
-    }
-  },
-  methods: {
-    clearQueuesAndClose() {
-      this.queueStore.clear()
-      this.interfaceStore.isQueueModalDialogShown = false
-    },
-    updateQueuedAndClose() {
-      this.updateQueued()
-      this.interfaceStore.isQueueModalDialogShown = false
-    },
-    removeFromQueueAndUpdatePublications(publication) {
-      this.queueStore.removeFromQueues(publication.doi)
-      this.updatePublications()
-    }
-  }
-}
-</script>
 
 <style scoped lang="scss">
 @include comment;

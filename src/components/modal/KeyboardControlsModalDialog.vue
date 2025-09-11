@@ -1,3 +1,13 @@
+<script>
+import { useInterfaceStore } from '@/stores/interface.js'
+export default {
+  setup() {
+    const interfaceStore = useInterfaceStore()
+    return { interfaceStore }
+  }
+}
+</script>
+
 <template>
   <ModalDialog
     v-model="interfaceStore.isKeyboardControlsModalDialogShown"
@@ -66,16 +76,6 @@
     </div>
   </ModalDialog>
 </template>
-
-<script>
-import { useInterfaceStore } from '@/stores/interface.js'
-export default {
-  setup() {
-    const interfaceStore = useInterfaceStore()
-    return { interfaceStore }
-  }
-}
-</script>
 
 <style lang="scss" scoped>
 .card {

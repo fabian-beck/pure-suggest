@@ -1,3 +1,14 @@
+<script>
+import { useInterfaceStore } from '@/stores/interface.js'
+export default {
+  inject: ['appMeta'],
+  setup() {
+    const interfaceStore = useInterfaceStore()
+    return { interfaceStore }
+  }
+}
+</script>
+
 <template>
   <ModalDialog
     v-model="interfaceStore.isAboutModalDialogShown"
@@ -142,17 +153,6 @@
     </div>
   </ModalDialog>
 </template>
-
-<script>
-import { useInterfaceStore } from '@/stores/interface.js'
-export default {
-  inject: ['appMeta'],
-  setup() {
-    const interfaceStore = useInterfaceStore()
-    return { interfaceStore }
-  }
-}
-</script>
 
 <style lang="scss" scoped>
 .content {

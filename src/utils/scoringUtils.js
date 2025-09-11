@@ -155,7 +155,7 @@ export function calculateBoostFactor(matchCount, isBoost) {
   if (!isBoost || matchCount === 0) {
     return SCORING.DEFAULT_BOOST_FACTOR
   }
-  return SCORING.DEFAULT_BOOST_FACTOR * Math.pow(SCORING.BOOST_MULTIPLIER, matchCount)
+  return SCORING.DEFAULT_BOOST_FACTOR * SCORING.BOOST_MULTIPLIER**matchCount
 }
 
 /**

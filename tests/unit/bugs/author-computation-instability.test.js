@@ -211,7 +211,7 @@ describe('Author Computation Instability Bug', () => {
         }))
 
         modalOpenCloseSequence.push({
-          cycle: cycle,
+          cycle,
           onOpen: topAuthorsOnOpen,
           onClose: topAuthorsOnClose
         })

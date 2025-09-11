@@ -132,7 +132,7 @@ vi.mock('@/stores/session.js', () => ({
 }))
 
 // Create a dynamic interface store that tests can modify
-let mockInterfaceStore = {
+const mockInterfaceStore = {
   isMobile: false,
   isNetworkExpanded: false,
   isNetworkCollapsed: false,

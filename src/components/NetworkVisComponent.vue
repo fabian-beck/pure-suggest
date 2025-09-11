@@ -1,60 +1,3 @@
-<template>
-  <div class="network-of-references">
-    <div class="box has-background-grey">
-      <NetworkHeader
-        :error-message="errorMessage"
-        v-model:is-network-clusters="isNetworkClusters"
-        @expand-network="expandNetwork"
-        @collapse-network="collapseNetwork"
-        @restore-network="restoreNetwork"
-      />
-      <div id="network-svg-container" v-show="!interfaceStore.isNetworkCollapsed">
-        <NetworkPerformanceMonitor
-          ref="performanceMonitor"
-          :show="interfaceStore.showPerformancePanel"
-          :is-empty="isEmpty || !sessionStore.selectedPublications?.length"
-          :node-count="graph.nodes.length"
-          :link-count="graph.links.length"
-          :should-skip-early-ticks="shouldSkipEarlyTicks"
-          :skip-early-ticks="skipEarlyTicks"
-        />
-        <svg id="network-svg" :class="networkCssClasses">
-          <g></g>
-        </svg>
-      </div>
-      <ul class="publication-component-list" v-show="!interfaceStore.isNetworkCollapsed">
-        <PublicationComponent
-          v-if="activePublication && interfaceStore.isNetworkExpanded"
-          :publication="activePublication"
-          :is-active="true"
-          :publication-type="activePublication.isSelected ? 'selected' : 'suggested'"
-        ></PublicationComponent>
-      </ul>
-      <div class="controls-header-left" v-show="!interfaceStore.isNetworkCollapsed">
-        <v-btn
-          class="has-background-primary has-text-white"
-          @click="updateQueued"
-          v-show="queueStore.isUpdatable && interfaceStore.isNetworkExpanded"
-          id="quick-access-update"
-        >
-          <v-icon left>mdi-update</v-icon>
-          <span class="key">U</span>pdate
-        </v-btn>
-      </div>
-      <NetworkControls
-        v-model:show-nodes="showNodes"
-        v-model:only-show-filtered="onlyShowFiltered"
-        v-model:suggested-number-factor="suggestedNumberFactor"
-        v-model:author-number-factor="authorNumberFactor"
-        @zoom="zoomByFactor"
-        @reset="resetZoom"
-        @plot="plot"
-        v-show="!interfaceStore.isNetworkCollapsed"
-      />
-    </div>
-  </div>
-</template>
-
 <script>
 import * as d3 from 'd3'
 import 'tippy.js/dist/tippy.css'
@@ -147,7 +90,7 @@ export default {
       updateQueued
     }
   },
-  data: function () {
+  data () {
     return {
       svg: null,
       svgWidth: Number,
@@ -178,20 +121,20 @@ export default {
     }
   },
   computed: {
-    showSelectedNodes: function () {
+    showSelectedNodes () {
       return this.showNodes.includes('selected')
     },
-    showSuggestedNodes: function () {
+    showSuggestedNodes () {
       return this.showNodes.includes('suggested')
     },
-    showKeywordNodes: function () {
+    showKeywordNodes () {
       return this.showNodes.includes('keyword')
     },
-    showAuthorNodes: function () {
+    showAuthorNodes () {
       return this.showNodes.includes('author')
     },
 
-    networkCssClasses: function () {
+    networkCssClasses () {
       // Check if we should show fading animation during early tick skipping (but not when dragging)
       if (
         this.shouldSkipEarlyTicks &&
@@ -206,7 +149,7 @@ export default {
   },
   watch: {
     isNetworkClusters: {
-      handler: function () {
+      handler () {
         // Skip plotting during loading to prevent premature network rendering
         if (this.interfaceStore.isLoading) {
           return
@@ -216,7 +159,7 @@ export default {
     },
     filter: {
       deep: true,
-      handler: function () {
+      handler () {
         // Update "only show filtered" based on filter state
         if (!this.sessionStore.filter.hasActiveFilters()) {
           this.onlyShowFiltered = false
@@ -231,7 +174,7 @@ export default {
       }
     },
     activePublication: {
-      handler: function () {
+      handler () {
         if (this.interfaceStore.isLoading) {
           return
         }
@@ -239,7 +182,7 @@ export default {
       }
     },
     'interfaceStore.networkReplotTrigger': {
-      handler: function (newValue, oldValue) {
+      handler (newValue, oldValue) {
         // Only replot if author nodes are visible and the trigger value changed
         if (newValue !== oldValue && this.showAuthorNodes) {
           this.$nextTick(() => {
@@ -291,7 +234,7 @@ export default {
     }
   },
   methods: {
-    plot: function (restart) {
+    plot (restart) {
       if (this.isDragging) {
         // During dragging, we want full simulation restart for responsive layout
         // Skip the expensive graph reconstruction but restart simulation with current graph
@@ -359,7 +302,7 @@ export default {
           this.start()
         }
       } catch (error) {
-        console.error('Cannot plot network: ' + error.message)
+        console.error(`Cannot plot network: ${  error.message}`)
         this.errorMessage = 'Sorry, an error occurred while plotting the citation network.'
         if (this.errorTimer) {
           clearTimeout(this.errorTimer)
@@ -526,7 +469,7 @@ export default {
           )
           this.publicationTooltips = publicationResult.tooltips
         } catch (error) {
-          throw new Error('Cannot update publication nodes in network: ' + error.message)
+          throw new Error(`Cannot update publication nodes in network: ${  error.message}`)
         }
         try {
           // Update keyword nodes using module
@@ -537,7 +480,7 @@ export default {
           )
           this.keywordTooltips = keywordResult.tooltips
         } catch (error) {
-          throw new Error('Cannot update keyword nodes in network: ' + error.message)
+          throw new Error(`Cannot update keyword nodes in network: ${  error.message}`)
         }
         try {
           // Update author nodes using module
@@ -548,12 +491,12 @@ export default {
           )
           this.authorTooltips = authorResult.tooltips
         } catch (error) {
-          throw new Error('Cannot update author nodes in network: ' + error.message)
+          throw new Error(`Cannot update author nodes in network: ${  error.message}`)
         }
         // Old helper functions removed - now handled by modules
       }
     },
-    tick: function () {
+    tick () {
       // Skip when network is collapsed for performance
       if (this.interfaceStore.isNetworkCollapsed) {
         return
@@ -617,35 +560,35 @@ export default {
       // FPS tracking (always track for debugging)
       this.$refs.performanceMonitor?.trackFps()
     },
-    keywordNodeDrag: function () {
+    keywordNodeDrag () {
       return createKeywordNodeDrag(this, SIMULATION_ALPHA)
     },
-    keywordNodeClick: function (event, d) {
+    keywordNodeClick (event, d) {
       releaseKeywordPosition(event, d, this, SIMULATION_ALPHA)
     },
-    onKeywordNodeMouseover: function (event, d) {
+    onKeywordNodeMouseover (event, d) {
       highlightKeywordPublications(d, this.sessionStore.publicationsFiltered || [])
       this.updatePublicationHighlighting()
     },
-    onKeywordNodeMouseout: function () {
+    onKeywordNodeMouseout () {
       clearKeywordHighlight(this.sessionStore.publicationsFiltered || [])
       this.updatePublicationHighlighting()
     },
-    onAuthorNodeMouseover: function (event, d) {
+    onAuthorNodeMouseover (event, d) {
       highlightAuthorPublications(d, this.sessionStore.publicationsFiltered || [])
       this.updatePublicationHighlighting()
     },
-    onAuthorNodeMouseout: function () {
+    onAuthorNodeMouseout () {
       clearAuthorHighlight(this.sessionStore.publicationsFiltered || [])
       this.updatePublicationHighlighting()
     },
-    authorNodeClick: function (event, d) {
+    authorNodeClick (event, d) {
       this.interfaceStore.openAuthorModalDialog(d.author.id)
     },
-    yearX: function (year) {
+    yearX (year) {
       return calculateYearX(year, this.svgWidth, this.svgHeight, this.interfaceStore.isMobile)
     },
-    activatePublication: function (event, d) {
+    activatePublication (event, d) {
       this.activatePublicationComponentByDoi(d.publication.doi)
       event.stopPropagation()
     },
@@ -970,6 +913,63 @@ export default {
   }
 }
 </script>
+
+<template>
+  <div class="network-of-references">
+    <div class="box has-background-grey">
+      <NetworkHeader
+        :error-message="errorMessage"
+        v-model:is-network-clusters="isNetworkClusters"
+        @expand-network="expandNetwork"
+        @collapse-network="collapseNetwork"
+        @restore-network="restoreNetwork"
+      />
+      <div id="network-svg-container" v-show="!interfaceStore.isNetworkCollapsed">
+        <NetworkPerformanceMonitor
+          ref="performanceMonitor"
+          :show="interfaceStore.showPerformancePanel"
+          :is-empty="isEmpty || !sessionStore.selectedPublications?.length"
+          :node-count="graph.nodes.length"
+          :link-count="graph.links.length"
+          :should-skip-early-ticks="shouldSkipEarlyTicks"
+          :skip-early-ticks="skipEarlyTicks"
+        />
+        <svg id="network-svg" :class="networkCssClasses">
+          <g></g>
+        </svg>
+      </div>
+      <ul class="publication-component-list" v-show="!interfaceStore.isNetworkCollapsed">
+        <PublicationComponent
+          v-if="activePublication && interfaceStore.isNetworkExpanded"
+          :publication="activePublication"
+          :is-active="true"
+          :publication-type="activePublication.isSelected ? 'selected' : 'suggested'"
+        ></PublicationComponent>
+      </ul>
+      <div class="controls-header-left" v-show="!interfaceStore.isNetworkCollapsed">
+        <v-btn
+          class="has-background-primary has-text-white"
+          @click="updateQueued"
+          v-show="queueStore.isUpdatable && interfaceStore.isNetworkExpanded"
+          id="quick-access-update"
+        >
+          <v-icon left>mdi-update</v-icon>
+          <span class="key">U</span>pdate
+        </v-btn>
+      </div>
+      <NetworkControls
+        v-model:show-nodes="showNodes"
+        v-model:only-show-filtered="onlyShowFiltered"
+        v-model:suggested-number-factor="suggestedNumberFactor"
+        v-model:author-number-factor="authorNumberFactor"
+        @zoom="zoomByFactor"
+        @reset="resetZoom"
+        @plot="plot"
+        v-show="!interfaceStore.isNetworkCollapsed"
+      />
+    </div>
+  </div>
+</template>
 
 <style lang="scss">
 .network-of-references {

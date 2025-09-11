@@ -1,3 +1,78 @@
+<script setup>
+import { computed } from 'vue'
+import CompactButton from '@/components/basic/CompactButton.vue'
+import { useSessionStore } from '@/stores/session.js'
+import { useAppState } from '@/composables/useAppState.js'
+
+const props = defineProps({
+  showNodes: {
+    type: Array,
+    default: () => ['selected', 'suggested', 'keyword', 'author']
+  },
+  onlyShowFiltered: {
+    type: Boolean,
+    default: false
+  },
+  suggestedNumberFactor: {
+    type: Number,
+    default: 0.3
+  },
+  authorNumberFactor: {
+    type: Number,
+    default: 0.5
+  }
+})
+
+const emit = defineEmits([
+  'zoom',
+  'reset',
+  'plot',
+  'update:showNodes',
+  'update:onlyShowFiltered',
+  'update:suggestedNumberFactor',
+  'update:authorNumberFactor'
+])
+
+const sessionStore = useSessionStore()
+const { isEmpty } = useAppState()
+
+const showNodesModel = computed({
+  get() {
+    return props.showNodes
+  },
+  set(value) {
+    emit('update:showNodes', value)
+  }
+})
+
+const onlyShowFilteredModel = computed({
+  get() {
+    return props.onlyShowFiltered
+  },
+  set(value) {
+    emit('update:onlyShowFiltered', value)
+  }
+})
+
+const suggestedNumberFactorModel = computed({
+  get() {
+    return props.suggestedNumberFactor
+  },
+  set(value) {
+    emit('update:suggestedNumberFactor', value)
+  }
+})
+
+const authorNumberFactorModel = computed({
+  get() {
+    return props.authorNumberFactor
+  },
+  set(value) {
+    emit('update:authorNumberFactor', value)
+  }
+})
+</script>
+
 <template>
   <div class="controls-footer-right" v-show="!isEmpty">
     <span class="mr-4">
@@ -111,81 +186,6 @@
     </span>
   </div>
 </template>
-
-<script setup>
-import { computed } from 'vue'
-import CompactButton from '@/components/basic/CompactButton.vue'
-import { useSessionStore } from '@/stores/session.js'
-import { useAppState } from '@/composables/useAppState.js'
-
-const props = defineProps({
-  showNodes: {
-    type: Array,
-    default: () => ['selected', 'suggested', 'keyword', 'author']
-  },
-  onlyShowFiltered: {
-    type: Boolean,
-    default: false
-  },
-  suggestedNumberFactor: {
-    type: Number,
-    default: 0.3
-  },
-  authorNumberFactor: {
-    type: Number,
-    default: 0.5
-  }
-})
-
-const emit = defineEmits([
-  'zoom',
-  'reset',
-  'plot',
-  'update:showNodes',
-  'update:onlyShowFiltered',
-  'update:suggestedNumberFactor',
-  'update:authorNumberFactor'
-])
-
-const sessionStore = useSessionStore()
-const { isEmpty } = useAppState()
-
-const showNodesModel = computed({
-  get() {
-    return props.showNodes
-  },
-  set(value) {
-    emit('update:showNodes', value)
-  }
-})
-
-const onlyShowFilteredModel = computed({
-  get() {
-    return props.onlyShowFiltered
-  },
-  set(value) {
-    emit('update:onlyShowFiltered', value)
-  }
-})
-
-const suggestedNumberFactorModel = computed({
-  get() {
-    return props.suggestedNumberFactor
-  },
-  set(value) {
-    emit('update:suggestedNumberFactor', value)
-  }
-})
-
-const authorNumberFactorModel = computed({
-  get() {
-    return props.authorNumberFactor
-  },
-  set(value) {
-    emit('update:authorNumberFactor', value)
-  }
-})
-</script>
 
 <style lang="scss" scoped>
 .controls-footer-right {

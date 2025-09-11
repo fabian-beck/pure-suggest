@@ -1,18 +1,3 @@
-<template>
-  <v-btn
-    icon
-    size="small"
-    @click="openLink()"
-    :disabled="disabled"
-    :active="active"
-    :class="{ 'is-selected': active }"
-    flat
-    height="30"
-    width="30"
-    ><v-icon>{{ icon }}</v-icon></v-btn
-  >
-</template>
-
 <script>
 export default {
   name: 'CompactButton',
@@ -40,6 +25,21 @@ export default {
   }
 }
 </script>
+
+<template>
+  <v-btn
+    icon
+    size="small"
+    @click="openLink()"
+    :disabled="disabled"
+    :active="active"
+    :class="{ 'is-selected': active }"
+    flat
+    height="30"
+    width="30"
+    ><v-icon>{{ icon }}</v-icon></v-btn
+  >
+</template>
 
 <style scoped lang="scss">
 .v-btn {

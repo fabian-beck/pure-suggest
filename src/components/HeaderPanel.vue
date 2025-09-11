@@ -1,3 +1,17 @@
+<script setup>
+import { inject, ref } from 'vue'
+import { useInterfaceStore } from '@/stores/interface.js'
+import FilterMenuComponent from '@/components/FilterMenuComponent.vue'
+import SessionMenuComponent from '@/components/SessionMenuComponent.vue'
+import { useAppState } from '@/composables/useAppState.js'
+
+const appMeta = inject('appMeta')
+const interfaceStore = useInterfaceStore()
+const { isEmpty, clearCache } = useAppState()
+
+const filterMenuComponent = ref(null)
+</script>
+
 <template>
   <div>
     <v-app-bar color="white" density="compact">
@@ -60,20 +74,6 @@
     <div v-else class="intro-message-placeholder"></div>
   </div>
 </template>
-
-<script setup>
-import { inject, ref } from 'vue'
-import { useInterfaceStore } from '@/stores/interface.js'
-import FilterMenuComponent from '@/components/FilterMenuComponent.vue'
-import SessionMenuComponent from '@/components/SessionMenuComponent.vue'
-import { useAppState } from '@/composables/useAppState.js'
-
-const appMeta = inject('appMeta')
-const interfaceStore = useInterfaceStore()
-const { isEmpty, clearCache } = useAppState()
-
-const filterMenuComponent = ref(null)
-</script>
 
 <style lang="scss" scoped>
 .v-toolbar {

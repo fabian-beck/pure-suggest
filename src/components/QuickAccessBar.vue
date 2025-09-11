@@ -1,3 +1,49 @@
+<script setup>
+import { reactive, onMounted, onUnmounted } from 'vue'
+import { useQueueStore } from '@/stores/queue.js'
+import { useAppState } from '@/composables/useAppState.js'
+import { scrollToTargetAdjusted } from '@/lib/Util.js'
+
+const queueStore = useQueueStore()
+const { updateQueued } = useAppState()
+
+function scrollTo(id) {
+  scrollToTargetAdjusted(document.getElementById(id), 55)
+}
+
+const isComponentActive = reactive({
+  selected: true,
+  suggested: false,
+  network: false
+})
+
+function updateActiveButton() {
+  isComponentActive.selected = false
+  isComponentActive.suggested = false
+  isComponentActive.network = false
+
+  const activationHeight = document.documentElement.clientHeight * 0.7
+  for (const componentId of Object.keys(isComponentActive)) {
+    const component = document.getElementById(componentId)
+    const rect = component.getBoundingClientRect()
+    isComponentActive[componentId] =
+      (rect.top >= 0 && rect.top <= activationHeight) ||
+      (rect.top < 0 && rect.bottom > activationHeight)
+    if (isComponentActive[componentId]) {
+      break
+    }
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('scroll', updateActiveButton)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('scroll', updateActiveButton)
+})
+</script>
+
 <template>
   <div>
     <v-btn
@@ -44,52 +90,6 @@
     </v-btn-toggle>
   </div>
 </template>
-
-<script setup>
-import { reactive, onMounted, onUnmounted } from 'vue'
-import { useQueueStore } from '@/stores/queue.js'
-import { useAppState } from '@/composables/useAppState.js'
-import { scrollToTargetAdjusted } from '@/lib/Util.js'
-
-const queueStore = useQueueStore()
-const { updateQueued } = useAppState()
-
-function scrollTo(id) {
-  scrollToTargetAdjusted(document.getElementById(id), 55)
-}
-
-const isComponentActive = reactive({
-  selected: true,
-  suggested: false,
-  network: false
-})
-
-function updateActiveButton() {
-  isComponentActive.selected = false
-  isComponentActive.suggested = false
-  isComponentActive.network = false
-
-  const activationHeight = document.documentElement.clientHeight * 0.7
-  for (const componentId of Object.keys(isComponentActive)) {
-    const component = document.getElementById(componentId)
-    const rect = component.getBoundingClientRect()
-    isComponentActive[componentId] =
-      (rect.top >= 0 && rect.top <= activationHeight) ||
-      (rect.top < 0 && rect.bottom > activationHeight)
-    if (isComponentActive[componentId]) {
-      break
-    }
-  }
-}
-
-onMounted(() => {
-  document.addEventListener('scroll', updateActiveButton)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('scroll', updateActiveButton)
-})
-</script>
 <style lang="scss" scoped>
 .v-btn-group {
   background-color: white;

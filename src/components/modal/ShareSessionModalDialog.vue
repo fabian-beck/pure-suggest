@@ -1,3 +1,47 @@
+<script setup>
+import { ref, computed, watch } from 'vue'
+import { useInterfaceStore } from '@/stores/interface.js'
+import { useSessionStore } from '@/stores/session.js'
+import ModalDialog from './ModalDialog.vue'
+
+const interfaceStore = useInterfaceStore()
+const sessionStore = useSessionStore()
+
+const linkInput = ref(null)
+const copySuccess = ref(false)
+
+const shareableUrl = computed(() => {
+  return sessionStore.generateSessionUrl()
+})
+
+const copyToClipboard = async () => {
+  try {
+    await navigator.clipboard.writeText(shareableUrl.value)
+    copySuccess.value = true
+    setTimeout(() => {
+      copySuccess.value = false
+    }, 2000)
+  } catch (err) {
+    console.error('Failed to copy to clipboard:', err)
+    // Fallback: select the text for manual copy
+    if (linkInput.value) {
+      linkInput.value.select()
+      linkInput.value.setSelectionRange(0, 99999) // For mobile devices
+    }
+  }
+}
+
+// Reset copy status when modal is opened
+watch(
+  () => interfaceStore.isShareSessionModalDialogShown,
+  (isShown) => {
+    if (isShown) {
+      copySuccess.value = false
+    }
+  }
+)
+</script>
+
 <template>
   <ModalDialog
     v-model="interfaceStore.isShareSessionModalDialogShown"
@@ -45,50 +89,6 @@
     </div>
   </ModalDialog>
 </template>
-
-<script setup>
-import { ref, computed, watch } from 'vue'
-import { useInterfaceStore } from '@/stores/interface.js'
-import { useSessionStore } from '@/stores/session.js'
-import ModalDialog from './ModalDialog.vue'
-
-const interfaceStore = useInterfaceStore()
-const sessionStore = useSessionStore()
-
-const linkInput = ref(null)
-const copySuccess = ref(false)
-
-const shareableUrl = computed(() => {
-  return sessionStore.generateSessionUrl()
-})
-
-const copyToClipboard = async () => {
-  try {
-    await navigator.clipboard.writeText(shareableUrl.value)
-    copySuccess.value = true
-    setTimeout(() => {
-      copySuccess.value = false
-    }, 2000)
-  } catch (err) {
-    console.error('Failed to copy to clipboard:', err)
-    // Fallback: select the text for manual copy
-    if (linkInput.value) {
-      linkInput.value.select()
-      linkInput.value.setSelectionRange(0, 99999) // For mobile devices
-    }
-  }
-}
-
-// Reset copy status when modal is opened
-watch(
-  () => interfaceStore.isShareSessionModalDialogShown,
-  (isShown) => {
-    if (isShown) {
-      copySuccess.value = false
-    }
-  }
-)
-</script>
 
 <style scoped>
 /* No custom styles needed - Vuetify handles alignment automatically */

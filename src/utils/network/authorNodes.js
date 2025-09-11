@@ -21,7 +21,7 @@ export function createAuthorNodes(filteredAuthors, publications) {
     if (hasDisplayedPublications) {
       nodes.push({
         id: author.id,
-        author: author,
+        author,
         type: 'author'
       })
     }

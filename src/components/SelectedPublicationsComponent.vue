@@ -1,3 +1,73 @@
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useSessionStore } from '@/stores/session.js'
+import { useInterfaceStore } from '@/stores/interface.js'
+import { useQueueStore } from '@/stores/queue.js'
+import { useAppState } from '@/composables/useAppState.js'
+import { bibtexParser } from '@/lib/Util.js'
+
+const sessionStore = useSessionStore()
+const interfaceStore = useInterfaceStore()
+const queueStore = useQueueStore()
+const {
+  isEmpty,
+  importSession: importSessionFromState,
+  loadExample,
+  updateQueued,
+  loadSession
+} = useAppState()
+
+const publicationList = ref(null)
+
+function importSession() {
+  interfaceStore.showConfirmDialog(
+    `<label>Choose an exported session JSON file:&nbsp;</label>
+    <input type="file" id="import-json-input" accept="application/JSON"/>`,
+    () => importSessionFromState(document.getElementById('import-json-input').files[0]),
+    'Import session'
+  )
+}
+
+function importBibtex() {
+  const warningMessage = isEmpty.value
+    ? ''
+    : '<p style="color: #d32f2f; margin-bottom: 16px;"><strong>This will clear and replace the current session.</strong></p>'
+
+  interfaceStore.showConfirmDialog(
+    `${warningMessage}<label>Choose a BibTeX file:&nbsp;</label>
+    <input type="file" id="import-bibtex-input" accept=".bib"/>`,
+    async () => {
+      const fileInput = document.getElementById('import-bibtex-input')
+      const file = fileInput.files[0]
+
+      if (!file) {
+        console.error('No file selected')
+        return
+      }
+
+      try {
+        const parsedData = await bibtexParser(file)
+        loadSession(parsedData)
+      } catch (error) {
+        console.error('Error parsing BibTeX file:', error)
+        interfaceStore.showErrorMessage('Error parsing BibTeX file. Please check the file format.')
+      }
+    },
+    'Import BibTeX'
+  )
+}
+
+onMounted(() => {
+  sessionStore.$onAction(({ name, after }) => {
+    after(() => {
+      if (name === 'updateQueued') {
+        publicationList.value.$el.scrollTop = 0
+      }
+    })
+  })
+})
+</script>
+
 <template>
   <div class="selected-publications box has-background-primary">
     <div class="level">
@@ -133,76 +203,6 @@
     />
   </div>
 </template>
-
-<script setup>
-import { ref, onMounted } from 'vue'
-import { useSessionStore } from '@/stores/session.js'
-import { useInterfaceStore } from '@/stores/interface.js'
-import { useQueueStore } from '@/stores/queue.js'
-import { useAppState } from '@/composables/useAppState.js'
-import { bibtexParser } from '@/lib/Util.js'
-
-const sessionStore = useSessionStore()
-const interfaceStore = useInterfaceStore()
-const queueStore = useQueueStore()
-const {
-  isEmpty,
-  importSession: importSessionFromState,
-  loadExample,
-  updateQueued,
-  loadSession
-} = useAppState()
-
-const publicationList = ref(null)
-
-function importSession() {
-  interfaceStore.showConfirmDialog(
-    `<label>Choose an exported session JSON file:&nbsp;</label>
-    <input type="file" id="import-json-input" accept="application/JSON"/>`,
-    () => importSessionFromState(document.getElementById('import-json-input').files[0]),
-    'Import session'
-  )
-}
-
-function importBibtex() {
-  const warningMessage = isEmpty.value
-    ? ''
-    : '<p style="color: #d32f2f; margin-bottom: 16px;"><strong>This will clear and replace the current session.</strong></p>'
-
-  interfaceStore.showConfirmDialog(
-    `${warningMessage}<label>Choose a BibTeX file:&nbsp;</label>
-    <input type="file" id="import-bibtex-input" accept=".bib"/>`,
-    async () => {
-      const fileInput = document.getElementById('import-bibtex-input')
-      const file = fileInput.files[0]
-
-      if (!file) {
-        console.error('No file selected')
-        return
-      }
-
-      try {
-        const parsedData = await bibtexParser(file)
-        loadSession(parsedData)
-      } catch (error) {
-        console.error('Error parsing BibTeX file:', error)
-        interfaceStore.showErrorMessage('Error parsing BibTeX file. Please check the file format.')
-      }
-    },
-    'Import BibTeX'
-  )
-}
-
-onMounted(() => {
-  sessionStore.$onAction(({ name, after }) => {
-    after(() => {
-      if (name === 'updateQueued') {
-        publicationList.value.$el.scrollTop = 0
-      }
-    })
-  })
-})
-</script>
 
 <style lang="scss" scoped>
 .box {

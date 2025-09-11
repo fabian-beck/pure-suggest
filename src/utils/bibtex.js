@@ -5,7 +5,7 @@
  */
 function protectAcronyms(s) {
   let s2 = s
-  let detectedAcronyms = []
+  const detectedAcronyms = []
   s.split(/\W/).forEach((word) => {
     if (word.slice(1) != word.slice(1).toLowerCase() && !detectedAcronyms.includes(word)) {
       s2 = s2.replaceAll(word, `{${word}}`)

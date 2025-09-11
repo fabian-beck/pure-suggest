@@ -1,3 +1,138 @@
+<script setup>
+import { computed, ref, nextTick } from 'vue'
+import { useSessionStore } from '@/stores/session.js'
+import { useInterfaceStore } from '@/stores/interface.js'
+import Publication from '@/core/Publication.js'
+import { useAppState } from '@/composables/useAppState.js'
+
+const sessionStore = useSessionStore()
+const interfaceStore = useInterfaceStore()
+const { isEmpty } = useAppState()
+
+const filterSwitch = ref(null)
+const filterInput = ref(null)
+
+const yearRules = [
+  (value) => {
+    if (!value) return true
+    const regex = /^\d{4}$/
+    return regex.test(value) || 'Year must be a four digit number.'
+  }
+]
+
+const filterSummaryHtml = computed(() => {
+  const filter = sessionStore.filter
+  const parts = []
+
+  if (filter.string) {
+    parts.push(`<span class="filter-part">text: "${filter.string}"</span>`)
+  }
+
+  if (filter.yearStart || filter.yearEnd) {
+    let yearRange
+    if (filter.yearStart && filter.yearEnd) {
+      yearRange = `${filter.yearStart}–${filter.yearEnd}`
+    } else if (filter.yearStart) {
+      yearRange = `${filter.yearStart}–`
+    } else {
+      yearRange = `–${filter.yearEnd}`
+    }
+    parts.push(`<span class="filter-part">year: ${yearRange}</span>`)
+  }
+
+  if (filter.tag) {
+    const tagName = Publication.TAGS.find((t) => t.value === filter.tag)?.name || filter.tag
+    parts.push(`<span class="filter-part">tag: ${tagName}</span>`)
+  }
+
+  if (filter.dois.length > 0) {
+    parts.push(`<span class="filter-part">citations: ${filter.dois.length}</span>`)
+  }
+
+  return parts.length > 0 ? parts.join('<span class="filter-separator">, </span>') : ''
+})
+
+const hasFilterValues = computed(() => {
+  const filter = sessionStore.filter
+  return Boolean(filter.string ||
+    filter.tag ||
+    filter.yearStart ||
+    filter.yearEnd ||
+    filter.dois.length > 0)
+})
+
+const displayText = computed(() => {
+  if (!sessionStore.filter.isActive && hasFilterValues.value) {
+    return '[FILTERS OFF]'
+  }
+  if (sessionStore.filter.hasActiveFilters()) {
+    return filterSummaryHtml.value
+  }
+  return '[SET FILTERS]'
+})
+
+const buttonColor = computed(() => {
+  if (!sessionStore.filter.hasActiveFilters()) {
+    return 'grey-darken-1'
+  }
+
+  const applyToSelected = sessionStore.filter.applyToSelected
+  const applyToSuggested = sessionStore.filter.applyToSuggested
+
+  if (applyToSelected && !applyToSuggested) {
+    return 'hsl(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l))'
+  } else if (!applyToSelected && applyToSuggested) {
+    return 'hsl(var(--bulma-info-h), var(--bulma-info-s), var(--bulma-info-l))'
+  } else {
+    return 'default'
+  }
+})
+
+function handleMenuToggle(isOpen) {
+  // Only activate filter when opening the menu
+  if (isOpen) {
+    sessionStore.filter.isActive = true
+  }
+  handleMenuInput(isOpen)
+}
+
+function handleMenuInput(value) {
+  if (value) {
+    nextTick(() => {
+      const switchElement = filterSwitch.value?.$el?.querySelector('input')
+      if (switchElement && typeof switchElement.focus === 'function') {
+        switchElement.focus()
+      }
+    })
+  }
+}
+
+function handleSwitchKeydown(event) {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    event.stopPropagation()
+    sessionStore.filter.isActive = !sessionStore.filter.isActive
+  }
+}
+
+function handleChipKeydown(event, doi) {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    event.stopPropagation()
+    removeDoi(doi)
+  }
+}
+
+function removeDoi(doi) {
+  sessionStore.filter.removeDoi(doi)
+}
+
+function getDoiTooltip(doi) {
+  const publication = sessionStore.getSelectedPublicationByDoi(doi)
+  return `Filtered to publications citing or cited by <b>${publication.title} (${publication.authorShort}, ${publication.year})</b>`
+}
+</script>
+
 <template>
   <v-menu
     v-if="!isEmpty"
@@ -161,143 +296,6 @@
     </v-sheet>
   </v-menu>
 </template>
-
-<script setup>
-import { computed, ref, nextTick } from 'vue'
-import { useSessionStore } from '@/stores/session.js'
-import { useInterfaceStore } from '@/stores/interface.js'
-import Publication from '@/core/Publication.js'
-import { useAppState } from '@/composables/useAppState.js'
-
-const sessionStore = useSessionStore()
-const interfaceStore = useInterfaceStore()
-const { isEmpty } = useAppState()
-
-const filterSwitch = ref(null)
-const filterInput = ref(null)
-
-const yearRules = [
-  (value) => {
-    if (!value) return true
-    const regex = /^\d{4}$/
-    return regex.test(value) || 'Year must be a four digit number.'
-  }
-]
-
-const filterSummaryHtml = computed(() => {
-  const filter = sessionStore.filter
-  const parts = []
-
-  if (filter.string) {
-    parts.push(`<span class="filter-part">text: "${filter.string}"</span>`)
-  }
-
-  if (filter.yearStart || filter.yearEnd) {
-    let yearRange
-    if (filter.yearStart && filter.yearEnd) {
-      yearRange = `${filter.yearStart}–${filter.yearEnd}`
-    } else if (filter.yearStart) {
-      yearRange = `${filter.yearStart}–`
-    } else {
-      yearRange = `–${filter.yearEnd}`
-    }
-    parts.push(`<span class="filter-part">year: ${yearRange}</span>`)
-  }
-
-  if (filter.tag) {
-    const tagName = Publication.TAGS.find((t) => t.value === filter.tag)?.name || filter.tag
-    parts.push(`<span class="filter-part">tag: ${tagName}</span>`)
-  }
-
-  if (filter.dois.length > 0) {
-    parts.push(`<span class="filter-part">citations: ${filter.dois.length}</span>`)
-  }
-
-  return parts.length > 0 ? parts.join('<span class="filter-separator">, </span>') : ''
-})
-
-const hasFilterValues = computed(() => {
-  const filter = sessionStore.filter
-  return !!(
-    filter.string ||
-    filter.tag ||
-    filter.yearStart ||
-    filter.yearEnd ||
-    filter.dois.length > 0
-  )
-})
-
-const displayText = computed(() => {
-  if (!sessionStore.filter.isActive && hasFilterValues.value) {
-    return '[FILTERS OFF]'
-  }
-  if (sessionStore.filter.hasActiveFilters()) {
-    return filterSummaryHtml.value
-  }
-  return '[SET FILTERS]'
-})
-
-const buttonColor = computed(() => {
-  if (!sessionStore.filter.hasActiveFilters()) {
-    return 'grey-darken-1'
-  }
-
-  const applyToSelected = sessionStore.filter.applyToSelected
-  const applyToSuggested = sessionStore.filter.applyToSuggested
-
-  if (applyToSelected && !applyToSuggested) {
-    return 'hsl(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l))'
-  } else if (!applyToSelected && applyToSuggested) {
-    return 'hsl(var(--bulma-info-h), var(--bulma-info-s), var(--bulma-info-l))'
-  } else {
-    return 'default'
-  }
-})
-
-function handleMenuToggle(isOpen) {
-  // Only activate filter when opening the menu
-  if (isOpen) {
-    sessionStore.filter.isActive = true
-  }
-  handleMenuInput(isOpen)
-}
-
-function handleMenuInput(value) {
-  if (value) {
-    nextTick(() => {
-      const switchElement = filterSwitch.value?.$el?.querySelector('input')
-      if (switchElement && typeof switchElement.focus === 'function') {
-        switchElement.focus()
-      }
-    })
-  }
-}
-
-function handleSwitchKeydown(event) {
-  if (event.key === 'Enter' || event.key === ' ') {
-    event.preventDefault()
-    event.stopPropagation()
-    sessionStore.filter.isActive = !sessionStore.filter.isActive
-  }
-}
-
-function handleChipKeydown(event, doi) {
-  if (event.key === 'Enter' || event.key === ' ') {
-    event.preventDefault()
-    event.stopPropagation()
-    removeDoi(doi)
-  }
-}
-
-function removeDoi(doi) {
-  sessionStore.filter.removeDoi(doi)
-}
-
-function getDoiTooltip(doi) {
-  const publication = sessionStore.getSelectedPublicationByDoi(doi)
-  return `Filtered to publications citing or cited by <b>${publication.title} (${publication.authorShort}, ${publication.year})</b>`
-}
-</script>
 
 <style lang="scss" scoped>
 :deep(.filter-part) {

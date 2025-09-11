@@ -1,3 +1,20 @@
+<script>
+import { useInterfaceStore } from '@/stores/interface.js'
+
+export default {
+  name: 'InfoDialog',
+  setup: () => {
+    const interfaceStore = useInterfaceStore()
+    return { interfaceStore }
+  },
+  methods: {
+    hideDialog() {
+      this.interfaceStore.infoDialog.isShown = false
+    }
+  }
+}
+</script>
+
 <template>
   <v-dialog
     width="700"
@@ -17,23 +34,6 @@
     </v-card>
   </v-dialog>
 </template>
-
-<script>
-import { useInterfaceStore } from '@/stores/interface.js'
-
-export default {
-  name: 'InfoDialog',
-  setup: () => {
-    const interfaceStore = useInterfaceStore()
-    return { interfaceStore }
-  },
-  methods: {
-    hideDialog() {
-      this.interfaceStore.infoDialog.isShown = false
-    }
-  }
-}
-</script>
 
 <style scoped lang="scss">
 :deep(.v-overlay__content) {

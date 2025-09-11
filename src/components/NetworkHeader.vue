@@ -1,3 +1,41 @@
+<script setup>
+import { computed } from 'vue'
+import CompactButton from '@/components/basic/CompactButton.vue'
+import CompactSwitch from '@/components/basic/CompactSwitch.vue'
+import { useInterfaceStore } from '@/stores/interface.js'
+import { useAppState } from '@/composables/useAppState.js'
+
+const props = defineProps({
+  errorMessage: {
+    type: String,
+    default: ''
+  },
+  isNetworkClusters: {
+    type: Boolean,
+    default: false
+  }
+})
+
+const emit = defineEmits([
+  'expandNetwork',
+  'update:isNetworkClusters',
+  'collapseNetwork',
+  'restoreNetwork'
+])
+
+const interfaceStore = useInterfaceStore()
+const { isEmpty } = useAppState()
+
+const isNetworkClustersModel = computed({
+  get() {
+    return props.isNetworkClusters
+  },
+  set(value) {
+    emit('update:isNetworkClusters', value)
+  }
+})
+</script>
+
 <template>
   <div class="level" :class="{ 'mb-0': interfaceStore.isNetworkCollapsed }">
     <div class="level-left has-text-white">
@@ -71,41 +109,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { computed } from 'vue'
-import CompactButton from '@/components/basic/CompactButton.vue'
-import CompactSwitch from '@/components/basic/CompactSwitch.vue'
-import { useInterfaceStore } from '@/stores/interface.js'
-import { useAppState } from '@/composables/useAppState.js'
-
-const props = defineProps({
-  errorMessage: {
-    type: String,
-    default: ''
-  },
-  isNetworkClusters: {
-    type: Boolean,
-    default: false
-  }
-})
-
-const emit = defineEmits([
-  'expandNetwork',
-  'update:isNetworkClusters',
-  'collapseNetwork',
-  'restoreNetwork'
-])
-
-const interfaceStore = useInterfaceStore()
-const { isEmpty } = useAppState()
-
-const isNetworkClustersModel = computed({
-  get() {
-    return props.isNetworkClusters
-  },
-  set(value) {
-    emit('update:isNetworkClusters', value)
-  }
-})
-</script>

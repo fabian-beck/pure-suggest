@@ -1,3 +1,20 @@
+<script>
+import { useInterfaceStore } from '@/stores/interface.js'
+
+export default {
+  name: 'ConfirmDialog',
+  setup: () => {
+    const interfaceStore = useInterfaceStore()
+    return { interfaceStore }
+  },
+  methods: {
+    hideDialog() {
+      this.interfaceStore.confirmDialog.isShown = false
+    }
+  }
+}
+</script>
+
 <template>
   <v-dialog
     width="500"
@@ -19,23 +36,6 @@
     </v-card>
   </v-dialog>
 </template>
-
-<script>
-import { useInterfaceStore } from '@/stores/interface.js'
-
-export default {
-  name: 'ConfirmDialog',
-  setup: () => {
-    const interfaceStore = useInterfaceStore()
-    return { interfaceStore }
-  },
-  methods: {
-    hideDialog() {
-      this.interfaceStore.confirmDialog.isShown = false
-    }
-  }
-}
-</script>
 
 <style scoped lang="scss">
 :deep(.v-overlay__content) {

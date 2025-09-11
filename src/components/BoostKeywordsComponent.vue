@@ -1,3 +1,50 @@
+<script setup>
+import { computed, nextTick, ref } from 'vue'
+import { useSessionStore } from '@/stores/session.js'
+import { useInterfaceStore } from '@/stores/interface.js'
+import { useAppState } from '@/composables/useAppState.js'
+
+const sessionStore = useSessionStore()
+const interfaceStore = useInterfaceStore()
+const { isEmpty, updateScores } = useAppState()
+
+const boost = ref(null)
+const isMenuOpen = ref(false)
+const initialKeywordString = ref('')
+
+const boostKeywordStringHtml = computed(() => {
+  let html = sessionStore.boostKeywordString
+  // wrap comma seperated words in span.word
+  html = html.replace(/\s*([^,|]+)/g, "<span class='word'>$1</span>")
+  // wrap | in span.alt
+  html = html.replace(/\|/g, "<span class='alt'>|</span>")
+  // wrap , in span.comma
+  html = html.replace(/,/g, "<span class='comma'>,</span>")
+  return html
+})
+
+function handleMenuInput(value) {
+  if (value) {
+    nextTick(() => {
+      boost.value?.focus()
+    })
+  }
+}
+
+function handleMenuToggle(isOpen) {
+  if (isOpen) {
+    // Menu is opening - store the initial value to compare later
+    initialKeywordString.value = sessionStore.boostKeywordString
+  } else {
+    // Menu is closing - check if changes were made and update scores if needed
+    const currentKeywordString = sessionStore.boostKeywordString
+    if (currentKeywordString !== initialKeywordString.value) {
+      updateScores()
+    }
+  }
+}
+</script>
+
 <template>
   <v-menu
     v-if="!isEmpty"
@@ -59,53 +106,6 @@
     </v-sheet>
   </v-menu>
 </template>
-
-<script setup>
-import { computed, nextTick, ref } from 'vue'
-import { useSessionStore } from '@/stores/session.js'
-import { useInterfaceStore } from '@/stores/interface.js'
-import { useAppState } from '@/composables/useAppState.js'
-
-const sessionStore = useSessionStore()
-const interfaceStore = useInterfaceStore()
-const { isEmpty, updateScores } = useAppState()
-
-const boost = ref(null)
-const isMenuOpen = ref(false)
-const initialKeywordString = ref('')
-
-const boostKeywordStringHtml = computed(() => {
-  let html = sessionStore.boostKeywordString
-  // wrap comma seperated words in span.word
-  html = html.replace(/\s*([^,|]+)/g, "<span class='word'>$1</span>")
-  // wrap | in span.alt
-  html = html.replace(/\|/g, "<span class='alt'>|</span>")
-  // wrap , in span.comma
-  html = html.replace(/,/g, "<span class='comma'>,</span>")
-  return html
-})
-
-function handleMenuInput(value) {
-  if (value) {
-    nextTick(() => {
-      boost.value?.focus()
-    })
-  }
-}
-
-function handleMenuToggle(isOpen) {
-  if (isOpen) {
-    // Menu is opening - store the initial value to compare later
-    initialKeywordString.value = sessionStore.boostKeywordString
-  } else {
-    // Menu is closing - check if changes were made and update scores if needed
-    const currentKeywordString = sessionStore.boostKeywordString
-    if (currentKeywordString !== initialKeywordString.value) {
-      updateScores()
-    }
-  }
-}
-</script>
 
 <style lang="scss" scoped>
 :deep(input) {
