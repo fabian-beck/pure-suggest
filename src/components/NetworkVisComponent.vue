@@ -310,18 +310,11 @@ export default {
         }, 10000)
       }
 
-      function initGraph() {
-        // Initialize DOI to index mapping
-        const doiToIndex = {}
-
-        // Filter authors based on factor
-        const allAuthors = this.authorStore.selectedPublicationsAuthors || []
-        const filteredAuthors = allAuthors.slice(
-          0,
-          this.authorNumberFactor * this.sessionStore.selectedPublications.length
-        )
-
-        // Get filtered publications
+      /**
+       * Collect and filter publications based on current settings
+       * @returns {Array} Array of filtered publications
+       */
+      function collectFilteredPublications() {
         let publications = []
 
         if (this.showSelectedNodes) {
@@ -349,6 +342,23 @@ export default {
             suggestedPubs.slice(0, Math.round(this.suggestedNumberFactor * 50))
           )
         }
+
+        return publications
+      }
+
+      function initGraph() {
+        // Initialize DOI to index mapping
+        const doiToIndex = {}
+
+        // Filter authors based on factor
+        const allAuthors = this.authorStore.selectedPublicationsAuthors || []
+        const filteredAuthors = allAuthors.slice(
+          0,
+          this.authorNumberFactor * this.sessionStore.selectedPublications.length
+        )
+
+        // Get filtered publications
+        const publications = collectFilteredPublications.call(this)
 
         // Create nodes
         let nodes = []
