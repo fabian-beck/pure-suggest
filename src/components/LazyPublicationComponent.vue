@@ -56,17 +56,22 @@ const props = defineProps({
     type: String,
     default: 'suggested',
     validator: (value) => ['selected', 'suggested', 'general'].includes(value)
+  },
+  isMobile: {
+    type: Boolean,
+    default: false
   }
 })
     const hasLoaded = ref(false);
     const targetRef = ref(null);
     let observer = null;
 
-    // Load immediately if publication is active/selected to avoid navigation issues
+    // Load immediately if publication is active/selected to avoid navigation issues, or if on mobile
     const shouldLoadImmediately = () => {
       return props.publication.isActive || 
              props.publication.isSelected || 
-             props.publication.isLinkedToActive;
+             props.publication.isLinkedToActive ||
+             props.isMobile;
     };
 
     onMounted(() => {
