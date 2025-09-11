@@ -26,42 +26,14 @@ function findAdjacentPublicationComponent(currentElement, direction) {
   return null
 }
 
-export function onKey(e) {
+/**
+ * Handle global keyboard shortcuts available when app has data
+ */
+function handleGlobalShortcuts(e) {
   const sessionStore = useSessionStore()
   const interfaceStore = useInterfaceStore()
-  const { clearSession, updateQueued, isEmpty } = useAppState()
-  if (
-    e.ctrlKey ||
-    e.shiftKey ||
-    e.metaKey ||
-    (e.repeat && !(e.key === 'ArrowDown' || e.key === 'ArrowUp'))
-  ) {
-    return
-  }
-  if (interfaceStore.isAnyOverlayShown && document.activeElement.nodeName != 'INPUT') {
-    e.preventDefault()
-    return
-  }
-  if (
-    (document.activeElement.nodeName === 'INPUT' && document.activeElement.type === 'text') ||
-    document.activeElement.className.includes('input')
-  ) {
-    if (e.key === 'Escape') {
-      document.activeElement.blur()
-    }
-    return
-  }
-  if (e.key === 's') {
-    e.preventDefault()
-    interfaceStore.isSearchModalDialogShown = true
-    return
-  }
-  if (isEmpty.value) return
-  if (e.key === 'a') {
-    e.preventDefault()
-    interfaceStore.openAuthorModalDialog()
-    return
-  }
+  const { clearSession, updateQueued } = useAppState()
+
   if (e.key === 'c') {
     e.preventDefault()
     clearSession()
@@ -105,13 +77,26 @@ export function onKey(e) {
     e.preventDefault()
     // Toggle performance panel in network visualization
     interfaceStore.togglePerformancePanel()
-  } else if (e.key === 'ArrowLeft') {
+  } else {
+    return false // Key not handled
+  }
+  return true // Key was handled
+}
+
+/**
+ * Handle navigation shortcuts (arrow keys for panel switching)
+ */
+function handleNavigationShortcuts(e) {
+  const interfaceStore = useInterfaceStore()
+
+  if (e.key === 'ArrowLeft') {
     e.preventDefault()
     // Close filter menu when navigating to publications
     interfaceStore.closeFilterMenu()
     interfaceStore.activatePublicationComponent(
       document.getElementById('selected').getElementsByClassName('publication-component')[0]
     )
+    return true
   } else if (e.key === 'ArrowRight') {
     e.preventDefault()
     // Close filter menu when navigating to publications
@@ -119,53 +104,123 @@ export function onKey(e) {
     interfaceStore.activatePublicationComponent(
       document.getElementById('suggested').getElementsByClassName('publication-component')[0]
     )
-  } else if (sessionStore.activePublication) {
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      e.preventDefault()
-      const activePublicationComponent = document.getElementsByClassName(
-        'publication-component is-active'
-      )[0]
-      try {
-        const direction = e.key === 'ArrowDown' ? 'next' : 'previous'
-        const nextPublicationComponent = findAdjacentPublicationComponent(
-          activePublicationComponent.parentNode,
-          direction
-        )
-        if (nextPublicationComponent) {
-          interfaceStore.activatePublicationComponent(nextPublicationComponent)
-        }
-      } catch {
-        console.log('Could not activate next/previous publication.')
-      }
-    } else if (e.key === '+') {
-      e.preventDefault()
-      const doi = sessionStore.activePublication.doi
-      sessionStore.queueForSelected(doi)
-    } else if (e.key === '-') {
-      e.preventDefault()
-      const doi = sessionStore.activePublication.doi
-      sessionStore.queueForExcluded(doi)
-    } else if (e.key === 'd') {
-      e.preventDefault()
-      window.open(sessionStore.activePublication.doiUrl)
-    } else if (e.key === 't' && sessionStore.activePublication.abstract) {
-      e.preventDefault()
-      interfaceStore.showAbstract(sessionStore.activePublication)
-    } else if (e.key === 'g') {
-      e.preventDefault()
-      window.open(sessionStore.activePublication.gsUrl)
-    } else if (e.key === 'x') {
-      e.preventDefault()
-      sessionStore.exportSingleBibtex(sessionStore.activePublication)
-    } else if (e.key === 'i') {
-      e.preventDefault()
-      const doi = sessionStore.activePublication.doi
-      // Only allow DOI filtering for selected publications, not suggested ones
-      if (sessionStore.isSelected(doi)) {
-        sessionStore.filter.toggleDoi(doi)
-        // Ensure filters are active when adding DOI
-        sessionStore.filter.isActive = true
-      }
-    }
+    return true
   }
+  return false // Key not handled
+}
+
+/**
+ * Handle shortcuts that work when a publication is active
+ */
+function handleActivePublicationShortcuts(e) {
+  const sessionStore = useSessionStore()
+  const interfaceStore = useInterfaceStore()
+  
+  if (!sessionStore.activePublication) return false
+
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault()
+    const activePublicationComponent = document.getElementsByClassName(
+      'publication-component is-active'
+    )[0]
+    try {
+      const direction = e.key === 'ArrowDown' ? 'next' : 'previous'
+      const nextPublicationComponent = findAdjacentPublicationComponent(
+        activePublicationComponent.parentNode,
+        direction
+      )
+      if (nextPublicationComponent) {
+        interfaceStore.activatePublicationComponent(nextPublicationComponent)
+      }
+    } catch {
+      console.log('Could not activate next/previous publication.')
+    }
+  } else if (e.key === '+') {
+    e.preventDefault()
+    const doi = sessionStore.activePublication.doi
+    sessionStore.queueForSelected(doi)
+  } else if (e.key === '-') {
+    e.preventDefault()
+    const doi = sessionStore.activePublication.doi
+    sessionStore.queueForExcluded(doi)
+  } else if (e.key === 'd') {
+    e.preventDefault()
+    window.open(sessionStore.activePublication.doiUrl)
+  } else if (e.key === 't' && sessionStore.activePublication.abstract) {
+    e.preventDefault()
+    interfaceStore.showAbstract(sessionStore.activePublication)
+  } else if (e.key === 'g') {
+    e.preventDefault()
+    window.open(sessionStore.activePublication.gsUrl)
+  } else if (e.key === 'x') {
+    e.preventDefault()
+    sessionStore.exportSingleBibtex(sessionStore.activePublication)
+  } else if (e.key === 'i') {
+    e.preventDefault()
+    const doi = sessionStore.activePublication.doi
+    // Only allow DOI filtering for selected publications, not suggested ones
+    if (sessionStore.isSelected(doi)) {
+      sessionStore.filter.toggleDoi(doi)
+      // Ensure filters are active when adding DOI
+      sessionStore.filter.isActive = true
+    }
+  } else {
+    return false // Key not handled
+  }
+  return true // Key was handled
+}
+
+export function onKey(e) {
+  const sessionStore = useSessionStore()
+  const interfaceStore = useInterfaceStore()
+  const { isEmpty } = useAppState()
+
+  // Early returns for modifier keys and repeats
+  if (
+    e.ctrlKey ||
+    e.shiftKey ||
+    e.metaKey ||
+    (e.repeat && !(e.key === 'ArrowDown' || e.key === 'ArrowUp'))
+  ) {
+    return
+  }
+
+  // Handle overlay states
+  if (interfaceStore.isAnyOverlayShown && document.activeElement.nodeName != 'INPUT') {
+    e.preventDefault()
+    return
+  }
+
+  // Handle input field focus
+  if (
+    (document.activeElement.nodeName === 'INPUT' && document.activeElement.type === 'text') ||
+    document.activeElement.className.includes('input')
+  ) {
+    if (e.key === 'Escape') {
+      document.activeElement.blur()
+    }
+    return
+  }
+
+  // Search shortcut (works even when empty)
+  if (e.key === 's') {
+    e.preventDefault()
+    interfaceStore.isSearchModalDialogShown = true
+    return
+  }
+
+  // Author shortcut (works when not empty)
+  if (!isEmpty.value && e.key === 'a') {
+    e.preventDefault()
+    interfaceStore.openAuthorModalDialog()
+    return
+  }
+
+  // Early return if app is empty
+  if (isEmpty.value) return
+
+  // Try handlers in order: global → navigation → active publication
+  if (handleGlobalShortcuts(e)) return
+  if (handleNavigationShortcuts(e)) return
+  if (handleActivePublicationShortcuts(e)) return
 }
