@@ -40,10 +40,12 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 ## Testing Strategy
 - **Unit Tests**: `tests/unit/` - Component and utility testing
 - **Performance Tests**: `tests/performance/` - Load and rendering benchmarks
+- **Browser Testing**: Use Playwright for UI and mobile interface testing
 - **Test Commands**: 
   - `npm test` - Run unit tests
   - `npm run test:perf` - Run performance tests
   - `npm run test:all` - Run both test suites
+- **Development Server**: Usually running at http://localhost:8080/ for testing
 
 ## Development Commands
 - `npm run dev` - Development server (port 8080)
