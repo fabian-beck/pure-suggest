@@ -41,7 +41,8 @@ describe('Author Bug Regression Tests', () => {
     it('should handle null publication author without crashing', () => {
       mockPublication.author = null
       expect(() => {
-        const author = new Author('Smith, John', 0, mockPublication, true, false, false)
+        const author = new Author('Smith, John', 0, mockPublication)
+        author.setScoring(true, false, false)
         expect(author.coauthors).toEqual({})
       }).not.toThrow()
     })
@@ -49,7 +50,8 @@ describe('Author Bug Regression Tests', () => {
     it('should handle undefined publication author without crashing', () => {
       mockPublication.author = undefined
       expect(() => {
-        const author = new Author('Doe, Jane', 0, mockPublication, true, false, false)
+        const author = new Author('Doe, Jane', 0, mockPublication)
+        author.setScoring(true, false, false)
         expect(author.coauthors).toEqual({})
       }).not.toThrow()
     })
@@ -59,8 +61,10 @@ describe('Author Bug Regression Tests', () => {
     let author1, author2
 
     beforeEach(() => {
-      author1 = new Author('Smith, John', 0, mockPublication, true, false, false)
-      author2 = new Author('Smith, John', 1, mockPublication, true, false, false)
+      author1 = new Author('Smith, John', 0, mockPublication)
+      author1.setScoring(true, false, false)
+      author2 = new Author('Smith, John', 1, mockPublication)
+      author2.setScoring(true, false, false)
     })
 
     it('should handle merging with undefined years without NaN', () => {

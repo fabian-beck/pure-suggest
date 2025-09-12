@@ -1,23 +1,14 @@
 import { SCORING } from '../constants/config.js'
 
 export default class Author {
-  constructor(
-    authorString,
-    authorIndex,
-    publication,
-    isAuthorScoreEnabled,
-    isFirstAuthorBoostEnabled,
-    isAuthorNewBoostEnabled
-  ) {
+  constructor(authorString, authorIndex, publication) {
     this.name = authorString.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g, '')
     this.id = Author.nameToId(this.name)
     this.count = 1
     this.firstAuthorCount = authorIndex === 0 ? 1 : 0
-
-    this.score =
-      (isAuthorScoreEnabled ? publication.score : 1) *
-      (isFirstAuthorBoostEnabled ? (authorIndex > 0 ? 1 : SCORING.FIRST_AUTHOR_BOOST) : 1) *
-      (isAuthorNewBoostEnabled ? (publication.isNew ? SCORING.NEW_PUBLICATION_BOOST : 1) : 1)
+    this.authorIndex = authorIndex
+    this.publication = publication
+    this.score = 1 // Default score, set via setScoring method
 
     this.keywords = publication.boostKeywords
       .map((keyword) => ({ [keyword]: 1 }))
@@ -36,6 +27,13 @@ export default class Author {
     this.yearMax = publication.year
     this.newPublication = publication.isNew
     this.publicationDois = [publication.doi]
+  }
+
+  setScoring(isAuthorScoreEnabled, isFirstAuthorBoostEnabled, isAuthorNewBoostEnabled) {
+    this.score =
+      (isAuthorScoreEnabled ? this.publication.score : 1) *
+      (isFirstAuthorBoostEnabled ? (this.authorIndex > 0 ? 1 : SCORING.FIRST_AUTHOR_BOOST) : 1) *
+      (isAuthorNewBoostEnabled ? (this.publication.isNew ? SCORING.NEW_PUBLICATION_BOOST : 1) : 1)
   }
 
   mergeWith(author) {
@@ -140,14 +138,8 @@ export default class Author {
     // assemble authors from selected publications
     publications.forEach((publication) => {
       publication.authorOrcid?.split('; ').forEach((authorString, i) => {
-        const author = new Author(
-          authorString,
-          i,
-          publication,
-          isAuthorScoreEnabled,
-          isFirstAuthorBoostEnabled,
-          isAuthorNewBoostEnabled
-        )
+        const author = new Author(authorString, i, publication)
+        author.setScoring(isAuthorScoreEnabled, isFirstAuthorBoostEnabled, isAuthorNewBoostEnabled)
         if (!authors[author.id]) {
           authors[author.id] = author
         } else {
