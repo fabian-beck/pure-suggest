@@ -129,11 +129,14 @@ export default class Publication {
 
     const authorArray = this.author.split('; ')
     const firstAuthor = authorArray[0].split(', ')[0]
-    return authorArray.length === 1
-      ? firstAuthor
-      : authorArray.length === 2
-        ? `${firstAuthor} and ${authorArray[1].split(', ')[0]}`
-        : `${firstAuthor} et al.`
+    
+    if (authorArray.length === 1) {
+      return firstAuthor
+    } else if (authorArray.length === 2) {
+      return `${firstAuthor} and ${authorArray[1].split(', ')[0]}`
+    } else {
+      return `${firstAuthor} et al.`
+    }
   }
 
   /**

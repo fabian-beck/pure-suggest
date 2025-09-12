@@ -31,8 +31,14 @@ export function getLinkDistance(link, isNetworkClusters, selectedPublicationsCou
  * Calculate link strength based on link type and network mode
  */
 export function getLinkStrength(link, isNetworkClusters) {
-  const internalFactor =
-    link.type === 'citation' ? (link.internal ? 1 : 1.5) : link.type === 'keyword' ? 0.5 : 2.5 // author
+  let internalFactor
+  if (link.type === 'citation') {
+    internalFactor = link.internal ? 1 : 1.5
+  } else if (link.type === 'keyword') {
+    internalFactor = 0.5
+  } else {
+    internalFactor = 2.5 // author
+  }
 
   const clustersFactor = isNetworkClusters ? 1 : 0.5
   return 0.05 * clustersFactor * internalFactor

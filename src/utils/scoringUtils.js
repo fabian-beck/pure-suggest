@@ -176,18 +176,20 @@ export function calculatePublicationScore(citationCount, referenceCount, isSelec
  * @returns {string} HSL color string
  */
 export function getScoreColor(score) {
-  const lightness =
-    score >= SCORE_COLOR_THRESHOLDS.VERY_HIGH
-      ? SCORE_LIGHTNESS.VERY_HIGH
-      : score >= SCORE_COLOR_THRESHOLDS.HIGH
-        ? SCORE_LIGHTNESS.HIGH
-        : score >= SCORE_COLOR_THRESHOLDS.MEDIUM_HIGH
-          ? SCORE_LIGHTNESS.MEDIUM_HIGH
-          : score >= SCORE_COLOR_THRESHOLDS.MEDIUM
-            ? SCORE_LIGHTNESS.MEDIUM
-            : score >= SCORE_COLOR_THRESHOLDS.LOW
-              ? SCORE_LIGHTNESS.LOW
-              : SCORE_LIGHTNESS.DEFAULT
+  let lightness
+  if (score >= SCORE_COLOR_THRESHOLDS.VERY_HIGH) {
+    lightness = SCORE_LIGHTNESS.VERY_HIGH
+  } else if (score >= SCORE_COLOR_THRESHOLDS.HIGH) {
+    lightness = SCORE_LIGHTNESS.HIGH
+  } else if (score >= SCORE_COLOR_THRESHOLDS.MEDIUM_HIGH) {
+    lightness = SCORE_LIGHTNESS.MEDIUM_HIGH
+  } else if (score >= SCORE_COLOR_THRESHOLDS.MEDIUM) {
+    lightness = SCORE_LIGHTNESS.MEDIUM
+  } else if (score >= SCORE_COLOR_THRESHOLDS.LOW) {
+    lightness = SCORE_LIGHTNESS.LOW
+  } else {
+    lightness = SCORE_LIGHTNESS.DEFAULT
+  }
   return `hsl(0, 0%, ${lightness}%)`
 }
 

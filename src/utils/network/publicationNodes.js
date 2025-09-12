@@ -99,11 +99,12 @@ export function updatePublicationNodes(nodeSelection, activePublication, existin
 
   // Set up tooltip content
   publicationNodes.attr('data-tippy-content', (d) => {
-    const queueStatus = d.isQueuingForSelected
-      ? ' and marked to be added to selected publications'
-      : d.isQueuingForExcluded
-        ? ' and marked to be added to excluded publications'
-        : ''
+    let queueStatus = ''
+    if (d.isQueuingForSelected) {
+      queueStatus = ' and marked to be added to selected publications'
+    } else if (d.isQueuingForExcluded) {
+      queueStatus = ' and marked to be added to excluded publications'
+    }
 
     return `<b>${d.publication.title ? d.publication.title : '[unknown title]'}</b> (${
       d.publication.authorShort ? `${d.publication.authorShort  }, ` : ''
