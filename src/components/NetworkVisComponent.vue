@@ -373,31 +373,39 @@ export default {
           const g = enter.append('g').attr('class', (d) => `node-container ${d.type}`)
 
           // Initialize publication nodes using module
-          initializePublicationNodes(g, this.activatePublication, (publication, isHovered) => {
-            if (isHovered) {
-              this.interfaceStore.setHoveredPublication(publication)
-            } else {
+          const publicationNodes = initializePublicationNodes(g)
+          
+          // Add event handlers to publication nodes
+          publicationNodes
+            .select('rect')
+            .on('click', this.activatePublication)
+            .on('mouseover', (event, d) => {
+              this.interfaceStore.setHoveredPublication(d.publication)
+              this.updatePublicationHighlighting()
+            })
+            .on('mouseout', () => {
               this.interfaceStore.setHoveredPublication(null)
-            }
-            this.updatePublicationHighlighting()
-          })
+              this.updatePublicationHighlighting()
+            })
 
           // Initialize keyword nodes using module
-          initializeKeywordNodes(
-            g,
-            this.keywordNodeDrag,
-            this.keywordNodeClick,
-            this.onKeywordNodeMouseover,
-            this.onKeywordNodeMouseout
-          )
+          const keywordNodes = initializeKeywordNodes(g)
+          
+          // Add event handlers to keyword nodes
+          keywordNodes
+            .call(this.keywordNodeDrag())
+            .on('click', this.keywordNodeClick)
+            .on('mouseover', this.onKeywordNodeMouseover)
+            .on('mouseout', this.onKeywordNodeMouseout)
 
           // Initialize author nodes using module
-          initializeAuthorNodes(
-            g,
-            this.onAuthorNodeMouseover,
-            this.onAuthorNodeMouseout,
-            this.authorNodeClick
-          )
+          const authorNodes = initializeAuthorNodes(g)
+          
+          // Add event handlers to author nodes
+          authorNodes
+            .on('mouseover', this.onAuthorNodeMouseover)
+            .on('mouseout', this.onAuthorNodeMouseout)
+            .on('click', this.authorNodeClick)
 
           return g
         })

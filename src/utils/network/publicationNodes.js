@@ -38,16 +38,13 @@ export function createPublicationNodes(publications, doiToIndex, selectedQueue, 
 /**
  * Initialize publication node DOM elements
  */
-export function initializePublicationNodes(nodeSelection, activatePublication, hoverHandler) {
+export function initializePublicationNodes(nodeSelection) {
   const publicationNodes = nodeSelection.filter((d) => d.type === 'publication')
 
   // Add rect element (main visual element for publication nodes)
   publicationNodes
     .append('rect')
     .attr('pointer-events', 'all')
-    .on('click', activatePublication)
-    .on('mouseover', (event, d) => hoverHandler(d.publication, true))
-    .on('mouseout', (event, d) => hoverHandler(d.publication, false))
 
   // Add score text (displays the publication score)
   publicationNodes.append('text').classed('score', true).attr('pointer-events', 'none')

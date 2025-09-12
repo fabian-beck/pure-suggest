@@ -58,12 +58,7 @@ export function createAuthorLinks(filteredAuthors, publications, doiToIndex) {
 /**
  * Initialize author node DOM elements
  */
-export function initializeAuthorNodes(
-  nodeSelection,
-  authorNodeMouseover,
-  authorNodeMouseout,
-  authorNodeClick
-) {
+export function initializeAuthorNodes(nodeSelection) {
   const authorNodes = nodeSelection.filter((d) => d.type === 'author')
 
   // Add circle element
@@ -71,12 +66,6 @@ export function initializeAuthorNodes(
 
   // Add text element for initials
   authorNodes.append('text').attr('pointer-events', 'none')
-
-  // Add event handlers
-  authorNodes
-    .on('mouseover', authorNodeMouseover)
-    .on('mouseout', authorNodeMouseout)
-    .on('click', authorNodeClick)
 
   return authorNodes
 }

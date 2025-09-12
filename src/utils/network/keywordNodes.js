@@ -54,24 +54,11 @@ export function createKeywordLinks(uniqueBoostKeywords, publicationsFiltered, do
 /**
  * Initialize keyword node DOM elements
  */
-export function initializeKeywordNodes(
-  nodeSelection,
-  keywordNodeDrag,
-  keywordNodeClick,
-  keywordNodeMouseover,
-  keywordNodeMouseout
-) {
+export function initializeKeywordNodes(nodeSelection) {
   const keywordNodes = nodeSelection.filter((d) => d.type === 'keyword')
 
   // Add text element
   keywordNodes.append('text')
-
-  // Add event handlers
-  keywordNodes
-    .call(keywordNodeDrag())
-    .on('click', keywordNodeClick)
-    .on('mouseover', keywordNodeMouseover)
-    .on('mouseout', keywordNodeMouseout)
 
   return keywordNodes
 }
