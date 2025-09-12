@@ -1,16 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import SuggestedPublicationsComponent from '@/components/SuggestedPublicationsComponent.vue'
 import { useSessionStore } from '@/stores/session.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { commonComponentStubs } from '../../helpers/testUtils.js'
-
-// Simplified useAppState mock
-const mockLoadMoreSuggestions = vi.fn()
-vi.mock('@/composables/useAppState.js', () => ({
-  useAppState: () => ({ loadMoreSuggestions: mockLoadMoreSuggestions })
-}))
 
 describe('SuggestedPublicationsComponent', () => {
   let pinia
@@ -25,9 +19,6 @@ describe('SuggestedPublicationsComponent', () => {
     
     // Set up default store state
     interfaceStore.isMobile = false
-    
-    vi.clearAllMocks()
-    mockLoadMoreSuggestions.mockClear()
     
     // Set up default session store state
     sessionStore.suggestion = null
@@ -94,7 +85,7 @@ describe('SuggestedPublicationsComponent', () => {
     expect(wrapper.html()).toContain('compact-button')
   })
 
-  it('disables load more button when all suggestions are loaded', () => {
+  it('shows settings button when suggestions are available', () => {
     sessionStore.suggestion = {
       totalSuggestions: 1,
       publications: [
@@ -109,8 +100,7 @@ describe('SuggestedPublicationsComponent', () => {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'v-badge': { template: '<div class="v-badge"><slot></slot></div>' },
           'CompactButton': { 
-            template: '<button class="compact-button" :disabled="disabled"><slot></slot></button>',
-            props: ['disabled']
+            template: '<button class="compact-button"><slot></slot></button>',
           },
           'tippy': { template: '<div class="tippy"><slot></slot></div>' },
           'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
@@ -118,13 +108,13 @@ describe('SuggestedPublicationsComponent', () => {
       }
     })
 
-    const loadMoreBtn = wrapper.find('.compact-button')
-    expect(loadMoreBtn.exists()).toBe(true)
-    // The button should be disabled when all suggestions are loaded
-    expect(loadMoreBtn.attributes('disabled')).toBeDefined()
+    const settingsBtn = wrapper.find('.compact-button')
+    expect(settingsBtn.exists()).toBe(true)
+    // The settings button should always be enabled (no disabled attribute)
+    expect(settingsBtn.attributes('disabled')).toBeUndefined()
   })
 
-  it('calls loadMoreSuggestions when load more button is clicked', async () => {
+  it('opens settings dialog when settings button is clicked', async () => {
     sessionStore.suggestion = {
       totalSuggestions: 1000,
       publications: [
@@ -139,9 +129,8 @@ describe('SuggestedPublicationsComponent', () => {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'v-badge': { template: '<div class="v-badge"><slot></slot></div>' },
           'CompactButton': { 
-            template: '<button class="compact-button" @click="$emit(\'click\')" :disabled="disabled"><slot></slot></button>',
-            emits: ['click'],
-            props: ['disabled']
+            template: '<button class="compact-button" @click="$emit(\'click\')"><slot></slot></button>',
+            emits: ['click']
           },
           'tippy': { template: '<div class="tippy"><slot></slot></div>' },
           'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
@@ -149,9 +138,12 @@ describe('SuggestedPublicationsComponent', () => {
       }
     })
 
-    const loadMoreBtn = wrapper.find('.compact-button')
-    await loadMoreBtn.trigger('click')
-    expect(mockLoadMoreSuggestions).toHaveBeenCalled()
+    expect(interfaceStore.isSuggestionsSettingsDialogShown).toBe(false)
+    
+    const settingsBtn = wrapper.find('.compact-button')
+    await settingsBtn.trigger('click')
+    
+    expect(interfaceStore.isSuggestionsSettingsDialogShown).toBe(true)
   })
 
   it('renders PublicationListComponent with correct props', () => {

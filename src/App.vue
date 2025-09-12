@@ -17,6 +17,7 @@
     <AboutModalDialog />
     <KeyboardControlsModalDialog />
     <ShareSessionModalDialog />
+    <SuggestionsSettingsDialog />
     <!-- Other dialogs and overlays -->
     <v-overlay v-model="interfaceStore.isLoading" class="align-center justify-center main-overlay" persistent>
       <div class="d-flex flex-column align-center justify-center">

@@ -42,10 +42,8 @@
               }}.
             </template>
           </tippy>
-          <CompactButton icon="mdi-playlist-plus has-text-white" class="ml-2"
-            v-tippy="'Load more suggested publications.'" @click="loadMoreSuggestions()" :disabled="sessionStore.suggestedPublications.length ===
-              sessionStore.suggestion.totalSuggestions
-              "></CompactButton>
+          <CompactButton icon="mdi-cog has-text-white" class="ml-2"
+            v-tippy="'Suggestions settings - Set the number of publications to load.'" @click="openSuggestionsSettings()"></CompactButton>
         </div>
       </div>
     </div>
@@ -56,16 +54,20 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useSessionStore } from "@/stores/session.js"
-import { useAppState } from "@/composables/useAppState.js"
+import { useInterfaceStore } from "@/stores/interface.js"
 
 defineProps({
   title: String,
 })
 
 const sessionStore = useSessionStore()
-const { loadMoreSuggestions } = useAppState()
+const interfaceStore = useInterfaceStore()
 
 const publicationList = ref(null)
+
+const openSuggestionsSettings = () => {
+  interfaceStore.isSuggestionsSettingsDialogShown = true
+}
 
 onMounted(() => {
   sessionStore.$onAction(({ name, after }) => {
