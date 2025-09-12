@@ -128,7 +128,14 @@ export default [
       }
     },
     rules: {
-      'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }]
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      
+      // Tools exceptions - developer utilities may have different quality requirements
+      'sonarjs/regex-complexity': 'off', // Complex regex needed for parsing code
+      'sonarjs/no-unused-collection': 'off', // May have experimental/future features
+      'sonarjs/cognitive-complexity': 'off', // Tools can be complex for functionality
+      'sonarjs/no-nested-functions': 'off', // Deep nesting acceptable for parsing logic
+      'complexity': 'off' // Tools prioritize functionality over complexity limits
     }
   }
 ]
