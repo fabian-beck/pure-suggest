@@ -2,7 +2,7 @@ import { SCORING } from '../constants/config.js'
 
 export default class Author {
   constructor(authorString, authorIndex, publication) {
-    this.name = authorString.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g, '')
+    this.name = authorString.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx])/g, '')
     this.id = Author.nameToId(this.name)
     this.count = 1
     this.firstAuthorCount = authorIndex === 0 ? 1 : 0
@@ -13,7 +13,7 @@ export default class Author {
     this.keywords = publication.boostKeywords
       .map((keyword) => ({ [keyword]: 1 }))
       .reduce((a, b) => ({ ...a, ...b }), {})
-    const orcid = authorString.match(/(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g)
+    const orcid = authorString.match(/(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx])/g)
     this.orcid = orcid ? orcid[0] : undefined
     this.alternativeNames = [this.name]
     this.coauthors =

@@ -23,7 +23,7 @@ describe('Publication Bug Regression Tests', () => {
       SURVEY_KEYWORDS: [],
       ORDINAL_REGEX: /\d+/,
       ROMAN_NUMERAL_REGEX: /[IVX]+/,
-      ORCID_REGEX: /\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1}/,
+      ORCID_REGEX: /\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]/,
       TITLE_WORD_MAP: {},
       PUBLICATION_TAGS: {}
     }))

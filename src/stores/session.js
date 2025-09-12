@@ -135,7 +135,7 @@ export const useSessionStore = defineStore('session', {
         // Replace multiple underscores with single underscore
         .replace(/_+/g, '_')
         // Remove leading/trailing underscores
-        .replace(/^_+|_+$/g, '')
+        .replace(/(^_+|_+$)/g, '')
 
       // Handle edge case of empty filename after sanitization
       if (!filename || filename === '_') {

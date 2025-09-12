@@ -32,7 +32,7 @@ const ORDINAL_REGEX = /\d+(st|nd|rd|th)/i
 
 const ROMAN_NUMERAL_REGEX = /^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})(\?.?)$/i
 
-const ORCID_REGEX = /(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]{1})/g
+const ORCID_REGEX = /(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx])/g
 
 const TITLE_WORD_MAP = {
   a: 'a',
@@ -240,7 +240,7 @@ export default class Publication {
       }
       this.container += `${mappedWord ? mappedWord : word  } `
     })
-    this.container = this.container.trim().replace(/^[. ]+|[. ]+$/g, '')
+    this.container = this.container.trim().replace(/(^[. ]+|[. ]+$)/g, '')
     this.container = cleanTitle(this.container)
   }
 

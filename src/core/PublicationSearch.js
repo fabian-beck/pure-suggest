@@ -19,7 +19,7 @@ export default class PublicationSearch {
       // cutting characters that might be included in DOI, but very unlikely at the end
       doi = doi
         .trim()
-        .replace(/^[.,;]+|[.,;]+$/g, '')
+        .replace(/(^[.,;]+|[.,;]+$)/g, '')
         .replace('\\_', '_')
       if (doi.indexOf('10.') === 0 && !dois.includes(doi)) {
         dois.push(doi)
