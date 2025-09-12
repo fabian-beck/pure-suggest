@@ -194,6 +194,12 @@ export default {
           })
         }
       }
+    },
+    'interfaceStore.hoveredPublication': {
+      handler () {
+        // Update publication highlighting when hover state changes from external components
+        this.updatePublicationHighlighting()
+      }
     }
   },
   mounted() {
