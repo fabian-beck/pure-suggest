@@ -100,15 +100,7 @@ export function calculateLinkClasses(d, activePublication) {
     if (!(d.source.publication.isSelected && d.target.publication.isSelected)) {
       classes.push('external')
     }
-  } else if (d.type === 'keyword') {
-    if (activePublication) {
-      if (d.target.publication.isActive) {
-        classes.push('active')
-      } else {
-        classes.push('non-active')
-      }
-    }
-  } else if (d.type === 'author') {
+  } else if (d.type === 'keyword' || d.type === 'author') {
     if (activePublication) {
       if (d.target.publication.isActive) {
         classes.push('active')
