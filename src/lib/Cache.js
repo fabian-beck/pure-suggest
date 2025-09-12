@@ -80,6 +80,7 @@ async function handleCacheCleanupAndRetry(url, cacheObject) {
   try {
     // local storage cache full, delete random elements
     for (let i = 0; i < CACHE_CONFIG.CLEANUP_BATCH_SIZE; i++) {
+      // eslint-disable-next-line sonarjs/pseudo-random
       const randomStoredUrl = keysArray[Math.floor(Math.random() * keysArray.length)]
       del(randomStoredUrl)
     }
