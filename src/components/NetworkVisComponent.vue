@@ -52,7 +52,12 @@ import {
 } from '@/utils/network/links.js'
 
 // Year labels
-import { updateYearLabels } from '@/utils/network/yearLabels.js'
+import { 
+  generateYearRange, 
+  updateYearLabelContent, 
+  updateYearLabelRects, 
+  updateYearLabelVisibility 
+} from '@/utils/network/yearLabels.js'
 
 // Components
 import NetworkControls from '@/components/NetworkControls.vue'
@@ -475,17 +480,20 @@ export default {
 
         // Update year labels
         const hasPublications = this.sessionStore.publicationsFiltered?.length > 0
-        const shouldShow = !this.isEmpty && !this.isNetworkClusters
+        const shouldShow = hasPublications && !this.isEmpty && !this.isNetworkClusters
 
-        this.label = updateYearLabels(
-          this.label,
-          hasPublications,
-          this.sessionStore.yearMin,
-          this.sessionStore.yearMax,
-          shouldShow,
-          this.yearX,
-          this.svgHeight
-        )
+        if (shouldShow) {
+          const yearRange = generateYearRange(
+            this.sessionStore.yearMin,
+            this.sessionStore.yearMax
+          )
+
+          this.label = updateYearLabelContent(this.label, yearRange)
+          updateYearLabelRects(this.label, this.yearX)
+          updateYearLabelVisibility(this.label, true, this.yearX, this.svgHeight)
+        } else if (this.label) {
+          this.label.selectAll('text, rect').attr('visibility', 'hidden')
+        }
 
         // Update graph data in simulation
         this.updateGraphData(this.graph.nodes, this.graph.links)

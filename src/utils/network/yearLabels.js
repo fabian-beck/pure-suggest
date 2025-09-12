@@ -79,38 +79,18 @@ export function updateYearLabelVisibility(labelSelection, isVisible, yearXCalcul
 }
 
 /**
- * Complete year labels update function
- * This is the main function that orchestrates all year label updates
+ * Updates year label content (data binding and text)
+ * @param {Object} labelSelection - D3 selection for year labels
+ * @param {Array<number>} yearRange - Array of years to display
+ * @returns {Object} Updated label selection
  */
-export function updateYearLabels(
-  labelSelection,
-  hasPublications,
-  yearMin,
-  yearMax,
-  shouldShow,
-  yearXCalculator,
-  svgHeight
-) {
-  // Early return if no publications
-  if (!hasPublications) {
-    return labelSelection
-  }
-
-  // Validate label selection
+export function updateYearLabelContent(labelSelection, yearRange) {
   if (!labelSelection) {
-    throw new Error('Label selection is undefined - cannot update year labels')
+    throw new Error('Label selection is undefined - cannot update year label content')
   }
 
-  // Generate year range and initialize labels
-  const yearRange = generateYearRange(yearMin, yearMax)
   const updatedLabels = initializeYearLabels(labelSelection, yearRange)
-
-  // Update visual properties
-  updateYearLabelRects(updatedLabels, yearXCalculator)
   updateYearLabelText(updatedLabels)
-
-  // Set visibility and positioning
-  updateYearLabelVisibility(updatedLabels, shouldShow, yearXCalculator, svgHeight)
-
   return updatedLabels
 }
+

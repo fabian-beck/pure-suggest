@@ -208,7 +208,11 @@ vi.mock('@/utils/network/links.js', () => ({
 }))
 
 vi.mock('@/utils/network/yearLabels.js', () => ({
-  updateYearLabels: vi.fn(() => createMockSelection())
+  shouldUpdateYearLabels: vi.fn(() => true),
+  generateYearRange: vi.fn(() => [2020, 2025]),
+  updateYearLabelContent: vi.fn(() => createMockSelection()),
+  updateYearLabelLayout: vi.fn(),
+  hideYearLabels: vi.fn()
 }))
 
 // Mock components
