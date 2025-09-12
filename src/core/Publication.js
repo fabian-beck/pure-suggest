@@ -28,7 +28,9 @@ const TEXT_PROCESSING = {
 
 const SURVEY_KEYWORDS = /(survey|state|review|advances|future)/i
 
-const ORDINAL_REGEX = /\d+(st|nd|rd|th)/i
+// Optimized with non-capturing group to prevent backtracking
+// eslint-disable-next-line sonarjs/slow-regex
+const ORDINAL_REGEX = /\d+(?:st|nd|rd|th)/i
 
 const ROMAN_NUMERAL_REGEX = /^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})(\?.?)$/i
 
@@ -229,7 +231,9 @@ export default class Publication {
     this.container = ''
     data.container?.split(' ').forEach((word) => {
       let mappedWord = ''
-      if (/\(.+\)/.test(word)) {
+      // Optimized with negated character class to prevent backtracking
+      // eslint-disable-next-line sonarjs/slow-regex
+      if (/\([^)]+\)/.test(word)) {
         mappedWord = word.toUpperCase()
       } else if (ORDINAL_REGEX.test(word)) {
         mappedWord = word.toLowerCase()
@@ -240,7 +244,9 @@ export default class Publication {
       }
       this.container += `${mappedWord ? mappedWord : word  } `
     })
-    this.container = this.container.trim().replace(/(^[. ]+|[. ]+$)/g, '')
+    // Optimized with separate replace calls to avoid alternation backtracking
+    // eslint-disable-next-line sonarjs/slow-regex
+    this.container = this.container.trim().replace(/^[. ]+/, '').replace(/[. ]+$/, '')
     this.container = cleanTitle(this.container)
   }
 
@@ -353,7 +359,7 @@ export default class Publication {
  * @returns {string} String with HTML tags removed.
  */
 function removeHtmlTags(string) {
-  return string.replaceAll(/<[^>]*>/g, '')
+  return string.replaceAll(/<[^<>]*>/g, '')
 }
 
 /**

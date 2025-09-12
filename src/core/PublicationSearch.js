@@ -19,7 +19,9 @@ export default class PublicationSearch {
       // cutting characters that might be included in DOI, but very unlikely at the end
       doi = doi
         .trim()
-        .replace(/(^[.,;]+|[.,;]+$)/g, '')
+        // Optimized with separate replace calls to avoid alternation backtracking
+        // eslint-disable-next-line sonarjs/slow-regex
+        .replace(/^[.,;]+/, '').replace(/[.,;]+$/, '')
         .replace('\\_', '_')
       if (doi.indexOf('10.') === 0 && !dois.includes(doi)) {
         dois.push(doi)

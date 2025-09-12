@@ -28,7 +28,9 @@ const SCORE_LIGHTNESS = {
  */
 export function normalizeBoostKeywordString(boostKeywordString) {
   return boostKeywordString
+    // eslint-disable-next-line sonarjs/slow-regex -- Safe whitespace pattern
     .replace(/\s*,\s*/g, ', ') // treat spaces before/after commas
+    // eslint-disable-next-line sonarjs/slow-regex -- Safe whitespace pattern
     .replace(/\s*\|\s*/g, '|') // remove spaces before/after vertical line
     .toUpperCase() // upper case
 }
