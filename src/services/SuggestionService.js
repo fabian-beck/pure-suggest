@@ -40,25 +40,28 @@ export class SuggestionService {
     // Build suggestions from citation network
     const suggestedPublications = {}
 
-    // Helper function to process DOI arrays with the same pattern
-    const processDoisArray = (dois, counterType, listType, sourceDoi) => {
-      const counterConfig = { counter: counterType, doiList: listType, sourceDoi }
-      const context = { isExcluded, isSelected, getSelectedPublicationByDoi }
-      
-      dois.forEach((doi) => {
-        this._incrementSuggestedPublicationCounter(
-          suggestedPublications,
-          doi,
-          counterConfig,
-          context
-        )
-      })
-    }
-
     selectedPublications.forEach((publication) => {
-      // Process citations and references using the helper
-      processDoisArray(publication.citationDois, 'citationCount', 'referenceDois', publication.doi)
-      processDoisArray(publication.referenceDois, 'referenceCount', 'citationDois', publication.doi)
+      // Process citations (publication cites these DOIs)
+      publication.citationDois.forEach((doi) => {
+        if (isExcluded(doi)) return
+        
+        if (isSelected(doi)) {
+          getSelectedPublicationByDoi(doi).citationCount++
+        } else {
+          this._addCitationSuggestion(suggestedPublications, doi, publication.doi)
+        }
+      })
+      
+      // Process references (these DOIs cite this publication)  
+      publication.referenceDois.forEach((doi) => {
+        if (isExcluded(doi)) return
+        
+        if (isSelected(doi)) {
+          getSelectedPublicationByDoi(doi).referenceCount++
+        } else {
+          this._addReferenceSuggestion(suggestedPublications, doi, publication.doi)
+        }
+      })
     })
 
     // Process and rank suggestions
@@ -103,29 +106,27 @@ export class SuggestionService {
   }
 
   /**
-   * Increments suggestion counters for a given DOI
+   * Adds citation suggestion (suggested DOI is referenced by source)
    * @private
    */
-  static _incrementSuggestedPublicationCounter(
-    suggestedPublications,
-    doi,
-    counterConfig,
-    context
-  ) {
-    const { counter, doiList, sourceDoi } = counterConfig
-    const { isExcluded, isSelected, getSelectedPublicationByDoi } = context
-    
-    if (isExcluded(doi)) return
-
-    if (isSelected(doi)) {
-      getSelectedPublicationByDoi(doi)[counter]++
-    } else {
-      if (!suggestedPublications[doi]) {
-        suggestedPublications[doi] = new Publication(doi)
-      }
-      suggestedPublications[doi][doiList].push(sourceDoi)
-      suggestedPublications[doi][counter]++
+  static _addCitationSuggestion(suggestedPublications, doi, sourceDoi) {
+    if (!suggestedPublications[doi]) {
+      suggestedPublications[doi] = new Publication(doi)
     }
+    suggestedPublications[doi].referenceDois.push(sourceDoi)
+    suggestedPublications[doi].citationCount++
+  }
+
+  /**
+   * Adds reference suggestion (suggested DOI cites source)
+   * @private
+   */
+  static _addReferenceSuggestion(suggestedPublications, doi, sourceDoi) {
+    if (!suggestedPublications[doi]) {
+      suggestedPublications[doi] = new Publication(doi)
+    }
+    suggestedPublications[doi].citationDois.push(sourceDoi)
+    suggestedPublications[doi].referenceCount++
   }
 
   /**
