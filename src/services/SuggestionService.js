@@ -42,14 +42,15 @@ export class SuggestionService {
 
     // Helper function to process DOI arrays with the same pattern
     const processDoisArray = (dois, counterType, listType, sourceDoi) => {
+      const counterConfig = { counter: counterType, doiList: listType, sourceDoi }
+      const context = { isExcluded, isSelected, getSelectedPublicationByDoi }
+      
       dois.forEach((doi) => {
         this._incrementSuggestedPublicationCounter(
           suggestedPublications,
           doi,
-          counterType,
-          listType,
-          sourceDoi,
-          { isExcluded, isSelected, getSelectedPublicationByDoi }
+          counterConfig,
+          context
         )
       })
     }
@@ -108,24 +109,22 @@ export class SuggestionService {
   static _incrementSuggestedPublicationCounter(
     suggestedPublications,
     doi,
-    counter,
-    doiList,
-    sourceDoi,
-    { isExcluded, isSelected, getSelectedPublicationByDoi }
+    counterConfig,
+    context
   ) {
-    if (!isExcluded(doi)) {
-      if (!isSelected(doi)) {
-        // Add to suggestions
-        if (!suggestedPublications[doi]) {
-          const citingPublication = new Publication(doi)
-          suggestedPublications[doi] = citingPublication
-        }
-        suggestedPublications[doi][doiList].push(sourceDoi)
-        suggestedPublications[doi][counter]++
-      } else {
-        // Update selected publication counters
-        getSelectedPublicationByDoi(doi)[counter]++
+    const { counter, doiList, sourceDoi } = counterConfig
+    const { isExcluded, isSelected, getSelectedPublicationByDoi } = context
+    
+    if (isExcluded(doi)) return
+
+    if (isSelected(doi)) {
+      getSelectedPublicationByDoi(doi)[counter]++
+    } else {
+      if (!suggestedPublications[doi]) {
+        suggestedPublications[doi] = new Publication(doi)
       }
+      suggestedPublications[doi][doiList].push(sourceDoi)
+      suggestedPublications[doi][counter]++
     }
   }
 

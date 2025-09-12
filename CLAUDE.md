@@ -128,3 +128,4 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 ## Others
 
 - prefix unused vars only if removing is not possible
+- Don't use paramater, config, or context objects to hide complex parameter setups of functions
