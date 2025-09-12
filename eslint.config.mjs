@@ -108,7 +108,15 @@ export default [
       // Disable length and complexity warnings for tests - they often need longer functions for comprehensive testing
       'max-lines-per-function': 'off',
       'complexity': 'off',
-      'max-nested-callbacks': 'off'
+      'max-nested-callbacks': 'off',
+      
+      // SonarJS exceptions for test files - these patterns are acceptable/necessary in tests
+      'sonarjs/no-nested-functions': 'off', // Deep callback nesting is common in test setups
+      'sonarjs/pseudo-random': 'off', // Math.random() is fine for test data generation
+      'sonarjs/no-identical-expressions': 'off', // Repetitive assertions are normal in tests
+      'sonarjs/no-identical-functions': 'off', // Test helper duplication is sometimes needed
+      'sonarjs/no-os-command-from-path': 'off', // Performance tests may need system commands
+      'sonarjs/cognitive-complexity': 'off' // Complex test scenarios are acceptable
     }
   },
   {
