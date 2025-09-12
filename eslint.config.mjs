@@ -1,11 +1,13 @@
 import js from '@eslint/js'
 import pluginVue from 'eslint-plugin-vue'
+import pluginSonarJS from 'eslint-plugin-sonarjs'
 import configPrettier from 'eslint-config-prettier'
 import globals from 'globals'
 
 export default [
   js.configs.recommended,
   ...pluginVue.configs['flat/strongly-recommended'],
+  pluginSonarJS.configs.recommended,
   configPrettier,
   {
     languageOptions: {
@@ -62,6 +64,11 @@ export default [
       'max-nested-callbacks': ['warn', 3],
       'max-params': ['warn', 4],
       'max-lines-per-function': ['warn', 200],
+      
+      // SonarJS Rules for detecting wrapper functions
+      'sonarjs/prefer-immediate-return': 'error',
+      'sonarjs/no-identical-functions': 'error',
+      'sonarjs/cognitive-complexity': ['warn', 15],
       
       // Error Prevention
       'yoda': 'error',
