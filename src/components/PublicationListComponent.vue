@@ -41,53 +41,52 @@ const publicationsWithHeaders = computed(() => {
     }))
   }
 
-  // Use composable for complex header logic
+  // Optimized: single pass through publications, evaluate filter once per publication
   const result = []
-  const filteredCount =
-    props.publicationType === 'selected'
-      ? sessionStore.selectedPublicationsFilteredCount
-      : sessionStore.suggestedPublicationsFilteredCount
-  const nonFilteredCount =
-    props.publicationType === 'selected'
-      ? sessionStore.selectedPublicationsNonFilteredCount
-      : sessionStore.suggestedPublicationsNonFilteredCount
+  const filteredPublications = []
+  const nonFilteredPublications = []
+
+  // Single iteration with filter evaluation cached
+  for (const publication of props.publications) {
+    if (sessionStore.filter.matches(publication)) {
+      filteredPublications.push(publication)
+    } else {
+      nonFilteredPublications.push(publication)
+    }
+  }
 
   // Add filtered publications with header
-  if (filteredCount > 0) {
+  if (filteredPublications.length > 0) {
     result.push({
       type: 'header',
-      text: `<i class="mdi mdi-filter"></i> Filtered (${filteredCount})`,
+      text: `<i class="mdi mdi-filter"></i> Filtered (${filteredPublications.length})`,
       key: 'filtered-header'
     })
 
-    props.publications
-      .filter((pub) => sessionStore.filter.matches(pub))
-      .forEach((publication) => {
-        result.push({
-          type: 'publication',
-          publication,
-          key: publication.doi
-        })
+    for (const publication of filteredPublications) {
+      result.push({
+        type: 'publication',
+        publication,
+        key: publication.doi
       })
+    }
   }
 
   // Add non-filtered publications with header
-  if (nonFilteredCount > 0) {
+  if (nonFilteredPublications.length > 0) {
     result.push({
       type: 'header',
-      text: `Other publications (${nonFilteredCount})`,
+      text: `Other publications (${nonFilteredPublications.length})`,
       key: 'non-filtered-header'
     })
 
-    props.publications
-      .filter((pub) => !sessionStore.filter.matches(pub))
-      .forEach((publication) => {
-        result.push({
-          type: 'publication',
-          publication,
-          key: publication.doi
-        })
+    for (const publication of nonFilteredPublications) {
+      result.push({
+        type: 'publication',
+        publication,
+        key: publication.doi
       })
+    }
   }
 
   return result
