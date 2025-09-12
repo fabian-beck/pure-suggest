@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
 import PublicationDescription from '@/components/PublicationDescription.vue'
 
 // Mock stores
@@ -72,9 +73,9 @@ describe('PublicationDescription', () => {
       global: {
         stubs: {
           'v-icon': true,
-          'InlineIcon': true,
-          'CompactButton': { template: '<button><slot></slot></button>' },
-          'PublicationTag': { template: '<span class="tag"><slot></slot></span>' }
+          InlineIcon: true,
+          CompactButton: { template: '<button><slot></slot></button>' },
+          PublicationTag: { template: '<span class="tag"><slot></slot></span>' }
         }
       }
     })
@@ -93,9 +94,9 @@ describe('PublicationDescription', () => {
       global: {
         stubs: {
           'v-icon': true,
-          'InlineIcon': true,
-          'CompactButton': { template: '<button><slot></slot></button>' },
-          'PublicationTag': { template: '<span class="tag"><slot></slot></span>' }
+          InlineIcon: true,
+          CompactButton: { template: '<button><slot></slot></button>' },
+          PublicationTag: { template: '<span class="tag"><slot></slot></span>' }
         }
       }
     })
@@ -116,9 +117,9 @@ describe('PublicationDescription', () => {
       global: {
         stubs: {
           'v-icon': true,
-          'InlineIcon': true,
-          'CompactButton': { template: '<button><slot></slot></button>' },
-          'PublicationTag': { template: '<span class="tag"><slot></slot></span>' }
+          InlineIcon: true,
+          CompactButton: { template: '<button><slot></slot></button>' },
+          PublicationTag: { template: '<span class="tag"><slot></slot></span>' }
         }
       }
     })
@@ -136,9 +137,9 @@ describe('PublicationDescription', () => {
       global: {
         stubs: {
           'v-icon': true,
-          'InlineIcon': true,
-          'CompactButton': { template: '<button><slot></slot></button>' },
-          'PublicationTag': { template: '<span class="tag"><slot></slot></span>' }
+          InlineIcon: true,
+          CompactButton: { template: '<button><slot></slot></button>' },
+          PublicationTag: { template: '<span class="tag"><slot></slot></span>' }
         }
       }
     })
@@ -156,9 +157,9 @@ describe('PublicationDescription', () => {
       global: {
         stubs: {
           'v-icon': true,
-          'InlineIcon': true,
-          'CompactButton': { template: '<button><slot></slot></button>' },
-          'PublicationTag': { template: '<span class="tag"><slot></slot></span>' }
+          InlineIcon: true,
+          CompactButton: { template: '<button><slot></slot></button>' },
+          PublicationTag: { template: '<span class="tag"><slot></slot></span>' }
         }
       }
     })
@@ -176,20 +177,20 @@ describe('PublicationDescription', () => {
       global: {
         stubs: {
           'v-icon': true,
-          'InlineIcon': true,
-          'CompactButton': { 
+          InlineIcon: true,
+          CompactButton: {
             template: '<button @click="$emit(\'click\')" v-bind="$attrs"><slot></slot></button>',
             emits: ['click']
           },
-          'PublicationTag': { template: '<span class="tag"><slot></slot></span>' }
+          PublicationTag: { template: '<span class="tag"><slot></slot></span>' }
         }
       }
     })
 
     // Find and click the abstract button (has mdi-text icon)
     const buttons = wrapper.findAllComponents({ name: 'CompactButton' })
-    const abstractButton = buttons.find(button => button.attributes('icon') === 'mdi-text')
-    
+    const abstractButton = buttons.find((button) => button.attributes('icon') === 'mdi-text')
+
     if (abstractButton) {
       await abstractButton.trigger('click')
       expect(mockInterfaceStore.showAbstract).toHaveBeenCalledWith(mockPublication)
@@ -211,9 +212,9 @@ describe('PublicationDescription', () => {
       global: {
         stubs: {
           'v-icon': true,
-          'InlineIcon': true,
-          'CompactButton': { template: '<button><slot></slot></button>' },
-          'PublicationTag': { template: '<span class="tag"><slot></slot></span>' }
+          InlineIcon: true,
+          CompactButton: { template: '<button><slot></slot></button>' },
+          PublicationTag: { template: '<span class="tag"><slot></slot></span>' }
         }
       }
     })

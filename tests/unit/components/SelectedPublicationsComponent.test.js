@@ -1,10 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
 import SelectedPublicationsComponent from '@/components/SelectedPublicationsComponent.vue'
-import { useSessionStore } from '@/stores/session.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useQueueStore } from '@/stores/queue.js'
+import { useSessionStore } from '@/stores/session.js'
 
 // Mock useAppState for the functions the component uses
 const mockLoadExample = vi.fn()
@@ -51,10 +52,10 @@ describe('SelectedPublicationsComponent', () => {
       global: {
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
-          'InlineIcon': { template: '<i class="inline-icon"><slot></slot></i>' },
+          CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
+          InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -74,10 +75,10 @@ describe('SelectedPublicationsComponent', () => {
         plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
-          'InlineIcon': { template: '<i class="inline-icon"><slot></slot></i>' },
+          CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
+          InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -98,10 +99,10 @@ describe('SelectedPublicationsComponent', () => {
         plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
-          'InlineIcon': { template: '<i class="inline-icon"><slot></slot></i>' },
+          CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
+          InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -118,14 +119,15 @@ describe('SelectedPublicationsComponent', () => {
         plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'CompactButton': { 
-            template: '<button class="compact-button" @click="$emit(\'click\')" :icon="icon"><slot></slot></button>',
+          CompactButton: {
+            template:
+              '<button class="compact-button" @click="$emit(\'click\')" :icon="icon"><slot></slot></button>',
             emits: ['click'],
             props: ['icon']
           },
-          'InlineIcon': { template: '<i class="inline-icon"><slot></slot></i>' },
+          InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -142,14 +144,15 @@ describe('SelectedPublicationsComponent', () => {
         plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'CompactButton': { 
-            template: '<button class="compact-button" @click="$emit(\'click\')" :icon="icon"><slot></slot></button>',
+          CompactButton: {
+            template:
+              '<button class="compact-button" @click="$emit(\'click\')" :icon="icon"><slot></slot></button>',
             emits: ['click'],
             props: ['icon']
           },
-          'InlineIcon': { template: '<i class="inline-icon"><slot></slot></i>' },
+          InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -167,15 +170,15 @@ describe('SelectedPublicationsComponent', () => {
     queueStore.selectedQueue = []
     queueStore.excludedQueue = []
 
-    const wrapper = mount(SelectedPublicationsComponent, {
+    mount(SelectedPublicationsComponent, {
       global: {
         plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
-          'InlineIcon': { template: '<i class="inline-icon"><slot></slot></i>' },
+          CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
+          InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -194,10 +197,10 @@ describe('SelectedPublicationsComponent', () => {
         plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
-          'InlineIcon': { template: '<i class="inline-icon"><slot></slot></i>' },
+          CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
+          InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          'PublicationListComponent': { 
+          PublicationListComponent: {
             template: '<div class="publication-list">Publications</div>',
             props: ['publications', 'showSectionHeaders', 'publicationType']
           }

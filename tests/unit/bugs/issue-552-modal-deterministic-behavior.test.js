@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { useInterfaceStore } from '@/stores/interface.js'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+
 import { useAuthorStore } from '@/stores/author.js'
+import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
 
 // Mock constants
@@ -22,17 +23,17 @@ describe('Issue #552: Modal Deterministic Behavior', () => {
   beforeEach(() => {
     const pinia = createPinia()
     setActivePinia(pinia)
-    
+
     interfaceStore = useInterfaceStore()
     authorStore = useAuthorStore()
     sessionStore = useSessionStore()
-    
+
     // Mock the stores
     vi.spyOn(authorStore, 'computeSelectedPublicationsAuthors').mockReturnValue()
     vi.spyOn(sessionStore, 'updatePublicationScores').mockImplementation(() => {
       // Mark publications as having scores to avoid repeated updates
-      sessionStore.selectedPublications.forEach(pub => {
-        pub.score = 10  // Some non-zero score
+      sessionStore.selectedPublications.forEach((pub) => {
+        pub.score = 10 // Some non-zero score
         pub.boostKeywords = ['test']
         pub.citationCount = 5
         pub.referenceCount = 10
@@ -43,10 +44,10 @@ describe('Issue #552: Modal Deterministic Behavior', () => {
   it('should not recompute authors when opening modal multiple times with valid author data', () => {
     // SETUP: Publications with valid scores and existing author data
     sessionStore.selectedPublications = [
-      { 
-        doi: '10.1234/test1', 
+      {
+        doi: '10.1234/test1',
         title: 'Test Publication 1',
-        author: 'Smith, John; Doe, Jane', 
+        author: 'Smith, John; Doe, Jane',
         authorOrcid: 'Smith, John; Doe, Jane',
         score: 10,
         boostKeywords: ['test'],
@@ -56,7 +57,7 @@ describe('Issue #552: Modal Deterministic Behavior', () => {
         isNew: false
       }
     ]
-    
+
     // Set up existing author data (simulating already computed authors)
     authorStore.selectedPublicationsAuthors = [
       { id: 'smith, john', name: 'Smith, John', score: 10, count: 1 },
@@ -67,13 +68,13 @@ describe('Issue #552: Modal Deterministic Behavior', () => {
     for (let i = 0; i < 5; i++) {
       // Reset computation spy before each test
       authorStore.computeSelectedPublicationsAuthors.mockClear()
-      
+
       // Open modal
       interfaceStore.openAuthorModalDialog()
-      
-      // Close modal (this sets isAuthorModalDialogShown = false)  
+
+      // Close modal (this sets isAuthorModalDialogShown = false)
       interfaceStore.isAuthorModalDialogShown = false
-      
+
       // VERIFICATION: Authors should NOT be recomputed since data is valid
       expect(authorStore.computeSelectedPublicationsAuthors).not.toHaveBeenCalled()
     }
@@ -83,10 +84,10 @@ describe('Issue #552: Modal Deterministic Behavior', () => {
     // SETUP: Identical conditions each time
     const setupIdenticalState = () => {
       sessionStore.selectedPublications = [
-        { 
-          doi: '10.1234/test1', 
+        {
+          doi: '10.1234/test1',
           title: 'Test Publication 1',
-          author: 'Smith, John; Doe, Jane', 
+          author: 'Smith, John; Doe, Jane',
           authorOrcid: 'Smith, John; Doe, Jane',
           score: 10,
           boostKeywords: ['test'],
@@ -96,7 +97,7 @@ describe('Issue #552: Modal Deterministic Behavior', () => {
           isNew: false
         }
       ]
-      
+
       authorStore.selectedPublicationsAuthors = [
         { id: 'smith, john', name: 'Smith, John', score: 10, count: 1 },
         { id: 'doe, jane', name: 'Doe, Jane', score: 10, count: 1 }
@@ -104,17 +105,17 @@ describe('Issue #552: Modal Deterministic Behavior', () => {
     }
 
     const results = []
-    
+
     // TEST: Run the same scenario multiple times
     for (let i = 0; i < 10; i++) {
       setupIdenticalState()
-      
+
       // Clear spy
       authorStore.computeSelectedPublicationsAuthors.mockClear()
-      
+
       // Open modal
       interfaceStore.openAuthorModalDialog()
-      
+
       // Record whether computation was triggered
       results.push(authorStore.computeSelectedPublicationsAuthors.mock.calls.length > 0)
     }
@@ -124,17 +125,17 @@ describe('Issue #552: Modal Deterministic Behavior', () => {
     for (let i = 1; i < results.length; i++) {
       expect(results[i]).toBe(firstResult)
     }
-    
+
     // In this case, all should be false (no recomputation needed)
-    expect(results.every(result => result === false)).toBe(true)
+    expect(results.every((result) => result === false)).toBe(true)
   })
 
   it('should only recompute when actually needed (no authors or stale publications)', () => {
     sessionStore.selectedPublications = [
-      { 
-        doi: '10.1234/test1', 
+      {
+        doi: '10.1234/test1',
         title: 'Test Publication 1',
-        author: 'Smith, John', 
+        author: 'Smith, John',
         authorOrcid: 'Smith, John',
         score: 10,
         boostKeywords: ['test'],
@@ -142,15 +143,17 @@ describe('Issue #552: Modal Deterministic Behavior', () => {
         referenceCount: 10
       }
     ]
-    
+
     // Case 1: No authors - should recompute
     authorStore.selectedPublicationsAuthors = []
     interfaceStore.openAuthorModalDialog()
     expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledTimes(1)
-    
+
     // Case 2: Authors exist and publications are valid - should NOT recompute
     authorStore.computeSelectedPublicationsAuthors.mockClear()
-    authorStore.selectedPublicationsAuthors = [{ id: 'smith, john', name: 'Smith, John', score: 10, count: 1 }]
+    authorStore.selectedPublicationsAuthors = [
+      { id: 'smith, john', name: 'Smith, John', score: 10, count: 1 }
+    ]
     interfaceStore.openAuthorModalDialog()
     expect(authorStore.computeSelectedPublicationsAuthors).not.toHaveBeenCalled()
   })

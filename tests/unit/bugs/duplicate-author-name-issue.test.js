@@ -1,11 +1,12 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { createVuetify } from 'vuetify'
 import { createPinia, setActivePinia } from 'pinia'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { createVuetify } from 'vuetify'
+
 import AuthorModalDialog from '@/components/modal/AuthorModalDialog.vue'
 import { useAuthorStore } from '@/stores/author.js'
-import { useSessionStore } from '@/stores/session.js'
 import { useInterfaceStore } from '@/stores/interface.js'
+import { useSessionStore } from '@/stores/session.js'
 
 const vuetify = createVuetify()
 
@@ -18,11 +19,11 @@ describe('Author Alternative Names Issue #540', () => {
   beforeEach(() => {
     pinia = createPinia()
     setActivePinia(pinia)
-    
+
     authorStore = useAuthorStore()
     sessionStore = useSessionStore()
     interfaceStore = useInterfaceStore()
-    
+
     // Mock the stores
     vi.spyOn(authorStore, 'computeSelectedPublicationsAuthors').mockReturnValue()
   })
@@ -84,12 +85,12 @@ describe('Author Alternative Names Issue #540', () => {
 
     // Should show "also listed as" section since there are alternative names
     expect(text).toContain('also listed as')
-    
+
     // Should NOT show the primary name "Klaus Müller" in the alternative names section
     // We check this by looking for the v-chip containing the primary name
     const chips = wrapper.findAll('.alternative-name')
-    const chipTexts = chips.map(chip => chip.text().trim())
-    
+    const chipTexts = chips.map((chip) => chip.text().trim())
+
     // Should only show "Klaus Muller" (without umlaut), not "Klaus Müller" (primary name)
     expect(chipTexts).toContain('Klaus Muller')
     expect(chipTexts).not.toContain('Klaus Müller') // This should NOT appear in chips
@@ -121,10 +122,10 @@ describe('Author Alternative Names Issue #540', () => {
     const text = wrapper.text()
 
     expect(text).toContain('also listed as')
-    
+
     const chips = wrapper.findAll('.alternative-name')
-    const chipTexts = chips.map(chip => chip.text().trim())
-    
+    const chipTexts = chips.map((chip) => chip.text().trim())
+
     // Should show 3 alternatives but NOT the primary name
     expect(chipTexts).not.toContain('John Doe') // Primary name should not appear
     expect(chipTexts).toContain('J. Doe')
