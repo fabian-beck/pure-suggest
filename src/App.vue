@@ -129,7 +129,7 @@ export default {
     }, 1000)
   },
   beforeUnmount() {
-    document.removeEventListener('keydown', this.onKey)
+    document.removeEventListener('keydown', onKey)
   }
 }
 </script>
