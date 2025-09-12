@@ -11,7 +11,7 @@ import { vi } from 'vitest'
  */
 export const createMockSelection = () => {
   const mockData = []
-  const selection = {
+  return {
     append: vi.fn(() => createMockSelection()),
     attr: vi.fn(() => createMockSelection()),
     select: vi.fn(() => createMockSelection()),
@@ -59,7 +59,6 @@ export const createMockSelection = () => {
     node: vi.fn(() => ({ getBoundingClientRect: () => ({ x: 0, y: 0, width: 100, height: 100 }) })),
     nodes: vi.fn(() => [])
   }
-  return selection
 }
 
 /**
