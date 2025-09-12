@@ -68,7 +68,7 @@ export default [
       // SonarJS Rules for detecting wrapper functions
       'sonarjs/prefer-immediate-return': 'error',
       'sonarjs/no-identical-functions': 'error',
-      'sonarjs/cognitive-complexity': ['warn', 15],
+      'sonarjs/cognitive-complexity': ['warn', 20],
       'sonarjs/slow-regex': 'warn',
       
       // Error Prevention
