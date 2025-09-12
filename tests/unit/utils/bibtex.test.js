@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+
 import { generateBibtex } from '@/utils/bibtex.js'
 
 describe('generateBibtex', () => {
@@ -41,7 +42,9 @@ describe('generateBibtex', () => {
       const result = generateBibtex(publication)
 
       expect(result).toContain('@inproceedings{10.1145/conference.2022.456')
-      expect(result).toContain('booktitle = {Proceedings of the International Conference on Software Testing}')
+      expect(result).toContain(
+        'booktitle = {Proceedings of the International Conference on Software Testing}'
+      )
       expect(result).not.toContain('journal =')
       expect(result).not.toContain('volume =')
     })

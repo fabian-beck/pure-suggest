@@ -1,5 +1,7 @@
-import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { describe, it, expect, vi } from 'vitest'
+
+import PublicationComponentSearch from '@/components/PublicationComponentSearch.vue'
 
 // Mock IndexedDB for this test since PublicationDescription imports things that need it
 global.indexedDB = {
@@ -28,8 +30,6 @@ vi.mock('@/lib/Cache.js', () => ({
   clearCache: vi.fn()
 }))
 
-import PublicationComponentSearch from '@/components/PublicationComponentSearch.vue'
-
 describe('PublicationComponentSearch', () => {
   const mockPublication = {
     doi: '10.1234/test-publication',
@@ -47,8 +47,8 @@ describe('PublicationComponentSearch', () => {
       },
       global: {
         stubs: {
-          'PublicationDescription': true,
-          'CompactButton': true
+          PublicationDescription: true,
+          CompactButton: true
         }
       }
     })
@@ -66,8 +66,8 @@ describe('PublicationComponentSearch', () => {
       },
       global: {
         stubs: {
-          'PublicationDescription': true,
-          'CompactButton': true
+          PublicationDescription: true,
+          CompactButton: true
         }
       }
     })
@@ -77,5 +77,4 @@ describe('PublicationComponentSearch', () => {
     expect(description.props('highlighted')).toBe('Test Query')
     expect(description.props('alwaysShowDetails')).toBe(true)
   })
-
 })

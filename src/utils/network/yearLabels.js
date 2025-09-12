@@ -1,27 +1,28 @@
 /**
  * Year Labels Management for Network Visualization
- * 
+ *
  * This composable handles the creation and positioning of year labels
  * in timeline mode for the citation network visualization.
  */
 
-import { CURRENT_YEAR } from "@/constants/config.js";
+import { CURRENT_YEAR } from '@/constants/config.js'
 
-const MARGIN = 50;
+const MARGIN = 50
 
 /**
  * Generate array of years to display as labels (every 5 years)
  */
 export function generateYearRange(yearMin, yearMax) {
   if (yearMin === undefined || yearMax === undefined) {
-    return [];
+    return []
   }
-  
-  const rangeLength = yearMax - yearMin + 6;
-  const startYear = yearMin - 4;
-  
-  return Array.from({ length: rangeLength }, (_, i) => startYear + i)
-    .filter((year) => year % 5 === 0);
+
+  const rangeLength = yearMax - yearMin + 6
+  const startYear = yearMin - 4
+
+  return Array.from({ length: rangeLength }, (_, i) => startYear + i).filter(
+    (year) => year % 5 === 0
+  )
 }
 
 /**
@@ -31,12 +32,12 @@ export function initializeYearLabels(labelSelection, yearRange) {
   return labelSelection
     .data(yearRange, (d) => d)
     .join((enter) => {
-      const g = enter.append("g");
-      g.append("rect");
-      g.append("text");
-      g.append("text");
-      return g;
-    });
+      const g = enter.append('g')
+      g.append('rect')
+      g.append('text')
+      g.append('text')
+      return g
+    })
 }
 
 /**
@@ -44,12 +45,12 @@ export function initializeYearLabels(labelSelection, yearRange) {
  */
 export function updateYearLabelRects(labelSelection, yearXCalculator) {
   labelSelection
-    .selectAll("rect")
-    .attr("width", (d) => yearXCalculator(Math.min(d + 5, CURRENT_YEAR)) - yearXCalculator(d))
-    .attr("height", 20000)
-    .attr("fill", (d) => d % 10 === 0 ? "#fafafa" : "white")
-    .attr("x", -24)
-    .attr("y", -10000);
+    .selectAll('rect')
+    .attr('width', (d) => yearXCalculator(Math.min(d + 5, CURRENT_YEAR)) - yearXCalculator(d))
+    .attr('height', 20000)
+    .attr('fill', (d) => (d % 10 === 0 ? '#fafafa' : 'white'))
+    .attr('x', -24)
+    .attr('y', -10000)
 }
 
 /**
@@ -57,56 +58,39 @@ export function updateYearLabelRects(labelSelection, yearXCalculator) {
  */
 export function updateYearLabelText(labelSelection) {
   labelSelection
-    .selectAll("text")
-    .attr("text-anchor", "middle")
+    .selectAll('text')
+    .attr('text-anchor', 'middle')
     .text((d) => d)
-    .attr("fill", "grey");
+    .attr('fill', 'grey')
 }
 
 /**
  * Set visibility and positioning of year labels
  */
 export function updateYearLabelVisibility(labelSelection, isVisible, yearXCalculator, svgHeight) {
-  labelSelection
-    .selectAll("text, rect")
-    .attr("visibility", isVisible ? "visible" : "hidden");
-    
+  labelSelection.selectAll('text, rect').attr('visibility', isVisible ? 'visible' : 'hidden')
+
   if (isVisible) {
     labelSelection
-      .attr("transform", (d) => `translate(${yearXCalculator(d)}, ${svgHeight / 2 - MARGIN})`)
-      .select("text")
-      .attr("y", -svgHeight + 2 * MARGIN);
+      .attr('transform', (d) => `translate(${yearXCalculator(d)}, ${svgHeight / 2 - MARGIN})`)
+      .select('text')
+      .attr('y', -svgHeight + 2 * MARGIN)
   }
 }
 
-
 /**
- * Complete year labels update function
- * This is the main function that orchestrates all year label updates
+ * Updates year label content (data binding and text)
+ * @param {Object} labelSelection - D3 selection for year labels
+ * @param {Array<number>} yearRange - Array of years to display
+ * @returns {Object} Updated label selection
  */
-export function updateYearLabels(labelSelection, hasPublications, yearMin, yearMax, shouldShow, yearXCalculator, svgHeight) {
-  
-  // Early return if no publications
-  if (!hasPublications) {
-    return labelSelection;
-  }
-  
-  // Validate label selection
+export function updateYearLabelContent(labelSelection, yearRange) {
   if (!labelSelection) {
-    throw new Error("Label selection is undefined - cannot update year labels");
+    throw new Error('Label selection is undefined - cannot update year label content')
   }
-  
-  // Generate year range and initialize labels
-  const yearRange = generateYearRange(yearMin, yearMax);
-  const updatedLabels = initializeYearLabels(labelSelection, yearRange);
-  
-  // Update visual properties
-  updateYearLabelRects(updatedLabels, yearXCalculator);
-  updateYearLabelText(updatedLabels);
-  
-  // Set visibility and positioning
-  updateYearLabelVisibility(updatedLabels, shouldShow, yearXCalculator, svgHeight);
-  
-  return updatedLabels;
+
+  const updatedLabels = initializeYearLabels(labelSelection, yearRange)
+  updateYearLabelText(updatedLabels)
+  return updatedLabels
 }
 

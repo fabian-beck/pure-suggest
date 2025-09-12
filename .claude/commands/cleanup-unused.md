@@ -7,6 +7,7 @@ Find and clean unused legacy code using the automated unused function detection 
 ## Quick Analysis
 
 Run the automated unused function finder:
+
 ```bash
 node tools/find-unused-functions.js
 ```
@@ -23,6 +24,7 @@ This tool analyzes the codebase for:
 ## Manual Verification Required
 
 The tool provides candidates that need manual verification. For each identified unused piece, verify it's truly unused by checking:
+
 - Import statements across the codebase
 - Dynamic imports or string-based references
 - Template usage in Vue components
@@ -33,6 +35,7 @@ The tool provides candidates that need manual verification. For each identified 
 ## Focus Areas
 
 The analysis covers:
+
 - Vue components and composables in `src/components/` and `src/composables/`
 - Utility functions in `src/lib/` and `src/core/`
 - Store modules that may have unused getters/actions
@@ -41,6 +44,7 @@ The analysis covers:
 ## Safe Removal Guidelines
 
 Prioritize removal candidates with highest confidence:
+
 1. **Test utilities never imported** - Safe to remove
 2. **Private methods with single occurrence** - Usually safe
 3. **Legacy helper functions** - Check for string-based calls first

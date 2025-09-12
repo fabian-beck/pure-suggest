@@ -5,6 +5,7 @@ This document outlines testing best practices established through systematic ref
 ## 🎯 Core Principles
 
 ### 1. **Test Behavior, Not Implementation**
+
 - ✅ **Good**: Test user interactions and expected outcomes
 - ❌ **Bad**: Test internal component state or method calls
 
@@ -19,6 +20,7 @@ expect(mockStore.addPublication).toHaveBeenCalledWith(publication.doi)
 ```
 
 ### 2. **Simplify Mocking**
+
 - Use minimal, behavior-focused mocks
 - Avoid overly complex mock implementations
 - Focus on essential functionality only
@@ -31,15 +33,17 @@ const createMockSelection = () => {
 
 // ✅ Good - simple behavior mock
 const createD3ChainableMock = () => {
-  const mock = vi.fn(() => createD3ChainableMock())
-  ['append', 'attr', 'select'].forEach(method => {
-    mock[method] = vi.fn(() => createD3ChainableMock())
-  })
+  const mock = vi
+    .fn(() => createD3ChainableMock())
+    [('append', 'attr', 'select')].forEach((method) => {
+      mock[method] = vi.fn(() => createD3ChainableMock())
+    })
   return mock
 }
 ```
 
 ### 3. **Remove Redundant Tests**
+
 - One representative test per behavior
 - Avoid excessive boundary testing
 - Focus on meaningful edge cases only
@@ -47,10 +51,18 @@ const createD3ChainableMock = () => {
 ```javascript
 // ❌ Bad - excessive boundary testing
 describe('score boundaries', () => {
-  it('should handle score exactly at threshold', () => { /* test */ })
-  it('should handle score just below threshold', () => { /* test */ })  
-  it('should handle score just above threshold', () => { /* test */ })
-  it('should handle fractional scores near boundary', () => { /* test */ })
+  it('should handle score exactly at threshold', () => {
+    /* test */
+  })
+  it('should handle score just below threshold', () => {
+    /* test */
+  })
+  it('should handle score just above threshold', () => {
+    /* test */
+  })
+  it('should handle fractional scores near boundary', () => {
+    /* test */
+  })
   // ... 5 more similar tests
 })
 
@@ -69,12 +81,12 @@ describe('score display', () => {
 Import and use standardized patterns:
 
 ```javascript
-import { 
-  createMockSessionStore, 
-  createMockInterfaceStore, 
+import {
+  createMockSessionStore,
+  createMockInterfaceStore,
   commonComponentStubs,
   createMockPublication,
-  mockExternalDependencies 
+  mockExternalDependencies
 } from '../../helpers/testUtils.js'
 ```
 
@@ -87,8 +99,8 @@ const mockSessionStore = createMockSessionStore({
   selectedPublications: [mockPublication1, mockPublication2]
 })
 
-vi.mock('@/stores/session.js', () => ({ 
-  useSessionStore: () => mockSessionStore 
+vi.mock('@/stores/session.js', () => ({
+  useSessionStore: () => mockSessionStore
 }))
 ```
 
@@ -114,19 +126,21 @@ vi.mock('@/lib/Util.js', () => mockExternalDependencies.Util)
 ## 📋 Test Structure Guidelines
 
 ### File Organization
+
 ```
 tests/
 ├── helpers/
 │   └── testUtils.js          # Shared utilities and mocks
 ├── unit/
 │   ├── components/           # Component tests
-│   ├── stores/              # Store tests  
+│   ├── stores/              # Store tests
 │   ├── utils/               # Utility function tests
 │   └── bugs/                # Regression tests for specific bugs
 └── performance/             # Performance benchmarks
 ```
 
 ### Test Naming
+
 - Use descriptive test names that explain the behavior
 - Group related tests in `describe` blocks
 - Use consistent naming patterns
@@ -138,7 +152,7 @@ describe('PublicationComponent', () => {
       // Test user interaction and expected behavior
     })
   })
-  
+
   describe('Display Logic', () => {
     it('should show score with appropriate styling', () => {
       // Test visual behavior
@@ -150,6 +164,7 @@ describe('PublicationComponent', () => {
 ## ⚠️ Anti-Patterns to Avoid
 
 ### 1. **Over-Mocking External Libraries**
+
 ```javascript
 // ❌ Bad - 100+ lines of D3.js mocking
 global.d3 = {
@@ -163,15 +178,16 @@ global.d3 = {
 }
 
 // ✅ Good - Simple behavior stub
-vi.mock('d3', () => ({ 
+vi.mock('d3', () => ({
   select: vi.fn(() => createD3ChainableMock()),
   zoom: vi.fn(() => ({ on: vi.fn(), transform: vi.fn() }))
 }))
 ```
 
 ### 2. **Testing Implementation Details**
+
 ```javascript
-// ❌ Bad - brittle to implementation changes  
+// ❌ Bad - brittle to implementation changes
 expect(wrapper.vm.svg).toBeDefined()
 expect(wrapper.vm.simulation.nodes).toHaveBeenCalled()
 
@@ -181,12 +197,21 @@ expect(wrapper.emitted('publication-selected')).toBeTruthy()
 ```
 
 ### 3. **Excessive Edge Case Testing**
+
 ```javascript
 // ❌ Bad - testing every possible edge case
-it('should handle null DOI', () => { /* test */ })
-it('should handle empty string DOI', () => { /* test */ })
-it('should handle undefined DOI', () => { /* test */ })
-it('should handle whitespace-only DOI', () => { /* test */ })
+it('should handle null DOI', () => {
+  /* test */
+})
+it('should handle empty string DOI', () => {
+  /* test */
+})
+it('should handle undefined DOI', () => {
+  /* test */
+})
+it('should handle whitespace-only DOI', () => {
+  /* test */
+})
 
 // ✅ Good - test meaningful edge cases only
 it('should handle invalid DOI gracefully', () => {
@@ -197,6 +222,7 @@ it('should handle invalid DOI gracefully', () => {
 ## 📊 Success Metrics
 
 Our refactoring achieved:
+
 - **80% reduction** in D3 mocking complexity
 - **Zero test failures** during refactoring
 - **8 redundant tests removed** (473 → 465 total)
@@ -214,16 +240,19 @@ Our refactoring achieved:
 ## 🔧 Common Test Utilities Reference
 
 ### Mock Factories
+
 - `createMockSessionStore(overrides)` - Standard session store
-- `createMockInterfaceStore(overrides)` - Standard interface store  
+- `createMockInterfaceStore(overrides)` - Standard interface store
 - `createMockPublication(overrides)` - Standard publication object
 - `createD3ChainableMock()` - D3.js chainable methods
 
 ### Component Stubs
+
 - `commonComponentStubs` - Standard Vuetify and custom component stubs
 - `mockExternalDependencies` - Cache, Util, and other external mocks
 
 ### Testing Patterns
+
 - `createMockElement(id, nodeName)` - DOM element mocks
 - Focus on `data-testid` attributes for reliable element selection
 - Use behavior-driven test descriptions

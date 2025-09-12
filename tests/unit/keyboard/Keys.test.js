@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+
+import Filter from '../../../src/core/Filter.js'
 import { onKey } from '../../../src/lib/Keys.js'
-import { useSessionStore } from '../../../src/stores/session.js'
 import { useInterfaceStore } from '../../../src/stores/interface.js'
 import { useQueueStore } from '../../../src/stores/queue.js'
-import Filter from '../../../src/core/Filter.js'
+import { useSessionStore } from '../../../src/stores/session.js'
 
 // Mock useAppState
 const mockClearSession = vi.fn()
@@ -43,7 +44,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
     sessionStore = useSessionStore()
     interfaceStore = useInterfaceStore()
     queueStore = useQueueStore()
-    
+
     // Reset stores to empty state
     sessionStore.selectedPublications = []
     sessionStore.excludedPublicationsDois = []
@@ -51,23 +52,25 @@ describe('Keys Module - Keyboard Event Handling', () => {
     sessionStore.filter = new Filter()
     queueStore.selectedQueue = []
     queueStore.excludedQueue = []
-    
+
     // Add isEmpty computed property
     Object.defineProperty(sessionStore, 'isEmpty', {
       get() {
-        return sessionStore.selectedPublications.length === 0 && 
-               sessionStore.excludedPublicationsDois.length === 0 &&
-               queueStore.selectedQueue.length === 0 &&
-               queueStore.excludedQueue.length === 0
+        return (
+          sessionStore.selectedPublications.length === 0 &&
+          sessionStore.excludedPublicationsDois.length === 0 &&
+          queueStore.selectedQueue.length === 0 &&
+          queueStore.excludedQueue.length === 0
+        )
       },
       configurable: true
     })
-    
+
     // Mock interface store methods
     interfaceStore.openFilterMenu = vi.fn()
     interfaceStore.closeFilterMenu = vi.fn()
     interfaceStore.activatePublicationComponent = vi.fn()
-    
+
     // Reset all modal states to false
     interfaceStore.confirmDialog.isShown = false
     interfaceStore.infoDialog.isShown = false
@@ -78,7 +81,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
     interfaceStore.isAboutModalDialogShown = false
     interfaceStore.isKeyboardControlsModalDialogShown = false
     interfaceStore.isFilterMenuOpen = false
-    
+
     // Mock DOM
     Object.defineProperty(document, 'activeElement', {
       value: { nodeName: 'BODY', className: '' },
@@ -86,7 +89,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
       writable: true
     })
     document.getElementById = vi.fn((id) => createMockElement(id))
-    
+
     // Clear all mocks
     vi.clearAllMocks()
   })
@@ -107,11 +110,11 @@ describe('Keys Module - Keyboard Event Handling', () => {
       const ctrlEvent = createKeyEvent('f', { ctrlKey: true })
       const shiftEvent = createKeyEvent('f', { shiftKey: true })
       const metaEvent = createKeyEvent('f', { metaKey: true })
-      
+
       onKey(ctrlEvent)
       onKey(shiftEvent)
       onKey(metaEvent)
-      
+
       expect(interfaceStore.openFilterMenu).not.toHaveBeenCalled()
       expect(ctrlEvent.preventDefault).not.toHaveBeenCalled()
       expect(shiftEvent.preventDefault).not.toHaveBeenCalled()
@@ -121,7 +124,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
     it('should ignore repeated events (except arrow keys)', () => {
       const repeatEvent = createKeyEvent('f', { repeat: true })
       onKey(repeatEvent)
-      
+
       expect(interfaceStore.openFilterMenu).not.toHaveBeenCalled()
       expect(repeatEvent.preventDefault).not.toHaveBeenCalled()
     })
@@ -132,9 +135,9 @@ describe('Keys Module - Keyboard Event Handling', () => {
         configurable: true
       })
       const event = createKeyEvent('f')
-      
+
       onKey(event)
-      
+
       expect(interfaceStore.openFilterMenu).not.toHaveBeenCalled()
       expect(event.preventDefault).not.toHaveBeenCalled()
     })
@@ -144,10 +147,10 @@ describe('Keys Module - Keyboard Event Handling', () => {
     it('should open filter menu when pressing f with publications', () => {
       // Add a publication so session is not empty
       sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
-      
+
       const event = { key: 'f', preventDefault: vi.fn() }
       onKey(event)
-      
+
       expect(event.preventDefault).toHaveBeenCalled()
       expect(interfaceStore.openFilterMenu).toHaveBeenCalled()
     })
@@ -159,13 +162,13 @@ describe('Keys Module - Keyboard Event Handling', () => {
       queueStore.selectedQueue = []
       queueStore.excludedQueue = []
       mockIsEmpty.value = true
-      
+
       const event = { key: 'f', preventDefault: vi.fn() }
       onKey(event)
-      
+
       expect(event.preventDefault).not.toHaveBeenCalled()
       expect(interfaceStore.openFilterMenu).not.toHaveBeenCalled()
-      
+
       // Reset for other tests
       mockIsEmpty.value = false
     })
@@ -173,10 +176,10 @@ describe('Keys Module - Keyboard Event Handling', () => {
     it('should not open filter menu when overlay is shown', () => {
       sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
       interfaceStore.confirmDialog.isShown = true // This makes isAnyOverlayShown true
-      
+
       const event = { key: 'f', preventDefault: vi.fn() }
       onKey(event)
-      
+
       expect(event.preventDefault).toHaveBeenCalled()
       expect(interfaceStore.openFilterMenu).not.toHaveBeenCalled()
     })
@@ -186,10 +189,10 @@ describe('Keys Module - Keyboard Event Handling', () => {
     it('should add DOI filter for selected publication', () => {
       sessionStore.selectedPublications = [{ doi: '10.1234/selected' }]
       sessionStore.activePublication = { doi: '10.1234/selected' }
-      
+
       const event = { key: 'i', preventDefault: vi.fn() }
       onKey(event)
-      
+
       expect(event.preventDefault).toHaveBeenCalled()
       expect(sessionStore.filter.dois).toContain('10.1234/selected')
     })
@@ -197,10 +200,10 @@ describe('Keys Module - Keyboard Event Handling', () => {
     it('should not add DOI filter for suggested publication', () => {
       sessionStore.selectedPublications = [{ doi: '10.1234/different' }]
       sessionStore.activePublication = { doi: '10.1234/suggested' }
-      
+
       const event = { key: 'i', preventDefault: vi.fn() }
       onKey(event)
-      
+
       expect(event.preventDefault).toHaveBeenCalled()
       expect(sessionStore.filter.dois).not.toContain('10.1234/suggested')
     })
@@ -208,10 +211,10 @@ describe('Keys Module - Keyboard Event Handling', () => {
     it('should do nothing when no active publication', () => {
       sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
       sessionStore.activePublication = null
-      
+
       const event = { key: 'i', preventDefault: vi.fn() }
       onKey(event)
-      
+
       expect(event.preventDefault).not.toHaveBeenCalled()
     })
   })
@@ -223,10 +226,10 @@ describe('Keys Module - Keyboard Event Handling', () => {
     ])('should navigate %s to %s publications', (key, targetId) => {
       // Add publications so session is not empty
       sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
-      
+
       const event = { key, preventDefault: vi.fn() }
       onKey(event)
-      
+
       expect(event.preventDefault).toHaveBeenCalled()
       expect(document.getElementById).toHaveBeenCalledWith(targetId)
       expect(interfaceStore.closeFilterMenu).toHaveBeenCalled()
@@ -240,10 +243,10 @@ describe('Keys Module - Keyboard Event Handling', () => {
         value: mockInput,
         configurable: true
       })
-      
+
       const event = { key: 'Escape', preventDefault: vi.fn() }
       onKey(event)
-      
+
       expect(mockInput.blur).toHaveBeenCalled()
     })
   })
