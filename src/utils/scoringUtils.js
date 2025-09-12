@@ -56,6 +56,31 @@ export function parseUniqueBoostKeywords(boostKeywordString) {
  * @param {string[]} boostKeywords - Keywords to search for
  * @returns {Array} Array of match objects with keyword, position, and length
  */
+/**
+ * Check if a new match would overlap with existing matches and add it if no overlap
+ */
+function tryAddMatch(matches, boostKeyword, alternativeKeyword, position) {
+  if (position < 0) return false
+  
+  // Check for overlaps with existing matches
+  const overlaps = matches.some(match => 
+    position < match.position + match.length &&
+    position + alternativeKeyword.length > match.position
+  )
+  
+  if (!overlaps) {
+    matches.push({
+      keyword: boostKeyword,
+      position,
+      length: alternativeKeyword.length,
+      text: alternativeKeyword
+    })
+    return true
+  }
+  
+  return false
+}
+
 export function findKeywordMatches(title, boostKeywords) {
   const matches = []
   const upperTitle = title.toUpperCase()
@@ -63,49 +88,30 @@ export function findKeywordMatches(title, boostKeywords) {
   boostKeywords.forEach((boostKeyword) => {
     if (!boostKeyword) return
 
-    let keywordMatched = false
     // Filter out empty alternatives when splitting by "|"
     const alternatives = boostKeyword.split('|').filter((alt) => alt.trim())
-
-    // Skip if no valid alternatives remain
     if (alternatives.length === 0) return
 
-    alternatives.forEach((alternativeKeyword) => {
-      if (keywordMatched) return // Skip if this keyword group already has a match
-
-      // Helper function to add match if no overlap
-      const addMatchIfNoOverlap = (index) => {
-        if (index >= 0) {
-          const overlaps = matches.some(
-            (match) =>
-              index < match.position + match.length &&
-              index + alternativeKeyword.length > match.position
-          )
-
-          if (!overlaps) {
-            matches.push({
-              keyword: boostKeyword,
-              position: index,
-              length: alternativeKeyword.length,
-              text: alternativeKeyword
-            })
-            keywordMatched = true
-          }
-        }
-      }
-
+    // Find first matching alternative for this keyword group
+    for (const alternativeKeyword of alternatives) {
+      let position = -1
+      
       // Use word boundary matching for short keywords (3 chars or less)
       if (alternativeKeyword.length <= 3) {
         const wordBoundaryRegex = new RegExp(`\\b${escapeRegExp(alternativeKeyword)}`, 'gi')
         const regexMatch = wordBoundaryRegex.exec(title)
-        addMatchIfNoOverlap(regexMatch?.index ?? -1)
+        position = regexMatch?.index ?? -1
       } else {
         // Use substring matching for longer keywords
         const upperAlternativeKeyword = alternativeKeyword.toUpperCase()
-        const index = upperTitle.indexOf(upperAlternativeKeyword)
-        addMatchIfNoOverlap(index)
+        position = upperTitle.indexOf(upperAlternativeKeyword)
       }
-    })
+      
+      // Try to add match and break if successful (only match first alternative per keyword group)
+      if (tryAddMatch(matches, boostKeyword, alternativeKeyword, position)) {
+        break
+      }
+    }
   })
 
   return matches.sort((a, b) => a.position - b.position)
@@ -158,17 +164,6 @@ export function calculateBoostFactor(matchCount, isBoost) {
   return SCORING.DEFAULT_BOOST_FACTOR * SCORING.BOOST_MULTIPLIER**matchCount
 }
 
-/**
- * Calculates publication score based on citations, references, and boost
- * @param {number} citationCount - Number of citations
- * @param {number} referenceCount - Number of references
- * @param {boolean} isSelected - Whether publication is selected
- * @param {number} boostFactor - Boost multiplier factor
- * @returns {number} Calculated score
- */
-export function calculatePublicationScore(citationCount, referenceCount, isSelected, boostFactor) {
-  return (citationCount + referenceCount + (isSelected ? 1 : 0)) * boostFactor
-}
 
 /**
  * Gets color based on publication score
@@ -211,13 +206,8 @@ export function updatePublicationScores(publications, uniqueBoostKeywords, isBoo
     // Generate highlighted title
     publication.titleHighlighted = highlightTitle(publication.title, matches)
 
-    // Calculate score
-    publication.score = calculatePublicationScore(
-      publication.citationCount,
-      publication.referenceCount,
-      publication.isSelected,
-      publication.boostFactor
-    )
+    // Calculate score: (citations + references + selected bonus) * boost factor
+    publication.score = (publication.citationCount + publication.referenceCount + (publication.isSelected ? 1 : 0)) * publication.boostFactor
 
     // Set score color
     publication.scoreColor = getScoreColor(publication.score)
