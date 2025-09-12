@@ -55,7 +55,6 @@ describe('NetworkPerformanceMonitor', () => {
   })
 
   it('tracks FPS correctly', () => {
-    const _initialFps = wrapper.vm.currentFps
     wrapper.vm.trackFps()
 
     // FPS tracker should be working (exact value depends on timing)

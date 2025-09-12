@@ -169,7 +169,7 @@ describe('SelectedPublicationsComponent', () => {
     queueStore.selectedQueue = []
     queueStore.excludedQueue = []
 
-    const _wrapper = mount(SelectedPublicationsComponent, {
+    mount(SelectedPublicationsComponent, {
       global: {
         plugins: [pinia],
         stubs: {

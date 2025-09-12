@@ -427,7 +427,6 @@ describe('Author Details On Demand Feature', () => {
       })
 
       // Verify that the component's style includes the necessary CSS rules
-      const _componentStyles = wrapper.vm.$options.__hmrId || wrapper.vm.$options._scopeId
       // The CSS rules are defined in the component, even if we can't test computed styles in jsdom
       expect(true).toBe(true) // CSS is defined in the component file
     })

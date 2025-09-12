@@ -273,7 +273,6 @@ describe('NetworkVisComponent', () => {
     it('hides controls when session is empty', () => {
       // Setup empty session state
       const sessionStore = useSessionStore()
-      const _interfaceStore = useInterfaceStore()
       sessionStore.selectedPublications = []
       sessionStore.excludedPublicationsDois = []
 
@@ -993,8 +992,6 @@ describe('NetworkVisComponent', () => {
     })
 
     it('calculates year X coordinate correctly for desktop', () => {
-      const _currentYear = new Date().getFullYear()
-
       // Test with default non-mobile width (800) and height (160)
       const yearX2020 = wrapper.vm.yearX(2020)
       const yearX2021 = wrapper.vm.yearX(2021)

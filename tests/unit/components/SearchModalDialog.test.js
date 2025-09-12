@@ -294,7 +294,7 @@ describe('SearchModalDialog', () => {
     wrapper.vm.searchResults = { results: [{ doi: 'existing' }], type: 'search' }
 
     // Mock the search execution
-    const _searchSpy = vi.spyOn(wrapper.vm, 'search').mockImplementation(() => {})
+    vi.spyOn(wrapper.vm, 'search').mockImplementation(() => {})
 
     // Try to search with same query
     await wrapper.vm.search()
