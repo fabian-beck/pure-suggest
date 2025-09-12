@@ -69,6 +69,7 @@ export default [
       'sonarjs/prefer-immediate-return': 'error',
       'sonarjs/no-identical-functions': 'error',
       'sonarjs/cognitive-complexity': ['warn', 15],
+      'sonarjs/slow-regex': 'warn',
       
       // Error Prevention
       'yoda': 'error',
