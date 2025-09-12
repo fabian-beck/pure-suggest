@@ -6,8 +6,8 @@
  * displayed as text-based nodes that can be dragged and repositioned.
  */
 
-import tippy from 'tippy.js'
 import * as d3 from 'd3'
+import tippy from 'tippy.js'
 
 /**
  * Create keyword node data from unique boost keywords

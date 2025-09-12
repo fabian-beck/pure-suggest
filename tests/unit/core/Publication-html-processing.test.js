@@ -1,5 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
 
+// Import after mocking
+import Publication from '@/core/Publication.js'
+
 // Direct test of the HTML removal function by creating a mock module
 const mockTextProcessing = {
   MAX_TITLE_LENGTH: 200,
@@ -37,9 +40,6 @@ vi.mock('@/constants/publication.js', () => ({
 vi.mock('@/lib/Cache.js', () => ({
   cachedFetch: vi.fn()
 }))
-
-// Import after mocking
-import Publication from '@/core/Publication.js'
 
 // Helper function to test HTML removal - we'll test indirectly through processTitle
 function testHtmlRemoval(inputTitle) {

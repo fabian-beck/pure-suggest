@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
+import { describe, it, expect, beforeEach } from 'vitest'
+
 import { useAuthorStore } from '@/stores/author.js'
 import { useSessionStore } from '@/stores/session.js'
 

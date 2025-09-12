@@ -1,6 +1,7 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+
 import PublicationComponent from '@/components/PublicationComponent.vue'
 
 // Mock IndexedDB for testing environment

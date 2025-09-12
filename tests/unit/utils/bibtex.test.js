@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+
 import { generateBibtex } from '@/utils/bibtex.js'
 
 describe('generateBibtex', () => {

@@ -1,9 +1,10 @@
 <script setup>
 import { inject, ref } from 'vue'
-import { useInterfaceStore } from '@/stores/interface.js'
+
 import FilterMenuComponent from '@/components/FilterMenuComponent.vue'
 import SessionMenuComponent from '@/components/SessionMenuComponent.vue'
 import { useAppState } from '@/composables/useAppState.js'
+import { useInterfaceStore } from '@/stores/interface.js'
 
 const appMeta = inject('appMeta')
 const interfaceStore = useInterfaceStore()

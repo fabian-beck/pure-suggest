@@ -9,9 +9,9 @@
  * Usage: node tools/find-unused-functions.js
  */
 
+const { execSync: _execSync } = require('child_process')
 const fs = require('fs')
 const path = require('path')
-const { execSync: _execSync } = require('child_process')
 
 // Configuration  
 const SOURCE_DIRS = [path.join(__dirname, '..', 'src'), path.join(__dirname, '..', 'tests')]

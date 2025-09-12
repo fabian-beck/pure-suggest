@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useSessionStore } from '@/stores/session.js'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+
 import { useInterfaceStore } from '@/stores/interface.js'
+import { useSessionStore } from '@/stores/session.js'
 
 // Mock the interface store
 vi.mock('@/stores/interface.js', () => ({

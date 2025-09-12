@@ -1,11 +1,12 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { createVuetify } from 'vuetify'
 import { createPinia, setActivePinia } from 'pinia'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { createVuetify } from 'vuetify'
+
 import AuthorModalDialog from '@/components/modal/AuthorModalDialog.vue'
 import { useAuthorStore } from '@/stores/author.js'
-import { useSessionStore } from '@/stores/session.js'
 import { useInterfaceStore } from '@/stores/interface.js'
+import { useSessionStore } from '@/stores/session.js'
 
 const vuetify = createVuetify()
 

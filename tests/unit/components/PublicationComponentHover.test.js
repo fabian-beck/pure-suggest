@@ -1,7 +1,10 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
-import PublicationComponent from '@/components/PublicationComponent.vue'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+
 import { createMockSessionStore, createMockInterfaceStore } from '../../helpers/testUtils.js'
+
+import PublicationComponent from '@/components/PublicationComponent.vue'
+
 
 // Simplified store mocks using testUtils
 const mockQueueStore = {

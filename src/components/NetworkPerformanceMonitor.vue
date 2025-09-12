@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+
 import { FpsTracker } from '@/lib/FpsTracker.js'
 
 // Props definition with defaults

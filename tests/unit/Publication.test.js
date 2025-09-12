@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+
 import Publication from '@/core/Publication.js'
 
 // Mock dependencies

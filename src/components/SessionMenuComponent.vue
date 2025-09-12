@@ -1,9 +1,10 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { useSessionStore } from '@/stores/session.js'
-import { useInterfaceStore } from '@/stores/interface.js'
+
 import { useAppState } from '@/composables/useAppState.js'
 import { bibtexParser } from '@/lib/Util.js'
+import { useInterfaceStore } from '@/stores/interface.js'
+import { useSessionStore } from '@/stores/session.js'
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()

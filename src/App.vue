@@ -1,11 +1,13 @@
 <script>
-import { useSessionStore } from './stores/session.js'
-import { useInterfaceStore } from './stores/interface.js'
-import { perfMonitor } from './utils/performance.js'
-import { useAppState } from './composables/useAppState.js'
 import LZString from 'lz-string'
 
+import { useAppState } from './composables/useAppState.js'
 import { onKey } from './lib/Keys.js'
+import { useInterfaceStore } from './stores/interface.js'
+import { useSessionStore } from './stores/session.js'
+import { perfMonitor } from './utils/performance.js'
+
+
 
 export default {
   name: 'App',

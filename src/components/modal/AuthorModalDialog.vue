@@ -1,8 +1,8 @@
 <script>
-import { useSessionStore } from '@/stores/session.js'
+import PublicationComponent from '@/components/PublicationComponent.vue'
 import { useAuthorStore } from '@/stores/author.js'
 import { useInterfaceStore } from '@/stores/interface.js'
-import PublicationComponent from '@/components/PublicationComponent.vue'
+import { useSessionStore } from '@/stores/session.js'
 import { calculateAuthorColor } from '@/utils/authorColor.js'
 
 export default {

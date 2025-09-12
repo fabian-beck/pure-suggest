@@ -1,13 +1,16 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import PublicationComponent from '@/components/PublicationComponent.vue'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+
 import {
   measureRenderTime,
   measureMemoryUsage,
   createMockPublications,
   PerformanceProfiler
 } from './utils.js'
+
+import PublicationComponent from '@/components/PublicationComponent.vue'
+
 
 // Mock IndexedDB and dependencies
 global.indexedDB = {

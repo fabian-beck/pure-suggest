@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+
 import QuickAccessBar from '@/components/QuickAccessBar.vue'
 import { useQueueStore } from '@/stores/queue.js'
 

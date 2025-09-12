@@ -1,10 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
 import { useAppState } from '@/composables/useAppState.js'
-import { useSessionStore } from '@/stores/session.js'
-import { useInterfaceStore } from '@/stores/interface.js'
 import { useAuthorStore } from '@/stores/author.js'
+import { useInterfaceStore } from '@/stores/interface.js'
 import { useQueueStore } from '@/stores/queue.js'
+import { useSessionStore } from '@/stores/session.js'
 
 // Mock all the dependencies
 vi.mock('@/lib/Cache.js', () => ({

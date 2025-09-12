@@ -1,10 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import SuggestedPublicationsComponent from '@/components/SuggestedPublicationsComponent.vue'
-import { useSessionStore } from '@/stores/session.js'
-import { useInterfaceStore } from '@/stores/interface.js'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
 import { commonComponentStubs } from '../../helpers/testUtils.js'
+
+import SuggestedPublicationsComponent from '@/components/SuggestedPublicationsComponent.vue'
+import { useInterfaceStore } from '@/stores/interface.js'
+import { useSessionStore } from '@/stores/session.js'
 
 // Simplified useAppState mock
 const mockLoadMoreSuggestions = vi.fn()

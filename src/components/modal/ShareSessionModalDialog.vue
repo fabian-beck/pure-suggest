@@ -1,8 +1,10 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
+
+import ModalDialog from './ModalDialog.vue'
+
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
-import ModalDialog from './ModalDialog.vue'
 
 const interfaceStore = useInterfaceStore()
 const sessionStore = useSessionStore()

@@ -1,7 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useSessionStore } from '@/stores/session.js'
+
 import { useAppState } from '@/composables/useAppState.js'
+import { useSessionStore } from '@/stores/session.js'
 
 defineProps({
   title: {

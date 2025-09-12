@@ -1,6 +1,6 @@
-import { cachedFetch } from '../lib/Cache.js'
 import Publication from './Publication.js'
 import { API_ENDPOINTS, API_PARAMS } from '../constants/config.js'
+import { cachedFetch } from '../lib/Cache.js'
 
 export default class PublicationSearch {
   constructor(query) {

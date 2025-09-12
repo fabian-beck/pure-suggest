@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+
 import { findKeywordMatches, highlightTitle } from '@/utils/scoringUtils.js'
 
 describe('scoringUtils', () => {

@@ -1,8 +1,9 @@
 <script setup>
 import { computed } from 'vue'
-import { useQueueStore } from '@/stores/queue.js'
-import { useInterfaceStore } from '@/stores/interface.js'
+
 import { useAppState } from '@/composables/useAppState.js'
+import { useInterfaceStore } from '@/stores/interface.js'
+import { useQueueStore } from '@/stores/queue.js'
 
 const props = defineProps({
   publication: {

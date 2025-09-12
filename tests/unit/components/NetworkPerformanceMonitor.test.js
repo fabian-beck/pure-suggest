@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { describe, it, expect, beforeEach } from 'vitest'
+
 import NetworkPerformanceMonitor from '@/components/NetworkPerformanceMonitor.vue'
 
 describe('NetworkPerformanceMonitor', () => {

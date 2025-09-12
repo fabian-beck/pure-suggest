@@ -1,8 +1,9 @@
 <script setup>
 import { computed, nextTick, ref } from 'vue'
-import { useSessionStore } from '@/stores/session.js'
-import { useInterfaceStore } from '@/stores/interface.js'
+
 import { useAppState } from '@/composables/useAppState.js'
+import { useInterfaceStore } from '@/stores/interface.js'
+import { useSessionStore } from '@/stores/session.js'
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()

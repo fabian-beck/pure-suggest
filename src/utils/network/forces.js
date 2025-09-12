@@ -7,6 +7,7 @@
  */
 
 import * as d3 from 'd3'
+
 import { CURRENT_YEAR } from '@/constants/config.js'
 
 export const SIMULATION_ALPHA = 0.7

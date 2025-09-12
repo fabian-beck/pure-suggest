@@ -4,13 +4,24 @@ import 'tippy.js/dist/tippy.css'
 import { storeToRefs } from 'pinia'
 
 // Stores
-import { useSessionStore } from '@/stores/session.js'
+import NetworkControls from '@/components/NetworkControls.vue'
+import NetworkHeader from '@/components/NetworkHeader.vue'
+import NetworkPerformanceMonitor from '@/components/NetworkPerformanceMonitor.vue'
+import { useAppState } from '@/composables/useAppState.js'
+import { useAuthorStore } from '@/stores/author.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useQueueStore } from '@/stores/queue.js'
-import { useAuthorStore } from '@/stores/author.js'
-import { useAppState } from '@/composables/useAppState.js'
+import { useSessionStore } from '@/stores/session.js'
 
 // Force simulation utilities
+import {
+  initializeAuthorNodes,
+  updateAuthorNodes,
+  highlightAuthorPublications,
+  clearAuthorHighlight,
+  createAuthorLinks,
+  createAuthorNodes
+} from '@/utils/network/authorNodes.js'
 import {
   createForceSimulation,
   initializeForces,
@@ -20,11 +31,6 @@ import {
 } from '@/utils/network/forces.js'
 
 // Node types
-import {
-  initializePublicationNodes,
-  updatePublicationNodes,
-  createPublicationNodes
-} from '@/utils/network/publicationNodes.js'
 import {
   initializeKeywordNodes,
   updateKeywordNodes,
@@ -36,20 +42,17 @@ import {
   createKeywordNodes
 } from '@/utils/network/keywordNodes.js'
 import {
-  initializeAuthorNodes,
-  updateAuthorNodes,
-  highlightAuthorPublications,
-  clearAuthorHighlight,
-  createAuthorLinks,
-  createAuthorNodes
-} from '@/utils/network/authorNodes.js'
-
-// Links
-import {
   updateNetworkLinks,
   updateLinkProperties,
   createCitationLinks
 } from '@/utils/network/links.js'
+import {
+  initializePublicationNodes,
+  updatePublicationNodes,
+  createPublicationNodes
+} from '@/utils/network/publicationNodes.js'
+
+// Links
 
 // Year labels
 import { 
@@ -60,9 +63,6 @@ import {
 } from '@/utils/network/yearLabels.js'
 
 // Components
-import NetworkControls from '@/components/NetworkControls.vue'
-import NetworkHeader from '@/components/NetworkHeader.vue'
-import NetworkPerformanceMonitor from '@/components/NetworkPerformanceMonitor.vue'
 
 export default {
   name: 'NetworkVisComponent',

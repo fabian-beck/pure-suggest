@@ -1,9 +1,11 @@
 <script setup>
 import { computed, nextTick, watch, ref, onMounted, onBeforeUnmount } from 'vue'
-import { scrollToTargetAdjusted } from '@/lib/Util.js'
-import { useSessionStore } from '@/stores/session.js'
-import { useInterfaceStore } from '@/stores/interface.js'
+
 import LazyPublicationComponent from './LazyPublicationComponent.vue'
+
+import { scrollToTargetAdjusted } from '@/lib/Util.js'
+import { useInterfaceStore } from '@/stores/interface.js'
+import { useSessionStore } from '@/stores/session.js'
 
 const props = defineProps({
   publications: {

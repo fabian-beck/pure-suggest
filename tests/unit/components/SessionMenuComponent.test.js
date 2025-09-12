@@ -1,7 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
-import SessionMenuComponent from '@/components/SessionMenuComponent.vue'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
 import { createMockSessionStore, createMockInterfaceStore } from '../../helpers/testUtils.js'
+
+import SessionMenuComponent from '@/components/SessionMenuComponent.vue'
+
 
 // Simplified mock stores using testUtils
 const mockSessionStore = createMockSessionStore({

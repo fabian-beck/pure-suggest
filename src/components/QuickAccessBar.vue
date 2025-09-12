@@ -1,8 +1,9 @@
 <script setup>
 import { reactive, onMounted, onUnmounted } from 'vue'
-import { useQueueStore } from '@/stores/queue.js'
+
 import { useAppState } from '@/composables/useAppState.js'
 import { scrollToTargetAdjusted } from '@/lib/Util.js'
+import { useQueueStore } from '@/stores/queue.js'
 
 const queueStore = useQueueStore()
 const { updateQueued } = useAppState()

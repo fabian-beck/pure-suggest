@@ -1,6 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+import SearchModalDialog from '@/components/modal/SearchModalDialog.vue'
+import { useInterfaceStore } from '@/stores/interface.js'
+import { useQueueStore } from '@/stores/queue.js'
+import { useSessionStore } from '@/stores/session.js'
 
 // Simplified external dependency mocking
 vi.mock('@/lib/Cache.js', () => ({
@@ -24,11 +29,6 @@ vi.mock('@/core/PublicationSearch.js', () => ({
     }
   }
 }))
-
-import SearchModalDialog from '@/components/modal/SearchModalDialog.vue'
-import { useSessionStore } from '@/stores/session.js'
-import { useInterfaceStore } from '@/stores/interface.js'
-import { useQueueStore } from '@/stores/queue.js'
 
 describe('SearchModalDialog', () => {
   let sessionStore

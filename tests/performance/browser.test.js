@@ -1,6 +1,7 @@
+import { spawn } from 'child_process'
+
 import puppeteer from 'puppeteer'
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { spawn } from 'child_process'
 
 describe('Browser Performance Tests', () => {
   let browser

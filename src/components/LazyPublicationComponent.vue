@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue'
+
 import PublicationComponent from './PublicationComponent.vue'
 
 const props = defineProps({

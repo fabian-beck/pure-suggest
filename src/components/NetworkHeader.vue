@@ -1,9 +1,10 @@
 <script setup>
 import { computed } from 'vue'
+
 import CompactButton from '@/components/basic/CompactButton.vue'
 import CompactSwitch from '@/components/basic/CompactSwitch.vue'
-import { useInterfaceStore } from '@/stores/interface.js'
 import { useAppState } from '@/composables/useAppState.js'
+import { useInterfaceStore } from '@/stores/interface.js'
 
 const props = defineProps({
   errorMessage: {

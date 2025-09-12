@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+
 import Filter from '@/core/Filter.js'
 
 describe('Filter', () => {

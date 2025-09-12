@@ -1,8 +1,11 @@
-import { describe, it, expect, beforeEach, vi, beforeAll, afterAll } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
+import { describe, it, expect, beforeEach, vi, beforeAll, afterAll } from 'vitest'
 import { ref } from 'vue'
+
 import NetworkVisComponent from '@/components/NetworkVisComponent.vue'
+import { useInterfaceStore } from '@/stores/interface.js'
+import { useSessionStore } from '@/stores/session.js'
 
 // Simplified D3 mock - focus on behavior, not implementation details
 const createChainableMock = (returnData = null) => {
@@ -173,9 +176,6 @@ vi.mock('@/composables/useAppState.js', () => ({
     updateQueued: vi.fn()
   }))
 }))
-
-import { useSessionStore } from '@/stores/session.js'
-import { useInterfaceStore } from '@/stores/interface.js'
 
 // Helper function for consistent component stubs
 const getComponentStubs = () => ({

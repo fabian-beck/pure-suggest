@@ -1,7 +1,8 @@
 <script setup>
 import { computed } from 'vue'
-import { useSessionStore } from '@/stores/session.js'
+
 import { useInterfaceStore } from '@/stores/interface.js'
+import { useSessionStore } from '@/stores/session.js'
 
 const props = defineProps({
   publication: {

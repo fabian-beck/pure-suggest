@@ -1,8 +1,14 @@
-import { describe, it, expect, beforeEach, vi, beforeAll, afterAll } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
+import { describe, it, expect, beforeEach, vi, beforeAll, afterAll } from 'vitest'
 import { ref } from 'vue'
+
 import NetworkVisComponent from '@/components/NetworkVisComponent.vue'
+
+// Import the mocked stores and functions for testing
+import { useAuthorStore } from '@/stores/author.js'
+import { useSessionStore } from '@/stores/session.js'
+import { createAuthorNodes } from '@/utils/network/authorNodes.js'
 
 // Mock D3.js with chainable methods (reused from main test)
 const createMockSelection = () => {
@@ -291,11 +297,6 @@ vi.mock('@/composables/useAppState.js', () => ({
     updateQueued: vi.fn()
   }))
 }))
-
-// Import the mocked stores and functions for testing
-import { useSessionStore } from '@/stores/session.js'
-import { useAuthorStore } from '@/stores/author.js'
-import { createAuthorNodes } from '@/utils/network/authorNodes.js'
 
 describe('Author Nodes Visibility Bug', () => {
   let pinia

@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+
 import { useAuthorStore } from '@/stores/author.js'
 import { calculateAuthorColor } from '@/utils/authorColor.js'
 

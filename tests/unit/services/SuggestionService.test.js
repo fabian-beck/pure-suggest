@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+
 import { SuggestionService } from '@/services/SuggestionService.js'
 
 // Mock dependencies - must be before imports

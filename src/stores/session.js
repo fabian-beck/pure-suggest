@@ -1,7 +1,10 @@
-import { defineStore } from 'pinia'
 import LZString from 'lz-string'
+import { defineStore } from 'pinia'
 
+import { PAGINATION } from '@/constants/config.js'
+import Filter from '@/core/Filter.js'
 import Publication from '@/core/Publication.js'
+import { saveAsFile } from '@/lib/Util.js'
 import { generateBibtex } from '@/utils/bibtex.js'
 import { getFilteredPublications, countFilteredPublications } from '@/utils/filterUtils.js'
 import {
@@ -9,9 +12,6 @@ import {
   parseUniqueBoostKeywords,
   updatePublicationScores
 } from '@/utils/scoringUtils.js'
-import Filter from '@/core/Filter.js'
-import { saveAsFile } from '@/lib/Util.js'
-import { PAGINATION } from '@/constants/config.js'
 
 export const useSessionStore = defineStore('session', {
   state: () => {

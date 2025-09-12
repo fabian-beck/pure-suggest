@@ -1,7 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useSessionStore } from '@/stores/session.js'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+
+import { saveAsFile } from '@/lib/Util.js'
 import { useInterfaceStore } from '@/stores/interface.js'
+import { useSessionStore } from '@/stores/session.js'
+
+// Get reference to the mocked saveAsFile function
 
 // Mock the interface store
 vi.mock('@/stores/interface.js', () => ({
@@ -24,9 +28,6 @@ vi.mock('@/lib/Util.js', () => ({
   shuffle: vi.fn((arr) => arr),
   saveAsFile: vi.fn()
 }))
-
-// Get reference to the mocked saveAsFile function
-import { saveAsFile } from '@/lib/Util.js'
 
 describe('Session Store - Selected Publications Filtering', () => {
   let sessionStore

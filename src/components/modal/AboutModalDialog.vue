@@ -1,5 +1,6 @@
 <script>
 import { useInterfaceStore } from '@/stores/interface.js'
+
 export default {
   inject: ['appMeta'],
   setup() {

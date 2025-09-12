@@ -1,12 +1,11 @@
 <script>
 import { storeToRefs } from 'pinia'
 
-import { useSessionStore } from '@/stores/session.js'
+import { useAppState } from '@/composables/useAppState.js'
+import PublicationSearch from '@/core/PublicationSearch.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useQueueStore } from '@/stores/queue.js'
-import { useAppState } from '@/composables/useAppState.js'
-
-import PublicationSearch from '@/core/PublicationSearch.js'
+import { useSessionStore } from '@/stores/session.js'
 
 export default {
   name: 'SearchModalDialog',

@@ -1,6 +1,7 @@
 import js from '@eslint/js'
 import pluginVue from 'eslint-plugin-vue'
 import pluginSonarJS from 'eslint-plugin-sonarjs'
+import pluginImport from 'eslint-plugin-import'
 import configPrettier from 'eslint-config-prettier'
 import globals from 'globals'
 
@@ -10,6 +11,9 @@ export default [
   pluginSonarJS.configs.recommended,
   configPrettier,
   {
+    plugins: {
+      import: pluginImport
+    },
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -43,6 +47,24 @@ export default [
       // Advanced Code Quality Rules
       // Import/Export Management
       'no-duplicate-imports': 'error',
+      'import/order': ['error', {
+        'groups': [
+          'builtin',
+          'external',
+          'internal',
+          ['parent', 'sibling'],
+          'index'
+        ],
+        'newlines-between': 'always',
+        'alphabetize': { 'order': 'asc', 'caseInsensitive': true },
+        'warnOnUnassignedImports': true
+      }],
+      'import/newline-after-import': 'error',
+      'import/no-duplicates': 'error',
+      'import/no-unused-modules': 'error',
+      'import/no-cycle': 'error',
+      'import/no-self-import': 'error',
+      'import/first': 'error',
       
       // Modern JavaScript Best Practices
       'prefer-const': 'error',
@@ -91,6 +113,13 @@ export default [
       // Exception for useAppState: This is a coordination composable that acts as a unified API facade
       // Breaking it up would hurt the architecture by creating unnecessary indirection
       'max-lines-per-function': 'off'
+    }
+  },
+  {
+    files: ['src/components/NetworkVisComponent.vue', 'tests/unit/bugs/author-nodes-visibility.test.js', 'src/main.js'],
+    rules: {
+      // Exception for complex import organization with comments or application entry points
+      'import/order': 'off'
     }
   },
   {

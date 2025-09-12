@@ -1,12 +1,13 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
 import NetworkVisComponent from '@/components/NetworkVisComponent.vue'
-import { useSessionStore } from '@/stores/session.js'
+import Publication from '@/core/Publication.js'
+import { useAuthorStore } from '@/stores/author.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useQueueStore } from '@/stores/queue.js'
-import { useAuthorStore } from '@/stores/author.js'
-import Publication from '@/core/Publication.js'
+import { useSessionStore } from '@/stores/session.js'
 
 // Mock D3 and related modules to avoid DOM dependencies
 vi.mock('d3', () => ({

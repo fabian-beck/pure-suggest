@@ -1,5 +1,7 @@
-import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { describe, it, expect, vi } from 'vitest'
+
+import PublicationComponentSearch from '@/components/PublicationComponentSearch.vue'
 
 // Mock IndexedDB for this test since PublicationDescription imports things that need it
 global.indexedDB = {
@@ -27,8 +29,6 @@ vi.mock('@/lib/Cache.js', () => ({
   keys: vi.fn(() => Promise.resolve([])),
   clearCache: vi.fn()
 }))
-
-import PublicationComponentSearch from '@/components/PublicationComponentSearch.vue'
 
 describe('PublicationComponentSearch', () => {
   const mockPublication = {

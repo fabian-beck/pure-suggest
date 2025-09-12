@@ -1,5 +1,11 @@
-import { cachedFetch } from '../lib/Cache.js'
 import { SCORING, CURRENT_YEAR, API_ENDPOINTS, API_PARAMS } from '../constants/config.js'
+import { cachedFetch } from '../lib/Cache.js'
+import {
+  findKeywordMatches,
+  highlightTitle,
+  calculateBoostFactor
+} from '../utils/scoringUtils.js'
+
 const ORCID_ICON_URL = 'https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png'
 const ICON_SIZES = {
   ORCID_WIDTH: 14,
@@ -81,11 +87,6 @@ const PUBLICATION_TAGS = [
     name: 'Unnoted'
   }
 ]
-import {
-  findKeywordMatches,
-  highlightTitle,
-  calculateBoostFactor
-} from '../utils/scoringUtils.js'
 
 /**
  * Represents an academic publication with metadata, citations, and scoring capabilities.

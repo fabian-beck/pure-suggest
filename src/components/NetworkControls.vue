@@ -1,8 +1,9 @@
 <script setup>
 import { computed } from 'vue'
+
 import CompactButton from '@/components/basic/CompactButton.vue'
-import { useSessionStore } from '@/stores/session.js'
 import { useAppState } from '@/composables/useAppState.js'
+import { useSessionStore } from '@/stores/session.js'
 
 const props = defineProps({
   showNodes: {

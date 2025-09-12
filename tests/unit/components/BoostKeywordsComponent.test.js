@@ -1,10 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
 import BoostKeywordsComponent from '@/components/BoostKeywordsComponent.vue'
-import { useSessionStore } from '@/stores/session.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useQueueStore } from '@/stores/queue.js'
+import { useSessionStore } from '@/stores/session.js'
 
 // Mock useAppState to control updateScores
 const mockUpdateScores = vi.fn()
