@@ -63,18 +63,40 @@ export const useSessionStore = defineStore('session', {
     publications: (state) => state.selectedPublications.concat(state.suggestedPublications),
     publicationsFiltered: (state) =>
       state.selectedPublications.concat(state.suggestedPublicationsFiltered),
-    yearMax: (state) =>
-      Math.max(
-        ...state.publicationsFiltered
-          .filter((publication) => publication.year)
-          .map((publication) => Number(publication.year))
-      ),
-    yearMin: (state) =>
-      Math.min(
-        ...state.publicationsFiltered
-          .filter((publication) => publication.year)
-          .map((publication) => Number(publication.year))
-      ),
+    // Optimized year range calculations - compute both min/max in single pass
+    yearRange: (state) => {
+      let min = Infinity
+      let max = -Infinity
+      let hasValidYears = false
+
+      const processPublication = (publication) => {
+        if (!publication.year) return
+        const year = Number(publication.year)
+        if (isNaN(year)) return
+        min = Math.min(min, year)
+        max = Math.max(max, year)
+        hasValidYears = true
+      }
+
+      // Process selected publications
+      state.selectedPublications.forEach(processPublication)
+
+      // Process filtered suggested publications
+      if (state.suggestion?.publications) {
+        const publications = state.filter.applyToSuggested
+          ? state.suggestion.publications.filter(pub => state.filter.matches(pub))
+          : state.suggestion.publications
+        publications.forEach(processPublication)
+      }
+
+      return hasValidYears ? { min, max } : { min: undefined, max: undefined }
+    },
+    yearMax() {
+      return this.yearRange.max
+    },
+    yearMin() {
+      return this.yearRange.min
+    },
     unreadSuggestionsCount: (state) =>
       state.suggestedPublicationsFiltered.filter((publication) => !publication.isRead).length,
     isKeywordLinkedToActive: (state) => (keyword) =>

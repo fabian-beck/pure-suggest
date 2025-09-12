@@ -73,21 +73,20 @@ export default {
   },
   watch: {
     // Watch for any changes to session state and clean URL if we loaded from URL
-    'sessionStore.selectedPublications': {
+    // Use shallow watchers since we only care about array length changes, not deep object mutations
+    'sessionStore.selectedPublicationsCount': {
       handler() {
         if (this.isInitialLoadComplete) {
           this.cleanUrlIfNeeded()
         }
-      },
-      deep: true
+      }
     },
-    'sessionStore.excludedPublicationsDois': {
+    'sessionStore.excludedPublicationsCount': {
       handler() {
         if (this.isInitialLoadComplete) {
           this.cleanUrlIfNeeded()
         }
-      },
-      deep: true
+      }
     },
     'sessionStore.boostKeywordString': {
       handler() {
@@ -129,7 +128,7 @@ export default {
     }, 1000)
   },
   beforeUnmount() {
-    document.removeEventListener('keydown', this.onKey)
+    document.removeEventListener('keydown', onKey)
   }
 }
 </script>
