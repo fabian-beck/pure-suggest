@@ -205,7 +205,7 @@ function scrollToActivated() {
         } else {
           publicationComponent.scrollIntoView({
             behavior: "smooth",
-            block: "start",
+            block: "center",
             inline: "nearest",
           })
         }
