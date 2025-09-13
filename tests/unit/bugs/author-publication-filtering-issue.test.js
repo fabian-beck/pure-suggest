@@ -1,11 +1,12 @@
-import { describe, it, expect, beforeEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
+import { describe, it, expect, beforeEach } from 'vitest'
+
 import { useAuthorStore } from '@/stores/author.js'
 import { useSessionStore } from '@/stores/session.js'
 
 describe('Author Publication Filtering Issue', () => {
   let authorStore, sessionStore
-  
+
   beforeEach(() => {
     setActivePinia(createPinia())
     authorStore = useAuthorStore()
@@ -39,7 +40,7 @@ describe('Author Publication Filtering Issue', () => {
           title: 'Publication by Smith J'
         },
         {
-          doi: '10.1/pub2', 
+          doi: '10.1/pub2',
           author: 'Smith, John B.; Davis, M.',
           title: 'Publication by Smith John B'
         },
@@ -64,11 +65,11 @@ describe('Author Publication Filtering Issue', () => {
 
       // Should get publications 1 and 3 (where "Smith, J." is listed)
       expect(smithJPublications).toHaveLength(2)
-      expect(smithJPublications.map(p => p.doi)).toContain('10.1/pub1')
-      expect(smithJPublications.map(p => p.doi)).toContain('10.1/pub3')
+      expect(smithJPublications.map((p) => p.doi)).toContain('10.1/pub1')
+      expect(smithJPublications.map((p) => p.doi)).toContain('10.1/pub3')
       // Should NOT contain publications by "Smith, John B."
-      expect(smithJPublications.map(p => p.doi)).not.toContain('10.1/pub2')
-      expect(smithJPublications.map(p => p.doi)).not.toContain('10.1/pub4')
+      expect(smithJPublications.map((p) => p.doi)).not.toContain('10.1/pub2')
+      expect(smithJPublications.map((p) => p.doi)).not.toContain('10.1/pub4')
 
       // Test Smith, John B. - should only get publications where "Smith, John B." is the exact author
       authorStore.setActiveAuthor('smith, john b.')
@@ -76,11 +77,11 @@ describe('Author Publication Filtering Issue', () => {
 
       // Should get publications 2 and 4 (where "Smith, John B." is listed)
       expect(smithJohnBPublications).toHaveLength(2)
-      expect(smithJohnBPublications.map(p => p.doi)).toContain('10.1/pub2')
-      expect(smithJohnBPublications.map(p => p.doi)).toContain('10.1/pub4')
+      expect(smithJohnBPublications.map((p) => p.doi)).toContain('10.1/pub2')
+      expect(smithJohnBPublications.map((p) => p.doi)).toContain('10.1/pub4')
       // Should NOT contain publications by "Smith, J."
-      expect(smithJohnBPublications.map(p => p.doi)).not.toContain('10.1/pub1')
-      expect(smithJohnBPublications.map(p => p.doi)).not.toContain('10.1/pub3')
+      expect(smithJohnBPublications.map((p) => p.doi)).not.toContain('10.1/pub1')
+      expect(smithJohnBPublications.map((p) => p.doi)).not.toContain('10.1/pub3')
     })
 
     it('should handle partial name matches correctly without false positives', () => {
@@ -131,8 +132,8 @@ describe('Author Publication Filtering Issue', () => {
       expect(brownMPublications).toHaveLength(1)
       expect(brownMPublications[0].doi).toBe('10.1/pub1')
       // Should NOT match "Brown, Mary J." publications
-      expect(brownMPublications.map(p => p.doi)).not.toContain('10.1/pub2')
-      expect(brownMPublications.map(p => p.doi)).not.toContain('10.1/pub3')
+      expect(brownMPublications.map((p) => p.doi)).not.toContain('10.1/pub2')
+      expect(brownMPublications.map((p) => p.doi)).not.toContain('10.1/pub3')
 
       // Test Brown, Mary J. - should get the correct publications
       authorStore.setActiveAuthor('brown, mary j.')
@@ -140,10 +141,10 @@ describe('Author Publication Filtering Issue', () => {
 
       // Should get pub2 and pub3 (where "Brown, Mary J." is exactly listed)
       expect(brownMaryPublications).toHaveLength(2)
-      expect(brownMaryPublications.map(p => p.doi)).toContain('10.1/pub2')
-      expect(brownMaryPublications.map(p => p.doi)).toContain('10.1/pub3')
+      expect(brownMaryPublications.map((p) => p.doi)).toContain('10.1/pub2')
+      expect(brownMaryPublications.map((p) => p.doi)).toContain('10.1/pub3')
       // Should NOT match "Brown, M." publication
-      expect(brownMaryPublications.map(p => p.doi)).not.toContain('10.1/pub1')
+      expect(brownMaryPublications.map((p) => p.doi)).not.toContain('10.1/pub1')
     })
 
     it('should handle edge cases with comma and semicolon separators correctly', () => {
@@ -184,15 +185,15 @@ describe('Author Publication Filtering Issue', () => {
 
       // Should find Johnson, A. in all publications regardless of separator format
       expect(johnsonPublications).toHaveLength(3)
-      expect(johnsonPublications.map(p => p.doi)).toContain('10.1/semicolon')
-      expect(johnsonPublications.map(p => p.doi)).toContain('10.1/comma')
-      expect(johnsonPublications.map(p => p.doi)).toContain('10.1/mixed')
+      expect(johnsonPublications.map((p) => p.doi)).toContain('10.1/semicolon')
+      expect(johnsonPublications.map((p) => p.doi)).toContain('10.1/comma')
+      expect(johnsonPublications.map((p) => p.doi)).toContain('10.1/mixed')
     })
 
     it('should demonstrate the current buggy behavior with includes() method', () => {
       // This test demonstrates the current problem - it should fail initially
       // and pass after we fix the issue
-      
+
       const mockAuthors = [
         {
           id: 'lee, j.',
@@ -225,11 +226,11 @@ describe('Author Publication Filtering Issue', () => {
       // This test will initially fail because the current implementation incorrectly matches
       // "Lee, James Robert" because "Lee, James Robert".includes("Lee, J.") returns false
       // but "Lee, J.".includes("Lee, J") returns true (partial match)
-      
+
       // After fix: should only get the correct publication
       expect(leePublications).toHaveLength(1)
       expect(leePublications[0].doi).toBe('10.1/correct')
-      expect(leePublications.map(p => p.doi)).not.toContain('10.1/false-positive')
+      expect(leePublications.map((p) => p.doi)).not.toContain('10.1/false-positive')
     })
   })
 })

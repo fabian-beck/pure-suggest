@@ -1,10 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
 import BoostKeywordsComponent from '@/components/BoostKeywordsComponent.vue'
-import { useSessionStore } from '@/stores/session.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useQueueStore } from '@/stores/queue.js'
+import { useSessionStore } from '@/stores/session.js'
 
 // Mock useAppState to control updateScores
 const mockUpdateScores = vi.fn()
@@ -19,25 +20,24 @@ describe('BoostKeywordsComponent', () => {
   let pinia
   let sessionStore
   let interfaceStore
-  let queueStore
+  let _queueStore
 
   beforeEach(() => {
     pinia = createPinia()
     setActivePinia(pinia)
     sessionStore = useSessionStore()
     interfaceStore = useInterfaceStore()
-    queueStore = useQueueStore()
-    
+    _queueStore = useQueueStore()
+
     // Set up default values
     sessionStore.boostKeywordString = 'test, example'
     sessionStore.isBoost = true
     sessionStore.setBoostKeywordString = vi.fn()
     interfaceStore.isMobile = false
-    
+
     // Reset the mock before each test
     mockUpdateScores.mockReset()
   })
-
 
   it('generates correct HTML for boost keyword string', () => {
     sessionStore.boostKeywordString = 'word1, word2|alt, word3'
@@ -84,7 +84,6 @@ describe('BoostKeywordsComponent', () => {
     expect(wrapper.vm.boostKeywordStringHtml).toBe('')
   })
 
-
   describe('menu close behavior', () => {
     it('should call updateScores when menu closes after user made changes', async () => {
       sessionStore.selectedPublications = [{ doi: '10.1000/test' }] // Make not empty
@@ -94,17 +93,27 @@ describe('BoostKeywordsComponent', () => {
         global: {
           plugins: [pinia],
           stubs: {
-            'v-menu': { 
+            'v-menu': {
               template: '<div class="v-menu"><slot></slot></div>',
               props: ['modelValue'],
               emits: ['update:modelValue']
             },
-            'v-btn': { template: '<button class="v-btn" @click="$emit(\'click\')"><slot></slot></button>' },
+            'v-btn': {
+              template: '<button class="v-btn" @click="$emit(\'click\')"><slot></slot></button>'
+            },
             'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
             'v-sheet': { template: '<div class="v-sheet"><slot></slot></div>' },
-            'v-text-field': { 
+            'v-text-field': {
               template: '<input class="v-text-field" />',
-              props: ['modelValue', 'label', 'variant', 'density', 'appendInnerIcon', 'hint', 'persistentHint'],
+              props: [
+                'modelValue',
+                'label',
+                'variant',
+                'density',
+                'appendInnerIcon',
+                'hint',
+                'persistentHint'
+              ],
               emits: ['update:modelValue', 'click:append-inner']
             },
             'v-checkbox': { template: '<input type="checkbox" class="v-checkbox" />' }
@@ -133,7 +142,7 @@ describe('BoostKeywordsComponent', () => {
         global: {
           plugins: [pinia],
           stubs: {
-            'v-menu': { 
+            'v-menu': {
               template: '<div class="v-menu"><slot></slot></div>',
               props: ['modelValue'],
               emits: ['update:modelValue']
@@ -141,9 +150,17 @@ describe('BoostKeywordsComponent', () => {
             'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
             'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
             'v-sheet': { template: '<div class="v-sheet"><slot></slot></div>' },
-            'v-text-field': { 
+            'v-text-field': {
               template: '<input class="v-text-field" />',
-              props: ['modelValue', 'label', 'variant', 'density', 'appendInnerIcon', 'hint', 'persistentHint']
+              props: [
+                'modelValue',
+                'label',
+                'variant',
+                'density',
+                'appendInnerIcon',
+                'hint',
+                'persistentHint'
+              ]
             },
             'v-checkbox': { template: '<input type="checkbox" class="v-checkbox" />' }
           }
@@ -170,13 +187,13 @@ describe('BoostKeywordsComponent', () => {
           plugins: [pinia],
           stubs: {
             'v-menu': { template: '<div class="v-menu"><slot></slot></div>' },
-            'v-btn': { 
+            'v-btn': {
               template: '<button class="v-btn" @click="$emit(\'click\')"><slot></slot></button>',
               emits: ['click']
             },
             'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
             'v-sheet': { template: '<div class="v-sheet"><slot></slot></div>' },
-            'v-text-field': { 
+            'v-text-field': {
               template: '<input class="v-text-field" />',
               props: ['appendInnerIcon', 'label', 'variant', 'density', 'hint', 'persistentHint'],
               emits: ['click:append-inner']
@@ -188,8 +205,8 @@ describe('BoostKeywordsComponent', () => {
 
       // Find the boost button (with mdi-chevron-double-up icon) and click it
       const boostButtons = wrapper.findAll('.v-btn')
-      const submitButton = boostButtons.find(btn => btn.text().includes('mdi-chevron-double-up'))
-      
+      const submitButton = boostButtons.find((btn) => btn.text().includes('mdi-chevron-double-up'))
+
       if (submitButton) {
         await submitButton.trigger('click')
         expect(mockUpdateScores).toHaveBeenCalled()
