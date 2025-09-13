@@ -418,6 +418,15 @@ function handleMouseLeave() {
       background: hsla(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l), 0.08) !important;
     }
 
+    &.is-newly-added.is-hovered {
+      background: hsla(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l), 0.12) !important;
+
+      & .glyph {
+        transform: scale(1.05);
+        animation: glyph-pulse 2s ease-in-out infinite;
+      }
+    }
+
     &.is-active .glyph,
     &.is-linked-to-active .glyph {
       border-width: 0.3rem;
