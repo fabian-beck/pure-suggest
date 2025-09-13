@@ -42,8 +42,23 @@
               }}.
             </template>
           </tippy>
-          <CompactButton icon="mdi-cog has-text-white" class="ml-2"
-            v-tippy="'Suggestions settings - Set the number of publications to load.'" @click="openSuggestionsSettings()"></CompactButton>
+          <v-menu :close-on-content-click="false">
+            <template v-slot:activator="{ props }">
+              <CompactButton icon="mdi-cog has-text-white" class="ml-2"
+                v-tippy="'Suggestions settings - Set the number of publications to load.'" v-bind="props"></CompactButton>
+            </template>
+            <v-list>
+              <v-list-item prepend-icon="mdi-water-plus-outline">
+                <v-list-item-title>Number of <b>suggested</b> shown</v-list-item-title>
+                <v-slider 
+                  v-model="maxSuggestionsModel" 
+                  :min="20" 
+                  :max="400" 
+                  :step="10"
+                  @update:model-value="updateMaxSuggestions" />
+              </v-list-item>
+            </v-list>
+          </v-menu>
         </div>
       </div>
     </div>
@@ -52,21 +67,40 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useSessionStore } from "@/stores/session.js"
-import { useInterfaceStore } from "@/stores/interface.js"
+import { useAppState } from "@/composables/useAppState.js"
 
 defineProps({
   title: String,
 })
 
 const sessionStore = useSessionStore()
-const interfaceStore = useInterfaceStore()
+const { updateSuggestions } = useAppState()
 
 const publicationList = ref(null)
 
-const openSuggestionsSettings = () => {
-  interfaceStore.isSuggestionsSettingsDialogShown = true
+// Create reactive model for the slider
+const maxSuggestionsModel = computed({
+  get() {
+    return sessionStore.maxSuggestions
+  },
+  set() {
+    // This will be handled by updateMaxSuggestions
+  }
+})
+
+// Update max suggestions when slider changes
+const updateMaxSuggestions = async (newValue) => {
+  if (newValue !== sessionStore.maxSuggestions) {
+    // Only update if we have selected publications to work with
+    if (sessionStore.selectedPublicationsCount > 0) {
+      await updateSuggestions(newValue)
+    } else {
+      // If no publications selected, just update the max value
+      sessionStore.maxSuggestions = newValue
+    }
+  }
 }
 
 onMounted(() => {
@@ -94,5 +128,11 @@ onMounted(() => {
   & .publication-list {
     @include scrollable-list;
   }
+}
+
+// Fix for slider thumb being cut off when at minimum and maximum values
+:deep(.v-list-item .v-slider) {
+  padding-left: 16px;
+  padding-right: 16px;
 }
 </style>

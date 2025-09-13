@@ -24,7 +24,6 @@ export const useInterfaceStore = defineStore('interface', {
             isQueueModalDialogShown: false,
             isAboutModalDialogShown: false,
             isShareSessionModalDialogShown: false,
-            isSuggestionsSettingsDialogShown: false,
             // Network replot trigger (incremented to notify NetworkVisComponent to replot)
             networkReplotTrigger: 0,
             isKeyboardControlsModalDialogShown: false,
@@ -55,7 +54,6 @@ export const useInterfaceStore = defineStore('interface', {
                 || this.isQueueModalDialogShown
                 || this.isAboutModalDialogShown
                 || this.isShareSessionModalDialogShown
-                || this.isSuggestionsSettingsDialogShown
                 || this.isKeyboardControlsModalDialogShown;
         }
     },
