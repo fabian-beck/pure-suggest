@@ -197,20 +197,35 @@ function scrollToActivated() {
   }
 
   if (onNextActivatedScroll.value) {
-    setTimeout(() => {
-      const publicationComponent = document.getElementsByClassName("is-active")[0]
-      if (publicationComponent) {
-        if (window.innerWidth <= 1023) {
-          scrollToTargetAdjusted(publicationComponent, 65)
-        } else {
-          publicationComponent.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-            inline: "nearest",
-          })
+    // Wait for DOM updates and publication expansion
+    nextTick(() => {
+      // Additional delay to account for any transitions/animations
+      setTimeout(() => {
+        const publicationComponent = document.getElementsByClassName("is-active")[0]
+        if (publicationComponent) {
+          if (window.innerWidth <= 1023) {
+            scrollToTargetAdjusted(publicationComponent, 65)
+          } else {
+            // Check if we're at the bottom of the viewport to avoid unnecessary scrolling
+            const rect = publicationComponent.getBoundingClientRect()
+            const viewportHeight = window.innerHeight
+            
+            // If publication is already fully visible, don't scroll
+            if (rect.top >= 0 && rect.bottom <= viewportHeight) {
+              return
+            }
+            
+            // Use "start" for better visibility of expanded content
+            // This ensures the entire expanded publication is visible
+            publicationComponent.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+              inline: "nearest",
+            })
+          }
         }
-      }
-    }, 100)
+      }, 150) // Increased delay to account for expansion
+    })
   } else {
     onNextActivatedScroll.value = true
   }

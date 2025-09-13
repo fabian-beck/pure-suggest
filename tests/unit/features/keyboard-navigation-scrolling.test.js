@@ -38,7 +38,7 @@ describe('Keyboard Navigation Scrolling Fix', () => {
     mockScrollIntoView.mockClear()
   })
   
-  it('should use block: "center" for better keyboard navigation visibility', async () => {
+  it('should use block: "start" with visibility check for better keyboard navigation', async () => {
     const publications = [
       createTestPublication('10.1000/test1', 'First Publication'),
       createTestPublication('10.1000/test2', 'Second Publication'),
@@ -65,7 +65,11 @@ describe('Keyboard Navigation Scrolling Fix', () => {
     
     // Mock the DOM query that finds active publications
     const mockActiveElement = {
-      scrollIntoView: mockScrollIntoView
+      scrollIntoView: mockScrollIntoView,
+      getBoundingClientRect: vi.fn().mockReturnValue({
+        top: -50,  // Partially above viewport - triggers scrolling
+        bottom: 600
+      })
     }
     
     // Mock getElementsByClassName to return our mock element
@@ -79,16 +83,23 @@ describe('Keyboard Navigation Scrolling Fix', () => {
       value: 1200
     })
     
+    // Set window height for viewport calculations
+    Object.defineProperty(window, 'innerHeight', {
+      writable: true,
+      configurable: true,
+      value: 800
+    })
+    
     // Trigger scrollToActivated method by calling it directly
     await wrapper.vm.scrollToActivated()
     
-    // Wait for setTimeout in scrollToActivated
-    await new Promise(resolve => setTimeout(resolve, 150))
+    // Wait for nextTick and setTimeout in scrollToActivated
+    await new Promise(resolve => setTimeout(resolve, 200))
     
     // Verify scrollIntoView was called with correct parameters for our fix
     expect(mockScrollIntoView).toHaveBeenCalledWith({
       behavior: "smooth",
-      block: "center",  // This is the key fix - should be "center" not "start"
+      block: "start",  // Changed to "start" for better visibility of expanded content
       inline: "nearest"
     })
     
@@ -126,7 +137,7 @@ describe('Keyboard Navigation Scrolling Fix', () => {
     })
     
     const mockActiveElement = {
-      getBoundingClientRect: () => ({ top: 100 }),
+      getBoundingClientRect: vi.fn().mockReturnValue({ top: 100 }),
       scrollIntoView: mockScrollIntoView
     }
     
@@ -135,17 +146,84 @@ describe('Keyboard Navigation Scrolling Fix', () => {
     
     // Mock window.scrollTo for mobile scrolling
     const mockScrollTo = vi.fn()
-    window.scrollTo = mockScrollTo
-    window.pageYOffset = 0
+    Object.defineProperty(window, 'scrollTo', {
+      writable: true,
+      configurable: true,
+      value: mockScrollTo
+    })
+    Object.defineProperty(window, 'pageYOffset', {
+      writable: true,
+      configurable: true,
+      value: 0
+    })
     
     await wrapper.vm.scrollToActivated()
-    await new Promise(resolve => setTimeout(resolve, 150))
+    await new Promise(resolve => setTimeout(resolve, 200))
     
     // For mobile, it should use scrollToTargetAdjusted, not scrollIntoView
     expect(mockScrollTo).toHaveBeenCalledWith({
       top: 35, // 100 (element position) - 65 (offset) = 35
       behavior: "smooth"
     })
+    
+    // scrollIntoView should not be called for mobile
+    expect(mockScrollIntoView).not.toHaveBeenCalled()
+    
+    // Restore
+    document.getElementsByClassName = originalGetElementsByClassName
+  })
+  
+  it('should not scroll when publication is already fully visible', async () => {
+    const publications = [
+      createTestPublication('10.1000/test1', 'First Publication')
+    ]
+    
+    sessionStore.selectedPublications = publications
+    
+    const wrapper = mount(PublicationListComponent, {
+      props: {
+        publications,
+        publicationType: 'selected'
+      },
+      global: {
+        stubs: {
+          LazyPublicationComponent: {
+            template: '<li class="publication-component" :class="{ \'is-active\': publication.isActive }" :id="publication.doi">{{ publication.title }}</li>',
+            props: ['publication', 'publicationType', 'isMobile']
+          }
+        }
+      }
+    })
+    
+    // Mock the DOM query that finds active publications with fully visible element
+    const mockActiveElement = {
+      scrollIntoView: mockScrollIntoView,
+      getBoundingClientRect: vi.fn().mockReturnValue({
+        top: 100,  // Fully within viewport
+        bottom: 300
+      })
+    }
+    
+    const originalGetElementsByClassName = document.getElementsByClassName
+    document.getElementsByClassName = vi.fn(() => [mockActiveElement])
+    
+    // Set window properties for desktop
+    Object.defineProperty(window, 'innerWidth', {
+      writable: true,
+      configurable: true,
+      value: 1200
+    })
+    Object.defineProperty(window, 'innerHeight', {
+      writable: true,
+      configurable: true,
+      value: 800
+    })
+    
+    await wrapper.vm.scrollToActivated()
+    await new Promise(resolve => setTimeout(resolve, 200))
+    
+    // Should not call scrollIntoView when publication is fully visible
+    expect(mockScrollIntoView).not.toHaveBeenCalled()
     
     // Restore
     document.getElementsByClassName = originalGetElementsByClassName
