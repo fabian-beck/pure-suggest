@@ -135,7 +135,11 @@ export const useSessionStore = defineStore('session', {
 
     async addPublicationsToSelection(dois) {
       console.log(`Adding to selection publications with DOIs: ${dois}.`);
-      dois.forEach((doi) => {
+      
+      // Filter out null, undefined, and empty/whitespace-only DOIs to prevent crashes
+      const validDois = dois.filter(doi => doi != null && typeof doi === 'string' && doi.trim() !== '');
+      
+      validDois.forEach((doi) => {
         doi = doi.toLowerCase();
         if (this.isExcluded(doi)) {
           this.removeFromExcludedPublication(doi);
