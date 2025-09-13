@@ -13,7 +13,9 @@
     "test:coverage": "vitest --coverage",
     "test:perf": "vitest run --config vite.config.perf.mjs",
     "test:perf:watch": "vitest --config vite.config.perf.mjs",
-    "test:all": "npm test && npm run test:perf"
+    "test:integration": "vitest run --config vite.config.integration.mjs",
+    "test:integration:watch": "vitest --config vite.config.integration.mjs",
+    "test:all": "npm test && npm run test:integration && npm run test:perf"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
