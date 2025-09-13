@@ -40,7 +40,7 @@ describe('generateBibtex', () => {
 
       const result = generateBibtex(publication)
 
-      expect(result).toContain('@inproceedings{Johnson2022A,')
+      expect(result).toContain('@inproceedings{Johnson2022Novel,')
       expect(result).toContain('booktitle = {Proceedings of the International Conference on Software Testing}')
       expect(result).not.toContain('journal =')
       expect(result).not.toContain('volume =')
@@ -228,7 +228,7 @@ describe('generateBibtex', () => {
       }
 
       const result = generateBibtex(publication)
-      expect(result).toContain('@misc{Wonder2024A,')
+      expect(result).toContain('@misc{Wonder2024Study,')
     })
 
     it('should handle multiple author names correctly', () => {
@@ -313,6 +313,54 @@ describe('generateBibtex', () => {
 
       const result = generateBibtex(publication)
       expect(result).toContain('@misc{Smith2023Fallback,')
+    })
+
+    it('should skip common short words when generating title key', () => {
+      const publication = {
+        title: 'A Study of the Modern Approach',
+        author: 'John Smith',
+        year: '2023',
+        doi: '10.1234/skip.123'
+      }
+
+      const result = generateBibtex(publication)
+      expect(result).toContain('@misc{Smith2023Study,')
+    })
+
+    it('should skip articles and prepositions in title', () => {
+      const publication = {
+        title: 'The Impact of Machine Learning on Software',
+        author: 'Jane Doe',
+        year: '2024',
+        doi: '10.1234/articles.456'
+      }
+
+      const result = generateBibtex(publication)
+      expect(result).toContain('@misc{Doe2024Impact,')
+    })
+
+    it('should handle title with only short words by using first word as fallback', () => {
+      const publication = {
+        title: 'A to Z',
+        author: 'Bob Wilson',
+        year: '2022',
+        doi: '10.1234/shortonly.789'
+      }
+
+      const result = generateBibtex(publication)
+      expect(result).toContain('@misc{Wilson2022A,')
+    })
+
+    it('should require minimum 2 characters for meaningful words', () => {
+      const publication = {
+        title: 'I Am Learning Programming',
+        author: 'Alice Cooper',
+        year: '2023',
+        doi: '10.1234/twochars.123'
+      }
+
+      const result = generateBibtex(publication)
+      expect(result).toContain('@misc{Cooper2023Am,')
     })
   })
 })

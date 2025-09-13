@@ -66,21 +66,34 @@ function generateBibtexKey(publication) {
         key += publication.year;
     }
     
-    // Add first word of title
+    // Add first meaningful word of title
     if (publication.title) {
-        // Remove special characters, split by spaces, and take first meaningful word
+        // Common short words to skip in academic citations
+        const skipWords = new Set(['a', 'an', 'the', 'of', 'in', 'on', 'at', 'to', 'for', 'with', 'by', 'from', 'and', 'or', 'but', 'is', 'are', 'was', 'were']);
+        
+        // Remove special characters, split by spaces, and find first meaningful word
         const titleWords = publication.title
             .replace(/[^\w\s]/g, ' ')  // Replace non-word characters with spaces
             .split(/\s+/)             // Split by whitespace
             .filter(word => word.length > 0); // Remove empty strings
         
-        if (titleWords.length > 0) {
-            const firstWord = titleWords[0];
-            // Remove non-alphanumeric characters and capitalize first letter
-            const cleanFirstWord = firstWord.replace(/[^a-zA-Z0-9]/g, '');
-            if (cleanFirstWord.length > 0) {
-                key += cleanFirstWord.charAt(0).toUpperCase() + cleanFirstWord.slice(1).toLowerCase();
+        // Find first word that's meaningful (not a common skip word and at least 2 characters)
+        let meaningfulWord = null;
+        for (const word of titleWords) {
+            const cleanWord = word.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+            if (cleanWord.length >= 2 && !skipWords.has(cleanWord)) {
+                meaningfulWord = cleanWord;
+                break;
             }
+        }
+        
+        // If no meaningful word found, fall back to first word
+        if (!meaningfulWord && titleWords.length > 0) {
+            meaningfulWord = titleWords[0].replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+        }
+        
+        if (meaningfulWord && meaningfulWord.length > 0) {
+            key += meaningfulWord.charAt(0).toUpperCase() + meaningfulWord.slice(1);
         }
     }
     
