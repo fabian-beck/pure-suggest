@@ -179,6 +179,38 @@ describe('Publication HTML Tag Removal', () => {
       expect(cleanedTitle).not.toContain('</sc>')
     })
 
+    it('should remove HTML entities encoded tags - Bug reproduction case', () => {
+      const cleanedTitle = testHtmlRemoval('V&lt;sc&gt;is&lt;/sc&gt;T&lt;sc&gt;iles&lt;/sc&gt;: Coordinating and Combining Co-located Mobile Devices for Visual Data Exploration')
+      
+      expect(cleanedTitle).toBe('VisTiles: Coordinating and Combining Co-located Mobile Devices for Visual Data Exploration')
+      expect(cleanedTitle).not.toContain('&lt;sc&gt;')
+      expect(cleanedTitle).not.toContain('&lt;/sc&gt;')
+      expect(cleanedTitle).not.toContain('<sc>')
+      expect(cleanedTitle).not.toContain('</sc>')
+    })
+
+    it('should remove various HTML entities encoded tags', () => {
+      const cleanedTitle = testHtmlRemoval('Study of &lt;sub&gt;2&lt;/sub&gt;O and H&lt;sup&gt;+&lt;/sup&gt; reactions')
+      
+      expect(cleanedTitle).toBe('Study of 2O and H+ reactions')
+      expect(cleanedTitle).not.toContain('&lt;sub&gt;')
+      expect(cleanedTitle).not.toContain('&lt;/sub&gt;')
+      expect(cleanedTitle).not.toContain('&lt;sup&gt;')
+      expect(cleanedTitle).not.toContain('&lt;/sup&gt;')
+    })
+
+    it('should remove mixed HTML tags and HTML entities', () => {
+      const cleanedTitle = testHtmlRemoval('Research on <b>neural</b> &lt;i&gt;networks&lt;/i&gt; and &lt;sc&gt;machine&lt;/sc&gt; learning')
+      
+      expect(cleanedTitle).toBe('Research on neural networks and machine learning')
+      expect(cleanedTitle).not.toContain('<b>')
+      expect(cleanedTitle).not.toContain('</b>')
+      expect(cleanedTitle).not.toContain('&lt;i&gt;')
+      expect(cleanedTitle).not.toContain('&lt;/i&gt;')
+      expect(cleanedTitle).not.toContain('&lt;sc&gt;')
+      expect(cleanedTitle).not.toContain('&lt;/sc&gt;')
+    })
+
     it('should remove various formatting tags used in academic publications', () => {
       const cleanedTitle = testHtmlRemoval('Study of <sub>2</sub>O and H<sup>+</sup> in <sc>chemical</sc> reactions')
       
