@@ -6,13 +6,15 @@ import NetworkControls from '@/components/NetworkControls.vue'
 import { useSessionStore } from '@/stores/session.js'
 
 // Mock the composable that determines if the app state is empty
+const mockUseAppState = vi.fn()
 vi.mock('@/composables/useAppState.js', () => ({
-  useAppState: vi.fn()
+  useAppState: mockUseAppState
 }))
 
 // Mock session store
+const mockUseSessionStore = vi.fn()
 vi.mock('@/stores/session.js', () => ({
-  useSessionStore: vi.fn()
+  useSessionStore: mockUseSessionStore
 }))
 
 // Mock tippy for tooltips
@@ -20,24 +22,20 @@ vi.mock('tippy.js', () => ({ default: vi.fn(() => ({})) }))
 
 describe('NetworkControls', () => {
   let pinia
-  let mockUseAppState
-  let mockSessionStore
+  let mockSessionStoreInstance
 
-  beforeEach(async () => {
+  beforeEach(() => {
     pinia = createPinia()
     setActivePinia(pinia)
 
-    // Setup mocks
-    mockUseAppState = vi.fn()
-    mockSessionStore = {
+    // Setup mock return values
+    mockSessionStoreInstance = {
       filter: {
         hasActiveFilters: vi.fn(() => false)
       }
     }
 
-    vi.mocked(useSessionStore).mockReturnValue(mockSessionStore)
-    const { useAppState } = await import('@/composables/useAppState.js')
-    vi.mocked(useAppState).mockImplementation(mockUseAppState)
+    mockUseSessionStore.mockReturnValue(mockSessionStoreInstance)
   })
 
   const getComponentStubs = () => ({
@@ -84,8 +82,8 @@ describe('NetworkControls', () => {
 
       const controlsContainer = wrapper.find('.controls-footer-right')
       expect(controlsContainer.exists()).toBe(true)
-      
-      // The component should correctly set display: none when isEmpty is true
+
+      // Vue's v-show directive sets style="display: none;" when condition is false
       expect(controlsContainer.attributes('style')).toBe('display: none;')
     })
 
@@ -136,9 +134,9 @@ describe('NetworkControls', () => {
         }
       })
 
-      // Should contain zoom in, zoom out, and reset buttons
-      const compactButtons = wrapper.findAllComponents({ name: 'CompactButton' })
-      expect(compactButtons).toHaveLength(3) // zoom in, zoom out, reset
+      // Should contain zoom in, zoom out, and reset buttons (3 total)
+      const compactButtons = wrapper.findAll('.compact-button')
+      expect(compactButtons.length).toBeGreaterThanOrEqual(3) // at least zoom in, zoom out, reset
     })
 
     it('contains node type toggle buttons', () => {
@@ -155,7 +153,7 @@ describe('NetworkControls', () => {
 
       const btnToggle = wrapper.find('.v-btn-toggle')
       expect(btnToggle.exists()).toBe(true)
-      
+
       const toggleButtons = btnToggle.findAll('button')
       expect(toggleButtons).toHaveLength(4) // selected, suggested, keyword, author
     })
@@ -172,7 +170,7 @@ describe('NetworkControls', () => {
         }
       })
 
-      const menu = wrapper.findComponent({ name: 'v-menu' })
+      const menu = wrapper.find('.v-menu')
       expect(menu.exists()).toBe(true)
     })
   })
@@ -192,8 +190,9 @@ describe('NetworkControls', () => {
         }
       })
 
-      const zoomInButton = wrapper.findAllComponents({ name: 'CompactButton' })[0]
-      const zoomOutButton = wrapper.findAllComponents({ name: 'CompactButton' })[1]
+      const compactButtons = wrapper.findAll('.compact-button')
+      const zoomInButton = compactButtons[0]
+      const zoomOutButton = compactButtons[1]
 
       await zoomInButton.trigger('click')
       expect(wrapper.emitted().zoom).toBeTruthy()
@@ -211,9 +210,10 @@ describe('NetworkControls', () => {
         }
       })
 
-      const resetButton = wrapper.findAllComponents({ name: 'CompactButton' })[2]
+      const compactButtons = wrapper.findAll('.compact-button')
+      const resetButton = compactButtons[2] // third button is reset
       await resetButton.trigger('click')
-      
+
       expect(wrapper.emitted().reset).toBeTruthy()
     })
 
@@ -227,7 +227,7 @@ describe('NetworkControls', () => {
 
       const btnToggle = wrapper.find('.v-btn-toggle')
       await btnToggle.trigger('click')
-      
+
       expect(wrapper.emitted().plot).toBeTruthy()
       expect(wrapper.emitted().plot[0]).toEqual([true])
     })

@@ -7,33 +7,45 @@ import { useInterfaceStore } from '@/stores/interface.js'
 import { useQueueStore } from '@/stores/queue.js'
 import { useSessionStore } from '@/stores/session.js'
 
+// Create a comprehensive D3 mock
+const createChainableMock = () => {
+  const mock = vi.fn(() => createChainableMock())
+  const chainableMethods = [
+    'attr', 'select', 'selectAll', 'append', 'call', 'on', 'style', 'text',
+    'classed', 'data', 'join', 'enter', 'exit', 'remove', 'merge', 'filter',
+    'transition', 'duration', 'delay', 'ease', 'each', 'node', 'nodes',
+    'datum', 'property', 'html', 'lower', 'raise', 'sort', 'order'
+  ]
+  chainableMethods.forEach(method => {
+    mock[method] = vi.fn(() => createChainableMock())
+  })
+  return mock
+}
+
 // Mock D3 and other external dependencies
 vi.mock('d3', () => ({
-  select: vi.fn(() => ({
-    attr: vi.fn(() => ({
-      select: vi.fn(() => ({
-        append: vi.fn(() => ({
-          attr: vi.fn(() => ({
-            selectAll: vi.fn(() => ({}))
-          }))
-        }))
-      }))
-    })),
-    call: vi.fn(() => ({}))
-  })),
+  select: vi.fn(() => createChainableMock()),
+  selectAll: vi.fn(() => createChainableMock()),
   zoom: vi.fn(() => ({
-    on: vi.fn()
+    on: vi.fn(() => createChainableMock())
   })),
   forceSimulation: vi.fn(() => ({
-    alphaDecay: vi.fn(() => ({})),
-    alphaMin: vi.fn(() => ({})),
-    nodes: vi.fn(() => ({})),
-    force: vi.fn(() => ({})),
-    alpha: vi.fn(() => ({})),
-    restart: vi.fn(() => ({})),
-    stop: vi.fn(() => ({})),
-    on: vi.fn(() => ({}))
-  }))
+    alphaDecay: vi.fn(() => createChainableMock()),
+    alphaMin: vi.fn(() => createChainableMock()),
+    nodes: vi.fn(() => createChainableMock()),
+    force: vi.fn(() => createChainableMock()),
+    alpha: vi.fn(() => createChainableMock()),
+    restart: vi.fn(() => createChainableMock()),
+    stop: vi.fn(() => createChainableMock()),
+    on: vi.fn(() => createChainableMock())
+  })),
+  drag: vi.fn(() => ({ on: vi.fn(() => createChainableMock()) })),
+  forceLink: vi.fn(() => ({
+    id: vi.fn(() => ({ distance: vi.fn(() => ({ strength: vi.fn() })) }))
+  })),
+  forceManyBody: vi.fn(() => ({ strength: vi.fn(() => ({ theta: vi.fn() })) })),
+  forceX: vi.fn(() => ({ x: vi.fn(() => ({ strength: vi.fn() })) })),
+  forceY: vi.fn(() => ({ y: vi.fn(() => ({ strength: vi.fn() })) }))
 }))
 
 vi.mock('tippy.js', () => ({ default: vi.fn(() => ({})) }))
@@ -137,13 +149,13 @@ describe('Bug: Network controls should not show when app state is empty', () => 
     const sessionStore = useSessionStore()
     const queueStore = useQueueStore()
     const interfaceStore = useInterfaceStore()
-    
+
     // Ensure empty state
     sessionStore.selectedPublications = []
     sessionStore.excludedPublicationsDois = []
     queueStore.selectedQueue = []
     queueStore.excludedQueue = []
-    
+
     // Ensure network is not collapsed
     interfaceStore.isNetworkCollapsed = false
 
@@ -157,9 +169,10 @@ describe('Bug: Network controls should not show when app state is empty', () => 
     // NetworkControls should be hidden because isEmpty is true
     const networkControls = wrapper.findComponent({ name: 'NetworkControls' })
     expect(networkControls.exists()).toBe(true)
-    
+
     // The key test: NetworkControls should not be visible when app state is empty
-    expect(networkControls.isVisible()).toBe(false)
+    // Use attributes check since v-show sets display: none
+    expect(networkControls.attributes('style')).toBe('display: none;')
   })
 
   it('shows NetworkControls when app state is not empty and network not collapsed', () => {
@@ -167,7 +180,7 @@ describe('Bug: Network controls should not show when app state is empty', () => 
     const sessionStore = useSessionStore()
     const queueStore = useQueueStore()
     const interfaceStore = useInterfaceStore()
-    
+
     // Add some publications to make state non-empty
     sessionStore.selectedPublications = [
       { doi: '10.1234/test1', title: 'Test Publication' }
@@ -175,7 +188,7 @@ describe('Bug: Network controls should not show when app state is empty', () => 
     sessionStore.excludedPublicationsDois = []
     queueStore.selectedQueue = []
     queueStore.excludedQueue = []
-    
+
     // Ensure network is not collapsed
     interfaceStore.isNetworkCollapsed = false
 
@@ -197,14 +210,14 @@ describe('Bug: Network controls should not show when app state is empty', () => 
     const sessionStore = useSessionStore()
     const queueStore = useQueueStore()
     const interfaceStore = useInterfaceStore()
-    
+
     // Add some publications to make state non-empty
     sessionStore.selectedPublications = [
       { doi: '10.1234/test1', title: 'Test Publication' }
     ]
     queueStore.selectedQueue = []
     queueStore.excludedQueue = []
-    
+
     // Collapse the network
     interfaceStore.isNetworkCollapsed = true
 
@@ -218,7 +231,7 @@ describe('Bug: Network controls should not show when app state is empty', () => 
     // NetworkControls should be hidden because network is collapsed
     const networkControls = wrapper.findComponent({ name: 'NetworkControls' })
     expect(networkControls.exists()).toBe(true)
-    expect(networkControls.isVisible()).toBe(false)
+    expect(networkControls.attributes('style')).toBe('display: none;')
   })
 
   it('hides NetworkControls when both app state is empty AND network is collapsed', () => {
@@ -226,13 +239,13 @@ describe('Bug: Network controls should not show when app state is empty', () => 
     const sessionStore = useSessionStore()
     const queueStore = useQueueStore()
     const interfaceStore = useInterfaceStore()
-    
+
     // Ensure empty state
     sessionStore.selectedPublications = []
     sessionStore.excludedPublicationsDois = []
     queueStore.selectedQueue = []
     queueStore.excludedQueue = []
-    
+
     // Collapse the network
     interfaceStore.isNetworkCollapsed = true
 
@@ -246,6 +259,6 @@ describe('Bug: Network controls should not show when app state is empty', () => 
     // NetworkControls should be hidden for both reasons
     const networkControls = wrapper.findComponent({ name: 'NetworkControls' })
     expect(networkControls.exists()).toBe(true)
-    expect(networkControls.isVisible()).toBe(false)
+    expect(networkControls.attributes('style')).toBe('display: none;')
   })
 })
