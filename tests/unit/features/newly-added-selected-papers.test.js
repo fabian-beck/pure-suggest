@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useSessionStore } from '@/stores/session.js'
-import { useQueueStore } from '@/stores/queue.js'
+import { describe, it, expect, beforeEach } from 'vitest'
+
 import { useAppState } from '@/composables/useAppState.js'
 import Publication from '@/core/Publication.js'
+import { useQueueStore } from '@/stores/queue.js'
+import { useSessionStore } from '@/stores/session.js'
 
 describe('Newly Added Selected Papers', () => {
   let sessionStore
