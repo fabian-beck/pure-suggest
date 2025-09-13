@@ -164,6 +164,7 @@ export default class Publication {
     this.isSurvey = this.isHighlyCited = this.isNew = this.isUnnoted = false
     this.isActive = this.isLinkedToActive = this.isSelected = this.isRead = false
     this.isHovered = this.isKeywordHovered = this.isAuthorHovered = this.wasFetched = false
+    this.isNewlyAdded = false
   }
 
   /**

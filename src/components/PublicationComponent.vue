@@ -116,7 +116,8 @@ function handleMouseLeave() {
           queueStore.isQueuingForExcluded(publication.doi),
         'is-hovered': interfaceStore.hoveredPublication === publication.doi,
         'is-keyword-hovered': publication.isKeywordHovered,
-        'is-author-hovered': publication.isAuthorHovered
+        'is-author-hovered': publication.isAuthorHovered,
+        'is-newly-added': publication.isNewlyAdded
       }"
       :id="publication.doi"
       tabindex="0"
@@ -202,6 +203,10 @@ function handleMouseLeave() {
           <div v-if="publication.isActive">
             <br />
             Currently active, with linked publications highlighted.
+          </div>
+          <div v-if="publication.isNewlyAdded">
+            <br />
+            The publication was added to selected in the most recent update.
           </div>
         </template>
       </tippy>
@@ -407,6 +412,10 @@ function handleMouseLeave() {
       & .boost-indicator {
         border-color: var(--bulma-primary);
       }
+    }
+
+    &.is-newly-added {
+      background: hsla(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l), 0.08) !important;
     }
 
     &.is-active .glyph,
