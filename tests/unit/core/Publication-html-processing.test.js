@@ -190,6 +190,58 @@ describe('Publication HTML Tag Removal', () => {
       expect(cleanedTitle).not.toContain('<sc>')
       expect(cleanedTitle).not.toContain('</sc>')
     })
+
+    it('should handle uppercase SC tags', () => {
+      const cleanedTitle = testHtmlRemoval('VT<SC>iles</SC>: Test with uppercase tags')
+      
+      expect(cleanedTitle).toBe('VTiles: Test with uppercase tags')
+      expect(cleanedTitle).not.toContain('<SC>')
+      expect(cleanedTitle).not.toContain('</SC>')
+    })
+
+    it('should handle sc tags with attributes', () => {
+      const cleanedTitle = testHtmlRemoval('VT<sc class="small-caps">iles</sc>: Test with attributes')
+      
+      expect(cleanedTitle).toBe('VTiles: Test with attributes')
+      expect(cleanedTitle).not.toContain('<sc')
+      expect(cleanedTitle).not.toContain('</sc>')
+    })
+
+    it('should handle multiple sc tags in same title', () => {
+      const cleanedTitle = testHtmlRemoval('<sc>Small</sc> caps and <sc>more</sc> small caps')
+      
+      expect(cleanedTitle).toBe('Small caps and more small caps')
+      expect(cleanedTitle).not.toContain('<sc>')
+      expect(cleanedTitle).not.toContain('</sc>')
+    })
+
+    it('should handle mixed case sc tags', () => {
+      const cleanedTitle = testHtmlRemoval('Test <Sc>mixed</sC> case tags')
+      
+      expect(cleanedTitle).toBe('Test mixed case tags')
+      expect(cleanedTitle).not.toContain('<Sc>')
+      expect(cleanedTitle).not.toContain('</sC>')
+    })
+
+    it('should handle browser compatibility fallback', () => {
+      const publication = new Publication('10.1234/test')
+      
+      // Mock a scenario where replaceAll is not available
+      const originalReplaceAll = String.prototype.replaceAll
+      delete String.prototype.replaceAll
+      
+      try {
+        const data = { title: 'VT<sc>iles</sc>: Test fallback' }
+        publication.processTitle(data)
+        
+        expect(publication.title).toBe('VTiles: Test fallback')
+        expect(publication.title).not.toContain('<sc>')
+        expect(publication.title).not.toContain('</sc>')
+      } finally {
+        // Restore replaceAll
+        String.prototype.replaceAll = originalReplaceAll
+      }
+    })
   })
 
   describe('integration with cleanTitle function', () => {
