@@ -77,11 +77,11 @@ function generateBibtexKey(publication) {
             .split(/\s+/)             // Split by whitespace
             .filter(word => word.length > 0); // Remove empty strings
         
-        // Find first word that's meaningful (not a common skip word and at least 2 characters)
+        // Find first word that's meaningful (not a common skip word and more than 3 characters)
         let meaningfulWord = null;
         for (const word of titleWords) {
             const cleanWord = word.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-            if (cleanWord.length >= 2 && !skipWords.has(cleanWord)) {
+            if (cleanWord.length > 3 && !skipWords.has(cleanWord)) {
                 meaningfulWord = cleanWord;
                 break;
             }

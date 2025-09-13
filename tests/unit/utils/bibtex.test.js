@@ -277,7 +277,7 @@ describe('generateBibtex', () => {
       }
 
       const result = generateBibtex(publication)
-      expect(result).toContain('@misc{Doe2022Re,')
+      expect(result).toContain('@misc{Doe2022Thinking,')
     })
 
     it('should extract last name from comma-separated format', () => {
@@ -352,7 +352,7 @@ describe('generateBibtex', () => {
       expect(result).toContain('@misc{Wilson2022A,')
     })
 
-    it('should require minimum 2 characters for meaningful words', () => {
+    it('should require more than 3 characters for meaningful words', () => {
       const publication = {
         title: 'I Am Learning Programming',
         author: 'Alice Cooper',
@@ -361,7 +361,31 @@ describe('generateBibtex', () => {
       }
 
       const result = generateBibtex(publication)
-      expect(result).toContain('@misc{Cooper2023Am,')
+      expect(result).toContain('@misc{Cooper2023Learning,')
+    })
+
+    it('should skip short words up to 3 characters like "how"', () => {
+      const publication = {
+        title: 'How Can We Improve Testing',
+        author: 'John Smith',
+        year: '2023',
+        doi: '10.1234/short.456'
+      }
+
+      const result = generateBibtex(publication)
+      expect(result).toContain('@misc{Smith2023Improve,')
+    })
+
+    it('should skip various 3-character words', () => {
+      const publication = {
+        title: 'The Way You Can Use New Methods',
+        author: 'Jane Doe',
+        year: '2024',
+        doi: '10.1234/threechars.789'
+      }
+
+      const result = generateBibtex(publication)
+      expect(result).toContain('@misc{Doe2024Methods,')
     })
   })
 })
