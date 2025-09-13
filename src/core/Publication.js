@@ -360,7 +360,28 @@ export default class Publication {
  * @returns {string} String with HTML tags removed.
  */
 function removeHtmlTags(string) {
-  return string.replaceAll(/<[^<>]*>/g, '')
+  if (!string || typeof string !== 'string') {
+    return string || ''
+  }
+  
+  // First decode HTML entities to actual HTML characters
+  const decodedString = string
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+  
+  // Then remove HTML tags
+  // Use replaceAll if available (modern browsers), otherwise fallback to replace with global flag
+  // This handles the case where replaceAll might not be supported in older environments
+  if (typeof decodedString.replaceAll === 'function') {
+    return decodedString.replaceAll(/<[^<>]*>/g, '')
+  } else {
+    // Fallback for older browsers - use replace with global flag
+    return decodedString.replace(/<[^<>]*>/g, '')
+  }
 }
 
 /**
