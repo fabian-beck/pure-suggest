@@ -42,20 +42,19 @@
               }}.
             </template>
           </tippy>
-          <v-menu :close-on-content-click="false">
+          <v-menu :close-on-content-click="false" v-model="isSettingsMenuOpen" @update:model-value="onMenuToggle">
             <template v-slot:activator="{ props }">
               <CompactButton icon="mdi-cog has-text-white" class="ml-2"
                 v-tippy="'Suggestions settings - Set the number of publications to load.'" v-bind="props"></CompactButton>
             </template>
             <v-list>
               <v-list-item prepend-icon="mdi-water-plus-outline">
-                <v-list-item-title>Number of <b>suggested</b> shown</v-list-item-title>
+                <v-list-item-title>Number of <b>suggested</b> shown: <b>{{ localMaxSuggestions }}</b></v-list-item-title>
                 <v-slider 
-                  v-model="maxSuggestionsModel" 
+                  v-model="localMaxSuggestions" 
                   :min="20" 
                   :max="400" 
-                  :step="10"
-                  @update:model-value="updateMaxSuggestions" />
+                  :step="10" />
               </v-list-item>
             </v-list>
           </v-menu>
@@ -69,6 +68,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useSessionStore } from "@/stores/session.js"
+import { useInterfaceStore } from "@/stores/interface.js"
 import { useAppState } from "@/composables/useAppState.js"
 
 defineProps({
@@ -76,29 +76,53 @@ defineProps({
 })
 
 const sessionStore = useSessionStore()
+const interfaceStore = useInterfaceStore()
 const { updateSuggestions } = useAppState()
 
 const publicationList = ref(null)
+const isSettingsMenuOpen = ref(false)
 
-// Create reactive model for the slider
-const maxSuggestionsModel = computed({
-  get() {
-    return sessionStore.maxSuggestions
-  },
-  set() {
-    // This will be handled by updateMaxSuggestions
+// Local variable to track slider value without immediately applying it
+const localMaxSuggestions = ref(sessionStore.maxSuggestions)
+
+// Update local value when store value changes (e.g., from other sources)
+computed(() => {
+  if (!isSettingsMenuOpen.value) {
+    localMaxSuggestions.value = sessionStore.maxSuggestions
   }
 })
 
-// Update max suggestions when slider changes
+// Handle menu open/close
+const onMenuToggle = async (isOpen) => {
+  if (!isOpen && localMaxSuggestions.value !== sessionStore.maxSuggestions) {
+    // Menu is closing and value has changed - apply the change
+    await updateMaxSuggestions(localMaxSuggestions.value)
+  } else if (isOpen) {
+    // Menu is opening - sync local value with current store value
+    localMaxSuggestions.value = sessionStore.maxSuggestions
+  }
+}
+
+// Update max suggestions when menu closes with new value
 const updateMaxSuggestions = async (newValue) => {
   if (newValue !== sessionStore.maxSuggestions) {
-    // Only update if we have selected publications to work with
-    if (sessionStore.selectedPublicationsCount > 0) {
-      await updateSuggestions(newValue)
-    } else {
-      // If no publications selected, just update the max value
-      sessionStore.maxSuggestions = newValue
+    // Block interface while loading to prevent inconsistent states
+    interfaceStore.startLoading()
+    interfaceStore.loadingMessage = `Updating suggestions to show ${newValue} publications...`
+    
+    try {
+      // Only update if we have selected publications to work with
+      if (sessionStore.selectedPublicationsCount > 0) {
+        await updateSuggestions(newValue)
+      } else {
+        // If no publications selected, just update the max value
+        sessionStore.maxSuggestions = newValue
+        interfaceStore.endLoading()
+      }
+    } catch (error) {
+      console.error('Error updating suggestions:', error)
+      interfaceStore.endLoading()
+      interfaceStore.showErrorMessage('Failed to update suggestions. Please try again.')
     }
   }
 }

@@ -167,7 +167,7 @@ describe('SuggestedPublicationsComponent', () => {
     // Check that the menu and slider components are present
     expect(wrapper.find('.v-menu').exists()).toBe(true)
     expect(wrapper.find('.v-slider').exists()).toBe(true)
-    expect(wrapper.text()).toContain('Number of suggested shown')
+    expect(wrapper.text()).toContain('Number of suggested shown: 100')
   })
 
   it('renders PublicationListComponent with correct props', () => {
