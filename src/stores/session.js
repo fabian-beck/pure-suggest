@@ -120,6 +120,7 @@ export const useSessionStore = defineStore('session', {
       this.filter = new Filter()
       this.addQuery = ''
       this.sessionName = ''
+      // Note: newly added flags are automatically cleared when selectedPublications is reset
     },
 
     removeFromExcludedPublication(doi) {
@@ -186,6 +187,34 @@ export const useSessionStore = defineStore('session', {
         if (!this.getSelectedPublicationByDoi(doi)) {
           this.selectedPublications.push(new Publication(doi))
         }
+      })
+    },
+
+    markPublicationsAsNewlyAdded(dois, wasSessionEmpty = false) {
+      // Only mark publications as newly added if the session was not empty before
+      if (wasSessionEmpty) {
+        return
+      }
+      
+      // Clear all previously newly added flags
+      this.selectedPublications.forEach((publication) => {
+        publication.isNewlyAdded = false
+      })
+      
+      // Mark the specified publications as newly added
+      dois.forEach((doi) => {
+        const normalizedDoi = doi.toLowerCase()
+        const publication = this.getSelectedPublicationByDoi(normalizedDoi)
+        if (publication) {
+          publication.isNewlyAdded = true
+        }
+      })
+      console.log(`Marked ${dois.length} publications as newly added.`)
+    },
+
+    clearNewlyAddedFlags() {
+      this.selectedPublications.forEach((publication) => {
+        publication.isNewlyAdded = false
       })
     },
 
