@@ -45,9 +45,18 @@ function generateBibtexKey(publication) {
     // Extract first author's last name
     if (publication.author) {
         const firstAuthor = publication.author.split(';')[0].trim();
-        // Split by space and take the last part as last name
-        const nameParts = firstAuthor.split(/\s+/);
-        const lastName = nameParts[nameParts.length - 1];
+        let lastName;
+        
+        // Check if name is in "lastname, firstname" format
+        if (firstAuthor.includes(',')) {
+            // Extract part before the comma as last name
+            lastName = firstAuthor.split(',')[0].trim();
+        } else {
+            // Fall back to assuming "firstname lastname" format - take the last word
+            const nameParts = firstAuthor.split(/\s+/);
+            lastName = nameParts[nameParts.length - 1];
+        }
+        
         // Remove non-alphanumeric characters and keep only letters/numbers
         key += lastName.replace(/[^a-zA-Z0-9]/g, '');
     }

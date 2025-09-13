@@ -278,5 +278,41 @@ describe('generateBibtex', () => {
       const result = generateBibtex(publication)
       expect(result).toContain('@misc{Doe2022Re,')
     })
+
+    it('should extract last name from comma-separated format', () => {
+      const publication = {
+        title: 'Research Paper',
+        author: 'Smith, John;Doe, Jane',
+        year: '2023',
+        doi: '10.1234/comma.123'
+      }
+
+      const result = generateBibtex(publication)
+      expect(result).toContain('@misc{Smith2023Research,')
+    })
+
+    it('should handle hyphenated last names in comma format', () => {
+      const publication = {
+        title: 'Advanced Study',
+        author: 'García-López, José;O\'Connor, María',
+        year: '2024',
+        doi: '10.1234/hyphen.456'
+      }
+
+      const result = generateBibtex(publication)
+      expect(result).toContain('@misc{GarcaLpez2024Advanced,')
+    })
+
+    it('should fall back to space-separated format when no comma present', () => {
+      const publication = {
+        title: 'Fallback Test',
+        author: 'John Smith',
+        year: '2023',
+        doi: '10.1234/fallback.789'
+      }
+
+      const result = generateBibtex(publication)
+      expect(result).toContain('@misc{Smith2023Fallback,')
+    })
   })
 })
