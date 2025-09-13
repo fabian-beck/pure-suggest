@@ -1014,7 +1014,7 @@ export default {
         @zoom="zoomByFactor"
         @reset="resetZoom"
         @plot="plot"
-        v-show="!interfaceStore.isNetworkCollapsed"
+        v-show="!interfaceStore.isNetworkCollapsed && !isEmpty"
       />
     </div>
   </div>
