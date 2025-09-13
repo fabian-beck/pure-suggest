@@ -253,7 +253,7 @@ describe('generateBibtex', () => {
       }
 
       const result = generateBibtex(publication)
-      expect(result).toContain('@misc{B2023Ai,')
+      expect(result).toContain('@misc{B2023AI,')
     })
 
     it('should handle numeric-only title words', () => {
@@ -277,7 +277,7 @@ describe('generateBibtex', () => {
       }
 
       const result = generateBibtex(publication)
-      expect(result).toContain('@misc{Doe2022Thinking,')
+      expect(result).toContain('@misc{Doe2022thinking,')
     })
 
     it('should extract last name from comma-separated format', () => {
@@ -352,7 +352,7 @@ describe('generateBibtex', () => {
       expect(result).toContain('@misc{Wilson2022A,')
     })
 
-    it('should require more than 3 characters for meaningful words', () => {
+    it('should require more than 2 characters for meaningful words', () => {
       const publication = {
         title: 'I Am Learning Programming',
         author: 'Alice Cooper',
@@ -364,7 +364,7 @@ describe('generateBibtex', () => {
       expect(result).toContain('@misc{Cooper2023Learning,')
     })
 
-    it('should skip short words up to 3 characters like "how"', () => {
+    it('should skip short words up to 2 characters like "how"', () => {
       const publication = {
         title: 'How Can We Improve Testing',
         author: 'John Smith',
@@ -386,6 +386,38 @@ describe('generateBibtex', () => {
 
       const result = generateBibtex(publication)
       expect(result).toContain('@misc{Doe2024Methods,')
+    })
+
+    it('should preserve character case in title words', () => {
+      const publication = {
+        title: 'CamelCase: A Study of Naming Conventions',
+        author: 'Smith, John',
+        year: '2020',
+        doi: '10.1234/camelcase.123'
+      }
+
+      const result = generateBibtex(publication)
+      expect(result).toContain('@misc{Smith2020CamelCase,')
+    })
+
+    it('should preserve case in various mixed-case title words', () => {
+      const testCases = [
+        { title: 'XMLHttpRequest and API Design', expected: 'XMLHttpRequest' },
+        { title: 'iOS Development with SwiftUI', expected: 'iOS' },
+        { title: 'GraphQL vs REST Comparison', expected: 'GraphQL' },
+        { title: 'MachineLearning Algorithms', expected: 'MachineLearning' }
+      ]
+
+      testCases.forEach(({ title, expected }) => {
+        const publication = {
+          title,
+          author: 'Test Author',
+          year: '2023',
+          doi: '10.1234/test.123'
+        }
+        const result = generateBibtex(publication)
+        expect(result).toContain(`@misc{Author2023${expected},`)
+      })
     })
   })
 })

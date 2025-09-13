@@ -3,7 +3,6 @@ import { setActivePinia, createPinia } from 'pinia'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 import NetworkControls from '@/components/NetworkControls.vue'
-import { useSessionStore } from '@/stores/session.js'
 
 // Mock the composable that determines if the app state is empty
 const mockUseAppState = vi.fn()
