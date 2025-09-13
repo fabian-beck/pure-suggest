@@ -38,7 +38,7 @@ describe('Keyboard Navigation Scrolling Fix', () => {
     mockScrollIntoView.mockClear()
   })
   
-  it('should use block: "start" with visibility check for better keyboard navigation', async () => {
+  it('should use block: "start" by default and "end" for UP navigation', async () => {
     const publications = [
       createTestPublication('10.1000/test1', 'First Publication'),
       createTestPublication('10.1000/test2', 'Second Publication'),
@@ -90,16 +90,28 @@ describe('Keyboard Navigation Scrolling Fix', () => {
       value: 800
     })
     
-    // Trigger scrollToActivated method by calling it directly
+    // Test default behavior (DOWN navigation or no direction)
+    wrapper.vm.interfaceStore.lastNavigationDirection = 'down'
     await wrapper.vm.scrollToActivated()
-    
-    // Wait for nextTick and setTimeout in scrollToActivated
     await new Promise(resolve => setTimeout(resolve, 200))
     
-    // Verify scrollIntoView was called with correct parameters for our fix
     expect(mockScrollIntoView).toHaveBeenCalledWith({
       behavior: "smooth",
-      block: "start",  // Changed to "start" for better visibility of expanded content
+      block: "start",  // DOWN navigation uses "start"
+      inline: "nearest"
+    })
+    
+    // Clear mock calls for next test
+    mockScrollIntoView.mockClear()
+    
+    // Test UP navigation behavior
+    wrapper.vm.interfaceStore.lastNavigationDirection = 'up'
+    await wrapper.vm.scrollToActivated()
+    await new Promise(resolve => setTimeout(resolve, 200))
+    
+    expect(mockScrollIntoView).toHaveBeenCalledWith({
+      behavior: "smooth",
+      block: "end",  // UP navigation uses "end" to prevent title cutoff
       inline: "nearest"
     })
     

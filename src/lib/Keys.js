@@ -135,12 +135,13 @@ export function onKey(e) {
             )[0];
             try {
                 const direction = e.key === "ArrowDown" ? 'next' : 'previous';
+                const navigationDirection = e.key === "ArrowDown" ? 'down' : 'up';
                 const nextPublicationComponent = findAdjacentPublicationComponent(
                     activePublicationComponent.parentNode, 
                     direction
                 );
                 if (nextPublicationComponent) {
-                    interfaceStore.activatePublicationComponent(nextPublicationComponent);
+                    interfaceStore.activatePublicationComponent(nextPublicationComponent, navigationDirection);
                 }
             } catch {
                 console.log("Could not activate next/previous publication.")

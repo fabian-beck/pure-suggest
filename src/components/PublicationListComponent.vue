@@ -217,11 +217,17 @@ function scrollToActivated() {
             
             // Use "start" for better visibility of expanded content
             // This ensures the entire expanded publication is visible
+            // For UP navigation, use "end" to prevent title cutoff
+            const blockPosition = interfaceStore.lastNavigationDirection === 'up' ? 'end' : 'start';
+            
             publicationComponent.scrollIntoView({
               behavior: "smooth",
-              block: "start",
+              block: blockPosition,
               inline: "nearest",
             })
+            
+            // Clear navigation direction after use to avoid stale values
+            interfaceStore.lastNavigationDirection = null;
           }
         }
       }, 150) // Increased delay to account for expansion

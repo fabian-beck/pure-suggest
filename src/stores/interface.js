@@ -42,6 +42,8 @@ export const useInterfaceStore = defineStore('interface', {
             isFilterMenuOpen: false,
             // Hover state management
             hoveredPublication: null, // DOI of currently hovered publication
+            // Keyboard navigation direction tracking
+            lastNavigationDirection: null, // 'up' or 'down' - for scroll behavior
         }
     },
     getters: {
@@ -154,7 +156,9 @@ export const useInterfaceStore = defineStore('interface', {
             )
         },
 
-        activatePublicationComponent: function (publicationComponent) {
+        activatePublicationComponent: function (publicationComponent, navigationDirection = null) {
+            // Store navigation direction for scrolling behavior
+            this.lastNavigationDirection = navigationDirection;
             if (publicationComponent && typeof publicationComponent.focus === 'function') {
                 publicationComponent.focus();
             }
