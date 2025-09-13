@@ -170,6 +170,28 @@ describe('Publication HTML Tag Removal', () => {
     })
   })
 
+  describe('specific HTML tag types', () => {
+    it('should remove small caps (sc) tags - Bug reproduction case', () => {
+      const cleanedTitle = testHtmlRemoval('VT<sc>iles</sc>: Coordinating and Combining Co-located Mobile Devices for Visual Data Exploration')
+      
+      expect(cleanedTitle).toBe('VTiles: Coordinating and Combining Co-located Mobile Devices for Visual Data Exploration')
+      expect(cleanedTitle).not.toContain('<sc>')
+      expect(cleanedTitle).not.toContain('</sc>')
+    })
+
+    it('should remove various formatting tags used in academic publications', () => {
+      const cleanedTitle = testHtmlRemoval('Study of <sub>2</sub>O and H<sup>+</sup> in <sc>chemical</sc> reactions')
+      
+      expect(cleanedTitle).toBe('Study of 2O and H+ in chemical reactions')
+      expect(cleanedTitle).not.toContain('<sub>')
+      expect(cleanedTitle).not.toContain('</sub>')
+      expect(cleanedTitle).not.toContain('<sup>')
+      expect(cleanedTitle).not.toContain('</sup>')
+      expect(cleanedTitle).not.toContain('<sc>')
+      expect(cleanedTitle).not.toContain('</sc>')
+    })
+  })
+
   describe('integration with cleanTitle function', () => {
     it('should work as part of the full cleaning process', () => {
       const cleanedTitle = testHtmlRemoval('A <b>Comprehensive</b> Study  of   <i>Machine Learning</i>')
