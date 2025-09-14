@@ -1,4 +1,6 @@
 <script>
+import { computed } from 'vue'
+
 import PublicationComponent from '@/components/PublicationComponent.vue'
 import { useAuthorStore } from '@/stores/author.js'
 import { useInterfaceStore } from '@/stores/interface.js'
@@ -14,7 +16,101 @@ export default {
     const sessionStore = useSessionStore()
     const authorStore = useAuthorStore()
     const interfaceStore = useInterfaceStore()
-    return { sessionStore, authorStore, interfaceStore }
+
+    /**
+     * Checks if publications need score updates
+     */
+    const publicationsNeedScoreUpdate = (publications) => {
+      // Check if publications have default/uninitialized scores
+      // Publications with score=0 and empty boostKeywords likely haven't had updatePublicationScores() called
+      return publications.some(
+        (pub) =>
+          pub.score === 0 &&
+          (!pub.boostKeywords || pub.boostKeywords.length === 0) &&
+          // Make sure it's not legitimately a zero score (has citation/reference data but calculated to 0)
+          (pub.citationCount === undefined || pub.referenceCount === undefined)
+      )
+    }
+
+    /**
+     * Gets publications filtered by the active author
+     * @returns {Array} Publications authored by the active author
+     */
+    const selectedPublicationsForAuthor = computed(() => {
+      if (!authorStore.activeAuthorId) return []
+
+      return sessionStore.selectedPublications.filter((publication) => {
+        if (!publication.author) return false
+        // Check if the active author is mentioned in the publication's author list
+        // Split only on semicolons, not commas (commas are part of "Last, First" format)
+        const authorNames = publication.author.split(';').map((name) => name.trim())
+        const activeAuthor = authorStore.selectedPublicationsAuthors.find(
+          (author) => author.id === authorStore.activeAuthorId
+        )
+        if (!activeAuthor) return false
+
+        // Normalize author names using the same method as Author.nameToId for exact matching
+        const normalizedPubAuthors = authorNames.map((name) =>
+          name
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[øØ]/g, 'o')
+            .replace(/[åÅ]/g, 'a')
+            .replace(/[æÆ]/g, 'ae')
+            .replace(/[ðÐ]/g, 'd')
+            .replace(/[þÞ]/g, 'th')
+            .replace(/[ßẞ]/g, 'ss')
+            .toLowerCase()
+        )
+
+        const normalizedAltNames = activeAuthor.alternativeNames.map((name) =>
+          name
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[øØ]/g, 'o')
+            .replace(/[åÅ]/g, 'a')
+            .replace(/[æÆ]/g, 'ae')
+            .replace(/[ðÐ]/g, 'd')
+            .replace(/[þÞ]/g, 'th')
+            .replace(/[ßẞ]/g, 'ss')
+            .toLowerCase()
+        )
+
+        // Check for exact matches between normalized IDs
+        return normalizedAltNames.some((altName) => normalizedPubAuthors.includes(altName))
+      })
+    })
+
+    /**
+     * Prepare author data when modal opens
+     */
+    const prepareAuthorData = () => {
+      // Check if we need to compute author data
+      if (sessionStore.selectedPublications?.length > 0) {
+        // Only recompute if no authors exist OR publications need score updates
+        const needsRecomputation =
+          authorStore.selectedPublicationsAuthors.length === 0 ||
+          publicationsNeedScoreUpdate(sessionStore.selectedPublications)
+
+        if (needsRecomputation) {
+          // IMPORTANT: Publications need to have their scores updated before computing author data
+          // Otherwise authors will have score=0 and no keywords
+          if (publicationsNeedScoreUpdate(sessionStore.selectedPublications)) {
+            sessionStore.updatePublicationScores()
+          }
+
+          authorStore.computeSelectedPublicationsAuthors(sessionStore.selectedPublications)
+        }
+      }
+    }
+
+    return {
+      sessionStore,
+      authorStore,
+      interfaceStore,
+      selectedPublicationsForAuthor,
+      prepareAuthorData
+    }
   },
   data() {
     return {
@@ -186,6 +282,7 @@ export default {
         else if (oldValue === false && newValue === true) {
           this.authorSettingsChanged = false
           this.resetPagination()
+          this.prepareAuthorData()
         }
       }
     },
@@ -382,7 +479,7 @@ export default {
         <div v-if="authorStore.activeAuthorId" class="mt-4">
           <div class="mb-3">Publications co-authored by {{ authorStore.activeAuthor?.name }}:</div>
           <div
-            v-for="publication in authorStore.selectedPublicationsForAuthor"
+            v-for="publication in selectedPublicationsForAuthor"
             :key="publication.doi"
             class="author-publication mb-3"
           >

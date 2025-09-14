@@ -169,11 +169,15 @@ vi.mock('@/composables/useGraphData.js', () => ({
 vi.mock('@/components/PublicationComponent.vue', () => ({
   default: { name: 'PublicationComponent' }
 }))
+// Create spy that we can reference in tests
+const mockOpenAuthorModalDialog = vi.fn()
+
 vi.mock('@/composables/useAppState.js', () => ({
   useAppState: vi.fn(() => ({
     isEmpty: false,
     activatePublicationComponentByDoi: vi.fn(),
-    updateQueued: vi.fn()
+    updateQueued: vi.fn(),
+    openAuthorModalDialog: mockOpenAuthorModalDialog
   }))
 }))
 
@@ -224,6 +228,7 @@ describe('NetworkVisComponent', () => {
   beforeEach(() => {
     pinia = createPinia()
     setActivePinia(pinia)
+    mockOpenAuthorModalDialog.mockClear()
   })
 
   afterAll(() => {
@@ -735,12 +740,11 @@ describe('NetworkVisComponent', () => {
       it('handles author node click correctly', () => {
         const mockEvent = {}
         const mockData = { author: { id: 'author123' } }
-        const mockInterfaceStore = vi.mocked(useInterfaceStore)()
 
         wrapper.vm.authorNodeClick(mockEvent, mockData)
 
         // Should open author modal dialog
-        expect(mockInterfaceStore.openAuthorModalDialog).toHaveBeenCalledWith('author123')
+        expect(mockOpenAuthorModalDialog).toHaveBeenCalledWith('author123')
       })
     })
 

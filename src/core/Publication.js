@@ -1,10 +1,5 @@
 import { SCORING, CURRENT_YEAR, API_ENDPOINTS, API_PARAMS } from '../constants/config.js'
 import { cachedFetch } from '../lib/Cache.js'
-import {
-  findKeywordMatches,
-  highlightTitle,
-  calculateBoostFactor
-} from '../utils/scoringUtils.js'
 
 const ORCID_ICON_URL = 'https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png'
 const ICON_SIZES = {
@@ -300,23 +295,6 @@ export default class Publication {
     this.processContainer(data)
     this.processCitations(data)
     this.processTags()
-  }
-
-  /**
-   * Processes keywords to calculate boost metrics and highlight title.
-   * @param {string[]} boostKeywords - Keywords to search for.
-   * @param {boolean} isBoost - Whether to apply score boost for matches.
-   */
-  processKeywordMatching(boostKeywords, isBoost) {
-    const matches = findKeywordMatches(this.title, boostKeywords)
-
-    // Update boost metrics
-    this.boostMatches = matches.length
-    this.boostKeywords = matches.map((match) => match.keyword)
-    this.boostFactor = calculateBoostFactor(matches.length, isBoost)
-
-    // Generate highlighted title
-    this.titleHighlighted = highlightTitle(this.title, matches)
   }
 
 

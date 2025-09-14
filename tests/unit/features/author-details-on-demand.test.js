@@ -1,6 +1,7 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
+import { useAppState } from '@/composables/useAppState.js'
 import { useAuthorStore } from '@/stores/author.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
@@ -10,7 +11,7 @@ vi.mock('@/lib/Keys.js')
 vi.mock('@/core/Publication.js')
 
 describe('Author Details On Demand Feature', () => {
-  let interfaceStore, authorStore, sessionStore
+  let interfaceStore, authorStore, sessionStore, appState
   let mockAuthors
 
   beforeEach(() => {
@@ -18,6 +19,7 @@ describe('Author Details On Demand Feature', () => {
     interfaceStore = useInterfaceStore()
     authorStore = useAuthorStore()
     sessionStore = useSessionStore()
+    appState = useAppState()
 
     // Mock author data
     mockAuthors = [
@@ -95,29 +97,13 @@ describe('Author Details On Demand Feature', () => {
       expect(authorStore.activeAuthor).toBeNull()
     })
 
-    it('should have selectedPublicationsForAuthor getter to get publications by specific author', () => {
-      // Mock publications
-      const mockPublications = [
-        { author: 'John Doe; Jane Smith', doi: '10.1/pub1' },
-        { author: 'Jane Smith', doi: '10.1/pub2' },
-        { author: 'John Doe; Bob Wilson', doi: '10.1/pub3' }
-      ]
-      sessionStore.selectedPublications = mockPublications
-
-      authorStore.setActiveAuthor('john-doe')
-      const johnsPublications = authorStore.selectedPublicationsForAuthor
-
-      expect(johnsPublications).toHaveLength(2)
-      expect(johnsPublications[0].doi).toBe('10.1/pub1')
-      expect(johnsPublications[1].doi).toBe('10.1/pub3')
-    })
   })
 
   describe('Interface Store - Author Modal State Management', () => {
     it('should have openAuthorModalDialog accept authorId parameter to activate specific author', () => {
       vi.spyOn(authorStore, 'setActiveAuthor')
 
-      interfaceStore.openAuthorModalDialog('john-doe')
+      appState.openAuthorModalDialog('john-doe')
 
       expect(authorStore.setActiveAuthor).toHaveBeenCalledWith('john-doe')
       expect(interfaceStore.isAuthorModalDialogShown).toBe(true)
@@ -224,7 +210,7 @@ describe('Author Details On Demand Feature', () => {
     })
 
     it('should handle author name click in publication description and activate correct author', () => {
-      vi.spyOn(interfaceStore, 'openAuthorModalDialog')
+      vi.spyOn(appState, 'openAuthorModalDialog')
 
       // Test the ID conversion function directly
       const testConversion = (authorName, expectedId) => {
@@ -251,8 +237,8 @@ describe('Author Details On Demand Feature', () => {
 
       // Verify the interface function is called properly
       const expectedAuthorId = 'smith, j.'
-      interfaceStore.openAuthorModalDialog(expectedAuthorId)
-      expect(interfaceStore.openAuthorModalDialog).toHaveBeenCalledWith(expectedAuthorId)
+      appState.openAuthorModalDialog(expectedAuthorId)
+      expect(appState.openAuthorModalDialog).toHaveBeenCalledWith(expectedAuthorId)
     })
 
     it('should convert author names to correct IDs', () => {
@@ -435,14 +421,14 @@ describe('Author Details On Demand Feature', () => {
 
   describe('Network Visualization - Author Node Click Integration', () => {
     it('should activate specific author when author node is clicked', () => {
-      vi.spyOn(interfaceStore, 'openAuthorModalDialog')
+      vi.spyOn(appState, 'openAuthorModalDialog')
 
       const mockAuthorNode = { author: { id: 'john-doe' } }
 
       // Simulate network author node click
-      interfaceStore.openAuthorModalDialog(mockAuthorNode.author.id)
+      appState.openAuthorModalDialog(mockAuthorNode.author.id)
 
-      expect(interfaceStore.openAuthorModalDialog).toHaveBeenCalledWith('john-doe')
+      expect(appState.openAuthorModalDialog).toHaveBeenCalledWith('john-doe')
     })
   })
 
@@ -555,7 +541,7 @@ describe('Author Details On Demand Feature', () => {
         citationsPerYear: 1.5
       }
 
-      vi.spyOn(interfaceStore, 'openAuthorModalDialog')
+      vi.spyOn(appState, 'openAuthorModalDialog')
 
       const wrapper = mount(PublicationDescription.default, {
         props: {
@@ -622,7 +608,7 @@ describe('Author Details On Demand Feature', () => {
         citationsPerYear: 1.5
       }
 
-      vi.spyOn(interfaceStore, 'openAuthorModalDialog')
+      vi.spyOn(appState, 'openAuthorModalDialog')
 
       const wrapper = mount(PublicationDescription.default, {
         props: {

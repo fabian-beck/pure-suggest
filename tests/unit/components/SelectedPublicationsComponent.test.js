@@ -10,10 +10,13 @@ import { useSessionStore } from '@/stores/session.js'
 // Mock useAppState for the functions the component uses
 const mockLoadExample = vi.fn()
 const mockImportSession = vi.fn()
+const mockOpenAuthorModalDialog = vi.fn()
 vi.mock('@/composables/useAppState.js', () => ({
   useAppState: () => ({
     loadExample: mockLoadExample,
-    importSession: mockImportSession
+    importSession: mockImportSession,
+    openAuthorModalDialog: mockOpenAuthorModalDialog,
+    isEmpty: { value: false }
   })
 }))
 
@@ -39,7 +42,7 @@ describe('SelectedPublicationsComponent', () => {
     sessionStore.excludedPublicationsDois = []
     interfaceStore.isMobile = false
     interfaceStore.isQueueModalDialogShown = false
-    interfaceStore.openAuthorModalDialog = vi.fn()
+    mockOpenAuthorModalDialog.mockClear()
     interfaceStore.openSearchModalDialog = vi.fn()
     interfaceStore.showConfirmDialog = vi.fn()
     queueStore.selectedQueue = []
@@ -135,7 +138,7 @@ describe('SelectedPublicationsComponent', () => {
     const compactButtons = wrapper.findAll('.compact-button')
     const authorsButton = compactButtons[0] // First CompactButton is the authors button
     await authorsButton.trigger('click')
-    expect(interfaceStore.openAuthorModalDialog).toHaveBeenCalled()
+    expect(mockOpenAuthorModalDialog).toHaveBeenCalled()
   })
 
   it('calls openSearchModalDialog when search button is clicked', async () => {

@@ -78,7 +78,7 @@ export default {
     const { isNetworkClusters } = storeToRefs(interfaceStore)
     const queueStore = useQueueStore()
     const authorStore = useAuthorStore()
-    const { isEmpty, activatePublicationComponentByDoi, updateQueued } = useAppState()
+    const { isEmpty, activatePublicationComponentByDoi, updateQueued, openAuthorModalDialog } = useAppState()
 
     return {
       sessionStore,
@@ -90,7 +90,8 @@ export default {
       authorStore,
       isEmpty,
       activatePublicationComponentByDoi,
-      updateQueued
+      updateQueued,
+      openAuthorModalDialog
     }
   },
   data () {
@@ -632,7 +633,7 @@ export default {
       this.updatePublicationHighlighting()
     },
     authorNodeClick (event, d) {
-      this.interfaceStore.openAuthorModalDialog(d.author.id)
+      this.openAuthorModalDialog(d.author.id)
     },
     yearX (year) {
       return calculateYearX(year, this.svgWidth, this.svgHeight, this.interfaceStore.isMobile)

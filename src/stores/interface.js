@@ -1,8 +1,5 @@
 import { defineStore } from 'pinia'
 
-import { useAuthorStore } from './author.js'
-import { useSessionStore } from './session.js'
-
 export const useInterfaceStore = defineStore('interface', {
   state: () => {
     return {
@@ -113,53 +110,8 @@ export const useInterfaceStore = defineStore('interface', {
       this.isSearchModalDialogShown = true
     },
 
-    openAuthorModalDialog(authorId) {
-      // Ensure author data is computed before showing the modal
-      const authorStore = useAuthorStore()
-      const sessionStore = useSessionStore()
-
-      // Check if we need to compute author data
-      if (sessionStore.selectedPublications?.length > 0) {
-        // Only recompute if no authors exist OR publications need score updates
-        const needsRecomputation =
-          authorStore.selectedPublicationsAuthors.length === 0 ||
-          this.publicationsNeedScoreUpdate(sessionStore.selectedPublications)
-
-        if (needsRecomputation) {
-          // IMPORTANT: Publications need to have their scores updated before computing author data
-          // Otherwise authors will have score=0 and no keywords
-          if (this.publicationsNeedScoreUpdate(sessionStore.selectedPublications)) {
-            sessionStore.updatePublicationScores()
-          }
-
-          authorStore.computeSelectedPublicationsAuthors(sessionStore.selectedPublications)
-        }
-      }
-
+    openAuthorModalDialog() {
       this.isAuthorModalDialogShown = true
-
-      // If authorId is provided, try to activate that author
-      if (authorId) {
-        // Check if author exists in the computed authors list
-        const authorExists = authorStore.selectedPublicationsAuthors.some(
-          (author) => author.id === authorId
-        )
-        if (authorExists) {
-          authorStore.setActiveAuthor(authorId)
-        }
-      }
-    },
-
-    publicationsNeedScoreUpdate(publications) {
-      // Check if publications have default/uninitialized scores
-      // Publications with score=0 and empty boostKeywords likely haven't had updatePublicationScores() called
-      return publications.some(
-        (pub) =>
-          pub.score === 0 &&
-          (!pub.boostKeywords || pub.boostKeywords.length === 0) &&
-          // Make sure it's not legitimately a zero score (has citation/reference data but calculated to 0)
-          (pub.citationCount === undefined || pub.referenceCount === undefined)
-      )
     },
 
     activatePublicationComponent(publicationComponent, navigationDirection = null) {

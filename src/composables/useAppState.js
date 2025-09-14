@@ -333,6 +333,18 @@ export function useAppState() {
     queueStore.excludedQueue.push(doi)
   }
 
+  /**
+   * Opens author modal dialog
+   */
+  const openAuthorModalDialog = (authorId) => {
+    interfaceStore.openAuthorModalDialog()
+
+    // If authorId is provided, set the active author
+    if (authorId) {
+      authorStore.setActiveAuthor(authorId)
+    }
+  }
+
   return {
     isEmpty,
     clear,
@@ -351,6 +363,7 @@ export function useAppState() {
     addPublicationsAndUpdate,
     loadExample,
     queueForSelected,
-    queueForExcluded
+    queueForExcluded,
+    openAuthorModalDialog
   }
 }
