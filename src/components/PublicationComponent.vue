@@ -406,6 +406,15 @@ function handleMouseLeave() {
       }
     }
 
+    &.is-unread.is-hovered {
+      background: hsla(var(--bulma-info-h), var(--bulma-info-s), var(--bulma-info-l), 0.14) !important;
+
+      & .glyph {
+        transform: scale(1.05);
+        animation: glyph-pulse 2s ease-in-out infinite;
+      }
+    }
+
     &.is-selected .glyph {
       border-color: var(--bulma-primary);
 
