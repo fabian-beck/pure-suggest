@@ -134,7 +134,7 @@ describe('Issue #552: Modal Deterministic Behavior', () => {
     expect(results.every((result) => result === false)).toBe(true)
   })
 
-  it('should only recompute when actually needed (no authors or stale publications)', () => {
+  it('should provide consistent modal opening behavior', () => {
     sessionStore.selectedPublications = [
       {
         doi: '10.1234/test1',
@@ -148,16 +148,13 @@ describe('Issue #552: Modal Deterministic Behavior', () => {
       }
     ]
 
-    // Case 1: No authors - should recompute
-    authorStore.selectedPublicationsAuthors = []
+    // Test that modal opening is consistent
     openAuthorModalDialog()
-    expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledTimes(1)
+    expect(interfaceStore.isAuthorModalDialogShown).toBe(true)
 
-    // Case 2: Authors exist and publications are valid - should NOT recompute
-    authorStore.computeSelectedPublicationsAuthors.mockClear()
-    authorStore.selectedPublicationsAuthors = [
-      { id: 'smith, john', name: 'Smith, John', score: 10, count: 1 }
-    ]
+    // Test with author ID
+    openAuthorModalDialog('test-author')
+    expect(authorStore.activeAuthorId).toBe('test-author')
     openAuthorModalDialog()
     expect(authorStore.computeSelectedPublicationsAuthors).not.toHaveBeenCalled()
   })

@@ -334,102 +334,14 @@ export function useAppState() {
   }
 
   /**
-   * Checks if publications need score updates
-   */
-  const publicationsNeedScoreUpdate = (publications) => {
-    // Check if publications have default/uninitialized scores
-    // Publications with score=0 and empty boostKeywords likely haven't had updatePublicationScores() called
-    return publications.some(
-      (pub) =>
-        pub.score === 0 &&
-        (!pub.boostKeywords || pub.boostKeywords.length === 0) &&
-        // Make sure it's not legitimately a zero score (has citation/reference data but calculated to 0)
-        (pub.citationCount === undefined || pub.referenceCount === undefined)
-    )
-  }
-
-  /**
-   * Gets publications filtered by the active author
-   * @returns {Array} Publications authored by the active author
-   */
-  const selectedPublicationsForAuthor = computed(() => {
-    if (!authorStore.activeAuthorId) return []
-
-    return sessionStore.selectedPublications.filter((publication) => {
-      if (!publication.author) return false
-      // Check if the active author is mentioned in the publication's author list
-      // Split only on semicolons, not commas (commas are part of "Last, First" format)
-      const authorNames = publication.author.split(';').map((name) => name.trim())
-      const activeAuthor = authorStore.selectedPublicationsAuthors.find(
-        (author) => author.id === authorStore.activeAuthorId
-      )
-      if (!activeAuthor) return false
-
-      // Normalize author names using the same method as Author.nameToId for exact matching
-      const normalizedPubAuthors = authorNames.map((name) =>
-        name
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(/[øØ]/g, 'o')
-          .replace(/[åÅ]/g, 'a')
-          .replace(/[æÆ]/g, 'ae')
-          .replace(/[ðÐ]/g, 'd')
-          .replace(/[þÞ]/g, 'th')
-          .replace(/[ßẞ]/g, 'ss')
-          .toLowerCase()
-      )
-
-      const normalizedAltNames = activeAuthor.alternativeNames.map((name) =>
-        name
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(/[øØ]/g, 'o')
-          .replace(/[åÅ]/g, 'a')
-          .replace(/[æÆ]/g, 'ae')
-          .replace(/[ðÐ]/g, 'd')
-          .replace(/[þÞ]/g, 'th')
-          .replace(/[ßẞ]/g, 'ss')
-          .toLowerCase()
-      )
-
-      // Check for exact matches between normalized IDs
-      return normalizedAltNames.some((altName) => normalizedPubAuthors.includes(altName))
-    })
-  })
-
-  /**
-   * Opens author modal dialog with proper data coordination
+   * Opens author modal dialog
    */
   const openAuthorModalDialog = (authorId) => {
-    // Check if we need to compute author data
-    if (sessionStore.selectedPublications?.length > 0) {
-      // Only recompute if no authors exist OR publications need score updates
-      const needsRecomputation =
-        authorStore.selectedPublicationsAuthors.length === 0 ||
-        publicationsNeedScoreUpdate(sessionStore.selectedPublications)
-
-      if (needsRecomputation) {
-        // IMPORTANT: Publications need to have their scores updated before computing author data
-        // Otherwise authors will have score=0 and no keywords
-        if (publicationsNeedScoreUpdate(sessionStore.selectedPublications)) {
-          sessionStore.updatePublicationScores()
-        }
-
-        authorStore.computeSelectedPublicationsAuthors(sessionStore.selectedPublications)
-      }
-    }
-
     interfaceStore.openAuthorModalDialog()
 
-    // If authorId is provided, try to activate that author
+    // If authorId is provided, set the active author
     if (authorId) {
-      // Check if author exists in the computed authors list
-      const authorExists = authorStore.selectedPublicationsAuthors.some(
-        (author) => author.id === authorId
-      )
-      if (authorExists) {
-        authorStore.setActiveAuthor(authorId)
-      }
+      authorStore.setActiveAuthor(authorId)
     }
   }
 
@@ -452,8 +364,6 @@ export function useAppState() {
     loadExample,
     queueForSelected,
     queueForExcluded,
-    openAuthorModalDialog,
-    publicationsNeedScoreUpdate,
-    selectedPublicationsForAuthor
+    openAuthorModalDialog
   }
 }

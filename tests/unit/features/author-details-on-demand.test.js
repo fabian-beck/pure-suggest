@@ -97,22 +97,6 @@ describe('Author Details On Demand Feature', () => {
       expect(authorStore.activeAuthor).toBeNull()
     })
 
-    it('should have selectedPublicationsForAuthor in appState to get publications by specific author', () => {
-      // Mock publications
-      const mockPublications = [
-        { author: 'John Doe; Jane Smith', doi: '10.1/pub1' },
-        { author: 'Jane Smith', doi: '10.1/pub2' },
-        { author: 'John Doe; Bob Wilson', doi: '10.1/pub3' }
-      ]
-      sessionStore.selectedPublications = mockPublications
-
-      authorStore.setActiveAuthor('john-doe')
-      const johnsPublications = appState.selectedPublicationsForAuthor.value
-
-      expect(johnsPublications).toHaveLength(2)
-      expect(johnsPublications[0].doi).toBe('10.1/pub1')
-      expect(johnsPublications[1].doi).toBe('10.1/pub3')
-    })
   })
 
   describe('Interface Store - Author Modal State Management', () => {
