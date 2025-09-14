@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { nextTick } from 'vue'
 import { useAuthorStore } from './author.js'
 import { useSessionStore } from './session.js'
 
@@ -161,7 +162,24 @@ export const useInterfaceStore = defineStore('interface', {
             this.lastNavigationDirection = navigationDirection;
             if (publicationComponent && typeof publicationComponent.focus === 'function') {
                 publicationComponent.focus();
+
+                // Radical solution: ALWAYS center during keyboard navigation
+                if (navigationDirection) {
+                    this.centerPublication(publicationComponent);
+                }
             }
+        },
+
+        centerPublication: function (publicationComponent) {
+            // Radical approach: Always center the publication, no conditions
+            // Wait briefly for focus/activation to complete, then center
+            setTimeout(() => {
+                publicationComponent.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                    inline: "nearest"
+                });
+            }, 50); // Minimal delay just for focus completion
         },
 
         triggerNetworkReplot() {
