@@ -333,6 +333,57 @@ export function useAppState() {
     queueStore.excludedQueue.push(doi)
   }
 
+  /**
+   * Checks if publications need score updates
+   */
+  const publicationsNeedScoreUpdate = (publications) => {
+    // Check if publications have default/uninitialized scores
+    // Publications with score=0 and empty boostKeywords likely haven't had updatePublicationScores() called
+    return publications.some(
+      (pub) =>
+        pub.score === 0 &&
+        (!pub.boostKeywords || pub.boostKeywords.length === 0) &&
+        // Make sure it's not legitimately a zero score (has citation/reference data but calculated to 0)
+        (pub.citationCount === undefined || pub.referenceCount === undefined)
+    )
+  }
+
+  /**
+   * Opens author modal dialog with proper data coordination
+   */
+  const openAuthorModalDialog = (authorId) => {
+    // Check if we need to compute author data
+    if (sessionStore.selectedPublications?.length > 0) {
+      // Only recompute if no authors exist OR publications need score updates
+      const needsRecomputation =
+        authorStore.selectedPublicationsAuthors.length === 0 ||
+        publicationsNeedScoreUpdate(sessionStore.selectedPublications)
+
+      if (needsRecomputation) {
+        // IMPORTANT: Publications need to have their scores updated before computing author data
+        // Otherwise authors will have score=0 and no keywords
+        if (publicationsNeedScoreUpdate(sessionStore.selectedPublications)) {
+          sessionStore.updatePublicationScores()
+        }
+
+        authorStore.computeSelectedPublicationsAuthors(sessionStore.selectedPublications)
+      }
+    }
+
+    interfaceStore.openAuthorModalDialog()
+
+    // If authorId is provided, try to activate that author
+    if (authorId) {
+      // Check if author exists in the computed authors list
+      const authorExists = authorStore.selectedPublicationsAuthors.some(
+        (author) => author.id === authorId
+      )
+      if (authorExists) {
+        authorStore.setActiveAuthor(authorId)
+      }
+    }
+  }
+
   return {
     isEmpty,
     clear,
@@ -351,6 +402,8 @@ export function useAppState() {
     addPublicationsAndUpdate,
     loadExample,
     queueForSelected,
-    queueForExcluded
+    queueForExcluded,
+    openAuthorModalDialog,
+    publicationsNeedScoreUpdate
   }
 }

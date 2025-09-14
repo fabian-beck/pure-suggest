@@ -192,7 +192,7 @@ function handleActivePublicationShortcuts(e) {
 
 export function onKey(e) {
   const interfaceStore = useInterfaceStore()
-  const { isEmpty } = useAppState()
+  const { isEmpty, openAuthorModalDialog } = useAppState()
 
   // Early returns for modifier keys and repeats
   if (
@@ -231,7 +231,7 @@ export function onKey(e) {
   // Author shortcut (works when not empty)
   if (!isEmpty.value && e.key === 'a') {
     e.preventDefault()
-    interfaceStore.openAuthorModalDialog()
+    openAuthorModalDialog()
     return
   }
 

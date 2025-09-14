@@ -1,6 +1,7 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
+import { useAppState } from '@/composables/useAppState.js'
 import { useAuthorStore } from '@/stores/author.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
@@ -18,7 +19,7 @@ vi.mock('@/constants/config.js', () => ({
 }))
 
 describe('Issue #552: Modal Deterministic Behavior', () => {
-  let interfaceStore, authorStore, sessionStore
+  let interfaceStore, authorStore, sessionStore, openAuthorModalDialog
 
   beforeEach(() => {
     const pinia = createPinia()
@@ -27,6 +28,9 @@ describe('Issue #552: Modal Deterministic Behavior', () => {
     interfaceStore = useInterfaceStore()
     authorStore = useAuthorStore()
     sessionStore = useSessionStore()
+
+    const appState = useAppState()
+    openAuthorModalDialog = appState.openAuthorModalDialog
 
     // Mock the stores
     vi.spyOn(authorStore, 'computeSelectedPublicationsAuthors').mockReturnValue()
@@ -70,7 +74,7 @@ describe('Issue #552: Modal Deterministic Behavior', () => {
       authorStore.computeSelectedPublicationsAuthors.mockClear()
 
       // Open modal
-      interfaceStore.openAuthorModalDialog()
+      openAuthorModalDialog()
 
       // Close modal (this sets isAuthorModalDialogShown = false)
       interfaceStore.isAuthorModalDialogShown = false
@@ -114,7 +118,7 @@ describe('Issue #552: Modal Deterministic Behavior', () => {
       authorStore.computeSelectedPublicationsAuthors.mockClear()
 
       // Open modal
-      interfaceStore.openAuthorModalDialog()
+      openAuthorModalDialog()
 
       // Record whether computation was triggered
       results.push(authorStore.computeSelectedPublicationsAuthors.mock.calls.length > 0)
@@ -146,7 +150,7 @@ describe('Issue #552: Modal Deterministic Behavior', () => {
 
     // Case 1: No authors - should recompute
     authorStore.selectedPublicationsAuthors = []
-    interfaceStore.openAuthorModalDialog()
+    openAuthorModalDialog()
     expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledTimes(1)
 
     // Case 2: Authors exist and publications are valid - should NOT recompute
@@ -154,7 +158,7 @@ describe('Issue #552: Modal Deterministic Behavior', () => {
     authorStore.selectedPublicationsAuthors = [
       { id: 'smith, john', name: 'Smith, John', score: 10, count: 1 }
     ]
-    interfaceStore.openAuthorModalDialog()
+    openAuthorModalDialog()
     expect(authorStore.computeSelectedPublicationsAuthors).not.toHaveBeenCalled()
   })
 })

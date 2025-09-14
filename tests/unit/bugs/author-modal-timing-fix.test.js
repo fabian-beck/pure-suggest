@@ -1,6 +1,7 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
+import { useAppState } from '@/composables/useAppState.js'
 import { useAuthorStore } from '@/stores/author.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
@@ -10,6 +11,7 @@ describe('Author Modal Timing Fix', () => {
   let interfaceStore
   let authorStore
   let sessionStore
+  let appState
 
   beforeEach(() => {
     pinia = createPinia()
@@ -18,6 +20,7 @@ describe('Author Modal Timing Fix', () => {
     interfaceStore = useInterfaceStore()
     authorStore = useAuthorStore()
     sessionStore = useSessionStore()
+    appState = useAppState()
 
     // Set up test data
     sessionStore.selectedPublications = [
@@ -54,7 +57,7 @@ describe('Author Modal Timing Fix', () => {
     expect(sessionStore.selectedPublications).toHaveLength(2)
 
     // USER ACTION: Open the author modal dialog
-    interfaceStore.openAuthorModalDialog()
+    appState.openAuthorModalDialog()
 
     // VERIFICATION: Author computation should be triggered automatically
     expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(
@@ -73,7 +76,7 @@ describe('Author Modal Timing Fix', () => {
     ]
 
     // USER ACTION: Open the author modal dialog
-    interfaceStore.openAuthorModalDialog()
+    appState.openAuthorModalDialog()
 
     // VERIFICATION: Author computation should NOT be triggered since data already exists
     expect(authorStore.computeSelectedPublicationsAuthors).not.toHaveBeenCalled()
@@ -86,7 +89,7 @@ describe('Author Modal Timing Fix', () => {
     expect(authorStore.selectedPublicationsAuthors).toHaveLength(0)
 
     // USER ACTION: Open modal with specific author ID
-    interfaceStore.openAuthorModalDialog('jane-smith')
+    appState.openAuthorModalDialog('jane-smith')
 
     // VERIFICATION: Author computation triggered
     expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(
@@ -101,7 +104,7 @@ describe('Author Modal Timing Fix', () => {
     expect(authorStore.selectedPublicationsAuthors).toHaveLength(0)
 
     // USER ACTION: Open modal
-    interfaceStore.openAuthorModalDialog()
+    appState.openAuthorModalDialog()
 
     // VERIFICATION: No author computation should be triggered since no publications
     expect(authorStore.computeSelectedPublicationsAuthors).not.toHaveBeenCalled()
@@ -124,7 +127,7 @@ describe('Author Modal Timing Fix', () => {
 
     // Case 1: No authors exist - should recompute
     authorStore.selectedPublicationsAuthors = []
-    interfaceStore.openAuthorModalDialog()
+    appState.openAuthorModalDialog()
     expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(
       sessionStore.selectedPublications
     )
@@ -134,7 +137,7 @@ describe('Author Modal Timing Fix', () => {
 
     // Case 2: Authors exist and publications have scores - should NOT recompute
     authorStore.selectedPublicationsAuthors = [{ id: 'john-doe', name: 'John Doe', count: 1 }]
-    interfaceStore.openAuthorModalDialog()
+    appState.openAuthorModalDialog()
     expect(authorStore.computeSelectedPublicationsAuthors).not.toHaveBeenCalled()
   })
 
@@ -153,10 +156,10 @@ describe('Author Modal Timing Fix', () => {
     authorStore.selectedPublicationsAuthors = [{ id: 'john-doe', name: 'John Doe', count: 1 }]
 
     // Mock publicationsNeedScoreUpdate to return true
-    vi.spyOn(interfaceStore, 'publicationsNeedScoreUpdate').mockReturnValue(true)
+    vi.spyOn(appState, 'publicationsNeedScoreUpdate').mockReturnValue(true)
 
     // USER ACTION: Open modal
-    interfaceStore.openAuthorModalDialog()
+    appState.openAuthorModalDialog()
 
     // VERIFICATION: Should trigger recomputation even though authors exist
     expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(
@@ -180,16 +183,14 @@ describe('Author Modal Timing Fix', () => {
       }
     ]
 
-    // Mock publicationsNeedScoreUpdate to return true
-    vi.spyOn(interfaceStore, 'publicationsNeedScoreUpdate').mockReturnValue(true)
+    // Verify that publications actually need score updates (should be true based on setup)
+    expect(appState.publicationsNeedScoreUpdate(sessionStore.selectedPublications)).toBe(true)
 
     // USER ACTION: Open modal right after session load
-    interfaceStore.openAuthorModalDialog()
+    appState.openAuthorModalDialog()
 
-    // VERIFICATION: Should trigger updatePublicationScores first, then author computation
-    expect(interfaceStore.publicationsNeedScoreUpdate).toHaveBeenCalledWith(
-      sessionStore.selectedPublications
-    )
+    // VERIFICATION: Should trigger updatePublicationScores then author computation
+    // (we don't need to spy on publicationsNeedScoreUpdate since it's called internally)
     expect(sessionStore.updatePublicationScores).toHaveBeenCalled()
     expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(
       sessionStore.selectedPublications

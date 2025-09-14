@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 
+import { useAppState } from '@/composables/useAppState.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
 
@@ -22,6 +23,7 @@ const props = defineProps({
 })
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
+const { openAuthorModalDialog } = useAppState()
 
 const showDetails = computed(() => {
   return props.alwaysShowDetails || props.publication.isActive
@@ -141,7 +143,7 @@ function handleAuthorClick(event) {
       // Convert the author name to an author ID and open modal with that ID
       const authorId = findAuthorIdByName(authorName.trim())
       if (authorId) {
-        interfaceStore.openAuthorModalDialog(authorId)
+        openAuthorModalDialog(authorId)
       }
     }
     return

@@ -1,6 +1,7 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
+import { useAppState } from '@/composables/useAppState.js'
 import { useAuthorStore } from '@/stores/author.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
@@ -10,6 +11,7 @@ describe('Author Scores Zero on Keypress Bug', () => {
   let interfaceStore
   let authorStore
   let sessionStore
+  let openAuthorModalDialog
 
   beforeEach(() => {
     pinia = createPinia()
@@ -18,6 +20,9 @@ describe('Author Scores Zero on Keypress Bug', () => {
     interfaceStore = useInterfaceStore()
     authorStore = useAuthorStore()
     sessionStore = useSessionStore()
+
+    const appState = useAppState()
+    openAuthorModalDialog = appState.openAuthorModalDialog
 
     // Spy on the methods
     vi.spyOn(authorStore, 'computeSelectedPublicationsAuthors')
@@ -107,7 +112,7 @@ describe('Author Scores Zero on Keypress Bug', () => {
     })
 
     // PROPER ACTION: Call openAuthorModalDialog instead of just setting the flag
-    interfaceStore.openAuthorModalDialog()
+    openAuthorModalDialog()
 
     // VERIFICATION: Both updates are triggered in correct order
     expect(sessionStore.updatePublicationScores).toHaveBeenCalled()
@@ -147,7 +152,7 @@ describe('Author Scores Zero on Keypress Bug', () => {
     ]
 
     // Call proper method
-    interfaceStore.openAuthorModalDialog()
+    openAuthorModalDialog()
 
     // Should trigger author computation
     expect(authorStore.computeSelectedPublicationsAuthors).toHaveBeenCalledWith(
@@ -202,7 +207,7 @@ describe('Author Scores Zero on Keypress Bug', () => {
 
     // SIMULATE FIXED BEHAVIOR: What happens when user presses "a" key after fix
     // With the fix, Keys.js now calls openAuthorModalDialog() instead of just setting the flag
-    interfaceStore.openAuthorModalDialog()
+    openAuthorModalDialog()
 
     // VERIFICATION: With the fix, both score updates and author computation are triggered
     expect(sessionStore.updatePublicationScores).toHaveBeenCalled()

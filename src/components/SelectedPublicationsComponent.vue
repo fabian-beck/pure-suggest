@@ -15,7 +15,8 @@ const {
   importSession: importSessionFromState,
   loadExample,
   updateQueued,
-  loadSession
+  loadSession,
+  openAuthorModalDialog
 } = useAppState()
 
 const publicationList = ref(null)
@@ -88,7 +89,7 @@ onMounted(() => {
           <CompactButton
             icon="mdi-account-group has-text-white"
             v-tippy="`List <span class='key'>a</span>uthors of selected publications.`"
-            @click="interfaceStore.openAuthorModalDialog()"
+            @click="openAuthorModalDialog()"
           ></CompactButton>
           <CompactButton
             icon="mdi-magnify"

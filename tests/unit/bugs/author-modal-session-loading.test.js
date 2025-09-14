@@ -1,6 +1,7 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
+import { useAppState } from '@/composables/useAppState.js'
 import { useAuthorStore } from '@/stores/author.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
@@ -10,6 +11,7 @@ describe('Author Modal Session Loading Issue', () => {
   let interfaceStore
   let authorStore
   let sessionStore
+  let appState
 
   beforeEach(() => {
     pinia = createPinia()
@@ -18,6 +20,7 @@ describe('Author Modal Session Loading Issue', () => {
     interfaceStore = useInterfaceStore()
     authorStore = useAuthorStore()
     sessionStore = useSessionStore()
+    appState = useAppState()
 
     // Spy on the methods
     vi.spyOn(authorStore, 'computeSelectedPublicationsAuthors')
@@ -52,7 +55,7 @@ describe('Author Modal Session Loading Issue', () => {
     ]
 
     // Should identify these as needing score updates
-    expect(interfaceStore.publicationsNeedScoreUpdate(publicationsAfterSessionLoad)).toBe(true)
+    expect(appState.publicationsNeedScoreUpdate(publicationsAfterSessionLoad)).toBe(true)
 
     // Test with properly scored publications
     const publicationsWithScores = [
@@ -75,7 +78,7 @@ describe('Author Modal Session Loading Issue', () => {
     ]
 
     // Should not identify these as needing updates
-    expect(interfaceStore.publicationsNeedScoreUpdate(publicationsWithScores)).toBe(false)
+    expect(appState.publicationsNeedScoreUpdate(publicationsWithScores)).toBe(false)
   })
 
   it('should handle legitimate zero scores correctly', () => {
@@ -92,7 +95,7 @@ describe('Author Modal Session Loading Issue', () => {
     ]
 
     // Should not identify this as needing updates (it's a legitimate zero)
-    expect(interfaceStore.publicationsNeedScoreUpdate(publicationsWithLegitimateZeroScore)).toBe(
+    expect(appState.publicationsNeedScoreUpdate(publicationsWithLegitimateZeroScore)).toBe(
       false
     )
   })
@@ -138,7 +141,7 @@ describe('Author Modal Session Loading Issue', () => {
     expect(authorStore.selectedPublicationsAuthors).toHaveLength(0)
 
     // USER ACTION: Open author modal right after session load
-    interfaceStore.openAuthorModalDialog()
+    appState.openAuthorModalDialog()
 
     // VERIFICATION: Should trigger score updates first, then author computation
     expect(sessionStore.updatePublicationScores).toHaveBeenCalled()
@@ -188,7 +191,7 @@ describe('Author Modal Session Loading Issue', () => {
     expect(authorStore.selectedPublicationsAuthors).toHaveLength(0)
 
     // USER ACTION: Open author modal
-    interfaceStore.openAuthorModalDialog()
+    appState.openAuthorModalDialog()
 
     // VERIFICATION: Should NOT trigger updatePublicationScores since scores are already valid
     expect(sessionStore.updatePublicationScores).not.toHaveBeenCalled()
@@ -230,7 +233,7 @@ describe('Author Modal Session Loading Issue', () => {
     ]
 
     // USER ACTION: Open author modal
-    interfaceStore.openAuthorModalDialog()
+    appState.openAuthorModalDialog()
 
     // VERIFICATION: Should trigger updatePublicationScores because at least one publication needs it
     expect(sessionStore.updatePublicationScores).toHaveBeenCalled()
@@ -242,7 +245,7 @@ describe('Author Modal Session Loading Issue', () => {
     sessionStore.selectedPublications = []
 
     // USER ACTION: Open author modal
-    interfaceStore.openAuthorModalDialog()
+    appState.openAuthorModalDialog()
 
     // VERIFICATION: Should not trigger any computation
     expect(sessionStore.updatePublicationScores).not.toHaveBeenCalled()
