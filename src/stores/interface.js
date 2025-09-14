@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia'
-import { nextTick } from 'vue'
 import { useAuthorStore } from './author.js'
 import { useSessionStore } from './session.js'
 
