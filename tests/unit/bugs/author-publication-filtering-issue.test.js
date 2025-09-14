@@ -1,16 +1,18 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, beforeEach } from 'vitest'
 
+import { useAppState } from '@/composables/useAppState.js'
 import { useAuthorStore } from '@/stores/author.js'
 import { useSessionStore } from '@/stores/session.js'
 
 describe('Author Publication Filtering Issue', () => {
-  let authorStore, sessionStore
+  let authorStore, sessionStore, appState
 
   beforeEach(() => {
     setActivePinia(createPinia())
     authorStore = useAuthorStore()
     sessionStore = useSessionStore()
+    appState = useAppState()
   })
 
   describe('Issue: selectedPublicationsForAuthor shows too many publications', () => {
@@ -61,7 +63,7 @@ describe('Author Publication Filtering Issue', () => {
 
       // Test Smith, J. - should only get publications where "Smith, J." is the exact author
       authorStore.setActiveAuthor('smith, j.')
-      const smithJPublications = authorStore.selectedPublicationsForAuthor
+      const smithJPublications = appState.selectedPublicationsForAuthor.value
 
       // Should get publications 1 and 3 (where "Smith, J." is listed)
       expect(smithJPublications).toHaveLength(2)
@@ -73,7 +75,7 @@ describe('Author Publication Filtering Issue', () => {
 
       // Test Smith, John B. - should only get publications where "Smith, John B." is the exact author
       authorStore.setActiveAuthor('smith, john b.')
-      const smithJohnBPublications = authorStore.selectedPublicationsForAuthor
+      const smithJohnBPublications = appState.selectedPublicationsForAuthor.value
 
       // Should get publications 2 and 4 (where "Smith, John B." is listed)
       expect(smithJohnBPublications).toHaveLength(2)
@@ -126,7 +128,7 @@ describe('Author Publication Filtering Issue', () => {
 
       // Test Brown, M. - the current buggy implementation might match "Brown, Mary J." because it includes "Brown, M"
       authorStore.setActiveAuthor('brown, m.')
-      const brownMPublications = authorStore.selectedPublicationsForAuthor
+      const brownMPublications = appState.selectedPublicationsForAuthor.value
 
       // Should only get pub1 (where "Brown, M." is exactly listed)
       expect(brownMPublications).toHaveLength(1)
@@ -137,7 +139,7 @@ describe('Author Publication Filtering Issue', () => {
 
       // Test Brown, Mary J. - should get the correct publications
       authorStore.setActiveAuthor('brown, mary j.')
-      const brownMaryPublications = authorStore.selectedPublicationsForAuthor
+      const brownMaryPublications = appState.selectedPublicationsForAuthor.value
 
       // Should get pub2 and pub3 (where "Brown, Mary J." is exactly listed)
       expect(brownMaryPublications).toHaveLength(2)
@@ -181,7 +183,7 @@ describe('Author Publication Filtering Issue', () => {
       sessionStore.selectedPublications = mockPublications
 
       authorStore.setActiveAuthor('johnson, a.')
-      const johnsonPublications = authorStore.selectedPublicationsForAuthor
+      const johnsonPublications = appState.selectedPublicationsForAuthor.value
 
       // Should find Johnson, A. in all publications regardless of separator format
       expect(johnsonPublications).toHaveLength(3)
@@ -221,7 +223,7 @@ describe('Author Publication Filtering Issue', () => {
       sessionStore.selectedPublications = mockPublications
 
       authorStore.setActiveAuthor('lee, j.')
-      const leePublications = authorStore.selectedPublicationsForAuthor
+      const leePublications = appState.selectedPublicationsForAuthor.value
 
       // This test will initially fail because the current implementation incorrectly matches
       // "Lee, James Robert" because "Lee, James Robert".includes("Lee, J.") returns false

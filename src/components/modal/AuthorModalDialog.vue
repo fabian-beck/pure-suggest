@@ -1,5 +1,6 @@
 <script>
 import PublicationComponent from '@/components/PublicationComponent.vue'
+import { useAppState } from '@/composables/useAppState.js'
 import { useAuthorStore } from '@/stores/author.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
@@ -14,7 +15,8 @@ export default {
     const sessionStore = useSessionStore()
     const authorStore = useAuthorStore()
     const interfaceStore = useInterfaceStore()
-    return { sessionStore, authorStore, interfaceStore }
+    const { selectedPublicationsForAuthor } = useAppState()
+    return { sessionStore, authorStore, interfaceStore, selectedPublicationsForAuthor }
   },
   data() {
     return {
@@ -382,7 +384,7 @@ export default {
         <div v-if="authorStore.activeAuthorId" class="mt-4">
           <div class="mb-3">Publications co-authored by {{ authorStore.activeAuthor?.name }}:</div>
           <div
-            v-for="publication in authorStore.selectedPublicationsForAuthor"
+            v-for="publication in selectedPublicationsForAuthor"
             :key="publication.doi"
             class="author-publication mb-3"
           >
