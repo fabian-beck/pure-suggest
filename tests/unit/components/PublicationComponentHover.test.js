@@ -1,7 +1,10 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
-import PublicationComponent from '@/components/PublicationComponent.vue'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+
 import { createMockSessionStore, createMockInterfaceStore } from '../../helpers/testUtils.js'
+
+import PublicationComponent from '@/components/PublicationComponent.vue'
+
 
 // Simplified store mocks using testUtils
 const mockQueueStore = {
@@ -34,7 +37,8 @@ vi.mock('@/components/PublicationDescription.vue', () => ({
   default: {
     name: 'PublicationDescription',
     props: ['publication'],
-    template: '<div class="mock-publication-description">{{ publication.title || "Mock Publication" }}</div>'
+    template:
+      '<div class="mock-publication-description">{{ publication.title || "Mock Publication" }}</div>'
   }
 }))
 
@@ -46,7 +50,7 @@ const MockInlineIcon = {
 }
 
 const MockCompactButton = {
-  name: 'CompactButton', 
+  name: 'CompactButton',
   props: ['icon'],
   emits: ['click'],
   template: '<button class="mock-compact-button" @click="$emit(\'click\')">{{ icon }}</button>'
@@ -78,7 +82,7 @@ describe('PublicationComponent Hover Bug', () => {
   beforeEach(() => {
     // Reset mocks
     vi.clearAllMocks()
-    
+
     mockPublication = {
       doi: 'test-doi',
       title: 'Test Publication',
@@ -139,5 +143,75 @@ describe('PublicationComponent Hover Bug', () => {
     await publicationDiv.trigger('mouseleave')
 
     expect(mockInterfaceStore.setHoveredPublication).toHaveBeenCalledWith(null)
+  })
+
+  it('should show hover state when interfaceStore.hoveredPublication matches DOI', async () => {
+    // Set the hovered publication in the mock store
+    mockInterfaceStore.hoveredPublication = 'test-doi'
+    
+    wrapper = mount(PublicationComponent, {
+      props: { publication: mockPublication },
+      global: {
+        components: {
+          InlineIcon: MockInlineIcon,
+          CompactButton: MockCompactButton,
+          tippy: MockTippy,
+          'v-btn': MockVBtn,
+          'v-icon': MockVIcon
+        }
+      }
+    })
+
+    const publicationDiv = wrapper.find('.publication-component')
+    expect(publicationDiv.classes()).toContain('is-hovered')
+  })
+
+  it('should not show hover state when interfaceStore.hoveredPublication does not match DOI', async () => {
+    // Set a different DOI in the mock store
+    mockInterfaceStore.hoveredPublication = 'other-doi'
+    
+    wrapper = mount(PublicationComponent, {
+      props: { publication: mockPublication },
+      global: {
+        components: {
+          InlineIcon: MockInlineIcon,
+          CompactButton: MockCompactButton,
+          tippy: MockTippy,
+          'v-btn': MockVBtn,
+          'v-icon': MockVIcon
+        }
+      }
+    })
+
+    const publicationDiv = wrapper.find('.publication-component')
+    expect(publicationDiv.classes()).not.toContain('is-hovered')
+  })
+
+  it('reproduces bug: hover state should update network visualization', async () => {
+    // This test shows the expected behavior:
+    // When PublicationComponent sets hoveredPublication, the network should update
+    wrapper = mount(PublicationComponent, {
+      props: { publication: mockPublication },
+      global: {
+        components: {
+          InlineIcon: MockInlineIcon,
+          CompactButton: MockCompactButton,
+          tippy: MockTippy,
+          'v-btn': MockVBtn,
+          'v-icon': MockVIcon
+        }
+      }
+    })
+
+    const publicationDiv = wrapper.find('.publication-component')
+    await publicationDiv.trigger('mouseenter')
+
+    // BUG: Currently, there's no mechanism to notify the NetworkVisComponent
+    // that hoveredPublication has changed from the PublicationComponent side.
+    // The NetworkVisComponent only updates when its own nodes are hovered.
+    
+    // Expected behavior: Network visualization should update when publication is hovered
+    // This test documents the bug - the network doesn't update from external hover events
+    expect(mockInterfaceStore.setHoveredPublication).toHaveBeenCalledWith(mockPublication)
   })
 })

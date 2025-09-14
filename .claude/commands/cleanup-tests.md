@@ -5,7 +5,7 @@ description: Clean up the tests by identifying trivial, redundant, fragile, or o
 Clean up the tests by analyzing the test suite for:
 
 1. **Trivial functionality** - Tests that check basic language features or framework behavior
-2. **Redundant tests** - Tests that duplicate coverage provided by other tests  
+2. **Redundant tests** - Tests that duplicate coverage provided by other tests
 3. **Fragile tests** - Tests that break easily with minor implementation changes (brittle)
 4. **Overly convoluted tests** - Tests with unnecessarily complex setup, mocking, or assertions
 

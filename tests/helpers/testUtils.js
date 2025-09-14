@@ -8,22 +8,39 @@ import { vi } from 'vitest'
 // Simplified D3 mock - chainable behavior without implementation complexity
 export const createD3ChainableMock = (returnData = null) => {
   const mock = vi.fn(() => returnData || createD3ChainableMock())
-  
+
   // Common D3 methods that return chainable objects
   const chainableMethods = [
-    'append', 'attr', 'select', 'selectAll', 'call', 'join', 'enter', 'exit', 
-    'remove', 'merge', 'style', 'text', 'on', 'classed', 'filter', 'transition', 'duration'
+    'append',
+    'attr',
+    'select',
+    'selectAll',
+    'call',
+    'join',
+    'enter',
+    'exit',
+    'remove',
+    'merge',
+    'style',
+    'text',
+    'on',
+    'classed',
+    'filter',
+    'transition',
+    'duration'
   ]
-  
-  chainableMethods.forEach(method => {
+
+  chainableMethods.forEach((method) => {
     mock[method] = vi.fn(() => createD3ChainableMock())
   })
-  
+
   // Special D3 cases
-  mock.data = vi.fn((data) => data ? { map: vi.fn(fn => data.map(fn)), ...mock } : [])
-  mock.node = vi.fn(() => ({ getBoundingClientRect: () => ({ x: 0, y: 0, width: 100, height: 100 }) }))
+  mock.data = vi.fn((data) => (data ? { map: vi.fn((fn) => data.map(fn)), ...mock } : []))
+  mock.node = vi.fn(() => ({
+    getBoundingClientRect: () => ({ x: 0, y: 0, width: 100, height: 100 })
+  }))
   mock.nodes = vi.fn(() => [])
-  
+
   return mock
 }
 
@@ -91,13 +108,13 @@ export const mockExternalDependencies = {
     set: vi.fn(),
     keys: vi.fn(() => Promise.resolve([]))
   },
-  
+
   Util: {
     scrollToTargetAdjusted: vi.fn(),
-    shuffle: vi.fn(arr => arr),
+    shuffle: vi.fn((arr) => arr),
     saveAsFile: vi.fn()
   },
-  
+
   Publication: {
     default: {
       TAGS: [
@@ -120,24 +137,26 @@ export const commonComponentStubs = {
   'v-list-item-title': { template: '<div class="v-list-item-title"><slot></slot></div>' },
   'v-checkbox': { template: '<input type="checkbox" class="v-checkbox">' },
   'v-slider': { template: '<input type="range" class="v-slider">' },
-  
+
   // Custom components commonly mocked
-  'InlineIcon': { 
-    props: ['icon', 'color'], 
-    template: '<span class="inline-icon">{{ icon }}</span>' 
+  InlineIcon: {
+    props: ['icon', 'color'],
+    template: '<span class="inline-icon">{{ icon }}</span>'
   },
-  'CompactButton': { 
-    props: ['icon'], 
-    emits: ['click'], 
-    template: '<button class="compact-button" @click="$emit(\'click\')" data-testid="compact-btn">{{ icon }}</button>' 
+  CompactButton: {
+    props: ['icon'],
+    emits: ['click'],
+    template:
+      '<button class="compact-button" @click="$emit(\'click\')" data-testid="compact-btn">{{ icon }}</button>'
   },
-  'PublicationDescription': { 
-    props: ['publication'], 
-    template: '<div class="publication-description">{{ publication.title || "Mock Publication" }}</div>' 
+  PublicationDescription: {
+    props: ['publication'],
+    template:
+      '<div class="publication-description">{{ publication.title || "Mock Publication" }}</div>'
   },
-  'Tippy': { 
-    props: ['class', 'placement'], 
-    template: '<div class="tippy-tooltip"><slot /></div>' 
+  Tippy: {
+    props: ['class', 'placement'],
+    template: '<div class="tippy-tooltip"><slot /></div>'
   }
 }
 

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+
 import Author from '@/core/Author.js'
 
 // Mock constants
@@ -41,7 +42,8 @@ describe('Author Bug Regression Tests', () => {
     it('should handle null publication author without crashing', () => {
       mockPublication.author = null
       expect(() => {
-        const author = new Author('Smith, John', 0, mockPublication, true, false, false)
+        const author = new Author('Smith, John', 0, mockPublication)
+        author.setScoring(true, false, false)
         expect(author.coauthors).toEqual({})
       }).not.toThrow()
     })
@@ -49,7 +51,8 @@ describe('Author Bug Regression Tests', () => {
     it('should handle undefined publication author without crashing', () => {
       mockPublication.author = undefined
       expect(() => {
-        const author = new Author('Doe, Jane', 0, mockPublication, true, false, false)
+        const author = new Author('Doe, Jane', 0, mockPublication)
+        author.setScoring(true, false, false)
         expect(author.coauthors).toEqual({})
       }).not.toThrow()
     })
@@ -59,8 +62,10 @@ describe('Author Bug Regression Tests', () => {
     let author1, author2
 
     beforeEach(() => {
-      author1 = new Author('Smith, John', 0, mockPublication, true, false, false)
-      author2 = new Author('Smith, John', 1, mockPublication, true, false, false)
+      author1 = new Author('Smith, John', 0, mockPublication)
+      author1.setScoring(true, false, false)
+      author2 = new Author('Smith, John', 1, mockPublication)
+      author2.setScoring(true, false, false)
     })
 
     it('should handle merging with undefined years without NaN', () => {
@@ -68,9 +73,9 @@ describe('Author Bug Regression Tests', () => {
       author1.yearMax = 2022
       author2.yearMin = undefined
       author2.yearMax = undefined
-      
+
       author1.mergeWith(author2)
-      
+
       // Should preserve valid years, not become NaN
       expect(author1.yearMin).toBe(2020)
       expect(author1.yearMax).toBe(2022)
@@ -83,9 +88,9 @@ describe('Author Bug Regression Tests', () => {
       author1.yearMax = undefined
       author2.yearMin = undefined
       author2.yearMax = undefined
-      
+
       author1.mergeWith(author2)
-      
+
       // With our fix, when both are undefined: Math.min(Infinity, Infinity) || undefined = Infinity
       // The key is that they're NOT NaN (the original bug)
       expect(author1.yearMin).toBe(Infinity) // This is the actual behavior of our fix

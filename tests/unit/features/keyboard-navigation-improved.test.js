@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+
 import { useInterfaceStore } from '@/stores/interface.js'
 
 // Mock scrollIntoView

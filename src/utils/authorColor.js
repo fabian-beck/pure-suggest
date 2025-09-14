@@ -6,7 +6,7 @@
  */
 export function calculateAuthorColor(score, authorStore) {
   let adjustedScore = score
-  
+
   // Apply the same adjustments as in AuthorGlyph.vue
   if (!authorStore.isAuthorScoreEnabled) {
     adjustedScore = adjustedScore * 20
@@ -17,6 +17,6 @@ export function calculateAuthorColor(score, authorStore) {
   if (!authorStore.isAuthorNewBoostEnabled) {
     adjustedScore = adjustedScore * 1.5
   }
-  
+
   return `hsl(0, 0%, ${Math.round(Math.max(60 - adjustedScore / 3, 0))}%)`
 }

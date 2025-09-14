@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
 import PublicationComponent from '@/components/PublicationComponent.vue'
-import { useSessionStore } from '@/stores/session.js'
 import { useInterfaceStore } from '@/stores/interface.js'
+import { useSessionStore } from '@/stores/session.js'
 
 // Mock useAppState for the functions the component uses
 const mockActivatePublicationComponentByDoi = vi.fn()
@@ -70,12 +71,14 @@ describe('Publication Activation', () => {
       global: {
         plugins: [pinia],
         stubs: {
-          'tippy': true,
+          tippy: true,
           'v-icon': true,
           'v-btn': true,
-          'InlineIcon': true,
-          'CompactButton': { template: '<button @click="$emit(\'click\')" v-bind="$attrs"><slot></slot></button>' },
-          'PublicationDescription': { template: '<div>Mock Publication Description</div>' }
+          InlineIcon: true,
+          CompactButton: {
+            template: '<button @click="$emit(\'click\')" v-bind="$attrs"><slot></slot></button>'
+          },
+          PublicationDescription: { template: '<div>Mock Publication Description</div>' }
         }
       }
     })
@@ -85,10 +88,10 @@ describe('Publication Activation', () => {
     // Find the publication component element and simulate focus (which triggers activate)
     const publicationElement = wrapper.find('.publication-component')
     expect(publicationElement.exists()).toBe(true)
-    
+
     // Trigger focus event which should call the activate function
     await publicationElement.trigger('focus')
-    
+
     // Verify that the sessionStore method was called with correct DOI
     expect(mockActivatePublicationComponentByDoi).toHaveBeenCalledWith('test-publication-doi')
   })
@@ -96,10 +99,10 @@ describe('Publication Activation', () => {
   it('should emit activate event when publication is activated', async () => {
     // Find the publication component element and simulate focus
     const publicationElement = wrapper.find('.publication-component')
-    
+
     // Trigger focus event
     await publicationElement.trigger('focus')
-    
+
     // Verify that the activate event was emitted with correct DOI
     expect(wrapper.emitted()).toHaveProperty('activate')
     expect(wrapper.emitted().activate[0]).toEqual(['test-publication-doi'])
@@ -109,12 +112,12 @@ describe('Publication Activation', () => {
     // Trigger activation
     const publicationElement = wrapper.find('.publication-component')
     await publicationElement.trigger('focus')
-    
+
     // Verify both operations happened
     expect(mockActivatePublicationComponentByDoi).toHaveBeenCalledWith('test-publication-doi')
     expect(wrapper.emitted()).toHaveProperty('activate')
     expect(wrapper.emitted().activate[0]).toEqual(['test-publication-doi'])
-    
+
     // The important thing is both are called - the exact timing is implementation detail
     // but the sessionStore call enables the "blending" visual functionality
   })
@@ -123,33 +126,33 @@ describe('Publication Activation', () => {
     // This test verifies that when a publication is activated,
     // the store method is called which should handle visual blending
     const publicationElement = wrapper.find('.publication-component')
-    
+
     // Simulate activation
     await publicationElement.trigger('focus')
-    
+
     // Verify the integration point that handles visual blending
     expect(mockActivatePublicationComponentByDoi).toHaveBeenCalledTimes(1)
     expect(mockActivatePublicationComponentByDoi).toHaveBeenCalledWith('test-publication-doi')
-    
+
     // The sessionStore method is responsible for:
     // 1. Setting the active publication
-    // 2. Updating visual states (isActive, isLinkedToActive)  
+    // 2. Updating visual states (isActive, isLinkedToActive)
     // 3. Triggering interface updates for highlighting
     // This test ensures the integration point exists
   })
 
   it('should prevent recursive activation calls when triggered multiple times rapidly', async () => {
     const publicationElement = wrapper.find('.publication-component')
-    
+
     // Trigger multiple rapid focus events (simulating the recursive focus issue)
     await publicationElement.trigger('focus')
     await publicationElement.trigger('focus')
     await publicationElement.trigger('focus')
-    
+
     // Should still only call the sessionStore method once due to the guard
     expect(mockActivatePublicationComponentByDoi).toHaveBeenCalledTimes(1)
     expect(mockActivatePublicationComponentByDoi).toHaveBeenCalledWith('test-publication-doi')
-    
+
     // This prevents the issue where:
     // focus → activate → sessionStore → interfaceStore.focus() → focus → activate (loop)
   })
