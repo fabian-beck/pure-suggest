@@ -110,57 +110,62 @@ function handleNavigationShortcuts(e) {
 }
 
 /**
- * Handle shortcuts that work when a publication is active
+ * Handle arrow key navigation for active publications
  */
-function handleActivePublicationShortcuts(e) {
+function handleArrowKeyNavigation(e) {
+  const interfaceStore = useInterfaceStore()
+
+  e.preventDefault()
+  const activePublicationComponent = document.getElementsByClassName(
+    'publication-component is-active'
+  )[0]
+  try {
+    const direction = e.key === 'ArrowDown' ? 'next' : 'previous'
+    const navigationDirection = e.key === 'ArrowDown' ? 'down' : 'up'
+    const nextPublicationComponent = findAdjacentPublicationComponent(
+      activePublicationComponent.parentNode,
+      direction
+    )
+    if (nextPublicationComponent) {
+      interfaceStore.activatePublicationComponent(nextPublicationComponent, navigationDirection)
+    }
+  } catch {
+    console.log('Could not activate next/previous publication.')
+  }
+  return true
+}
+
+/**
+ * Handle other publication shortcuts (queue, open, export, etc.)
+ */
+function handlePublicationActions(e) {
   const sessionStore = useSessionStore()
   const interfaceStore = useInterfaceStore()
-  
-  if (!sessionStore.activePublication) return false
+  const publication = sessionStore.activePublication
 
-  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+  if (e.key === '+') {
     e.preventDefault()
-    const activePublicationComponent = document.getElementsByClassName(
-      'publication-component is-active'
-    )[0]
-    try {
-      const direction = e.key === 'ArrowDown' ? 'next' : 'previous'
-      const nextPublicationComponent = findAdjacentPublicationComponent(
-        activePublicationComponent.parentNode,
-        direction
-      )
-      if (nextPublicationComponent) {
-        interfaceStore.activatePublicationComponent(nextPublicationComponent)
-      }
-    } catch {
-      console.log('Could not activate next/previous publication.')
-    }
-  } else if (e.key === '+') {
-    e.preventDefault()
-    const doi = sessionStore.activePublication.doi
-    sessionStore.queueForSelected(doi)
+    sessionStore.queueForSelected(publication.doi)
   } else if (e.key === '-') {
     e.preventDefault()
-    const doi = sessionStore.activePublication.doi
-    sessionStore.queueForExcluded(doi)
+    sessionStore.queueForExcluded(publication.doi)
   } else if (e.key === 'd') {
     e.preventDefault()
-    window.open(sessionStore.activePublication.doiUrl)
-  } else if (e.key === 't' && sessionStore.activePublication.abstract) {
+    window.open(publication.doiUrl)
+  } else if (e.key === 't' && publication.abstract) {
     e.preventDefault()
-    interfaceStore.showAbstract(sessionStore.activePublication)
+    interfaceStore.showAbstract(publication)
   } else if (e.key === 'g') {
     e.preventDefault()
-    window.open(sessionStore.activePublication.gsUrl)
+    window.open(publication.gsUrl)
   } else if (e.key === 'x') {
     e.preventDefault()
-    sessionStore.exportSingleBibtex(sessionStore.activePublication)
+    sessionStore.exportSingleBibtex(publication)
   } else if (e.key === 'i') {
     e.preventDefault()
-    const doi = sessionStore.activePublication.doi
     // Only allow DOI filtering for selected publications, not suggested ones
-    if (sessionStore.isSelected(doi)) {
-      sessionStore.filter.toggleDoi(doi)
+    if (sessionStore.isSelected(publication.doi)) {
+      sessionStore.filter.toggleDoi(publication.doi)
       // Ensure filters are active when adding DOI
       sessionStore.filter.isActive = true
     }
@@ -168,6 +173,21 @@ function handleActivePublicationShortcuts(e) {
     return false // Key not handled
   }
   return true // Key was handled
+}
+
+/**
+ * Handle shortcuts that work when a publication is active
+ */
+function handleActivePublicationShortcuts(e) {
+  const sessionStore = useSessionStore()
+
+  if (!sessionStore.activePublication) return false
+
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    return handleArrowKeyNavigation(e)
+  }
+
+  return handlePublicationActions(e)
 }
 
 export function onKey(e) {

@@ -105,44 +105,45 @@ watch(
       nextTick(scrollToActivated)
     }
   },
-  { deep: true }
+  { deep: false }
 )
-// Lifecycle with cleanup
-let scrollTimeout
-let scrollHandler
 
+// Detect user scroll
+function onUserScroll() {
+  lastScrollTime.value = Date.now()
+  userIsScrolling.value = true
+  setTimeout(() => {
+    userIsScrolling.value = false
+  }, 1000)
+}
+
+// Watch for scroll events to detect user scrolling
 onMounted(() => {
-  scrollHandler = () => {
-    userIsScrolling.value = true
-    lastScrollTime.value = Date.now()
-
-    clearTimeout(scrollTimeout)
-    scrollTimeout = setTimeout(() => {
-      userIsScrolling.value = false
-    }, 150)
-  }
-
-  window.addEventListener('scroll', scrollHandler)
+  window.addEventListener('scroll', onUserScroll, { passive: true })
 })
 
 onBeforeUnmount(() => {
-  if (scrollHandler) {
-    window.removeEventListener('scroll', scrollHandler)
-  }
-  if (scrollTimeout) {
-    clearTimeout(scrollTimeout)
-  }
+  window.removeEventListener('scroll', onUserScroll)
 })
 
-// Methods
-function activatePublication(doi) {
-  onNextActivatedScroll.value = false
-  emit('activate', doi)
+function activatePublication(publication, publicationElement, e) {
+  emit('activate', publication, publicationElement, e)
+  onNextActivatedScroll.value = true
+}
+
+// DOM event handling - find closest publication element
+function findPublicationElement(target) {
+  let element = target
+  while (element && !element.classList.contains('publication-component')) {
+    element = element.parentElement
+  }
+  return element
 }
 
 function handleDelegatedClick(event) {
-  const publicationComponent = findPublicationElement(event.target)
-  if (publicationComponent) {
+  const publicationElement = findPublicationElement(event.target)
+  if (publicationElement) {
+    const publicationComponent = publicationElement
     publicationComponent.click()
   }
 }
@@ -169,17 +170,6 @@ function handleDelegatedMouseLeave(event) {
   }
 }
 
-function findPublicationElement(target) {
-  let element = target
-  while (element) {
-    if (element.classList?.contains('publication-component')) {
-      return element
-    }
-    element = element.parentElement
-  }
-  return null
-}
-
 function scrollToActivated() {
   const timeSinceLastScroll = Date.now() - lastScrollTime.value
   if (userIsScrolling.value || timeSinceLastScroll < 1000) {
@@ -201,7 +191,7 @@ function scrollToActivated() {
           })
         }
       }
-    }, 100)
+    }, 150) // Increased delay to account for expansion
   } else {
     onNextActivatedScroll.value = true
   }
@@ -244,23 +234,23 @@ function scrollToActivated() {
   padding: 0;
 
   .section-header-text {
+    background: lighten(#363636, 10%);
+    color: white;
+    padding: 0.8rem 1rem;
     margin: 0;
-    padding: 0.5rem 0.75rem;
-    font-size: 0.75rem;
+    font-size: 1rem;
     font-weight: 600;
-    color: var(--bulma-primary-dark);
-    background: linear-gradient(135deg, var(--bulma-primary-95) 0%, var(--bulma-primary-90) 100%);
-    border-left: 3px solid var(--bulma-primary);
-    border-bottom: 1px solid var(--bulma-primary-85);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    @include light-shadow;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 
     &.info-theme {
-      color: var(--bulma-info-dark);
-      background: linear-gradient(135deg, var(--bulma-info-95) 0%, var(--bulma-info-90) 100%);
-      border-left-color: var(--bulma-info);
-      border-bottom-color: var(--bulma-info-85);
+      background: #3e8ed0;
+    }
+
+    :deep(.mdi) {
+      font-size: 1.1rem;
     }
   }
 }

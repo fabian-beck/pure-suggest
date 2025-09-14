@@ -42,7 +42,9 @@ export const useInterfaceStore = defineStore('interface', {
       isMobile: true,
       isFilterMenuOpen: false,
       // Hover state management
-      hoveredPublication: null // DOI of currently hovered publication
+      hoveredPublication: null, // DOI of currently hovered publication
+      // Keyboard navigation direction tracking
+      lastNavigationDirection: null // 'up' or 'down' - for scroll behavior
     }
   },
   getters: {
@@ -160,10 +162,29 @@ export const useInterfaceStore = defineStore('interface', {
       )
     },
 
-    activatePublicationComponent (publicationComponent) {
+    activatePublicationComponent(publicationComponent, navigationDirection = null) {
+      // Store navigation direction for scrolling behavior
+      this.lastNavigationDirection = navigationDirection;
       if (publicationComponent && typeof publicationComponent.focus === 'function') {
-        publicationComponent.focus()
+        publicationComponent.focus();
+
+        // Radical solution: ALWAYS center during keyboard navigation
+        if (navigationDirection) {
+          this.centerPublication(publicationComponent);
+        }
       }
+    },
+
+    centerPublication(publicationComponent) {
+      // Radical approach: Always center the publication, no conditions
+      // Wait briefly for focus/activation to complete, then center
+      setTimeout(() => {
+        publicationComponent.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+          inline: "nearest"
+        });
+      }, 50); // Minimal delay just for focus completion
     },
 
     triggerNetworkReplot() {
