@@ -170,6 +170,112 @@ describe('Publication HTML Tag Removal', () => {
     })
   })
 
+  describe('specific HTML tag types', () => {
+    it('should remove small caps (sc) tags - Bug reproduction case', () => {
+      const cleanedTitle = testHtmlRemoval('VT<sc>iles</sc>: Coordinating and Combining Co-located Mobile Devices for Visual Data Exploration')
+      
+      expect(cleanedTitle).toBe('VTiles: Coordinating and Combining Co-located Mobile Devices for Visual Data Exploration')
+      expect(cleanedTitle).not.toContain('<sc>')
+      expect(cleanedTitle).not.toContain('</sc>')
+    })
+
+    it('should remove HTML entities encoded tags - Bug reproduction case', () => {
+      const cleanedTitle = testHtmlRemoval('V&lt;sc&gt;is&lt;/sc&gt;T&lt;sc&gt;iles&lt;/sc&gt;: Coordinating and Combining Co-located Mobile Devices for Visual Data Exploration')
+      
+      expect(cleanedTitle).toBe('VisTiles: Coordinating and Combining Co-located Mobile Devices for Visual Data Exploration')
+      expect(cleanedTitle).not.toContain('&lt;sc&gt;')
+      expect(cleanedTitle).not.toContain('&lt;/sc&gt;')
+      expect(cleanedTitle).not.toContain('<sc>')
+      expect(cleanedTitle).not.toContain('</sc>')
+    })
+
+    it('should remove various HTML entities encoded tags', () => {
+      const cleanedTitle = testHtmlRemoval('Study of &lt;sub&gt;2&lt;/sub&gt;O and H&lt;sup&gt;+&lt;/sup&gt; reactions')
+      
+      expect(cleanedTitle).toBe('Study of 2O and H+ reactions')
+      expect(cleanedTitle).not.toContain('&lt;sub&gt;')
+      expect(cleanedTitle).not.toContain('&lt;/sub&gt;')
+      expect(cleanedTitle).not.toContain('&lt;sup&gt;')
+      expect(cleanedTitle).not.toContain('&lt;/sup&gt;')
+    })
+
+    it('should remove mixed HTML tags and HTML entities', () => {
+      const cleanedTitle = testHtmlRemoval('Research on <b>neural</b> &lt;i&gt;networks&lt;/i&gt; and &lt;sc&gt;machine&lt;/sc&gt; learning')
+      
+      expect(cleanedTitle).toBe('Research on neural networks and machine learning')
+      expect(cleanedTitle).not.toContain('<b>')
+      expect(cleanedTitle).not.toContain('</b>')
+      expect(cleanedTitle).not.toContain('&lt;i&gt;')
+      expect(cleanedTitle).not.toContain('&lt;/i&gt;')
+      expect(cleanedTitle).not.toContain('&lt;sc&gt;')
+      expect(cleanedTitle).not.toContain('&lt;/sc&gt;')
+    })
+
+    it('should remove various formatting tags used in academic publications', () => {
+      const cleanedTitle = testHtmlRemoval('Study of <sub>2</sub>O and H<sup>+</sup> in <sc>chemical</sc> reactions')
+      
+      expect(cleanedTitle).toBe('Study of 2O and H+ in chemical reactions')
+      expect(cleanedTitle).not.toContain('<sub>')
+      expect(cleanedTitle).not.toContain('</sub>')
+      expect(cleanedTitle).not.toContain('<sup>')
+      expect(cleanedTitle).not.toContain('</sup>')
+      expect(cleanedTitle).not.toContain('<sc>')
+      expect(cleanedTitle).not.toContain('</sc>')
+    })
+
+    it('should handle uppercase SC tags', () => {
+      const cleanedTitle = testHtmlRemoval('VT<SC>iles</SC>: Test with uppercase tags')
+      
+      expect(cleanedTitle).toBe('VTiles: Test with uppercase tags')
+      expect(cleanedTitle).not.toContain('<SC>')
+      expect(cleanedTitle).not.toContain('</SC>')
+    })
+
+    it('should handle sc tags with attributes', () => {
+      const cleanedTitle = testHtmlRemoval('VT<sc class="small-caps">iles</sc>: Test with attributes')
+      
+      expect(cleanedTitle).toBe('VTiles: Test with attributes')
+      expect(cleanedTitle).not.toContain('<sc')
+      expect(cleanedTitle).not.toContain('</sc>')
+    })
+
+    it('should handle multiple sc tags in same title', () => {
+      const cleanedTitle = testHtmlRemoval('<sc>Small</sc> caps and <sc>more</sc> small caps')
+      
+      expect(cleanedTitle).toBe('Small caps and more small caps')
+      expect(cleanedTitle).not.toContain('<sc>')
+      expect(cleanedTitle).not.toContain('</sc>')
+    })
+
+    it('should handle mixed case sc tags', () => {
+      const cleanedTitle = testHtmlRemoval('Test <Sc>mixed</sC> case tags')
+      
+      expect(cleanedTitle).toBe('Test mixed case tags')
+      expect(cleanedTitle).not.toContain('<Sc>')
+      expect(cleanedTitle).not.toContain('</sC>')
+    })
+
+    it('should handle browser compatibility fallback', () => {
+      const publication = new Publication('10.1234/test')
+      
+      // Mock a scenario where replaceAll is not available
+      const originalReplaceAll = String.prototype.replaceAll
+      delete String.prototype.replaceAll
+      
+      try {
+        const data = { title: 'VT<sc>iles</sc>: Test fallback' }
+        publication.processTitle(data)
+        
+        expect(publication.title).toBe('VTiles: Test fallback')
+        expect(publication.title).not.toContain('<sc>')
+        expect(publication.title).not.toContain('</sc>')
+      } finally {
+        // Restore replaceAll
+        String.prototype.replaceAll = originalReplaceAll
+      }
+    })
+  })
+
   describe('integration with cleanTitle function', () => {
     it('should work as part of the full cleaning process', () => {
       const cleanedTitle = testHtmlRemoval('A <b>Comprehensive</b> Study  of   <i>Machine Learning</i>')
