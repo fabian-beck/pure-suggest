@@ -212,7 +212,7 @@ class IndirectionDetector {
 
     // Search in ALL file contents
     if (this.allFileContents) {
-      for (const [filePath, content] of this.allFileContents) {
+      for (const [, content] of this.allFileContents) {
         const templateUsages = this.countTemplateUsages(functionName, content);
         const codeUsages = this.countCodeUsages(functionName, content);
 

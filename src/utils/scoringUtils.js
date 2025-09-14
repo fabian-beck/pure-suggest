@@ -100,7 +100,7 @@ export function findKeywordMatches(title, boostKeywords) {
       
       // Use word boundary matching for short keywords (3 chars or less)
       if (alternativeKeyword.length <= 3) {
-        const wordBoundaryRegex = new RegExp(`\\b${escapeRegExp(alternativeKeyword)}`, 'gi')
+        const wordBoundaryRegex = new RegExp(`\\b${alternativeKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'gi')
         const regexMatch = wordBoundaryRegex.exec(title)
         position = regexMatch?.index ?? -1
       } else {
@@ -124,9 +124,6 @@ export function findKeywordMatches(title, boostKeywords) {
  * @param {string} string - String to escape
  * @returns {string} Escaped string safe for use in regex
  */
-function escapeRegExp(string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
 
 /**
  * Generates highlighted title with matched keywords underlined

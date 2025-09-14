@@ -30,7 +30,7 @@ export const useSessionStore = defineStore('session', {
     }
   },
   getters: {
-    selectedPublicationsDois: (state) => asDois(state.selectedPublications),
+    selectedPublicationsDois: (state) => state.selectedPublications.map((publication) => publication.doi),
     selectedPublicationsCount: (state) => state.selectedPublications.length,
     excludedPublicationsCount: (state) => state.excludedPublicationsDois.length,
     suggestedPublications: (state) => (state.suggestion ? state.suggestion.publications : []),
@@ -305,6 +305,3 @@ export const useSessionStore = defineStore('session', {
   }
 })
 
-function asDois(publications) {
-  return publications.map((publication) => publication.doi)
-}
