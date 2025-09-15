@@ -1,10 +1,32 @@
 import { setActivePinia, createPinia } from 'pinia'
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
 import { useAppState } from '@/composables/useAppState.js'
 import Publication from '@/core/Publication.js'
 import { useQueueStore } from '@/stores/queue.js'
 import { useSessionStore } from '@/stores/session.js'
+
+// Mock heavy dependencies that cause timeouts
+vi.mock('@/services/SuggestionService.js', () => ({
+  SuggestionService: {
+    computeSuggestions: vi.fn().mockResolvedValue({ publications: [] })
+  }
+}))
+
+vi.mock('@/lib/Cache.js', () => ({
+  clearCache: vi.fn(),
+  cachedFetch: vi.fn().mockResolvedValue(null)
+}))
+
+// Mock Publication.fetchData to avoid network calls
+const originalFetchData = Publication.prototype.fetchData
+beforeEach(() => {
+  Publication.prototype.fetchData = vi.fn().mockResolvedValue()
+})
+
+afterEach(() => {
+  Publication.prototype.fetchData = originalFetchData
+})
 
 describe('Newly Added Selected Papers', () => {
   let sessionStore
@@ -106,53 +128,37 @@ describe('Newly Added Selected Papers', () => {
     it('handles empty session correctly in updateQueued', async () => {
       // Start with empty session
       expect(sessionStore.selectedPublicationsCount).toBe(0)
-      
+
       // Queue some publications
       queueStore.selectedQueue = ['10.1000/first1', '10.1000/first2']
-      
-      // Mock updateSuggestions to avoid API calls
-      const originalUpdateSuggestions = appState.updateSuggestions
-      appState.updateSuggestions = () => Promise.resolve()
-      
-      try {
-        await appState.updateQueued()
-        
-        const first1 = sessionStore.getSelectedPublicationByDoi('10.1000/first1')
-        const first2 = sessionStore.getSelectedPublicationByDoi('10.1000/first2')
-        
-        // Should not be marked as newly added since session was empty
-        expect(first1.isNewlyAdded).toBe(false)
-        expect(first2.isNewlyAdded).toBe(false)
-      } finally {
-        appState.updateSuggestions = originalUpdateSuggestions
-      }
+
+      await appState.updateQueued()
+
+      const first1 = sessionStore.getSelectedPublicationByDoi('10.1000/first1')
+      const first2 = sessionStore.getSelectedPublicationByDoi('10.1000/first2')
+
+      // Should not be marked as newly added since session was empty
+      expect(first1.isNewlyAdded).toBe(false)
+      expect(first2.isNewlyAdded).toBe(false)
     })
 
     it('handles non-empty session correctly in updateQueued', async () => {
       // Start with non-empty session
       sessionStore.selectedPublications.push(new Publication('10.1000/initial'))
-      
+
       // Queue some publications
       queueStore.selectedQueue = ['10.1000/new1', '10.1000/new2']
-      
-      // Mock updateSuggestions to avoid API calls
-      const originalUpdateSuggestions = appState.updateSuggestions
-      appState.updateSuggestions = () => Promise.resolve()
-      
-      try {
-        await appState.updateQueued()
-        
-        const new1 = sessionStore.getSelectedPublicationByDoi('10.1000/new1')
-        const new2 = sessionStore.getSelectedPublicationByDoi('10.1000/new2')
-        const initial = sessionStore.getSelectedPublicationByDoi('10.1000/initial')
-        
-        // Should be marked as newly added since session was not empty
-        expect(new1.isNewlyAdded).toBe(true)
-        expect(new2.isNewlyAdded).toBe(true)
-        expect(initial.isNewlyAdded).toBe(false)
-      } finally {
-        appState.updateSuggestions = originalUpdateSuggestions
-      }
+
+      await appState.updateQueued()
+
+      const new1 = sessionStore.getSelectedPublicationByDoi('10.1000/new1')
+      const new2 = sessionStore.getSelectedPublicationByDoi('10.1000/new2')
+      const initial = sessionStore.getSelectedPublicationByDoi('10.1000/initial')
+
+      // Should be marked as newly added since session was not empty
+      expect(new1.isNewlyAdded).toBe(true)
+      expect(new2.isNewlyAdded).toBe(true)
+      expect(initial.isNewlyAdded).toBe(false)
     })
   })
 })
