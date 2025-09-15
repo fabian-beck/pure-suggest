@@ -54,6 +54,7 @@ export function createKeywordLinks(uniqueBoostKeywords, publicationsFiltered, do
 /**
  * Initialize keyword node DOM elements
  */
+// @indirection-reviewed: architectural-consistency - part of initialize*Nodes pattern for different node types
 export function initializeKeywordNodes(nodeSelection) {
   const keywordNodes = nodeSelection.filter((d) => d.type === 'keyword')
 
@@ -119,6 +120,7 @@ export function updateKeywordNodes(nodeSelection, activePublication, existingToo
 /**
  * Release fixed positioning from a keyword node
  */
+// @indirection-reviewed: meaningful-abstraction - clear UI interaction semantics for node positioning
 export function releaseKeywordPosition(event, keywordNode, networkSimulation, SIMULATION_ALPHA) {
   delete keywordNode.fx
   delete keywordNode.fy
@@ -140,6 +142,7 @@ export function highlightKeywordPublications(keywordNode, publications) {
 /**
  * Clear keyword highlighting from all publications
  */
+// @indirection-reviewed: architectural-consistency - matches clearAuthorHighlight pattern
 export function clearKeywordHighlight(publications) {
   publications.forEach((publication) => {
     publication.isKeywordHovered = false

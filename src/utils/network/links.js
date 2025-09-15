@@ -46,6 +46,7 @@ export function createCitationLinks(selectedPublications, isSelectedFn, doiToInd
 /**
  * Update link DOM elements with data binding
  */
+// @indirection-reviewed: meaningful-abstraction - D3 data binding abstraction adds clarity
 export function updateNetworkLinks(linkSelection, links) {
   return linkSelection.data(links, (d) => [d.source, d.target]).join('path')
 }
@@ -113,11 +114,3 @@ export function calculateLinkClasses(d, activePublication) {
   return classes.join(' ')
 }
 
-/**
- * Update link visual properties (path and classes)
- */
-export function updateLinkProperties(linkSelection, nodeX, activePublication) {
-  linkSelection
-    .attr('d', (d) => calculateLinkPath(d, nodeX))
-    .attr('class', (d) => calculateLinkClasses(d, activePublication))
-}

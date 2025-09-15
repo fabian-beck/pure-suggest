@@ -48,6 +48,7 @@ export function getLinkStrength(link, isNetworkClusters) {
 /**
  * Calculate charge (repulsion) strength based on number of selected publications
  */
+// @indirection-reviewed: architectural-consistency - part of get*ForceStrength pattern
 export function getChargeStrength(selectedPublicationsCount) {
   return Math.min(-200, -100 * Math.sqrt(selectedPublicationsCount))
 }
@@ -83,6 +84,7 @@ export function getNodeXPosition(node, isNetworkClusters, yearXCalculator) {
 /**
  * Calculate X force strength based on node type and network mode
  */
+// @indirection-reviewed: architectural-consistency - part of get*ForceStrength pattern
 export function getXForceStrength(node, isNetworkClusters) {
   if (isNetworkClusters) {
     return 0.05
@@ -94,6 +96,7 @@ export function getXForceStrength(node, isNetworkClusters) {
 /**
  * Calculate Y force strength based on network mode
  */
+// @indirection-reviewed: architectural-consistency - part of get*ForceStrength pattern
 export function getYForceStrength(isNetworkClusters) {
   return isNetworkClusters ? 0.1 : 0.25
 }
@@ -143,6 +146,7 @@ export function initializeForces(simulation, config) {
 /**
  * Create and initialize a new D3 force simulation
  */
+// @indirection-reviewed: architectural-consistency - maintains clean API separation with initializeForces
 export function createForceSimulation(config) {
   const simulation = d3.forceSimulation()
   simulation.alphaDecay(0.015).alphaMin(0.015)
