@@ -968,7 +968,7 @@ export default {
     <div class="box has-background-grey">
       <NetworkHeader
         :error-message="errorMessage"
-        :has-no-content="isEmpty"
+        :has-no-content="isEmpty.value"
         v-model:is-network-clusters="isNetworkClusters"
         @expand-network="expandNetwork"
         @collapse-network="collapseNetwork"
@@ -978,7 +978,7 @@ export default {
         <NetworkPerformanceMonitor
           ref="performanceMonitor"
           :show="interfaceStore.showPerformancePanel"
-          :is-empty="isEmpty || !sessionStore.selectedPublications?.length"
+          :is-empty="isEmpty.value || !sessionStore.selectedPublications?.length"
           :node-count="graph.nodes.length"
           :link-count="graph.links.length"
           :should-skip-early-ticks="shouldSkipEarlyTicks"

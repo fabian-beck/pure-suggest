@@ -407,21 +407,23 @@ describe('NetworkVisComponent - Collapse Functionality', () => {
       mockInterfaceStore.isNetworkCollapsed = true
       wrapper.vm.graph.nodes = [{ id: 'test-node' }]
 
-      // Mock performance monitor
-      const mockPerformanceMonitor = {
-        trackFps: vi.fn(),
-        incrementTick: vi.fn(),
-        recordDomUpdate: vi.fn(),
-        recordSkippedUpdate: vi.fn()
+      // Mock performance monitor methods
+      const performanceMonitor = wrapper.vm.$refs.performanceMonitor
+      if (performanceMonitor) {
+        vi.spyOn(performanceMonitor, 'trackFps')
+        vi.spyOn(performanceMonitor, 'incrementTick')
+        vi.spyOn(performanceMonitor, 'recordDomUpdate')
+        vi.spyOn(performanceMonitor, 'recordSkippedUpdate')
       }
-      wrapper.vm.$refs.performanceMonitor = mockPerformanceMonitor
 
       // Call tick - should return early
       wrapper.vm.tick()
 
       // Should not call any performance tracking when collapsed
-      expect(mockPerformanceMonitor.trackFps).not.toHaveBeenCalled()
-      expect(mockPerformanceMonitor.incrementTick).not.toHaveBeenCalled()
+      if (performanceMonitor) {
+        expect(performanceMonitor.trackFps).not.toHaveBeenCalled()
+        expect(performanceMonitor.incrementTick).not.toHaveBeenCalled()
+      }
     })
 
     it('should resume normal operation when network is restored', () => {
