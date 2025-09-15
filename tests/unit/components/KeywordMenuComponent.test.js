@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-import BoostKeywordsComponent from '@/components/BoostKeywordsComponent.vue'
+import KeywordMenuComponent from '@/components/KeywordMenuComponent.vue'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useQueueStore } from '@/stores/queue.js'
 import { useSessionStore } from '@/stores/session.js'
@@ -16,7 +16,7 @@ vi.mock('@/composables/useAppState.js', () => ({
   })
 }))
 
-describe('BoostKeywordsComponent', () => {
+describe('KeywordMenuComponent', () => {
   let pinia
   let sessionStore
   let interfaceStore
@@ -43,7 +43,7 @@ describe('BoostKeywordsComponent', () => {
     sessionStore.boostKeywordString = 'word1, word2|alt, word3'
     sessionStore.selectedPublications = [{ doi: '10.1000/test' }] // Make not empty
 
-    const wrapper = mount(BoostKeywordsComponent, {
+    const wrapper = mount(KeywordMenuComponent, {
       global: {
         plugins: [pinia],
         stubs: {
@@ -67,7 +67,7 @@ describe('BoostKeywordsComponent', () => {
     sessionStore.boostKeywordString = ''
     sessionStore.selectedPublications = [{ doi: '10.1000/test' }] // Make not empty
 
-    const wrapper = mount(BoostKeywordsComponent, {
+    const wrapper = mount(KeywordMenuComponent, {
       global: {
         plugins: [pinia],
         stubs: {
@@ -89,7 +89,7 @@ describe('BoostKeywordsComponent', () => {
       sessionStore.selectedPublications = [{ doi: '10.1000/test' }] // Make not empty
       sessionStore.boostKeywordString = 'original keywords'
 
-      const wrapper = mount(BoostKeywordsComponent, {
+      const wrapper = mount(KeywordMenuComponent, {
         global: {
           plugins: [pinia],
           stubs: {
@@ -138,7 +138,7 @@ describe('BoostKeywordsComponent', () => {
       sessionStore.selectedPublications = [{ doi: '10.1000/test' }] // Make not empty
       sessionStore.boostKeywordString = 'original keywords'
 
-      const wrapper = mount(BoostKeywordsComponent, {
+      const wrapper = mount(KeywordMenuComponent, {
         global: {
           plugins: [pinia],
           stubs: {
@@ -182,7 +182,7 @@ describe('BoostKeywordsComponent', () => {
     it('should call updateScores when form is submitted via button click', async () => {
       sessionStore.selectedPublications = [{ doi: '10.1000/test' }] // Make not empty
 
-      const wrapper = mount(BoostKeywordsComponent, {
+      const wrapper = mount(KeywordMenuComponent, {
         global: {
           plugins: [pinia],
           stubs: {

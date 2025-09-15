@@ -2,6 +2,7 @@
 import { inject, ref } from 'vue'
 
 import FilterMenuComponent from '@/components/FilterMenuComponent.vue'
+import KeywordMenuComponent from '@/components/KeywordMenuComponent.vue'
 import SessionMenuComponent from '@/components/SessionMenuComponent.vue'
 import { useAppState } from '@/composables/useAppState.js'
 import { useInterfaceStore } from '@/stores/interface.js'
@@ -21,7 +22,7 @@ const filterMenuComponent = ref(null)
         <div class="app-name" v-html="appMeta.nameHtml"></div>
         <div class="session-state" v-if="!isEmpty">
           <SessionMenuComponent />
-          <BoostKeywordsComponent />
+          <KeywordMenuComponent />
           <FilterMenuComponent ref="filterMenuComponent" />
         </div>
       </v-app-bar-title>
