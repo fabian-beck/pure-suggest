@@ -178,6 +178,8 @@ export function useAppState() {
       sessionStore.setSessionName(session.name)
     }
     sessionStore.addPublicationsToSelection(session.selected)
+    // When loading a session, don't mark publications as newly added
+    sessionStore.clearNewlyAddedFlags()
 
     // Mark that we're tracking a workflow
     sessionStore._isTrackingWorkflow = true
@@ -251,6 +253,9 @@ export function useAppState() {
     sessionStore._workflowStartTime = startTime
     sessionStore._isTrackingWorkflow = true
 
+    // Check if session was empty before this update
+    const wasSessionEmpty = sessionStore.selectedPublicationsCount === 0
+
     sessionStore.clearActivePublication()
     if (queueStore.excludedQueue.length) {
       sessionStore.excludedPublicationsDois = sessionStore.excludedPublicationsDois.concat(
@@ -269,6 +274,8 @@ export function useAppState() {
     }
     if (queueStore.selectedQueue.length) {
       sessionStore.addPublicationsToSelection(queueStore.selectedQueue)
+      // Mark the newly added publications (only if session wasn't empty before)
+      sessionStore.markPublicationsAsNewlyAdded(queueStore.selectedQueue, wasSessionEmpty)
     }
     await updateSuggestions()
     queueStore.clear()
@@ -285,8 +292,13 @@ export function useAppState() {
     sessionStore._workflowStartTime = startTime
     sessionStore._isTrackingWorkflow = true
 
+    // Check if session was empty before this update
+    const wasSessionEmpty = sessionStore.selectedPublicationsCount === 0
+
     dois.forEach((doi) => queueStore.removeFromQueues(doi))
     await sessionStore.addPublicationsToSelection(dois)
+    // Mark the newly added publications (only if session wasn't empty before)
+    sessionStore.markPublicationsAsNewlyAdded(dois, wasSessionEmpty)
     await updateSuggestions()
   }
 
