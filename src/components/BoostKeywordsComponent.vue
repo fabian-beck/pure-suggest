@@ -7,7 +7,7 @@ import { useSessionStore } from '@/stores/session.js'
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
-const { isEmpty, updateScores } = useAppState()
+const { updateScores } = useAppState()
 
 const boost = ref(null)
 const isMenuOpen = ref(false)
@@ -48,7 +48,6 @@ function handleMenuToggle(isOpen) {
 
 <template>
   <v-menu
-    v-if="!isEmpty"
     v-model="isMenuOpen"
     location="bottom"
     transition="slide-y-transition"

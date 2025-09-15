@@ -19,10 +19,10 @@ const filterMenuComponent = ref(null)
       <v-icon class="mr-1" :size="interfaceStore.isMobile ? 24 : 32">mdi-water-plus-outline</v-icon>
       <v-app-bar-title>
         <div class="app-name" v-html="appMeta.nameHtml"></div>
-        <div class="session-state">
-          <SessionMenuComponent v-if="!isEmpty" />
+        <div class="session-state" v-if="!isEmpty">
+          <SessionMenuComponent />
           <BoostKeywordsComponent />
-          <FilterMenuComponent v-if="!isEmpty" ref="filterMenuComponent" />
+          <FilterMenuComponent ref="filterMenuComponent" />
         </div>
       </v-app-bar-title>
       <v-menu bottom left offset-y transition="slide-y-transition">
