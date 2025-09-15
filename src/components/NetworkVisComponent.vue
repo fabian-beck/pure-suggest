@@ -43,7 +43,8 @@ import {
 } from '@/utils/network/keywordNodes.js'
 import {
   updateNetworkLinks,
-  updateLinkProperties,
+  calculateLinkPath,
+  calculateLinkClasses,
   createCitationLinks
 } from '@/utils/network/links.js'
 import {
@@ -921,11 +922,9 @@ export default {
       })
 
       // Update only the affected links using appropriate X positions
-      updateLinkProperties(
-        affectedLinks,
-        (d) => this.getNodeDisplayX(d),
-        this.sessionStore.activePublication
-      )
+      affectedLinks
+        .attr('d', (d) => calculateLinkPath(d, (d) => this.getNodeDisplayX(d)))
+        .attr('class', (d) => calculateLinkClasses(d, this.sessionStore.activePublication))
 
       // Return how many links were updated
       return affectedLinks.size()

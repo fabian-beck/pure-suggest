@@ -73,6 +73,7 @@ function isDoiFiltered(doi) {
   return sessionStore.filter.dois.includes(doi)
 }
 
+// @indirection-reviewed: template-readability - keeps template code clean and readable
 function getFilterDoiTooltip(doi) {
   return isDoiFiltered(doi)
     ? 'Active as f<span class="key">i</span>lter; click to remove DOI from filter'

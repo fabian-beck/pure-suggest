@@ -87,6 +87,11 @@ Always manually review candidates before cleanup. The goal is **removing unneces
 - Complex operations that benefit from descriptive naming
 - Business logic that may evolve (calculations, validations)
 
+**Template Readability**
+- Functions called from Vue templates that would become complex inline expressions
+- Template logic that would harm readability if inlined (multi-line expressions, complex conditions)
+- Functions that keep template code clean and declarative
+
 **Architectural Consistency**
 - Part of established patterns (if you keep one `clearXHighlight`, keep all)
 - API consistency across similar utility modules
@@ -123,6 +128,7 @@ export function getChargeStrength(selectedPublicationsCount) {
 
 - **`architectural-consistency`** - Part of established patterns (e.g., `get*ForceStrength`, `clear*Highlight`)
 - **`meaningful-abstraction`** - Function name adds significant clarity (e.g., D3 data binding helpers)
+- **`template-readability`** - Keeps Vue template code clean and readable
 - **`business-logic`** - Contains domain logic that may evolve
 - **`complex-operation`** - Multi-step operations despite being short
 - **`api-consistency`** - Maintains consistent interface across modules

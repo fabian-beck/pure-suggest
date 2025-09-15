@@ -58,6 +58,7 @@ export function createAuthorLinks(filteredAuthors, publications, doiToIndex) {
 /**
  * Initialize author node DOM elements
  */
+// @indirection-reviewed: architectural-consistency - part of initialize*Nodes pattern for different node types
 export function initializeAuthorNodes(nodeSelection) {
   const authorNodes = nodeSelection.filter((d) => d.type === 'author')
 

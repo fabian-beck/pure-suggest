@@ -26,6 +26,7 @@ const SCORE_LIGHTNESS = {
  * @param {string} boostKeywordString - Raw boost keyword string
  * @returns {string} Normalized boost keyword string
  */
+// @indirection-reviewed: meaningful-abstraction - clear business logic for user input normalization
 export function normalizeBoostKeywordString(boostKeywordString) {
   return boostKeywordString
     // eslint-disable-next-line sonarjs/slow-regex -- Safe whitespace pattern
@@ -150,18 +151,6 @@ export function highlightTitle(title, matches) {
   return result
 }
 
-/**
- * Calculates boost factor based on keyword matches
- * @param {number} matchCount - Number of keyword matches found
- * @param {boolean} isBoost - Whether boost is enabled
- * @returns {number} Boost factor to multiply score by
- */
-export function calculateBoostFactor(matchCount, isBoost) {
-  if (!isBoost || matchCount === 0) {
-    return SCORING.DEFAULT_BOOST_FACTOR
-  }
-  return SCORING.DEFAULT_BOOST_FACTOR * SCORING.BOOST_MULTIPLIER**matchCount
-}
 
 
 /**
@@ -200,7 +189,9 @@ export function updatePublicationScores(publications, uniqueBoostKeywords, isBoo
     // Update boost metrics
     publication.boostMatches = matches.length
     publication.boostKeywords = matches.map((match) => match.keyword)
-    publication.boostFactor = calculateBoostFactor(matches.length, isBoost)
+    publication.boostFactor = !isBoost || matches.length === 0
+      ? SCORING.DEFAULT_BOOST_FACTOR
+      : SCORING.DEFAULT_BOOST_FACTOR * SCORING.BOOST_MULTIPLIER**matches.length
 
     // Generate highlighted title
     publication.titleHighlighted = highlightTitle(publication.title, matches)

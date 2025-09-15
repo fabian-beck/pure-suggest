@@ -84,6 +84,7 @@ export function getNodeXPosition(node, isNetworkClusters, yearXCalculator) {
 /**
  * Calculate X force strength based on node type and network mode
  */
+// @indirection-reviewed: architectural-consistency - part of get*ForceStrength pattern
 export function getXForceStrength(node, isNetworkClusters) {
   if (isNetworkClusters) {
     return 0.05
@@ -145,6 +146,7 @@ export function initializeForces(simulation, config) {
 /**
  * Create and initialize a new D3 force simulation
  */
+// @indirection-reviewed: architectural-consistency - maintains clean API separation with initializeForces
 export function createForceSimulation(config) {
   const simulation = d3.forceSimulation()
   simulation.alphaDecay(0.015).alphaMin(0.015)

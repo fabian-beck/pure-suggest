@@ -114,11 +114,3 @@ export function calculateLinkClasses(d, activePublication) {
   return classes.join(' ')
 }
 
-/**
- * Update link visual properties (path and classes)
- */
-export function updateLinkProperties(linkSelection, nodeX, activePublication) {
-  linkSelection
-    .attr('d', (d) => calculateLinkPath(d, nodeX))
-    .attr('class', (d) => calculateLinkClasses(d, activePublication))
-}

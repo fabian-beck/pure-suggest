@@ -116,6 +116,7 @@ function handleSwitchKeydown(event) {
   }
 }
 
+// @indirection-reviewed: template-readability - keeps template clean and provides clear accessibility semantics
 function handleChipKeydown(event, doi) {
   if (event.key === 'Enter' || event.key === ' ') {
     event.preventDefault()
@@ -124,14 +125,16 @@ function handleChipKeydown(event, doi) {
   }
 }
 
-function removeDoi(doi) {
-  sessionStore.filter.removeDoi(doi)
-}
-
+// @indirection-reviewed: template-readability - keeps template code clean and readable
 function getDoiTooltip(doi) {
   const publication = sessionStore.getSelectedPublicationByDoi(doi)
   return `Filtered to publications citing or cited by <b>${publication.title} (${publication.authorShort}, ${publication.year})</b>`
 }
+
+function removeDoi(doi) {
+  sessionStore.filter.removeDoi(doi)
+}
+
 </script>
 
 <template>
