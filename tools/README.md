@@ -85,6 +85,134 @@ export function getChargeStrength(selectedPublicationsCount) {
 
 Use with the Claude Code command `/cleanup-indirections` for guided cleanup workflow.
 
+## constant-usage-analyzer.js
+
+**Purpose:** Analyzes usage patterns of exported constants across the codebase to identify unused or underutilized constants and understand their distribution.
+
+**Usage:**
+
+```bash
+node tools/constant-usage-analyzer.js
+```
+
+**What it does:**
+
+1. Scans all files in `src/constants/` to extract exported constants
+2. Searches through all source and test files for usage of each constant
+3. Categorizes usage by file type (source vs test files)
+4. Identifies which files define vs consume each constant
+5. Generates usage statistics and saves detailed analysis to JSON
+
+**Output:**
+
+- **Console Report**: Summary of each constant with usage counts and file locations
+- **JSON File**: Detailed analysis saved to `tools/output/constant-usage-analysis.json`
+
+**Example Output:**
+
+```
+🔍 Analyzing constant usage patterns...
+
+Found 3 constant files: index.js, themes.js, validation.js
+Searching through 127 files for usage patterns
+
+📊 CONSTANT USAGE ANALYSIS:
+
+📁 DEFAULT_THEME (from src/constants/themes.js):
+  ✅ Used in 5 files (2 source, 3 test)
+  📄 src/components/ThemeSelector.vue (1 usage)
+  📄 src/stores/interface.js (2 usages)
+  🧪 tests/unit/themes.test.js (3 usages)
+
+⚠️  VALIDATION_RULES (from src/constants/validation.js):
+  ⚠️  Used in 1 file (1 source, 0 test) - potentially underutilized
+  📄 src/utils/validators.js (1 usage)
+
+❌ UNUSED_CONSTANT (from src/constants/index.js):
+  ❌ No usage found - consider removing
+
+📈 SUMMARY:
+- Total constants: 15
+- Used constants: 12 (80%)
+- Unused constants: 3 (20%)
+- Underutilized: 2 (13%)
+```
+
+**Use Cases:**
+- Identify unused constants for cleanup
+- Understand constant distribution across the codebase
+- Find constants that may need better adoption
+- Audit constants before refactoring
+
+## dependency-analyzer.js
+
+**Purpose:** Analyzes import/export relationships and dependencies across the entire codebase, generating a comprehensive project dependency overview.
+
+**Usage:**
+
+```bash
+node tools/dependency-analyzer.js
+```
+
+**What it does:**
+
+1. Scans all `.vue`, `.js`, `.ts`, and `.mjs` files in the project
+2. Extracts import statements and categorizes them (local vs external)
+3. Identifies exports from each file
+4. Analyzes Vue-specific patterns (template components, store usage)
+5. Generates dependency graph and statistics
+
+**Output:**
+
+- **Console Report**: Detailed breakdown by file type with imports/exports
+- **GraphML File**: Dependency graph saved to `tools/output/project-dependencies.graphml`
+
+**Example Output:**
+
+```
+📊 Project Overview:
+
+=== Vue Components (45) ===
+
+📁 NetworkVisComponent.vue (src/components/NetworkVisComponent.vue)
+  📦 Local: ./NetworkControls.vue, @/stores/session, @/utils/network/forces
+  📚 External: d3, tippy.js
+  📤 Exports: default
+  🏪 Stores: sessionStore, interfaceStore
+  🧩 Template Components: NetworkControls, NetworkPerformanceMonitor
+
+=== JavaScript Modules (23) ===
+
+📁 forces.js (src/utils/network/forces.js)
+  📦 Local: @/constants
+  📚 External: d3
+  📤 Exports: getChargeStrength, createForceSimulation
+
+=== Summary Statistics ===
+
+File Types:
+- Vue Components: 45 files
+- JavaScript Modules: 23 files
+- TypeScript Files: 2 files
+
+Dependencies:
+- Total import relationships: 156
+- Local dependencies: 89 (57%)
+- External dependencies: 67 (43%)
+- Most imported external: d3 (12 files)
+- Most imported local: @/stores/session (18 files)
+```
+
+**Generated Files:**
+- `tools/output/project-dependencies.graphml` - Import graph for visualization tools
+
+**Use Cases:**
+- Understand project architecture and dependency flow
+- Identify tightly coupled modules
+- Find candidates for refactoring or extraction
+- Visualize dependency graphs in external tools
+- Audit external dependency usage
+
 ## find-unused-functions.js
 
 **Purpose:** Identifies potentially unused functions in the codebase by finding function definitions that appear only once (suggesting they may only exist in their definition but never called).
