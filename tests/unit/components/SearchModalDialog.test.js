@@ -1,6 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+import SearchModalDialog from '@/components/modal/SearchModalDialog.vue'
+import { useModalStore } from '@/stores/modal.js'
+import { useQueueStore } from '@/stores/queue.js'
+import { useSessionStore } from '@/stores/session.js'
 
 // Simplified external dependency mocking
 vi.mock('@/lib/Cache.js', () => ({
@@ -25,14 +30,9 @@ vi.mock('@/core/PublicationSearch.js', () => ({
   }
 }))
 
-import SearchModalDialog from '@/components/modal/SearchModalDialog.vue'
-import { useSessionStore } from '@/stores/session.js'
-import { useInterfaceStore } from '@/stores/interface.js'
-import { useQueueStore } from '@/stores/queue.js'
-
 describe('SearchModalDialog', () => {
   let sessionStore
-  let interfaceStore
+  let modalStore
   let queueStore
   let pinia
 
@@ -40,7 +40,7 @@ describe('SearchModalDialog', () => {
     pinia = createPinia()
     setActivePinia(pinia)
     sessionStore = useSessionStore()
-    interfaceStore = useInterfaceStore()
+    modalStore = useModalStore()
     queueStore = useQueueStore()
   })
 
@@ -50,8 +50,8 @@ describe('SearchModalDialog', () => {
       global: {
         plugins: [pinia],
         stubs: {
-          'ModalDialog': true,
-          'PublicationComponentSearch': true,
+          ModalDialog: true,
+          PublicationComponentSearch: true,
           'v-text-field': true,
           'v-btn': true,
           'v-card-actions': true,
@@ -84,13 +84,13 @@ describe('SearchModalDialog', () => {
     // Set up stores correctly
     sessionStore.selectedPublications = []
     queueStore.selectedQueue = ['10.1234/test-publication-2']
-    
+
     // Verify that sessionStore does not have selectedQueue property
     expect(sessionStore.selectedQueue).toBeUndefined()
-    
+
     // Now the filteredSearchResults should work correctly by accessing queueStore.selectedQueue
     const results = wrapper.vm.filteredSearchResults
-    
+
     // Should filter out the publication that's in selectedQueue
     expect(results).toHaveLength(1)
     expect(results[0].doi).toBe('10.1234/test-publication-1')
@@ -101,8 +101,8 @@ describe('SearchModalDialog', () => {
       global: {
         plugins: [pinia],
         stubs: {
-          'ModalDialog': true,
-          'PublicationComponentSearch': true,
+          ModalDialog: true,
+          PublicationComponentSearch: true,
           'v-text-field': true,
           'v-btn': true,
           'v-card-actions': true,
@@ -124,7 +124,7 @@ describe('SearchModalDialog', () => {
         },
         {
           doi: '10.1234/test-publication-2',
-          title: 'Test Publication 2', 
+          title: 'Test Publication 2',
           year: 2022,
           wasFetched: true
         }
@@ -139,7 +139,7 @@ describe('SearchModalDialog', () => {
     // This demonstrates what should happen when we fix the issue:
     // filteredSearchResults should exclude publications that are in selectedQueue
     const expectedResults = wrapper.vm.searchResults.results.filter(
-      pub => !queueStore.selectedQueue.includes(pub.doi)
+      (pub) => !queueStore.selectedQueue.includes(pub.doi)
     )
 
     expect(expectedResults).toHaveLength(1)
@@ -151,8 +151,8 @@ describe('SearchModalDialog', () => {
       global: {
         plugins: [pinia],
         stubs: {
-          'ModalDialog': true,
-          'PublicationComponentSearch': true,
+          ModalDialog: true,
+          PublicationComponentSearch: true,
           'v-text-field': true,
           'v-btn': true,
           'v-card-actions': true,
@@ -164,8 +164,8 @@ describe('SearchModalDialog', () => {
     })
 
     // Set up initial state
-    interfaceStore.searchQuery = 'test query'
-    interfaceStore.isSearchModalDialogShown = true
+    modalStore.searchQuery = 'test query'
+    modalStore.isSearchModalDialogShown = true
     wrapper.vm.isLoading = true
     wrapper.vm.searchResults = { results: [{ doi: 'test' }], type: 'search' }
 
@@ -182,8 +182,8 @@ describe('SearchModalDialog', () => {
       global: {
         plugins: [pinia],
         stubs: {
-          'ModalDialog': true,
-          'PublicationComponentSearch': true,
+          ModalDialog: true,
+          PublicationComponentSearch: true,
           'v-text-field': true,
           'v-btn': true,
           'v-card-actions': true,
@@ -208,8 +208,8 @@ describe('SearchModalDialog', () => {
       global: {
         plugins: [pinia],
         stubs: {
-          'ModalDialog': true,
-          'PublicationComponentSearch': true,
+          ModalDialog: true,
+          PublicationComponentSearch: true,
           'v-text-field': true,
           'v-btn': true,
           'v-card-actions': true,
@@ -228,9 +228,9 @@ describe('SearchModalDialog', () => {
 
     // Mock cancelSearch to verify it's called
     const cancelSearchSpy = vi.spyOn(wrapper.vm, 'cancelSearch')
-    
+
     // Start a new search while previous is loading - with different query
-    interfaceStore.searchQuery = 'new search query'
+    modalStore.searchQuery = 'new search query'
     await wrapper.vm.search()
 
     // Should have called cancelSearch for previous search
@@ -242,8 +242,8 @@ describe('SearchModalDialog', () => {
       global: {
         plugins: [pinia],
         stubs: {
-          'ModalDialog': true,
-          'PublicationComponentSearch': true,
+          ModalDialog: true,
+          PublicationComponentSearch: true,
           'v-text-field': true,
           'v-btn': true,
           'v-card-actions': true,
@@ -260,12 +260,12 @@ describe('SearchModalDialog', () => {
 
     // Mock cancelSearch to verify it's called
     const cancelSearchSpy = vi.spyOn(wrapper.vm, 'cancelSearch')
-    
+
     // Simulate user typing in search field by changing the query and triggering watcher manually
-    interfaceStore.searchQuery = 'new typing'
-    
+    modalStore.searchQuery = 'new typing'
+
     // Simulate the watcher being triggered (since Vue watchers don't always trigger in tests)
-    await wrapper.vm.$options.watch['interfaceStore.searchQuery'].handler.call(wrapper.vm)
+    await wrapper.vm.$options.watch['modalStore.searchQuery'].handler.call(wrapper.vm)
 
     // Should cancel the ongoing search
     expect(cancelSearchSpy).toHaveBeenCalled()
@@ -276,8 +276,8 @@ describe('SearchModalDialog', () => {
       global: {
         plugins: [pinia],
         stubs: {
-          'ModalDialog': true,
-          'PublicationComponentSearch': true,
+          ModalDialog: true,
+          PublicationComponentSearch: true,
           'v-text-field': true,
           'v-btn': true,
           'v-card-actions': true,
@@ -290,12 +290,12 @@ describe('SearchModalDialog', () => {
 
     // Set up initial search state
     wrapper.vm.lastSearchQuery = 'machine learning'
-    interfaceStore.searchQuery = 'machine learning'
+    modalStore.searchQuery = 'machine learning'
     wrapper.vm.searchResults = { results: [{ doi: 'existing' }], type: 'search' }
 
     // Mock the search execution
-    const searchSpy = vi.spyOn(wrapper.vm, 'search').mockImplementation(() => {})
-    
+    vi.spyOn(wrapper.vm, 'search').mockImplementation(() => {})
+
     // Try to search with same query
     await wrapper.vm.search()
 
@@ -305,14 +305,14 @@ describe('SearchModalDialog', () => {
 
   it('should not cancel ongoing search when clicking search with same query', async () => {
     // Set interfaceStore query before mounting to avoid triggering watchers
-    interfaceStore.searchQuery = 'machine learning'
-    
+    modalStore.searchQuery = 'machine learning'
+
     const wrapper = mount(SearchModalDialog, {
       global: {
         plugins: [pinia],
         stubs: {
-          'ModalDialog': true,
-          'PublicationComponentSearch': true,
+          ModalDialog: true,
+          PublicationComponentSearch: true,
           'v-text-field': true,
           'v-btn': true,
           'v-card-actions': true,
@@ -328,10 +328,10 @@ describe('SearchModalDialog', () => {
     wrapper.vm.isLoading = true
     wrapper.vm.searchResults = { results: [{ doi: 'loading' }], type: 'search' }
     const originalLoading = wrapper.vm.isLoading
-    
+
     // Mock cancelSearch to verify it's NOT called within search() method
     const cancelSearchSpy = vi.spyOn(wrapper.vm, 'cancelSearch')
-    
+
     // Click search with same query - should return early without calling cancelSearch
     await wrapper.vm.search()
 
@@ -345,8 +345,8 @@ describe('SearchModalDialog', () => {
       global: {
         plugins: [pinia],
         stubs: {
-          'ModalDialog': true,
-          'PublicationComponentSearch': true,
+          ModalDialog: true,
+          PublicationComponentSearch: true,
           'v-text-field': true,
           'v-btn': true,
           'v-card-actions': true,
@@ -358,7 +358,7 @@ describe('SearchModalDialog', () => {
     })
 
     // Set up search state
-    interfaceStore.searchQuery = 'test query'
+    modalStore.searchQuery = 'test query'
     wrapper.vm.isLoading = true
     wrapper.vm.searchResults = { results: [{ doi: 'loading' }], type: 'search' }
 
@@ -366,9 +366,9 @@ describe('SearchModalDialog', () => {
     wrapper.vm.cancelSearch()
 
     // Simulate late-arriving search results (like from PublicationSearch.execute())
-    wrapper.vm.searchResults = { 
-      results: [{ doi: '10.1234/late-result', title: 'Late Result', wasFetched: true }], 
-      type: 'search' 
+    wrapper.vm.searchResults = {
+      results: [{ doi: '10.1234/late-result', title: 'Late Result', wasFetched: true }],
+      type: 'search'
     }
 
     // Results should not be displayed since search was cancelled

@@ -1,7 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
-import SessionMenuComponent from '@/components/SessionMenuComponent.vue'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
 import { createMockSessionStore, createMockInterfaceStore } from '../../helpers/testUtils.js'
+
+import SessionMenuComponent from '@/components/SessionMenuComponent.vue'
+
 
 // Simplified mock stores using testUtils
 const mockSessionStore = createMockSessionStore({
@@ -64,13 +67,13 @@ describe('SessionMenuComponent', () => {
             `,
             emits: ['click:outside']
           },
-          'v-btn': { 
+          'v-btn': {
             template: '<button class="v-btn" @click="$emit(\'click\')"><slot /></button>',
             emits: ['click']
           },
           'v-icon': { template: '<i class="v-icon"><slot /></i>' },
           'v-list': { template: '<div class="v-list"><slot /></div>' },
-          'v-list-item': { 
+          'v-list-item': {
             template: '<div class="v-list-item" @click="$emit(\'click\')"><slot /></div>',
             emits: ['click']
           },
@@ -114,10 +117,12 @@ describe('SessionMenuComponent', () => {
     expect(wrapper.find('[data-testid="menu"]').exists()).toBe(true)
   })
 
-  it('should not render menu when session is empty', () => {
+  it('should always render menu component (visibility controlled by parent)', () => {
+    // Note: SessionMenuComponent no longer handles isEmpty internally.
+    // Visibility is now controlled by parent container (HeaderPanel) via v-if="!isEmpty"
     mockAppState.isEmpty = true
     wrapper = createWrapper()
-    expect(wrapper.find('[data-testid="menu"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="menu"]').exists()).toBe(true)
   })
 
   it('should display session name in text field', () => {
@@ -129,20 +134,20 @@ describe('SessionMenuComponent', () => {
   it('should call setSessionName when text field loses focus', async () => {
     wrapper = createWrapper()
     const textField = wrapper.find('[data-testid="session-name-input"]')
-    
+
     await textField.setValue('New Session Name')
     await textField.trigger('blur')
-    
+
     expect(mockSessionStore.setSessionName).toHaveBeenCalledWith('New Session Name')
   })
 
   it('should call setSessionName when Enter is pressed', async () => {
     wrapper = createWrapper()
     const textField = wrapper.find('[data-testid="session-name-input"]')
-    
+
     await textField.setValue('New Session Name')
     await textField.trigger('keyup.enter')
-    
+
     expect(mockSessionStore.setSessionName).toHaveBeenCalledWith('New Session Name')
   })
 
@@ -150,17 +155,17 @@ describe('SessionMenuComponent', () => {
     it('should clear session name when clear button is clicked', async () => {
       mockSessionStore.sessionName = 'My Project'
       wrapper = createWrapper()
-      
+
       const clearButton = wrapper.find('[data-testid="clear-button"]')
       await clearButton.trigger('click')
-      
+
       expect(mockSessionStore.setSessionName).toHaveBeenCalledWith('')
     })
 
     it('should show clear button when session name has value', () => {
       mockSessionStore.sessionName = 'My Project'
       wrapper = createWrapper()
-      
+
       const clearButton = wrapper.find('[data-testid="clear-button"]')
       expect(clearButton.exists()).toBe(true)
     })
@@ -168,7 +173,7 @@ describe('SessionMenuComponent', () => {
     it('should hide clear button when session name is empty', () => {
       mockSessionStore.sessionName = ''
       wrapper = createWrapper()
-      
+
       const clearButton = wrapper.find('[data-testid="clear-button"]')
       expect(clearButton.exists()).toBe(false)
     })
@@ -176,17 +181,17 @@ describe('SessionMenuComponent', () => {
 
   describe('Menu closing behavior', () => {
     it('should NOT close menu when clicking in session name text field', async () => {
-      // This test documents the expected behavior: 
+      // This test documents the expected behavior:
       // clicking in the text field should not cause the menu to close
       wrapper = createWrapper()
-      
+
       // The current implementation will have click events bubble up from the text field div
       // which will close the menu. We need to add @click.stop to prevent this.
-      
+
       // For now, we'll test that the text field container has proper event handling
       const textFieldDiv = wrapper.find('div.px-4.py-4')
       expect(textFieldDiv.exists()).toBe(true)
-      
+
       // This test documents that we expect the div to handle clicks without closing menu
       // The implementation fix is to add @click.stop to this div
       expect(textFieldDiv.exists()).toBe(true) // Verify the div exists with proper structure
@@ -194,22 +199,24 @@ describe('SessionMenuComponent', () => {
 
     it('should close menu when clicking on export JSON option', async () => {
       wrapper = createWrapper()
-      
+
       // Find export session item by looking for the click handler that calls exportSession
       const exportItems = wrapper.findAll('.v-list-item')
       let exportJsonItem = null
-      
+
       // Look for the item that calls exportSession when clicked
       for (const item of exportItems) {
-        const clickHandler = item.attributes('onclick') || item.element.onclick
-        if (item.attributes('title')?.includes('Export') && !item.attributes('title')?.includes('BibTeX')) {
+        if (
+          item.attributes('title')?.includes('Export') &&
+          !item.attributes('title')?.includes('BibTeX')
+        ) {
           exportJsonItem = item
           break
         }
       }
-      
+
       expect(exportJsonItem).toBeTruthy()
-      
+
       // Click on export item should trigger the export function
       await exportJsonItem.trigger('click')
       expect(mockSessionStore.exportSession).toHaveBeenCalled()
@@ -218,18 +225,21 @@ describe('SessionMenuComponent', () => {
     it('should close menu when clicking on export BibTeX option', async () => {
       wrapper = createWrapper()
       const exportItems = wrapper.findAll('.v-list-item')
-      
+
       // Find the export BibTeX item by looking for BibTeX in title
       let exportBibtexItem = null
       for (const item of exportItems) {
-        if (item.attributes('title')?.includes('BibTeX') && item.attributes('title')?.includes('Export')) {
+        if (
+          item.attributes('title')?.includes('BibTeX') &&
+          item.attributes('title')?.includes('Export')
+        ) {
           exportBibtexItem = item
           break
         }
       }
-      
+
       expect(exportBibtexItem).toBeTruthy()
-      
+
       // Click on export item should trigger the export function
       await exportBibtexItem.trigger('click')
       expect(mockSessionStore.exportAllBibtex).toHaveBeenCalled()
@@ -238,19 +248,18 @@ describe('SessionMenuComponent', () => {
     it('should close menu when clicking on clear session option', async () => {
       wrapper = createWrapper()
       const exportItems = wrapper.findAll('.v-list-item')
-      
+
       // Find the clear session item
       let clearSessionItem = null
       for (const item of exportItems) {
-        if (item.text().includes('Clear session') || 
-            item.attributes('title') === 'Clear session') {
+        if (item.text().includes('Clear session') || item.attributes('title') === 'Clear session') {
           clearSessionItem = item
           break
         }
       }
-      
+
       expect(clearSessionItem).toBeTruthy()
-      
+
       // Click on clear session item should trigger the clear function
       await clearSessionItem.trigger('click')
       expect(mockAppState.clearSession).toHaveBeenCalled()
@@ -301,18 +310,26 @@ describe('SessionMenuComponent', () => {
     it('should show import session menu item', () => {
       wrapper = createWrapper()
       // Look for import item by title containing "Import" and "session"
-      const importItem = wrapper.findAll('.v-list-item').find(item => 
-        item.attributes('title')?.includes('Import') && item.attributes('title')?.includes('session')
-      )
+      const importItem = wrapper
+        .findAll('.v-list-item')
+        .find(
+          (item) =>
+            item.attributes('title')?.includes('Import') &&
+            item.attributes('title')?.includes('session')
+        )
       expect(importItem).toBeTruthy()
     })
 
     it('should call importSessionWithConfirmation from useAppState when import menu item is clicked', async () => {
       wrapper = createWrapper()
-      const importItem = wrapper.findAll('.v-list-item').find(item => 
-        item.attributes('title')?.includes('Import') && item.attributes('title')?.includes('session')
-      )
-      
+      const importItem = wrapper
+        .findAll('.v-list-item')
+        .find(
+          (item) =>
+            item.attributes('title')?.includes('Import') &&
+            item.attributes('title')?.includes('session')
+        )
+
       expect(importItem).toBeTruthy()
       await importItem.trigger('click')
       expect(mockAppState.importSessionWithConfirmation).toHaveBeenCalled()
@@ -320,11 +337,15 @@ describe('SessionMenuComponent', () => {
 
     it('should have import icon for import session menu item', () => {
       wrapper = createWrapper()
-      const importItem = wrapper.findAll('.v-list-item').find(item => 
-        item.attributes('title')?.includes('Import') && item.attributes('title')?.includes('session')
-      )
+      const importItem = wrapper
+        .findAll('.v-list-item')
+        .find(
+          (item) =>
+            item.attributes('title')?.includes('Import') &&
+            item.attributes('title')?.includes('session')
+        )
       expect(importItem).toBeTruthy()
-      
+
       // Verify the component has the import item (the exact icon rendering is handled by Vuetify)
       // In the real component, prepend-icon="mdi-import" will render the correct icon
       expect(importItem).toBeTruthy()

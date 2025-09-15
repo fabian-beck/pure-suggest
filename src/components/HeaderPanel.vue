@@ -1,17 +1,35 @@
+<script setup>
+import { inject, ref } from 'vue'
+
+import FilterMenuComponent from '@/components/FilterMenuComponent.vue'
+import KeywordMenuComponent from '@/components/KeywordMenuComponent.vue'
+import SessionMenuComponent from '@/components/SessionMenuComponent.vue'
+import { useAppState } from '@/composables/useAppState.js'
+import { useModalManager } from '@/composables/useModalManager.js'
+import { useInterfaceStore } from '@/stores/interface.js'
+
+const appMeta = inject('appMeta')
+const interfaceStore = useInterfaceStore()
+const { openKeyboardControlsModal, openAboutModal } = useModalManager()
+const { isEmpty, clearCache } = useAppState()
+
+const filterMenuComponent = ref(null)
+</script>
+
 <template>
   <div>
     <v-app-bar color="white" density="compact">
       <v-icon class="mr-1" :size="interfaceStore.isMobile ? 24 : 32">mdi-water-plus-outline</v-icon>
       <v-app-bar-title>
         <div class="app-name" v-html="appMeta.nameHtml"></div>
-        <div class="session-state">
+        <div class="session-state" v-if="!isEmpty">
           <SessionMenuComponent />
-          <BoostKeywordsComponent />
+          <KeywordMenuComponent />
           <FilterMenuComponent ref="filterMenuComponent" />
         </div>
       </v-app-bar-title>
       <v-menu bottom left offset-y transition="slide-y-transition">
-        <template v-slot:activator="{ props }">
+        <template #activator="{ props }">
           <v-btn icon v-bind="props" class="mr-1" density="compact">
             <v-icon>mdi-dots-vertical</v-icon>
           </v-btn>
@@ -20,13 +38,23 @@
           <v-list-item>
             <HeaderExternalLinks />
           </v-list-item>
-          <v-list-item prepend-icon="mdi-keyboard-outline"
-            @click="interfaceStore.isKeyboardControlsModalDialogShown = true" class="is-hidden-touch"
-            title="Keyboard controls" />
-          <v-list-item prepend-icon="mdi-information-outline" @click="interfaceStore.isAboutModalDialogShown = true"
-            title="About" />
-          <v-list-item prepend-icon="mdi-cached" @click="clearCache" class="has-text-danger"
-            title="Clear cache (and session)" />
+          <v-list-item
+            prepend-icon="mdi-keyboard-outline"
+            @click="openKeyboardControlsModal()"
+            class="is-hidden-touch"
+            title="Keyboard controls"
+          />
+          <v-list-item
+            prepend-icon="mdi-information-outline"
+            @click="openAboutModal()"
+            title="About"
+          />
+          <v-list-item
+            prepend-icon="mdi-cached"
+            @click="clearCache"
+            class="has-text-danger"
+            title="Clear cache (and session)"
+          />
         </v-list>
       </v-menu>
     </v-app-bar>
@@ -51,20 +79,6 @@
   </div>
 </template>
 
-<script setup>
-import { inject, ref } from 'vue'
-import { useInterfaceStore } from "@/stores/interface.js"
-import FilterMenuComponent from "@/components/FilterMenuComponent.vue"
-import SessionMenuComponent from "@/components/SessionMenuComponent.vue"
-import { useAppState } from "@/composables/useAppState.js"
-
-const appMeta = inject("appMeta")
-const interfaceStore = useInterfaceStore()
-const { isEmpty, clearCache } = useAppState()
-
-const filterMenuComponent = ref(null)
-</script>
-
 <style lang="scss" scoped>
 .v-toolbar {
   position: relative !important;
@@ -79,7 +93,7 @@ const filterMenuComponent = ref(null)
     & .v-app-bar-title {
       margin-left: 0;
 
-      &>div {
+      & > div {
         height: 48px;
         display: flex;
 
@@ -102,7 +116,7 @@ const filterMenuComponent = ref(null)
           /* Session state button - never shrink, always readable */
           & .session-state-button {
             flex: 0 0 auto; /* Fixed size, never shrink */
-            
+
             /* Reduce excess padding on desktop */
             &:not(.v-btn--icon) {
               padding-left: 8px !important;
@@ -110,19 +124,19 @@ const filterMenuComponent = ref(null)
               min-width: auto !important;
             }
           }
-          
+
           /* Boost keywords - can shrink when needed on desktop, fixed on mobile */
           & .boost-button {
             flex: 0 1 auto; /* Natural size but can shrink under pressure */
-            
+
             /* Mobile: completely remove from flex layout to maintain circle */
             &.v-btn--icon {
               flex: none !important; /* Not part of flex layout on mobile */
             }
           }
-          
+
           /* Filter button - fixed size */
-          &>button:last-child {
+          & > button:last-child {
             flex: 0 0 auto; /* Fixed size, never shrink */
           }
         }

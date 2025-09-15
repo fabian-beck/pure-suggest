@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
 import HeaderPanel from '@/components/HeaderPanel.vue'
 
 // Mock stores
@@ -56,19 +57,20 @@ describe('HeaderPanel', () => {
     'v-menu': { template: '<div class="v-menu"><slot></slot></div>' },
     'v-list': { template: '<div class="v-list"><slot></slot></div>' },
     'v-list-item': { template: '<div class="v-list-item"><slot></slot></div>' },
-    'BoostKeywordsComponent': { template: '<div class="boost-keywords">Boost Keywords</div>' },
-    'FilterMenuComponent': { template: '<div class="filter-menu">Filter Menu</div>' },
-    'SessionMenuComponent': { template: '<div class="session-menu">Session Menu</div>' },
-    'HeaderExternalLinks': { template: '<div class="header-external-links">External Links</div>' }
+    KeywordMenuComponent: { template: '<div class="boost-keywords">Boost Keywords</div>' },
+    FilterMenuComponent: { template: '<div class="filter-menu">Filter Menu</div>' },
+    SessionMenuComponent: { template: '<div class="session-menu">Session Menu</div>' },
+    HeaderExternalLinks: { template: '<div class="header-external-links">External Links</div>' }
   }
 
-  const createWrapper = (props = {}) => mount(HeaderPanel, {
-    global: {
-      provide: { appMeta: mockAppMeta },
-      stubs: defaultStubs
-    },
-    ...props
-  })
+  const createWrapper = (props = {}) =>
+    mount(HeaderPanel, {
+      global: {
+        provide: { appMeta: mockAppMeta },
+        stubs: defaultStubs
+      },
+      ...props
+    })
 
   beforeEach(() => {
     vi.clearAllMocks()

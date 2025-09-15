@@ -1,33 +1,19 @@
-import { createApp } from 'vue';
-import App from './App.vue'
-
-const app = createApp(App)
-
-// App meta data
-import packageInfo from './../package.json';
-const appMeta = {
-  name: "PUREsuggest",
-  nameHtml: '<span class="has-text-primary">PURE&ThinSpace;</span><span class="has-text-info">suggest</span>',
-  subtitle: "Citation-based literature search",
-  version: packageInfo.version,
-};
-app.provide('appMeta', appMeta);
-
-// Pinia
 import { createPinia } from 'pinia'
-const pinia = createPinia()
-app.use(pinia);
-
-// Vuetify
+import { createApp } from 'vue'
+import VueTippy from 'vue-tippy'
 import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
-const vuetify = createVuetify({
-  components,
-  directives,
-});
-app.use(vuetify)
+
+import App from './App.vue'
+import packageInfo from './../package.json'
+
+// App meta data
+
+// Pinia
+
+// Vuetify
 
 // Icons
 import '@mdi/font/css/materialdesignicons.css'
@@ -39,15 +25,31 @@ import 'bulma/css/bulma.css'
 import './assets/bulma-color-overrides.css'
 
 // VueTippy
-import VueTippy from 'vue-tippy';
 import 'tippy.js/dist/tippy.css'
+
+const app = createApp(App)
+const appMeta = {
+  name: 'PUREsuggest',
+  nameHtml:
+    '<span class="has-text-primary">PURE&ThinSpace;</span><span class="has-text-info">suggest</span>',
+  subtitle: 'Citation-based literature search',
+  version: packageInfo.version
+}
+app.provide('appMeta', appMeta)
+const pinia = createPinia()
+app.use(pinia)
+const vuetify = createVuetify({
+  components,
+  directives
+})
+app.use(vuetify)
 app.use(VueTippy, {
   maxWidth: 'min(400px,70vw)',
   directive: 'tippy', // => v-tippy
   component: 'tippy', // => <tippy/>
   defaultProps: {
-    allowHTML: true,
-  },
-});
+    allowHTML: true
+  }
+})
 
-app.mount('#app');
+app.mount('#app')

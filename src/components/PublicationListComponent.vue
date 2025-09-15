@@ -1,29 +1,17 @@
-<template>
-  <ul class="publication-list has-background-white" :class="{ 'empty-list': publications.length === 0 }"
-    @click="handleDelegatedClick" @mouseenter="handleDelegatedMouseEnter" @mouseleave="handleDelegatedMouseLeave">
-    <template v-for="item in publicationsWithHeaders" :key="item.key">
-      <li v-if="item.type === 'header'" class="section-header">
-        <h3 class="section-header-text" :class="{ 'info-theme': publicationType === 'suggested' }" v-html="item.text">
-        </h3>
-      </li>
-      <LazyPublicationComponent v-else :publication="item.publication" :publicationType="publicationType"
-        :isMobile="interfaceStore.isMobile" v-on:activate="activatePublication" />
-    </template>
-  </ul>
-</template>
-
 <script setup>
 import { computed, nextTick, watch, ref, onMounted, onBeforeUnmount } from 'vue'
-import { scrollToTargetAdjusted } from "@/lib/Util.js"
-import { useSessionStore } from "@/stores/session.js"
-import { useInterfaceStore } from "@/stores/interface.js"
+
 import LazyPublicationComponent from './LazyPublicationComponent.vue'
 
-const sessionStore = useSessionStore()
-const interfaceStore = useInterfaceStore()
+import { scrollToTargetAdjusted } from '@/lib/Util.js'
+import { useInterfaceStore } from '@/stores/interface.js'
+import { useSessionStore } from '@/stores/session.js'
 
 const props = defineProps({
-  publications: Array,
+  publications: {
+    type: Array,
+    default: () => []
+  },
   showSectionHeaders: {
     type: Boolean,
     default: false
@@ -34,66 +22,71 @@ const props = defineProps({
     validator: (value) => ['selected', 'suggested', 'general'].includes(value)
   }
 })
+const emit = defineEmits(['activate'])
+const sessionStore = useSessionStore()
+const interfaceStore = useInterfaceStore()
 
 const publicationsWithHeaders = computed(() => {
   // Don't show headers if filtering is not active for this publication type
-  const isFilteringApplied = sessionStore.filter.hasActiveFilters() &&
+  const isFilteringApplied =
+    sessionStore.filter.hasActiveFilters() &&
     ((props.publicationType === 'selected' && sessionStore.filter.applyToSelected) ||
       (props.publicationType === 'suggested' && sessionStore.filter.applyToSuggested))
 
   if (!props.showSectionHeaders || !isFilteringApplied) {
-    return props.publications.map(publication => ({
+    return props.publications.map((publication) => ({
       type: 'publication',
       publication,
       key: publication.doi
     }))
   }
 
-  // Use composable for complex header logic
+  // Optimized: single pass through publications, evaluate filter once per publication
   const result = []
-  const filteredCount = props.publicationType === 'selected'
-    ? sessionStore.selectedPublicationsFilteredCount
-    : sessionStore.suggestedPublicationsFilteredCount
-  const nonFilteredCount = props.publicationType === 'selected'
-    ? sessionStore.selectedPublicationsNonFilteredCount
-    : sessionStore.suggestedPublicationsNonFilteredCount
+  const filteredPublications = []
+  const nonFilteredPublications = []
+
+  // Single iteration with filter evaluation cached
+  for (const publication of props.publications) {
+    if (sessionStore.filter.matches(publication)) {
+      filteredPublications.push(publication)
+    } else {
+      nonFilteredPublications.push(publication)
+    }
+  }
 
   // Add filtered publications with header
-  if (filteredCount > 0) {
+  if (filteredPublications.length > 0) {
     result.push({
       type: 'header',
-      text: `<i class="mdi mdi-filter"></i> Filtered (${filteredCount})`,
+      text: `<i class="mdi mdi-filter"></i> Filtered (${filteredPublications.length})`,
       key: 'filtered-header'
     })
 
-    props.publications
-      .filter(pub => sessionStore.filter.matches(pub))
-      .forEach(publication => {
-        result.push({
-          type: 'publication',
-          publication,
-          key: publication.doi
-        })
+    for (const publication of filteredPublications) {
+      result.push({
+        type: 'publication',
+        publication,
+        key: publication.doi
       })
+    }
   }
 
   // Add non-filtered publications with header
-  if (nonFilteredCount > 0) {
+  if (nonFilteredPublications.length > 0) {
     result.push({
       type: 'header',
-      text: `Other publications (${nonFilteredCount})`,
+      text: `Other publications (${nonFilteredPublications.length})`,
       key: 'non-filtered-header'
     })
 
-    props.publications
-      .filter(pub => !sessionStore.filter.matches(pub))
-      .forEach(publication => {
-        result.push({
-          type: 'publication',
-          publication,
-          key: publication.doi
-        })
+    for (const publication of nonFilteredPublications) {
+      result.push({
+        type: 'publication',
+        publication,
+        key: publication.doi
       })
+    }
   }
 
   return result
@@ -104,8 +97,6 @@ const onNextActivatedScroll = ref(true)
 const lastScrollTime = ref(0)
 const userIsScrolling = ref(false)
 
-const emit = defineEmits(['activate'])
-
 // Watch for publications changes
 watch(
   () => props.publications,
@@ -114,44 +105,45 @@ watch(
       nextTick(scrollToActivated)
     }
   },
-  { deep: true }
+  { deep: false }
 )
-// Lifecycle with cleanup
-let scrollTimeout
-let scrollHandler
 
+// Detect user scroll
+function onUserScroll() {
+  lastScrollTime.value = Date.now()
+  userIsScrolling.value = true
+  setTimeout(() => {
+    userIsScrolling.value = false
+  }, 1000)
+}
+
+// Watch for scroll events to detect user scrolling
 onMounted(() => {
-  scrollHandler = () => {
-    userIsScrolling.value = true
-    lastScrollTime.value = Date.now()
-
-    clearTimeout(scrollTimeout)
-    scrollTimeout = setTimeout(() => {
-      userIsScrolling.value = false
-    }, 150)
-  }
-
-  window.addEventListener('scroll', scrollHandler)
+  window.addEventListener('scroll', onUserScroll, { passive: true })
 })
 
 onBeforeUnmount(() => {
-  if (scrollHandler) {
-    window.removeEventListener('scroll', scrollHandler)
-  }
-  if (scrollTimeout) {
-    clearTimeout(scrollTimeout)
-  }
+  window.removeEventListener('scroll', onUserScroll)
 })
 
-// Methods
-function activatePublication(doi) {
-  onNextActivatedScroll.value = false
-  emit('activate', doi)
+function activatePublication(publication, publicationElement, e) {
+  emit('activate', publication, publicationElement, e)
+  onNextActivatedScroll.value = true
+}
+
+// DOM event handling - find closest publication element
+function findPublicationElement(target) {
+  let element = target
+  while (element && !element.classList.contains('publication-component')) {
+    element = element.parentElement
+  }
+  return element
 }
 
 function handleDelegatedClick(event) {
-  const publicationComponent = findPublicationElement(event.target)
-  if (publicationComponent) {
+  const publicationElement = findPublicationElement(event.target)
+  if (publicationElement) {
+    const publicationComponent = publicationElement
     publicationComponent.click()
   }
 }
@@ -160,7 +152,7 @@ function handleDelegatedMouseEnter(event) {
   const publicationElement = findPublicationElement(event.target)
   if (publicationElement) {
     const doi = publicationElement.id
-    const publication = props.publications.find(p => p.doi === doi)
+    const publication = props.publications.find((p) => p.doi === doi)
     if (publication) {
       sessionStore.hoverPublication(publication, true)
     }
@@ -171,22 +163,11 @@ function handleDelegatedMouseLeave(event) {
   const publicationElement = findPublicationElement(event.target)
   if (publicationElement) {
     const doi = publicationElement.id
-    const publication = props.publications.find(p => p.doi === doi)
+    const publication = props.publications.find((p) => p.doi === doi)
     if (publication) {
       sessionStore.hoverPublication(publication, false)
     }
   }
-}
-
-function findPublicationElement(target) {
-  let element = target
-  while (element) {
-    if (element.classList?.contains('publication-component')) {
-      return element
-    }
-    element = element.parentElement
-  }
-  return null
 }
 
 function scrollToActivated() {
@@ -198,24 +179,51 @@ function scrollToActivated() {
 
   if (onNextActivatedScroll.value) {
     setTimeout(() => {
-      const publicationComponent = document.getElementsByClassName("is-active")[0]
+      const publicationComponent = document.getElementsByClassName('is-active')[0]
       if (publicationComponent) {
         if (window.innerWidth <= 1023) {
           scrollToTargetAdjusted(publicationComponent, 65)
         } else {
           publicationComponent.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-            inline: "nearest",
+            behavior: 'smooth',
+            block: 'start',
+            inline: 'nearest'
           })
         }
       }
-    }, 100)
+    }, 150) // Increased delay to account for expansion
   } else {
     onNextActivatedScroll.value = true
   }
 }
 </script>
+
+<template>
+  <ul
+    class="publication-list has-background-white"
+    :class="{ 'empty-list': publications.length === 0 }"
+    @click="handleDelegatedClick"
+    @mouseenter="handleDelegatedMouseEnter"
+    @mouseleave="handleDelegatedMouseLeave"
+  >
+    <template v-for="item in publicationsWithHeaders" :key="item.key">
+      <li v-if="item.type === 'header'" class="section-header">
+        <h3
+          class="section-header-text"
+          :class="{ 'info-theme': publicationType === 'suggested' }"
+          v-html="item.text"
+        ></h3>
+      </li>
+      <LazyPublicationComponent
+        v-else
+        :publication="item.publication"
+        :publication-type="publicationType"
+        :is-mobile="interfaceStore.isMobile"
+        @activate="activatePublication"
+      />
+    </template>
+  </ul>
+</template>
 
 <style lang="scss" scoped>
 .section-header {
@@ -226,23 +234,23 @@ function scrollToActivated() {
   padding: 0;
 
   .section-header-text {
+    background: lighten(#363636, 10%);
+    color: white;
+    padding: 0.8rem 1rem;
     margin: 0;
-    padding: 0.5rem 0.75rem;
-    font-size: 0.75rem;
+    font-size: 1rem;
     font-weight: 600;
-    color: var(--bulma-primary-dark);
-    background: linear-gradient(135deg, var(--bulma-primary-95) 0%, var(--bulma-primary-90) 100%);
-    border-left: 3px solid var(--bulma-primary);
-    border-bottom: 1px solid var(--bulma-primary-85);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    @include light-shadow;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 
     &.info-theme {
-      color: var(--bulma-info-dark);
-      background: linear-gradient(135deg, var(--bulma-info-95) 0%, var(--bulma-info-90) 100%);
-      border-left-color: var(--bulma-info);
-      border-bottom-color: var(--bulma-info-85);
+      background: #3e8ed0;
+    }
+
+    :deep(.mdi) {
+      font-size: 1.1rem;
     }
   }
 }

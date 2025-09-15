@@ -1,10 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
 import SelectedPublicationsComponent from '@/components/SelectedPublicationsComponent.vue'
-import { useSessionStore } from '@/stores/session.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useQueueStore } from '@/stores/queue.js'
+import { useSessionStore } from '@/stores/session.js'
 
 // Mock useAppState for the functions the component uses
 const mockLoadExample = vi.fn()
@@ -12,7 +13,20 @@ const mockImportSession = vi.fn()
 vi.mock('@/composables/useAppState.js', () => ({
   useAppState: () => ({
     loadExample: mockLoadExample,
-    importSession: mockImportSession
+    importSession: mockImportSession,
+    isEmpty: { value: false }
+  })
+}))
+
+// Mock useModalManager
+const mockShowConfirmDialog = vi.fn()
+const mockOpenSearchModal = vi.fn()
+const mockOpenAuthorModal = vi.fn()
+vi.mock('@/composables/useModalManager.js', () => ({
+  useModalManager: () => ({
+    showConfirmDialog: mockShowConfirmDialog,
+    openSearchModal: mockOpenSearchModal,
+    openAuthorModal: mockOpenAuthorModal
   })
 }))
 
@@ -37,10 +51,9 @@ describe('SelectedPublicationsComponent', () => {
     sessionStore.selectedPublications = []
     sessionStore.excludedPublicationsDois = []
     interfaceStore.isMobile = false
-    interfaceStore.isQueueModalDialogShown = false
-    interfaceStore.openAuthorModalDialog = vi.fn()
-    interfaceStore.openSearchModalDialog = vi.fn()
-    interfaceStore.showConfirmDialog = vi.fn()
+    mockOpenSearchModal.mockClear()
+    mockOpenAuthorModal.mockClear()
+    mockShowConfirmDialog.mockClear()
     queueStore.selectedQueue = []
     queueStore.excludedQueue = []
     queueStore.clear = vi.fn()
@@ -51,10 +64,10 @@ describe('SelectedPublicationsComponent', () => {
       global: {
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
-          'InlineIcon': { template: '<i class="inline-icon"><slot></slot></i>' },
+          CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
+          InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -74,10 +87,10 @@ describe('SelectedPublicationsComponent', () => {
         plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
-          'InlineIcon': { template: '<i class="inline-icon"><slot></slot></i>' },
+          CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
+          InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -98,10 +111,10 @@ describe('SelectedPublicationsComponent', () => {
         plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
-          'InlineIcon': { template: '<i class="inline-icon"><slot></slot></i>' },
+          CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
+          InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -118,14 +131,15 @@ describe('SelectedPublicationsComponent', () => {
         plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'CompactButton': { 
-            template: '<button class="compact-button" @click="$emit(\'click\')" :icon="icon"><slot></slot></button>',
+          CompactButton: {
+            template:
+              '<button class="compact-button" @click="$emit(\'click\')" :icon="icon"><slot></slot></button>',
             emits: ['click'],
             props: ['icon']
           },
-          'InlineIcon': { template: '<i class="inline-icon"><slot></slot></i>' },
+          InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -133,7 +147,7 @@ describe('SelectedPublicationsComponent', () => {
     const compactButtons = wrapper.findAll('.compact-button')
     const authorsButton = compactButtons[0] // First CompactButton is the authors button
     await authorsButton.trigger('click')
-    expect(interfaceStore.openAuthorModalDialog).toHaveBeenCalled()
+    expect(mockOpenAuthorModal).toHaveBeenCalled()
   })
 
   it('calls openSearchModalDialog when search button is clicked', async () => {
@@ -142,14 +156,15 @@ describe('SelectedPublicationsComponent', () => {
         plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'CompactButton': { 
-            template: '<button class="compact-button" @click="$emit(\'click\')" :icon="icon"><slot></slot></button>',
+          CompactButton: {
+            template:
+              '<button class="compact-button" @click="$emit(\'click\')" :icon="icon"><slot></slot></button>',
             emits: ['click'],
             props: ['icon']
           },
-          'InlineIcon': { template: '<i class="inline-icon"><slot></slot></i>' },
+          InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -157,7 +172,7 @@ describe('SelectedPublicationsComponent', () => {
     const compactButtons = wrapper.findAll('.compact-button')
     const searchButton = compactButtons[1] // Second CompactButton is the search button
     await searchButton.trigger('click')
-    expect(interfaceStore.openSearchModalDialog).toHaveBeenCalled()
+    expect(mockOpenSearchModal).toHaveBeenCalled()
   })
 
   it('calls loadExample when load example button is clicked', async () => {
@@ -167,15 +182,15 @@ describe('SelectedPublicationsComponent', () => {
     queueStore.selectedQueue = []
     queueStore.excludedQueue = []
 
-    const wrapper = mount(SelectedPublicationsComponent, {
+    mount(SelectedPublicationsComponent, {
       global: {
         plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
-          'InlineIcon': { template: '<i class="inline-icon"><slot></slot></i>' },
+          CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
+          InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -194,10 +209,10 @@ describe('SelectedPublicationsComponent', () => {
         plugins: [pinia],
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
-          'InlineIcon': { template: '<i class="inline-icon"><slot></slot></i>' },
+          CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
+          InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          'PublicationListComponent': { 
+          PublicationListComponent: {
             template: '<div class="publication-list">Publications</div>',
             props: ['publications', 'showSectionHeaders', 'publicationType']
           }

@@ -1,11 +1,12 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { createVuetify } from 'vuetify'
 import { createPinia, setActivePinia } from 'pinia'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { createVuetify } from 'vuetify'
+
 import AuthorModalDialog from '@/components/modal/AuthorModalDialog.vue'
 import { useAuthorStore } from '@/stores/author.js'
+import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
-import { useInterfaceStore } from '@/stores/interface.js'
 
 const vuetify = createVuetify()
 
@@ -13,16 +14,16 @@ describe('AuthorModalDialog', () => {
   let pinia
   let authorStore
   let sessionStore
-  let interfaceStore
+  let modalStore
 
   beforeEach(() => {
     pinia = createPinia()
     setActivePinia(pinia)
-    
+
     authorStore = useAuthorStore()
     sessionStore = useSessionStore()
-    interfaceStore = useInterfaceStore()
-    
+    modalStore = useModalStore()
+
     // Mock the stores
     vi.spyOn(authorStore, 'computeSelectedPublicationsAuthors').mockReturnValue()
   })
@@ -80,7 +81,7 @@ describe('AuthorModalDialog', () => {
         alternativeNames: ['Jane Smith'],
         keywords: {},
         coauthors: {
-          'author1': 3
+          author1: 3
         },
         orcid: undefined,
         newPublication: false
@@ -88,7 +89,7 @@ describe('AuthorModalDialog', () => {
     ]
 
     authorStore.selectedPublicationsAuthors = authors
-    
+
     // Activate an author to show co-author details
     authorStore.setActiveAuthor('author1')
 
@@ -118,7 +119,7 @@ describe('AuthorModalDialog', () => {
     ]
 
     sessionStore.boostKeywordString = ''
-    interfaceStore.isAuthorModalDialogShown = true
+    modalStore.isAuthorModalDialogShown = true
 
     const wrapper = createWrapper()
     const text = wrapper.text()
@@ -176,7 +177,7 @@ describe('AuthorModalDialog', () => {
     ]
 
     authorStore.selectedPublicationsAuthors = authors
-    
+
     // Activate an author to show co-author details
     authorStore.setActiveAuthor('author-with-coauthors')
 
@@ -242,26 +243,32 @@ describe('AuthorModalDialog', () => {
     authorStore.setActiveAuthor('main-author')
 
     const wrapper = createWrapper()
-    
+
     // Get the coauthor style for both authors
     const highScoreStyle = wrapper.vm.coauthorStyle('high-score-coauthor')
     const lowScoreStyle = wrapper.vm.coauthorStyle('low-score-coauthor')
-    
+
     // Both should have backgroundColor property
     expect(highScoreStyle).toHaveProperty('backgroundColor')
     expect(lowScoreStyle).toHaveProperty('backgroundColor')
-    
+
     // Higher score author should have a darker color (lower lightness percentage)
     // Extract lightness values from hsla colors
-    const highScoreLightness = parseInt(highScoreStyle.backgroundColor.match(/hsla\(0, 0%, (\d+)%/)[1])
-    const lowScoreLightness = parseInt(lowScoreStyle.backgroundColor.match(/hsla\(0, 0%, (\d+)%/)[1])
-    
+    const highScoreLightness = parseInt(
+      highScoreStyle.backgroundColor.match(/hsla\(0, 0%, (\d+)%/)[1],
+      10
+    )
+    const lowScoreLightness = parseInt(
+      lowScoreStyle.backgroundColor.match(/hsla\(0, 0%, (\d+)%/)[1],
+      10
+    )
+
     // Higher score should result in lower lightness (darker color)
     expect(highScoreLightness).toBeLessThan(lowScoreLightness)
   })
 
   it('should always use white text color for co-author chips', () => {
-    // Setup: author with co-authors that have different scores 
+    // Setup: author with co-authors that have different scores
     const authors = [
       {
         id: 'main-author',
@@ -315,15 +322,15 @@ describe('AuthorModalDialog', () => {
     authorStore.setActiveAuthor('main-author')
 
     const wrapper = createWrapper()
-    
+
     // Get the coauthor style for both authors
     const highScoreStyle = wrapper.vm.coauthorStyle('high-score-coauthor')
     const lowScoreStyle = wrapper.vm.coauthorStyle('low-score-coauthor')
-    
+
     // Both should have color property
     expect(highScoreStyle).toHaveProperty('color')
     expect(lowScoreStyle).toHaveProperty('color')
-    
+
     // All co-author chips should always have white text
     expect(highScoreStyle.color).toBe('#ffffff')
     expect(lowScoreStyle.color).toBe('#ffffff')
@@ -353,13 +360,13 @@ describe('AuthorModalDialog', () => {
     authorStore.setActiveAuthor('main-author')
 
     const wrapper = createWrapper()
-    
+
     // Get the coauthor style for nonexistent author (fallback case) - just test the method directly
     const fallbackStyle = wrapper.vm.coauthorStyle('nonexistent-coauthor')
-    
+
     // Should have color property
     expect(fallbackStyle).toHaveProperty('color')
-    
+
     // Fallback gray background should have black text
     expect(fallbackStyle.color).toBe('#000000')
   })
