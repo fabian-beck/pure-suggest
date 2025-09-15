@@ -116,7 +116,8 @@ function handleMouseLeave() {
           queueStore.isQueuingForExcluded(publication.doi),
         'is-hovered': interfaceStore.hoveredPublication === publication.doi,
         'is-keyword-hovered': publication.isKeywordHovered,
-        'is-author-hovered': publication.isAuthorHovered
+        'is-author-hovered': publication.isAuthorHovered,
+        'is-newly-added': publication.isNewlyAdded
       }"
       :id="publication.doi"
       tabindex="0"
@@ -202,6 +203,10 @@ function handleMouseLeave() {
           <div v-if="publication.isActive">
             <br />
             Currently active, with linked publications highlighted.
+          </div>
+          <div v-if="publication.isNewlyAdded">
+            <br />
+            The publication was added to selected in the most recent update.
           </div>
         </template>
       </tippy>
@@ -401,11 +406,33 @@ function handleMouseLeave() {
       }
     }
 
+    &.is-unread.is-hovered {
+      background: hsla(var(--bulma-info-h), var(--bulma-info-s), var(--bulma-info-l), 0.14) !important;
+
+      & .glyph {
+        transform: scale(1.05);
+        animation: glyph-pulse 2s ease-in-out infinite;
+      }
+    }
+
     &.is-selected .glyph {
       border-color: var(--bulma-primary);
 
       & .boost-indicator {
         border-color: var(--bulma-primary);
+      }
+    }
+
+    &.is-newly-added {
+      background: hsla(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l), 0.08) !important;
+    }
+
+    &.is-newly-added.is-hovered {
+      background: hsla(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l), 0.12) !important;
+
+      & .glyph {
+        transform: scale(1.05);
+        animation: glyph-pulse 2s ease-in-out infinite;
       }
     }
 
