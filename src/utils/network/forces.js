@@ -48,6 +48,7 @@ export function getLinkStrength(link, isNetworkClusters) {
 /**
  * Calculate charge (repulsion) strength based on number of selected publications
  */
+// @indirection-reviewed: architectural-consistency - part of get*ForceStrength pattern
 export function getChargeStrength(selectedPublicationsCount) {
   return Math.min(-200, -100 * Math.sqrt(selectedPublicationsCount))
 }
@@ -94,6 +95,7 @@ export function getXForceStrength(node, isNetworkClusters) {
 /**
  * Calculate Y force strength based on network mode
  */
+// @indirection-reviewed: architectural-consistency - part of get*ForceStrength pattern
 export function getYForceStrength(isNetworkClusters) {
   return isNetworkClusters ? 0.1 : 0.25
 }

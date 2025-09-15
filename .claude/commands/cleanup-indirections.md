@@ -105,13 +105,39 @@ Always manually review candidates before cleanup. The goal is **removing unneces
 
 **When in doubt, inline it** - you can always extract it back if needed.
 
+## Marking Reviewed Functions
+
+For functions that you analyze but decide to keep (for architectural consistency, meaningful abstractions, etc.), mark them with a parsable comment to prevent them from appearing in future analysis runs:
+
+```javascript
+/**
+ * Calculate charge strength based on selected publications
+ */
+// @indirection-reviewed: architectural-consistency - part of get*ForceStrength pattern
+export function getChargeStrength(selectedPublicationsCount) {
+  return Math.min(-200, -100 * Math.sqrt(selectedPublicationsCount))
+}
+```
+
+### Standard Review Reasons:
+
+- **`architectural-consistency`** - Part of established patterns (e.g., `get*ForceStrength`, `clear*Highlight`)
+- **`meaningful-abstraction`** - Function name adds significant clarity (e.g., D3 data binding helpers)
+- **`business-logic`** - Contains domain logic that may evolve
+- **`complex-operation`** - Multi-step operations despite being short
+- **`api-consistency`** - Maintains consistent interface across modules
+
+The detector will automatically skip marked functions in future runs and show them in a separate "Previously reviewed" section.
+
 ## Workflow
 
 **Work step by step on one function at a time:**
 
 1. **Select one candidate** from the detection results
 2. **Analyze** if it should be inlined based on the criteria above
-3. **Make the change** (inline the function and update caller)
+3. **Either:**
+   - **Inline the function** and update caller, OR
+   - **Mark as reviewed** with `// @indirection-reviewed: <reason>` comment
 4. **Test immediately**: `npm test` to verify functionality
 5. **Lint immediately**: `npm run lint` to check code quality
 6. **Fix any issues** before moving to the next function

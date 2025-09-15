@@ -140,6 +140,7 @@ export function highlightKeywordPublications(keywordNode, publications) {
 /**
  * Clear keyword highlighting from all publications
  */
+// @indirection-reviewed: architectural-consistency - matches clearAuthorHighlight pattern
 export function clearKeywordHighlight(publications) {
   publications.forEach((publication) => {
     publication.isKeywordHovered = false

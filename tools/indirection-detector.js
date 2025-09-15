@@ -96,12 +96,14 @@ class IndirectionDetector {
 
         if (name && !this.isConstructorOrSpecial(name) && this.isTopLevelFunction(match.index, content)) {
           const lineCount = this.countSignificantLines(body);
+          const reviewComment = this.extractReviewComment(match.index, content);
           functions.push({
             name,
             body: body.trim(),
             lineCount,
             filePath,
-            fullMatch: match[0]
+            fullMatch: match[0],
+            reviewComment
           });
 
         }
@@ -148,6 +150,23 @@ class IndirectionDetector {
     return lines.length;
   }
 
+  extractReviewComment(functionStartIndex, content) {
+    // Look for @indirection-reviewed comment in the lines before the function
+    const beforeFunction = content.substring(0, functionStartIndex);
+    const lines = beforeFunction.split('\n');
+
+    // Check the last few lines before the function for the review comment
+    for (let i = lines.length - 1; i >= Math.max(0, lines.length - 10); i--) {
+      const line = lines[i].trim();
+      const match = line.match(/\/\/\s*@indirection-reviewed:\s*(.+)/);
+      if (match) {
+        return match[1].trim();
+      }
+    }
+
+    return null;
+  }
+
   detectCandidates() {
     // Collect all short functions for analysis
     this.allShortFunctions = [];
@@ -167,7 +186,9 @@ class IndirectionDetector {
 
         // Categorize functions based on usage patterns
         let category = null;
-        if (usageInfo.totalCount === 0) {
+        if (func.reviewComment) {
+          category = 'reviewed'; // Already reviewed, skip
+        } else if (usageInfo.totalCount === 0) {
           category = 'unused';
         } else if (usageInfo.hasTemplateUsage) {
           category = 'template-bound'; // Not an indirection candidate
@@ -297,11 +318,13 @@ class IndirectionDetector {
     const unusedCandidates = this.candidates.filter(c => c.category === 'unused');
     const indirectionCandidates = this.candidates.filter(c => c.category === 'indirection');
     const templateBoundFunctions = this.allShortFunctions.filter(f => f.hasTemplateUsage);
+    const reviewedFunctions = this.allShortFunctions.filter(f => f.reviewComment);
 
     console.log(`📊 Analysis Results:`);
     console.log(`Total functions analyzed: ${this.functionMap.size}`);
     console.log(`Short functions (≤4 lines): ${this.allShortFunctions.length}`);
     console.log(`Template-bound functions: ${templateBoundFunctions.length}`);
+    console.log(`Previously reviewed functions: ${reviewedFunctions.length}`);
     console.log(`Unused functions found: ${unusedCandidates.length}`);
     console.log(`Indirection candidates found: ${indirectionCandidates.length}\n`);
 
@@ -313,6 +336,18 @@ class IndirectionDetector {
         console.log(`📁 ${path.relative(process.cwd(), func.filePath)}`);
         console.log(`   Function: ${func.name} | Lines: ${func.lineCount} | Template: ${func.templateUsages}, Code: ${func.codeUsages}`);
         console.log(`   Body: ${func.body.substring(0, 80)}${func.body.length > 80 ? '...' : ''}`);
+        console.log('');
+      }
+    }
+
+    // Show previously reviewed functions
+    if (reviewedFunctions.length > 0) {
+      console.log('✅ Previously reviewed functions (skipped):\n');
+      for (const func of reviewedFunctions) {
+        console.log(`📁 ${path.relative(process.cwd(), func.filePath)}`);
+        console.log(`   Function: ${func.name} | Lines: ${func.lineCount} | Usages: ${func.usageCount}`);
+        console.log(`   Reason: ${func.reviewComment}`);
+        console.log(`   Body: ${func.body.substring(0, 60)}${func.body.length > 60 ? '...' : ''}`);
         console.log('');
       }
     }
