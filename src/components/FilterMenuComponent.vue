@@ -1,14 +1,12 @@
 <script setup>
 import { computed, ref, nextTick } from 'vue'
 
-import { useAppState } from '@/composables/useAppState.js'
 import Publication from '@/core/Publication.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
-const { isEmpty } = useAppState()
 
 const filterSwitch = ref(null)
 const filterInput = ref(null)
@@ -139,7 +137,6 @@ function removeDoi(doi) {
 
 <template>
   <v-menu
-    v-if="!isEmpty"
     v-model="interfaceStore.isFilterMenuOpen"
     location="bottom"
     transition="slide-y-transition"

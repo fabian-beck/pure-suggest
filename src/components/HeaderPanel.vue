@@ -20,9 +20,9 @@ const filterMenuComponent = ref(null)
       <v-app-bar-title>
         <div class="app-name" v-html="appMeta.nameHtml"></div>
         <div class="session-state">
-          <SessionMenuComponent />
+          <SessionMenuComponent v-if="!isEmpty" />
           <BoostKeywordsComponent />
-          <FilterMenuComponent ref="filterMenuComponent" />
+          <FilterMenuComponent v-if="!isEmpty" ref="filterMenuComponent" />
         </div>
       </v-app-bar-title>
       <v-menu bottom left offset-y transition="slide-y-transition">

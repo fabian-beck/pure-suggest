@@ -8,7 +8,7 @@ import { useSessionStore } from '@/stores/session.js'
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
-const { isEmpty, clearSession, importSessionWithConfirmation, loadSession } = useAppState()
+const { clearSession, importSessionWithConfirmation, loadSession } = useAppState()
 
 const sessionName = ref(sessionStore.sessionName)
 
@@ -34,9 +34,7 @@ const clearSessionName = () => {
 }
 
 const importBibtex = () => {
-  const warningMessage = isEmpty.value
-    ? ''
-    : '<p style="color: #d32f2f; margin-bottom: 16px;"><strong>This will clear and replace the current session.</strong></p>'
+  const warningMessage = '<p style="color: #d32f2f; margin-bottom: 16px;"><strong>This will clear and replace the current session.</strong></p>'
 
   interfaceStore.showConfirmDialog(
     `${warningMessage}<label>Choose a BibTeX file:&nbsp;</label>
@@ -72,7 +70,7 @@ watch(
 </script>
 
 <template>
-  <v-menu v-if="!isEmpty" location="bottom" transition="slide-y-transition">
+  <v-menu location="bottom" transition="slide-y-transition">
     <template #activator="{ props }">
       <v-btn
         v-bind="props"
