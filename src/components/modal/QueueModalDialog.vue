@@ -4,12 +4,14 @@ import { watch, reactive } from 'vue'
 import { useAppState } from '@/composables/useAppState.js'
 import Publication from '@/core/Publication.js'
 import { useInterfaceStore } from '@/stores/interface.js'
+import { useModalStore } from '@/stores/modal.js'
 import { useQueueStore } from '@/stores/queue.js'
 
 
 export default {
   setup() {
     const interfaceStore = useInterfaceStore()
+    const modalStore = useModalStore()
     const queueStore = useQueueStore()
     const { updateQueued } = useAppState()
 
@@ -35,7 +37,7 @@ export default {
     }
 
     watch(
-      () => interfaceStore.isQueueModalDialogShown,
+      () => modalStore.isQueueModalDialogShown,
       (newValue) => {
         if (newValue) {
           updatePublications()
@@ -45,6 +47,7 @@ export default {
 
     return {
       interfaceStore,
+      modalStore,
       queueStore,
       selectedQueue,
       excludedQueue,
@@ -55,11 +58,11 @@ export default {
   methods: {
     clearQueuesAndClose() {
       this.queueStore.clear()
-      this.interfaceStore.isQueueModalDialogShown = false
+      this.modalStore.isQueueModalDialogShown = false
     },
     updateQueuedAndClose() {
       this.updateQueued()
-      this.interfaceStore.isQueueModalDialogShown = false
+      this.modalStore.isQueueModalDialogShown = false
     },
     removeFromQueueAndUpdatePublications(publication) {
       this.queueStore.removeFromQueues(publication.doi)
@@ -74,7 +77,7 @@ export default {
     header-color="primary"
     title="Queue"
     icon="mdi-tray-full"
-    v-model="interfaceStore.isQueueModalDialogShown"
+    v-model="modalStore.isQueueModalDialogShown"
   >
     <template #sticky>
       <v-sheet class="has-background-primary-95 pa-2">

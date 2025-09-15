@@ -4,6 +4,7 @@ import LZString from 'lz-string'
 import { useAppState } from './composables/useAppState.js'
 import { onKey } from './lib/Keys.js'
 import { useInterfaceStore } from './stores/interface.js'
+import { useModalStore } from './stores/modal.js'
 import { useSessionStore } from './stores/session.js'
 import { perfMonitor } from './utils/performance.js'
 
@@ -21,11 +22,12 @@ export default {
   setup() {
     const sessionStore = useSessionStore()
     const interfaceStore = useInterfaceStore()
+    const modalStore = useModalStore()
     const { isEmpty, loadSession } = useAppState()
     // check if mobile
     interfaceStore.checkMobile()
     window.addEventListener('resize', interfaceStore.checkMobile)
-    return { sessionStore, interfaceStore, isEmpty, loadSession }
+    return { sessionStore, interfaceStore, modalStore, isEmpty, loadSession }
   },
   methods: {
     checkAndLoadSessionFromUrl() {
@@ -153,7 +155,7 @@ export default {
     <QuickAccessBar
       id="quick-access"
       class="is-hidden-desktop"
-      v-show="!interfaceStore.isAnyOverlayShown"
+      v-show="!modalStore.isAnyOverlayShown"
     >
     </QuickAccessBar>
     <!-- Modal dialogs -->

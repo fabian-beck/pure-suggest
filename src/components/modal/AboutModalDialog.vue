@@ -1,18 +1,20 @@
 <script>
 import { useInterfaceStore } from '@/stores/interface.js'
+import { useModalStore } from '@/stores/modal.js'
 
 export default {
   inject: ['appMeta'],
   setup() {
     const interfaceStore = useInterfaceStore()
-    return { interfaceStore }
+    const modalStore = useModalStore()
+    return { interfaceStore, modalStore }
   }
 }
 </script>
 
 <template>
   <ModalDialog
-    v-model="interfaceStore.isAboutModalDialogShown"
+    v-model="modalStore.isAboutModalDialogShown"
     header-color="light"
     title="About"
     icon="mdi-information-outline"

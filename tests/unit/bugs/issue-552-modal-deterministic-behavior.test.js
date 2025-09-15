@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 import { useAppState } from '@/composables/useAppState.js'
 import { useAuthorStore } from '@/stores/author.js'
-import { useInterfaceStore } from '@/stores/interface.js'
+import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
 
 // Mock constants
@@ -19,13 +19,13 @@ vi.mock('@/constants/config.js', () => ({
 }))
 
 describe('Issue #552: Modal Deterministic Behavior', () => {
-  let interfaceStore, authorStore, sessionStore, openAuthorModalDialog
+  let modalStore, authorStore, sessionStore, openAuthorModalDialog
 
   beforeEach(() => {
     const pinia = createPinia()
     setActivePinia(pinia)
 
-    interfaceStore = useInterfaceStore()
+    modalStore = useModalStore()
     authorStore = useAuthorStore()
     sessionStore = useSessionStore()
 
@@ -77,7 +77,7 @@ describe('Issue #552: Modal Deterministic Behavior', () => {
       openAuthorModalDialog()
 
       // Close modal (this sets isAuthorModalDialogShown = false)
-      interfaceStore.isAuthorModalDialogShown = false
+      modalStore.isAuthorModalDialogShown = false
 
       // VERIFICATION: Authors should NOT be recomputed since data is valid
       expect(authorStore.computeSelectedPublicationsAuthors).not.toHaveBeenCalled()
@@ -150,7 +150,7 @@ describe('Issue #552: Modal Deterministic Behavior', () => {
 
     // Test that modal opening is consistent
     openAuthorModalDialog()
-    expect(interfaceStore.isAuthorModalDialogShown).toBe(true)
+    expect(modalStore.isAuthorModalDialogShown).toBe(true)
 
     // Test with author ID
     openAuthorModalDialog('test-author')

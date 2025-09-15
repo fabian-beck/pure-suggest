@@ -4,6 +4,7 @@ import { computed } from 'vue'
 import PublicationComponent from '@/components/PublicationComponent.vue'
 import { useAuthorStore } from '@/stores/author.js'
 import { useInterfaceStore } from '@/stores/interface.js'
+import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
 import { calculateAuthorColor } from '@/utils/authorColor.js'
 
@@ -16,6 +17,7 @@ export default {
     const sessionStore = useSessionStore()
     const authorStore = useAuthorStore()
     const interfaceStore = useInterfaceStore()
+    const modalStore = useModalStore()
 
     /**
      * Checks if publications need score updates
@@ -108,6 +110,7 @@ export default {
       sessionStore,
       authorStore,
       interfaceStore,
+      modalStore,
       selectedPublicationsForAuthor,
       prepareAuthorData
     }
@@ -186,7 +189,7 @@ export default {
       }
     },
     cancel() {
-      this.interfaceStore.isAuthorModalDialogShown = false
+      this.modalStore.isAuthorModalDialogShown = false
     },
     handleAuthorItemClick(authorId) {
       // Only activate if not already in single-author view
@@ -272,7 +275,7 @@ export default {
     }
   },
   watch: {
-    'interfaceStore.isAuthorModalDialogShown': {
+    'modalStore.isAuthorModalDialogShown': {
       handler (newValue, oldValue) {
         // Detect when modal is closed (was true, now false)
         if (oldValue === true && newValue === false) {
@@ -310,7 +313,7 @@ export default {
     header-color="primary"
     :title="modalTitle"
     icon="mdi-account-group"
-    v-model="interfaceStore.isAuthorModalDialogShown"
+    v-model="modalStore.isAuthorModalDialogShown"
   >
     <template #header-menu>
       <CompactButton

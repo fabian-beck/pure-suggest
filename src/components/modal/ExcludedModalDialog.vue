@@ -4,12 +4,14 @@ import { watch, reactive } from 'vue'
 import { useAppState } from '@/composables/useAppState.js'
 import Publication from '@/core/Publication.js'
 import { useInterfaceStore } from '@/stores/interface.js'
+import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
 
 
 export default {
   setup() {
     const interfaceStore = useInterfaceStore()
+    const modalStore = useModalStore()
     const sessionStore = useSessionStore()
     const { updateSuggestions, queueForSelected } = useAppState()
 
@@ -27,7 +29,7 @@ export default {
     }
 
     watch(
-      () => interfaceStore.isExcludedModalDialogShown,
+      () => modalStore.isExcludedModalDialogShown,
       (newValue) => {
         if (newValue) {
           updateExcludedPublications()
@@ -37,6 +39,7 @@ export default {
 
     return {
       interfaceStore,
+      modalStore,
       sessionStore,
       excludedPublications,
       updateExcludedPublications,
@@ -63,7 +66,7 @@ export default {
     header-color="primary"
     title="Excluded publications"
     icon="mdi-minus-thick"
-    v-model="interfaceStore.isExcludedModalDialogShown"
+    v-model="modalStore.isExcludedModalDialogShown"
   >
     <template #sticky>
       <v-sheet class="has-background-primary-95 pa-2">

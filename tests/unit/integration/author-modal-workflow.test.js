@@ -3,12 +3,12 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 import { useAppState } from '@/composables/useAppState.js'
 import { useAuthorStore } from '@/stores/author.js'
-import { useInterfaceStore } from '@/stores/interface.js'
+import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
 
 describe('Author Modal Integration Workflow', () => {
   let pinia
-  let interfaceStore
+  let modalStore
   let authorStore
   let sessionStore
   let appState
@@ -17,7 +17,7 @@ describe('Author Modal Integration Workflow', () => {
     pinia = createPinia()
     setActivePinia(pinia)
 
-    interfaceStore = useInterfaceStore()
+    modalStore = useModalStore()
     authorStore = useAuthorStore()
     sessionStore = useSessionStore()
     appState = useAppState()
@@ -31,14 +31,14 @@ describe('Author Modal Integration Workflow', () => {
     it('should open modal and set author ID when provided', () => {
       appState.openAuthorModalDialog('test-author-id')
 
-      expect(interfaceStore.isAuthorModalDialogShown).toBe(true)
+      expect(modalStore.isAuthorModalDialogShown).toBe(true)
       expect(authorStore.activeAuthorId).toBe('test-author-id')
     })
 
     it('should open modal without setting author ID when not provided', () => {
       appState.openAuthorModalDialog()
 
-      expect(interfaceStore.isAuthorModalDialogShown).toBe(true)
+      expect(modalStore.isAuthorModalDialogShown).toBe(true)
       expect(authorStore.activeAuthorId).toBeNull()
     })
   })

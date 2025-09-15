@@ -3,10 +3,10 @@ import { ref, computed, watch } from 'vue'
 
 import ModalDialog from './ModalDialog.vue'
 
-import { useInterfaceStore } from '@/stores/interface.js'
+import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
 
-const interfaceStore = useInterfaceStore()
+const modalStore = useModalStore()
 const sessionStore = useSessionStore()
 
 const linkInput = ref(null)
@@ -35,7 +35,7 @@ const copyToClipboard = async () => {
 
 // Reset copy status when modal is opened
 watch(
-  () => interfaceStore.isShareSessionModalDialogShown,
+  () => modalStore.isShareSessionModalDialogShown,
   (isShown) => {
     if (isShown) {
       copySuccess.value = false
@@ -46,7 +46,7 @@ watch(
 
 <template>
   <ModalDialog
-    v-model="interfaceStore.isShareSessionModalDialogShown"
+    v-model="modalStore.isShareSessionModalDialogShown"
     title="Share Session as Link"
     icon="mdi-share-variant"
     header-color="primary"

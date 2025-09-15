@@ -1,17 +1,19 @@
 <script>
 import { useInterfaceStore } from '@/stores/interface.js'
+import { useModalStore } from '@/stores/modal.js'
 
 export default {
   setup() {
     const interfaceStore = useInterfaceStore()
-    return { interfaceStore }
+    const modalStore = useModalStore()
+    return { interfaceStore, modalStore }
   }
 }
 </script>
 
 <template>
   <ModalDialog
-    v-model="interfaceStore.isKeyboardControlsModalDialogShown"
+    v-model="modalStore.isKeyboardControlsModalDialogShown"
     title="Keyboard Controls"
     icon="mdi-keyboard-outline"
     header-color="light"

@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import { useAppState } from '@/composables/useAppState.js'
 import PublicationSearch from '@/core/PublicationSearch.js'
 import { useInterfaceStore } from '@/stores/interface.js'
+import { useModalStore } from '@/stores/modal.js'
 import { useQueueStore } from '@/stores/queue.js'
 import { useSessionStore } from '@/stores/session.js'
 
@@ -12,10 +13,11 @@ export default {
   setup() {
     const sessionStore = useSessionStore()
     const interfaceStore = useInterfaceStore()
+    const modalStore = useModalStore()
     const queueStore = useQueueStore()
     const { queueForSelected } = useAppState()
-    const { isSearchModalDialogShown } = storeToRefs(interfaceStore)
-    return { sessionStore, interfaceStore, queueStore, isSearchModalDialogShown, queueForSelected }
+    const { isSearchModalDialogShown } = storeToRefs(modalStore)
+    return { sessionStore, interfaceStore, modalStore, queueStore, isSearchModalDialogShown, queueForSelected }
   },
   data() {
     return {
@@ -50,12 +52,12 @@ export default {
             this.$refs.searchInput.focus()
           }
         }, 300)
-        if (this.interfaceStore.searchQuery) {
+        if (this.modalStore.searchQuery) {
           this.search()
         }
       }
     },
-    'interfaceStore.searchQuery': {
+    'modalStore.searchQuery': {
       handler () {
         // Cancel ongoing search when user starts typing new query
         if (this.isLoading) {
@@ -86,7 +88,7 @@ export default {
 
     async search () {
       // Don't perform search if query is the same as last search
-      if (this.interfaceStore.searchQuery === this.lastSearchQuery) {
+      if (this.modalStore.searchQuery === this.lastSearchQuery) {
         return
       }
 
@@ -97,15 +99,15 @@ export default {
 
       this.loaded = 0
       this.searchCancelled = false
-      if (!this.interfaceStore.searchQuery) {
+      if (!this.modalStore.searchQuery) {
         this.searchResults = { results: [], type: 'empty' }
         this.lastSearchQuery = ''
         return
       }
       this.isLoading = true
-      this.lastSearchQuery = this.interfaceStore.searchQuery
-      this.cleanedSearchQuery = this.interfaceStore.searchQuery.replace(/[^a-zA-Z0-9 ]/g, ' ')
-      const publicationSearch = new PublicationSearch(this.interfaceStore.searchQuery)
+      this.lastSearchQuery = this.modalStore.searchQuery
+      this.cleanedSearchQuery = this.modalStore.searchQuery.replace(/[^a-zA-Z0-9 ]/g, ' ')
+      const publicationSearch = new PublicationSearch(this.modalStore.searchQuery)
       this.searchResults = await publicationSearch.execute()
 
       // Check if search was cancelled during execution
@@ -150,11 +152,11 @@ export default {
         this.addPublication(publication.doi)
       })
       this.searchResults = { results: [], type: 'empty' }
-      this.interfaceStore.searchQuery = ''
+      this.modalStore.searchQuery = ''
     },
 
     close() {
-      this.interfaceStore.isSearchModalDialogShown = false
+      this.modalStore.isSearchModalDialogShown = false
       this.reset()
     },
 
@@ -180,7 +182,7 @@ export default {
       <form @submit.prevent="search" class="has-background-primary-95">
         <v-text-field
           clearable
-          v-model="interfaceStore.searchQuery"
+          v-model="modalStore.searchQuery"
           type="input"
           ref="searchInput"
           variant="solo"

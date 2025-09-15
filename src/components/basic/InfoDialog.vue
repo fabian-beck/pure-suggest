@@ -1,15 +1,15 @@
 <script>
-import { useInterfaceStore } from '@/stores/interface.js'
+import { useModalStore } from '@/stores/modal.js'
 
 export default {
   name: 'InfoDialog',
   setup: () => {
-    const interfaceStore = useInterfaceStore()
-    return { interfaceStore }
+    const modalStore = useModalStore()
+    return { modalStore }
   },
   methods: {
     hideDialog() {
-      this.interfaceStore.infoDialog.isShown = false
+      this.modalStore.infoDialog.isShown = false
     }
   }
 }
@@ -18,15 +18,15 @@ export default {
 <template>
   <v-dialog
     width="700"
-    v-model="interfaceStore.infoDialog.isShown"
+    v-model="modalStore.infoDialog.isShown"
     :z-index="9000"
     class="info-dialog-overlay"
   >
     <v-card>
-      <v-card-title v-if="interfaceStore.infoDialog.title">
-        {{ interfaceStore.infoDialog.title }}
+      <v-card-title v-if="modalStore.infoDialog.title">
+        {{ modalStore.infoDialog.title }}
       </v-card-title>
-      <v-card-text><span v-html="interfaceStore.infoDialog.message"></span> </v-card-text>
+      <v-card-text><span v-html="modalStore.infoDialog.message"></span> </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn text @click="hideDialog">Close</v-btn>

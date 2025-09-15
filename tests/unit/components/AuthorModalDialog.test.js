@@ -5,7 +5,7 @@ import { createVuetify } from 'vuetify'
 
 import AuthorModalDialog from '@/components/modal/AuthorModalDialog.vue'
 import { useAuthorStore } from '@/stores/author.js'
-import { useInterfaceStore } from '@/stores/interface.js'
+import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
 
 const vuetify = createVuetify()
@@ -14,7 +14,7 @@ describe('AuthorModalDialog', () => {
   let pinia
   let authorStore
   let sessionStore
-  let interfaceStore
+  let modalStore
 
   beforeEach(() => {
     pinia = createPinia()
@@ -22,7 +22,7 @@ describe('AuthorModalDialog', () => {
 
     authorStore = useAuthorStore()
     sessionStore = useSessionStore()
-    interfaceStore = useInterfaceStore()
+    modalStore = useModalStore()
 
     // Mock the stores
     vi.spyOn(authorStore, 'computeSelectedPublicationsAuthors').mockReturnValue()
@@ -119,7 +119,7 @@ describe('AuthorModalDialog', () => {
     ]
 
     sessionStore.boostKeywordString = ''
-    interfaceStore.isAuthorModalDialogShown = true
+    modalStore.isAuthorModalDialogShown = true
 
     const wrapper = createWrapper()
     const text = wrapper.text()

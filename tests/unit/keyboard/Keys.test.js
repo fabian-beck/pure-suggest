@@ -4,6 +4,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import Filter from '../../../src/core/Filter.js'
 import { onKey } from '../../../src/lib/Keys.js'
 import { useInterfaceStore } from '../../../src/stores/interface.js'
+import { useModalStore } from '../../../src/stores/modal.js'
 import { useQueueStore } from '../../../src/stores/queue.js'
 import { useSessionStore } from '../../../src/stores/session.js'
 
@@ -36,6 +37,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
   let pinia
   let sessionStore
   let interfaceStore
+  let modalStore
   let queueStore
 
   beforeEach(() => {
@@ -43,6 +45,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
     setActivePinia(pinia)
     sessionStore = useSessionStore()
     interfaceStore = useInterfaceStore()
+    modalStore = useModalStore()
     queueStore = useQueueStore()
 
     // Reset stores to empty state
@@ -72,14 +75,14 @@ describe('Keys Module - Keyboard Event Handling', () => {
     interfaceStore.activatePublicationComponent = vi.fn()
 
     // Reset all modal states to false
-    interfaceStore.confirmDialog.isShown = false
-    interfaceStore.infoDialog.isShown = false
-    interfaceStore.isSearchModalDialogShown = false
-    interfaceStore.isAuthorModalDialogShown = false
-    interfaceStore.isExcludedModalDialogShown = false
-    interfaceStore.isQueueModalDialogShown = false
-    interfaceStore.isAboutModalDialogShown = false
-    interfaceStore.isKeyboardControlsModalDialogShown = false
+    modalStore.confirmDialog.isShown = false
+    modalStore.infoDialog.isShown = false
+    modalStore.isSearchModalDialogShown = false
+    modalStore.isAuthorModalDialogShown = false
+    modalStore.isExcludedModalDialogShown = false
+    modalStore.isQueueModalDialogShown = false
+    modalStore.isAboutModalDialogShown = false
+    modalStore.isKeyboardControlsModalDialogShown = false
     interfaceStore.isFilterMenuOpen = false
 
     // Mock DOM
@@ -175,7 +178,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
 
     it('should not open filter menu when overlay is shown', () => {
       sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
-      interfaceStore.confirmDialog.isShown = true // This makes isAnyOverlayShown true
+      modalStore.confirmDialog.isShown = true // This makes isAnyOverlayShown true
 
       const event = { key: 'f', preventDefault: vi.fn() }
       onKey(event)

@@ -3,7 +3,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import SearchModalDialog from '@/components/modal/SearchModalDialog.vue'
-import { useInterfaceStore } from '@/stores/interface.js'
+import { useModalStore } from '@/stores/modal.js'
 import { useQueueStore } from '@/stores/queue.js'
 import { useSessionStore } from '@/stores/session.js'
 
@@ -32,7 +32,7 @@ vi.mock('@/core/PublicationSearch.js', () => ({
 
 describe('SearchModalDialog', () => {
   let sessionStore
-  let interfaceStore
+  let modalStore
   let queueStore
   let pinia
 
@@ -40,7 +40,7 @@ describe('SearchModalDialog', () => {
     pinia = createPinia()
     setActivePinia(pinia)
     sessionStore = useSessionStore()
-    interfaceStore = useInterfaceStore()
+    modalStore = useModalStore()
     queueStore = useQueueStore()
   })
 
@@ -164,8 +164,8 @@ describe('SearchModalDialog', () => {
     })
 
     // Set up initial state
-    interfaceStore.searchQuery = 'test query'
-    interfaceStore.isSearchModalDialogShown = true
+    modalStore.searchQuery = 'test query'
+    modalStore.isSearchModalDialogShown = true
     wrapper.vm.isLoading = true
     wrapper.vm.searchResults = { results: [{ doi: 'test' }], type: 'search' }
 
@@ -230,7 +230,7 @@ describe('SearchModalDialog', () => {
     const cancelSearchSpy = vi.spyOn(wrapper.vm, 'cancelSearch')
 
     // Start a new search while previous is loading - with different query
-    interfaceStore.searchQuery = 'new search query'
+    modalStore.searchQuery = 'new search query'
     await wrapper.vm.search()
 
     // Should have called cancelSearch for previous search
@@ -262,10 +262,10 @@ describe('SearchModalDialog', () => {
     const cancelSearchSpy = vi.spyOn(wrapper.vm, 'cancelSearch')
 
     // Simulate user typing in search field by changing the query and triggering watcher manually
-    interfaceStore.searchQuery = 'new typing'
+    modalStore.searchQuery = 'new typing'
 
     // Simulate the watcher being triggered (since Vue watchers don't always trigger in tests)
-    await wrapper.vm.$options.watch['interfaceStore.searchQuery'].handler.call(wrapper.vm)
+    await wrapper.vm.$options.watch['modalStore.searchQuery'].handler.call(wrapper.vm)
 
     // Should cancel the ongoing search
     expect(cancelSearchSpy).toHaveBeenCalled()
@@ -290,7 +290,7 @@ describe('SearchModalDialog', () => {
 
     // Set up initial search state
     wrapper.vm.lastSearchQuery = 'machine learning'
-    interfaceStore.searchQuery = 'machine learning'
+    modalStore.searchQuery = 'machine learning'
     wrapper.vm.searchResults = { results: [{ doi: 'existing' }], type: 'search' }
 
     // Mock the search execution
@@ -305,7 +305,7 @@ describe('SearchModalDialog', () => {
 
   it('should not cancel ongoing search when clicking search with same query', async () => {
     // Set interfaceStore query before mounting to avoid triggering watchers
-    interfaceStore.searchQuery = 'machine learning'
+    modalStore.searchQuery = 'machine learning'
 
     const wrapper = mount(SearchModalDialog, {
       global: {
@@ -358,7 +358,7 @@ describe('SearchModalDialog', () => {
     })
 
     // Set up search state
-    interfaceStore.searchQuery = 'test query'
+    modalStore.searchQuery = 'test query'
     wrapper.vm.isLoading = true
     wrapper.vm.searchResults = { results: [{ doi: 'loading' }], type: 'search' }
 

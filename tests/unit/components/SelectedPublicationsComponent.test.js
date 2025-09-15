@@ -4,6 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import SelectedPublicationsComponent from '@/components/SelectedPublicationsComponent.vue'
 import { useInterfaceStore } from '@/stores/interface.js'
+import { useModalStore } from '@/stores/modal.js'
 import { useQueueStore } from '@/stores/queue.js'
 import { useSessionStore } from '@/stores/session.js'
 
@@ -24,6 +25,7 @@ describe('SelectedPublicationsComponent', () => {
   let pinia
   let sessionStore
   let interfaceStore
+  let modalStore
   let queueStore
 
   beforeEach(() => {
@@ -31,6 +33,7 @@ describe('SelectedPublicationsComponent', () => {
     setActivePinia(pinia)
     sessionStore = useSessionStore()
     interfaceStore = useInterfaceStore()
+    modalStore = useModalStore()
     queueStore = useQueueStore()
 
     vi.clearAllMocks()
@@ -41,10 +44,10 @@ describe('SelectedPublicationsComponent', () => {
     sessionStore.selectedPublications = []
     sessionStore.excludedPublicationsDois = []
     interfaceStore.isMobile = false
-    interfaceStore.isQueueModalDialogShown = false
+    modalStore.isQueueModalDialogShown = false
     mockOpenAuthorModalDialog.mockClear()
-    interfaceStore.openSearchModalDialog = vi.fn()
-    interfaceStore.showConfirmDialog = vi.fn()
+    modalStore.openSearchModalDialog = vi.fn()
+    modalStore.showConfirmDialog = vi.fn()
     queueStore.selectedQueue = []
     queueStore.excludedQueue = []
     queueStore.clear = vi.fn()
@@ -163,7 +166,7 @@ describe('SelectedPublicationsComponent', () => {
     const compactButtons = wrapper.findAll('.compact-button')
     const searchButton = compactButtons[1] // Second CompactButton is the search button
     await searchButton.trigger('click')
-    expect(interfaceStore.openSearchModalDialog).toHaveBeenCalled()
+    expect(modalStore.openSearchModalDialog).toHaveBeenCalled()
   })
 
   it('calls loadExample when load example button is clicked', async () => {

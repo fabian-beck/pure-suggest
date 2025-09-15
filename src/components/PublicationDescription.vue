@@ -3,6 +3,7 @@ import { computed } from 'vue'
 
 import { useAppState } from '@/composables/useAppState.js'
 import { useInterfaceStore } from '@/stores/interface.js'
+import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
 
 const props = defineProps({
@@ -23,6 +24,7 @@ const props = defineProps({
 })
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
+const modalStore = useModalStore()
 const { openAuthorModalDialog } = useAppState()
 
 const showDetails = computed(() => {
@@ -49,7 +51,7 @@ function highlight(string) {
 }
 
 function showAbstract() {
-  interfaceStore.showAbstract(props.publication)
+  modalStore.showAbstract(props.publication)
 }
 
 function exportBibtex() {

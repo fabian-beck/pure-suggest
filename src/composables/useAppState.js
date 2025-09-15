@@ -5,6 +5,7 @@ import { clearCache as clearCacheUtil } from '@/lib/Cache.js'
 import { SuggestionService } from '@/services/SuggestionService.js'
 import { useAuthorStore } from '@/stores/author.js'
 import { useInterfaceStore } from '@/stores/interface.js'
+import { useModalStore } from '@/stores/modal.js'
 import { useQueueStore } from '@/stores/queue.js'
 import { useSessionStore } from '@/stores/session.js'
 
@@ -13,6 +14,7 @@ export function useAppState() {
 
   const sessionStore = useSessionStore()
   const interfaceStore = useInterfaceStore()
+  const modalStore = useModalStore()
   const authorStore = useAuthorStore()
   const queueStore = useQueueStore()
 
@@ -45,7 +47,7 @@ export function useAppState() {
    * Shows confirmation dialog and clears session if confirmed
    */
   const clearSession = () => {
-    interfaceStore.showConfirmDialog(
+    modalStore.showConfirmDialog(
       'You are going to clear all selected and excluded articles and jump back to the initial state.',
       clear
     )
@@ -55,7 +57,7 @@ export function useAppState() {
    * Shows confirmation dialog and clears both session and cache if confirmed
    */
   const clearCache = () => {
-    interfaceStore.showConfirmDialog(
+    modalStore.showConfirmDialog(
       'You are going to clear the cache, as well as all selected and excluded articles and jump back to the initial state.',
       () => {
         clear()
@@ -215,7 +217,7 @@ export function useAppState() {
       ? ''
       : '<p style="color: #d32f2f; margin-bottom: 16px;"><strong>This will clear and replace the current session.</strong></p>'
 
-    interfaceStore.showConfirmDialog(
+    modalStore.showConfirmDialog(
       `${warningMessage}<label>Choose an exported session JSON file:&nbsp;</label>
       <input type="file" id="import-json-input" accept="application/JSON"/>`,
       () => {
@@ -337,7 +339,7 @@ export function useAppState() {
    * Opens author modal dialog
    */
   const openAuthorModalDialog = (authorId) => {
-    interfaceStore.openAuthorModalDialog()
+    modalStore.openAuthorModalDialog()
 
     // If authorId is provided, set the active author
     if (authorId) {

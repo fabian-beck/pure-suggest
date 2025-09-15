@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 import { useAppState } from '@/composables/useAppState.js'
 import { useAuthorStore } from '@/stores/author.js'
-import { useInterfaceStore } from '@/stores/interface.js'
+import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
 
 // Mock external dependencies
@@ -11,12 +11,12 @@ vi.mock('@/lib/Keys.js')
 vi.mock('@/core/Publication.js')
 
 describe('Author Details On Demand Feature', () => {
-  let interfaceStore, authorStore, sessionStore, appState
+  let modalStore, authorStore, sessionStore, appState
   let mockAuthors
 
   beforeEach(() => {
     setActivePinia(createPinia())
-    interfaceStore = useInterfaceStore()
+    modalStore = useModalStore()
     authorStore = useAuthorStore()
     sessionStore = useSessionStore()
     appState = useAppState()
@@ -106,7 +106,7 @@ describe('Author Details On Demand Feature', () => {
       appState.openAuthorModalDialog('john-doe')
 
       expect(authorStore.setActiveAuthor).toHaveBeenCalledWith('john-doe')
-      expect(interfaceStore.isAuthorModalDialogShown).toBe(true)
+      expect(modalStore.isAuthorModalDialogShown).toBe(true)
     })
 
     it('should clear active author when modal is closed', async () => {

@@ -4,11 +4,13 @@ import { ref, onMounted } from 'vue'
 import { useAppState } from '@/composables/useAppState.js'
 import { bibtexParser } from '@/lib/Util.js'
 import { useInterfaceStore } from '@/stores/interface.js'
+import { useModalStore } from '@/stores/modal.js'
 import { useQueueStore } from '@/stores/queue.js'
 import { useSessionStore } from '@/stores/session.js'
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
+const modalStore = useModalStore()
 const queueStore = useQueueStore()
 const {
   isEmpty,
@@ -22,7 +24,7 @@ const {
 const publicationList = ref(null)
 
 function importSession() {
-  interfaceStore.showConfirmDialog(
+  modalStore.showConfirmDialog(
     `<label>Choose an exported session JSON file:&nbsp;</label>
     <input type="file" id="import-json-input" accept="application/JSON"/>`,
     () => importSessionFromState(document.getElementById('import-json-input').files[0]),
@@ -35,7 +37,7 @@ function importBibtex() {
     ? ''
     : '<p style="color: #d32f2f; margin-bottom: 16px;"><strong>This will clear and replace the current session.</strong></p>'
 
-  interfaceStore.showConfirmDialog(
+  modalStore.showConfirmDialog(
     `${warningMessage}<label>Choose a BibTeX file:&nbsp;</label>
     <input type="file" id="import-bibtex-input" accept=".bib"/>`,
     async () => {
@@ -97,7 +99,7 @@ onMounted(() => {
             v-tippy="
               `<span class='key'>S</span>earch/add specific publications to be added to selected.`
             "
-            @click="interfaceStore.openSearchModalDialog()"
+            @click="modalStore.openSearchModalDialog()"
           ></CompactButton>
         </div>
       </div>
@@ -169,7 +171,7 @@ onMounted(() => {
             <div class="column is-narrow py-1">
               <v-btn
                 class="has-background-primary-95"
-                @click.stop="interfaceStore.openSearchModalDialog()"
+                @click.stop="modalStore.openSearchModalDialog()"
               >
                 <v-icon left class="mr-2">mdi-magnify</v-icon>
                 Search/add</v-btn

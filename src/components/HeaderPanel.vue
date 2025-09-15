@@ -6,9 +6,11 @@ import KeywordMenuComponent from '@/components/KeywordMenuComponent.vue'
 import SessionMenuComponent from '@/components/SessionMenuComponent.vue'
 import { useAppState } from '@/composables/useAppState.js'
 import { useInterfaceStore } from '@/stores/interface.js'
+import { useModalStore } from '@/stores/modal.js'
 
 const appMeta = inject('appMeta')
 const interfaceStore = useInterfaceStore()
+const modalStore = useModalStore()
 const { isEmpty, clearCache } = useAppState()
 
 const filterMenuComponent = ref(null)
@@ -38,13 +40,13 @@ const filterMenuComponent = ref(null)
           </v-list-item>
           <v-list-item
             prepend-icon="mdi-keyboard-outline"
-            @click="interfaceStore.isKeyboardControlsModalDialogShown = true"
+            @click="modalStore.isKeyboardControlsModalDialogShown = true"
             class="is-hidden-touch"
             title="Keyboard controls"
           />
           <v-list-item
             prepend-icon="mdi-information-outline"
-            @click="interfaceStore.isAboutModalDialogShown = true"
+            @click="modalStore.isAboutModalDialogShown = true"
             title="About"
           />
           <v-list-item

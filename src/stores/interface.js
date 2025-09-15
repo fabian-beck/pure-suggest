@@ -15,27 +15,8 @@ export const useInterfaceStore = defineStore('interface', {
       isNetworkCollapsed: false,
       isNetworkClusters: true,
       showPerformancePanel: false,
-      searchQuery: '',
-      isSearchModalDialogShown: false,
-      isAuthorModalDialogShown: false,
-      isExcludedModalDialogShown: false,
-      isQueueModalDialogShown: false,
-      isAboutModalDialogShown: false,
-      isShareSessionModalDialogShown: false,
       // Network replot trigger (incremented to notify NetworkVisComponent to replot)
       networkReplotTrigger: 0,
-      isKeyboardControlsModalDialogShown: false,
-      confirmDialog: {
-        message: '',
-        action: () => {},
-        isShown: false,
-        title: ''
-      },
-      infoDialog: {
-        message: '',
-        isShown: false,
-        title: ''
-      },
       isMobile: true,
       isFilterMenuOpen: false,
       // Hover state management
@@ -44,21 +25,7 @@ export const useInterfaceStore = defineStore('interface', {
       lastNavigationDirection: null // 'up' or 'down' - for scroll behavior
     }
   },
-  getters: {
-    isAnyOverlayShown() {
-      return (
-        this.confirmDialog.isShown ||
-        this.infoDialog.isShown ||
-        this.isSearchModalDialogShown ||
-        this.isAuthorModalDialogShown ||
-        this.isExcludedModalDialogShown ||
-        this.isQueueModalDialogShown ||
-        this.isAboutModalDialogShown ||
-        this.isShareSessionModalDialogShown ||
-        this.isKeyboardControlsModalDialogShown
-      )
-    }
-  },
+  getters: {},
   actions: {
     clear() {
       this.isNetworkExpanded = false
@@ -80,38 +47,12 @@ export const useInterfaceStore = defineStore('interface', {
       this.loadingMessage = ''
     },
 
-    showAbstract(publication) {
-      this.infoDialog = {
-        title: 'Abstract',
-        message: `<div><i>${publication.abstract}</i></div>`,
-        isShown: true
-      }
-    },
-
     showErrorMessage(errorMessage) {
       console.error(errorMessage)
       this.errorToast = {
         isShown: true,
         message: errorMessage
       }
-    },
-
-    showConfirmDialog(message, confirm, title = 'Confirm') {
-      this.confirmDialog = {
-        message,
-        action: confirm,
-        isShown: true,
-        title
-      }
-    },
-
-    openSearchModalDialog(query) {
-      this.searchQuery = query ? query : ''
-      this.isSearchModalDialogShown = true
-    },
-
-    openAuthorModalDialog() {
-      this.isAuthorModalDialogShown = true
     },
 
     activatePublicationComponent(publicationComponent, navigationDirection = null) {

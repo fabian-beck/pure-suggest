@@ -4,10 +4,12 @@ import { computed, ref, watch } from 'vue'
 import { useAppState } from '@/composables/useAppState.js'
 import { bibtexParser } from '@/lib/Util.js'
 import { useInterfaceStore } from '@/stores/interface.js'
+import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
+const modalStore = useModalStore()
 const { clearSession, importSessionWithConfirmation, loadSession } = useAppState()
 
 const sessionName = ref(sessionStore.sessionName)
@@ -36,7 +38,7 @@ const clearSessionName = () => {
 const importBibtex = () => {
   const warningMessage = '<p style="color: #d32f2f; margin-bottom: 16px;"><strong>This will clear and replace the current session.</strong></p>'
 
-  interfaceStore.showConfirmDialog(
+  modalStore.showConfirmDialog(
     `${warningMessage}<label>Choose a BibTeX file:&nbsp;</label>
     <input type="file" id="import-bibtex-input" accept=".bib"/>`,
     async () => {
