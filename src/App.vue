@@ -30,6 +30,15 @@ export default {
     return { sessionStore, interfaceStore, modalStore, isEmpty, loadSession }
   },
   methods: {
+    updatePageTitle() {
+      const defaultTitle = 'PUREsuggest – Citation-based literature search'
+      if (this.sessionStore.sessionName && this.sessionStore.sessionName.trim() !== '') {
+        document.title = `${this.sessionStore.sessionName}: ${defaultTitle}`
+      } else {
+        document.title = defaultTitle
+      }
+    },
+
     checkAndLoadSessionFromUrl() {
       const urlParams = new URLSearchParams(window.location.search)
       const sessionParam = urlParams.get('session')
@@ -102,6 +111,7 @@ export default {
         if (this.isInitialLoadComplete) {
           this.cleanUrlIfNeeded()
         }
+        this.updatePageTitle()
       }
     }
   },
@@ -115,6 +125,9 @@ export default {
 
     // Check for session parameter in URL and load if present
     this.checkAndLoadSessionFromUrl()
+
+    // Update page title based on current session name
+    this.updatePageTitle()
 
     // Mark initial load as complete after a short delay to allow session loading to finish
     this.$nextTick(() => {
