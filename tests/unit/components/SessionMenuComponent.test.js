@@ -117,10 +117,12 @@ describe('SessionMenuComponent', () => {
     expect(wrapper.find('[data-testid="menu"]').exists()).toBe(true)
   })
 
-  it('should not render menu when session is empty', () => {
+  it('should always render menu component (visibility controlled by parent)', () => {
+    // Note: SessionMenuComponent no longer handles isEmpty internally.
+    // Visibility is now controlled by parent container (HeaderPanel) via v-if="!isEmpty"
     mockAppState.isEmpty = true
     wrapper = createWrapper()
-    expect(wrapper.find('[data-testid="menu"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="menu"]').exists()).toBe(true)
   })
 
   it('should display session name in text field', () => {
