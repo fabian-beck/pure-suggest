@@ -2,15 +2,15 @@
 import { ref, onMounted } from 'vue'
 
 import { useAppState } from '@/composables/useAppState.js'
+import { useModalManager } from '@/composables/useModalManager.js'
 import { bibtexParser } from '@/lib/Util.js'
 import { useInterfaceStore } from '@/stores/interface.js'
-import { useModalStore } from '@/stores/modal.js'
 import { useQueueStore } from '@/stores/queue.js'
 import { useSessionStore } from '@/stores/session.js'
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
-const modalStore = useModalStore()
+const { showConfirmDialog, openSearchModal, openAuthorModal } = useModalManager()
 const queueStore = useQueueStore()
 const {
   isEmpty,
@@ -18,13 +18,12 @@ const {
   loadExample,
   updateQueued,
   loadSession,
-  openAuthorModalDialog
 } = useAppState()
 
 const publicationList = ref(null)
 
 function importSession() {
-  modalStore.showConfirmDialog(
+  showConfirmDialog(
     `<label>Choose an exported session JSON file:&nbsp;</label>
     <input type="file" id="import-json-input" accept="application/JSON"/>`,
     () => importSessionFromState(document.getElementById('import-json-input').files[0]),
@@ -37,7 +36,7 @@ function importBibtex() {
     ? ''
     : '<p style="color: #d32f2f; margin-bottom: 16px;"><strong>This will clear and replace the current session.</strong></p>'
 
-  modalStore.showConfirmDialog(
+  showConfirmDialog(
     `${warningMessage}<label>Choose a BibTeX file:&nbsp;</label>
     <input type="file" id="import-bibtex-input" accept=".bib"/>`,
     async () => {
@@ -91,7 +90,7 @@ onMounted(() => {
           <CompactButton
             icon="mdi-account-group has-text-white"
             v-tippy="`List <span class='key'>a</span>uthors of selected publications.`"
-            @click="openAuthorModalDialog()"
+            @click="openAuthorModal()"
           ></CompactButton>
           <CompactButton
             icon="mdi-magnify"
@@ -99,7 +98,7 @@ onMounted(() => {
             v-tippy="
               `<span class='key'>S</span>earch/add specific publications to be added to selected.`
             "
-            @click="modalStore.openSearchModalDialog()"
+            @click="openSearchModal()"
           ></CompactButton>
         </div>
       </div>
@@ -171,7 +170,7 @@ onMounted(() => {
             <div class="column is-narrow py-1">
               <v-btn
                 class="has-background-primary-95"
-                @click.stop="modalStore.openSearchModalDialog()"
+                @click.stop="openSearchModal()"
               >
                 <v-icon left class="mr-2">mdi-magnify</v-icon>
                 Search/add</v-btn

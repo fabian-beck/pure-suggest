@@ -1,7 +1,7 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-import { useAppState } from '@/composables/useAppState.js'
+import { useModalManager } from '@/composables/useModalManager.js'
 import { useAuthorStore } from '@/stores/author.js'
 import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
@@ -11,7 +11,7 @@ vi.mock('@/lib/Keys.js')
 vi.mock('@/core/Publication.js')
 
 describe('Author Details On Demand Feature', () => {
-  let modalStore, authorStore, sessionStore, appState
+  let modalStore, authorStore, sessionStore, modalManager
   let mockAuthors
 
   beforeEach(() => {
@@ -19,7 +19,7 @@ describe('Author Details On Demand Feature', () => {
     modalStore = useModalStore()
     authorStore = useAuthorStore()
     sessionStore = useSessionStore()
-    appState = useAppState()
+    modalManager = useModalManager()
 
     // Mock author data
     mockAuthors = [
@@ -100,10 +100,10 @@ describe('Author Details On Demand Feature', () => {
   })
 
   describe('Interface Store - Author Modal State Management', () => {
-    it('should have openAuthorModalDialog accept authorId parameter to activate specific author', () => {
+    it('should have openAuthorModal accept authorId parameter to activate specific author', () => {
       vi.spyOn(authorStore, 'setActiveAuthor')
 
-      appState.openAuthorModalDialog('john-doe')
+      modalManager.openAuthorModal('john-doe')
 
       expect(authorStore.setActiveAuthor).toHaveBeenCalledWith('john-doe')
       expect(modalStore.isAuthorModalDialogShown).toBe(true)
@@ -210,7 +210,7 @@ describe('Author Details On Demand Feature', () => {
     })
 
     it('should handle author name click in publication description and activate correct author', () => {
-      vi.spyOn(appState, 'openAuthorModalDialog')
+      vi.spyOn(modalManager, 'openAuthorModal')
 
       // Test the ID conversion function directly
       const testConversion = (authorName, expectedId) => {
@@ -237,8 +237,8 @@ describe('Author Details On Demand Feature', () => {
 
       // Verify the interface function is called properly
       const expectedAuthorId = 'smith, j.'
-      appState.openAuthorModalDialog(expectedAuthorId)
-      expect(appState.openAuthorModalDialog).toHaveBeenCalledWith(expectedAuthorId)
+      modalManager.openAuthorModal(expectedAuthorId)
+      expect(modalManager.openAuthorModal).toHaveBeenCalledWith(expectedAuthorId)
     })
 
     it('should convert author names to correct IDs', () => {
@@ -421,14 +421,14 @@ describe('Author Details On Demand Feature', () => {
 
   describe('Network Visualization - Author Node Click Integration', () => {
     it('should activate specific author when author node is clicked', () => {
-      vi.spyOn(appState, 'openAuthorModalDialog')
+      vi.spyOn(modalManager, 'openAuthorModal')
 
       const mockAuthorNode = { author: { id: 'john-doe' } }
 
       // Simulate network author node click
-      appState.openAuthorModalDialog(mockAuthorNode.author.id)
+      modalManager.openAuthorModal(mockAuthorNode.author.id)
 
-      expect(appState.openAuthorModalDialog).toHaveBeenCalledWith('john-doe')
+      expect(modalManager.openAuthorModal).toHaveBeenCalledWith('john-doe')
     })
   })
 
@@ -541,7 +541,7 @@ describe('Author Details On Demand Feature', () => {
         citationsPerYear: 1.5
       }
 
-      vi.spyOn(appState, 'openAuthorModalDialog')
+      vi.spyOn(modalManager, 'openAuthorModal')
 
       const wrapper = mount(PublicationDescription.default, {
         props: {
@@ -608,7 +608,7 @@ describe('Author Details On Demand Feature', () => {
         citationsPerYear: 1.5
       }
 
-      vi.spyOn(appState, 'openAuthorModalDialog')
+      vi.spyOn(modalManager, 'openAuthorModal')
 
       const wrapper = mount(PublicationDescription.default, {
         props: {

@@ -1,7 +1,7 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-import { useAppState } from '@/composables/useAppState.js'
+import { useModalManager } from '@/composables/useModalManager.js'
 import { useAuthorStore } from '@/stores/author.js'
 import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
@@ -11,7 +11,7 @@ describe('Author Modal Integration Workflow', () => {
   let modalStore
   let authorStore
   let sessionStore
-  let appState
+  let modalManager
 
   beforeEach(() => {
     pinia = createPinia()
@@ -20,7 +20,7 @@ describe('Author Modal Integration Workflow', () => {
     modalStore = useModalStore()
     authorStore = useAuthorStore()
     sessionStore = useSessionStore()
-    appState = useAppState()
+    modalManager = useModalManager()
 
     // Spy on the methods
     vi.spyOn(authorStore, 'computeSelectedPublicationsAuthors')
@@ -29,14 +29,14 @@ describe('Author Modal Integration Workflow', () => {
 
   describe('Author Modal Opening', () => {
     it('should open modal and set author ID when provided', () => {
-      appState.openAuthorModalDialog('test-author-id')
+      modalManager.openAuthorModal('test-author-id')
 
       expect(modalStore.isAuthorModalDialogShown).toBe(true)
       expect(authorStore.activeAuthorId).toBe('test-author-id')
     })
 
     it('should open modal without setting author ID when not provided', () => {
-      appState.openAuthorModalDialog()
+      modalManager.openAuthorModal()
 
       expect(modalStore.isAuthorModalDialogShown).toBe(true)
       expect(authorStore.activeAuthorId).toBeNull()

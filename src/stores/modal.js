@@ -39,31 +39,5 @@ export const useModalStore = defineStore('modal', {
       )
     }
   },
-  actions: {
-    showAbstract(publication) {
-      this.infoDialog = {
-        title: 'Abstract',
-        message: `<div><i>${publication.abstract}</i></div>`,
-        isShown: true
-      }
-    },
-
-    showConfirmDialog(message, confirm, title = 'Confirm') {
-      this.confirmDialog = {
-        message,
-        action: confirm,
-        isShown: true,
-        title
-      }
-    },
-
-    openSearchModalDialog(query) {
-      this.searchQuery = query ? query : ''
-      this.isSearchModalDialogShown = true
-    },
-
-    openAuthorModalDialog() {
-      this.isAuthorModalDialogShown = true
-    }
-  }
+  actions: {}
 })

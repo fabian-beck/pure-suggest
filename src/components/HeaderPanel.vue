@@ -5,12 +5,12 @@ import FilterMenuComponent from '@/components/FilterMenuComponent.vue'
 import KeywordMenuComponent from '@/components/KeywordMenuComponent.vue'
 import SessionMenuComponent from '@/components/SessionMenuComponent.vue'
 import { useAppState } from '@/composables/useAppState.js'
+import { useModalManager } from '@/composables/useModalManager.js'
 import { useInterfaceStore } from '@/stores/interface.js'
-import { useModalStore } from '@/stores/modal.js'
 
 const appMeta = inject('appMeta')
 const interfaceStore = useInterfaceStore()
-const modalStore = useModalStore()
+const { openKeyboardControlsModal, openAboutModal } = useModalManager()
 const { isEmpty, clearCache } = useAppState()
 
 const filterMenuComponent = ref(null)
@@ -40,13 +40,13 @@ const filterMenuComponent = ref(null)
           </v-list-item>
           <v-list-item
             prepend-icon="mdi-keyboard-outline"
-            @click="modalStore.isKeyboardControlsModalDialogShown = true"
+            @click="openKeyboardControlsModal()"
             class="is-hidden-touch"
             title="Keyboard controls"
           />
           <v-list-item
             prepend-icon="mdi-information-outline"
-            @click="modalStore.isAboutModalDialogShown = true"
+            @click="openAboutModal()"
             title="About"
           />
           <v-list-item

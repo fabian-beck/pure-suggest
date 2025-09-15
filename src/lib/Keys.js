@@ -1,6 +1,6 @@
 import { useAppState } from '../composables/useAppState.js'
+import { useModalManager } from '../composables/useModalManager.js'
 import { useInterfaceStore } from '../stores/interface.js'
-import { useModalStore } from '../stores/modal.js'
 import { useSessionStore } from '../stores/session.js'
 
 /**
@@ -141,7 +141,7 @@ function handleArrowKeyNavigation(e) {
  */
 function handlePublicationActions(e) {
   const sessionStore = useSessionStore()
-  const modalStore = useModalStore()
+  const { showAbstract } = useModalManager()
   const publication = sessionStore.activePublication
 
   if (e.key === '+') {
@@ -155,7 +155,7 @@ function handlePublicationActions(e) {
     window.open(publication.doiUrl)
   } else if (e.key === 't' && publication.abstract) {
     e.preventDefault()
-    modalStore.showAbstract(publication)
+    showAbstract(publication)
   } else if (e.key === 'g') {
     e.preventDefault()
     window.open(publication.gsUrl)
@@ -192,8 +192,8 @@ function handleActivePublicationShortcuts(e) {
 }
 
 export function onKey(e) {
-  const modalStore = useModalStore()
-  const { isEmpty, openAuthorModalDialog } = useAppState()
+  const { isEmpty } = useAppState()
+  const { isAnyOverlayShown, openSearchModal, openAuthorModal } = useModalManager()
 
   // Early returns for modifier keys and repeats
   if (
@@ -206,7 +206,7 @@ export function onKey(e) {
   }
 
   // Handle overlay states
-  if (modalStore.isAnyOverlayShown && document.activeElement.nodeName != 'INPUT') {
+  if (isAnyOverlayShown && document.activeElement.nodeName != 'INPUT') {
     e.preventDefault()
     return
   }
@@ -225,14 +225,14 @@ export function onKey(e) {
   // Search shortcut (works even when empty)
   if (e.key === 's') {
     e.preventDefault()
-    modalStore.isSearchModalDialogShown = true
+    openSearchModal()
     return
   }
 
   // Author shortcut (works when not empty)
   if (!isEmpty.value && e.key === 'a') {
     e.preventDefault()
-    openAuthorModalDialog()
+    openAuthorModal()
     return
   }
 

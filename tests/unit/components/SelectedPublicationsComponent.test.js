@@ -4,20 +4,29 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import SelectedPublicationsComponent from '@/components/SelectedPublicationsComponent.vue'
 import { useInterfaceStore } from '@/stores/interface.js'
-import { useModalStore } from '@/stores/modal.js'
 import { useQueueStore } from '@/stores/queue.js'
 import { useSessionStore } from '@/stores/session.js'
 
 // Mock useAppState for the functions the component uses
 const mockLoadExample = vi.fn()
 const mockImportSession = vi.fn()
-const mockOpenAuthorModalDialog = vi.fn()
 vi.mock('@/composables/useAppState.js', () => ({
   useAppState: () => ({
     loadExample: mockLoadExample,
     importSession: mockImportSession,
-    openAuthorModalDialog: mockOpenAuthorModalDialog,
     isEmpty: { value: false }
+  })
+}))
+
+// Mock useModalManager
+const mockShowConfirmDialog = vi.fn()
+const mockOpenSearchModal = vi.fn()
+const mockOpenAuthorModal = vi.fn()
+vi.mock('@/composables/useModalManager.js', () => ({
+  useModalManager: () => ({
+    showConfirmDialog: mockShowConfirmDialog,
+    openSearchModal: mockOpenSearchModal,
+    openAuthorModal: mockOpenAuthorModal
   })
 }))
 
@@ -25,7 +34,6 @@ describe('SelectedPublicationsComponent', () => {
   let pinia
   let sessionStore
   let interfaceStore
-  let modalStore
   let queueStore
 
   beforeEach(() => {
@@ -33,7 +41,6 @@ describe('SelectedPublicationsComponent', () => {
     setActivePinia(pinia)
     sessionStore = useSessionStore()
     interfaceStore = useInterfaceStore()
-    modalStore = useModalStore()
     queueStore = useQueueStore()
 
     vi.clearAllMocks()
@@ -44,10 +51,9 @@ describe('SelectedPublicationsComponent', () => {
     sessionStore.selectedPublications = []
     sessionStore.excludedPublicationsDois = []
     interfaceStore.isMobile = false
-    modalStore.isQueueModalDialogShown = false
-    mockOpenAuthorModalDialog.mockClear()
-    modalStore.openSearchModalDialog = vi.fn()
-    modalStore.showConfirmDialog = vi.fn()
+    mockOpenSearchModal.mockClear()
+    mockOpenAuthorModal.mockClear()
+    mockShowConfirmDialog.mockClear()
     queueStore.selectedQueue = []
     queueStore.excludedQueue = []
     queueStore.clear = vi.fn()
@@ -141,7 +147,7 @@ describe('SelectedPublicationsComponent', () => {
     const compactButtons = wrapper.findAll('.compact-button')
     const authorsButton = compactButtons[0] // First CompactButton is the authors button
     await authorsButton.trigger('click')
-    expect(mockOpenAuthorModalDialog).toHaveBeenCalled()
+    expect(mockOpenAuthorModal).toHaveBeenCalled()
   })
 
   it('calls openSearchModalDialog when search button is clicked', async () => {
@@ -166,7 +172,7 @@ describe('SelectedPublicationsComponent', () => {
     const compactButtons = wrapper.findAll('.compact-button')
     const searchButton = compactButtons[1] // Second CompactButton is the search button
     await searchButton.trigger('click')
-    expect(modalStore.openSearchModalDialog).toHaveBeenCalled()
+    expect(mockOpenSearchModal).toHaveBeenCalled()
   })
 
   it('calls loadExample when load example button is clicked', async () => {

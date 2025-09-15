@@ -1,7 +1,7 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-import { useAppState } from '@/composables/useAppState.js'
+import { useModalManager } from '@/composables/useModalManager.js'
 import { useAuthorStore } from '@/stores/author.js'
 import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
@@ -29,8 +29,8 @@ describe('Issue #552: Modal Deterministic Behavior', () => {
     authorStore = useAuthorStore()
     sessionStore = useSessionStore()
 
-    const appState = useAppState()
-    openAuthorModalDialog = appState.openAuthorModalDialog
+    const { openAuthorModal } = useModalManager()
+    openAuthorModalDialog = openAuthorModal
 
     // Mock the stores
     vi.spyOn(authorStore, 'computeSelectedPublicationsAuthors').mockReturnValue()

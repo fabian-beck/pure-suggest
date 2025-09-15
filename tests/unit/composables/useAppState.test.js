@@ -4,9 +4,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useAppState } from '@/composables/useAppState.js'
 import { useAuthorStore } from '@/stores/author.js'
 import { useInterfaceStore } from '@/stores/interface.js'
-import { useModalStore } from '@/stores/modal.js'
 import { useQueueStore } from '@/stores/queue.js'
 import { useSessionStore } from '@/stores/session.js'
+
+// Mock useModalManager
+const mockShowConfirmDialog = vi.fn()
+vi.mock('@/composables/useModalManager.js', () => ({
+  useModalManager: () => ({
+    showConfirmDialog: mockShowConfirmDialog
+  })
+}))
 
 // Mock all the dependencies
 vi.mock('@/lib/Cache.js', () => ({
@@ -22,16 +29,16 @@ vi.mock('@/services/SuggestionService.js', () => ({
 }))
 
 describe('useAppState - Session Loading', () => {
-  let sessionStore, interfaceStore, modalStore, authorStore, queueStore, appState
+  let sessionStore, interfaceStore, authorStore, queueStore, appState
 
   beforeEach(() => {
     setActivePinia(createPinia())
 
     sessionStore = useSessionStore()
     interfaceStore = useInterfaceStore()
-    modalStore = useModalStore()
     authorStore = useAuthorStore()
     queueStore = useQueueStore()
+
 
     appState = useAppState()
 
@@ -163,12 +170,12 @@ describe('useAppState - Session Loading', () => {
 
     it('should show confirmation dialog with file input', () => {
       // Mock the showConfirmDialog method
-      modalStore.showConfirmDialog = vi.fn()
+      mockShowConfirmDialog.mockClear()
 
       appState.importSessionWithConfirmation()
 
-      expect(modalStore.showConfirmDialog).toHaveBeenCalled()
-      const [message, , title] = modalStore.showConfirmDialog.mock.calls[0]
+      expect(mockShowConfirmDialog).toHaveBeenCalled()
+      const [message, , title] = mockShowConfirmDialog.mock.calls[0]
 
       expect(message).toContain('Choose an exported session JSON file')
       expect(message).toContain('input type="file"')
@@ -180,12 +187,12 @@ describe('useAppState - Session Loading', () => {
       // (We can't use the mocked method as it doesn't actually update state)
       sessionStore.selectedPublications = [{ doi: '10.1234/test1' }, { doi: '10.1234/test2' }]
 
-      modalStore.showConfirmDialog = vi.fn()
+      mockShowConfirmDialog.mockClear()
 
       appState.importSessionWithConfirmation()
 
-      expect(modalStore.showConfirmDialog).toHaveBeenCalled()
-      const [message] = modalStore.showConfirmDialog.mock.calls[0]
+      expect(mockShowConfirmDialog).toHaveBeenCalled()
+      const [message] = mockShowConfirmDialog.mock.calls[0]
 
       expect(message).toContain('This will clear and replace the current session')
       expect(message).toContain('Choose an exported session JSON file')
@@ -199,12 +206,12 @@ describe('useAppState - Session Loading', () => {
       sessionStore.clear()
       queueStore.clear()
 
-      modalStore.showConfirmDialog = vi.fn()
+      mockShowConfirmDialog.mockClear()
 
       appState.importSessionWithConfirmation()
 
-      expect(modalStore.showConfirmDialog).toHaveBeenCalled()
-      const [message] = modalStore.showConfirmDialog.mock.calls[0]
+      expect(mockShowConfirmDialog).toHaveBeenCalled()
+      const [message] = mockShowConfirmDialog.mock.calls[0]
 
       expect(message).not.toContain('This will clear and replace the current session')
       expect(message).toContain('Choose an exported session JSON file')

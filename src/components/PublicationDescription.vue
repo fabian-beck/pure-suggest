@@ -1,9 +1,8 @@
 <script setup>
 import { computed } from 'vue'
 
-import { useAppState } from '@/composables/useAppState.js'
+import { useModalManager } from '@/composables/useModalManager.js'
 import { useInterfaceStore } from '@/stores/interface.js'
-import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
 
 const props = defineProps({
@@ -24,8 +23,7 @@ const props = defineProps({
 })
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
-const modalStore = useModalStore()
-const { openAuthorModalDialog } = useAppState()
+const { showAbstract: showAbstractModal, openAuthorModal } = useModalManager()
 
 const showDetails = computed(() => {
   return props.alwaysShowDetails || props.publication.isActive
@@ -51,7 +49,7 @@ function highlight(string) {
 }
 
 function showAbstract() {
-  modalStore.showAbstract(props.publication)
+  showAbstractModal(props.publication)
 }
 
 function exportBibtex() {
@@ -146,7 +144,7 @@ function handleAuthorClick(event) {
       // Convert the author name to an author ID and open modal with that ID
       const authorId = findAuthorIdByName(authorName.trim())
       if (authorId) {
-        openAuthorModalDialog(authorId)
+        openAuthorModal(authorId)
       }
     }
     return
