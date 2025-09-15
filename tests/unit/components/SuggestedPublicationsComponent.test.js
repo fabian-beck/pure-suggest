@@ -1,18 +1,12 @@
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 
 import { commonComponentStubs } from '../../helpers/testUtils.js'
 
 import SuggestedPublicationsComponent from '@/components/SuggestedPublicationsComponent.vue'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
-
-// Simplified useAppState mock
-const mockLoadMoreSuggestions = vi.fn()
-vi.mock('@/composables/useAppState.js', () => ({
-  useAppState: () => ({ loadMoreSuggestions: mockLoadMoreSuggestions })
-}))
 
 describe('SuggestedPublicationsComponent', () => {
   let pinia
@@ -27,10 +21,6 @@ describe('SuggestedPublicationsComponent', () => {
 
     // Set up default store state
     interfaceStore.isMobile = false
-
-    vi.clearAllMocks()
-    mockLoadMoreSuggestions.mockClear()
-
     // Set up default session store state
     sessionStore.suggestion = null
     sessionStore.selectedPublications = []
@@ -65,7 +55,7 @@ describe('SuggestedPublicationsComponent', () => {
     expect(wrapper.text()).toContain('1,000')
   })
 
-  it('shows load more button when suggestions are available', () => {
+  it('shows settings menu when suggestions are available', () => {
     sessionStore.suggestion = {
       totalSuggestions: 1000,
       publications: [{ doi: 'test-doi-1', title: 'Test Publication 1' }]
@@ -81,19 +71,24 @@ describe('SuggestedPublicationsComponent', () => {
             template: '<button class="compact-button" :disabled="disabled"><slot></slot></button>',
             props: ['disabled']
           },
-          tippy: { template: '<div class="tippy"><slot></slot></div>' },
-          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
+          'v-menu': { template: '<div class="v-menu"><slot name="activator" :props="{}"></slot><slot></slot></div>' },
+          'v-list': { template: '<div class="v-list"><slot></slot></div>' },
+          'v-list-item': { template: '<div class="v-list-item"><slot></slot></div>' },
+          'v-list-item-title': { template: '<div class="v-list-item-title"><slot></slot></div>' },
+          'v-slider': { template: '<div class="v-slider"></div>' },
+          'tippy': { template: '<div class="tippy"><slot></slot></div>' },
+          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
 
-    const loadMoreBtn = wrapper.find('.compact-button')
-    expect(loadMoreBtn.exists()).toBe(true)
+    const settingsBtn = wrapper.find('.compact-button')
+    expect(settingsBtn.exists()).toBe(true)
     // Check if button exists (the button text is actually from the v-tippy tooltip)
     expect(wrapper.html()).toContain('compact-button')
   })
 
-  it('disables load more button when all suggestions are loaded', () => {
+  it('shows settings button when suggestions are available', () => {
     sessionStore.suggestion = {
       totalSuggestions: 1,
       publications: [{ doi: 'test-doi-1', title: 'Test Publication 1' }]
@@ -105,27 +100,32 @@ describe('SuggestedPublicationsComponent', () => {
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'v-badge': { template: '<div class="v-badge"><slot></slot></div>' },
-          CompactButton: {
-            template: '<button class="compact-button" :disabled="disabled"><slot></slot></button>',
-            props: ['disabled']
+          'CompactButton': {
+            template: '<button class="compact-button"><slot></slot></button>',
           },
-          tippy: { template: '<div class="tippy"><slot></slot></div>' },
-          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
+          'v-menu': { template: '<div class="v-menu"><slot name="activator" :props="{}"></slot><slot></slot></div>' },
+          'v-list': { template: '<div class="v-list"><slot></slot></div>' },
+          'v-list-item': { template: '<div class="v-list-item"><slot></slot></div>' },
+          'v-list-item-title': { template: '<div class="v-list-item-title"><slot></slot></div>' },
+          'v-slider': { template: '<div class="v-slider"></div>' },
+          'tippy': { template: '<div class="tippy"><slot></slot></div>' },
+          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
 
-    const loadMoreBtn = wrapper.find('.compact-button')
-    expect(loadMoreBtn.exists()).toBe(true)
-    // The button should be disabled when all suggestions are loaded
-    expect(loadMoreBtn.attributes('disabled')).toBeDefined()
+    const settingsBtn = wrapper.find('.compact-button')
+    expect(settingsBtn.exists()).toBe(true)
+    // The settings button should always be enabled (no disabled attribute)
+    expect(settingsBtn.attributes('disabled')).toBeUndefined()
   })
 
-  it('calls loadMoreSuggestions when load more button is clicked', async () => {
+  it('shows settings menu with slider when suggestions are available', async () => {
     sessionStore.suggestion = {
       totalSuggestions: 1000,
       publications: [{ doi: 'test-doi-1', title: 'Test Publication 1' }]
     }
+    sessionStore.maxSuggestions = 100
 
     const wrapper = mount(SuggestedPublicationsComponent, {
       global: {
@@ -133,11 +133,24 @@ describe('SuggestedPublicationsComponent', () => {
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'v-badge': { template: '<div class="v-badge"><slot></slot></div>' },
-          CompactButton: {
-            template:
-              '<button class="compact-button" @click="$emit(\'click\')" :disabled="disabled"><slot></slot></button>',
-            emits: ['click'],
-            props: ['disabled']
+          'CompactButton': {
+            template: '<button class="compact-button" @click="$emit(\'click\')"><slot></slot></button>',
+            emits: ['click']
+          },
+          'v-menu': {
+            template: '<div class="v-menu"><slot name="activator" :props="{}"></slot><slot></slot></div>',
+            props: ['close-on-content-click']
+          },
+          'v-list': { template: '<div class="v-list"><slot></slot></div>' },
+          'v-list-item': {
+            template: '<div class="v-list-item"><div class="v-list-item-title"><slot></slot></div><slot name="default"></slot></div>',
+            props: ['prepend-icon']
+          },
+          'v-list-item-title': { template: '<div class="v-list-item-title"><slot></slot></div>' },
+          'v-slider': {
+            template: '<div class="v-slider" @update:model-value="$emit(\'update:model-value\', 200)"></div>',
+            props: ['model-value', 'min', 'max', 'step'],
+            emits: ['update:model-value']
           },
           tippy: { template: '<div class="tippy"><slot></slot></div>' },
           PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
@@ -145,9 +158,10 @@ describe('SuggestedPublicationsComponent', () => {
       }
     })
 
-    const loadMoreBtn = wrapper.find('.compact-button')
-    await loadMoreBtn.trigger('click')
-    expect(mockLoadMoreSuggestions).toHaveBeenCalled()
+    // Check that the menu and slider components are present
+    expect(wrapper.find('.v-menu').exists()).toBe(true)
+    expect(wrapper.find('.v-slider').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Number of suggested to load: 100')
   })
 
   it('renders PublicationListComponent with correct props', () => {
@@ -163,9 +177,13 @@ describe('SuggestedPublicationsComponent', () => {
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'v-badge': { template: '<div class="v-badge"><slot></slot></div>' },
-          CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
-          tippy: { template: '<div class="tippy"><slot></slot></div>' },
-          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
+          'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
+          'v-menu': { template: '<div class="v-menu"><slot name="activator" :props="{}"></slot><slot></slot></div>' },
+          'v-list': { template: '<div class="v-list"><slot></slot></div>' },
+          'v-list-item': { template: '<div class="v-list-item"><slot></slot></div>' },
+          'v-slider': { template: '<div class="v-slider"></div>' },
+          'tippy': { template: '<div class="tippy"><slot></slot></div>' },
+          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -174,7 +192,7 @@ describe('SuggestedPublicationsComponent', () => {
     expect(publicationList.exists()).toBe(true)
   })
 
-  it('hides count and load more when no suggestions are available', () => {
+  it('hides count and settings menu when no suggestions are available', () => {
     sessionStore.suggestion = null
 
     const wrapper = mount(SuggestedPublicationsComponent, {
@@ -183,9 +201,13 @@ describe('SuggestedPublicationsComponent', () => {
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'v-badge': { template: '<div class="v-badge"><slot></slot></div>' },
-          CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
-          tippy: { template: '<div class="tippy"><slot></slot></div>' },
-          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
+          'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
+          'v-menu': { template: '<div class="v-menu"><slot name="activator" :props="{}"></slot><slot></slot></div>' },
+          'v-list': { template: '<div class="v-list"><slot></slot></div>' },
+          'v-list-item': { template: '<div class="v-list-item"><slot></slot></div>' },
+          'v-slider': { template: '<div class="v-slider"></div>' },
+          'tippy': { template: '<div class="tippy"><slot></slot></div>' },
+          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
