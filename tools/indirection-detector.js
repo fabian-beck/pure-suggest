@@ -4,9 +4,10 @@ const fs = require('fs');
 const path = require('path');
 
 class IndirectionDetector {
-  constructor() {
+  constructor(verbose = false) {
     this.candidates = [];
     this.functionMap = new Map();
+    this.verbose = verbose;
   }
 
   async analyze(sourceDir) {
@@ -320,17 +321,22 @@ class IndirectionDetector {
     const templateBoundFunctions = this.allShortFunctions.filter(f => f.hasTemplateUsage);
     const reviewedFunctions = this.allShortFunctions.filter(f => f.reviewComment);
 
-    console.log(`📊 Analysis Results:`);
-    console.log(`Total functions analyzed: ${this.functionMap.size}`);
-    console.log(`Short functions (≤4 lines): ${this.allShortFunctions.length}`);
-    console.log(`Template-bound functions: ${templateBoundFunctions.length}`);
-    console.log(`Previously reviewed functions: ${reviewedFunctions.length}`);
-    console.log(`Unused functions found: ${unusedCandidates.length}`);
-    console.log(`Indirection candidates found: ${indirectionCandidates.length}\n`);
+    if (this.verbose) {
+      console.log(`📊 Analysis Results:`);
+      console.log(`Total functions analyzed: ${this.functionMap.size}`);
+      console.log(`Short functions (≤4 lines): ${this.allShortFunctions.length}`);
+      console.log(`Template-bound functions: ${templateBoundFunctions.length}`);
+      console.log(`Previously reviewed functions: ${reviewedFunctions.length}`);
+      console.log(`Unused functions found: ${unusedCandidates.length}`);
+      console.log(`Indirection candidates found: ${indirectionCandidates.length}\n`);
+    } else {
+      // Concise output
+      console.log(`📊 Found ${indirectionCandidates.length} indirection candidates (${unusedCandidates.length} unused, ${reviewedFunctions.length} reviewed, ${templateBoundFunctions.length} template-bound)${this.verbose ? '' : ' - use --verbose for details'}\n`);
+    }
 
 
-    // Show template-bound functions (excluded from candidates)
-    if (templateBoundFunctions.length > 0) {
+    // Show template-bound functions (excluded from candidates) - verbose only
+    if (this.verbose && templateBoundFunctions.length > 0) {
       console.log('🎭 Template-bound functions (excluded from indirection candidates):\n');
       for (const func of templateBoundFunctions) {
         console.log(`📁 ${path.relative(process.cwd(), func.filePath)}`);
@@ -340,8 +346,8 @@ class IndirectionDetector {
       }
     }
 
-    // Show previously reviewed functions
-    if (reviewedFunctions.length > 0) {
+    // Show previously reviewed functions - verbose only
+    if (this.verbose && reviewedFunctions.length > 0) {
       console.log('✅ Previously reviewed functions (skipped):\n');
       for (const func of reviewedFunctions) {
         console.log(`📁 ${path.relative(process.cwd(), func.filePath)}`);
@@ -352,7 +358,8 @@ class IndirectionDetector {
       }
     }
 
-    if (unusedCandidates.length > 0) {
+    // Show unused functions - verbose only
+    if (this.verbose && unusedCandidates.length > 0) {
       console.log('🗑️  Potentially unused functions:\n');
       for (const candidate of unusedCandidates) {
         console.log(`📁 ${path.relative(process.cwd(), candidate.filePath)}`);
@@ -384,9 +391,11 @@ class IndirectionDetector {
 
 // Main execution
 if (require.main === module) {
-  const detector = new IndirectionDetector();
-  const sourceDir = process.argv[2] || 'src';
+  const args = process.argv.slice(2);
+  const verbose = args.includes('--verbose') || args.includes('-v');
+  const sourceDir = args.find(arg => !arg.startsWith('--') && !arg.startsWith('-')) || 'src';
 
+  const detector = new IndirectionDetector(verbose);
   detector.analyze(sourceDir).catch(console.error);
 }
 
