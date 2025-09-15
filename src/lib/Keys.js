@@ -142,14 +142,15 @@ function handleArrowKeyNavigation(e) {
 function handlePublicationActions(e) {
   const sessionStore = useSessionStore()
   const { showAbstract } = useModalManager()
+  const { queueForSelected, queueForExcluded } = useAppState()
   const publication = sessionStore.activePublication
 
   if (e.key === '+') {
     e.preventDefault()
-    sessionStore.queueForSelected(publication.doi)
+    queueForSelected(publication.doi)
   } else if (e.key === '-') {
     e.preventDefault()
-    sessionStore.queueForExcluded(publication.doi)
+    queueForExcluded(publication.doi)
   } else if (e.key === 'd') {
     e.preventDefault()
     window.open(publication.doiUrl)

@@ -11,11 +11,15 @@ import { useSessionStore } from '../../../src/stores/session.js'
 // Mock useAppState
 const mockClearSession = vi.fn()
 const mockUpdateQueued = vi.fn()
+const mockQueueForSelected = vi.fn()
+const mockQueueForExcluded = vi.fn()
 const mockIsEmpty = { value: false }
 vi.mock('../../../src/composables/useAppState.js', () => ({
   useAppState: () => ({
     clearSession: mockClearSession,
     updateQueued: mockUpdateQueued,
+    queueForSelected: mockQueueForSelected,
+    queueForExcluded: mockQueueForExcluded,
     isEmpty: mockIsEmpty
   })
 }))
@@ -95,6 +99,10 @@ describe('Keys Module - Keyboard Event Handling', () => {
 
     // Clear all mocks
     vi.clearAllMocks()
+    mockClearSession.mockClear()
+    mockUpdateQueued.mockClear()
+    mockQueueForSelected.mockClear()
+    mockQueueForExcluded.mockClear()
   })
 
   describe('Basic Key Handling', () => {
@@ -251,6 +259,41 @@ describe('Keys Module - Keyboard Event Handling', () => {
       onKey(event)
 
       expect(mockInput.blur).toHaveBeenCalled()
+    })
+  })
+
+  describe('Publication Queuing (+ and - keys)', () => {
+    it('should queue publication for selection when pressing + with active publication', () => {
+      sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
+      sessionStore.activePublication = { doi: '10.1234/active' }
+
+      const event = { key: '+', preventDefault: vi.fn() }
+      onKey(event)
+
+      expect(event.preventDefault).toHaveBeenCalled()
+      expect(mockQueueForSelected).toHaveBeenCalledWith('10.1234/active')
+    })
+
+    it('should queue publication for exclusion when pressing - with active publication', () => {
+      sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
+      sessionStore.activePublication = { doi: '10.1234/active' }
+
+      const event = { key: '-', preventDefault: vi.fn() }
+      onKey(event)
+
+      expect(event.preventDefault).toHaveBeenCalled()
+      expect(mockQueueForExcluded).toHaveBeenCalledWith('10.1234/active')
+    })
+
+    it('should do nothing when pressing + without active publication', () => {
+      sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
+      sessionStore.activePublication = null
+
+      const event = { key: '+', preventDefault: vi.fn() }
+      onKey(event)
+
+      expect(event.preventDefault).not.toHaveBeenCalled()
+      expect(mockQueueForSelected).not.toHaveBeenCalled()
     })
   })
 })
