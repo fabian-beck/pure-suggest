@@ -129,7 +129,7 @@ icon="mdi-cog has-text-white" class="ml-2"
             </template>
             <v-list>
               <v-list-item prepend-icon="mdi-water-plus-outline">
-                <v-list-item-title>Number of <b>suggested</b> shown: <b>{{ localMaxSuggestions }}</b></v-list-item-title>
+                <v-list-item-title>Number of <b>suggested</b> to load: <b class="fixed-width-number">{{ localMaxSuggestions }}</b></v-list-item-title>
                 <v-slider
                   v-model="localMaxSuggestions"
                   :min="20"
@@ -165,5 +165,12 @@ icon="mdi-cog has-text-white" class="ml-2"
 :deep(.v-list-item .v-slider) {
   padding-left: 16px;
   padding-right: 16px;
+}
+
+// Fixed-width number to prevent panel width changes
+.fixed-width-number {
+  display: inline-block;
+  min-width: 3ch;
+  text-align: center;
 }
 </style>
