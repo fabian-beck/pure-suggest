@@ -3,7 +3,6 @@ import { computed } from 'vue'
 
 import CompactButton from '@/components/basic/CompactButton.vue'
 import CompactSwitch from '@/components/basic/CompactSwitch.vue'
-import { useAppState } from '@/composables/useAppState.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 
 const props = defineProps({
@@ -12,6 +11,10 @@ const props = defineProps({
     default: ''
   },
   isNetworkClusters: {
+    type: Boolean,
+    default: false
+  },
+  hasNoContent: {
     type: Boolean,
     default: false
   }
@@ -25,7 +28,6 @@ const emit = defineEmits([
 ])
 
 const interfaceStore = useInterfaceStore()
-const { isEmpty } = useAppState()
 
 const isNetworkClustersModel = computed({
   get() {
@@ -55,7 +57,7 @@ const isNetworkClustersModel = computed({
         {{ errorMessage }}
       </div>
     </div>
-    <div class="level-right" v-show="!isEmpty">
+    <div class="level-right" v-show="!hasNoContent">
       <div
         class="level-item has-text-white mr-4 mb-0"
         v-show="!interfaceStore.isNetworkCollapsed"

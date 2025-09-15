@@ -968,6 +968,7 @@ export default {
     <div class="box has-background-grey">
       <NetworkHeader
         :error-message="errorMessage"
+        :has-no-content="isEmpty"
         v-model:is-network-clusters="isNetworkClusters"
         @expand-network="expandNetwork"
         @collapse-network="collapseNetwork"

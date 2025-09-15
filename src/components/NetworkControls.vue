@@ -2,7 +2,6 @@
 import { computed } from 'vue'
 
 import CompactButton from '@/components/basic/CompactButton.vue'
-import { useAppState } from '@/composables/useAppState.js'
 import { useSessionStore } from '@/stores/session.js'
 
 const props = defineProps({
@@ -35,7 +34,6 @@ const emit = defineEmits([
 ])
 
 const sessionStore = useSessionStore()
-const { isEmpty } = useAppState()
 
 const showNodesModel = computed({
   get() {
@@ -75,7 +73,7 @@ const authorNumberFactorModel = computed({
 </script>
 
 <template>
-  <div class="controls-footer-right" v-show="!isEmpty">
+  <div class="controls-footer-right">
     <span class="mr-4">
       <CompactButton
         icon="mdi-plus"
