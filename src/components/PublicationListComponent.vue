@@ -234,23 +234,23 @@ function scrollToActivated() {
   padding: 0;
 
   .section-header-text {
-    background: lighten(#363636, 10%);
-    color: white;
-    padding: 0.8rem 1rem;
     margin: 0;
-    font-size: 1rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    color: var(--bulma-primary-dark);
+    background: linear-gradient(135deg, var(--bulma-primary-95) 0%, var(--bulma-primary-90) 100%);
+    border-left: 3px solid var(--bulma-primary);
+    border-bottom: 1px solid var(--bulma-primary-85);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    @include light-shadow;
 
     &.info-theme {
-      background: #3e8ed0;
-    }
-
-    :deep(.mdi) {
-      font-size: 1.1rem;
+      color: var(--bulma-info-dark);
+      background: linear-gradient(135deg, var(--bulma-info-95) 0%, var(--bulma-info-90) 100%);
+      border-left-color: var(--bulma-info);
+      border-bottom-color: var(--bulma-info-85);
     }
   }
 }
