@@ -92,12 +92,6 @@ function refocus() {
   document.getElementById(props.publication.doi)?.focus()
 }
 
-function extractTextFromHtml(htmlContent) {
-  // Create a temporary DOM element to extract text content from HTML
-  const tempDiv = document.createElement('div')
-  tempDiv.innerHTML = htmlContent
-  return (tempDiv.textContent || tempDiv.innerText || '').trim()
-}
 
 
 function handleAuthorClick(event) {

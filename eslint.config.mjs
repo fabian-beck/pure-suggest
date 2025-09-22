@@ -129,6 +129,7 @@ export default [
         ...globals.browser,
         ...globals.es2021,
         ...globals.vitest,
+        ...globals.node,
         global: 'readonly'
       }
     },
