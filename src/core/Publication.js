@@ -143,7 +143,7 @@ export default class Publication {
   resetToDefaults() {
     // Meta-data
     this.title = this.titleHighlighted = ''
-    this.year = this.author = this.authorOrcidHtml = undefined
+    this.year = this.author = this.authorOrcidData = undefined
     this.container = this.volume = this.issue = this.page = this.abstract = undefined
 
     // Citation arrays and counts
@@ -209,10 +209,24 @@ export default class Publication {
 
     this.author = data.author.replace(ORCID_REGEX, '')
     this.authorOrcid = data.author
-    this.authorOrcidHtml = data.author.replace(
-      ORCID_REGEX,
-      ` <a href='https://orcid.org/$2'><img alt='ORCID logo' src='${ORCID_ICON_URL}' width='${ICON_SIZES.ORCID_WIDTH}' height='${ICON_SIZES.ORCID_HEIGHT}' /></a>`
-    )
+
+    // Extract ORCID IDs and their positions for cleaner template handling
+    this.authorOrcidData = []
+    const authorParts = data.author.split('; ')
+
+    authorParts.forEach((authorPart, index) => {
+      const match = ORCID_REGEX.exec(authorPart)
+      if (match) {
+        this.authorOrcidData.push({
+          index,
+          orcidId: match[2],
+          authorName: authorPart.replace(ORCID_REGEX, '').trim()
+        })
+      }
+      // Reset regex for next iteration
+      ORCID_REGEX.lastIndex = 0
+    })
+
   }
 
   /**

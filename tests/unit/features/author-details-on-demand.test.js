@@ -532,6 +532,13 @@ describe('Author Details On Demand Feature', () => {
         title: 'Test Publication with ORCID',
         author: 'John Smith; Jane Doe',
         authorOrcidHtml: `John Smith <a href='https://orcid.org/0000-0000-0000-0001'><img alt='ORCID logo' src='orcid-icon.png' width='14' height='14' /></a>; Jane Doe`,
+        authorOrcidData: [
+          {
+            index: 0,
+            orcidId: '0000-0000-0000-0001',
+            authorName: 'John Smith'
+          }
+        ],
         year: 2023,
         wasFetched: true,
         isActive: true,
@@ -584,9 +591,14 @@ describe('Author Details On Demand Feature', () => {
       expect(authorIdFromHTML).toBe('john smith') // Clean conversion
       expect(authorIdFromHTML).not.toContain('<a href=') // No HTML in the ID
 
-      // The visual display should still preserve ORCID links
-      expect(firstAuthor.html()).toContain('<a href=') // ORCID link still visible
-      expect(firstAuthor.html()).toContain('img') // ORCID icon still visible
+      // FIXED: ORCID links should now be OUTSIDE the clickable author span to prevent double-click
+      expect(firstAuthor.html()).not.toContain('<a href=') // ORCID link moved outside
+      expect(firstAuthor.html()).not.toContain('img') // ORCID icon moved outside
+
+      // But ORCID should still be visible in the overall author section
+      const authorSection = wrapper.find('[data-author="John Smith"]').element.parentElement
+      expect(authorSection.innerHTML).toContain('href="https://orcid.org/') // ORCID link present outside clickable span
+      expect(authorSection.innerHTML).toContain('img') // ORCID icon present outside clickable span
     })
 
     it('should correctly handle ORCID authors after fix - clean data-author attribute', async () => {
@@ -599,6 +611,13 @@ describe('Author Details On Demand Feature', () => {
         title: 'Test Publication with ORCID Fixed',
         author: 'John Smith; Jane Doe',
         authorOrcidHtml: `John Smith <a href='https://orcid.org/0000-0000-0000-0001'><img alt='ORCID logo' src='orcid-icon.png' width='14' height='14' /></a>; Jane Doe`,
+        authorOrcidData: [
+          {
+            index: 0,
+            orcidId: '0000-0000-0000-0001',
+            authorName: 'John Smith'
+          }
+        ],
         year: 2023,
         wasFetched: true,
         isActive: true,
@@ -632,8 +651,12 @@ describe('Author Details On Demand Feature', () => {
       expect(dataAuthor).not.toContain('<a href=') // No HTML tags
       expect(dataAuthor).not.toContain('img') // No img tags
 
-      // The visual content should still show ORCID (in the display HTML)
-      expect(firstAuthor.html()).toContain('<a href=') // Visual ORCID link preserved
+      // FIXED: ORCID should now be outside the clickable span to prevent double-click
+      expect(firstAuthor.html()).not.toContain('<a href=') // ORCID moved outside clickable span
+
+      // But ORCID should still be visible in the overall author section
+      const authorSection = wrapper.find('[data-author="John Smith"]').element.parentElement
+      expect(authorSection.innerHTML).toContain('href="https://orcid.org/') // ORCID link still visible overall
 
       // Now the findAuthorIdByName should work correctly
       const findAuthorIdByName = (authorName) => {

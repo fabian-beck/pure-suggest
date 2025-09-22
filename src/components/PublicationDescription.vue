@@ -91,48 +91,6 @@ function extractTextFromHtml(htmlContent) {
   return (tempDiv.textContent || tempDiv.innerText || '').trim()
 }
 
-function makeAuthorsClickable(authorHtml) {
-  if (!authorHtml) return ''
-
-  // Apply highlighting first to preserve existing highlighting functionality
-  const highlighted = highlight(authorHtml)
-
-  // Only make authors clickable for selected publications
-  if (props.publicationType !== 'selected') {
-    return highlighted // Return as-is for non-selected publications
-  }
-
-  // Use the same parsing logic as Publication.js - authors are separated by '; '
-  // This leverages the existing well-tested structure instead of complex regex
-  const authorSeparator = '; '
-
-  // Check if this looks like a structured author list (contains the separator)
-  if (highlighted.includes(authorSeparator)) {
-    // Split by the known separator and wrap each author
-    return highlighted
-      .split(authorSeparator)
-      .map((author) => {
-        const trimmedAuthor = author.trim()
-        if (trimmedAuthor) {
-          // Extract clean text for data-author attribute (for ORCID handling)
-          const cleanAuthorText = extractTextFromHtml(trimmedAuthor)
-          return `<span class="clickable-author" data-author="${cleanAuthorText}">${trimmedAuthor}</span>`
-        }
-        return trimmedAuthor
-      })
-      .join(authorSeparator)
-  }
-
-  // If no structured separator found, treat as single author
-  const trimmedHtml = highlighted.trim()
-  if (trimmedHtml) {
-    // Extract clean text for data-author attribute (for ORCID handling)
-    const cleanAuthorText = extractTextFromHtml(trimmedHtml)
-    return `<span class="clickable-author" data-author="${cleanAuthorText}">${trimmedHtml}</span>`
-  }
-
-  return highlighted
-}
 
 function handleAuthorClick(event) {
   // Check if clicked element or its parent has the clickable-author class
@@ -168,6 +126,32 @@ function findAuthorIdByName(authorName) {
       .replace(/[ßẞ]/g, 'ss')
       .toLowerCase()
   )
+}
+
+function getOrcidUrl(orcidId) {
+  return `https://orcid.org/${orcidId}`
+}
+
+function getOrcidIconUrl() {
+  return 'https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png'
+}
+
+function getAuthorsWithOrcid() {
+  if (!props.publication.author) {
+    return []
+  }
+
+  const authors = props.publication.author.split('; ')
+  const orcidData = props.publication.authorOrcidData || []
+
+  return authors.map((author, index) => {
+    const orcidInfo = orcidData.find(data => data.index === index)
+    return {
+      name: author.trim(),
+      orcidId: orcidInfo?.orcidId,
+      hasOrcid: Boolean(orcidInfo)
+    }
+  })
 }
 </script>
 
@@ -237,16 +221,36 @@ function findAuthorIdByName(authorName) {
       </div>
     </div>
     <div v-if="showDetails">
-      <span>
-        <span
-          v-html="
-            makeAuthorsClickable(publication.authorOrcidHtml) +
-            (publication.authorOrcidHtml.endsWith('.') ? ' ' : '. ')
-          "
-          v-if="publication.author"
-          @click.stop="handleAuthorClick"
-          @click.middle.stop="refocus"
-        ></span>
+      <span v-if="publication.author">
+        <template v-for="(author, index) in getAuthorsWithOrcid()" :key="index">
+          <span
+            v-if="publicationType === 'selected'"
+            class="clickable-author"
+            :data-author="author.name"
+            @click.stop="handleAuthorClick"
+            @click.middle.stop="refocus"
+            v-html="highlight(author.name)"
+          ></span>
+          <span
+            v-else
+            v-html="highlight(author.name)"
+          ></span>
+          <a
+            v-if="author.hasOrcid"
+            :href="getOrcidUrl(author.orcidId)"
+            @click.stop
+            class="ml-1"
+          >
+            <img
+              :src="getOrcidIconUrl()"
+              alt="ORCID logo"
+              width="14"
+              height="14"
+            />
+          </a>
+          <span v-if="index < getAuthorsWithOrcid().length - 1">; </span>
+        </template>
+        <span>. </span>
       </span>
       <span v-if="publication.container">
         <em v-html="` ${highlight(publication.container)}`"></em>,
