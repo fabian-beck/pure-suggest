@@ -57,12 +57,12 @@ const isNetworkClustersModel = computed({
         {{ errorMessage }}
       </div>
     </div>
-    <div class="level-right" v-show="!hasNoContent">
+    <div class="level-right" v-if="!hasNoContent">
       <div
         class="level-item has-text-white mr-4 mb-0"
         v-show="!interfaceStore.isNetworkCollapsed"
         v-tippy="
-          `There are two display <span class='key'>m</span>odes:<br><br><b>Timeline:</b> 
+          `There are two display <span class='key'>m</span>odes:<br><br><b>Timeline:</b>
         The diagram places publications from left to right based on year, and vertically tries to group linked publications close to each other.<br><br>
         <b>Clusters:</b> The diagram groups linked publications close to each other, irrespective of publication year.`
         "
@@ -79,16 +79,16 @@ const isNetworkClustersModel = computed({
       <CompactButton
         icon="mdi-arrow-down"
         v-tippy="'Hide diagram'"
-        v-show="!interfaceStore.isNetworkCollapsed"
+        v-show="!interfaceStore.isNetworkCollapsed && !interfaceStore.isMobile && !interfaceStore.isWideScreen"
         @click="$emit('collapseNetwork')"
-        class="ml-4 is-hidden-touch has-text-white"
+        class="ml-4 has-text-white"
       ></CompactButton>
       <CompactButton
         icon="mdi-arrow-up"
         v-tippy="'Show diagram'"
-        v-show="interfaceStore.isNetworkCollapsed"
+        v-show="interfaceStore.isNetworkCollapsed && !interfaceStore.isMobile && !interfaceStore.isWideScreen"
         @click="$emit('restoreNetwork')"
-        class="ml-4 is-hidden-touch has-text-white"
+        class="ml-4 has-text-white"
       ></CompactButton>
       <CompactButton
         icon="mdi-arrow-expand"

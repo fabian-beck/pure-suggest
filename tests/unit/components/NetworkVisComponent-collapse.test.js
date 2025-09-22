@@ -135,6 +135,7 @@ vi.mock('@/stores/session.js', () => ({
 // Create a dynamic interface store that tests can modify
 const mockInterfaceStore = {
   isMobile: false,
+  isWideScreen: false,
   isNetworkExpanded: false,
   isNetworkCollapsed: false,
   isNetworkClusters: false,
@@ -277,6 +278,7 @@ describe('NetworkVisComponent - Collapse Functionality', () => {
     // Reset mock interface store to default state
     mockInterfaceStore.isNetworkExpanded = false
     mockInterfaceStore.isNetworkCollapsed = false
+    mockInterfaceStore.isWideScreen = false
     mockInterfaceStore.isNetworkClusters = false
     mockInterfaceStore.isLoading = false
   })
@@ -354,57 +356,81 @@ describe('NetworkVisComponent - Collapse Functionality', () => {
   })
 
   describe('Performance Optimization When Collapsed', () => {
-    it('should skip plot when network is collapsed', () => {
+    it('should skip plot when network is collapsed (in regular desktop mode)', () => {
+      // Set collapsed state BEFORE mounting (ensure not wide screen)
+      mockInterfaceStore.isNetworkCollapsed = true
+      mockInterfaceStore.isWideScreen = false
+
       const wrapper = mount(NetworkVisComponent, {
         global: {
           stubs: getComponentStubs()
         }
       })
-
-      // Set collapsed state
-      mockInterfaceStore.isNetworkCollapsed = true
 
       // Spy on simulation methods
       const restartSpy = vi.spyOn(wrapper.vm, 'restart')
       const startSpy = vi.spyOn(wrapper.vm, 'start')
 
-      // Call plot - should return early
+      // Call plot - should return early in regular desktop mode when collapsed
       wrapper.vm.plot()
 
-      // Should not call simulation methods when collapsed
-      expect(restartSpy).not.toHaveBeenCalled()
+      // Should not call simulation methods when collapsed in regular desktop mode
       expect(startSpy).not.toHaveBeenCalled()
+      expect(restartSpy).not.toHaveBeenCalled()
     })
 
-    it('should skip plot with restart when network is collapsed', () => {
+    it('should skip plot with restart when network is collapsed (in regular desktop mode)', () => {
+      // Set collapsed state BEFORE mounting (ensure not wide screen)
+      mockInterfaceStore.isNetworkCollapsed = true
+      mockInterfaceStore.isWideScreen = false
+
       const wrapper = mount(NetworkVisComponent, {
         global: {
           stubs: getComponentStubs()
         }
       })
-
-      // Set collapsed state
-      mockInterfaceStore.isNetworkCollapsed = true
 
       // Spy on simulation methods
       const restartSpy = vi.spyOn(wrapper.vm, 'restart')
 
-      // Call plot with restart - should return early
+      // Call plot with restart - should return early in regular desktop mode when collapsed
       wrapper.vm.plot(true)
 
-      // Should not call simulation restart when collapsed
+      // Should not call simulation restart when collapsed in regular desktop mode
       expect(restartSpy).not.toHaveBeenCalled()
     })
 
-    it('should skip tick when network is collapsed', () => {
+    it('should not skip plot when network is collapsed but in wide screen mode', () => {
+      // Set collapsed state AND wide screen mode BEFORE mounting
+      mockInterfaceStore.isNetworkCollapsed = true
+      mockInterfaceStore.isWideScreen = true
+
       const wrapper = mount(NetworkVisComponent, {
         global: {
           stubs: getComponentStubs()
         }
       })
 
-      // Set collapsed state and add some nodes
+      // Spy on simulation methods
+      const startSpy = vi.spyOn(wrapper.vm, 'start')
+
+      // Call plot - should NOT return early in wide screen mode
+      wrapper.vm.plot()
+
+      // Should call simulation methods even when collapsed in wide screen mode
+      expect(startSpy).toHaveBeenCalled()
+    })
+
+    it('should skip tick when network is collapsed (in regular desktop mode)', () => {
+      // Set collapsed state BEFORE mounting (ensure not wide screen)
       mockInterfaceStore.isNetworkCollapsed = true
+      mockInterfaceStore.isWideScreen = false
+
+      const wrapper = mount(NetworkVisComponent, {
+        global: {
+          stubs: getComponentStubs()
+        }
+      })
       wrapper.vm.graph.nodes = [{ id: 'test-node' }]
 
       // Mock performance monitor methods

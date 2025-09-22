@@ -18,6 +18,7 @@ export const useInterfaceStore = defineStore('interface', {
       // Network replot trigger (incremented to notify NetworkVisComponent to replot)
       networkReplotTrigger: 0,
       isMobile: true,
+      isWideScreen: false,
       isFilterMenuOpen: false,
       // Hover state management
       hoveredPublication: null, // DOI of currently hovered publication
@@ -36,6 +37,7 @@ export const useInterfaceStore = defineStore('interface', {
 
     checkMobile() {
       this.isMobile = window.innerWidth < 1023
+      this.isWideScreen = window.innerWidth >= 2400
     },
 
     startLoading() {

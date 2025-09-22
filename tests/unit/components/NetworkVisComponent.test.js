@@ -104,6 +104,7 @@ const mockSessionStore = {
 
 const mockInterfaceStore = {
   isMobile: false,
+  isWideScreen: false,
   isNetworkExpanded: false,
   isNetworkClusters: false,
   isLoading: false,

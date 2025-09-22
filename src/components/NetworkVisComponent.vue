@@ -139,6 +139,11 @@ export default {
       return this.showNodes.includes('author')
     },
 
+    isNetworkActuallyCollapsed () {
+      // In wide screen mode, network is never collapsed regardless of store state
+      return this.interfaceStore.isNetworkCollapsed && !this.interfaceStore.isWideScreen
+    },
+
     networkCssClasses () {
       // Check if we should show fading animation during early tick skipping (but not when dragging)
       if (
@@ -465,7 +470,7 @@ export default {
       }
 
       // Skip plotting when network is collapsed for performance
-      if (this.interfaceStore.isNetworkCollapsed) {
+      if (this.isNetworkActuallyCollapsed) {
         return
       }
 
@@ -540,7 +545,7 @@ export default {
      */
     shouldSkipCurrentTick() {
       // Skip when network is collapsed for performance
-      if (this.interfaceStore.isNetworkCollapsed) {
+      if (this.isNetworkActuallyCollapsed) {
         return true
       }
 
@@ -974,7 +979,7 @@ export default {
         @collapse-network="collapseNetwork"
         @restore-network="restoreNetwork"
       />
-      <div id="network-svg-container" v-show="!interfaceStore.isNetworkCollapsed">
+      <div id="network-svg-container" v-show="!isNetworkActuallyCollapsed">
         <NetworkPerformanceMonitor
           ref="performanceMonitor"
           :show="interfaceStore.showPerformancePanel"
@@ -988,7 +993,7 @@ export default {
           <g></g>
         </svg>
       </div>
-      <ul class="publication-component-list" v-show="!interfaceStore.isNetworkCollapsed">
+      <ul class="publication-component-list" v-show="!isNetworkActuallyCollapsed">
         <PublicationComponent
           v-if="activePublication && interfaceStore.isNetworkExpanded"
           :publication="activePublication"
@@ -996,7 +1001,7 @@ export default {
           :publication-type="activePublication.isSelected ? 'selected' : 'suggested'"
         ></PublicationComponent>
       </ul>
-      <div class="controls-header-left" v-show="!interfaceStore.isNetworkCollapsed">
+      <div class="controls-header-left" v-show="!isNetworkActuallyCollapsed">
         <v-btn
           class="has-background-primary has-text-white"
           @click="updateQueued"
@@ -1015,7 +1020,7 @@ export default {
         @zoom="zoomByFactor"
         @reset="resetZoom"
         @plot="plot"
-        v-show="!interfaceStore.isNetworkCollapsed && !isEmpty"
+        v-show="!isNetworkActuallyCollapsed && !isEmpty"
       />
     </div>
   </div>
