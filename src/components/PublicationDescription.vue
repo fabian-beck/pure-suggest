@@ -58,14 +58,22 @@ function exportBibtex() {
 }
 
 function toggleDoi(doi) {
-  // Check if the filter menu is open
-  if (!interfaceStore.isFilterMenuOpen) {
-    // Open the filter menu and add the DOI
+  // Remember the states before we do anything
+  const wasMenuOpen = interfaceStore.isFilterMenuOpen
+  const wasDoiFiltered = isDoiFiltered(doi)
+
+  // Always toggle the DOI
+  sessionStore.filter.toggleDoi(doi)
+
+  // Handle menu state based on original state
+  if (!wasMenuOpen && !wasDoiFiltered) {
+    // Menu was closed and we just added a DOI - open the menu
     interfaceStore.openFilterMenu()
-    sessionStore.filter.addDoi(doi)
-  } else {
-    // Menu is already open, just toggle the DOI
-    sessionStore.filter.toggleDoi(doi)
+  } else if (wasMenuOpen) {
+    // Menu was open - ensure it stays open after Vuetify's close behavior
+    setTimeout(() => {
+      interfaceStore.setFilterMenuState(true)
+    }, 0)
   }
 }
 
@@ -328,7 +336,7 @@ function getAuthorsWithOrcid() {
             class="ml-5"
             v-tippy="getFilterDoiTooltip(publication.doi)"
             :active="isDoiFiltered(publication.doi)"
-            @click="toggleDoi(publication.doi)"
+            @click.stop="toggleDoi(publication.doi)"
             v-if="publication.isSelected"
           >
           </CompactButton>
