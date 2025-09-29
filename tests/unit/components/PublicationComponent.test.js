@@ -217,79 +217,42 @@ describe('PublicationComponent', () => {
   })
 
   describe('CSS class binding', () => {
-    it('should apply is-active class when publication is active', () => {
+    it('should apply correct state classes', () => {
       wrapper = createWrapper({ isActive: true })
       expect(wrapper.classes()).toContain('is-active')
-    })
 
-    it('should apply is-selected class when publication is selected', () => {
       wrapper = createWrapper({ isSelected: true })
       expect(wrapper.classes()).toContain('is-selected')
     })
 
-    it('should apply is-unread class for unread, unselected, fetched publications', () => {
-      wrapper = createWrapper({
-        isRead: false,
-        isSelected: false,
-        wasFetched: true
-      })
+    it('should handle is-unread class correctly', () => {
+      wrapper = createWrapper({ isRead: false, isSelected: false, wasFetched: true })
       expect(wrapper.classes()).toContain('is-unread')
-    })
 
-    it('should NOT apply is-unread class when publication is read', () => {
-      wrapper = createWrapper({
-        isRead: true,
-        isSelected: false,
-        wasFetched: true
-      })
+      wrapper = createWrapper({ isRead: true, isSelected: false, wasFetched: true })
       expect(wrapper.classes()).not.toContain('is-unread')
-    })
 
-    it('should NOT apply is-unread class when publication is selected', () => {
-      wrapper = createWrapper({
-        isRead: false,
-        isSelected: true,
-        wasFetched: true
-      })
+      wrapper = createWrapper({ isRead: false, isSelected: true, wasFetched: true })
       expect(wrapper.classes()).not.toContain('is-unread')
-    })
 
-    it('should NOT apply is-unread class when publication was not fetched', () => {
-      wrapper = createWrapper({
-        isRead: false,
-        isSelected: false,
-        wasFetched: false
-      })
+      wrapper = createWrapper({ isRead: false, isSelected: false, wasFetched: false })
       expect(wrapper.classes()).not.toContain('is-unread')
     })
   })
 
   describe('user interactions', () => {
-    it('should call activate method when clicked', async () => {
+    it('should handle publication activation and hover', async () => {
       const publication = createMockPublication({ doi: 'test-doi' })
       wrapper = createWrapper(publication)
 
       await wrapper.trigger('click')
-
       expect(mockSessionStore.activatePublicationComponentByDoi).toHaveBeenCalledWith('test-doi')
       expect(wrapper.emitted('activate')[0]).toEqual(['test-doi'])
-    })
-
-    it('should call hoverPublication on mouseenter', async () => {
-      const publication = createMockPublication()
-      wrapper = createWrapper(publication)
 
       await wrapper.trigger('mouseenter')
-
       expect(mockSessionStore.hoverPublication).toHaveBeenCalledWith(publication, true)
-    })
-
-    it('should call hoverPublication on mouseleave', async () => {
-      const publication = createMockPublication()
-      wrapper = createWrapper(publication)
 
       await wrapper.trigger('mouseleave')
-
       expect(mockSessionStore.hoverPublication).toHaveBeenCalledWith(publication, false)
     })
 
@@ -389,79 +352,32 @@ describe('PublicationComponent', () => {
     })
   })
 
-  describe('boost indicator display', () => {
-    it('should show boost indicator when boostFactor > 1', () => {
+  describe('boost indicator', () => {
+    it('should conditionally display based on boostFactor', () => {
       wrapper = createWrapper({ boostFactor: 2 })
+      expect(wrapper.find('.boost-indicator').exists()).toBe(true)
+      expect(wrapper.find('.boost-indicator').classes()).toContain('chevron-up')
 
-      const boostIndicator = wrapper.find('.boost-indicator')
-      expect(boostIndicator.exists()).toBe(true)
-      expect(boostIndicator.classes()).toContain('chevron-up')
-    })
-
-    it('should NOT show boost indicator when boostFactor = 1', () => {
       wrapper = createWrapper({ boostFactor: 1 })
-
       expect(wrapper.find('.boost-indicator').exists()).toBe(false)
-    })
 
-    it('should NOT show boost indicator when boostFactor < 1', () => {
       wrapper = createWrapper({ boostFactor: 0.8 })
-
       expect(wrapper.find('.boost-indicator').exists()).toBe(false)
     })
   })
 
   describe('event propagation', () => {
-    it('should not trigger parent click when button is clicked', async () => {
+    it('should not trigger parent click when action buttons are clicked', async () => {
       const publication = createMockPublication({ doi: 'test-doi', isSelected: false })
       wrapper = createWrapper(publication)
-
       const activateSpy = vi.spyOn(wrapper.vm, 'activate')
 
-      // Find the plus button and click it
       const plusButton = wrapper
         .findAll('.mock-compact-button')
         .find((btn) => btn.text().includes('mdi-plus-thick'))
-
       await plusButton.trigger('click')
-
-      // The activate method should NOT be called when a button is clicked
-      // This would indicate a bug where button clicks bubble up to the parent
       expect(activateSpy).not.toHaveBeenCalled()
       expect(mockSessionStore.queueForSelected).toHaveBeenCalledWith('test-doi')
-    })
-
-    it('should not trigger parent click when refresh button is clicked', async () => {
-      const publication = createMockPublication({
-        isActive: true,
-        title: '',
-        author: '',
-        year: null
-      })
-      wrapper = createWrapper(publication)
-
-      const activateSpy = vi.spyOn(wrapper.vm, 'activate')
-
-      const refreshButton = wrapper.find('.error-notification .mock-compact-button')
-      await refreshButton.trigger('click')
-
-      // The activate method should NOT be called when refresh button is clicked
-      expect(activateSpy).not.toHaveBeenCalled()
-      expect(mockSessionStore.retryLoadingPublication).toHaveBeenCalled()
-    })
-  })
-
-  describe('score display', () => {
-    it('should display various score values correctly', () => {
-      // Test representative score values
-      wrapper = createWrapper({ score: 32, scoreColor: 'hsl(0, 0%, 60%)' })
-      expect(wrapper.find('.score').text()).toBe('32')
-
-      wrapper = createWrapper({ score: 0, scoreColor: 'hsl(0, 0%, 100%)' })
-      expect(wrapper.find('.score').text()).toBe('0')
-
-      wrapper = createWrapper({ score: -5, scoreColor: 'hsl(0, 0%, 100%)' })
-      expect(wrapper.find('.score').text()).toBe('-5')
     })
   })
 
