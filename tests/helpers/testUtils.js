@@ -46,15 +46,61 @@ export const createD3ChainableMock = (returnData = null) => {
 
 // Simplified D3 simulation mock
 export const createD3SimulationMock = () => ({
-  alphaDecay: vi.fn(() => createD3SimulationMock()),
-  alphaMin: vi.fn(() => createD3SimulationMock()),
-  nodes: vi.fn(() => createD3SimulationMock()),
-  force: vi.fn(() => createD3SimulationMock()),
-  alpha: vi.fn(() => createD3SimulationMock()),
-  restart: vi.fn(() => createD3SimulationMock()),
-  stop: vi.fn(() => createD3SimulationMock()),
-  on: vi.fn(() => createD3SimulationMock())
+  alphaDecay: vi.fn(function() { return this }),
+  alphaMin: vi.fn(function() { return this }),
+  nodes: vi.fn(function() { return this }),
+  force: vi.fn(function() { return this }),
+  alpha: vi.fn(function() { return this }),
+  restart: vi.fn(function() { return this }),
+  stop: vi.fn(function() { return this }),
+  on: vi.fn(function() { return this })
 })
+
+// Complete D3 module mock for vi.mock('d3')
+export const createD3ModuleMock = () => {
+  const mockSimulation = createD3SimulationMock()
+  const mockZoom = {
+    on: vi.fn(function() { return this }),
+    transform: vi.fn(),
+    scaleBy: vi.fn(),
+    scaleTo: vi.fn(),
+    translateTo: vi.fn()
+  }
+  const mockDrag = { on: vi.fn(function() { return this }) }
+
+  return {
+    select: vi.fn(() => createD3ChainableMock()),
+    selectAll: vi.fn(() => createD3ChainableMock()),
+    zoom: vi.fn(() => mockZoom),
+    zoomTransform: vi.fn(() => ({ k: 1, x: 0, y: 0 })),
+    zoomIdentity: { k: 1, x: 0, y: 0 },
+    drag: vi.fn(() => mockDrag),
+    forceSimulation: vi.fn(() => mockSimulation),
+    forceLink: vi.fn(() => ({
+      id: vi.fn(() => ({ distance: vi.fn(() => ({ strength: vi.fn() })) }))
+    })),
+    forceManyBody: vi.fn(() => ({ strength: vi.fn(() => ({ theta: vi.fn() })) })),
+    forceX: vi.fn(() => ({ x: vi.fn(() => ({ strength: vi.fn() })) })),
+    forceY: vi.fn(() => ({ y: vi.fn(() => ({ strength: vi.fn() })) }))
+  }
+}
+
+// Setup DOM mocks for D3 tests
+export const setupD3DomMocks = () => {
+  global.document.getElementById = vi.fn((id) => {
+    if (id === 'network-svg-container') {
+      return { clientWidth: 800, clientHeight: 400 }
+    }
+    return null
+  })
+
+  if (!Element.prototype.getBoundingClientRect) {
+    Element.prototype.getBoundingClientRect = vi.fn(() => ({
+      width: 800, height: 400, x: 0, y: 0,
+      top: 0, left: 0, right: 800, bottom: 400
+    }))
+  }
+}
 
 // Standard store mocks - essential state only
 export const createMockSessionStore = (overrides = {}) => ({
