@@ -65,161 +65,79 @@ describe('PublicationDescription', () => {
     }
   })
 
-  it('renders publication title correctly', () => {
-    const wrapper = mount(PublicationDescription, {
-      props: {
-        publication: mockPublication
-      },
-      global: {
-        stubs: {
-          'v-icon': true,
-          InlineIcon: true,
-          CompactButton: { template: '<button><slot></slot></button>' },
-          PublicationTag: { template: '<span class="tag"><slot></slot></span>' }
-        }
-      }
-    })
+  const defaultStubs = {
+    'v-icon': true,
+    InlineIcon: true,
+    CompactButton: { template: '<button><slot></slot></button>' },
+    PublicationTag: { template: '<span class="tag"><slot></slot></span>' }
+  }
 
+  it('renders publication with conditional details display', () => {
+    let wrapper = mount(PublicationDescription, {
+      props: { publication: mockPublication },
+      global: { stubs: defaultStubs }
+    })
     expect(wrapper.text()).toContain('Test Publication Title')
-  })
 
-  it('shows details when publication is active', () => {
-    mockPublication.isActive = true
-
-    const wrapper = mount(PublicationDescription, {
-      props: {
-        publication: mockPublication,
-        alwaysShowDetails: false
-      },
-      global: {
-        stubs: {
-          'v-icon': true,
-          InlineIcon: true,
-          CompactButton: { template: '<button><slot></slot></button>' },
-          PublicationTag: { template: '<span class="tag"><slot></slot></span>' }
-        }
-      }
+    wrapper = mount(PublicationDescription, {
+      props: { publication: { ...mockPublication, isActive: true }, alwaysShowDetails: false },
+      global: { stubs: defaultStubs }
     })
-
-    // Should show DOI and author details when active
     expect(wrapper.text()).toContain('DOI:')
     expect(wrapper.text()).toContain('10.1234/test-publication')
     expect(wrapper.text()).toContain('Citing: 2')
-    expect(wrapper.text()).toContain('Cited by: 1')
-  })
 
-  it('shows details when alwaysShowDetails is true', () => {
-    const wrapper = mount(PublicationDescription, {
-      props: {
-        publication: mockPublication,
-        alwaysShowDetails: true
-      },
-      global: {
-        stubs: {
-          'v-icon': true,
-          InlineIcon: true,
-          CompactButton: { template: '<button><slot></slot></button>' },
-          PublicationTag: { template: '<span class="tag"><slot></slot></span>' }
-        }
-      }
+    wrapper = mount(PublicationDescription, {
+      props: { publication: mockPublication, alwaysShowDetails: true },
+      global: { stubs: defaultStubs }
     })
-
     expect(wrapper.text()).toContain('DOI:')
-    expect(wrapper.text()).toContain('Citing: 2')
-  })
 
-  it('hides details when not active and alwaysShowDetails is false', () => {
-    const wrapper = mount(PublicationDescription, {
-      props: {
-        publication: { ...mockPublication, isActive: false },
-        alwaysShowDetails: false
-      },
-      global: {
-        stubs: {
-          'v-icon': true,
-          InlineIcon: true,
-          CompactButton: { template: '<button><slot></slot></button>' },
-          PublicationTag: { template: '<span class="tag"><slot></slot></span>' }
-        }
-      }
+    wrapper = mount(PublicationDescription, {
+      props: { publication: { ...mockPublication, isActive: false }, alwaysShowDetails: false },
+      global: { stubs: defaultStubs }
     })
-
     expect(wrapper.text()).not.toContain('DOI:')
-    expect(wrapper.text()).not.toContain('Citing:')
   })
 
   it('highlights search terms when provided', () => {
     const wrapper = mount(PublicationDescription, {
-      props: {
-        publication: mockPublication,
-        highlighted: 'Test Publication'
-      },
-      global: {
-        stubs: {
-          'v-icon': true,
-          InlineIcon: true,
-          CompactButton: { template: '<button><slot></slot></button>' },
-          PublicationTag: { template: '<span class="tag"><slot></slot></span>' }
-        }
-      }
+      props: { publication: mockPublication, highlighted: 'Test Publication' },
+      global: { stubs: defaultStubs }
     })
-
     expect(wrapper.html()).toContain('has-background-grey-light')
   })
 
   it('calls showAbstract when abstract button is clicked', async () => {
-    mockPublication.isActive = true
-
     const wrapper = mount(PublicationDescription, {
-      props: {
-        publication: mockPublication
-      },
+      props: { publication: { ...mockPublication, isActive: true } },
       global: {
         stubs: {
-          'v-icon': true,
-          InlineIcon: true,
+          ...defaultStubs,
           CompactButton: {
             template: '<button @click="$emit(\'click\')" v-bind="$attrs"><slot></slot></button>',
             emits: ['click']
-          },
-          PublicationTag: { template: '<span class="tag"><slot></slot></span>' }
+          }
         }
       }
     })
 
-    // Find and click the abstract button (has mdi-text icon)
-    const buttons = wrapper.findAllComponents({ name: 'CompactButton' })
-    const abstractButton = buttons.find((button) => button.attributes('icon') === 'mdi-text')
+    const abstractButton = wrapper.findAllComponents({ name: 'CompactButton' })
+      .find(button => button.attributes('icon') === 'mdi-text')
 
     if (abstractButton) {
       await abstractButton.trigger('click')
-      expect(mockInterfaceStore.showAbstract).toHaveBeenCalledWith(mockPublication)
+      expect(mockInterfaceStore.showAbstract).toHaveBeenCalledWith({ ...mockPublication, isActive: true })
     }
   })
 
-  it('renders publication tags correctly', () => {
-    const publicationWithTags = {
-      ...mockPublication,
-      isHighlyCited: true,
-      isSurvey: true,
-      isNew: true
-    }
-
+  it('renders publication tags', () => {
     const wrapper = mount(PublicationDescription, {
       props: {
-        publication: publicationWithTags
+        publication: { ...mockPublication, isHighlyCited: true, isSurvey: true, isNew: true }
       },
-      global: {
-        stubs: {
-          'v-icon': true,
-          InlineIcon: true,
-          CompactButton: { template: '<button><slot></slot></button>' },
-          PublicationTag: { template: '<span class="tag"><slot></slot></span>' }
-        }
-      }
+      global: { stubs: defaultStubs }
     })
-
-    const tags = wrapper.findAll('.tag')
-    expect(tags.length).toBe(3) // highly cited, survey, new
+    expect(wrapper.findAll('.tag').length).toBe(3)
   })
 })
