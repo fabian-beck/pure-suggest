@@ -3,75 +3,28 @@ import { setActivePinia, createPinia } from 'pinia'
 import { describe, it, expect, beforeEach, vi, beforeAll, afterAll } from 'vitest'
 import { ref } from 'vue'
 
+import { createD3ChainableMock, createD3SimulationMock } from '../../helpers/testUtils.js'
+
 import NetworkVisComponent from '@/components/NetworkVisComponent.vue'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
 
-// Simplified D3 mock - focus on behavior, not implementation details
-const createChainableMock = (returnData = null) => {
-  const mock = vi.fn(() => returnData || createChainableMock())
-  // Add common D3 methods that return chainable objects
-  const chainableMethods = [
-    'append',
-    'attr',
-    'select',
-    'selectAll',
-    'call',
-    'join',
-    'enter',
-    'exit',
-    'remove',
-    'merge',
-    'style',
-    'text',
-    'on',
-    'classed',
-    'filter',
-    'transition',
-    'duration'
-  ]
-  chainableMethods.forEach((method) => {
-    mock[method] = vi.fn(() => createChainableMock())
-  })
-  // Special cases
-  mock.data = vi.fn((data) => (data ? { map: vi.fn((fn) => data.map(fn)), ...mock } : []))
-  mock.node = vi.fn(() => ({
-    getBoundingClientRect: () => ({ x: 0, y: 0, width: 100, height: 100 })
-  }))
-  mock.nodes = vi.fn(() => [])
-  return mock
-}
-
-const mockSimulation = {
-  alphaDecay: vi.fn(() => mockSimulation),
-  alphaMin: vi.fn(() => mockSimulation),
-  nodes: vi.fn(() => mockSimulation),
-  force: vi.fn(() => mockSimulation),
-  alpha: vi.fn(() => mockSimulation),
-  restart: vi.fn(() => mockSimulation),
-  stop: vi.fn(() => mockSimulation),
-  on: vi.fn(() => mockSimulation)
-}
-
-const mockZoom = {
-  on: vi.fn(() => mockZoom),
-  transform: vi.fn(),
-  scaleBy: vi.fn(),
-  scaleTo: vi.fn(),
-  translateTo: vi.fn()
-}
-
+// Use shared D3 mock utilities
 vi.mock('d3', () => ({
-  select: vi.fn(() => createChainableMock()),
-  selectAll: vi.fn(() => createChainableMock()),
-  zoom: vi.fn(() => mockZoom),
+  select: vi.fn(() => createD3ChainableMock()),
+  selectAll: vi.fn(() => createD3ChainableMock()),
+  zoom: vi.fn(() => ({
+    on: vi.fn(function() { return this }),
+    transform: vi.fn(),
+    scaleBy: vi.fn(),
+    scaleTo: vi.fn(),
+    translateTo: vi.fn()
+  })),
   zoomTransform: vi.fn(() => ({ k: 1, x: 0, y: 0 })),
   zoomIdentity: { k: 1, x: 0, y: 0 },
-  drag: vi.fn(() => ({ on: vi.fn() })),
-  forceSimulation: vi.fn(() => mockSimulation),
-  forceLink: vi.fn(() => ({
-    id: vi.fn(() => ({ distance: vi.fn(() => ({ strength: vi.fn() })) }))
-  })),
+  drag: vi.fn(() => ({ on: vi.fn(function() { return this }) })),
+  forceSimulation: vi.fn(() => createD3SimulationMock()),
+  forceLink: vi.fn(() => ({ id: vi.fn(() => ({ distance: vi.fn(() => ({ strength: vi.fn() })) })) })),
   forceManyBody: vi.fn(() => ({ strength: vi.fn(() => ({ theta: vi.fn() })) })),
   forceX: vi.fn(() => ({ x: vi.fn(() => ({ strength: vi.fn() })) })),
   forceY: vi.fn(() => ({ y: vi.fn(() => ({ strength: vi.fn() })) }))
@@ -118,7 +71,7 @@ vi.mock('@/stores/interface.js', () => ({ useInterfaceStore: vi.fn(() => mockInt
 // Simplified composable mocks - essential functionality only
 const mockGraphData = { nodes: [], links: [] }
 const mockSimulationComposable = {
-  simulation: { value: mockSimulation },
+  simulation: { value: createD3SimulationMock() },
   graph: { value: mockGraphData },
   isDragging: { value: false },
   initializeSimulation: vi.fn(),
@@ -140,25 +93,25 @@ vi.mock('@/composables/networkForces.js', () => ({
   SIMULATION_ALPHA: 0.5
 }))
 vi.mock('@/composables/publicationNodes.js', () => ({
-  initializePublicationNodes: vi.fn(() => createChainableMock()),
-  updatePublicationNodes: vi.fn(() => ({ nodes: createChainableMock(), tooltips: [] }))
+  initializePublicationNodes: vi.fn(() => createD3ChainableMock()),
+  updatePublicationNodes: vi.fn(() => ({ nodes: createD3ChainableMock(), tooltips: [] }))
 }))
 vi.mock('@/composables/keywordNodes.js', () => ({
-  initializeKeywordNodes: vi.fn(() => createChainableMock()),
-  updateKeywordNodes: vi.fn(() => ({ nodes: createChainableMock(), tooltips: [] })),
+  initializeKeywordNodes: vi.fn(() => createD3ChainableMock()),
+  updateKeywordNodes: vi.fn(() => ({ nodes: createD3ChainableMock(), tooltips: [] })),
   releaseKeywordPosition: vi.fn(),
   highlightKeywordPublications: vi.fn(),
   clearKeywordHighlight: vi.fn(),
   createKeywordNodeDrag: vi.fn(() => ({ on: vi.fn(() => ({ on: vi.fn() })) }))
 }))
 vi.mock('@/composables/authorNodes.js', () => ({
-  initializeAuthorNodes: vi.fn(() => createChainableMock()),
-  updateAuthorNodes: vi.fn(() => ({ nodes: createChainableMock(), tooltips: [] })),
+  initializeAuthorNodes: vi.fn(() => createD3ChainableMock()),
+  updateAuthorNodes: vi.fn(() => ({ nodes: createD3ChainableMock(), tooltips: [] })),
   highlightAuthorPublications: vi.fn(),
   clearAuthorHighlight: vi.fn()
 }))
 vi.mock('@/composables/networkLinks.js', () => ({
-  updateNetworkLinks: vi.fn(() => createChainableMock()),
+  updateNetworkLinks: vi.fn(() => createD3ChainableMock()),
   updateLinkProperties: vi.fn()
 }))
 vi.mock('@/composables/useGraphData.js', () => ({
