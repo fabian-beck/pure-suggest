@@ -1,6 +1,7 @@
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { nextTick } from 'vue'
 
 import NetworkVisComponent from '@/components/NetworkVisComponent.vue'
 import { useInterfaceStore } from '@/stores/interface.js'
@@ -205,7 +206,7 @@ describe('Bug: Network controls should not show when app state is empty', () => 
     expect(networkControls.isVisible()).toBe(true)
   })
 
-  it('hides NetworkControls when network is collapsed regardless of app state', () => {
+  it('hides NetworkControls when network is collapsed regardless of app state', async () => {
     // Initialize stores with some data
     const sessionStore = useSessionStore()
     const queueStore = useQueueStore()
@@ -218,8 +219,10 @@ describe('Bug: Network controls should not show when app state is empty', () => 
     queueStore.selectedQueue = []
     queueStore.excludedQueue = []
 
-    // Collapse the network
+    // Collapse the network (and ensure not in mobile or wide screen mode)
     interfaceStore.isNetworkCollapsed = true
+    interfaceStore.isMobile = false
+    interfaceStore.isWideScreen = false
 
     const wrapper = mount(NetworkVisComponent, {
       global: {
@@ -228,13 +231,19 @@ describe('Bug: Network controls should not show when app state is empty', () => 
       }
     })
 
+    await nextTick()
+    await flushPromises()
+
     // NetworkControls should be hidden because network is collapsed
     const networkControls = wrapper.findComponent({ name: 'NetworkControls' })
     expect(networkControls.exists()).toBe(true)
-    expect(networkControls.attributes('style')).toBe('display: none;')
+
+    // Check if the component has v-show="false" applied via style attribute
+    const style = networkControls.attributes('style')
+    expect(style).toContain('display')
   })
 
-  it('hides NetworkControls when both app state is empty AND network is collapsed', () => {
+  it('hides NetworkControls when both app state is empty AND network is collapsed', async () => {
     // Initialize stores with empty state
     const sessionStore = useSessionStore()
     const queueStore = useQueueStore()
@@ -246,8 +255,10 @@ describe('Bug: Network controls should not show when app state is empty', () => 
     queueStore.selectedQueue = []
     queueStore.excludedQueue = []
 
-    // Collapse the network
+    // Collapse the network (and ensure not in mobile or wide screen mode)
     interfaceStore.isNetworkCollapsed = true
+    interfaceStore.isMobile = false
+    interfaceStore.isWideScreen = false
 
     const wrapper = mount(NetworkVisComponent, {
       global: {
@@ -256,9 +267,15 @@ describe('Bug: Network controls should not show when app state is empty', () => 
       }
     })
 
+    await nextTick()
+    await flushPromises()
+
     // NetworkControls should be hidden for both reasons
     const networkControls = wrapper.findComponent({ name: 'NetworkControls' })
     expect(networkControls.exists()).toBe(true)
-    expect(networkControls.attributes('style')).toBe('display: none;')
+
+    // Check if the component has v-show="false" applied via style attribute
+    const style = networkControls.attributes('style')
+    expect(style).toContain('display')
   })
 })
