@@ -170,11 +170,9 @@ export default {
     filter: {
       deep: true,
       handler () {
-        // Update "only show filtered" based on filter state
+        // When filters are cleared, reset onlyShowFiltered to false
         if (!this.sessionStore.filter.hasActiveFilters()) {
           this.onlyShowFiltered = false
-        } else {
-          this.onlyShowFiltered = true
         }
         // Skip plotting during loading to prevent premature network rendering
         if (this.interfaceStore.isLoading) {
@@ -271,6 +269,7 @@ export default {
 
       if (this.showSuggestedNodes) {
         let suggestedPubs = this.sessionStore.suggestedPublications || []
+        // Filter first if needed
         if (
           this.onlyShowFiltered &&
           this.sessionStore.filter.hasActiveFilters() &&
@@ -278,9 +277,9 @@ export default {
         ) {
           suggestedPubs = suggestedPubs.filter((pub) => this.sessionStore.filter.matches(pub))
         }
-        publications = publications.concat(
-          suggestedPubs.slice(0, Math.round(this.suggestedNumberFactor * 50))
-        )
+        // Then slice to limit to top N from filtered results
+        suggestedPubs = suggestedPubs.slice(0, Math.round(this.suggestedNumberFactor * 50))
+        publications = publications.concat(suggestedPubs)
       }
 
       return publications

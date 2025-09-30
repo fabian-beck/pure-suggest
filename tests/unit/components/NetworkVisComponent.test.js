@@ -919,6 +919,67 @@ describe('NetworkVisComponent', () => {
       expect(wrapper.vm.onlyShowFiltered).toBe(true)
     })
 
+    it('respects user preference when filters change', async () => {
+      const mockSessionStore = vi.mocked(useSessionStore)()
+      mockSessionStore.filter.hasActiveFilters = vi.fn(() => true)
+
+      // User manually disables onlyShowFiltered
+      await wrapper.setData({ onlyShowFiltered: false })
+      expect(wrapper.vm.onlyShowFiltered).toBe(false)
+
+      // Filter changes - user preference should persist
+      mockSessionStore.filter.string = 'test'
+      await wrapper.vm.$options.watch.filter.handler.call(wrapper.vm)
+
+      // User preference maintained
+      expect(wrapper.vm.onlyShowFiltered).toBe(false)
+    })
+
+    it('resets onlyShowFiltered when filters are cleared', async () => {
+      const mockSessionStore = vi.mocked(useSessionStore)()
+
+      await wrapper.setData({ onlyShowFiltered: true })
+
+      // Clear filters
+      mockSessionStore.filter.hasActiveFilters = vi.fn(() => false)
+      await wrapper.vm.$options.watch.filter.handler.call(wrapper.vm)
+
+      // Should auto-reset to false
+      expect(wrapper.vm.onlyShowFiltered).toBe(false)
+    })
+
+    it('applies filter first, then slices top N from filtered results', () => {
+      const mockSessionStore = vi.mocked(useSessionStore)()
+
+      // Create 100 suggested publications where positions 10, 20, 30... match filter
+      const suggestedPubs = []
+      for (let i = 1; i <= 100; i++) {
+        suggestedPubs.push({
+          doi: `10.1000/pub${i}`,
+          title: i % 10 === 0 ? 'matching' : 'other',
+          year: 2020
+        })
+      }
+
+      mockSessionStore.selectedPublications = []
+      mockSessionStore.suggestedPublications = suggestedPubs
+      mockSessionStore.filter.hasActiveFilters = vi.fn(() => true)
+      mockSessionStore.filter.applyToSuggested = true
+      mockSessionStore.filter.matches = vi.fn((pub) => pub.title === 'matching')
+
+      wrapper.vm.onlyShowFiltered = true
+      wrapper.vm.suggestedNumberFactor = 0.3 // 30% of 50 = 15 publications
+
+      const filtered = wrapper.vm.collectFilteredPublications()
+
+      // Should filter entire list (10 matches), then show top 15 of those
+      // Since only 10 match total, should return all 10
+      expect(filtered.length).toBe(10)
+
+      // Verify filter was applied to full list, not just first 15
+      expect(mockSessionStore.filter.matches.mock.calls.length).toBeGreaterThanOrEqual(10)
+    })
+
     it('handles error timeout correctly', async () => {
       // Set an error message directly
       wrapper.vm.errorMessage = 'Test error'
