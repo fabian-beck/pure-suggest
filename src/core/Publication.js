@@ -188,7 +188,7 @@ export default class Publication {
     this.year = data.year
 
     const subtitle = data.subtitle
-    if (subtitle?.length && this.title.toLowerCase().indexOf(subtitle.toLowerCase())) {
+    if (subtitle?.length && this.title.toLowerCase().indexOf(subtitle.toLowerCase()) === -1) {
       const cleanedTitle = removeHtmlTags(this.title)
       this.title += `${cleanedTitle.match(/^.*\W$/) ? '' : ':'}  ${subtitle}`
     }
