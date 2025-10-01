@@ -59,8 +59,14 @@ export default class Author {
     this.orcid = this.orcid ? this.orcid : author.orcid
     this.alternativeNames = [...new Set(this.alternativeNames.concat(author.alternativeNames))]
     this.coauthors = mergeCounts(this.coauthors, author.coauthors)
-    this.yearMin = Math.min(this.yearMin || Infinity, author.yearMin || Infinity) || undefined
-    this.yearMax = Math.max(this.yearMax || -Infinity, author.yearMax || -Infinity) || undefined
+
+    // Merge year ranges, handling undefined properly
+    const minYear = Math.min(this.yearMin || Infinity, author.yearMin || Infinity)
+    this.yearMin = minYear === Infinity ? undefined : minYear
+
+    const maxYear = Math.max(this.yearMax || -Infinity, author.yearMax || -Infinity)
+    this.yearMax = maxYear === -Infinity ? undefined : maxYear
+
     this.newPublication = this.newPublication || author.newPublication
     this.publicationDois = [...new Set(this.publicationDois.concat(author.publicationDois))]
   }
