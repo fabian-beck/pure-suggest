@@ -109,22 +109,10 @@ describe('Author Details On Demand Feature', () => {
       expect(modalStore.isAuthorModalDialogShown).toBe(true)
     })
 
-    it('should clear active author when modal is closed', async () => {
-      // This will be handled by the AuthorModalDialog watcher
-      // The interface store itself doesn't directly clear active authors
-
-      authorStore.setActiveAuthor('john-doe')
-      expect(authorStore.activeAuthorId).toBe('john-doe')
-
-      // This functionality is tested in the component level
-      // where the watcher handles modal state changes
-      expect(true).toBe(true)
-    })
   })
 
-  // Note: AuthorModalDialog UI behavior is tested separately in
-  // tests/unit/components/AuthorModalDialog.test.js
-  // Core integration is verified through store and component tests above
+  // Note: AuthorModalDialog UI behavior (including clearing active author when modal closes)
+  // is tested in tests/unit/components/AuthorModalDialog.test.js
 
   describe('Publication Component - Author Click Integration', () => {
     it('should parse author string using existing Publication structure', () => {
@@ -239,21 +227,6 @@ describe('Author Details On Demand Feature', () => {
       const expectedAuthorId = 'smith, j.'
       modalManager.openAuthorModal(expectedAuthorId)
       expect(modalManager.openAuthorModal).toHaveBeenCalledWith(expectedAuthorId)
-    })
-
-    it('should convert author names to correct IDs', () => {
-      // Test the findAuthorIdByName function
-      const testCases = [
-        { input: 'John Smith', expected: 'john smith' },
-        { input: 'Smith, J.', expected: 'smith, j.' },
-        { input: 'Mary Johnson-Brown', expected: 'mary johnson-brown' },
-        { input: 'Dr. Robert Wilson', expected: 'dr. robert wilson' }
-      ]
-
-      // This test should verify the ID conversion works correctly
-      testCases.forEach((_testCase) => {
-        expect(true).toBe(true) // Placeholder - will be replaced with actual test
-      })
     })
 
     it('should only make authors clickable in selected publications, not suggested ones', () => {
@@ -412,10 +385,6 @@ describe('Author Details On Demand Feature', () => {
         // Verify it has the data-author attribute for click handling
         expect(authorElement.attributes('data-author')).toBeDefined()
       })
-
-      // Verify that the component's style includes the necessary CSS rules
-      // The CSS rules are defined in the component, even if we can't test computed styles in jsdom
-      expect(true).toBe(true) // CSS is defined in the component file
     })
   })
 
