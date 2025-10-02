@@ -172,33 +172,17 @@ describe('PublicationComponent', () => {
   })
 
   describe('chevronType computed property', () => {
-    it('should return empty string for boostFactor 1', () => {
-      wrapper = createWrapper({ boostFactor: 1 })
-      expect(wrapper.vm.chevronType).toBe('')
-    })
-
-    it('should return chevron-up for boostFactor > 1 and < 4', () => {
-      wrapper = createWrapper({ boostFactor: 2 })
-      expect(wrapper.vm.chevronType).toBe('chevron-up')
-
-      wrapper = createWrapper({ boostFactor: 3.9 })
-      expect(wrapper.vm.chevronType).toBe('chevron-up')
-    })
-
-    it('should return chevron-double-up for boostFactor >= 4 and < 8', () => {
-      wrapper = createWrapper({ boostFactor: 4 })
-      expect(wrapper.vm.chevronType).toBe('chevron-double-up')
-
-      wrapper = createWrapper({ boostFactor: 7.9 })
-      expect(wrapper.vm.chevronType).toBe('chevron-double-up')
-    })
-
-    it('should return chevron-triple-up for boostFactor >= 8', () => {
-      wrapper = createWrapper({ boostFactor: 8 })
-      expect(wrapper.vm.chevronType).toBe('chevron-triple-up')
-
-      wrapper = createWrapper({ boostFactor: 100 })
-      expect(wrapper.vm.chevronType).toBe('chevron-triple-up')
+    it.each([
+      { boostFactor: 1, expected: '', description: 'no boost' },
+      { boostFactor: 2, expected: 'chevron-up', description: 'low boost' },
+      { boostFactor: 3.9, expected: 'chevron-up', description: 'low boost (edge)' },
+      { boostFactor: 4, expected: 'chevron-double-up', description: 'medium boost' },
+      { boostFactor: 7.9, expected: 'chevron-double-up', description: 'medium boost (edge)' },
+      { boostFactor: 8, expected: 'chevron-triple-up', description: 'high boost' },
+      { boostFactor: 100, expected: 'chevron-triple-up', description: 'very high boost' }
+    ])('should return $expected for boostFactor $boostFactor ($description)', ({ boostFactor, expected }) => {
+      wrapper = createWrapper({ boostFactor })
+      expect(wrapper.vm.chevronType).toBe(expected)
     })
 
     it('should handle edge case boostFactor exactly at boundaries', () => {
