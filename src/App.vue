@@ -8,8 +8,6 @@ import { useModalStore } from './stores/modal.js'
 import { useSessionStore } from './stores/session.js'
 import { perfMonitor } from './utils/performance.js'
 
-
-
 export default {
   name: 'App',
   data() {
@@ -259,11 +257,12 @@ body {
   & #main {
     grid-area: main;
     margin: 0.5vw;
+    margin-top: 0;
     display: grid;
     grid-template-areas:
       'selected suggested'
       'vis vis';
-    height: calc(100% - 1vw);
+    height: calc(100% - 0.5vw);
     overflow: hidden;
     grid-template-columns: 50fr 50fr;
     grid-template-rows: auto 35vh;
@@ -399,7 +398,7 @@ body {
     & #main {
       display: block;
       margin: 0;
-      padding-top: 3rem; /* Account for fixed header height */
+      padding-top: 2.8rem; /* Account for fixed header height */
       overflow: visible; /* Let document handle scrolling, not main element */
       height: auto;
 
