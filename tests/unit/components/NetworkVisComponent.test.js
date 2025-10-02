@@ -3,7 +3,11 @@ import { setActivePinia, createPinia } from 'pinia'
 import { describe, it, expect, beforeEach, vi, beforeAll, afterAll } from 'vitest'
 import { ref } from 'vue'
 
-import { createD3ChainableMock, createD3SimulationMock } from '../../helpers/testUtils.js'
+import {
+  createD3ChainableMock,
+  createD3SimulationMock,
+  commonComponentStubs
+} from '../../helpers/testUtils.js'
 
 import NetworkVisComponent from '@/components/NetworkVisComponent.vue'
 import { useInterfaceStore } from '@/stores/interface.js'
@@ -135,22 +139,6 @@ vi.mock('@/composables/useAppState.js', () => ({
   }))
 }))
 
-// Helper function for consistent component stubs
-const getComponentStubs = () => ({
-  'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-  CompactSwitch: { template: '<div class="compact-switch"><slot></slot></div>' },
-  CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
-  'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-  'v-btn-toggle': { template: '<div class="v-btn-toggle"><slot></slot></div>' },
-  'v-menu': { template: '<div class="v-menu"><slot></slot></div>' },
-  'v-list': { template: '<div class="v-list"><slot></slot></div>' },
-  'v-list-item': { template: '<div class="v-list-item"><slot></slot></div>' },
-  'v-list-item-title': { template: '<div class="v-list-item-title"><slot></slot></div>' },
-  'v-checkbox': { template: '<input type="checkbox" class="v-checkbox">' },
-  'v-slider': { template: '<input type="range" class="v-slider">' },
-  PublicationComponent: { template: '<div class="publication-component"><slot></slot></div>' }
-})
-
 describe('NetworkVisComponent', () => {
   let pinia
 
@@ -193,7 +181,7 @@ describe('NetworkVisComponent', () => {
     it('renders with correct basic structure', () => {
       const wrapper = mount(NetworkVisComponent, {
         global: {
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
 
@@ -206,7 +194,7 @@ describe('NetworkVisComponent', () => {
     it('displays the citation network header', () => {
       const wrapper = mount(NetworkVisComponent, {
         global: {
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
 
@@ -218,7 +206,7 @@ describe('NetworkVisComponent', () => {
     it('shows error message when errorMessage is set', async () => {
       const wrapper = mount(NetworkVisComponent, {
         global: {
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
 
@@ -246,7 +234,7 @@ describe('NetworkVisComponent', () => {
       const wrapper = mount(NetworkVisComponent, {
         global: {
           plugins: [pinia],
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
 
@@ -261,7 +249,7 @@ describe('NetworkVisComponent', () => {
       const wrapper = mount(NetworkVisComponent, {
         global: {
           plugins: [pinia],
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
 
@@ -280,7 +268,7 @@ describe('NetworkVisComponent', () => {
     it('initializes component without errors', () => {
       const wrapper = mount(NetworkVisComponent, {
         global: {
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
 
@@ -292,7 +280,7 @@ describe('NetworkVisComponent', () => {
     it('renders SVG container element', () => {
       const wrapper = mount(NetworkVisComponent, {
         global: {
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
 
@@ -312,7 +300,7 @@ describe('NetworkVisComponent', () => {
 
       const wrapper = mount(NetworkVisComponent, {
         global: {
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
 
@@ -338,7 +326,7 @@ describe('NetworkVisComponent', () => {
 
       const wrapper = mount(NetworkVisComponent, {
         global: {
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
 
@@ -350,7 +338,7 @@ describe('NetworkVisComponent', () => {
     it('computes showSelectedNodes correctly', () => {
       const wrapper = mount(NetworkVisComponent, {
         global: {
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
 
@@ -363,7 +351,7 @@ describe('NetworkVisComponent', () => {
     it('computes showSuggestedNodes correctly', () => {
       const wrapper = mount(NetworkVisComponent, {
         global: {
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
 
@@ -376,7 +364,7 @@ describe('NetworkVisComponent', () => {
     it('computes showKeywordNodes correctly', () => {
       const wrapper = mount(NetworkVisComponent, {
         global: {
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
 
@@ -389,7 +377,7 @@ describe('NetworkVisComponent', () => {
     it('computes showAuthorNodes correctly', () => {
       const wrapper = mount(NetworkVisComponent, {
         global: {
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
 
@@ -428,7 +416,7 @@ describe('NetworkVisComponent', () => {
 
       wrapper = mount(NetworkVisComponent, {
         global: {
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
     })
@@ -517,7 +505,7 @@ describe('NetworkVisComponent', () => {
     beforeEach(() => {
       wrapper = mount(NetworkVisComponent, {
         global: {
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
     })
@@ -606,7 +594,7 @@ describe('NetworkVisComponent', () => {
 
       wrapper = mount(NetworkVisComponent, {
         global: {
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
     })
@@ -814,7 +802,7 @@ describe('NetworkVisComponent', () => {
 
       wrapper = mount(NetworkVisComponent, {
         global: {
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
     })
@@ -847,7 +835,7 @@ describe('NetworkVisComponent', () => {
       mockSessionStore.filter.hasActiveFilters.mockReturnValue(true)
       wrapper = mount(NetworkVisComponent, {
         global: {
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
 
@@ -894,7 +882,7 @@ describe('NetworkVisComponent', () => {
     beforeEach(() => {
       wrapper = mount(NetworkVisComponent, {
         global: {
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
     })
@@ -1005,7 +993,7 @@ describe('NetworkVisComponent', () => {
     beforeEach(() => {
       wrapper = mount(NetworkVisComponent, {
         global: {
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
     })
@@ -1031,7 +1019,7 @@ describe('NetworkVisComponent', () => {
 
       const mobileWrapper = mount(NetworkVisComponent, {
         global: {
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
 
@@ -1073,7 +1061,7 @@ describe('NetworkVisComponent', () => {
 
       const clustersWrapper = mount(NetworkVisComponent, {
         global: {
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
 
@@ -1089,7 +1077,7 @@ describe('NetworkVisComponent', () => {
       const wrapper = mount(NetworkVisComponent, {
         global: {
           plugins: [pinia],
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
 
@@ -1131,7 +1119,7 @@ describe('NetworkVisComponent', () => {
     beforeEach(() => {
       wrapper = mount(NetworkVisComponent, {
         global: {
-          stubs: getComponentStubs()
+          stubs: commonComponentStubs
         }
       })
     })

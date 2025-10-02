@@ -195,10 +195,16 @@ export const commonComponentStubs = {
     template:
       '<button class="compact-button" @click="$emit(\'click\')" data-testid="compact-btn">{{ icon }}</button>'
   },
+  CompactSwitch: {
+    template: '<div class="compact-switch"><slot></slot></div>'
+  },
   PublicationDescription: {
     props: ['publication'],
     template:
       '<div class="publication-description">{{ publication.title || "Mock Publication" }}</div>'
+  },
+  PublicationComponent: {
+    template: '<div class="publication-component"><slot></slot></div>'
   },
   Tippy: {
     props: ['class', 'placement'],
