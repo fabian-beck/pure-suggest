@@ -77,7 +77,7 @@ onMounted(() => {
 
 <template>
   <div class="suggested-publications box has-background-info">
-    <div class="level box-header">
+    <div class="level is-mobile box-header">
       <div class="level-left has-text-white">
         <div
 class="level-item"

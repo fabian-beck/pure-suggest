@@ -75,7 +75,7 @@ onMounted(() => {
 
 <template>
   <div class="selected-publications box has-background-primary">
-    <div class="level">
+    <div class="level is-mobile">
       <div class="level-left has-text-white">
         <div
           class="level-item"
