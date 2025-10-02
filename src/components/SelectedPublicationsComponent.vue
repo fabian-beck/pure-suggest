@@ -107,9 +107,9 @@ onMounted(() => {
     </div>
     <div class="header">
       <div>
-        <div class="notification queue-panel p-2" v-show="queueStore.isUpdatable">
-          <div class="level">
-            <div class="has-text-centered level-item queue-description">
+        <div class="notification queue-panel pa-3" v-show="queueStore.isUpdatable">
+          <div class="d-flex align-center ga-2">
+            <div class="flex-grow-1 has-text-centered queue-description">
               <p>
                 <InlineIcon icon="mdi-tray-full" class="mr-2"></InlineIcon>
                 <b>Queue:&nbsp;</b>
@@ -132,32 +132,25 @@ onMounted(() => {
                 >.
               </p>
             </div>
-            <div
-              class="media-right"
-              :class="{
-                'level-item': interfaceStore.isMobile,
-                'level-right': !interfaceStore.isMobile
-              }"
-            >
+            <div class="d-flex align-center ga-1 flex-shrink-0">
               <CompactButton
                 icon="mdi-pencil"
-                class="ml-2"
                 v-tippy="'Edit publications in queue.'"
                 @click="modalStore.isQueueModalDialogShown = true"
               ></CompactButton>
               <CompactButton
                 icon="mdi-undo"
-                class="ml-1"
                 v-tippy="'Remove all publications from queue again.'"
                 @click="queueStore.clear()"
               ></CompactButton>
               <v-btn
-                class="has-background-primary has-text-white ml-2"
+                class="has-background-primary has-text-white"
                 v-tippy="
                   'Update suggested and excluded publications with queue and compute new suggestions.'
                 "
                 @click="updateQueued"
                 prepend-icon="mdi-update"
+                size="small"
               >
                 <span class="key">U</span>pdate
               </v-btn>
@@ -238,6 +231,10 @@ onMounted(() => {
   }
 }
 
+.header > div {
+  padding: 0;
+}
+
 .queue-panel {
   background: linear-gradient(
     135deg,
@@ -246,5 +243,6 @@ onMounted(() => {
   ) !important;
   border-left: 3px solid var(--bulma-primary) !important;
   border-bottom: 2px solid var(--bulma-primary) !important;
+  margin: 0 !important;
 }
 </style>
