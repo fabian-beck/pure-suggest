@@ -26,6 +26,9 @@ function updateActiveButton() {
   const activationHeight = document.documentElement.clientHeight * 0.7
   for (const componentId of Object.keys(isComponentActive)) {
     const component = document.getElementById(componentId)
+    if (!component) {
+      continue
+    }
     const rect = component.getBoundingClientRect()
     isComponentActive[componentId] =
       (rect.top >= 0 && rect.top <= activationHeight) ||
