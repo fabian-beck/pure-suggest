@@ -9,7 +9,7 @@ import { useSessionStore } from '@/stores/session.js'
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
-const { showConfirmDialog, openShareSessionModal } = useModalManager()
+const { showConfirmDialog, openShareSessionModal, openExcludedModal } = useModalManager()
 const { clearSession, importSessionWithConfirmation, loadSession } = useAppState()
 
 const sessionName = ref(sessionStore.sessionName)
@@ -117,7 +117,7 @@ watch(
       </div>
       <v-list-item
         prepend-icon="mdi-minus-thick"
-        @click="interfaceStore.isExcludedModalDialogShown = true"
+        @click="openExcludedModal"
         title="Excluded publications"
         v-if="sessionStore.excludedPublicationsCount > 0"
       >

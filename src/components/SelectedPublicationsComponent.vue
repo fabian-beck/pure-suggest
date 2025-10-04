@@ -5,14 +5,12 @@ import { useAppState } from '@/composables/useAppState.js'
 import { useModalManager } from '@/composables/useModalManager.js'
 import { bibtexParser } from '@/lib/Util.js'
 import { useInterfaceStore } from '@/stores/interface.js'
-import { useModalStore } from '@/stores/modal.js'
 import { useQueueStore } from '@/stores/queue.js'
 import { useSessionStore } from '@/stores/session.js'
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
-const modalStore = useModalStore()
-const { showConfirmDialog, openSearchModal, openAuthorModal } = useModalManager()
+const { showConfirmDialog, openSearchModal, openAuthorModal, openQueueModal } = useModalManager()
 const queueStore = useQueueStore()
 const {
   isEmpty,
@@ -136,7 +134,7 @@ onMounted(() => {
               <CompactButton
                 icon="mdi-pencil"
                 v-tippy="'Edit publications in queue.'"
-                @click="modalStore.isQueueModalDialogShown = true"
+                @click="openQueueModal"
               ></CompactButton>
               <CompactButton
                 icon="mdi-undo"
