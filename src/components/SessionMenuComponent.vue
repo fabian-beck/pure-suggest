@@ -9,7 +9,7 @@ import { useSessionStore } from '@/stores/session.js'
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
-const { showConfirmDialog } = useModalManager()
+const { showConfirmDialog, openShareSessionModal } = useModalManager()
 const { clearSession, importSessionWithConfirmation, loadSession } = useAppState()
 
 const sessionName = ref(sessionStore.sessionName)
@@ -134,7 +134,7 @@ watch(
       />
       <v-list-item
         prepend-icon="mdi-share-variant"
-        @click="interfaceStore.isShareSessionModalDialogShown = true"
+        @click="openShareSessionModal"
         title="Share session as link"
       />
       <v-list-item

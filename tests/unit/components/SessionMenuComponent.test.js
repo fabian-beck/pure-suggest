@@ -21,10 +21,16 @@ const mockInterfaceStore = createMockInterfaceStore({
   isExcludedModalDialogShown: false
 })
 
+const mockModalManager = {
+  showConfirmDialog: vi.fn(),
+  openShareSessionModal: vi.fn()
+}
+
 const mockAppState = {
   isEmpty: false,
   clearSession: vi.fn(),
-  importSessionWithConfirmation: vi.fn()
+  importSessionWithConfirmation: vi.fn(),
+  loadSession: vi.fn()
 }
 
 vi.mock('@/stores/session.js', () => ({
@@ -37,6 +43,10 @@ vi.mock('@/stores/interface.js', () => ({
 
 vi.mock('@/composables/useAppState.js', () => ({
   useAppState: () => mockAppState
+}))
+
+vi.mock('@/composables/useModalManager.js', () => ({
+  useModalManager: () => mockModalManager
 }))
 
 describe('SessionMenuComponent', () => {
@@ -229,6 +239,19 @@ describe('SessionMenuComponent', () => {
       expect(importItem).toBeTruthy()
       await importItem.trigger('click')
       expect(mockAppState.importSessionWithConfirmation).toHaveBeenCalled()
+    })
+  })
+
+  describe('Share session functionality', () => {
+    it('should open share session modal when clicking share session menu item', async () => {
+      wrapper = createWrapper()
+      const shareItem = wrapper
+        .findAll('.v-list-item')
+        .find(item => item.attributes('title') === 'Share session as link')
+
+      expect(shareItem).toBeTruthy()
+      await shareItem.trigger('click')
+      expect(mockModalManager.openShareSessionModal).toHaveBeenCalled()
     })
   })
 })
