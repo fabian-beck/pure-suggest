@@ -23,8 +23,8 @@ export default class Author {
         .filter((coauthorId) => coauthorId !== this.id)
         .map((coauthorId) => ({ [coauthorId]: 1 }))
         .reduce((a, b) => ({ ...a, ...b }), {}) ?? {} // convert array to object;
-    this.yearMin = publication.year
-    this.yearMax = publication.year
+    this.yearMin = Number(publication.year)
+    this.yearMax = Number(publication.year)
     this.newPublication = publication.isNew
     this.publicationDois = [publication.doi]
   }
@@ -60,11 +60,11 @@ export default class Author {
     this.alternativeNames = [...new Set(this.alternativeNames.concat(author.alternativeNames))]
     this.coauthors = mergeCounts(this.coauthors, author.coauthors)
 
-    // Merge year ranges, handling undefined properly
-    const minYear = Math.min(this.yearMin || Infinity, author.yearMin || Infinity)
+    // Merge year ranges, handling undefined properly and ensuring numeric values
+    const minYear = Math.min(Number(this.yearMin) || Infinity, Number(author.yearMin) || Infinity)
     this.yearMin = minYear === Infinity ? undefined : minYear
 
-    const maxYear = Math.max(this.yearMax || -Infinity, author.yearMax || -Infinity)
+    const maxYear = Math.max(Number(this.yearMax) || -Infinity, Number(author.yearMax) || -Infinity)
     this.yearMax = maxYear === -Infinity ? undefined : maxYear
 
     this.newPublication = this.newPublication || author.newPublication
