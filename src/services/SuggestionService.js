@@ -172,7 +172,7 @@ export class SuggestionService {
             citedPub.citationDois.push(publication.doi)
             inconsistenciesFixed++
           }
-        } catch (e) {
+        } catch {
           // Publication not in selected set, skip validation
         }
       })
@@ -190,7 +190,7 @@ export class SuggestionService {
             citingPub.referenceDois.push(publication.doi)
             inconsistenciesFixed++
           }
-        } catch (e) {
+        } catch {
           // Publication not in selected set, skip validation
         }
       })
