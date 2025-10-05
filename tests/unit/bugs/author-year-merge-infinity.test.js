@@ -24,13 +24,13 @@ describe('Bug: Author.mergeWith sets yearMin/yearMax to Infinity when both autho
     }
   })
 
-  it('should keep yearMin as undefined when merging two authors with undefined years', () => {
+  it('should keep yearMin as NaN when merging two authors with undefined years', () => {
     const author1 = new Author('Smith, John', 0, mockPublication)
     const author2 = new Author('Smith, John', 0, mockPublication)
 
-    // Both authors have undefined years from publication without year
-    expect(author1.yearMin).toBe(undefined)
-    expect(author2.yearMin).toBe(undefined)
+    // Both authors have NaN years from publication without year
+    expect(author1.yearMin).toBeNaN()
+    expect(author2.yearMin).toBeNaN()
 
     author1.mergeWith(author2)
 
@@ -43,9 +43,9 @@ describe('Bug: Author.mergeWith sets yearMin/yearMax to Infinity when both autho
     const author1 = new Author('Smith, John', 0, mockPublication)
     const author2 = new Author('Smith, John', 0, mockPublication)
 
-    // Both authors have undefined years from publication without year
-    expect(author1.yearMax).toBe(undefined)
-    expect(author2.yearMax).toBe(undefined)
+    // Both authors have NaN years from publication without year
+    expect(author1.yearMax).toBeNaN()
+    expect(author2.yearMax).toBeNaN()
 
     author1.mergeWith(author2)
 
@@ -63,8 +63,8 @@ describe('Bug: Author.mergeWith sets yearMin/yearMax to Infinity when both autho
 
     expect(author1.yearMin).toBe(2020)
     expect(author1.yearMax).toBe(2020)
-    expect(author2.yearMin).toBe(undefined)
-    expect(author2.yearMax).toBe(undefined)
+    expect(author2.yearMin).toBeNaN()
+    expect(author2.yearMax).toBeNaN()
 
     author1.mergeWith(author2)
 
