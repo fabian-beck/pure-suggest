@@ -11,30 +11,39 @@
  */
 export function createCitationLinks(selectedPublications, isSelectedFn, doiToIndex) {
   const links = []
+  const linkSet = new Set() // Track unique links to avoid duplicates
 
   selectedPublications.forEach((publication) => {
     if (publication.doi in doiToIndex) {
       // Create links for citations (papers this publication cites)
       publication.citationDois.forEach((citationDoi) => {
         if (citationDoi in doiToIndex) {
-          links.push({
-            source: citationDoi,
-            target: publication.doi,
-            type: 'citation',
-            internal: isSelectedFn(citationDoi)
-          })
+          const linkKey = `${citationDoi}→${publication.doi}`
+          if (!linkSet.has(linkKey)) {
+            linkSet.add(linkKey)
+            links.push({
+              source: citationDoi,
+              target: publication.doi,
+              type: 'citation',
+              internal: isSelectedFn(citationDoi)
+            })
+          }
         }
       })
 
       // Create links for references (papers that cite this publication)
       publication.referenceDois.forEach((referenceDoi) => {
         if (referenceDoi in doiToIndex) {
-          links.push({
-            source: publication.doi,
-            target: referenceDoi,
-            type: 'citation',
-            internal: isSelectedFn(referenceDoi)
-          })
+          const linkKey = `${publication.doi}→${referenceDoi}`
+          if (!linkSet.has(linkKey)) {
+            linkSet.add(linkKey)
+            links.push({
+              source: publication.doi,
+              target: referenceDoi,
+              type: 'citation',
+              internal: isSelectedFn(referenceDoi)
+            })
+          }
         }
       })
     }
