@@ -17,12 +17,12 @@ The tool is available at: https://fabian-beck.github.io/pure-suggest/
 
 - Add publications to selection by DOIs or search
 - View the main authors of the selected publications
-- Filter suggestions by different criteria
-- Automatic tagging of publication characteristics (e.g., highly cited)
+- Filter publications by different criteria
+- Automatic tagging of publication characteristics (e.g., ”highly cited”)
 - Quick access to publications through links (DOIs, open access versions, or Google Scholar)
 - Keyboard controls for an efficient workflow
-- Export/import search session
-- Export selected publications to BibTeX
+- Export/import session and share as link
+- Export/import selected publications to/from BibTeX
 - Responsive design that supports screen sizes from phone up to ultra-wide displays
 
 ## Read more
