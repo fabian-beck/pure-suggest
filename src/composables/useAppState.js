@@ -366,6 +366,6 @@ export function useAppState() {
     addPublicationsAndUpdate,
     loadExample,
     queueForSelected,
-    queueForExcluded,
+    queueForExcluded
   }
 }

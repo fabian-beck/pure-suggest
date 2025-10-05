@@ -8,6 +8,7 @@ import NetworkControls from '@/components/NetworkControls.vue'
 import NetworkHeader from '@/components/NetworkHeader.vue'
 import NetworkPerformanceMonitor from '@/components/NetworkPerformanceMonitor.vue'
 import { useAppState } from '@/composables/useAppState.js'
+import { useModalManager } from '@/composables/useModalManager.js'
 import { useAuthorStore } from '@/stores/author.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useQueueStore } from '@/stores/queue.js'
@@ -79,7 +80,8 @@ export default {
     const { isNetworkClusters } = storeToRefs(interfaceStore)
     const queueStore = useQueueStore()
     const authorStore = useAuthorStore()
-    const { isEmpty, activatePublicationComponentByDoi, updateQueued, openAuthorModalDialog } = useAppState()
+    const { isEmpty, activatePublicationComponentByDoi, updateQueued } = useAppState()
+    const { openAuthorModal } = useModalManager()
 
     return {
       sessionStore,
@@ -92,7 +94,7 @@ export default {
       isEmpty,
       activatePublicationComponentByDoi,
       updateQueued,
-      openAuthorModalDialog
+      openAuthorModal
     }
   },
   data () {
@@ -638,7 +640,7 @@ export default {
       this.updatePublicationHighlighting()
     },
     authorNodeClick (event, d) {
-      this.openAuthorModalDialog(d.author.id)
+      this.openAuthorModal(d.author.id)
     },
     yearX (year) {
       return calculateYearX(year, this.svgWidth, this.svgHeight, this.interfaceStore.isMobile)
