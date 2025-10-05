@@ -187,7 +187,6 @@ vi.mock('@/stores/interface.js', () => ({
     isNetworkExpanded: false,
     isNetworkClusters: false,
     isLoading: false,
-    openAuthorModalDialog: vi.fn(),
     activatePublicationComponent: vi.fn()
   }))
 }))

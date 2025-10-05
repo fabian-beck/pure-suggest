@@ -141,7 +141,6 @@ export const createMockInterfaceStore = (overrides = {}) => ({
   openFilterMenu: vi.fn(),
   closeFilterMenu: vi.fn(),
   setFilterMenuState: vi.fn(),
-  openAuthorModalDialog: vi.fn(),
   activatePublicationComponent: vi.fn(),
   ...overrides
 })

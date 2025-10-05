@@ -67,7 +67,6 @@ const mockInterfaceStore = {
   isNetworkCollapsed: false,
   isNetworkClusters: false,
   isLoading: false,
-  openAuthorModalDialog: vi.fn(),
   activatePublicationComponent: vi.fn(),
   collapseNetwork: vi.fn(() => {
     mockInterfaceStore.isNetworkExpanded = false
