@@ -31,6 +31,9 @@ export class SuggestionService {
       `Starting to compute new suggestions based on ${selectedPublications.length} selected publications.`
     )
 
+    // Validate and sync bidirectional citation relationships
+    this._validateCitationConsistency(selectedPublications, getSelectedPublicationByDoi)
+
     // Reset citation/reference counts for selected publications
     selectedPublications.forEach((publication) => {
       publication.citationCount = 0
@@ -44,18 +47,18 @@ export class SuggestionService {
       // Process citations (publication cites these DOIs)
       publication.citationDois.forEach((doi) => {
         if (isExcluded(doi)) return
-        
+
         if (isSelected(doi)) {
           getSelectedPublicationByDoi(doi).citationCount++
         } else {
           this._addCitationSuggestion(suggestedPublications, doi, publication.doi)
         }
       })
-      
-      // Process references (these DOIs cite this publication)  
+
+      // Process references (these DOIs cite this publication)
       publication.referenceDois.forEach((doi) => {
         if (isExcluded(doi)) return
-        
+
         if (isSelected(doi)) {
           getSelectedPublicationByDoi(doi).referenceCount++
         } else {
@@ -144,5 +147,59 @@ export class SuggestionService {
         updateLoadingMessage(`${publicationsLoadedCount}/${suggestions.length} suggestions loaded`)
       })
     )
+  }
+
+  /**
+   * Validates and repairs bidirectional citation consistency
+   * Ensures that if A cites B (B in A.referenceDois), then B should have A in citationDois
+   * @private
+   */
+  static _validateCitationConsistency(selectedPublications, getSelectedPublicationByDoi) {
+    let inconsistenciesFound = 0
+    let inconsistenciesFixed = 0
+
+    selectedPublications.forEach((publication) => {
+      // Check forward citations: if A cites B, B should list A as citing it
+      publication.referenceDois.forEach((citedDoi) => {
+        try {
+          const citedPub = getSelectedPublicationByDoi(citedDoi)
+          if (citedPub && !citedPub.citationDois.includes(publication.doi)) {
+            inconsistenciesFound++
+            console.warn(
+              `[SuggestionService] Citation inconsistency: ${publication.doi} claims to cite ${citedDoi}, ` +
+              `but ${citedDoi} doesn't list ${publication.doi} in citationDois. Adding reverse relationship.`
+            )
+            citedPub.citationDois.push(publication.doi)
+            inconsistenciesFixed++
+          }
+        } catch (e) {
+          // Publication not in selected set, skip validation
+        }
+      })
+
+      // Check reverse citations: if A lists B as citing it, B should cite A
+      publication.citationDois.forEach((citingDoi) => {
+        try {
+          const citingPub = getSelectedPublicationByDoi(citingDoi)
+          if (citingPub && !citingPub.referenceDois.includes(publication.doi)) {
+            inconsistenciesFound++
+            console.warn(
+              `[SuggestionService] Citation inconsistency: ${publication.doi} claims ${citingDoi} cites it, ` +
+              `but ${citingDoi} doesn't list ${publication.doi} in referenceDois. Adding forward relationship.`
+            )
+            citingPub.referenceDois.push(publication.doi)
+            inconsistenciesFixed++
+          }
+        } catch (e) {
+          // Publication not in selected set, skip validation
+        }
+      })
+    })
+
+    if (inconsistenciesFound > 0) {
+      console.log(
+        `[SuggestionService] Citation consistency check: Found and fixed ${inconsistenciesFixed} inconsistencies`
+      )
+    }
   }
 }
