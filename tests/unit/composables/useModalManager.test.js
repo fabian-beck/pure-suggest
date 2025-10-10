@@ -94,7 +94,7 @@ describe('useModalManager - Abstract Highlighting', () => {
       expect(message).toContain('machine learning')
     })
 
-    it('should only match first occurrence of each keyword group', () => {
+    it('should match all occurrences of each keyword', () => {
       sessionStore.boostKeywordString = 'test'
       
       const publication = {
@@ -104,9 +104,24 @@ describe('useModalManager - Abstract Highlighting', () => {
       modalManager.showAbstract(publication)
 
       const message = modalStore.infoDialog.message
-      // Count number of underline tags - should only be one
+      // Count number of underline tags - should be three (two standalone "test" and one in "testing")
       const underlineCount = (message.match(/<u style=/g) || []).length
-      expect(underlineCount).toBe(1)
+      expect(underlineCount).toBe(3)
+    })
+
+    it('should match all alternatives of a keyword', () => {
+      sessionStore.boostKeywordString = 'ML|machine learning'
+      
+      const publication = {
+        abstract: 'ML is short for machine learning. Both ML and machine learning are used here.'
+      }
+
+      modalManager.showAbstract(publication)
+
+      const message = modalStore.infoDialog.message
+      // Should highlight both "ML" occurrences and both "machine learning" occurrences
+      const underlineCount = (message.match(/<u style=/g) || []).length
+      expect(underlineCount).toBe(4)
     })
 
     it('should use word boundary matching for short keywords', () => {

@@ -121,6 +121,48 @@ export function findKeywordMatches(title, boostKeywords) {
 }
 
 /**
+ * Finds ALL keyword matches in a text string (for abstracts)
+ * Unlike findKeywordMatches, this finds all occurrences of all keywords and all alternatives
+ * @param {string} text - The text to search in
+ * @param {string[]} boostKeywords - Keywords to search for
+ * @returns {Array} Array of match objects with keyword, position, and length
+ */
+export function findAllKeywordMatches(text, boostKeywords) {
+  const matches = []
+
+  boostKeywords.forEach((boostKeyword) => {
+    if (!boostKeyword) return
+
+    // Filter out empty alternatives when splitting by "|"
+    const alternatives = boostKeyword.split('|').filter((alt) => alt.trim())
+    if (alternatives.length === 0) return
+
+    // Find all occurrences of all alternatives for this keyword group
+    alternatives.forEach((alternativeKeyword) => {
+      // Use word boundary matching for short keywords (3 chars or less)
+      if (alternativeKeyword.length <= 3) {
+        const wordBoundaryRegex = new RegExp(`\\b${alternativeKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'gi')
+        let match
+        while ((match = wordBoundaryRegex.exec(text)) !== null) {
+          tryAddMatch(matches, boostKeyword, alternativeKeyword, match.index)
+        }
+      } else {
+        // Use substring matching for longer keywords
+        const upperText = text.toUpperCase()
+        const upperAlternativeKeyword = alternativeKeyword.toUpperCase()
+        let position = 0
+        while ((position = upperText.indexOf(upperAlternativeKeyword, position)) !== -1) {
+          tryAddMatch(matches, boostKeyword, alternativeKeyword, position)
+          position += 1 // Move forward to find overlapping matches
+        }
+      }
+    })
+  })
+
+  return matches.sort((a, b) => a.position - b.position)
+}
+
+/**
  * Escapes special regex characters in a string
  * @param {string} string - String to escape
  * @returns {string} Escaped string safe for use in regex

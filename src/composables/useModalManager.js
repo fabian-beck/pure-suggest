@@ -1,7 +1,7 @@
 import { useAuthorStore } from '@/stores/author.js'
 import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
-import { findKeywordMatches, highlightTitle, parseUniqueBoostKeywords } from '@/utils/scoringUtils.js'
+import { findAllKeywordMatches, highlightTitle, parseUniqueBoostKeywords } from '@/utils/scoringUtils.js'
 
 /**
  * Composable for managing modal dialogs and their associated actions
@@ -91,8 +91,9 @@ export function useModalManager() {
    */
   const showAbstract = (publication) => {
     // Get boost keywords and apply highlighting to abstract
+    // Unlike titles, abstracts highlight ALL occurrences of ALL keywords and alternatives
     const uniqueBoostKeywords = parseUniqueBoostKeywords(sessionStore.boostKeywordString)
-    const matches = findKeywordMatches(publication.abstract || '', uniqueBoostKeywords)
+    const matches = findAllKeywordMatches(publication.abstract || '', uniqueBoostKeywords)
     const highlightedAbstract = highlightTitle(publication.abstract || '', matches)
     
     modalStore.infoDialog = {
