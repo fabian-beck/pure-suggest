@@ -39,9 +39,11 @@ const filterSummaryHtml = computed(() => {
     parts.push(`<span class="filter-part">year: ${yearRange}</span>`)
   }
 
-  if (filter.tag) {
-    const tagName = Publication.TAGS.find((t) => t.value === filter.tag)?.name || filter.tag
-    parts.push(`<span class="filter-part">tag: ${tagName}</span>`)
+  if (filter.tags && filter.tags.length > 0) {
+    const tagNames = filter.tags
+      .map((tagValue) => Publication.TAGS.find((t) => t.value === tagValue)?.name || tagValue)
+      .join(', ')
+    parts.push(`<span class="filter-part">tags: ${tagNames}</span>`)
   }
 
   if (filter.dois.length > 0) {
@@ -54,7 +56,7 @@ const filterSummaryHtml = computed(() => {
 const hasFilterValues = computed(() => {
   const filter = sessionStore.filter
   return Boolean(filter.string ||
-    filter.tag ||
+    (filter.tags && filter.tags.length > 0) ||
     filter.yearStart ||
     filter.yearEnd ||
     filter.dois.length > 0)
@@ -221,7 +223,7 @@ function removeDoi(doi) {
           </v-col>
         </v-row>
         <v-row dense :class="{ 'opacity-50': !sessionStore.filter.isActive }">
-          <v-col cols="12" md="4" class="py-1">
+          <v-col cols="12" md="6" class="py-1">
             <v-text-field
               ref="filterInput"
               label="Search"
@@ -233,7 +235,7 @@ function removeDoi(doi) {
               hide-details
             />
           </v-col>
-          <v-col cols="12" md="4" class="py-1">
+          <v-col cols="12" md="6" class="py-1">
             <v-row no-gutters>
               <v-col cols="12" md="7">
                 <v-text-field
@@ -262,18 +264,29 @@ function removeDoi(doi) {
               </v-col>
             </v-row>
           </v-col>
-          <v-col cols="12" md="4" class="py-1">
-            <v-select
-              label="Tag"
-              v-model="sessionStore.filter.tag"
-              :items="Publication.TAGS"
-              item-title="name"
-              item-value="value"
-              variant="underlined"
-              prepend-inner-icon="mdi-tag"
-              clearable
-              hide-details
-            />
+        </v-row>
+        <v-row dense :class="{ 'opacity-50': !sessionStore.filter.isActive }">
+          <v-col cols="12" class="py-1">
+            <div class="d-flex align-center">
+              <v-icon class="mr-2" size="20">mdi-tag</v-icon>
+              <span class="text-body-2 mr-3">Tags:</span>
+              <v-chip-group
+                v-model="sessionStore.filter.tags"
+                multiple
+                column
+              >
+                <v-chip
+                  v-for="tag in Publication.TAGS"
+                  :key="tag.value"
+                  :value="tag.value"
+                  filter
+                  variant="outlined"
+                  size="small"
+                >
+                  {{ tag.name }}
+                </v-chip>
+              </v-chip-group>
+            </div>
           </v-col>
         </v-row>
         <v-row dense v-if="sessionStore.filter.dois.length > 0">

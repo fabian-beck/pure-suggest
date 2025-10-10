@@ -103,7 +103,7 @@ describe('Session Store - Suggested Publications Filtering', () => {
     })
 
     it('should sort by score within filtered and non-filtered groups', () => {
-      sessionStore.filter.tag = 'someTag'
+      sessionStore.filter.tags = ['someTag']
 
       const filtered = sessionStore.suggestedPublicationsFiltered
 
@@ -166,7 +166,7 @@ describe('Session Store - Suggested Publications Filtering', () => {
     })
 
     it('should return correct count with tag filter', () => {
-      sessionStore.filter.tag = 'someTag'
+      sessionStore.filter.tags = ['someTag']
 
       expect(sessionStore.suggestedPublicationsFilteredCount).toBe(2)
     })
@@ -199,7 +199,7 @@ describe('Session Store - Suggested Publications Filtering', () => {
     })
 
     it('should return correct count with tag filter', () => {
-      sessionStore.filter.tag = 'someTag'
+      sessionStore.filter.tags = ['someTag']
 
       expect(sessionStore.suggestedPublicationsNonFilteredCount).toBe(1)
     })
@@ -224,7 +224,7 @@ describe('Session Store - Suggested Publications Filtering', () => {
     it('should work with complex filter combinations', () => {
       sessionStore.filter.string = 'Learning'
       sessionStore.filter.yearStart = '2020'
-      sessionStore.filter.tag = 'someTag'
+      sessionStore.filter.tags = ['someTag']
 
       const filtered = sessionStore.suggestedPublicationsFiltered
 

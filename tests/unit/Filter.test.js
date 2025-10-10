@@ -24,7 +24,7 @@ describe('Filter', () => {
       expect(filter.string).toBe('')
       expect(filter.yearStart).toBeUndefined()
       expect(filter.yearEnd).toBeUndefined()
-      expect(filter.tag).toBe('')
+      expect(filter.tags).toEqual([])
       expect(filter.doi).toBe('')
       expect(filter.dois).toEqual([])
       expect(filter.isActive).toBe(true)
@@ -209,23 +209,33 @@ describe('Filter', () => {
   })
 
   describe('matchesTag', () => {
-    it('should return true when tag filter is empty', () => {
-      filter.tag = ''
+    it('should return true when tags filter is empty', () => {
+      filter.tags = []
       expect(filter.matchesTag(mockPublication)).toBe(true)
     })
 
-    it('should return true when publication has truthy tag value', () => {
-      filter.tag = 'someTag'
+    it('should return true when publication has any of the selected tags', () => {
+      filter.tags = ['someTag']
       expect(filter.matchesTag(mockPublication)).toBe(true)
     })
 
-    it('should return false when publication has falsy tag value', () => {
-      filter.tag = 'otherTag'
+    it('should return true when publication has at least one of multiple tags', () => {
+      filter.tags = ['someTag', 'otherTag']
+      expect(filter.matchesTag(mockPublication)).toBe(true)
+    })
+
+    it('should return false when publication has none of the selected tags', () => {
+      filter.tags = ['otherTag']
       expect(filter.matchesTag(mockPublication)).toBe(false)
     })
 
-    it('should return false when publication does not have tag property', () => {
-      filter.tag = 'nonExistentTag'
+    it('should return false when publication does not have any tag properties', () => {
+      filter.tags = ['nonExistentTag']
+      expect(filter.matchesTag(mockPublication)).toBe(false)
+    })
+
+    it('should return false when publication has none of multiple tags', () => {
+      filter.tags = ['nonExistentTag', 'anotherNonExistentTag']
       expect(filter.matchesTag(mockPublication)).toBe(false)
     })
   })
@@ -315,7 +325,7 @@ describe('Filter', () => {
     beforeEach(() => {
       // Reset to passing state
       filter.string = ''
-      filter.tag = ''
+      filter.tags = []
       filter.dois = []
       mockPublication.year = '2023'
     })
@@ -330,7 +340,7 @@ describe('Filter', () => {
     })
 
     it('should return false when tag filter fails', () => {
-      filter.tag = 'nonExistentTag'
+      filter.tags = ['nonExistentTag']
       expect(filter.matches(mockPublication)).toBe(false)
     })
 
@@ -346,7 +356,7 @@ describe('Filter', () => {
 
     it('should handle complex combined filters', () => {
       filter.string = 'Machine'
-      filter.tag = 'someTag'
+      filter.tags = ['someTag']
       filter.yearStart = '2020'
       filter.yearEnd = '2025'
       filter.dois = ['10.1234/citation1']
@@ -366,7 +376,7 @@ describe('Filter', () => {
     })
 
     it('should return true when tag filter is set', () => {
-      filter.tag = 'someTag'
+      filter.tags = ['someTag']
       expect(filter.hasActiveFilters()).toBe(true)
     })
 

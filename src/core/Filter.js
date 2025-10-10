@@ -8,7 +8,7 @@ export default class Filter {
     this.string = ''
     this.yearStart = undefined
     this.yearEnd = undefined
-    this.tag = ''
+    this.tags = []
     this.doi = ''
     this.dois = []
     this.isActive = true
@@ -55,8 +55,8 @@ export default class Filter {
   }
 
   matchesTag(publication) {
-    if (!this.tag) return true
-    return Boolean(publication[this.tag])
+    if (!this.tags || this.tags.length === 0) return true
+    return this.tags.some((tag) => Boolean(publication[tag]))
   }
 
   toggleDoi(doi) {
@@ -102,7 +102,7 @@ export default class Filter {
   hasActiveFilters() {
     return (
       this.isActive &&
-      Boolean(this.string || this.tag || this.isYearActive() || this.dois.length > 0) &&
+      Boolean(this.string || this.tags.length > 0 || this.isYearActive() || this.dois.length > 0) &&
       (this.applyToSelected || this.applyToSuggested)
     )
   }

@@ -27,7 +27,7 @@ describe('FilterMenuComponent', () => {
         string: '',
         yearStart: '',
         yearEnd: '',
-        tag: '',
+        tags: [],
         dois: [],
         isActive: true,
         applyToSelected: true,
@@ -70,7 +70,7 @@ describe('FilterMenuComponent', () => {
           string: '',
           yearStart: '',
           yearEnd: '',
-          tag: '',
+          tags: [],
           dois: [],
           isActive: false,
           applyToSelected: true,
@@ -91,7 +91,7 @@ describe('FilterMenuComponent', () => {
           string: '',
           yearStart: '',
           yearEnd: '',
-          tag: '',
+          tags: [],
           dois: [],
           isActive: false,
           applyToSelected: true,
@@ -113,7 +113,7 @@ describe('FilterMenuComponent', () => {
         string: 'machine learning',
         yearStart: '2020',
         yearEnd: '',
-        tag: 'research',
+        tags: ['research'],
         dois: [],
         isActive: true,
         applyToSelected: true,
@@ -126,7 +126,7 @@ describe('FilterMenuComponent', () => {
       const summary = wrapper.vm.filterSummaryHtml
       expect(summary).toContain('text: "machine learning"')
       expect(summary).toContain('year: 2020')
-      expect(summary).toContain('tag: Research')
+      expect(summary).toContain('tags: Research')
     })
 
     it('shows disabled state when filters are inactive', () => {
@@ -134,7 +134,7 @@ describe('FilterMenuComponent', () => {
         string: 'test',
         yearStart: '',
         yearEnd: '',
-        tag: '',
+        tags: [],
         dois: [],
         isActive: false,
         applyToSelected: true,
@@ -159,7 +159,7 @@ describe('FilterMenuComponent', () => {
           string: '',
           yearStart,
           yearEnd,
-          tag: '',
+          tags: [],
           dois: [],
           isActive: true,
           applyToSelected: true,
@@ -180,7 +180,7 @@ describe('FilterMenuComponent', () => {
         string: '',
         yearStart: '',
         yearEnd: '',
-        tag: '',
+        tags: [],
         dois: ['10.1234/test'],
         isActive: true,
         applyToSelected: true,
