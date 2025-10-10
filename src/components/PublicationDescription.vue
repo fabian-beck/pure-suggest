@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 
 import { useModalManager } from '@/composables/useModalManager.js'
+import Publication from '@/core/Publication.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
 
@@ -28,6 +29,11 @@ const { showAbstract: showAbstractModal, openAuthorModal } = useModalManager()
 const showDetails = computed(() => {
   return props.alwaysShowDetails || props.publication.isActive
 })
+
+const visibleTags = computed(() => {
+  return Publication.TAGS.filter((tag) => props.publication[tag.value])
+})
+
 
 function highlight(string) {
   if (!string) {
@@ -92,6 +98,45 @@ function refocus() {
   document.getElementById(props.publication.doi)?.focus()
 }
 
+function toggleTag(tagValue) {
+  // Remember the states before we do anything
+  const wasMenuOpen = interfaceStore.isFilterMenuOpen
+  const wasTagFiltered = isTagFiltered(tagValue)
+
+  // Always toggle the tag
+  sessionStore.filter.toggleTag(tagValue)
+
+  // Handle menu state based on original state
+  if (!wasMenuOpen && !wasTagFiltered) {
+    // Menu was closed and we just added a tag - open the menu
+    interfaceStore.openFilterMenu()
+  } else if (wasMenuOpen) {
+    // Menu was open - ensure it stays open after Vuetify's close behavior
+    setTimeout(() => {
+      interfaceStore.setFilterMenuState(true)
+    }, 0)
+  }
+}
+
+function isTagFiltered(tagValue) {
+  return sessionStore.filter.tags.includes(tagValue)
+}
+
+function getTagTooltip(tagValue, tagName) {
+  return isTagFiltered(tagValue)
+    ? `Active as fil<span class="key">t</span>er; click to remove "${tagName}" from filter`
+    : `Add "${tagName}" to fil<span class="key">t</span>er`
+}
+
+function getTagIcon(tagValue) {
+  const iconMap = {
+    isHighlyCited: 'mdi-star',
+    isSurvey: 'mdi-table',
+    isNew: 'mdi-alarm',
+    isUnnoted: 'mdi-alert-box-outline'
+  }
+  return iconMap[tagValue] || ''
+}
 
 
 function handleAuthorClick(event) {
@@ -194,31 +239,16 @@ function getAuthorsWithOrcid() {
         >)</span
       >
       <div>
-        <!-- Refactor: replace by for loop over Publication.TAGS -->
         <PublicationTag
-          v-if="publication.isHighlyCited"
-          icon="mdi-star"
-          v-tippy="`Identified as highly cited: ${publication.isHighlyCited}.`"
-          >Highly cited
-        </PublicationTag>
-        <PublicationTag
-          v-if="publication.isSurvey"
-          icon="mdi-table"
-          v-tippy="`Identified as literature survey: ${publication.isSurvey}.`"
-          >Literature survey
-        </PublicationTag>
-        <PublicationTag
-          v-if="publication.isNew"
-          icon="mdi-alarm"
-          v-tippy="`Identified as new: ${publication.isNew}.`"
+          v-for="tag in visibleTags"
+          :key="tag.value"
+          :icon="getTagIcon(tag.value)"
+          clickable
+          :active="isTagFiltered(tag.value)"
+          @click="toggleTag(tag.value)"
+          v-tippy="getTagTooltip(tag.value, tag.name)"
         >
-          New</PublicationTag
-        >
-        <PublicationTag
-          v-if="publication.isUnnoted"
-          icon="mdi-alert-box-outline"
-          v-tippy="`Identified as yet unnoted: ${publication.isUnnoted}.`"
-          >Unnoted
+          {{ tag.name }}
         </PublicationTag>
       </div>
     </div>

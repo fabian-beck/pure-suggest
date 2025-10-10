@@ -59,6 +59,24 @@ export default class Filter {
     return this.tags.some((tag) => Boolean(publication[tag]))
   }
 
+  toggleTag(tagValue) {
+    if (this.tags.includes(tagValue)) {
+      this.removeTag(tagValue)
+    } else {
+      this.addTag(tagValue)
+    }
+  }
+
+  addTag(tagValue) {
+    if (!this.tags.includes(tagValue)) {
+      this.tags.push(tagValue)
+    }
+  }
+
+  removeTag(tagValue) {
+    this.tags = this.tags.filter((t) => t !== tagValue)
+  }
+
   toggleDoi(doi) {
     if (this.dois.includes(doi)) {
       this.removeDoi(doi)

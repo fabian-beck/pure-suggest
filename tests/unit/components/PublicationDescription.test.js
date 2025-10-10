@@ -8,7 +8,9 @@ const mockSessionStore = {
   filter: {
     addDoi: vi.fn(),
     toggleDoi: vi.fn(),
-    dois: []
+    toggleTag: vi.fn(),
+    dois: [],
+    tags: []
   },
   exportSingleBibtex: vi.fn(),
   getSelectedPublicationByDoi: vi.fn(() => ({

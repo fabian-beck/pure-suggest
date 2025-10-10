@@ -460,4 +460,51 @@ describe('Filter', () => {
       expect(filter.matches(mockPublication)).toBe(true)
     })
   })
+
+  describe('Tag management', () => {
+    describe('addTag', () => {
+      it('should add and handle duplicate tags', () => {
+        filter.addTag('isHighlyCited')
+        expect(filter.tags).toEqual(['isHighlyCited'])
+
+        filter.addTag('isHighlyCited') // duplicate
+        expect(filter.tags).toEqual(['isHighlyCited'])
+
+        filter.addTag('isSurvey')
+        expect(filter.tags).toEqual(['isHighlyCited', 'isSurvey'])
+      })
+    })
+
+    describe('removeTag', () => {
+      it('should remove tag and handle non-existent gracefully', () => {
+        filter.tags = ['isHighlyCited', 'isSurvey']
+        filter.removeTag('isHighlyCited')
+        expect(filter.tags).toEqual(['isSurvey'])
+
+        filter.removeTag('nonexistent')
+        expect(filter.tags).toEqual(['isSurvey'])
+      })
+    })
+
+    describe('toggleTag', () => {
+      it('should toggle tag presence', () => {
+        filter.toggleTag('isHighlyCited')
+        expect(filter.tags).toEqual(['isHighlyCited'])
+
+        filter.toggleTag('isHighlyCited')
+        expect(filter.tags).toEqual([])
+      })
+
+      it('should toggle multiple different tags', () => {
+        filter.toggleTag('isHighlyCited')
+        expect(filter.tags).toEqual(['isHighlyCited'])
+
+        filter.toggleTag('isSurvey')
+        expect(filter.tags).toEqual(['isHighlyCited', 'isSurvey'])
+
+        filter.toggleTag('isHighlyCited')
+        expect(filter.tags).toEqual(['isSurvey'])
+      })
+    })
+  })
 })
