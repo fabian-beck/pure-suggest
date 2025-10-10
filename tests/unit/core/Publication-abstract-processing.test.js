@@ -228,24 +228,58 @@ describe('Publication Abstract Processing', () => {
 
   describe('real-world abstract examples', () => {
     it('should handle abstract from the issue screenshot', () => {
-      const data = { 
+      const data = {
         title: 'Dynamic Graph Visualization',
-        abstract: 'Abstract Dynamic graph visualization focuses on the challenge of representing the evolution of relationships between entities in readable, scalable and effective diagrams.' 
+        abstract: 'Abstract Dynamic graph visualization focuses on the challenge of representing the evolution of relationships between entities in readable, scalable and effective diagrams.'
       }
       publication.processTitle(data)
-      
+
       expect(publication.abstract).toBe('Dynamic graph visualization focuses on the challenge of representing the evolution of relationships between entities in readable, scalable and effective diagrams.')
       expect(publication.abstract).not.toMatch(/^Abstract\s/)
     })
 
     it('should handle abstract with complex formatting', () => {
-      const data = { 
+      const data = {
         title: 'Test Title',
-        abstract: 'Abstract: We present a novel approach to solving complex problems. This work demonstrates significant improvements over previous methods.' 
+        abstract: 'Abstract: We present a novel approach to solving complex problems. This work demonstrates significant improvements over previous methods.'
       }
       publication.processTitle(data)
-      
+
       expect(publication.abstract).toBe('We present a novel approach to solving complex problems. This work demonstrates significant improvements over previous methods.')
+    })
+
+    it('should handle JATS XML tags with Abstract keyword (issue #593)', () => {
+      const data = {
+        title: 'Test Title',
+        abstract: '<jats:title>Abstract</jats:title><jats:p>This survey describes the latest developments in visualization techniques.</jats:p>'
+      }
+      publication.processTitle(data)
+
+      expect(publication.abstract).toBe('This survey describes the latest developments in visualization techniques.')
+      expect(publication.abstract).not.toMatch(/^Abstract/)
+      expect(publication.abstract).not.toContain('<jats:')
+      expect(publication.abstract).not.toContain('</jats:')
+    })
+
+    it('should handle various JATS XML tag structures', () => {
+      const data = {
+        title: 'Test Title',
+        abstract: '<jats:title>Abstract</jats:title><jats:p>Content here</jats:p>'
+      }
+      publication.processTitle(data)
+
+      expect(publication.abstract).toBe('Content here')
+    })
+
+    it('should handle JATS tags without Abstract keyword', () => {
+      const data = {
+        title: 'Test Title',
+        abstract: '<jats:p>This is the content without Abstract prefix.</jats:p>'
+      }
+      publication.processTitle(data)
+
+      expect(publication.abstract).toBe('This is the content without Abstract prefix.')
+      expect(publication.abstract).not.toContain('<jats:')
     })
   })
 

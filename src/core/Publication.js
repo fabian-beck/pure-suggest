@@ -397,7 +397,7 @@ function cleanTitle(title) {
 }
 
 /**
- * Clean abstract by removing leading "Abstract" keyword if present
+ * Clean abstract by removing HTML/XML tags and leading "Abstract" keyword if present
  * @param {string} abstract - Raw abstract string
  * @returns {string|null|undefined} Cleaned abstract or original if null/undefined
  */
@@ -406,10 +406,10 @@ function cleanAbstract(abstract) {
   if (!abstract || typeof abstract !== 'string') {
     return abstract
   }
-  
-  // Remove leading "Abstract" (case-insensitive) followed by optional punctuation and whitespace
-  // This regex matches:
-  // - "Abstract" at the start (case-insensitive)
-  // - Optional punctuation (: . - –) and whitespace after it
-  return abstract.replace(/^Abstract[\s:.–-]*/i, '').trim()
+
+  // First, remove HTML/XML tags (including JATS tags like <jats:title>, <jats:p>, etc.)
+  const withoutTags = removeHtmlTags(abstract)
+
+  // Then remove leading "Abstract" (case-insensitive) followed by optional punctuation and whitespace
+  return withoutTags.replace(/^Abstract[\s:.–-]*/i, '').trim()
 }
