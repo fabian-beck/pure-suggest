@@ -184,7 +184,7 @@ export default class Publication {
   processTitle(data) {
     // Set basic title first
     this.title = data.title || ''
-    this.abstract = data.abstract
+    this.abstract = cleanAbstract(data.abstract)
     this.year = data.year
 
     const subtitle = data.subtitle
@@ -394,4 +394,22 @@ function cleanTitle(title) {
     ? cleanedTitle.substring(0, TEXT_PROCESSING.TITLE_TRUNCATION_POINT) +
         TEXT_PROCESSING.TITLE_TRUNCATION_SUFFIX
     : cleanedTitle
+}
+
+/**
+ * Clean abstract by removing HTML/XML tags and leading "Abstract" keyword if present
+ * @param {string} abstract - Raw abstract string
+ * @returns {string|null|undefined} Cleaned abstract or original if null/undefined
+ */
+function cleanAbstract(abstract) {
+  // Return early for null, undefined, or empty string
+  if (!abstract || typeof abstract !== 'string') {
+    return abstract
+  }
+
+  // First, remove HTML/XML tags (including JATS tags like <jats:title>, <jats:p>, etc.)
+  const withoutTags = removeHtmlTags(abstract)
+
+  // Then remove leading "Abstract" (case-insensitive) followed by optional punctuation and whitespace
+  return withoutTags.replace(/^Abstract[\s:.–-]*/i, '').trim()
 }
