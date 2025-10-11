@@ -19,7 +19,7 @@ defineEmits(['click'])
 
 <template>
   <v-chip
-    :class="{ 
+    :class="{
       'has-background-dark has-text-white': active,
       'has-background-white has-text-black': !active,
       'tag-clickable': clickable
@@ -40,7 +40,6 @@ defineEmits(['click'])
   height: 1.5rem;
   border-radius: 0.25rem;
   font-size: 0.8rem;
-  border: 1px solid #ccc;
 
   &.has-background-dark {
     border-color: #363636;
