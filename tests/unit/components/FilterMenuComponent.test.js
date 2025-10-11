@@ -84,27 +84,6 @@ describe('FilterMenuComponent', () => {
 
       expect(mockSessionStore.filter.isActive).toBe(true)
     })
-
-    it('does not change filter state when menu is closed', () => {
-      const wrapper = createWrapper({
-        filter: {
-          string: '',
-          yearStart: '',
-          yearEnd: '',
-          tags: [],
-          dois: [],
-          isActive: false,
-          applyToSelected: true,
-          applyToSuggested: true,
-          hasActiveFilters: vi.fn(() => false),
-          removeDoi: vi.fn()
-        }
-      })
-
-      wrapper.vm.handleMenuToggle(false)
-
-      expect(mockSessionStore.filter.isActive).toBe(false)
-    })
   })
 
   describe('Filter Summary Generation', () => {

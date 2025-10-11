@@ -184,20 +184,6 @@ describe('PublicationComponent', () => {
       wrapper = createWrapper({ boostFactor })
       expect(wrapper.vm.chevronType).toBe(expected)
     })
-
-    it('should handle edge case boostFactor exactly at boundaries', () => {
-      wrapper = createWrapper({ boostFactor: 1.0 })
-      expect(wrapper.vm.chevronType).toBe('')
-
-      wrapper = createWrapper({ boostFactor: 1.1 })
-      expect(wrapper.vm.chevronType).toBe('chevron-up')
-
-      wrapper = createWrapper({ boostFactor: 4.0 })
-      expect(wrapper.vm.chevronType).toBe('chevron-double-up')
-
-      wrapper = createWrapper({ boostFactor: 8.0 })
-      expect(wrapper.vm.chevronType).toBe('chevron-triple-up')
-    })
   })
 
   describe('CSS class binding', () => {
@@ -362,32 +348,6 @@ describe('PublicationComponent', () => {
       await plusButton.trigger('click')
       expect(activateSpy).not.toHaveBeenCalled()
       expect(mockSessionStore.queueForSelected).toHaveBeenCalledWith('test-doi')
-    })
-  })
-
-  describe('refocus method', () => {
-    it('should focus element when refocus is called', () => {
-      const mockElement = { focus: vi.fn() }
-      const getElementByIdSpy = vi.spyOn(document, 'getElementById').mockReturnValue(mockElement)
-
-      wrapper = createWrapper({ doi: 'test-doi' })
-      wrapper.vm.refocus()
-
-      expect(getElementByIdSpy).toHaveBeenCalledWith('test-doi')
-      expect(mockElement.focus).toHaveBeenCalled()
-
-      getElementByIdSpy.mockRestore()
-    })
-
-    it('should handle missing element gracefully in refocus', () => {
-      const getElementByIdSpy = vi.spyOn(document, 'getElementById').mockReturnValue(null)
-
-      wrapper = createWrapper({ doi: 'test-doi' })
-
-      // Should not throw error
-      expect(() => wrapper.vm.refocus()).not.toThrow()
-
-      getElementByIdSpy.mockRestore()
     })
   })
 

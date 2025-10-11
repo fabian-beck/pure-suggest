@@ -6,6 +6,7 @@ import { ref } from 'vue'
 import {
   createD3ChainableMock,
   createD3SimulationMock,
+  createD3ModuleMock,
   commonComponentStubs
 } from '../../helpers/testUtils.js'
 
@@ -13,26 +14,8 @@ import NetworkVisComponent from '@/components/NetworkVisComponent.vue'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
 
-// Use shared D3 mock utilities
-vi.mock('d3', () => ({
-  select: vi.fn(() => createD3ChainableMock()),
-  selectAll: vi.fn(() => createD3ChainableMock()),
-  zoom: vi.fn(() => ({
-    on: vi.fn(function() { return this }),
-    transform: vi.fn(),
-    scaleBy: vi.fn(),
-    scaleTo: vi.fn(),
-    translateTo: vi.fn()
-  })),
-  zoomTransform: vi.fn(() => ({ k: 1, x: 0, y: 0 })),
-  zoomIdentity: { k: 1, x: 0, y: 0 },
-  drag: vi.fn(() => ({ on: vi.fn(function() { return this }) })),
-  forceSimulation: vi.fn(() => createD3SimulationMock()),
-  forceLink: vi.fn(() => ({ id: vi.fn(() => ({ distance: vi.fn(() => ({ strength: vi.fn() })) })) })),
-  forceManyBody: vi.fn(() => ({ strength: vi.fn(() => ({ theta: vi.fn() })) })),
-  forceX: vi.fn(() => ({ x: vi.fn(() => ({ strength: vi.fn() })) })),
-  forceY: vi.fn(() => ({ y: vi.fn(() => ({ strength: vi.fn() })) }))
-}))
+// Use shared D3 mock from testUtils
+vi.mock('d3', () => createD3ModuleMock())
 
 // Mock external dependencies with minimal setup
 vi.mock('tippy.js', () => ({ default: vi.fn(() => ({})) }))

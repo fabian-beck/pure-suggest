@@ -3,52 +3,14 @@ import { setActivePinia, createPinia } from 'pinia'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { nextTick } from 'vue'
 
+import { createD3ModuleMock } from '../../helpers/testUtils.js'
 import NetworkVisComponent from '@/components/NetworkVisComponent.vue'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useQueueStore } from '@/stores/queue.js'
 import { useSessionStore } from '@/stores/session.js'
 
-// Create a comprehensive D3 mock
-const createChainableMock = () => {
-  const mock = vi.fn(() => createChainableMock())
-  const chainableMethods = [
-    'attr', 'select', 'selectAll', 'append', 'call', 'on', 'style', 'text',
-    'classed', 'data', 'join', 'enter', 'exit', 'remove', 'merge', 'filter',
-    'transition', 'duration', 'delay', 'ease', 'each', 'node', 'nodes',
-    'datum', 'property', 'html', 'lower', 'raise', 'sort', 'order'
-  ]
-  chainableMethods.forEach(method => {
-    mock[method] = vi.fn(() => createChainableMock())
-  })
-  return mock
-}
-
-// Mock D3 and other external dependencies
-vi.mock('d3', () => ({
-  select: vi.fn(() => createChainableMock()),
-  selectAll: vi.fn(() => createChainableMock()),
-  zoom: vi.fn(() => ({
-    on: vi.fn(() => createChainableMock())
-  })),
-  forceSimulation: vi.fn(() => ({
-    alphaDecay: vi.fn(() => createChainableMock()),
-    alphaMin: vi.fn(() => createChainableMock()),
-    nodes: vi.fn(() => createChainableMock()),
-    force: vi.fn(() => createChainableMock()),
-    alpha: vi.fn(() => createChainableMock()),
-    restart: vi.fn(() => createChainableMock()),
-    stop: vi.fn(() => createChainableMock()),
-    on: vi.fn(() => createChainableMock())
-  })),
-  drag: vi.fn(() => ({ on: vi.fn(() => createChainableMock()) })),
-  forceLink: vi.fn(() => ({
-    id: vi.fn(() => ({ distance: vi.fn(() => ({ strength: vi.fn() })) }))
-  })),
-  forceManyBody: vi.fn(() => ({ strength: vi.fn(() => ({ theta: vi.fn() })) })),
-  forceX: vi.fn(() => ({ x: vi.fn(() => ({ strength: vi.fn() })) })),
-  forceY: vi.fn(() => ({ y: vi.fn(() => ({ strength: vi.fn() })) }))
-}))
-
+// Use shared D3 mock from testUtils
+vi.mock('d3', () => createD3ModuleMock())
 vi.mock('tippy.js', () => ({ default: vi.fn(() => ({})) }))
 
 // Mock all the network utility modules

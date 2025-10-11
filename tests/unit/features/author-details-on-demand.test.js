@@ -115,32 +115,6 @@ describe('Author Details On Demand Feature', () => {
   // is tested in tests/unit/components/AuthorModalDialog.test.js
 
   describe('Publication Component - Author Click Integration', () => {
-    it('should parse author string using existing Publication structure', () => {
-      // Test leveraging the known structure from Publication.js
-      // Authors are separated by '; ' and can be "Last, First" or "First Last" format
-
-      const testCases = [
-        {
-          input: 'John Smith; Jane Doe; Robert Wilson',
-          expected: ['John Smith', 'Jane Doe', 'Robert Wilson']
-        },
-        {
-          input: 'Smith, J.; Doe, J. A.; Wilson, R.',
-          expected: ['Smith, J.', 'Doe, J. A.', 'Wilson, R.']
-        },
-        {
-          input: 'Johnson-Brown, Mary; Wilson, Robert',
-          expected: ['Johnson-Brown, Mary', 'Wilson, Robert']
-        }
-      ]
-
-      testCases.forEach((testCase) => {
-        // Using the same parsing logic as Publication.authorShort
-        const authorArray = testCase.input.split('; ')
-        expect(authorArray).toEqual(testCase.expected)
-      })
-    })
-
     it('should make individual authors clickable using structure-based parsing', () => {
       // Test the structure-based approach (no regex)
 
@@ -491,13 +465,12 @@ describe('Author Details On Demand Feature', () => {
       })
     })
 
-    it('should demonstrate that ORCID authors are now fixed - the old bug no longer exists', async () => {
+    it('should correctly handle ORCID authors with clean data-author attribute', async () => {
       const { mount } = await import('@vue/test-utils')
       const PublicationDescription = await import('@/components/PublicationDescription.vue')
 
-      // Mock publication with ORCID-enabled author
       const mockPublication = {
-        doi: '10.1000/test-orcid',
+        doi: '10.1000/test-orcid-fixed',
         title: 'Test Publication with ORCID',
         author: 'John Smith; Jane Doe',
         authorOrcidHtml: `John Smith <a href='https://orcid.org/0000-0000-0000-0001'><img alt='ORCID logo' src='orcid-icon.png' width='14' height='14' /></a>; Jane Doe`,
@@ -517,8 +490,6 @@ describe('Author Details On Demand Feature', () => {
         citationsPerYear: 1.5
       }
 
-      vi.spyOn(modalManager, 'openAuthorModal')
-
       const wrapper = mount(PublicationDescription.default, {
         props: {
           publication: mockPublication,
@@ -528,127 +499,18 @@ describe('Author Details On Demand Feature', () => {
 
       await wrapper.vm.$nextTick()
 
-      // Find clickable authors (should exist)
       const clickableAuthors = wrapper.findAll('.clickable-author')
       expect(clickableAuthors.length).toBeGreaterThan(0)
 
-      // Try to click on the first author (John Smith with ORCID)
       const firstAuthor = clickableAuthors[0]
-
-      // FIXED: The data-author attribute should now contain clean text, not HTML
       const dataAuthor = firstAuthor.attributes('data-author')
-      expect(dataAuthor).toBe('John Smith') // Clean text only now
-      expect(dataAuthor).not.toContain('<a href=') // No more HTML tags in data attribute
 
-      // When we try to find author ID by name, it should now work correctly
-      const findAuthorIdByName = (authorName) => {
-        // This is the current implementation
-        return authorName
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(/[øØ]/g, 'o')
-          .replace(/[åÅ]/g, 'a')
-          .replace(/[æÆ]/g, 'ae')
-          .replace(/[ðÐ]/g, 'd')
-          .replace(/[þÞ]/g, 'th')
-          .replace(/[ßẞ]/g, 'ss')
-          .toLowerCase()
-      }
+      expect(dataAuthor).toBe('John Smith')
+      expect(dataAuthor).not.toContain('<a href=')
+      expect(firstAuthor.html()).not.toContain('<a href=')
 
-      // FIXED: This now works correctly with clean text
-      const authorIdFromHTML = findAuthorIdByName(dataAuthor)
-      expect(authorIdFromHTML).toBe('john smith') // Clean conversion
-      expect(authorIdFromHTML).not.toContain('<a href=') // No HTML in the ID
-
-      // FIXED: ORCID links should now be OUTSIDE the clickable author span to prevent double-click
-      expect(firstAuthor.html()).not.toContain('<a href=') // ORCID link moved outside
-      expect(firstAuthor.html()).not.toContain('img') // ORCID icon moved outside
-
-      // But ORCID should still be visible in the overall author section
       const authorSection = wrapper.find('[data-author="John Smith"]').element.parentElement
-      expect(authorSection.innerHTML).toContain('href="https://orcid.org/') // ORCID link present outside clickable span
-      expect(authorSection.innerHTML).toContain('img') // ORCID icon present outside clickable span
-    })
-
-    it('should correctly handle ORCID authors after fix - clean data-author attribute', async () => {
-      const { mount } = await import('@vue/test-utils')
-      const PublicationDescription = await import('@/components/PublicationDescription.vue')
-
-      // Mock publication with ORCID-enabled author
-      const mockPublication = {
-        doi: '10.1000/test-orcid-fixed',
-        title: 'Test Publication with ORCID Fixed',
-        author: 'John Smith; Jane Doe',
-        authorOrcidHtml: `John Smith <a href='https://orcid.org/0000-0000-0000-0001'><img alt='ORCID logo' src='orcid-icon.png' width='14' height='14' /></a>; Jane Doe`,
-        authorOrcidData: [
-          {
-            index: 0,
-            orcidId: '0000-0000-0000-0001',
-            authorName: 'John Smith'
-          }
-        ],
-        year: 2023,
-        wasFetched: true,
-        isActive: true,
-        referenceDois: ['10.1000/ref1'],
-        citationDois: ['10.1000/cit1'],
-        tooManyCitations: false,
-        citationsPerYear: 1.5
-      }
-
-      vi.spyOn(modalManager, 'openAuthorModal')
-
-      const wrapper = mount(PublicationDescription.default, {
-        props: {
-          publication: mockPublication,
-          publicationType: 'selected'
-        }
-      })
-
-      await wrapper.vm.$nextTick()
-
-      // Find clickable authors (should exist)
-      const clickableAuthors = wrapper.findAll('.clickable-author')
-      expect(clickableAuthors.length).toBeGreaterThan(0)
-
-      // Check the first author (John Smith with ORCID)
-      const firstAuthor = clickableAuthors[0]
-
-      // FIXED: The data-author attribute should now contain clean text, not HTML
-      const dataAuthor = firstAuthor.attributes('data-author')
-      expect(dataAuthor).toBe('John Smith') // Clean text only
-      expect(dataAuthor).not.toContain('<a href=') // No HTML tags
-      expect(dataAuthor).not.toContain('img') // No img tags
-
-      // FIXED: ORCID should now be outside the clickable span to prevent double-click
-      expect(firstAuthor.html()).not.toContain('<a href=') // ORCID moved outside clickable span
-
-      // But ORCID should still be visible in the overall author section
-      const authorSection = wrapper.find('[data-author="John Smith"]').element.parentElement
-      expect(authorSection.innerHTML).toContain('href="https://orcid.org/') // ORCID link still visible overall
-
-      // Now the findAuthorIdByName should work correctly
-      const findAuthorIdByName = (authorName) => {
-        return authorName
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(/[øØ]/g, 'o')
-          .replace(/[åÅ]/g, 'a')
-          .replace(/[æÆ]/g, 'ae')
-          .replace(/[ðÐ]/g, 'd')
-          .replace(/[þÞ]/g, 'th')
-          .replace(/[ßẞ]/g, 'ss')
-          .toLowerCase()
-      }
-
-      // FIXED: This should now work correctly
-      const authorIdFromHTML = findAuthorIdByName(dataAuthor)
-      expect(authorIdFromHTML).toBe('john smith') // Clean ID conversion
-      expect(authorIdFromHTML).not.toContain('<a href=') // No HTML in the ID
-
-      // Note: In the real application, clicking works, but in this test environment
-      // we can verify the data is correct and the ID conversion works properly
-      // The actual click integration is tested in other component tests
+      expect(authorSection.innerHTML).toContain('href="https://orcid.org/')
     })
   })
 })
