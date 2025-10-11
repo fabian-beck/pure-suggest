@@ -66,7 +66,7 @@ export default class PublicationSearch {
   async searchOpenAlex(results) {
     const simplifiedQuery = encodeURIComponent(this.query)
     await cachedFetch(
-      `${API_ENDPOINTS.OPENALEX}?search=${simplifiedQuery}&mailto=${API_PARAMS.OPENALEX_EMAIL}`,
+      `${API_ENDPOINTS.OPENALEX}?search=${simplifiedQuery}&filter=has_doi:true&per_page=20&mailto=${API_PARAMS.OPENALEX_EMAIL}`,
       (data) => {
         data.results
           .filter((item) => item.doi)
