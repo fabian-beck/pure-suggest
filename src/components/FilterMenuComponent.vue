@@ -147,7 +147,13 @@ function getTagIcon(tagValue) {
 }
 
 function toggleTag(tagValue) {
+  const wasTagActive = sessionStore.filter.tags.includes(tagValue)
   sessionStore.filter.toggleTag(tagValue)
+  
+  // If filters are disabled and we just activated a tag, enable filters
+  if (!sessionStore.filter.isActive && !wasTagActive) {
+    sessionStore.filter.isActive = true
+  }
 }
 
 function isTagActive(tagValue) {
