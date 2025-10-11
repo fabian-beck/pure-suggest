@@ -323,8 +323,9 @@ describe('SearchModalDialog', () => {
       }
     })
 
-    // Set up ongoing search with same query after mounting
+    // Set up ongoing search with same query and provider after mounting
     wrapper.vm.lastSearchQuery = 'machine learning'
+    wrapper.vm.lastSearchProvider = 'openalex'
     wrapper.vm.isLoading = true
     wrapper.vm.searchResults = { results: [{ doi: 'loading' }], type: 'search' }
     const originalLoading = wrapper.vm.isLoading
@@ -332,10 +333,10 @@ describe('SearchModalDialog', () => {
     // Mock cancelSearch to verify it's NOT called within search() method
     const cancelSearchSpy = vi.spyOn(wrapper.vm, 'cancelSearch')
 
-    // Click search with same query - should return early without calling cancelSearch
+    // Click search with same query and provider - should return early without calling cancelSearch
     await wrapper.vm.search()
 
-    // Should NOT cancel the ongoing search since query is same
+    // Should NOT cancel the ongoing search since query and provider are same
     expect(cancelSearchSpy).not.toHaveBeenCalled()
     expect(wrapper.vm.isLoading).toBe(originalLoading) // Should remain unchanged
   })

@@ -17,7 +17,14 @@ export default {
     const queueStore = useQueueStore()
     const { queueForSelected } = useAppState()
     const { isSearchModalDialogShown } = storeToRefs(modalStore)
-    return { sessionStore, interfaceStore, modalStore, queueStore, isSearchModalDialogShown, queueForSelected }
+    return {
+      sessionStore,
+      interfaceStore,
+      modalStore,
+      queueStore,
+      isSearchModalDialogShown,
+      queueForSelected
+    }
   },
   data() {
     return {
@@ -26,11 +33,16 @@ export default {
       loaded: 0,
       cleanedSearchQuery: '',
       searchCancelled: false,
-      lastSearchQuery: ''
+      lastSearchQuery: '',
+      lastSearchProvider: '',
+      searchProviders: [
+        { title: 'OpenAlex', value: 'openalex' },
+        { title: 'CrossRef', value: 'crossref' }
+      ]
     }
   },
   computed: {
-    filteredSearchResults () {
+    filteredSearchResults() {
       // Don't show any results if search was cancelled
       if (this.searchCancelled) {
         return []
@@ -45,7 +57,7 @@ export default {
   },
   watch: {
     isSearchModalDialogShown: {
-      handler () {
+      handler() {
         if (!this.isSearchModalDialogShown) return
         setTimeout(() => {
           if (this.$refs.searchInput && typeof this.$refs.searchInput.focus === 'function') {
@@ -58,7 +70,7 @@ export default {
       }
     },
     'modalStore.searchQuery': {
-      handler () {
+      handler() {
         // Cancel ongoing search when user starts typing new query
         if (this.isLoading) {
           this.cancelSearch()
@@ -86,9 +98,12 @@ export default {
       this.searchResults = { results: [], type: 'empty' }
     },
 
-    async search () {
-      // Don't perform search if query is the same as last search
-      if (this.modalStore.searchQuery === this.lastSearchQuery) {
+    async search() {
+      // Don't perform search if query and provider are the same as last search
+      if (
+        this.modalStore.searchQuery === this.lastSearchQuery &&
+        this.modalStore.searchProvider === this.lastSearchProvider
+      ) {
         return
       }
 
@@ -102,12 +117,17 @@ export default {
       if (!this.modalStore.searchQuery) {
         this.searchResults = { results: [], type: 'empty' }
         this.lastSearchQuery = ''
+        this.lastSearchProvider = ''
         return
       }
       this.isLoading = true
       this.lastSearchQuery = this.modalStore.searchQuery
+      this.lastSearchProvider = this.modalStore.searchProvider
       this.cleanedSearchQuery = this.modalStore.searchQuery.replace(/[^a-zA-Z0-9 ]/g, ' ')
-      const publicationSearch = new PublicationSearch(this.modalStore.searchQuery)
+      const publicationSearch = new PublicationSearch(
+        this.modalStore.searchQuery,
+        this.modalStore.searchProvider
+      )
       this.searchResults = await publicationSearch.execute()
 
       // Check if search was cancelled during execution
@@ -166,6 +186,7 @@ export default {
       this.searchCancelled = false
       this.loaded = 0
       this.lastSearchQuery = ''
+      this.lastSearchProvider = ''
     }
   }
 }
@@ -180,18 +201,32 @@ export default {
   >
     <template #sticky>
       <form @submit.prevent="search" class="has-background-primary-95">
-        <v-text-field
-          clearable
-          v-model="modalStore.searchQuery"
-          type="input"
-          ref="searchInput"
-          variant="solo"
-          append-icon="mdi-magnify"
-          @click:append="search"
-          density="compact"
-          hint="Search for keywords, names, etc. or add by providing DOI(s) in any format"
-        >
-        </v-text-field>
+        <div class="search-controls">
+          <v-text-field
+            clearable
+            v-model="modalStore.searchQuery"
+            type="input"
+            ref="searchInput"
+            variant="solo"
+            append-icon="mdi-magnify"
+            @click:append="search"
+            @keydown.enter="search"
+            density="compact"
+            hint="Search for keywords or by providing DOI(s) in any format. If searching also by author names or publication venue, use CrossRef; for keywords, OpenAlex usually provides better results."
+            class="search-field"
+          >
+          </v-text-field>
+          <v-select
+            v-model="modalStore.searchProvider"
+            :items="searchProviders"
+            variant="solo"
+            density="compact"
+            hide-details
+            @update:model-value="search"
+            class="search-provider-select flex-grow-0 flex-shrink-0"
+          >
+          </v-select>
+        </div>
       </form>
     </template>
     <template #footer>
@@ -260,6 +295,21 @@ export default {
 form {
   height: 5.5rem;
   padding: 0.5rem;
+}
+
+.search-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.search-field {
+  flex: 1;
+}
+
+.search-provider-select {
+  width: 150px;
+  flex-shrink: 0;
 }
 
 .content {
