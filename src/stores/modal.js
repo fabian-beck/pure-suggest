@@ -21,7 +21,8 @@ export const useModalStore = defineStore('modal', {
         isShown: false,
         title: ''
       },
-      searchQuery: ''
+      searchQuery: '',
+      searchProvider: 'openalex'
     }
   },
   getters: {

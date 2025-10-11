@@ -115,6 +115,7 @@ export default {
         </p>
         <ul>
           <li><a href="https://opencitations.net/">OpenCitations</a></li>
+          <li><a href="https://openalex.org/">OpenAlex</a></li>
           <li><a href="https://www.crossref.org/">CrossRef</a></li>
         </ul>
         <h2><v-icon>mdi-tools</v-icon>&ensp;Similar Tools</h2>

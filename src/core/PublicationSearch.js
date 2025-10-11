@@ -3,8 +3,9 @@ import { API_ENDPOINTS, API_PARAMS } from '../constants/config.js'
 import { cachedFetch } from '../lib/Cache.js'
 
 export default class PublicationSearch {
-  constructor(query) {
+  constructor(query, provider = 'openalex') {
     this.query = query
+    this.provider = provider
   }
 
   async execute() {
@@ -34,8 +35,20 @@ export default class PublicationSearch {
       console.log(`Identified ${results.length} DOI(s) in input; do not perform search.`)
       return { results, type: 'doi' }
     }
+    
+    console.log(`Searching for publications matching '${this.query}' using ${this.provider}.`)
+    
+    if (this.provider === 'openalex') {
+      await this.searchOpenAlex(results)
+    } else {
+      await this.searchCrossRef(results)
+    }
+    
+    return { results, type: 'search' }
+  }
+
+  async searchCrossRef(results) {
     const simplifiedQuery = this.query.replace(/\W+/g, '+').toLowerCase()
-    console.log(`Searching for publications matching '${this.query}'.`)
     await cachedFetch(
       `${API_ENDPOINTS.CROSSREF}?query=${simplifiedQuery}&mailto=${API_PARAMS.CROSSREF_EMAIL}&filter=${API_PARAMS.CROSSREF_FILTER}&sort=${API_PARAMS.CROSSREF_SORT}&order=desc`,
       (data) => {
@@ -48,6 +61,23 @@ export default class PublicationSearch {
           })
       }
     )
-    return { results, type: 'search' }
+  }
+
+  async searchOpenAlex(results) {
+    const simplifiedQuery = encodeURIComponent(this.query)
+    await cachedFetch(
+      `${API_ENDPOINTS.OPENALEX}?search=${simplifiedQuery}&mailto=${API_PARAMS.OPENALEX_EMAIL}`,
+      (data) => {
+        data.results
+          .filter((item) => item.doi)
+          .forEach((item) => {
+            // Extract DOI from the full URL (OpenAlex returns it as https://doi.org/...)
+            const doi = item.doi.replace('https://doi.org/', '')
+            const publication = new Publication(doi)
+            publication.fetchData()
+            results.push(publication)
+          })
+      }
+    )
   }
 }

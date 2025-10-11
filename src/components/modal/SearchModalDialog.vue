@@ -107,7 +107,7 @@ export default {
       this.isLoading = true
       this.lastSearchQuery = this.modalStore.searchQuery
       this.cleanedSearchQuery = this.modalStore.searchQuery.replace(/[^a-zA-Z0-9 ]/g, ' ')
-      const publicationSearch = new PublicationSearch(this.modalStore.searchQuery)
+      const publicationSearch = new PublicationSearch(this.modalStore.searchQuery, this.modalStore.searchProvider)
       this.searchResults = await publicationSearch.execute()
 
       // Check if search was cancelled during execution
@@ -192,6 +192,12 @@ export default {
           hint="Search for keywords, names, etc. or add by providing DOI(s) in any format"
         >
         </v-text-field>
+        <div class="search-provider-selector">
+          <v-radio-group v-model="modalStore.searchProvider" inline density="compact" hide-details>
+            <v-radio label="OpenAlex" value="openalex"></v-radio>
+            <v-radio label="CrossRef" value="crossref"></v-radio>
+          </v-radio-group>
+        </div>
       </form>
     </template>
     <template #footer>
@@ -258,8 +264,16 @@ export default {
 
 <style lang="scss" scoped>
 form {
-  height: 5.5rem;
+  height: 7.5rem;
   padding: 0.5rem;
+}
+
+.search-provider-selector {
+  padding: 0.25rem 0.5rem;
+  
+  :deep(.v-selection-control-group) {
+    justify-content: center;
+  }
 }
 
 .content {
