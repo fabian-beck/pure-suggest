@@ -4,6 +4,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { nextTick } from 'vue'
 
 import { createD3ModuleMock } from '../../helpers/testUtils.js'
+
 import NetworkVisComponent from '@/components/NetworkVisComponent.vue'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useQueueStore } from '@/stores/queue.js'
