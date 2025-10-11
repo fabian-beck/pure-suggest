@@ -195,4 +195,57 @@ describe('FilterMenuComponent', () => {
       expect(mockSessionStore.filter.removeDoi).toHaveBeenCalledWith('10.1234/test')
     })
   })
+
+  describe('Tag Filter Management', () => {
+    it('toggles tag when clicked', () => {
+      const filterState = {
+        string: '',
+        yearStart: '',
+        yearEnd: '',
+        tags: [],
+        dois: [],
+        isActive: true,
+        applyToSelected: true,
+        applyToSuggested: true,
+        hasActiveFilters: vi.fn(() => false),
+        removeDoi: vi.fn(),
+        toggleTag: vi.fn()
+      }
+      const wrapper = createWrapper({ filter: filterState })
+
+      wrapper.vm.toggleTag('research')
+
+      expect(mockSessionStore.filter.toggleTag).toHaveBeenCalledWith('research')
+    })
+
+    it('correctly identifies active tags', () => {
+      const filterState = {
+        string: '',
+        yearStart: '',
+        yearEnd: '',
+        tags: ['research'],
+        dois: [],
+        isActive: true,
+        applyToSelected: true,
+        applyToSuggested: true,
+        hasActiveFilters: vi.fn(() => true),
+        removeDoi: vi.fn(),
+        toggleTag: vi.fn()
+      }
+      const wrapper = createWrapper({ filter: filterState })
+
+      expect(wrapper.vm.isTagActive('research')).toBe(true)
+      expect(wrapper.vm.isTagActive('review')).toBe(false)
+    })
+
+    it('provides correct icon for each tag type', () => {
+      const wrapper = createWrapper()
+
+      expect(wrapper.vm.getTagIcon('isHighlyCited')).toBe('mdi-star')
+      expect(wrapper.vm.getTagIcon('isSurvey')).toBe('mdi-table')
+      expect(wrapper.vm.getTagIcon('isNew')).toBe('mdi-alarm')
+      expect(wrapper.vm.getTagIcon('isUnnoted')).toBe('mdi-alert-box-outline')
+      expect(wrapper.vm.getTagIcon('unknown')).toBe('')
+    })
+  })
 })
