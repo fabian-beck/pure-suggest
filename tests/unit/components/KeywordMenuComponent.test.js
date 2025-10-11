@@ -217,4 +217,121 @@ describe('KeywordMenuComponent', () => {
       }
     })
   })
+
+  describe('header display behavior', () => {
+    it('should not update header while typing - only when applied', async () => {
+      sessionStore.selectedPublications = [{ doi: '10.1000/test' }] // Make not empty
+      sessionStore.boostKeywordString = 'initial keywords'
+
+      const wrapper = mount(KeywordMenuComponent, {
+        global: {
+          plugins: [pinia],
+          stubs: {
+            'v-menu': {
+              template: '<div class="v-menu"><slot></slot></div>',
+              props: ['modelValue'],
+              emits: ['update:modelValue']
+            },
+            'v-btn': {
+              template: '<button class="v-btn" @click="$emit(\'click\')"><slot></slot></button>',
+              emits: ['click']
+            },
+            'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
+            'v-sheet': { template: '<div class="v-sheet"><slot></slot></div>' },
+            'v-text-field': {
+              template: '<input class="v-text-field" />',
+              props: [
+                'modelValue',
+                'label',
+                'variant',
+                'density',
+                'appendInnerIcon',
+                'hint',
+                'persistentHint'
+              ],
+              emits: ['update:modelValue', 'click:append-inner']
+            },
+            'v-checkbox': { template: '<input type="checkbox" class="v-checkbox" />' }
+          }
+        }
+      })
+
+      // Open menu and apply initial keywords
+      await wrapper.vm.handleMenuToggle(true)
+      await wrapper.vm.applyKeywords()
+
+      // Verify initial keywords are in the header
+      const initialHtml = wrapper.vm.boostKeywordStringHtml
+      expect(initialHtml).toContain('initial keywords')
+
+      // Simulate user typing new keywords
+      sessionStore.boostKeywordString = 'typing new keywords'
+
+      // Header should still show the initial keywords (not updated yet)
+      const stillInitialHtml = wrapper.vm.boostKeywordStringHtml
+      expect(stillInitialHtml).toContain('initial keywords')
+      expect(stillInitialHtml).not.toContain('typing new keywords')
+
+      // Now apply the new keywords
+      await wrapper.vm.applyKeywords()
+
+      // Header should now show the new keywords
+      const updatedHtml = wrapper.vm.boostKeywordStringHtml
+      expect(updatedHtml).toContain('typing new keywords')
+      expect(updatedHtml).not.toContain('initial keywords')
+    })
+
+    it('should update header when menu closes with changes', async () => {
+      sessionStore.selectedPublications = [{ doi: '10.1000/test' }] // Make not empty
+      sessionStore.boostKeywordString = 'original'
+
+      const wrapper = mount(KeywordMenuComponent, {
+        global: {
+          plugins: [pinia],
+          stubs: {
+            'v-menu': {
+              template: '<div class="v-menu"><slot></slot></div>',
+              props: ['modelValue'],
+              emits: ['update:modelValue']
+            },
+            'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
+            'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
+            'v-sheet': { template: '<div class="v-sheet"><slot></slot></div>' },
+            'v-text-field': {
+              template: '<input class="v-text-field" />',
+              props: [
+                'modelValue',
+                'label',
+                'variant',
+                'density',
+                'appendInnerIcon',
+                'hint',
+                'persistentHint'
+              ]
+            },
+            'v-checkbox': { template: '<input type="checkbox" class="v-checkbox" />' }
+          }
+        }
+      })
+
+      // Apply initial keywords
+      await wrapper.vm.applyKeywords()
+
+      // Open menu
+      await wrapper.vm.handleMenuToggle(true)
+
+      // Change keywords
+      sessionStore.boostKeywordString = 'changed'
+
+      // Header should still show original (not updated yet)
+      expect(wrapper.vm.boostKeywordStringHtml).toContain('original')
+
+      // Close menu - this should update the header
+      await wrapper.vm.handleMenuToggle(false)
+
+      // Header should now show changed keywords
+      expect(wrapper.vm.boostKeywordStringHtml).toContain('changed')
+      expect(wrapper.vm.boostKeywordStringHtml).not.toContain('original')
+    })
+  })
 })

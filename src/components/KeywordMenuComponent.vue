@@ -12,9 +12,10 @@ const { updateScores } = useAppState()
 const boost = ref(null)
 const isMenuOpen = ref(false)
 const initialKeywordString = ref('')
+const appliedBoostKeywordString = ref(sessionStore.boostKeywordString)
 
 const boostKeywordStringHtml = computed(() => {
-  let html = sessionStore.boostKeywordString
+  let html = appliedBoostKeywordString.value
   // wrap comma seperated words in span.word
   html = html.replace(/\s*([^,|]+)/g, "<span class='word'>$1</span>")
   // wrap | in span.alt
@@ -40,9 +41,15 @@ function handleMenuToggle(isOpen) {
     // Menu is closing - check if changes were made and update scores if needed
     const currentKeywordString = sessionStore.boostKeywordString
     if (currentKeywordString !== initialKeywordString.value) {
+      appliedBoostKeywordString.value = currentKeywordString
       updateScores()
     }
   }
+}
+
+function applyKeywords() {
+  appliedBoostKeywordString.value = sessionStore.boostKeywordString
+  updateScores()
 }
 </script>
 
@@ -75,7 +82,7 @@ function handleMenuToggle(isOpen) {
       </v-btn>
     </template>
     <v-sheet class="has-background-warning-95 p-2 pt-4">
-      <form @submit.prevent="updateScores">
+      <form @submit.prevent="applyKeywords">
         <v-text-field
           ref="boost"
           class="boost"
@@ -89,7 +96,7 @@ function handleMenuToggle(isOpen) {
           persistent-hint
         >
           <template #append>
-            <v-btn class="has-background-warning" @click="updateScores" height="47">
+            <v-btn class="has-background-warning" @click="applyKeywords" height="47">
               <v-icon>mdi-chevron-double-up</v-icon>
             </v-btn>
           </template>
