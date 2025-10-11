@@ -128,9 +128,11 @@ function isTagFiltered(tagValue) {
 }
 
 function getTagTooltip(tagValue, tagName) {
-  return isTagFiltered(tagValue)
-    ? `Active as fil<span class="key">t</span>er; click to remove "${tagName}" from filter`
-    : `Add "${tagName}" to fil<span class="key">t</span>er`
+  const description = `Identified as ${tagName.toLowerCase()}: ${props.publication[tagValue]}.`
+  const action = isTagFiltered(tagValue)
+    ? `Active as filter; click to remove from filter.`
+    : `Click to add to filter.`
+  return `${description}<br/>${action}`
 }
 
 function getTagIcon(tagValue) {
