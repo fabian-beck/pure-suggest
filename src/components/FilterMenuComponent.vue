@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, nextTick } from 'vue'
 
+import PublicationTag from '@/components/PublicationTag.vue'
 import Publication from '@/core/Publication.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
@@ -133,6 +134,30 @@ function getDoiTooltip(doi) {
 
 function removeDoi(doi) {
   sessionStore.filter.removeDoi(doi)
+}
+
+function getTagIcon(tagValue) {
+  const iconMap = {
+    isHighlyCited: 'mdi-star',
+    isSurvey: 'mdi-table',
+    isNew: 'mdi-alarm',
+    isUnnoted: 'mdi-alert-box-outline'
+  }
+  return iconMap[tagValue] || ''
+}
+
+function toggleTag(tagValue) {
+  const wasTagActive = sessionStore.filter.tags.includes(tagValue)
+  sessionStore.filter.toggleTag(tagValue)
+  
+  // If filters are disabled and we just activated a tag, enable filters
+  if (!sessionStore.filter.isActive && !wasTagActive) {
+    sessionStore.filter.isActive = true
+  }
+}
+
+function isTagActive(tagValue) {
+  return sessionStore.filter.tags.includes(tagValue)
 }
 
 </script>
@@ -270,22 +295,18 @@ function removeDoi(doi) {
             <div class="d-flex align-center">
               <v-icon class="mr-2" size="20">mdi-tag</v-icon>
               <span class="text-body-2 mr-3">Tags:</span>
-              <v-chip-group
-                v-model="sessionStore.filter.tags"
-                multiple
-                column
-              >
-                <v-chip
+              <div class="tag-group">
+                <PublicationTag
                   v-for="tag in Publication.TAGS"
                   :key="tag.value"
-                  :value="tag.value"
-                  filter
-                  variant="outlined"
-                  size="small"
+                  :icon="getTagIcon(tag.value)"
+                  clickable
+                  :active="isTagActive(tag.value)"
+                  @click="toggleTag(tag.value)"
                 >
                   {{ tag.name }}
-                </v-chip>
-              </v-chip-group>
+                </PublicationTag>
+              </div>
             </div>
           </v-col>
         </v-row>
@@ -371,5 +392,11 @@ function removeDoi(doi) {
 /* Disabled text color class */
 .text-disabled {
   opacity: 0.6;
+}
+
+.tag-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
 }
 </style>

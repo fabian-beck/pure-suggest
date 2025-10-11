@@ -106,6 +106,11 @@ function toggleTag(tagValue) {
   // Always toggle the tag
   sessionStore.filter.toggleTag(tagValue)
 
+  // If filters are disabled and we just activated a tag, enable filters
+  if (!sessionStore.filter.isActive && !wasTagFiltered) {
+    sessionStore.filter.isActive = true
+  }
+
   // Handle menu state based on original state
   if (!wasMenuOpen && !wasTagFiltered) {
     // Menu was closed and we just added a tag - open the menu
@@ -123,9 +128,11 @@ function isTagFiltered(tagValue) {
 }
 
 function getTagTooltip(tagValue, tagName) {
-  return isTagFiltered(tagValue)
-    ? `Active as fil<span class="key">t</span>er; click to remove "${tagName}" from filter`
-    : `Add "${tagName}" to fil<span class="key">t</span>er`
+  const description = `Identified as ${tagName.toLowerCase()}: ${props.publication[tagValue]}.`
+  const action = isTagFiltered(tagValue)
+    ? `Active as filter; click to remove from filter.`
+    : `Click to add to filter.`
+  return `${description}<br/>${action}`
 }
 
 function getTagIcon(tagValue) {

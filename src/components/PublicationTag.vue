@@ -19,9 +19,12 @@ defineEmits(['click'])
 
 <template>
   <v-chip
-    class="has-background-dark has-text-white"
-    :class="{ 'tag-clickable': clickable, 'tag-active': active }"
-    color="black"
+    :class="{
+      'has-background-dark has-text-white': active,
+      'has-background-white has-text-black': !active,
+      'tag-clickable': clickable
+    }"
+    :color="active ? 'black' : 'white'"
     :prepend-icon="icon"
     size="small"
     @click="clickable ? $emit('click') : null"
@@ -38,6 +41,10 @@ defineEmits(['click'])
   border-radius: 0.25rem;
   font-size: 0.8rem;
 
+  &.has-background-dark {
+    border-color: #363636;
+  }
+
   &.tag-clickable {
     cursor: pointer;
     transition: opacity 0.2s;
@@ -45,11 +52,6 @@ defineEmits(['click'])
     &:hover {
       opacity: 0.8;
     }
-  }
-
-  &.tag-active {
-    outline: 2px solid #ffd700;
-    outline-offset: 1px;
   }
 }
 </style>
