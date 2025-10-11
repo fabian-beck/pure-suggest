@@ -26,7 +26,11 @@ export default {
       loaded: 0,
       cleanedSearchQuery: '',
       searchCancelled: false,
-      lastSearchQuery: ''
+      lastSearchQuery: '',
+      searchProviders: [
+        { title: 'OpenAlex', value: 'openalex' },
+        { title: 'CrossRef', value: 'crossref' }
+      ]
     }
   },
   computed: {
@@ -180,23 +184,29 @@ export default {
   >
     <template #sticky>
       <form @submit.prevent="search" class="has-background-primary-95">
-        <v-text-field
-          clearable
-          v-model="modalStore.searchQuery"
-          type="input"
-          ref="searchInput"
-          variant="solo"
-          append-icon="mdi-magnify"
-          @click:append="search"
-          density="compact"
-          hint="Search for keywords, names, etc. or add by providing DOI(s) in any format"
-        >
-        </v-text-field>
-        <div class="search-provider-selector">
-          <v-radio-group v-model="modalStore.searchProvider" inline density="compact" hide-details>
-            <v-radio label="OpenAlex" value="openalex"></v-radio>
-            <v-radio label="CrossRef" value="crossref"></v-radio>
-          </v-radio-group>
+        <div class="search-controls">
+          <v-text-field
+            clearable
+            v-model="modalStore.searchQuery"
+            type="input"
+            ref="searchInput"
+            variant="solo"
+            append-icon="mdi-magnify"
+            @click:append="search"
+            density="compact"
+            hint="Search for keywords, names, etc. or add by providing DOI(s) in any format"
+            class="search-field"
+          >
+          </v-text-field>
+          <v-select
+            v-model="modalStore.searchProvider"
+            :items="searchProviders"
+            variant="solo"
+            density="compact"
+            hide-details
+            class="search-provider-select"
+          >
+          </v-select>
         </div>
       </form>
     </template>
@@ -264,16 +274,23 @@ export default {
 
 <style lang="scss" scoped>
 form {
-  height: 7.5rem;
+  height: 5.5rem;
   padding: 0.5rem;
 }
 
-.search-provider-selector {
-  padding: 0.25rem 0.5rem;
-  
-  :deep(.v-selection-control-group) {
-    justify-content: center;
-  }
+.search-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.search-field {
+  flex: 1;
+}
+
+.search-provider-select {
+  width: 150px;
+  flex-shrink: 0;
 }
 
 .content {
