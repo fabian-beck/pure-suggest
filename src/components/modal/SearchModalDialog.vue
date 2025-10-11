@@ -27,6 +27,7 @@ export default {
       cleanedSearchQuery: '',
       searchCancelled: false,
       lastSearchQuery: '',
+      lastSearchProvider: '',
       searchProviders: [
         { title: 'OpenAlex', value: 'openalex' },
         { title: 'CrossRef', value: 'crossref' }
@@ -91,8 +92,9 @@ export default {
     },
 
     async search () {
-      // Don't perform search if query is the same as last search
-      if (this.modalStore.searchQuery === this.lastSearchQuery) {
+      // Don't perform search if query and provider are the same as last search
+      if (this.modalStore.searchQuery === this.lastSearchQuery &&
+          this.modalStore.searchProvider === this.lastSearchProvider) {
         return
       }
 
@@ -106,10 +108,12 @@ export default {
       if (!this.modalStore.searchQuery) {
         this.searchResults = { results: [], type: 'empty' }
         this.lastSearchQuery = ''
+        this.lastSearchProvider = ''
         return
       }
       this.isLoading = true
       this.lastSearchQuery = this.modalStore.searchQuery
+      this.lastSearchProvider = this.modalStore.searchProvider
       this.cleanedSearchQuery = this.modalStore.searchQuery.replace(/[^a-zA-Z0-9 ]/g, ' ')
       const publicationSearch = new PublicationSearch(this.modalStore.searchQuery, this.modalStore.searchProvider)
       this.searchResults = await publicationSearch.execute()
@@ -170,6 +174,7 @@ export default {
       this.searchCancelled = false
       this.loaded = 0
       this.lastSearchQuery = ''
+      this.lastSearchProvider = ''
     }
   }
 }
@@ -193,6 +198,7 @@ export default {
             variant="solo"
             append-icon="mdi-magnify"
             @click:append="search"
+            @keydown.enter="search"
             density="compact"
             hint="Search for keywords, names, etc. or add by providing DOI(s) in any format"
             class="search-field"
@@ -204,7 +210,8 @@ export default {
             variant="solo"
             density="compact"
             hide-details
-            class="search-provider-select"
+            @update:model-value="search"
+            class="search-provider-select flex-grow-0 flex-shrink-0"
           >
           </v-select>
         </div>
@@ -289,7 +296,7 @@ form {
 }
 
 .search-provider-select {
-  width: 110px;
+  width: 150px;
   flex-shrink: 0;
 }
 
