@@ -289,7 +289,7 @@ form {
 }
 
 .search-provider-select {
-  width: 150px;
+  width: 110px;
   flex-shrink: 0;
 }
 
