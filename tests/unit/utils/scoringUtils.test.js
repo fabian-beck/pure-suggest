@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { findKeywordMatches, highlightTitle } from '@/utils/scoringUtils.js'
+import { findKeywordMatches, findAllKeywordMatches, highlightTitle } from '@/utils/scoringUtils.js'
 
 describe('scoringUtils', () => {
   describe('findKeywordMatches', () => {
@@ -278,6 +278,67 @@ describe('scoringUtils', () => {
       // Should only highlight the first "AI"
       expect((highlighted.match(/<u/g) || []).length).toBe(1) // Only one highlight
       expect(highlighted.indexOf('<u')).toBe(0) // Should start highlighting at position 0
+    })
+  })
+
+  describe('findAllKeywordMatches', () => {
+    it('should find all occurrences of a keyword', () => {
+      const text = 'This is a test with multiple test occurrences of test.'
+      const keywords = ['test']
+
+      const matches = findAllKeywordMatches(text, keywords)
+
+      // Should find all three occurrences
+      expect(matches).toHaveLength(3)
+      expect(matches[0].position).toBe(10)
+      expect(matches[1].position).toBe(29)
+      expect(matches[2].position).toBe(49)
+    })
+
+    it('should find all occurrences of all alternatives', () => {
+      const text = 'ML is short for machine learning. Both ML and machine learning are used.'
+      const keywords = ['ML|machine learning']
+
+      const matches = findAllKeywordMatches(text, keywords)
+
+      // Should find both "ML" occurrences (positions 0 and 39) and both "machine learning" occurrences (positions 16 and 46)
+      expect(matches).toHaveLength(4)
+    })
+
+    it('should handle word boundary matching for short keywords', () => {
+      const text = 'AI systems use AI. Some AI patterns exist.'
+      const keywords = ['AI']
+
+      const matches = findAllKeywordMatches(text, keywords)
+
+      // Should find all word-boundary matches of "AI" 
+      expect(matches).toHaveLength(3)
+      expect(matches[0].position).toBe(0)
+      expect(matches[1].position).toBe(15)
+      expect(matches[2].position).toBe(24)
+    })
+
+    it('should be case-insensitive', () => {
+      const text = 'Data VISUALIZATION and data visualization techniques'
+      const keywords = ['data', 'VISUALIZATION']
+
+      const matches = findAllKeywordMatches(text, keywords)
+
+      // Should find both "data" (case-insensitive) and both "VISUALIZATION"/"visualization"
+      expect(matches).toHaveLength(4)
+    })
+
+    it('should avoid overlapping matches', () => {
+      const text = 'machine learning and learning algorithms'
+      const keywords = ['machine', 'learning']
+
+      const matches = findAllKeywordMatches(text, keywords)
+
+      // Should find "machine" at position 0, "learning" at positions 8 and 25
+      expect(matches).toHaveLength(3)
+      expect(matches[0].text).toBe('machine')
+      expect(matches[1].text).toBe('learning')
+      expect(matches[2].text).toBe('learning')
     })
   })
 })

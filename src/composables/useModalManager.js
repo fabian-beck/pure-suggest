@@ -1,5 +1,7 @@
 import { useAuthorStore } from '@/stores/author.js'
 import { useModalStore } from '@/stores/modal.js'
+import { useSessionStore } from '@/stores/session.js'
+import { findAllKeywordMatches, highlightTitle, parseUniqueBoostKeywords } from '@/utils/scoringUtils.js'
 
 /**
  * Composable for managing modal dialogs and their associated actions
@@ -9,6 +11,7 @@ import { useModalStore } from '@/stores/modal.js'
 export function useModalManager() {
   const modalStore = useModalStore()
   const authorStore = useAuthorStore()
+  const sessionStore = useSessionStore()
 
   /**
    * Opens the search modal dialog
@@ -87,9 +90,15 @@ export function useModalManager() {
    * @param {Object} publication - The publication object with abstract
    */
   const showAbstract = (publication) => {
+    // Get boost keywords and apply highlighting to abstract
+    // Unlike titles, abstracts highlight ALL occurrences of ALL keywords and alternatives
+    const uniqueBoostKeywords = parseUniqueBoostKeywords(sessionStore.boostKeywordString)
+    const matches = findAllKeywordMatches(publication.abstract || '', uniqueBoostKeywords)
+    const highlightedAbstract = highlightTitle(publication.abstract || '', matches)
+    
     modalStore.infoDialog = {
       title: 'Abstract',
-      message: `<div><i>${publication.abstract}</i></div>`,
+      message: `<div><i>${highlightedAbstract}</i></div>`,
       isShown: true
     }
   }
