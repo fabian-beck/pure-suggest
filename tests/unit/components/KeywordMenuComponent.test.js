@@ -262,23 +262,23 @@ describe('KeywordMenuComponent', () => {
 
       // Verify initial keywords are in the header
       const initialHtml = wrapper.vm.boostKeywordStringHtml
-      expect(initialHtml).toContain('initial keywords')
+      expect(initialHtml).toContain('INITIAL KEYWORDS')
 
       // Simulate user typing new keywords
       sessionStore.boostKeywordString = 'typing new keywords'
 
       // Header should still show the initial keywords (not updated yet)
       const stillInitialHtml = wrapper.vm.boostKeywordStringHtml
-      expect(stillInitialHtml).toContain('initial keywords')
-      expect(stillInitialHtml).not.toContain('typing new keywords')
+      expect(stillInitialHtml).toContain('INITIAL KEYWORDS')
+      expect(stillInitialHtml).not.toContain('TYPING NEW KEYWORDS')
 
       // Now apply the new keywords
       await wrapper.vm.applyKeywords()
 
       // Header should now show the new keywords
       const updatedHtml = wrapper.vm.boostKeywordStringHtml
-      expect(updatedHtml).toContain('typing new keywords')
-      expect(updatedHtml).not.toContain('initial keywords')
+      expect(updatedHtml).toContain('TYPING NEW KEYWORDS')
+      expect(updatedHtml).not.toContain('INITIAL KEYWORDS')
     })
 
     it('should update header when menu closes with changes', async () => {
@@ -324,14 +324,14 @@ describe('KeywordMenuComponent', () => {
       sessionStore.boostKeywordString = 'changed'
 
       // Header should still show original (not updated yet)
-      expect(wrapper.vm.boostKeywordStringHtml).toContain('original')
+      expect(wrapper.vm.boostKeywordStringHtml).toContain('ORIGINAL')
 
       // Close menu - this should update the header
       await wrapper.vm.handleMenuToggle(false)
 
       // Header should now show changed keywords
-      expect(wrapper.vm.boostKeywordStringHtml).toContain('changed')
-      expect(wrapper.vm.boostKeywordStringHtml).not.toContain('original')
+      expect(wrapper.vm.boostKeywordStringHtml).toContain('CHANGED')
+      expect(wrapper.vm.boostKeywordStringHtml).not.toContain('ORIGINAL')
     })
   })
 })

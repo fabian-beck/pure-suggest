@@ -4,6 +4,7 @@ import { computed, nextTick, ref } from 'vue'
 import { useAppState } from '@/composables/useAppState.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
+import { normalizeBoostKeywordString } from '@/utils/scoringUtils.js'
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
@@ -41,14 +42,14 @@ function handleMenuToggle(isOpen) {
     // Menu is closing - check if changes were made and update scores if needed
     const currentKeywordString = sessionStore.boostKeywordString
     if (currentKeywordString !== initialKeywordString.value) {
-      appliedBoostKeywordString.value = currentKeywordString
+      appliedBoostKeywordString.value = normalizeBoostKeywordString(currentKeywordString)
       updateScores()
     }
   }
 }
 
 function applyKeywords() {
-  appliedBoostKeywordString.value = sessionStore.boostKeywordString
+  appliedBoostKeywordString.value = normalizeBoostKeywordString(sessionStore.boostKeywordString)
   updateScores()
 }
 </script>
