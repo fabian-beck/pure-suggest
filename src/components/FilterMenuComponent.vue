@@ -25,7 +25,7 @@ const filterSummaryHtml = computed(() => {
   const parts = []
 
   if (filter.string) {
-    parts.push(`<span class="filter-part">text: "${filter.string}"</span>`)
+    parts.push(`<span class="filter-part"><i class="mdi mdi-card-search"></i> "${filter.string}"</span>`)
   }
 
   if (filter.yearStart || filter.yearEnd) {
@@ -37,18 +37,21 @@ const filterSummaryHtml = computed(() => {
     } else {
       yearRange = `–${filter.yearEnd}`
     }
-    parts.push(`<span class="filter-part">year: ${yearRange}</span>`)
+    parts.push(`<span class="filter-part"><i class="mdi mdi-calendar"></i> ${yearRange}</span>`)
   }
 
   if (filter.tags && filter.tags.length > 0) {
-    const tagNames = filter.tags
-      .map((tagValue) => Publication.TAGS.find((t) => t.value === tagValue)?.name || tagValue)
-      .join(', ')
-    parts.push(`<span class="filter-part">tags: ${tagNames}</span>`)
+    const tagIcons = filter.tags
+      .map((tagValue) => {
+        const icon = getTagIcon(tagValue)
+        return `<i class="mdi ${icon}"></i>`
+      })
+      .join(' ')
+    parts.push(`<span class="filter-part">${tagIcons}</span>`)
   }
 
   if (filter.dois.length > 0) {
-    parts.push(`<span class="filter-part">citations: ${filter.dois.length}</span>`)
+    parts.push(`<span class="filter-part"><i class="mdi mdi-file-document"></i> ${filter.dois.length}</span>`)
   }
 
   return parts.length > 0 ? parts.join('<span class="filter-separator">, </span>') : ''
@@ -310,20 +313,26 @@ function isTagActive(tagValue) {
             </div>
           </v-col>
         </v-row>
-        <v-row dense v-if="sessionStore.filter.dois.length > 0">
+        <v-row dense v-if="sessionStore.filter.dois.length > 0" :class="{ 'opacity-50': !sessionStore.filter.isActive }">
           <v-col class="py-1">
-            <v-chip
-              v-for="doi in sessionStore.filter.dois"
-              :key="doi"
-              class="ma-1"
-              closable
-              @click:close="removeDoi(doi)"
-              @keydown="handleChipKeydown($event, doi)"
-              v-tippy="{ content: getDoiTooltip(doi), allowHTML: true }"
-            >
-              <v-icon left>mdi-file-document</v-icon>
-              {{ doi }}
-            </v-chip>
+            <div class="d-flex align-center">
+              <v-icon class="mr-2" size="20">mdi-file-document</v-icon>
+              <span class="text-body-2 mr-3">Citations:</span>
+              <div class="d-flex flex-wrap">
+                <v-chip
+                  v-for="doi in sessionStore.filter.dois"
+                  :key="doi"
+                  class="ma-1 doi-chip"
+                  size="small"
+                  closable
+                  @click:close="removeDoi(doi)"
+                  @keydown="handleChipKeydown($event, doi)"
+                  v-tippy="{ content: getDoiTooltip(doi), allowHTML: true }"
+                >
+                  {{ doi }}
+                </v-chip>
+              </div>
+            </div>
           </v-col>
         </v-row>
       </form>
@@ -398,5 +407,10 @@ function isTagActive(tagValue) {
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem;
+}
+
+.doi-chip {
+  height: 1.5rem !important;
+  font-size: 0.8rem !important;
 }
 </style>
