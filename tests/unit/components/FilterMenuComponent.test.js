@@ -29,17 +29,20 @@ describe('FilterMenuComponent', () => {
         yearEnd: '',
         tags: [],
         dois: [],
+        authors: [],
         isActive: true,
         applyToSelected: true,
         applyToSuggested: true,
         hasActiveFilters: vi.fn(() => false),
-        removeDoi: vi.fn()
+        removeDoi: vi.fn(),
+        removeAuthor: vi.fn()
       },
       getSelectedPublicationByDoi: vi.fn(() => ({
         title: 'Test Publication',
         authorShort: 'Author',
         year: 2023
-      }))
+      })),
+      selectedPublications: []
     }
 
     mockSessionStore = { ...sessionStoreDefaults, ...overrides }
@@ -72,12 +75,15 @@ describe('FilterMenuComponent', () => {
           yearEnd: '',
           tags: [],
           dois: [],
+          authors: [],
           isActive: false,
           applyToSelected: true,
           applyToSuggested: true,
           hasActiveFilters: vi.fn(() => false),
-          removeDoi: vi.fn()
-        }
+          removeDoi: vi.fn(),
+          removeAuthor: vi.fn()
+        },
+        selectedPublications: []
       })
 
       wrapper.vm.handleMenuToggle(true)
@@ -94,13 +100,15 @@ describe('FilterMenuComponent', () => {
         yearEnd: '',
         tags: ['research'],
         dois: [],
+        authors: [],
         isActive: true,
         applyToSelected: true,
         applyToSuggested: true,
         hasActiveFilters: vi.fn(() => true),
-        removeDoi: vi.fn()
+        removeDoi: vi.fn(),
+        removeAuthor: vi.fn()
       }
-      const wrapper = createWrapper({ filter: filterState })
+      const wrapper = createWrapper({ filter: filterState, selectedPublications: [] })
 
       const summary = wrapper.vm.filterSummaryHtml
       expect(summary).toContain('text: "machine learning"')
@@ -115,13 +123,15 @@ describe('FilterMenuComponent', () => {
         yearEnd: '',
         tags: [],
         dois: [],
+        authors: [],
         isActive: false,
         applyToSelected: true,
         applyToSuggested: true,
         hasActiveFilters: vi.fn(() => false),
-        removeDoi: vi.fn()
+        removeDoi: vi.fn(),
+        removeAuthor: vi.fn()
       }
-      const wrapper = createWrapper({ filter: filterState })
+      const wrapper = createWrapper({ filter: filterState, selectedPublications: [] })
 
       expect(wrapper.vm.displayText).toBe('[FILTERS OFF]')
     })
@@ -140,13 +150,15 @@ describe('FilterMenuComponent', () => {
           yearEnd,
           tags: [],
           dois: [],
+          authors: [],
           isActive: true,
           applyToSelected: true,
           applyToSuggested: true,
           hasActiveFilters: vi.fn(() => true),
-          removeDoi: vi.fn()
+          removeDoi: vi.fn(),
+          removeAuthor: vi.fn()
         }
-        const wrapper = createWrapper({ filter: filterState })
+        const wrapper = createWrapper({ filter: filterState, selectedPublications: [] })
 
         expect(wrapper.vm.filterSummaryHtml).toContain(expected)
       })
@@ -161,13 +173,15 @@ describe('FilterMenuComponent', () => {
         yearEnd: '',
         tags: [],
         dois: ['10.1234/test'],
+        authors: [],
         isActive: true,
         applyToSelected: true,
         applyToSuggested: true,
         hasActiveFilters: vi.fn(() => false),
-        removeDoi: vi.fn()
+        removeDoi: vi.fn(),
+        removeAuthor: vi.fn()
       }
-      const wrapper = createWrapper({ filter: filterState })
+      const wrapper = createWrapper({ filter: filterState, selectedPublications: [] })
 
       wrapper.vm.removeDoi('10.1234/test')
 
@@ -183,14 +197,16 @@ describe('FilterMenuComponent', () => {
         yearEnd: '',
         tags: [],
         dois: [],
+        authors: [],
         isActive: true,
         applyToSelected: true,
         applyToSuggested: true,
         hasActiveFilters: vi.fn(() => false),
         removeDoi: vi.fn(),
+        removeAuthor: vi.fn(),
         toggleTag: vi.fn()
       }
-      const wrapper = createWrapper({ filter: filterState })
+      const wrapper = createWrapper({ filter: filterState, selectedPublications: [] })
 
       wrapper.vm.toggleTag('research')
 
@@ -204,14 +220,16 @@ describe('FilterMenuComponent', () => {
         yearEnd: '',
         tags: ['research'],
         dois: [],
+        authors: [],
         isActive: true,
         applyToSelected: true,
         applyToSuggested: true,
         hasActiveFilters: vi.fn(() => true),
         removeDoi: vi.fn(),
+        removeAuthor: vi.fn(),
         toggleTag: vi.fn()
       }
-      const wrapper = createWrapper({ filter: filterState })
+      const wrapper = createWrapper({ filter: filterState, selectedPublications: [] })
 
       expect(wrapper.vm.isTagActive('research')).toBe(true)
       expect(wrapper.vm.isTagActive('review')).toBe(false)
