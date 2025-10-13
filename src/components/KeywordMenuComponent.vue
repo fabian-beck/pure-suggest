@@ -52,6 +52,12 @@ function applyKeywords() {
   appliedBoostKeywordString.value = normalizeBoostKeywordString(sessionStore.boostKeywordString)
   updateScores()
 }
+
+function clearKeywords() {
+  sessionStore.setBoostKeywordString('')
+  appliedBoostKeywordString.value = ''
+  updateScores()
+}
 </script>
 
 <template>
@@ -92,7 +98,7 @@ function applyKeywords() {
           label="Keywords"
           variant="solo"
           append-inner-icon="mdi-close"
-          @click:append-inner="sessionStore.setBoostKeywordString('')"
+          @click:append-inner="clearKeywords"
           hint="Use ',' to separate keywords, use '|' to discern alternatives/synonyms."
           persistent-hint
         >

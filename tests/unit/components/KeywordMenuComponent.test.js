@@ -333,5 +333,53 @@ describe('KeywordMenuComponent', () => {
       expect(wrapper.vm.boostKeywordStringHtml).toContain('CHANGED')
       expect(wrapper.vm.boostKeywordStringHtml).not.toContain('ORIGINAL')
     })
+
+    it('should update header when clearing keywords using the clear button', async () => {
+      sessionStore.selectedPublications = [{ doi: '10.1000/test' }] // Make not empty
+      sessionStore.boostKeywordString = 'test keywords'
+      sessionStore.setBoostKeywordString = vi.fn((value) => {
+        sessionStore.boostKeywordString = value
+      })
+
+      const wrapper = mount(KeywordMenuComponent, {
+        global: {
+          plugins: [pinia],
+          stubs: {
+            'v-menu': { template: '<div class="v-menu"><slot></slot></div>' },
+            'v-btn': {
+              template: '<button class="v-btn" @click="$emit(\'click\')"><slot></slot></button>',
+              emits: ['click']
+            },
+            'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
+            'v-sheet': { template: '<div class="v-sheet"><slot></slot></div>' },
+            'v-text-field': {
+              template: '<input class="v-text-field" />',
+              props: [
+                'modelValue',
+                'label',
+                'variant',
+                'density',
+                'appendInnerIcon',
+                'hint',
+                'persistentHint'
+              ],
+              emits: ['update:modelValue', 'click:append-inner']
+            },
+            'v-checkbox': { template: '<input type="checkbox" class="v-checkbox" />' }
+          }
+        }
+      })
+
+      // Apply initial keywords to header
+      await wrapper.vm.applyKeywords()
+      expect(wrapper.vm.boostKeywordStringHtml).toContain('TEST KEYWORDS')
+
+      // Clear keywords using the clear button
+      await wrapper.vm.clearKeywords()
+
+      // Header should now be empty (updated immediately)
+      expect(wrapper.vm.boostKeywordStringHtml).toBe('')
+      expect(mockUpdateScores).toHaveBeenCalled()
+    })
   })
 })
