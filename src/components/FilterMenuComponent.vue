@@ -54,6 +54,10 @@ const filterSummaryHtml = computed(() => {
     parts.push(`<span class="filter-part"><i class="mdi mdi-file-document"></i> ${filter.dois.length}</span>`)
   }
 
+  if (filter.authors.length > 0) {
+    parts.push(`<span class="filter-part"><i class="mdi mdi-account"></i> ${filter.authors.length}</span>`)
+  }
+
   return parts.length > 0 ? parts.join('<span class="filter-separator">, </span>') : ''
 })
 
@@ -63,7 +67,8 @@ const hasFilterValues = computed(() => {
     (filter.tags && filter.tags.length > 0) ||
     filter.yearStart ||
     filter.yearEnd ||
-    filter.dois.length > 0)
+    filter.dois.length > 0 ||
+    filter.authors.length > 0)
 })
 
 const displayText = computed(() => {
@@ -137,6 +142,45 @@ function getDoiTooltip(doi) {
 
 function removeDoi(doi) {
   sessionStore.filter.removeDoi(doi)
+}
+
+function handleAuthorChipKeydown(event, authorId) {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    event.stopPropagation()
+    removeAuthor(authorId)
+  }
+}
+
+function getAuthorTooltip(authorId) {
+  return `Filtered to publications authored by <b>${getAuthorName(authorId)}</b>`
+}
+
+function getAuthorName(authorId) {
+  // Try to find the author in the author store to get their display name
+  const author = sessionStore.selectedPublications
+    .flatMap(pub => {
+      if (!pub.author) return []
+      return pub.author.split(';').map(name => name.trim())
+    })
+    .find(name => {
+      const normalizedName = name
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[øØ]/g, 'o')
+        .replace(/[åÅ]/g, 'a')
+        .replace(/[æÆ]/g, 'ae')
+        .replace(/[ðÐ]/g, 'd')
+        .replace(/[þÞ]/g, 'th')
+        .replace(/[ßẞ]/g, 'ss')
+        .toLowerCase()
+      return normalizedName === authorId
+    })
+  return author || authorId
+}
+
+function removeAuthor(authorId) {
+  sessionStore.filter.removeAuthor(authorId)
 }
 
 function getTagIcon(tagValue) {
@@ -335,6 +379,28 @@ function isTagActive(tagValue) {
             </div>
           </v-col>
         </v-row>
+        <v-row dense v-if="sessionStore.filter.authors.length > 0" :class="{ 'opacity-50': !sessionStore.filter.isActive }">
+          <v-col class="py-1">
+            <div class="d-flex align-center">
+              <v-icon class="mr-2" size="20">mdi-account</v-icon>
+              <span class="text-body-2 mr-3">Authors:</span>
+              <div class="d-flex flex-wrap">
+                <v-chip
+                  v-for="authorId in sessionStore.filter.authors"
+                  :key="authorId"
+                  class="ma-1 author-chip"
+                  size="small"
+                  closable
+                  @click:close="removeAuthor(authorId)"
+                  @keydown="handleAuthorChipKeydown($event, authorId)"
+                  v-tippy="{ content: getAuthorTooltip(authorId), allowHTML: true }"
+                >
+                  {{ getAuthorName(authorId) }}
+                </v-chip>
+              </div>
+            </div>
+          </v-col>
+        </v-row>
       </form>
     </v-sheet>
   </v-menu>
@@ -410,6 +476,11 @@ function isTagActive(tagValue) {
 }
 
 .doi-chip {
+  height: 1.5rem !important;
+  font-size: 0.8rem !important;
+}
+
+.author-chip {
   height: 1.5rem !important;
   font-size: 0.8rem !important;
 }
