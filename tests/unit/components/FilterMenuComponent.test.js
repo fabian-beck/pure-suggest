@@ -92,7 +92,7 @@ describe('FilterMenuComponent', () => {
         string: 'machine learning',
         yearStart: '2020',
         yearEnd: '',
-        tags: ['research'],
+        tags: ['isSurvey'],
         dois: [],
         isActive: true,
         applyToSelected: true,
@@ -103,9 +103,9 @@ describe('FilterMenuComponent', () => {
       const wrapper = createWrapper({ filter: filterState })
 
       const summary = wrapper.vm.filterSummaryHtml
-      expect(summary).toContain('text: "machine learning"')
-      expect(summary).toContain('year: 2020')
-      expect(summary).toContain('tags: Research')
+      expect(summary).toContain('"machine learning"')
+      expect(summary).toContain('2020')
+      expect(summary).toContain('mdi-table')
     })
 
     it('shows disabled state when filters are inactive', () => {
@@ -128,9 +128,9 @@ describe('FilterMenuComponent', () => {
 
     it('formats year ranges with en dash', () => {
       const testCases = [
-        { yearStart: '2020', yearEnd: '', expected: 'year: 2020–' },
-        { yearStart: '', yearEnd: '2025', expected: 'year: –2025' },
-        { yearStart: '2020', yearEnd: '2025', expected: 'year: 2020–2025' }
+        { yearStart: '2020', yearEnd: '', expected: '2020–' },
+        { yearStart: '', yearEnd: '2025', expected: '–2025' },
+        { yearStart: '2020', yearEnd: '2025', expected: '2020–2025' }
       ]
 
       testCases.forEach(({ yearStart, yearEnd, expected }) => {
