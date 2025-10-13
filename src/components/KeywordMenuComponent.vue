@@ -4,6 +4,7 @@ import { computed, nextTick, ref } from 'vue'
 import { useAppState } from '@/composables/useAppState.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
+import { normalizeBoostKeywordString } from '@/utils/scoringUtils.js'
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
@@ -12,9 +13,10 @@ const { updateScores } = useAppState()
 const boost = ref(null)
 const isMenuOpen = ref(false)
 const initialKeywordString = ref('')
+const appliedBoostKeywordString = ref(sessionStore.boostKeywordString)
 
 const boostKeywordStringHtml = computed(() => {
-  let html = sessionStore.boostKeywordString
+  let html = appliedBoostKeywordString.value
   // wrap comma seperated words in span.word
   html = html.replace(/\s*([^,|]+)/g, "<span class='word'>$1</span>")
   // wrap | in span.alt
@@ -40,9 +42,21 @@ function handleMenuToggle(isOpen) {
     // Menu is closing - check if changes were made and update scores if needed
     const currentKeywordString = sessionStore.boostKeywordString
     if (currentKeywordString !== initialKeywordString.value) {
+      appliedBoostKeywordString.value = normalizeBoostKeywordString(currentKeywordString)
       updateScores()
     }
   }
+}
+
+function applyKeywords() {
+  appliedBoostKeywordString.value = normalizeBoostKeywordString(sessionStore.boostKeywordString)
+  updateScores()
+}
+
+function clearKeywords() {
+  sessionStore.setBoostKeywordString('')
+  appliedBoostKeywordString.value = ''
+  updateScores()
 }
 </script>
 
@@ -75,7 +89,7 @@ function handleMenuToggle(isOpen) {
       </v-btn>
     </template>
     <v-sheet class="has-background-warning-95 p-2 pt-4">
-      <form @submit.prevent="updateScores">
+      <form @submit.prevent="applyKeywords">
         <v-text-field
           ref="boost"
           class="boost"
@@ -84,12 +98,12 @@ function handleMenuToggle(isOpen) {
           label="Keywords"
           variant="solo"
           append-inner-icon="mdi-close"
-          @click:append-inner="sessionStore.setBoostKeywordString('')"
+          @click:append-inner="clearKeywords"
           hint="Use ',' to separate keywords, use '|' to discern alternatives/synonyms."
           persistent-hint
         >
           <template #append>
-            <v-btn class="has-background-warning" @click="updateScores" height="47">
+            <v-btn class="has-background-warning" @click="applyKeywords" height="47">
               <v-icon>mdi-chevron-double-up</v-icon>
             </v-btn>
           </template>
