@@ -16,30 +16,75 @@ export class FCAService {
       return []
     }
 
-    if (!boostKeywords || boostKeywords.length === 0) {
+    // Allow empty keywords array - citations can still form concepts
+    const context = this.buildContext(publications, boostKeywords || [])
+
+    // Return empty if no attributes at all (no keywords and no citations)
+    if (context.attributes.length === 0) {
       return []
     }
 
-    const context = this.buildContext(publications, boostKeywords)
     return this._extractFormalConcepts(context)
   }
 
   /**
-   * Builds binary context matrix (publications × keywords)
+   * Builds binary context matrix (publications × attributes)
+   * Attributes include both keywords and citation relationships
    * @param {Array} publications - Array of publication objects
    * @param {string[]} boostKeywords - Array of boost keyword strings
-   * @returns {Object} Context object with publications, keywords, and matrix
+   * @returns {Object} Context object with publications, attributes, and matrix
    */
   static buildContext(publications, boostKeywords) {
-    const matrix = []
+    // Create set of selected publication DOIs for filtering
+    const selectedDois = new Set(publications.map((pub) => pub.doi))
+
+    // Count citations for each selected publication
+    const citationCounts = new Map()
+    selectedDois.forEach((doi) => citationCounts.set(doi, 0))
 
     publications.forEach((publication) => {
+      ;(publication.citationDois || []).forEach((doi) => {
+        if (selectedDois.has(doi)) {
+          citationCounts.set(doi, citationCounts.get(doi) + 1)
+        }
+      })
+      ;(publication.referenceDois || []).forEach((doi) => {
+        if (selectedDois.has(doi)) {
+          citationCounts.set(doi, citationCounts.get(doi) + 1)
+        }
+      })
+    })
+
+    // Get top 10 most cited publications as attributes (exclude those with 0 citations)
+    const topCitedDois = Array.from(citationCounts.entries())
+      .filter((entry) => entry[1] > 0) // Only include DOIs with at least 1 citation
+      .sort((a, b) => b[1] - a[1]) // Sort by count descending
+      .slice(0, 10) // Take top 10
+      .map((entry) => entry[0])
+
+    // Combine keywords and top citation DOIs as attributes
+    const attributes = [...boostKeywords, ...topCitedDois]
+
+    // Build binary matrix
+    const matrix = []
+    publications.forEach((publication) => {
       const row = []
+
+      // Match keywords
       const matches = findKeywordMatches(publication.title, boostKeywords)
       const matchedKeywords = matches.map((match) => match.keyword)
 
-      boostKeywords.forEach((keyword) => {
-        row.push(matchedKeywords.includes(keyword))
+      // Check each attribute
+      attributes.forEach((attribute) => {
+        if (boostKeywords.includes(attribute)) {
+          // Keyword attribute
+          row.push(matchedKeywords.includes(attribute))
+        } else {
+          // Citation attribute - check if publication cites or is cited by this DOI
+          const hasCitation = (publication.citationDois || []).includes(attribute)
+          const hasReference = (publication.referenceDois || []).includes(attribute)
+          row.push(hasCitation || hasReference)
+        }
       })
 
       matrix.push(row)
@@ -47,7 +92,7 @@ export class FCAService {
 
     return {
       publications: publications.map((pub) => pub.doi),
-      keywords: boostKeywords,
+      attributes,
       matrix
     }
   }
@@ -55,28 +100,28 @@ export class FCAService {
   /**
    * Extracts all formal concepts using FCA algorithm
    * @private
-   * @param {Object} context - Context object with publications, keywords, and matrix
+   * @param {Object} context - Context object with publications, attributes, and matrix
    * @returns {Array} Array of formal concepts
    */
   static _extractFormalConcepts(context) {
     const concepts = []
-    const { publications, keywords, matrix } = context
+    const { publications, attributes, matrix } = context
 
-    // Generate all possible keyword subsets (power set)
-    const keywordSubsets = this._powerSet(keywords)
+    // Generate all possible attribute subsets (power set)
+    const attributeSubsets = this._powerSet(attributes)
 
-    keywordSubsets.forEach((keywordSet) => {
-      // Find publications that have all keywords in the set (extent)
-      const extent = this._computeExtent(keywordSet, publications, keywords, matrix)
+    attributeSubsets.forEach((attributeSet) => {
+      // Find publications that have all attributes in the set (extent)
+      const extent = this._computeExtent(attributeSet, publications, attributes, matrix)
 
-      // Find all keywords shared by these publications (intent)
-      const intent = this._computeIntent(extent, publications, keywords, matrix)
+      // Find all attributes shared by these publications (intent)
+      const intent = this._computeIntent(extent, publications, attributes, matrix)
 
       // Check if this is a formal concept (closure property)
-      if (this._isEqualSet(keywordSet, intent)) {
+      if (this._isEqualSet(attributeSet, intent)) {
         concepts.push({
           publications: extent.sort(),
-          keywords: keywordSet.sort()
+          attributes: attributeSet.sort()
         })
       }
     })
@@ -86,19 +131,19 @@ export class FCAService {
   }
 
   /**
-   * Computes extent: publications that have all keywords in the set
+   * Computes extent: publications that have all attributes in the set
    * @private
    */
-  static _computeExtent(keywordSet, publications, keywords, matrix) {
+  static _computeExtent(attributeSet, publications, attributes, matrix) {
     const extent = []
 
     publications.forEach((doi, pubIndex) => {
-      const hasAllKeywords = keywordSet.every((keyword) => {
-        const keyIndex = keywords.indexOf(keyword)
-        return matrix[pubIndex][keyIndex]
+      const hasAllAttributes = attributeSet.every((attribute) => {
+        const attrIndex = attributes.indexOf(attribute)
+        return matrix[pubIndex][attrIndex]
       })
 
-      if (hasAllKeywords) {
+      if (hasAllAttributes) {
         extent.push(doi)
       }
     })
@@ -107,24 +152,24 @@ export class FCAService {
   }
 
   /**
-   * Computes intent: keywords shared by all publications in the set
+   * Computes intent: attributes shared by all publications in the set
    * @private
    */
-  static _computeIntent(publicationSet, publications, keywords, matrix) {
+  static _computeIntent(publicationSet, publications, attributes, matrix) {
     if (publicationSet.length === 0) {
-      return keywords.slice() // All keywords if no publications
+      return attributes.slice() // All attributes if no publications
     }
 
     const intent = []
 
-    keywords.forEach((keyword, keyIndex) => {
-      const allHaveKeyword = publicationSet.every((doi) => {
+    attributes.forEach((attribute, attrIndex) => {
+      const allHaveAttribute = publicationSet.every((doi) => {
         const pubIndex = publications.indexOf(doi)
-        return matrix[pubIndex][keyIndex]
+        return matrix[pubIndex][attrIndex]
       })
 
-      if (allHaveKeyword) {
-        intent.push(keyword)
+      if (allHaveAttribute) {
+        intent.push(attribute)
       }
     })
 
@@ -172,7 +217,7 @@ export class FCAService {
     concepts.forEach((concept) => {
       const key = JSON.stringify({
         pubs: concept.publications.sort(),
-        keys: concept.keywords.sort()
+        attrs: concept.attributes.sort()
       })
 
       if (!seen.has(key)) {
@@ -185,7 +230,7 @@ export class FCAService {
   }
 
   /**
-   * Sorts concepts by importance score (publications × keywords) in descending order
+   * Sorts concepts by importance score (publications × attributes) in descending order
    * @param {Array} concepts - Array of formal concepts
    * @returns {Array} Sorted array with importance scores calculated
    */
@@ -197,7 +242,7 @@ export class FCAService {
     // Create copies to avoid mutation and calculate importance
     const conceptsWithImportance = concepts.map((concept) => ({
       ...concept,
-      importance: concept.publications.length * concept.keywords.length
+      importance: concept.publications.length * concept.attributes.length
     }))
 
     // Sort by importance score in descending order
@@ -230,12 +275,17 @@ export class FCAService {
 
     conceptsToShow.forEach((concept, index) => {
       const pubCount = concept.publications.length
-      const keyCount = concept.keywords.length
+      const attrCount = concept.attributes.length
+
+      // Separate keywords from citation DOIs
+      const keywords = concept.attributes.filter((attr) => !attr.startsWith('10.'))
+      const citations = concept.attributes.filter((attr) => attr.startsWith('10.'))
 
       console.log(`\nConcept ${index + 1}:`)
-      console.log(`  Importance: ${concept.importance} (${pubCount} publications × ${keyCount} keywords)`)
+      console.log(`  Importance: ${concept.importance} (${pubCount} publications × ${attrCount} attributes)`)
       console.log(`  Publications (${pubCount}): ${pubCount === 0 ? '∅' : concept.publications.join(', ')}`)
-      console.log(`  Keywords (${keyCount}): ${keyCount === 0 ? '∅' : concept.keywords.join(', ')}`)
+      console.log(`  Keywords (${keywords.length}): ${keywords.length === 0 ? '∅' : keywords.join(', ')}`)
+      console.log(`  Citations (${citations.length}): ${citations.length === 0 ? '∅' : citations.join(', ')}`)
     })
 
     console.log(`\n${'═'.repeat(80)}`)
