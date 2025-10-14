@@ -185,6 +185,26 @@ export class FCAService {
   }
 
   /**
+   * Sorts concepts by importance score (publications × keywords) in descending order
+   * @param {Array} concepts - Array of formal concepts
+   * @returns {Array} Sorted array with importance scores calculated
+   */
+  static sortConceptsByImportance(concepts) {
+    if (!concepts || concepts.length === 0) {
+      return []
+    }
+
+    // Create copies to avoid mutation and calculate importance
+    const conceptsWithImportance = concepts.map((concept) => ({
+      ...concept,
+      importance: concept.publications.length * concept.keywords.length
+    }))
+
+    // Sort by importance score in descending order
+    return conceptsWithImportance.sort((a, b) => b.importance - a.importance)
+  }
+
+  /**
    * Logs formal concepts to console
    * @param {Array} concepts - Array of formal concepts
    */
@@ -194,14 +214,26 @@ export class FCAService {
       return
     }
 
-    console.log(`\n[FCA] Formal Concept Analysis Results: ${concepts.length} concepts found`)
+    // Sort by importance and limit to top 10
+    const sortedConcepts = this.sortConceptsByImportance(concepts)
+    const conceptsToShow = sortedConcepts.slice(0, 10)
+    const totalCount = concepts.length
+
+    // Update header to indicate if showing subset
+    if (totalCount > 10) {
+      console.log(`\n[FCA] Formal Concept Analysis Results: Top 10 concepts (${totalCount} total)`)
+    } else {
+      console.log(`\n[FCA] Formal Concept Analysis Results: ${totalCount} concepts found`)
+    }
+
     console.log('═'.repeat(80))
 
-    concepts.forEach((concept, index) => {
+    conceptsToShow.forEach((concept, index) => {
       const pubCount = concept.publications.length
       const keyCount = concept.keywords.length
 
       console.log(`\nConcept ${index + 1}:`)
+      console.log(`  Importance: ${concept.importance} (${pubCount} publications × ${keyCount} keywords)`)
       console.log(`  Publications (${pubCount}): ${pubCount === 0 ? '∅' : concept.publications.join(', ')}`)
       console.log(`  Keywords (${keyCount}): ${keyCount === 0 ? '∅' : concept.keywords.join(', ')}`)
     })
