@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useModalManager } from '@/composables/useModalManager.js'
 import { PAGINATION } from '@/constants/config.js'
 import { clearCache as clearCacheUtil } from '@/lib/Cache.js'
+import { FCAService } from '@/services/FCAService.js'
 import { SuggestionService } from '@/services/SuggestionService.js'
 import { useAuthorStore } from '@/stores/author.js'
 import { useInterfaceStore } from '@/stores/interface.js'
@@ -85,6 +86,10 @@ export function useAppState() {
     )
 
     await computeSuggestions()
+
+    // Run FCA clustering in background (after suggestions are computed)
+    runFCAClustering()
+
     interfaceStore.endLoading()
 
     // Log end-to-end workflow timing if we're tracking one
@@ -108,6 +113,17 @@ export function useAppState() {
     sessionStore.updatePublicationScores()
     authorStore.computeSelectedPublicationsAuthors(sessionStore.selectedPublications)
     interfaceStore.triggerNetworkReplot()
+  }
+
+  /**
+   * Runs FCA clustering on selected publications
+   */
+  const runFCAClustering = () => {
+    const concepts = FCAService.computeFormalConcepts(
+      sessionStore.selectedPublications,
+      sessionStore.uniqueBoostKeywords
+    )
+    FCAService.logFormalConcepts(concepts)
   }
 
   /**
