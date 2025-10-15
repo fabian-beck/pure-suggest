@@ -230,23 +230,66 @@ export class FCAService {
   }
 
   /**
-   * Sorts concepts by importance score (publications × attributes) in descending order
+   * Sorts concepts using greedy algorithm based on remaining importance
+   * Iteratively picks concepts that cover the most uncovered publications
    * @param {Array} concepts - Array of formal concepts
-   * @returns {Array} Sorted array with importance scores calculated
+   * @returns {Array} Sorted array with importance and remaining importance
    */
   static sortConceptsByImportance(concepts) {
     if (!concepts || concepts.length === 0) {
       return []
     }
 
-    // Create copies to avoid mutation and calculate importance
-    const conceptsWithImportance = concepts.map((concept) => ({
-      ...concept,
-      importance: concept.publications.length * concept.attributes.length
-    }))
+    // Filter out concepts with only one publication and calculate initial importance
+    const allConcepts = concepts
+      .filter((concept) => concept.publications.length > 1)
+      .map((concept) => ({
+        ...concept,
+        importance: concept.publications.length * concept.attributes.length,
+        remainingImportance: 0
+      }))
 
-    // Sort by importance score in descending order
-    return conceptsWithImportance.sort((a, b) => b.importance - a.importance)
+    if (allConcepts.length === 0) {
+      return []
+    }
+
+    // Start greedy selection
+    const result = []
+    const remaining = [...allConcepts]
+    const coveredPublications = new Set()
+
+    // Pick first concept by highest initial importance
+    remaining.sort((a, b) => b.importance - a.importance)
+    const firstConcept = remaining.shift()
+    firstConcept.remainingImportance = firstConcept.importance
+    firstConcept.publications.forEach((pub) => coveredPublications.add(pub))
+    result.push(firstConcept)
+
+    // Iteratively pick concepts with highest remaining importance
+    while (remaining.length > 0) {
+      // Recompute remaining importance for all remaining concepts
+      remaining.forEach((concept) => {
+        const uncoveredPubs = concept.publications.filter((pub) => !coveredPublications.has(pub))
+        concept.remainingImportance = uncoveredPubs.length * concept.attributes.length
+      })
+
+      // Sort by remaining importance
+      remaining.sort((a, b) => b.remainingImportance - a.remainingImportance)
+
+      // Pick top concept
+      const topConcept = remaining.shift()
+
+      // Skip concepts with zero remaining importance
+      if (topConcept.remainingImportance === 0) {
+        break
+      }
+
+      // Add publications to covered set
+      topConcept.publications.forEach((pub) => coveredPublications.add(pub))
+      result.push(topConcept)
+    }
+
+    return result
   }
 
   /**
@@ -282,7 +325,10 @@ export class FCAService {
       const citations = concept.attributes.filter((attr) => attr.startsWith('10.'))
 
       console.log(`\nConcept ${index + 1}:`)
-      console.log(`  Importance: ${concept.importance} (${pubCount} publications × ${attrCount} attributes)`)
+      console.log(
+        `  Importance: ${concept.importance} (${pubCount} publications × ${attrCount} attributes)`
+      )
+      console.log(`  Remaining Importance: ${concept.remainingImportance}`)
       console.log(`  Publications (${pubCount}): ${pubCount === 0 ? '∅' : concept.publications.join(', ')}`)
       console.log(`  Keywords (${keywords.length}): ${keywords.length === 0 ? '∅' : keywords.join(', ')}`)
       console.log(`  Citations (${citations.length}): ${citations.length === 0 ? '∅' : citations.join(', ')}`)
