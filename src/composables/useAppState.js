@@ -123,6 +123,7 @@ export function useAppState() {
       sessionStore.selectedPublications,
       sessionStore.uniqueBoostKeywords
     )
+    FCAService.assignConceptTags(sessionStore.selectedPublications, concepts)
     FCAService.logFormalConcepts(concepts)
   }
 

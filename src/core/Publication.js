@@ -155,6 +155,7 @@ export default class Publication {
     this.isActive = this.isLinkedToActive = this.isSelected = this.isRead = false
     this.isHovered = this.isKeywordHovered = this.isAuthorHovered = this.wasFetched = false
     this.isNewlyAdded = false
+    this.fcaConcepts = null
   }
 
   /**
@@ -324,6 +325,26 @@ export default class Publication {
    */
   static get TAGS() {
     return PUBLICATION_TAGS
+  }
+
+  /**
+   * Gets all tags for this publication, including dynamic FCA concept tags
+   * @returns {Array} Array of tag configuration objects
+   */
+  getTags() {
+    const tags = [...PUBLICATION_TAGS.filter((tag) => this[tag.value])]
+
+    // Add FCA concept tags if they exist
+    if (this.fcaConcepts && this.fcaConcepts.length > 0) {
+      this.fcaConcepts.forEach((conceptNumber) => {
+        tags.push({
+          value: `fcaConcept${conceptNumber}`,
+          name: `Concept ${conceptNumber}`
+        })
+      })
+    }
+
+    return tags
   }
 
   /**

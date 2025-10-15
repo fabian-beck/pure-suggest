@@ -1,38 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 
 import { FCAService } from '@/services/FCAService.js'
 
 describe('FCAService', () => {
-  let mockPublications
-  let mockBoostKeywords
-
-  beforeEach(() => {
-    vi.clearAllMocks()
-
-    mockPublications = [
-      {
-        doi: '10.1234/pub1',
-        title: 'Visual Analytics for Citation Networks',
-        boostKeywords: []
-      },
-      {
-        doi: '10.1234/pub2',
-        title: 'Literature Review of Visualization Techniques',
-        boostKeywords: []
-      },
-      {
-        doi: '10.1234/pub3',
-        title: 'Visual Data Analysis Methods',
-        boostKeywords: []
-      }
-    ]
-
-    mockBoostKeywords = ['VISUAL', 'LITERAT|CITATION', 'ANALYT']
-  })
 
   describe('computeFormalConcepts', () => {
     it('should return empty array when no publications', () => {
-      const result = FCAService.computeFormalConcepts([], mockBoostKeywords)
+      const result = FCAService.computeFormalConcepts([], [])
 
       expect(result).toEqual([])
     })
@@ -376,9 +350,9 @@ describe('FCAService', () => {
   describe('sortConceptsByImportance', () => {
     it('should sort concepts by importance score (publications * attributes)', () => {
       const concepts = [
-        { publications: ['10.1/a'], attributes: ['VISUAL'], importance: 0 },
-        { publications: ['10.1/a', '10.1/b', '10.1/c'], attributes: ['DATA', 'ANALYT'], importance: 0 },
-        { publications: ['10.1/a', '10.1/b'], attributes: ['VISUAL'], importance: 0 }
+        { publications: ['10.1/a', '10.1/b'], attributes: ['VISUAL'], importance: 0 },
+        { publications: ['10.1/c', '10.1/d', '10.1/e'], attributes: ['DATA', 'ANALYT'], importance: 0 },
+        { publications: ['10.1/f', '10.1/g'], attributes: ['VISUAL', 'DATA'], importance: 0 }
       ]
 
       const sorted = FCAService.sortConceptsByImportance(concepts)
@@ -387,13 +361,13 @@ describe('FCAService', () => {
       expect(sorted[0].importance).toBe(6)
       expect(sorted[0].publications).toHaveLength(3)
 
-      // 2 pubs * 1 attribute = 2
-      expect(sorted[1].importance).toBe(2)
+      // 2 pubs * 2 attributes = 4
+      expect(sorted[1].importance).toBe(4)
       expect(sorted[1].publications).toHaveLength(2)
 
-      // 1 pub * 1 attribute = 1 (lowest)
-      expect(sorted[2].importance).toBe(1)
-      expect(sorted[2].publications).toHaveLength(1)
+      // 2 pubs * 1 attribute = 2 (lowest)
+      expect(sorted[2].importance).toBe(2)
+      expect(sorted[2].publications).toHaveLength(2)
     })
 
     it('should handle empty concepts array', () => {
@@ -401,16 +375,17 @@ describe('FCAService', () => {
       expect(result).toEqual([])
     })
 
-    it('should calculate importance correctly for edge cases', () => {
+    it('should filter out concepts with only one publication', () => {
       const concepts = [
-        { publications: [], attributes: ['VISUAL', 'DATA'], importance: 0 },
-        { publications: ['10.1/a'], attributes: [], importance: 0 }
+        { publications: ['10.1/a'], attributes: ['VISUAL', 'DATA'], importance: 0 },
+        { publications: ['10.1/a', '10.1/b'], attributes: ['VISUAL'], importance: 0 }
       ]
 
       const sorted = FCAService.sortConceptsByImportance(concepts)
 
-      expect(sorted[0].importance).toBe(0)
-      expect(sorted[1].importance).toBe(0)
+      // Should only include concepts with more than one publication
+      expect(sorted).toHaveLength(1)
+      expect(sorted[0].publications).toHaveLength(2)
     })
 
     it('should not mutate original array', () => {
@@ -505,9 +480,9 @@ describe('FCAService', () => {
 
       const concepts = [
         {
-          publications: ['10.1/a'],
+          publications: ['10.1/a', '10.1/b'],
           attributes: ['VISUAL', '10.1/cited'],
-          importance: 2
+          importance: 4
         }
       ]
 
@@ -520,6 +495,125 @@ describe('FCAService', () => {
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringMatching(/Citations.*10\.1\/cited/)
       )
+    })
+  })
+
+  describe('assignConceptTags', () => {
+    it('should assign concept tags to publications', () => {
+      const publications = [
+        { doi: '10.1/a', fcaConcepts: null },
+        { doi: '10.1/b', fcaConcepts: null },
+        { doi: '10.1/c', fcaConcepts: null }
+      ]
+
+      const concepts = [
+        {
+          publications: ['10.1/a', '10.1/b'],
+          attributes: ['VISUAL'],
+          importance: 0
+        },
+        {
+          publications: ['10.1/a', '10.1/c'],
+          attributes: ['ANALYT'],
+          importance: 0
+        }
+      ]
+
+      FCAService.assignConceptTags(publications, concepts)
+
+      // Publication a should be in concepts 1 and 2
+      expect(publications[0].fcaConcepts).toContain(1)
+      expect(publications[0].fcaConcepts).toContain(2)
+
+      // Publication b should be in concept 1
+      expect(publications[1].fcaConcepts).toContain(1)
+
+      // Publication c should be in concept 2
+      expect(publications[2].fcaConcepts).toContain(2)
+    })
+
+    it('should handle publications not in any concept', () => {
+      const publications = [
+        { doi: '10.1/a', fcaConcepts: null },
+        { doi: '10.1/b', fcaConcepts: null },
+        { doi: '10.1/c', fcaConcepts: null }
+      ]
+
+      const concepts = [
+        {
+          publications: ['10.1/a', '10.1/b'],
+          attributes: ['VISUAL'],
+          importance: 0
+        }
+      ]
+
+      FCAService.assignConceptTags(publications, concepts)
+
+      expect(publications[0].fcaConcepts).toEqual([1])
+      expect(publications[1].fcaConcepts).toEqual([1])
+      expect(publications[2].fcaConcepts).toBeNull()
+    })
+
+    it('should assign tags based on sorted importance', () => {
+      const publications = [
+        { doi: '10.1/a', fcaConcepts: null },
+        { doi: '10.1/b', fcaConcepts: null },
+        { doi: '10.1/c', fcaConcepts: null }
+      ]
+
+      const concepts = [
+        {
+          publications: ['10.1/a', '10.1/b'],
+          attributes: ['VISUAL'],
+          importance: 0
+        },
+        {
+          publications: ['10.1/b', '10.1/c'],
+          attributes: ['DATA', 'ANALYT'],
+          importance: 0
+        }
+      ]
+
+      FCAService.assignConceptTags(publications, concepts)
+
+      // Should be assigned concept numbers after sorting by importance
+      // Concept with 2 attributes has higher importance (2*2 = 4)
+      // Concept with 1 attribute has lower importance (2*1 = 2)
+      // Publication b should be in both concepts
+      expect(publications[1].fcaConcepts).toHaveLength(2)
+      expect(publications[1].fcaConcepts).toContain(1)
+      expect(publications[1].fcaConcepts).toContain(2)
+    })
+
+    it('should return a map of DOI to concept numbers', () => {
+      const publications = [
+        { doi: '10.1/a', fcaConcepts: null },
+        { doi: '10.1/b', fcaConcepts: null }
+      ]
+
+      const concepts = [
+        {
+          publications: ['10.1/a', '10.1/b'],
+          attributes: ['VISUAL'],
+          importance: 0
+        }
+      ]
+
+      const tagMap = FCAService.assignConceptTags(publications, concepts)
+
+      expect(tagMap.get('10.1/a')).toEqual([1])
+      expect(tagMap.get('10.1/b')).toEqual([1])
+    })
+
+    it('should handle empty concepts array', () => {
+      const publications = [
+        { doi: '10.1/a', fcaConcepts: null }
+      ]
+
+      const tagMap = FCAService.assignConceptTags(publications, [])
+
+      expect(publications[0].fcaConcepts).toBeNull()
+      expect(tagMap.size).toBe(0)
     })
   })
 })

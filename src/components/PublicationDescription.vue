@@ -2,7 +2,6 @@
 import { computed } from 'vue'
 
 import { useModalManager } from '@/composables/useModalManager.js'
-import Publication from '@/core/Publication.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
 
@@ -31,7 +30,7 @@ const showDetails = computed(() => {
 })
 
 const visibleTags = computed(() => {
-  return Publication.TAGS.filter((tag) => props.publication[tag.value])
+  return props.publication.getTags ? props.publication.getTags() : []
 })
 
 
@@ -128,6 +127,12 @@ function isTagFiltered(tagValue) {
 }
 
 function getTagTooltip(tagValue, tagName) {
+  // FCA concept tags have a different tooltip
+  if (tagValue.startsWith('fcaConcept')) {
+    const conceptNumber = tagValue.replace('fcaConcept', '')
+    return `Member of FCA concept ${conceptNumber}`
+  }
+
   const description = `Identified as ${tagName.toLowerCase()}: ${props.publication[tagValue]}.`
   const action = isTagFiltered(tagValue)
     ? `Active as filter; click to remove from filter.`
@@ -142,6 +147,12 @@ function getTagIcon(tagValue) {
     isNew: 'mdi-alarm',
     isUnnoted: 'mdi-alert-box-outline'
   }
+
+  // FCA concept tags use group icon
+  if (tagValue.startsWith('fcaConcept')) {
+    return 'mdi-group'
+  }
+
   return iconMap[tagValue] || ''
 }
 
@@ -250,9 +261,9 @@ function getAuthorsWithOrcid() {
           v-for="tag in visibleTags"
           :key="tag.value"
           :icon="getTagIcon(tag.value)"
-          clickable
+          :clickable="!tag.value.startsWith('fcaConcept')"
           :active="isTagFiltered(tag.value)"
-          @click="toggleTag(tag.value)"
+          @click="!tag.value.startsWith('fcaConcept') && toggleTag(tag.value)"
           v-tippy="getTagTooltip(tag.value, tag.name)"
         >
           {{ tag.name }}

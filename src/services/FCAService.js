@@ -293,6 +293,42 @@ export class FCAService {
   }
 
   /**
+   * Assigns concept tags to publications based on their membership in concepts
+   * @param {Array} publications - Array of publication objects to tag
+   * @param {Array} concepts - Array of formal concepts (sorted by importance)
+   * @returns {Map} Map of DOI to array of concept numbers
+   */
+  static assignConceptTags(publications, concepts) {
+    const tagMap = new Map()
+
+    // Sort concepts by importance
+    const sortedConcepts = this.sortConceptsByImportance(concepts)
+
+    // Assign each publication to the concepts it belongs to
+    sortedConcepts.forEach((concept, index) => {
+      const conceptNumber = index + 1
+      concept.publications.forEach((doi) => {
+        if (!tagMap.has(doi)) {
+          tagMap.set(doi, [])
+        }
+        tagMap.get(doi).push(conceptNumber)
+      })
+    })
+
+    // Update publication objects with concept tags
+    publications.forEach((publication) => {
+      const conceptNumbers = tagMap.get(publication.doi) || []
+      if (conceptNumbers.length > 0) {
+        publication.fcaConcepts = conceptNumbers
+      } else {
+        publication.fcaConcepts = null
+      }
+    })
+
+    return tagMap
+  }
+
+  /**
    * Logs formal concepts to console
    * @param {Array} concepts - Array of formal concepts
    */
