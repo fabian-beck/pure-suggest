@@ -315,9 +315,9 @@ export class FCAService {
       return []
     }
 
-    // Filter out concepts with only one publication and calculate initial importance
+    // Filter out concepts with fewer than 3 publications and calculate initial importance
     const allConcepts = concepts
-      .filter((concept) => concept.publications.length > 1)
+      .filter((concept) => concept.publications.length >= 3)
       .map((concept) => ({
         ...concept,
         importance: concept.publications.length * concept.attributes.length,
@@ -354,8 +354,8 @@ export class FCAService {
       // Pick top concept
       const topConcept = remaining.shift()
 
-      // Skip concepts with zero remaining importance
-      if (topConcept.remainingImportance === 0) {
+      // Skip concepts with remaining importance <= 3
+      if (topConcept.remainingImportance <= 3) {
         break
       }
 
