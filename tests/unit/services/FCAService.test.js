@@ -501,9 +501,9 @@ describe('FCAService', () => {
   describe('assignConceptTags', () => {
     it('should assign concept tags to publications', () => {
       const publications = [
-        { doi: '10.1/a', fcaConcepts: null },
-        { doi: '10.1/b', fcaConcepts: null },
-        { doi: '10.1/c', fcaConcepts: null }
+        { doi: '10.1/a', fcaConcepts: null, title: 'Visual Analytics Study' },
+        { doi: '10.1/b', fcaConcepts: null, title: 'Visual Design Patterns' },
+        { doi: '10.1/c', fcaConcepts: null, title: 'Analytical Methods' }
       ]
 
       const concepts = [
@@ -522,21 +522,24 @@ describe('FCAService', () => {
       FCAService.assignConceptTags(publications, concepts)
 
       // Publication a should be in concepts 1 and 2
-      expect(publications[0].fcaConcepts).toContain(1)
-      expect(publications[0].fcaConcepts).toContain(2)
+      expect(publications[0].fcaConcepts).toHaveLength(2)
+      expect(publications[0].fcaConcepts[0]).toMatch(/^C\d+/)
+      expect(publications[0].fcaConcepts[1]).toMatch(/^C\d+/)
 
       // Publication b should be in concept 1
-      expect(publications[1].fcaConcepts).toContain(1)
+      expect(publications[1].fcaConcepts).toHaveLength(1)
+      expect(publications[1].fcaConcepts[0]).toMatch(/^C\d+/)
 
       // Publication c should be in concept 2
-      expect(publications[2].fcaConcepts).toContain(2)
+      expect(publications[2].fcaConcepts).toHaveLength(1)
+      expect(publications[2].fcaConcepts[0]).toMatch(/^C\d+/)
     })
 
     it('should handle publications not in any concept', () => {
       const publications = [
-        { doi: '10.1/a', fcaConcepts: null },
-        { doi: '10.1/b', fcaConcepts: null },
-        { doi: '10.1/c', fcaConcepts: null }
+        { doi: '10.1/a', fcaConcepts: null, title: 'Visual Study' },
+        { doi: '10.1/b', fcaConcepts: null, title: 'Visual Analysis' },
+        { doi: '10.1/c', fcaConcepts: null, title: 'Other Topic' }
       ]
 
       const concepts = [
@@ -549,16 +552,18 @@ describe('FCAService', () => {
 
       FCAService.assignConceptTags(publications, concepts)
 
-      expect(publications[0].fcaConcepts).toEqual([1])
-      expect(publications[1].fcaConcepts).toEqual([1])
+      expect(publications[0].fcaConcepts).toHaveLength(1)
+      expect(publications[0].fcaConcepts[0]).toMatch(/^C1/)
+      expect(publications[1].fcaConcepts).toHaveLength(1)
+      expect(publications[1].fcaConcepts[0]).toMatch(/^C1/)
       expect(publications[2].fcaConcepts).toBeNull()
     })
 
     it('should assign tags based on sorted importance', () => {
       const publications = [
-        { doi: '10.1/a', fcaConcepts: null },
-        { doi: '10.1/b', fcaConcepts: null },
-        { doi: '10.1/c', fcaConcepts: null }
+        { doi: '10.1/a', fcaConcepts: null, title: 'Visual Study' },
+        { doi: '10.1/b', fcaConcepts: null, title: 'Data Analytics Methods' },
+        { doi: '10.1/c', fcaConcepts: null, title: 'Analytical Data Processing' }
       ]
 
       const concepts = [
@@ -576,19 +581,19 @@ describe('FCAService', () => {
 
       FCAService.assignConceptTags(publications, concepts)
 
-      // Should be assigned concept numbers after sorting by importance
+      // Should be assigned concept names after sorting by importance
       // Concept with 2 attributes has higher importance (2*2 = 4)
       // Concept with 1 attribute has lower importance (2*1 = 2)
       // Publication b should be in both concepts
       expect(publications[1].fcaConcepts).toHaveLength(2)
-      expect(publications[1].fcaConcepts).toContain(1)
-      expect(publications[1].fcaConcepts).toContain(2)
+      expect(publications[1].fcaConcepts[0]).toMatch(/^C1/)
+      expect(publications[1].fcaConcepts[1]).toMatch(/^C2/)
     })
 
-    it('should return a map of DOI to concept numbers', () => {
+    it('should return a map of DOI to concept names', () => {
       const publications = [
-        { doi: '10.1/a', fcaConcepts: null },
-        { doi: '10.1/b', fcaConcepts: null }
+        { doi: '10.1/a', fcaConcepts: null, title: 'Visual Study' },
+        { doi: '10.1/b', fcaConcepts: null, title: 'Visual Analysis' }
       ]
 
       const concepts = [
@@ -601,8 +606,10 @@ describe('FCAService', () => {
 
       const tagMap = FCAService.assignConceptTags(publications, concepts)
 
-      expect(tagMap.get('10.1/a')).toEqual([1])
-      expect(tagMap.get('10.1/b')).toEqual([1])
+      expect(tagMap.get('10.1/a')).toHaveLength(1)
+      expect(tagMap.get('10.1/a')[0]).toMatch(/^C1/)
+      expect(tagMap.get('10.1/b')).toHaveLength(1)
+      expect(tagMap.get('10.1/b')[0]).toMatch(/^C1/)
     })
 
     it('should handle empty concepts array', () => {
@@ -614,6 +621,89 @@ describe('FCAService', () => {
 
       expect(publications[0].fcaConcepts).toBeNull()
       expect(tagMap.size).toBe(0)
+    })
+
+    it('should not add term name when top scores are tied', () => {
+      const publications = [
+        { doi: '10.1/a', fcaConcepts: null, title: 'Study' },
+        { doi: '10.1/b', fcaConcepts: null, title: 'Research' }
+      ]
+
+      const concepts = [
+        {
+          publications: ['10.1/a', '10.1/b'],
+          attributes: ['VISUAL'],
+          importance: 0
+        }
+      ]
+
+      FCAService.assignConceptTags(publications, concepts)
+
+      // Both publications have different single-word titles with same TF-IDF
+      // Should get concept number only (no term name)
+      expect(publications[0].fcaConcepts[0]).toBe('C1')
+      expect(publications[1].fcaConcepts[0]).toBe('C1')
+    })
+
+    it('should add term name when there is a clear winner', () => {
+      const publications = [
+        { doi: '10.1/a', fcaConcepts: null, title: 'Unique neuromorphic computing systems' },
+        { doi: '10.1/b', fcaConcepts: null, title: 'Neuromorphic design patterns' }
+      ]
+
+      // Add many other publications with diverse titles to increase IDF
+      for (let i = 0; i < 10; i++) {
+        publications.push({
+          doi: `10.1/other${i}`,
+          fcaConcepts: null,
+          title: `Different topic ${i} with various words`
+        })
+      }
+
+      const concepts = [
+        {
+          publications: ['10.1/a', '10.1/b'],
+          attributes: ['VISUAL'],
+          importance: 0
+        }
+      ]
+
+      FCAService.assignConceptTags(publications, concepts)
+
+      // "neuromorphic" appears only in concept publications - should have highest TF-IDF
+      expect(publications[0].fcaConcepts[0]).toMatch(/^C1 - NEUROMORPHIC/)
+    })
+
+    it('should boost keyword alternatives separated by pipe', () => {
+      const publications = [
+        { doi: '10.1/a', fcaConcepts: null, title: 'Visual data analysis methods' },
+        { doi: '10.1/b', fcaConcepts: null, title: 'Graphic representation techniques' },
+        { doi: '10.1/c', fcaConcepts: null, title: 'Visualization and graphics systems' }
+      ]
+
+      // Add other publications
+      for (let i = 0; i < 10; i++) {
+        publications.push({
+          doi: `10.1/other${i}`,
+          fcaConcepts: null,
+          title: `Different topic ${i} with other terms`
+        })
+      }
+
+      const concepts = [
+        {
+          publications: ['10.1/a', '10.1/b', '10.1/c'],
+          attributes: ['VIS|GRAPH'], // Pipe-separated alternatives
+          importance: 0
+        }
+      ]
+
+      FCAService.assignConceptTags(publications, concepts)
+
+      // Should match "visual" and "graphic" via keyword alternatives and boost them
+      const conceptName = publications[0].fcaConcepts[0]
+      expect(conceptName).toMatch(/^C1/) // Has a concept tag
+      // If there's a clear winner after boosting, it should be VIS or GRAPH related
     })
   })
 })

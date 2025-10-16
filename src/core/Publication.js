@@ -336,10 +336,16 @@ export default class Publication {
 
     // Add FCA concept tags if they exist
     if (this.fcaConcepts && this.fcaConcepts.length > 0) {
-      this.fcaConcepts.forEach((conceptNumber) => {
+      this.fcaConcepts.forEach((conceptName) => {
+        // conceptName is either a number (legacy) or "C1 - TERM" format
+        const displayName = typeof conceptName === 'number' ? `Concept ${conceptName}` : conceptName
+        const value =
+          typeof conceptName === 'number'
+            ? `fcaConcept${conceptName}`
+            : `fcaConcept${conceptName.split(' ')[0]}`
         tags.push({
-          value: `fcaConcept${conceptNumber}`,
-          name: `Concept ${conceptNumber}`
+          value,
+          name: displayName
         })
       })
     }
