@@ -154,10 +154,11 @@ export class FCAService {
           // Keyword attribute
           row.push(matchedKeywords.includes(attribute))
         } else {
-          // Citation attribute - check if publication cites or is cited by this DOI
+          // Citation attribute - check if publication cites or is cited by this DOI, or is itself
+          const isSelf = publication.doi === attribute
           const hasCitation = (publication.citationDois || []).includes(attribute)
           const hasReference = (publication.referenceDois || []).includes(attribute)
-          row.push(hasCitation || hasReference)
+          row.push(isSelf || hasCitation || hasReference)
         }
       })
 
