@@ -367,10 +367,10 @@ export class FCAService {
   }
 
   /**
-   * Generates concept names from TF-IDF terms
+   * Generates concept names and metadata from TF-IDF terms
    * @param {Array} concepts - Array of formal concepts
    * @param {Array} allPublications - All publication objects
-   * @returns {Map} Map of concept index to concept name
+   * @returns {Map} Map of concept index to {name, topTerms} object
    */
   static generateConceptNames(concepts, allPublications) {
     const nameMap = new Map()
@@ -378,7 +378,7 @@ export class FCAService {
     if (!allPublications || allPublications.length === 0) {
       // Fallback to concept numbers only
       concepts.forEach((concept, index) => {
-        nameMap.set(index, `C${index + 1}`)
+        nameMap.set(index, { name: `C${index + 1}`, topTerms: [] })
       })
       return nameMap
     }
@@ -390,8 +390,10 @@ export class FCAService {
         concept.attributes
       )
 
+      const top10 = topTerms.slice(0, 10)
+
       if (topTerms.length === 0) {
-        nameMap.set(index, `C${index + 1}`)
+        nameMap.set(index, { name: `C${index + 1}`, topTerms: [] })
         return
       }
 
@@ -401,10 +403,13 @@ export class FCAService {
 
       if (tiedTerms.length > 1) {
         // Multiple terms with same score - too arbitrary to pick one
-        nameMap.set(index, `C${index + 1}`)
+        nameMap.set(index, { name: `C${index + 1}`, topTerms: top10 })
       } else {
         // Clear winner
-        nameMap.set(index, `C${index + 1} - ${topTerms[0].term.toUpperCase()}`)
+        nameMap.set(index, {
+          name: `C${index + 1} - ${topTerms[0].term.toUpperCase()}`,
+          topTerms: top10
+        })
       }
     })
 
@@ -419,31 +424,44 @@ export class FCAService {
    */
   static assignConceptTags(publications, concepts) {
     const tagMap = new Map()
+    const termsMap = new Map()
 
     // Sort concepts by importance
     const sortedConcepts = this.sortConceptsByImportance(concepts)
 
-    // Generate concept names
-    const conceptNames = this.generateConceptNames(sortedConcepts, publications)
+    // Generate concept names and metadata
+    const conceptMetadata = this.generateConceptNames(sortedConcepts, publications)
 
     // Assign each publication to the concepts it belongs to
     sortedConcepts.forEach((concept, index) => {
-      const conceptName = conceptNames.get(index)
+      const metadata = conceptMetadata.get(index)
+      const conceptName = metadata.name
       concept.publications.forEach((doi) => {
         if (!tagMap.has(doi)) {
           tagMap.set(doi, [])
         }
         tagMap.get(doi).push(conceptName)
+
+        // Store metadata (top terms and attributes) for this concept
+        if (!termsMap.has(doi)) {
+          termsMap.set(doi, new Map())
+        }
+        termsMap.get(doi).set(conceptName, {
+          topTerms: metadata.topTerms,
+          attributes: concept.attributes
+        })
       })
     })
 
-    // Update publication objects with concept tags
+    // Update publication objects with concept tags and metadata
     publications.forEach((publication) => {
       const conceptNames = tagMap.get(publication.doi) || []
       if (conceptNames.length > 0) {
         publication.fcaConcepts = conceptNames
+        publication.fcaConceptMetadata = termsMap.get(publication.doi) || new Map()
       } else {
         publication.fcaConcepts = null
+        publication.fcaConceptMetadata = null
       }
     })
 

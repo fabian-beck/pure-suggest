@@ -126,11 +126,54 @@ function isTagFiltered(tagValue) {
   return sessionStore.filter.tags.includes(tagValue)
 }
 
+function buildConceptAttributesTooltip(attributes) {
+  if (!attributes || attributes.length === 0) return ''
+
+  const keywords = attributes.filter((attr) => !attr.startsWith('10.'))
+  const citationDois = attributes.filter((attr) => attr.startsWith('10.'))
+
+  if (keywords.length === 0 && citationDois.length === 0) return ''
+
+  let section = '<br/><br/>Defining properties:'
+  if (keywords.length > 0) {
+    section += `<br/>Keywords: ${keywords.join(', ')}`
+  }
+  if (citationDois.length > 0) {
+    section += '<br/>Citations:'
+    // Look up titles from selected publications
+    citationDois.forEach((doi) => {
+      const publication = sessionStore.selectedPublications.find((pub) => pub.doi === doi)
+      const title = publication?.title || doi
+      section += `<br/>• ${title}`
+    })
+  }
+  return section
+}
+
+function buildConceptTermsTooltip(topTerms) {
+  if (!topTerms || topTerms.length === 0) return ''
+
+  let section = '<br/><br/>Top terms:'
+  topTerms.forEach((termObj) => {
+    section += `<br/>• ${termObj.term} (${termObj.score.toFixed(2)})`
+  })
+  return section
+}
+
 function getTagTooltip(tagValue, tagName) {
   // FCA concept tags have a different tooltip
   if (tagValue.startsWith('fcaConcept')) {
-    const conceptNumber = tagValue.replace('fcaConcept', '')
-    return `Member of FCA concept ${conceptNumber}`
+    let tooltip = `Member of FCA concept ${tagName}.`
+
+    const metadata =
+      props.publication.fcaConceptMetadata?.get(tagName)
+
+    if (metadata) {
+      tooltip += buildConceptAttributesTooltip(metadata.attributes)
+      tooltip += buildConceptTermsTooltip(metadata.topTerms)
+    }
+
+    return tooltip
   }
 
   const description = `Identified as ${tagName.toLowerCase()}: ${props.publication[tagValue]}.`
