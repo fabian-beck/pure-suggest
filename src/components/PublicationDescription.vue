@@ -173,6 +173,11 @@ function getTagTooltip(tagValue, tagName) {
       tooltip += buildConceptTermsTooltip(metadata.topTerms)
     }
 
+    const action = isTagFiltered(tagValue)
+      ? `<br/><br/>Active as filter; click to remove from filter.`
+      : `<br/><br/>Click to add to filter.`
+    tooltip += action
+
     return tooltip
   }
 
@@ -304,9 +309,9 @@ function getAuthorsWithOrcid() {
           v-for="tag in visibleTags"
           :key="tag.value"
           :icon="getTagIcon(tag.value)"
-          :clickable="!tag.value.startsWith('fcaConcept')"
+          clickable
           :active="isTagFiltered(tag.value)"
-          @click="!tag.value.startsWith('fcaConcept') && toggleTag(tag.value)"
+          @click="toggleTag(tag.value)"
           v-tippy="getTagTooltip(tag.value, tag.name)"
         >
           {{ tag.name }}

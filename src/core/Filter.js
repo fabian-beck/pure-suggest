@@ -56,7 +56,26 @@ export default class Filter {
 
   matchesTag(publication) {
     if (!this.tags || this.tags.length === 0) return true
-    return this.tags.some((tag) => Boolean(publication[tag]))
+    return this.tags.some((tag) => {
+      // Handle FCA concept tags (fcaConcept1, fcaConcept2, etc.)
+      if (tag.startsWith('fcaConcept')) {
+        if (!publication.fcaConcepts || publication.fcaConcepts.length === 0) {
+          return false
+        }
+        // Extract concept identifier from tag (e.g., "fcaConceptC1" -> "C1")
+        const conceptId = tag.replace('fcaConcept', '')
+        return publication.fcaConcepts.some((conceptName) => {
+          // Handle both legacy number format and "C1 - TERM" format
+          if (typeof conceptName === 'number') {
+            return `${conceptName}` === conceptId
+          }
+          // Match the concept number prefix (e.g., "C1" from "C1 - VISUAL")
+          return conceptName.startsWith(conceptId)
+        })
+      }
+      // Handle regular boolean tag properties
+      return Boolean(publication[tag])
+    })
   }
 
   toggleTag(tagValue) {

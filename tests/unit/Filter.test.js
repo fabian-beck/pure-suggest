@@ -238,6 +238,64 @@ describe('Filter', () => {
       filter.tags = ['nonExistentTag', 'anotherNonExistentTag']
       expect(filter.matchesTag(mockPublication)).toBe(false)
     })
+
+    describe('FCA concept tags', () => {
+      it('should return true when publication has matching FCA concept (string format)', () => {
+        mockPublication.fcaConcepts = ['C1 - VISUAL', 'C2 - DATA']
+        filter.tags = ['fcaConceptC1']
+        expect(filter.matchesTag(mockPublication)).toBe(true)
+      })
+
+      it('should return true when publication has matching FCA concept (number format)', () => {
+        mockPublication.fcaConcepts = [1, 2]
+        filter.tags = ['fcaConcept1']
+        expect(filter.matchesTag(mockPublication)).toBe(true)
+      })
+
+      it('should return false when publication does not have matching FCA concept', () => {
+        mockPublication.fcaConcepts = ['C1 - VISUAL', 'C2 - DATA']
+        filter.tags = ['fcaConceptC3']
+        expect(filter.matchesTag(mockPublication)).toBe(false)
+      })
+
+      it('should return false when publication has no FCA concepts', () => {
+        mockPublication.fcaConcepts = null
+        filter.tags = ['fcaConceptC1']
+        expect(filter.matchesTag(mockPublication)).toBe(false)
+      })
+
+      it('should return false when publication has empty FCA concepts array', () => {
+        mockPublication.fcaConcepts = []
+        filter.tags = ['fcaConceptC1']
+        expect(filter.matchesTag(mockPublication)).toBe(false)
+      })
+
+      it('should return true when publication has at least one matching FCA concept', () => {
+        mockPublication.fcaConcepts = ['C1 - VISUAL', 'C2 - DATA']
+        filter.tags = ['fcaConceptC1', 'fcaConceptC3']
+        expect(filter.matchesTag(mockPublication)).toBe(true)
+      })
+
+      it('should match FCA concept with complex name format', () => {
+        mockPublication.fcaConcepts = ['C1 - NEUROMORPHIC COMPUTING']
+        filter.tags = ['fcaConceptC1']
+        expect(filter.matchesTag(mockPublication)).toBe(true)
+      })
+
+      it('should work with mixed tag types (regular and FCA)', () => {
+        mockPublication.fcaConcepts = ['C1 - VISUAL']
+        mockPublication.someTag = true
+        filter.tags = ['fcaConceptC1', 'someTag']
+        expect(filter.matchesTag(mockPublication)).toBe(true)
+      })
+
+      it('should not match when only FCA tag is set but publication does not have it', () => {
+        mockPublication.fcaConcepts = ['C2 - DATA']
+        mockPublication.someTag = true
+        filter.tags = ['fcaConceptC1']
+        expect(filter.matchesTag(mockPublication)).toBe(false)
+      })
+    })
   })
 
   describe('DOI management', () => {

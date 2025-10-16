@@ -44,7 +44,9 @@ const filterSummaryHtml = computed(() => {
     const tagIcons = filter.tags
       .map((tagValue) => {
         const icon = getTagIcon(tagValue)
-        return `<i class="mdi ${icon}"></i>`
+        const label = getTagLabel(tagValue)
+        const labelPart = label ? ` ${label}` : ''
+        return `<i class="mdi ${icon}"></i>${labelPart}`
       })
       .join(' ')
     parts.push(`<span class="filter-part">${tagIcons}</span>`)
@@ -146,7 +148,21 @@ function getTagIcon(tagValue) {
     isNew: 'mdi-alarm',
     isUnnoted: 'mdi-alert-box-outline'
   }
+
+  // FCA concept tags use group icon
+  if (tagValue.startsWith('fcaConcept')) {
+    return 'mdi-group'
+  }
+
   return iconMap[tagValue] || ''
+}
+
+function getTagLabel(tagValue) {
+  // For FCA concept tags, extract the concept identifier (e.g., "C1" from "fcaConceptC1")
+  if (tagValue.startsWith('fcaConcept')) {
+    return tagValue.replace('fcaConcept', '')
+  }
+  return ''
 }
 
 function toggleTag(tagValue) {
@@ -161,6 +177,10 @@ function toggleTag(tagValue) {
 
 function isTagActive(tagValue) {
   return sessionStore.filter.tags.includes(tagValue)
+}
+
+function getActiveFcaConceptTags() {
+  return sessionStore.filter.tags.filter((tag) => tag.startsWith('fcaConcept'))
 }
 
 </script>
@@ -330,6 +350,28 @@ function isTagActive(tagValue) {
                   v-tippy="{ content: getDoiTooltip(doi), allowHTML: true }"
                 >
                   {{ doi }}
+                </v-chip>
+              </div>
+            </div>
+          </v-col>
+        </v-row>
+        <v-row dense v-if="getActiveFcaConceptTags().length > 0" :class="{ 'opacity-50': !sessionStore.filter.isActive }">
+          <v-col class="py-1">
+            <div class="d-flex align-center">
+              <v-icon class="mr-2" size="20">mdi-group</v-icon>
+              <span class="text-body-2 mr-3">Concepts:</span>
+              <div class="d-flex flex-wrap">
+                <v-chip
+                  v-for="tagValue in getActiveFcaConceptTags()"
+                  :key="tagValue"
+                  class="ma-1 doi-chip"
+                  size="small"
+                  closable
+                  @click:close="toggleTag(tagValue)"
+                  @keydown="handleChipKeydown($event, tagValue)"
+                  v-tippy="`Active FCA concept filter; click to remove`"
+                >
+                  {{ getTagLabel(tagValue) }}
                 </v-chip>
               </div>
             </div>
