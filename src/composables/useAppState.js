@@ -87,9 +87,6 @@ export function useAppState() {
 
     await computeSuggestions()
 
-    // Run FCA clustering in background (after suggestions are computed)
-    runFCAClustering()
-
     interfaceStore.endLoading()
 
     // Log end-to-end workflow timing if we're tracking one
@@ -373,6 +370,7 @@ export function useAppState() {
     updateSuggestions,
     updateScores,
     computeSuggestions,
+    runFCAClustering,
     activatePublicationComponentByDoi,
     retryLoadingPublication,
     loadSession,

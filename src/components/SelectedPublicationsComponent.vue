@@ -18,6 +18,7 @@ const {
   loadExample,
   updateQueued,
   loadSession,
+  runFCAClustering,
 } = useAppState()
 
 const publicationList = ref(null)
@@ -88,7 +89,13 @@ onMounted(() => {
       <div class="level-right" v-show="!isEmpty">
         <div class="level-item">
           <CompactButton
+            icon="mdi-group has-text-white"
+            v-tippy="`Cluster selected publications using Formal Concept Analysis.`"
+            @click="runFCAClustering()"
+          ></CompactButton>
+          <CompactButton
             icon="mdi-account-group has-text-white"
+            class="ml-2"
             v-tippy="`List <span class='key'>a</span>uthors of selected publications.`"
             @click="openAuthorModal()"
           ></CompactButton>
