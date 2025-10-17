@@ -26,52 +26,45 @@ const canCompute = computed(() => {
          sessionStore.selectedPublicationsCount > 0
 })
 
-const previewText = computed(() => {
-  if (!conceptsPreview.value || conceptsPreview.value.length === 0) {
-    return 'No concepts to preview. Click "Compute Concepts" to generate results.'
-  }
-
-  const sortedConcepts = sortedConceptsPreview.value
-  const conceptsToShow = sortedConcepts.slice(0, 10)
-  const totalCount = conceptsPreview.value.length
-
-  let text = ''
-
-  if (totalCount > 10) {
-    text += `Top 10 concepts (${totalCount} total)\n`
-  } else {
-    text += `${totalCount} concepts found\n`
-  }
-
-  text += `${'═'.repeat(80)}\n\n`
-
-  conceptsToShow.forEach((concept, index) => {
-    const pubCount = concept.publications.length
-    const attrCount = concept.attributes.length
-
-    const keywords = concept.attributes.filter((attr) => !attr.startsWith('10.'))
-    const citations = concept.attributes.filter((attr) => attr.startsWith('10.'))
-
-    const metadata = conceptMetadataPreview.value.get(index)
-    const conceptName = metadata?.name || `C${index + 1}`
-
-    text += `${conceptName}:\n`
-    text += `  Importance: ${concept.importance} (${pubCount} publications × ${attrCount} attributes)\n`
-    text += `  Remaining Importance: ${concept.remainingImportance}\n`
-    text += `  Publications (${pubCount}): ${pubCount === 0 ? '∅' : concept.publications.join(', ')}\n`
-    text += `  Keywords (${keywords.length}): ${keywords.length === 0 ? '∅' : keywords.join(', ')}\n`
-    text += `  Citations (${citations.length}): ${citations.length === 0 ? '∅' : citations.join(', ')}\n`
-
-    if (metadata?.topTerms && metadata.topTerms.length > 0) {
-      const termString = metadata.topTerms.map((t) => `${t.term} (${t.score.toFixed(2)})`).join(', ')
-      text += `  Top Terms: ${termString}\n`
-    }
-
-    text += '\n'
-  })
-
-  return text
+const hasPreview = computed(() => {
+  return conceptsPreview.value && conceptsPreview.value.length > 0
 })
+
+const conceptsToShow = computed(() => {
+  if (!hasPreview.value) return []
+  return sortedConceptsPreview.value.slice(0, 10)
+})
+
+const totalConceptCount = computed(() => {
+  return sortedConceptsPreview.value?.length || 0
+})
+
+const previewTitle = computed(() => {
+  if (totalConceptCount.value > 10) {
+    return `Top 10 concepts (${totalConceptCount.value} total)`
+  } else if (totalConceptCount.value > 0) {
+    return `${totalConceptCount.value} concept${totalConceptCount.value > 1 ? 's' : ''} found`
+  }
+  return ''
+})
+
+function getConceptKeywords(concept) {
+  return concept.attributes.filter((attr) => !attr.startsWith('10.'))
+}
+
+function getConceptCitations(concept) {
+  return concept.attributes.filter((attr) => attr.startsWith('10.'))
+}
+
+function getConceptName(index) {
+  const metadata = conceptMetadataPreview.value.get(index)
+  return metadata?.name || `C${index + 1}`
+}
+
+function getConceptTopTerms(index) {
+  const metadata = conceptMetadataPreview.value.get(index)
+  return metadata?.topTerms || []
+}
 
 function computeConcepts() {
   if (!canCompute.value) return
@@ -241,23 +234,141 @@ watch(
       </v-sheet>
     </template>
 
-    <div class="content pa-3">
-      <h3 class="is-size-6 mb-2"><b>Preview:</b></h3>
-      <pre class="concept-preview">{{ previewText }}</pre>
+    <div class="content">
+      <section>
+        <div v-if="!hasPreview" class="pa-3 text-center empty-state">
+          <v-icon size="large" class="mb-2">mdi-information-outline</v-icon>
+          <p>No concepts to preview. Click "Compute Concepts" to generate results.</p>
+        </div>
+
+        <div v-else>
+          <div class="pa-3 pb-2">
+            <h3 class="is-size-6"><b>{{ previewTitle }}</b></h3>
+          </div>
+
+          <ul class="concept-list">
+            <li
+              v-for="(concept, index) in conceptsToShow"
+              :key="index"
+              class="media p-3 m-0 concept-item"
+            >
+              <div class="media-left concept-icon">
+                <v-icon size="large" color="primary">mdi-group</v-icon>
+              </div>
+              <div class="media-content">
+                <div class="content">
+                  <div class="mb-2">
+                    <b class="concept-name">{{ getConceptName(index) }}</b>
+                  </div>
+                  <div class="mb-2 is-size-7">
+                    <b>{{ concept.publications.length }}</b> publication{{ concept.publications.length > 1 ? 's' : '' }}
+                    &bull;
+                    <b>{{ concept.attributes.length }}</b> attribute{{ concept.attributes.length > 1 ? 's' : '' }}
+                    &bull;
+                    Importance: <b>{{ concept.importance }}</b>
+                    (remaining: <b>{{ concept.remainingImportance }}</b>)
+                  </div>
+
+                  <div v-if="getConceptKeywords(concept).length > 0" class="mb-2 is-size-7">
+                    <span class="attribute-label">Keywords:</span>
+                    <v-chip
+                      v-for="keyword in getConceptKeywords(concept)"
+                      :key="keyword"
+                      size="small"
+                      label
+                      class="ma-1 keyword-chip"
+                    >
+                      {{ keyword }}
+                    </v-chip>
+                  </div>
+
+                  <div v-if="getConceptCitations(concept).length > 0" class="mb-2 is-size-7">
+                    <span class="attribute-label">Citations:</span>
+                    <v-chip
+                      v-for="citation in getConceptCitations(concept)"
+                      :key="citation"
+                      size="small"
+                      label
+                      class="ma-1 citation-chip"
+                    >
+                      {{ citation }}
+                    </v-chip>
+                  </div>
+
+                  <div v-if="getConceptTopTerms(index).length > 0" class="is-size-7">
+                    <span class="attribute-label">Top terms:</span>
+                    <v-chip
+                      v-for="term in getConceptTopTerms(index).slice(0, 5)"
+                      :key="term.term"
+                      size="small"
+                      label
+                      class="ma-1 term-chip"
+                    >
+                      {{ term.term }} ({{ term.score.toFixed(2) }})
+                    </v-chip>
+                  </div>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </section>
     </div>
   </ModalDialog>
 </template>
 
 <style scoped lang="scss">
-.concept-preview {
-  font-family: monospace;
-  font-size: 0.85rem;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  background-color: #f5f5f5;
-  padding: 1rem;
-  border-radius: 4px;
-  max-height: 60vh;
-  overflow-y: auto;
+.empty-state {
+  color: rgba(0, 0, 0, 0.6);
+  padding: 3rem 1rem;
+}
+
+.concept-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+
+  .concept-item {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    .media-left {
+      min-width: 4rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .concept-name {
+      font-size: 1rem;
+      color: var(--v-primary-base);
+    }
+
+    .attribute-label {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+
+    .keyword-chip {
+      background-color: hsla(48, 100%, 67%, 0.3) !important;
+    }
+
+    .citation-chip {
+      background-color: hsla(0, 0%, 70%, 0.3) !important;
+      font-family: monospace;
+      font-size: 0.7rem;
+    }
+
+    .term-chip {
+      background-color: hsla(180, 100%, 85%, 0.3) !important;
+    }
+  }
 }
 </style>
