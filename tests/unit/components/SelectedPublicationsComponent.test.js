@@ -10,10 +10,12 @@ import { useSessionStore } from '@/stores/session.js'
 // Mock useAppState for the functions the component uses
 const mockLoadExample = vi.fn()
 const mockImportSession = vi.fn()
+const mockRunFCAClustering = vi.fn()
 vi.mock('@/composables/useAppState.js', () => ({
   useAppState: () => ({
     loadExample: mockLoadExample,
     importSession: mockImportSession,
+    runFCAClustering: mockRunFCAClustering,
     isEmpty: { value: false }
   })
 }))

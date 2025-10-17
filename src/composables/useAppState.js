@@ -3,9 +3,9 @@ import { computed } from 'vue'
 import { useModalManager } from '@/composables/useModalManager.js'
 import { PAGINATION } from '@/constants/config.js'
 import { clearCache as clearCacheUtil } from '@/lib/Cache.js'
-import { FCAService } from '@/services/FCAService.js'
 import { SuggestionService } from '@/services/SuggestionService.js'
 import { useAuthorStore } from '@/stores/author.js'
+import { useFcaStore } from '@/stores/fca.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useQueueStore } from '@/stores/queue.js'
 import { useSessionStore } from '@/stores/session.js'
@@ -16,6 +16,7 @@ export function useAppState() {
   const sessionStore = useSessionStore()
   const interfaceStore = useInterfaceStore()
   const authorStore = useAuthorStore()
+  const fcaStore = useFcaStore()
   const queueStore = useQueueStore()
   const { showConfirmDialog } = useModalManager()
 
@@ -37,8 +38,8 @@ export function useAppState() {
   const clear = () => {
     sessionStore.clear()
     queueStore.clear()
-    // Clear author store
     authorStore.selectedPublicationsAuthors = []
+    fcaStore.clear()
     // do not reset read publications as the user might to carry this information to the next session
     interfaceStore.clear()
     // Network will naturally clear when it detects empty state, no need for expensive replot
@@ -113,15 +114,16 @@ export function useAppState() {
   }
 
   /**
-   * Runs FCA clustering on selected publications
+   * Runs FCA clustering on selected publications and stores concepts
    */
   const runFCAClustering = () => {
-    const concepts = FCAService.computeFormalConcepts(
-      sessionStore.selectedPublications,
-      sessionStore.uniqueBoostKeywords
-    )
-    FCAService.assignConceptTags(sessionStore.selectedPublications, concepts)
-    FCAService.logFormalConcepts(concepts, sessionStore.selectedPublications)
+    fcaStore.computeAndStoreConcepts(sessionStore.selectedPublications, sessionStore.uniqueBoostKeywords)
+    fcaStore.assignConceptTagsToPublications(sessionStore.selectedPublications)
+
+    // Also apply to suggested publications if they exist
+    if (sessionStore.suggestedPublications.length > 0) {
+      fcaStore.assignConceptTagsToPublications(sessionStore.suggestedPublications)
+    }
   }
 
   /**
@@ -146,6 +148,11 @@ export function useAppState() {
     })
 
     updateScores()
+
+    // Apply FCA concepts to suggested publications if concepts exist
+    if (fcaStore.hasConcepts && sessionStore.suggestedPublications.length > 0) {
+      fcaStore.assignConceptTagsToPublications(sessionStore.suggestedPublications)
+    }
   }
 
   /**
@@ -287,9 +294,18 @@ export function useAppState() {
       )
     }
     if (queueStore.selectedQueue.length) {
-      sessionStore.addPublicationsToSelection(queueStore.selectedQueue)
+      const newlyAddedDois = [...queueStore.selectedQueue]
+      sessionStore.addPublicationsToSelection(newlyAddedDois)
       // Mark the newly added publications (only if session wasn't empty before)
-      sessionStore.markPublicationsAsNewlyAdded(queueStore.selectedQueue, wasSessionEmpty)
+      sessionStore.markPublicationsAsNewlyAdded(newlyAddedDois, wasSessionEmpty)
+
+      // Apply FCA concepts to newly added selected publications if concepts exist
+      if (fcaStore.hasConcepts) {
+        const newlyAddedPublications = sessionStore.selectedPublications.filter((pub) =>
+          newlyAddedDois.includes(pub.doi)
+        )
+        fcaStore.assignConceptTagsToPublications(newlyAddedPublications)
+      }
     }
     await updateSuggestions()
     queueStore.clear()
@@ -313,6 +329,15 @@ export function useAppState() {
     await sessionStore.addPublicationsToSelection(dois)
     // Mark the newly added publications (only if session wasn't empty before)
     sessionStore.markPublicationsAsNewlyAdded(dois, wasSessionEmpty)
+
+    // Apply FCA concepts to newly added selected publications if concepts exist
+    if (fcaStore.hasConcepts) {
+      const newlyAddedPublications = sessionStore.selectedPublications.filter((pub) =>
+        dois.includes(pub.doi)
+      )
+      fcaStore.assignConceptTagsToPublications(newlyAddedPublications)
+    }
+
     await updateSuggestions()
   }
 
