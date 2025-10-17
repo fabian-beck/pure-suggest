@@ -71,6 +71,13 @@ export function useModalManager() {
   }
 
   /**
+   * Opens the FCA configuration modal dialog
+   */
+  const openFcaConfigModal = () => {
+    modalStore.isFcaConfigModalDialogShown = true
+  }
+
+  /**
    * Shows a confirmation dialog
    * @param {string} message - The confirmation message (supports HTML)
    * @param {Function} confirmAction - The action to execute on confirmation
@@ -114,6 +121,7 @@ export function useModalManager() {
     modalStore.isAboutModalDialogShown = false
     modalStore.isKeyboardControlsModalDialogShown = false
     modalStore.isShareSessionModalDialogShown = false
+    modalStore.isFcaConfigModalDialogShown = false
     modalStore.confirmDialog.isShown = false
     modalStore.infoDialog.isShown = false
   }
@@ -127,6 +135,7 @@ export function useModalManager() {
     openAboutModal,
     openKeyboardControlsModal,
     openShareSessionModal,
+    openFcaConfigModal,
 
     // Dialog functions
     showConfirmDialog,

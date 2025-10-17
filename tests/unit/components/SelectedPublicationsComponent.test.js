@@ -10,12 +10,10 @@ import { useSessionStore } from '@/stores/session.js'
 // Mock useAppState for the functions the component uses
 const mockLoadExample = vi.fn()
 const mockImportSession = vi.fn()
-const mockRunFCAClustering = vi.fn()
 vi.mock('@/composables/useAppState.js', () => ({
   useAppState: () => ({
     loadExample: mockLoadExample,
     importSession: mockImportSession,
-    runFCAClustering: mockRunFCAClustering,
     isEmpty: { value: false }
   })
 }))
@@ -24,11 +22,15 @@ vi.mock('@/composables/useAppState.js', () => ({
 const mockShowConfirmDialog = vi.fn()
 const mockOpenSearchModal = vi.fn()
 const mockOpenAuthorModal = vi.fn()
+const mockOpenQueueModal = vi.fn()
+const mockOpenFcaConfigModal = vi.fn()
 vi.mock('@/composables/useModalManager.js', () => ({
   useModalManager: () => ({
     showConfirmDialog: mockShowConfirmDialog,
     openSearchModal: mockOpenSearchModal,
-    openAuthorModal: mockOpenAuthorModal
+    openAuthorModal: mockOpenAuthorModal,
+    openQueueModal: mockOpenQueueModal,
+    openFcaConfigModal: mockOpenFcaConfigModal
   })
 }))
 
@@ -55,6 +57,8 @@ describe('SelectedPublicationsComponent', () => {
     interfaceStore.isMobile = false
     mockOpenSearchModal.mockClear()
     mockOpenAuthorModal.mockClear()
+    mockOpenQueueModal.mockClear()
+    mockOpenFcaConfigModal.mockClear()
     mockShowConfirmDialog.mockClear()
     queueStore.selectedQueue = []
     queueStore.excludedQueue = []
@@ -147,7 +151,7 @@ describe('SelectedPublicationsComponent', () => {
     })
 
     const compactButtons = wrapper.findAll('.compact-button')
-    const authorsButton = compactButtons[0] // First CompactButton is the authors button
+    const authorsButton = compactButtons[1] // Second CompactButton is the authors button (after FCA button)
     await authorsButton.trigger('click')
     expect(mockOpenAuthorModal).toHaveBeenCalled()
   })
@@ -172,7 +176,7 @@ describe('SelectedPublicationsComponent', () => {
     })
 
     const compactButtons = wrapper.findAll('.compact-button')
-    const searchButton = compactButtons[1] // Second CompactButton is the search button
+    const searchButton = compactButtons[2] // Third CompactButton is the search button (after FCA and authors buttons)
     await searchButton.trigger('click')
     expect(mockOpenSearchModal).toHaveBeenCalled()
   })

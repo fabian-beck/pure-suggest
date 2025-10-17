@@ -113,18 +113,6 @@ export function useAppState() {
     interfaceStore.triggerNetworkReplot()
   }
 
-  /**
-   * Runs FCA clustering on selected publications and stores concepts
-   */
-  const runFCAClustering = () => {
-    fcaStore.computeAndStoreConcepts(sessionStore.selectedPublications, sessionStore.uniqueBoostKeywords)
-    fcaStore.assignConceptTagsToPublications(sessionStore.selectedPublications)
-
-    // Also apply to suggested publications if they exist
-    if (sessionStore.suggestedPublications.length > 0) {
-      fcaStore.assignConceptTagsToPublications(sessionStore.suggestedPublications)
-    }
-  }
 
   /**
    * Computes suggestions based on selected publications
@@ -395,7 +383,6 @@ export function useAppState() {
     updateSuggestions,
     updateScores,
     computeSuggestions,
-    runFCAClustering,
     activatePublicationComponentByDoi,
     retryLoadingPublication,
     loadSession,

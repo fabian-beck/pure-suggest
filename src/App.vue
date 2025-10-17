@@ -177,6 +177,7 @@ export default {
     <AboutModalDialog />
     <KeyboardControlsModalDialog />
     <ShareSessionModalDialog />
+    <FCAConfigModalDialog />
     <!-- Other dialogs and overlays -->
     <v-overlay
       v-model="interfaceStore.isLoading"

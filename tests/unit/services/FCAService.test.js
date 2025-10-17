@@ -358,6 +358,9 @@ describe('FCAService', () => {
 
       const sorted = FCAService.sortConceptsByImportance(concepts)
 
+      // Should return only 2 concepts (third is filtered out due to low remaining importance)
+      expect(sorted).toHaveLength(2)
+
       // 4 pubs * 2 attributes = 8 (highest)
       expect(sorted[0].importance).toBe(8)
       expect(sorted[0].publications).toHaveLength(4)
@@ -366,9 +369,7 @@ describe('FCAService', () => {
       expect(sorted[1].importance).toBe(6)
       expect(sorted[1].publications).toHaveLength(3)
 
-      // 3 pubs * 1 attribute = 3 (lowest)
-      expect(sorted[2].importance).toBe(3)
-      expect(sorted[2].publications).toHaveLength(3)
+      // Third concept (3 pubs * 1 attribute = 3) is filtered out due to remaining importance <= 3
     })
 
     it('should handle empty concepts array', () => {
@@ -464,16 +465,16 @@ describe('FCAService', () => {
 
       const concepts = [
         {
-          publications: ['10.1/a', '10.1/b'],
+          publications: ['10.1/a', '10.1/b', '10.1/c'],
           attributes: ['VISUAL', 'DATA'],
-          importance: 4
+          importance: 6
         }
       ]
 
       FCAService.logFormalConcepts(concepts)
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Importance: 4')
+        expect.stringContaining('Importance: 6')
       )
     })
 
@@ -482,9 +483,9 @@ describe('FCAService', () => {
 
       const concepts = [
         {
-          publications: ['10.1/a', '10.1/b'],
+          publications: ['10.1/a', '10.1/b', '10.1/c'],
           attributes: ['VISUAL', '10.1/cited'],
-          importance: 4
+          importance: 6
         }
       ]
 
@@ -514,29 +515,22 @@ describe('FCAService', () => {
         {
           publications: ['10.1/a', '10.1/b', '10.1/d'],
           attributes: ['VISUAL', 'DESIGN'],
-          importance: 0
-        },
-        {
-          publications: ['10.1/a', '10.1/c', '10.1/e'],
-          attributes: ['ANALYT'],
-          importance: 0
+          importance: 6
         }
       ]
 
       FCAService.assignConceptTags(publications, concepts)
 
-      // Publication a should be in both concepts
-      expect(publications[0].fcaConcepts).toHaveLength(2)
+      // Publication a should be in the concept
+      expect(publications[0].fcaConcepts).toHaveLength(1)
       expect(publications[0].fcaConcepts[0]).toMatch(/^C\d+/)
-      expect(publications[0].fcaConcepts[1]).toMatch(/^C\d+/)
 
       // Publication b should be in concept 1
       expect(publications[1].fcaConcepts).toHaveLength(1)
       expect(publications[1].fcaConcepts[0]).toMatch(/^C\d+/)
 
-      // Publication c should be in concept 2
-      expect(publications[2].fcaConcepts).toHaveLength(1)
-      expect(publications[2].fcaConcepts[0]).toMatch(/^C\d+/)
+      // Publication c should not be in any concept
+      expect(publications[2].fcaConcepts).toBeNull()
     })
 
     it('should handle publications not in any concept', () => {
@@ -578,37 +572,37 @@ describe('FCAService', () => {
         {
           publications: ['10.1/a', '10.1/d', '10.1/e'],
           attributes: ['VISUAL'],
-          importance: 0
+          importance: 3
         },
         {
           publications: ['10.1/b', '10.1/c', '10.1/e', '10.1/f'],
           attributes: ['DATA', 'ANALYT'],
-          importance: 0
+          importance: 8
         }
       ]
 
       FCAService.assignConceptTags(publications, concepts)
 
       // Should be assigned concept names after sorting by importance
-      // Concept with 2 attributes has higher importance (4*2 = 8)
-      // Concept with 1 attribute has 3 pubs, after first concept covers e, has 3 uncovered * 2 attrs = 6 remaining
-      // Publication e should be in both concepts
-      expect(publications[4].fcaConcepts).toHaveLength(2)
+      // Concept with 2 attributes has higher importance (4*2 = 8) - picked first
+      // Concept with 1 attribute has 3 pubs, after first concept covers e, has 2 uncovered * 1 attr = 2 remaining (filtered out)
+      // Publication e should be in only the first concept picked
+      expect(publications[4].fcaConcepts).toHaveLength(1)
       expect(publications[4].fcaConcepts[0]).toMatch(/^C1/)
-      expect(publications[4].fcaConcepts[1]).toMatch(/^C2/)
     })
 
     it('should return a map of DOI to concept names', () => {
       const publications = [
         { doi: '10.1/a', fcaConcepts: null, title: 'Visual Study' },
-        { doi: '10.1/b', fcaConcepts: null, title: 'Visual Analysis' }
+        { doi: '10.1/b', fcaConcepts: null, title: 'Visual Analysis' },
+        { doi: '10.1/c', fcaConcepts: null, title: 'Visual System' }
       ]
 
       const concepts = [
         {
-          publications: ['10.1/a', '10.1/b'],
+          publications: ['10.1/a', '10.1/b', '10.1/c'],
           attributes: ['VISUAL'],
-          importance: 0
+          importance: 3
         }
       ]
 
@@ -618,6 +612,8 @@ describe('FCAService', () => {
       expect(tagMap.get('10.1/a')[0]).toMatch(/^C1/)
       expect(tagMap.get('10.1/b')).toHaveLength(1)
       expect(tagMap.get('10.1/b')[0]).toMatch(/^C1/)
+      expect(tagMap.get('10.1/c')).toHaveLength(1)
+      expect(tagMap.get('10.1/c')[0]).toMatch(/^C1/)
     })
 
     it('should handle empty concepts array', () => {
@@ -634,29 +630,32 @@ describe('FCAService', () => {
     it('should not add term name when top scores are tied', () => {
       const publications = [
         { doi: '10.1/a', fcaConcepts: null, title: 'Study' },
-        { doi: '10.1/b', fcaConcepts: null, title: 'Research' }
+        { doi: '10.1/b', fcaConcepts: null, title: 'Research' },
+        { doi: '10.1/c', fcaConcepts: null, title: 'Analysis' }
       ]
 
       const concepts = [
         {
-          publications: ['10.1/a', '10.1/b'],
+          publications: ['10.1/a', '10.1/b', '10.1/c'],
           attributes: ['VISUAL'],
-          importance: 0
+          importance: 3
         }
       ]
 
       FCAService.assignConceptTags(publications, concepts)
 
-      // Both publications have different single-word titles with same TF-IDF
+      // All publications have different single-word titles with same TF-IDF
       // Should get concept number only (no term name)
       expect(publications[0].fcaConcepts[0]).toBe('C1')
       expect(publications[1].fcaConcepts[0]).toBe('C1')
+      expect(publications[2].fcaConcepts[0]).toBe('C1')
     })
 
     it('should add term name when there is a clear winner', () => {
       const publications = [
         { doi: '10.1/a', fcaConcepts: null, title: 'Unique neuromorphic computing systems' },
-        { doi: '10.1/b', fcaConcepts: null, title: 'Neuromorphic design patterns' }
+        { doi: '10.1/b', fcaConcepts: null, title: 'Neuromorphic design patterns' },
+        { doi: '10.1/c', fcaConcepts: null, title: 'Advanced neuromorphic architectures' }
       ]
 
       // Add many other publications with diverse titles to increase IDF
@@ -670,9 +669,9 @@ describe('FCAService', () => {
 
       const concepts = [
         {
-          publications: ['10.1/a', '10.1/b'],
+          publications: ['10.1/a', '10.1/b', '10.1/c'],
           attributes: ['VISUAL'],
-          importance: 0
+          importance: 3
         }
       ]
 

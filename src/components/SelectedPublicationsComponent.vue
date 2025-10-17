@@ -10,7 +10,7 @@ import { useSessionStore } from '@/stores/session.js'
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
-const { showConfirmDialog, openSearchModal, openAuthorModal, openQueueModal } = useModalManager()
+const { showConfirmDialog, openSearchModal, openAuthorModal, openQueueModal, openFcaConfigModal } = useModalManager()
 const queueStore = useQueueStore()
 const {
   isEmpty,
@@ -18,7 +18,6 @@ const {
   loadExample,
   updateQueued,
   loadSession,
-  runFCAClustering,
 } = useAppState()
 
 const publicationList = ref(null)
@@ -91,7 +90,7 @@ onMounted(() => {
           <CompactButton
             icon="mdi-group has-text-white"
             v-tippy="`Cluster selected publications using Formal Concept Analysis.`"
-            @click="runFCAClustering()"
+            @click="openFcaConfigModal()"
           ></CompactButton>
           <CompactButton
             icon="mdi-account-group has-text-white"

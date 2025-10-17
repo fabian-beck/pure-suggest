@@ -23,8 +23,6 @@ export const useFcaStore = defineStore('fca', {
         this.sortedConcepts,
         selectedPublications
       )
-
-      FCAService.logFormalConcepts(this.concepts, selectedPublications)
     },
 
     assignConceptTagsToPublications(publications) {
