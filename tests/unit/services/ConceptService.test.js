@@ -804,4 +804,74 @@ describe('ConceptService', () => {
       expect(merged.get('visual')).toBe(10)
     })
   })
+
+  describe('Author attributes', () => {
+    it('should extract author IDs using Author disambiguation logic', () => {
+      const pubs = [
+        { doi: '10.1/a', title: 'Paper A', year: 2020, authorOrcid: 'Smith, John; Jones, Mary', citationDois: [], referenceDois: [], boostKeywords: [] },
+        { doi: '10.1/b', title: 'Paper B', year: 2021, authorOrcid: 'Smith, John; Brown, Bob', citationDois: [], referenceDois: [], boostKeywords: [] },
+        { doi: '10.1/c', title: 'Paper C', year: 2022, authorOrcid: 'Jones, Mary; White, Alice', citationDois: [], referenceDois: [], boostKeywords: [] }
+      ]
+
+      const context = ConceptService.buildContext(pubs, [], { includeCitations: false, includeAuthors: true })
+
+      // Should include all authors (top 10), not just those appearing multiple times
+      const authorAttrs = context.attributes.filter((attr) => attr.type === 'author')
+      expect(authorAttrs.length).toBeGreaterThan(0)
+      expect(authorAttrs.map((a) => a.value)).toContain('smith, john')
+      expect(authorAttrs.map((a) => a.value)).toContain('jones, mary')
+    })
+
+    it('should create concepts based on shared authors', () => {
+      const pubs = [
+        { doi: '10.1/a', title: 'Paper A', year: 2020, authorOrcid: 'Smith, John; Jones, Mary', citationDois: [], referenceDois: [], boostKeywords: [] },
+        { doi: '10.1/b', title: 'Paper B', year: 2021, authorOrcid: 'Smith, John; Brown, Bob', citationDois: [], referenceDois: [], boostKeywords: [] },
+        { doi: '10.1/c', title: 'Paper C', year: 2022, authorOrcid: 'Jones, Mary; White, Alice', citationDois: [], referenceDois: [], boostKeywords: [] }
+      ]
+
+      const concepts = ConceptService.computeConcepts(pubs, [], { includeCitations: false, includeAuthors: true })
+
+      // Should have a concept for Smith (papers A and B)
+      const smithConcept = concepts.find((c) =>
+        c.attributes.some((a) => a.type === 'author' && a.value === 'smith, john')
+      )
+      expect(smithConcept).toBeDefined()
+      expect(smithConcept.publications).toContain('10.1/a')
+      expect(smithConcept.publications).toContain('10.1/b')
+
+      // Should have a concept for Jones (papers A and C)
+      const jonesConcept = concepts.find((c) =>
+        c.attributes.some((a) => a.type === 'author' && a.value === 'jones, mary')
+      )
+      expect(jonesConcept).toBeDefined()
+      expect(jonesConcept.publications).toContain('10.1/a')
+      expect(jonesConcept.publications).toContain('10.1/c')
+    })
+
+    it('should include all authors as attributes even if appearing once', () => {
+      const pubs = [
+        { doi: '10.1/a', title: 'Paper A', year: 2020, authorOrcid: 'Smith, John', citationDois: [], referenceDois: [], boostKeywords: [] },
+        { doi: '10.1/b', title: 'Paper B', year: 2021, authorOrcid: 'Jones, Mary', citationDois: [], referenceDois: [], boostKeywords: [] }
+      ]
+
+      const context = ConceptService.buildContext(pubs, [], { includeCitations: false, includeAuthors: true })
+
+      // Authors are included even if they appear only once - FCA will determine concept relevance
+      const authorAttrs = context.attributes.filter((attr) => attr.type === 'author')
+      expect(authorAttrs.length).toBe(2)
+    })
+
+    it('should handle publications without author data', () => {
+      const pubs = [
+        { doi: '10.1/a', title: 'Paper A', citationDois: [], referenceDois: [] },
+        { doi: '10.1/b', title: 'Paper B', year: 2020, authorOrcid: 'Smith, John', citationDois: [], referenceDois: [], boostKeywords: [] }
+      ]
+
+      const context = ConceptService.buildContext(pubs, [], { includeCitations: false, includeAuthors: true })
+
+      // Only one author (Smith)
+      const authorAttrs = context.attributes.filter((attr) => attr.type === 'author')
+      expect(authorAttrs.length).toBe(1)
+    })
+  })
 })

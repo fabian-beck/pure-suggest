@@ -6,7 +6,6 @@ import { ConceptService } from '@/services/ConceptService.js'
 import { useConceptStore } from '@/stores/concept.js'
 import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
-import { findKeywordMatches } from '@/utils/scoringUtils.js'
 
 const sessionStore = useSessionStore()
 const conceptStore = useConceptStore()
@@ -15,6 +14,7 @@ const { updateScores } = useAppState()
 
 const includeKeywords = ref(true)
 const includeCitations = ref(true)
+const includeAuthors = ref(true)
 const isEnabled = ref(false)
 
 const conceptsPreview = ref([])
@@ -22,7 +22,7 @@ const sortedConceptsPreview = ref([])
 const conceptMetadataPreview = ref(new Map())
 
 const canCompute = computed(() => {
-  return (includeKeywords.value || includeCitations.value) &&
+  return (includeKeywords.value || includeCitations.value || includeAuthors.value) &&
          sessionStore.selectedPublicationsCount > 0
 })
 
@@ -30,8 +30,12 @@ const hasPreview = computed(() => {
   return conceptsPreview.value && conceptsPreview.value.length > 0
 })
 
+const hasFilteredConcepts = computed(() => {
+  return sortedConceptsPreview.value && sortedConceptsPreview.value.length > 0
+})
+
 const conceptsToShow = computed(() => {
-  if (!hasPreview.value) return []
+  if (!hasFilteredConcepts.value) return []
   return sortedConceptsPreview.value.slice(0, 10)
 })
 
@@ -56,6 +60,38 @@ function getConceptCitations(concept) {
   return concept.attributes.filter((attr) => attr.type === 'citation').map((attr) => attr.value)
 }
 
+function getConceptAuthors(concept) {
+  return concept.attributes.filter((attr) => attr.type === 'author').map((attr) => attr.value)
+}
+
+function getAuthorDisplayName(authorId) {
+  // Find the author in sessionStore's computed authors
+  const authors = sessionStore.selectedPublications
+    .flatMap((pub) => {
+      if (!pub.authorOrcid) return []
+      return pub.authorOrcid.split('; ').map((authorString) => {
+        const cleaned = authorString.replace(/(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx])/g, '')
+        return { id: authorId, name: cleaned }
+      })
+    })
+    .find((author) => {
+      // Normalize the author name to match the ID
+      const normalizedName = author.name
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[øØ]/g, 'o')
+        .replace(/[åÅ]/g, 'a')
+        .replace(/[æÆ]/g, 'ae')
+        .replace(/[ðÐ]/g, 'd')
+        .replace(/[þÞ]/g, 'th')
+        .replace(/[ßẞ]/g, 'ss')
+        .toLowerCase()
+      return normalizedName === authorId
+    })
+
+  return authors?.name || authorId
+}
+
 function getCitationTooltip(doi) {
   const pub = sessionStore.selectedPublications.find((p) => p.doi === doi)
   if (!pub) return doi
@@ -77,37 +113,13 @@ function getConceptTopTerms(index) {
 function computeConcepts() {
   if (!canCompute.value) return
 
-  // Build context based on selected attributes
   const publications = sessionStore.selectedPublications
   const boostKeywords = includeKeywords.value ? sessionStore.uniqueBoostKeywords : []
 
-  let concepts
-  if (includeCitations.value) {
-    // Use normal computation with citations
-    concepts = ConceptService.computeConcepts(publications, boostKeywords)
-  } else {
-    // Build context without citations (keywords only)
-    const context = {
-      publications: publications.map((pub) => pub.doi),
-      attributes: boostKeywords,
-      matrix: []
-    }
-
-    // Build matrix with keywords only
-    publications.forEach((publication) => {
-      const row = []
-      const matches = findKeywordMatches(publication.title, boostKeywords)
-      const matchedKeywords = matches.map((match) => match.keyword)
-
-      boostKeywords.forEach((keyword) => {
-        row.push(matchedKeywords.includes(keyword))
-      })
-
-      context.matrix.push(row)
-    })
-
-    concepts = context.attributes.length > 0 ? ConceptService._extractConcepts(context) : []
-  }
+  const concepts = ConceptService.computeConcepts(publications, boostKeywords, {
+    includeCitations: includeCitations.value,
+    includeAuthors: includeAuthors.value
+  })
 
   conceptsPreview.value = concepts
   sortedConceptsPreview.value = ConceptService.sortConceptsByImportance(concepts)
@@ -197,19 +209,27 @@ watch(
         </p>
 
         <div class="mb-3">
-          <h3 class="is-size-6 mb-2"><b>Attributes to consider:</b></h3>
-          <v-checkbox
-            v-model="includeKeywords"
-            label="Boost keywords"
-            density="compact"
-            hide-details
-          ></v-checkbox>
-          <v-checkbox
-            v-model="includeCitations"
-            label="Citation relationships"
-            density="compact"
-            hide-details
-          ></v-checkbox>
+          <h3 class="is-size-6 mb-2"><b>Attributes:</b></h3>
+          <div class="d-flex flex-wrap ga-2">
+            <v-checkbox
+              v-model="includeKeywords"
+              label="Keywords"
+              density="compact"
+              hide-details
+            ></v-checkbox>
+            <v-checkbox
+              v-model="includeCitations"
+              label="Citations"
+              density="compact"
+              hide-details
+            ></v-checkbox>
+            <v-checkbox
+              v-model="includeAuthors"
+              label="Authors"
+              density="compact"
+              hide-details
+            ></v-checkbox>
+          </div>
         </div>
 
         <div class="d-flex ga-2">
@@ -251,6 +271,15 @@ watch(
         <div v-if="!hasPreview" class="pa-3 text-center empty-state">
           <v-icon size="large" class="mb-2">mdi-information-outline</v-icon>
           <p>No concepts to preview. Click "Compute Concepts" to generate results.</p>
+        </div>
+
+        <div v-else-if="hasPreview && !hasFilteredConcepts" class="pa-3 text-center empty-state">
+          <v-icon size="large" class="mb-2" color="warning">mdi-filter-outline</v-icon>
+          <p>
+            <strong>No meaningful concepts found.</strong><br>
+            Concepts require at least 2 publications and 1 shared attribute.<br>
+            Try selecting more publications or enabling additional attribute types.
+          </p>
         </div>
 
         <div v-else>
@@ -305,6 +334,19 @@ watch(
                       class="ma-1 citation-chip"
                     >
                       {{ citation }}
+                    </v-chip>
+                  </div>
+
+                  <div v-if="getConceptAuthors(concept).length > 0" class="mb-2 is-size-7">
+                    <span class="attribute-label">Authors:</span>
+                    <v-chip
+                      v-for="author in getConceptAuthors(concept)"
+                      :key="author"
+                      size="small"
+                      label
+                      class="ma-1 author-chip"
+                    >
+                      {{ getAuthorDisplayName(author) }}
                     </v-chip>
                   </div>
 
@@ -377,6 +419,10 @@ watch(
       background-color: hsla(0, 0%, 70%, 0.3) !important;
       font-family: monospace;
       font-size: 0.7rem;
+    }
+
+    .author-chip {
+      background-color: hsla(270, 70%, 85%, 0.3) !important;
     }
 
     .term-chip {

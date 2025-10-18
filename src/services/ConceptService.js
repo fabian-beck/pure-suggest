@@ -1,3 +1,4 @@
+import Author from '@/core/Author.js'
 import { findKeywordMatches } from '@/utils/scoringUtils.js'
 
 /**
@@ -83,17 +84,25 @@ export class ConceptService {
    * Computes all concepts from publications and keywords
    * @param {Array} publications - Array of publication objects
    * @param {string[]} boostKeywords - Array of boost keyword strings
+   * @param {Object} options - Optional configuration
+   * @param {boolean} options.includeCitations - Whether to include citation attributes (default: true)
+   * @param {boolean} options.includeAuthors - Whether to include author attributes (default: false)
    * @returns {Array} Array of concepts
    */
-  static computeConcepts(publications, boostKeywords) {
+  static computeConcepts(publications, boostKeywords, options = {}) {
     if (!publications || publications.length === 0) {
       return []
     }
 
-    // Allow empty keywords array - citations can still form concepts
-    const context = this.buildContext(publications, boostKeywords || [])
+    const { includeCitations = true, includeAuthors = false } = options
 
-    // Return empty if no attributes at all (no keywords and no citations)
+    // Allow empty keywords array - citations/authors can still form concepts
+    const context = this.buildContext(publications, boostKeywords || [], {
+      includeCitations,
+      includeAuthors
+    })
+
+    // Return empty if no attributes at all (no keywords, citations, or authors)
     if (context.attributes.length === 0) {
       return []
     }
@@ -103,43 +112,64 @@ export class ConceptService {
 
   /**
    * Builds binary context matrix (publications × attributes)
-   * Attributes include both keywords and citation relationships
+   * Attributes include keywords, citation relationships, and co-authors
    * @param {Array} publications - Array of publication objects
    * @param {string[]} boostKeywords - Array of boost keyword strings
+   * @param {Object} options - Optional configuration
+   * @param {boolean} options.includeCitations - Whether to include citation attributes (default: true)
+   * @param {boolean} options.includeAuthors - Whether to include author attributes (default: false)
    * @returns {Object} Context object with publications, attributes, and matrix
    */
-  static buildContext(publications, boostKeywords) {
+  static buildContext(publications, boostKeywords, options = {}) {
+    const { includeCitations = true, includeAuthors = false } = options
+
     // Create set of selected publication DOIs for filtering
     const selectedDois = new Set(publications.map((pub) => pub.doi))
 
-    // Count citations for each selected publication
-    const citationCounts = new Map()
-    selectedDois.forEach((doi) => citationCounts.set(doi, 0))
+    let topCitedDois = []
+    if (includeCitations) {
+      // Count citations for each selected publication
+      const citationCounts = new Map()
+      selectedDois.forEach((doi) => citationCounts.set(doi, 0))
 
-    publications.forEach((publication) => {
-      ;(publication.citationDois || []).forEach((doi) => {
-        if (selectedDois.has(doi)) {
-          citationCounts.set(doi, citationCounts.get(doi) + 1)
-        }
+      publications.forEach((publication) => {
+        ;(publication.citationDois || []).forEach((doi) => {
+          if (selectedDois.has(doi)) {
+            citationCounts.set(doi, citationCounts.get(doi) + 1)
+          }
+        })
+        ;(publication.referenceDois || []).forEach((doi) => {
+          if (selectedDois.has(doi)) {
+            citationCounts.set(doi, citationCounts.get(doi) + 1)
+          }
+        })
       })
-      ;(publication.referenceDois || []).forEach((doi) => {
-        if (selectedDois.has(doi)) {
-          citationCounts.set(doi, citationCounts.get(doi) + 1)
-        }
-      })
-    })
 
-    // Get top 10 most cited publications as attributes (exclude those with 0 citations)
-    const topCitedDois = Array.from(citationCounts.entries())
-      .filter((entry) => entry[1] > 0) // Only include DOIs with at least 1 citation
-      .sort((a, b) => b[1] - a[1]) // Sort by count descending
-      .slice(0, 10) // Take top 10
-      .map((entry) => entry[0])
+      // Get top 10 most cited publications as attributes (exclude those with 0 citations)
+      topCitedDois = Array.from(citationCounts.entries())
+        .filter((entry) => entry[1] > 0) // Only include DOIs with at least 1 citation
+        .sort((a, b) => b[1] - a[1]) // Sort by count descending
+        .slice(0, 10) // Take top 10
+        .map((entry) => entry[0])
+    }
 
-    // Combine keywords and top citation DOIs as attributes (with type information)
+    let topAuthors = []
+    if (includeAuthors) {
+      // Use existing Author disambiguation logic
+      const authors = Author.computePublicationsAuthors(publications, false, false, false)
+
+      // Get top 10 most frequent authors as attributes (include all authors with at least 1 publication)
+      // Note: The FCA algorithm will naturally only create concepts for authors appearing in 2+ publications
+      topAuthors = authors
+        .slice(0, 10) // Take top 10 (already sorted by score/count)
+        .map((author) => author.id)
+    }
+
+    // Combine keywords, citation DOIs, and authors as attributes (with type information)
     const attributes = [
       ...boostKeywords.map((keyword) => ({ type: 'keyword', value: keyword })),
-      ...topCitedDois.map((doi) => ({ type: 'citation', value: doi }))
+      ...topCitedDois.map((doi) => ({ type: 'citation', value: doi })),
+      ...topAuthors.map((author) => ({ type: 'author', value: author }))
     ]
 
     // Build binary matrix
@@ -151,17 +181,25 @@ export class ConceptService {
       const matches = findKeywordMatches(publication.title, boostKeywords)
       const matchedKeywords = matches.map((match) => match.keyword)
 
+      // Get publication author IDs (normalized names)
+      const publicationAuthors = publication.authorOrcid
+        ? publication.authorOrcid.split('; ').map((authorString) => Author.nameToId(authorString))
+        : []
+
       // Check each attribute
       attributes.forEach((attribute) => {
         if (attribute.type === 'keyword') {
           // Keyword attribute
           row.push(matchedKeywords.includes(attribute.value))
-        } else {
+        } else if (attribute.type === 'citation') {
           // Citation attribute - check if publication cites or is cited by this DOI, or is itself
           const isSelf = publication.doi === attribute.value
           const hasCitation = (publication.citationDois || []).includes(attribute.value)
           const hasReference = (publication.referenceDois || []).includes(attribute.value)
           row.push(isSelf || hasCitation || hasReference)
+        } else if (attribute.type === 'author') {
+          // Author attribute - check if publication has this author
+          row.push(publicationAuthors.includes(attribute.value))
         }
       })
 
@@ -330,9 +368,14 @@ export class ConceptService {
       return []
     }
 
-    // Filter out concepts with fewer than 3 publications and calculate initial importance
+    // Determine minimum publication threshold based on total concepts
+    // For small datasets, require at least 2 publications; for larger, require 3
+    const minPublications = concepts.length <= 10 ? 2 : 3
+
+    // Filter out concepts with fewer than minimum publications and calculate initial importance
+    // Also skip concepts with 0 attributes (importance = 0)
     const allConcepts = concepts
-      .filter((concept) => concept.publications.length >= 3)
+      .filter((concept) => concept.publications.length >= minPublications && concept.attributes.length > 0)
       .map((concept) => ({
         ...concept,
         importance: concept.publications.length * concept.attributes.length,
@@ -673,9 +716,10 @@ export class ConceptService {
       const pubCount = concept.publications.length
       const attrCount = concept.attributes.length
 
-      // Separate keywords from citation DOIs
+      // Separate keywords, citation DOIs, and authors
       const keywords = concept.attributes.filter((attr) => attr.type === 'keyword').map((attr) => attr.value)
       const citations = concept.attributes.filter((attr) => attr.type === 'citation').map((attr) => attr.value)
+      const authors = concept.attributes.filter((attr) => attr.type === 'author').map((attr) => attr.value)
 
       console.log(`\nConcept ${index + 1}:`)
       console.log(
@@ -685,6 +729,7 @@ export class ConceptService {
       console.log(`  Publications (${pubCount}): ${pubCount === 0 ? '∅' : concept.publications.join(', ')}`)
       console.log(`  Keywords (${keywords.length}): ${keywords.length === 0 ? '∅' : keywords.join(', ')}`)
       console.log(`  Citations (${citations.length}): ${citations.length === 0 ? '∅' : citations.join(', ')}`)
+      console.log(`  Authors (${authors.length}): ${authors.length === 0 ? '∅' : authors.join(', ')}`)
 
       // Compute and display top TF-IDF terms if publications available
       if (allPublications.length > 0 && concept.publications.length > 0) {
