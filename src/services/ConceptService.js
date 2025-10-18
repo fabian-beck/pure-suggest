@@ -136,8 +136,11 @@ export class ConceptService {
       .slice(0, 10) // Take top 10
       .map((entry) => entry[0])
 
-    // Combine keywords and top citation DOIs as attributes
-    const attributes = [...boostKeywords, ...topCitedDois]
+    // Combine keywords and top citation DOIs as attributes (with type information)
+    const attributes = [
+      ...boostKeywords.map((keyword) => ({ type: 'keyword', value: keyword })),
+      ...topCitedDois.map((doi) => ({ type: 'citation', value: doi }))
+    ]
 
     // Build binary matrix
     const matrix = []
@@ -150,14 +153,14 @@ export class ConceptService {
 
       // Check each attribute
       attributes.forEach((attribute) => {
-        if (boostKeywords.includes(attribute)) {
+        if (attribute.type === 'keyword') {
           // Keyword attribute
-          row.push(matchedKeywords.includes(attribute))
+          row.push(matchedKeywords.includes(attribute.value))
         } else {
           // Citation attribute - check if publication cites or is cited by this DOI, or is itself
-          const isSelf = publication.doi === attribute
-          const hasCitation = (publication.citationDois || []).includes(attribute)
-          const hasReference = (publication.referenceDois || []).includes(attribute)
+          const isSelf = publication.doi === attribute.value
+          const hasCitation = (publication.citationDois || []).includes(attribute.value)
+          const hasReference = (publication.referenceDois || []).includes(attribute.value)
           row.push(isSelf || hasCitation || hasReference)
         }
       })
@@ -559,8 +562,19 @@ export class ConceptService {
       return []
     }
 
-    // Extract keywords (non-DOI attributes) and expand alternatives (pipe-separated)
-    const keywords = conceptAttributes.filter((attr) => !attr.startsWith('10.'))
+    // Extract keywords and citation DOIs from typed attributes
+    const keywords = conceptAttributes.filter((attr) => attr.type === 'keyword').map((attr) => attr.value)
+    const citationDois = conceptAttributes.filter((attr) => attr.type === 'citation').map((attr) => attr.value)
+
+    // Get titles of publications that are citation attributes
+    const citationTitles = citationDois
+      .map((doi) => pubMap.get(doi)?.title)
+      .filter((title) => title)
+
+    // Combine concept titles with citation attribute titles
+    const allTitles = [...conceptTitles, ...citationTitles]
+
+    // Expand keyword alternatives (pipe-separated)
     const keywordAlternatives = []
     keywords.forEach((keyword) => {
       // Split by pipe to handle alternatives like "vis|graph"
@@ -570,8 +584,8 @@ export class ConceptService {
       })
     })
 
-    // Tokenize concept titles (bag of words)
-    const conceptTokens = conceptTitles.flatMap((title) => tokenize(title))
+    // Tokenize all titles (bag of words)
+    const conceptTokens = allTitles.flatMap((title) => tokenize(title))
 
     // Count term frequency in concept, doubling frequency for keyword matches
     // Match using substring logic similar to findKeywordMatches
@@ -660,8 +674,8 @@ export class ConceptService {
       const attrCount = concept.attributes.length
 
       // Separate keywords from citation DOIs
-      const keywords = concept.attributes.filter((attr) => !attr.startsWith('10.'))
-      const citations = concept.attributes.filter((attr) => attr.startsWith('10.'))
+      const keywords = concept.attributes.filter((attr) => attr.type === 'keyword').map((attr) => attr.value)
+      const citations = concept.attributes.filter((attr) => attr.type === 'citation').map((attr) => attr.value)
 
       console.log(`\nConcept ${index + 1}:`)
       console.log(

@@ -55,8 +55,8 @@ export const useConceptStore = defineStore('concept', {
     },
 
     _publicationMatchesConceptAttributes(publication, attributes) {
-      const keywordAttributes = attributes.filter((attr) => !attr.startsWith('10.'))
-      const citationAttributes = attributes.filter((attr) => attr.startsWith('10.'))
+      const keywordAttributes = attributes.filter((attr) => attr.type === 'keyword').map((attr) => attr.value)
+      const citationAttributes = attributes.filter((attr) => attr.type === 'citation').map((attr) => attr.value)
 
       // Check keyword attributes using same logic as ConceptService
       const matches = findKeywordMatches(publication.title, keywordAttributes)

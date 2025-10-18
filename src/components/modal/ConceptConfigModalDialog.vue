@@ -49,11 +49,11 @@ const previewTitle = computed(() => {
 })
 
 function getConceptKeywords(concept) {
-  return concept.attributes.filter((attr) => !attr.startsWith('10.'))
+  return concept.attributes.filter((attr) => attr.type === 'keyword').map((attr) => attr.value)
 }
 
 function getConceptCitations(concept) {
-  return concept.attributes.filter((attr) => attr.startsWith('10.'))
+  return concept.attributes.filter((attr) => attr.type === 'citation').map((attr) => attr.value)
 }
 
 function getCitationTooltip(doi) {
