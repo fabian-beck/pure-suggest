@@ -470,6 +470,64 @@ export class ConceptService {
   }
 
   /**
+   * Merges similar terms by finding common prefixes and combining their frequencies
+   * @param {Map} termFreq - Map of term to frequency
+   * @returns {Map} Map with merged term frequencies
+   */
+  static _mergeTermFrequencies(termFreq) {
+    if (termFreq.size === 0) return new Map()
+
+    const MIN_PREFIX_LENGTH = 5
+    const terms = Array.from(termFreq.keys())
+    const merged = new Map()
+    const processed = new Set()
+
+    // Sort by frequency descending to prioritize high-frequency terms
+    const sorted = terms.sort((a, b) => (termFreq.get(b) || 0) - (termFreq.get(a) || 0))
+
+    sorted.forEach((term) => {
+      if (processed.has(term)) return
+
+      // Find all terms that share a common prefix with this term
+      const similar = sorted.filter((other) => {
+        if (processed.has(other) || other === term) return false
+
+        // Find common prefix length
+        const minLen = Math.min(term.length, other.length)
+        let commonPrefixLen = 0
+        for (let i = 0; i < minLen; i++) {
+          if (term[i] === other[i]) {
+            commonPrefixLen++
+          } else {
+            break
+          }
+        }
+
+        return commonPrefixLen >= MIN_PREFIX_LENGTH
+      })
+
+      if (similar.length > 0) {
+        // Merge: use the shortest term as the representative
+        const allTerms = [term, ...similar]
+        const shortest = allTerms.reduce((a, b) => (a.length < b.length ? a : b))
+        const totalFreq = allTerms.reduce((sum, t) => sum + (termFreq.get(t) || 0), 0)
+
+        merged.set(shortest, totalFreq)
+
+        // Mark all as processed
+        processed.add(term)
+        similar.forEach((s) => processed.add(s))
+      } else {
+        // No similar terms, add as-is
+        merged.set(term, termFreq.get(term))
+        processed.add(term)
+      }
+    })
+
+    return merged
+  }
+
+  /**
    * Computes TF-IDF scores for terms in a concept's publications
    * @param {Array} conceptPublications - Array of publication DOIs in the concept
    * @param {Array} allPublications - All publication objects
@@ -530,20 +588,26 @@ export class ConceptService {
       termFreq.set(term, (termFreq.get(term) || 0) + increment)
     })
 
-    // Count document frequency across all publications
-    const docFreq = new Map()
+    // Merge similar terms BEFORE computing TF-IDF
+    const mergedTermFreq = this._mergeTermFrequencies(termFreq)
+
+    // Count document frequency across all publications (also needs merging)
+    const docFreqRaw = new Map()
     allPublications.forEach((pub) => {
       const tokens = new Set(tokenize(pub.title))
       tokens.forEach((term) => {
-        docFreq.set(term, (docFreq.get(term) || 0) + 1)
+        docFreqRaw.set(term, (docFreqRaw.get(term) || 0) + 1)
       })
     })
 
+    // Merge document frequencies
+    const docFreq = this._mergeTermFrequencies(docFreqRaw)
+
     const totalDocs = allPublications.length
 
-    // Compute TF-IDF for each term
+    // Compute TF-IDF for each merged term
     const tfidfScores = []
-    termFreq.forEach((tf, term) => {
+    mergedTermFreq.forEach((tf, term) => {
       const df = docFreq.get(term) || 1
       const idf = Math.log(totalDocs / df)
       const tfidf = tf * idf

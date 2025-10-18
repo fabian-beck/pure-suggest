@@ -713,4 +713,83 @@ describe('ConceptService', () => {
       // If there's a clear winner after boosting, it should be VIS or GRAPH related
     })
   })
+
+  describe('_mergeTermFrequencies', () => {
+    it('should merge terms with common prefix of length >= 5', () => {
+      const termFreq = new Map([
+        ['visualiz', 10],
+        ['visualization', 8],
+        ['visual', 6]
+      ])
+
+      const merged = ConceptService._mergeTermFrequencies(termFreq)
+
+      expect(merged.size).toBe(1)
+      expect(merged.get('visual')).toBe(24)
+    })
+
+    it('should merge generat and generation', () => {
+      const termFreq = new Map([
+        ['generat', 15],
+        ['generation', 7]
+      ])
+
+      const merged = ConceptService._mergeTermFrequencies(termFreq)
+
+      expect(merged.size).toBe(1)
+      expect(merged.get('generat')).toBe(22)
+    })
+
+    it('should not merge terms with prefix shorter than 5', () => {
+      const termFreq = new Map([
+        ['data', 10],
+        ['date', 8]
+      ])
+
+      const merged = ConceptService._mergeTermFrequencies(termFreq)
+
+      expect(merged.size).toBe(2)
+      expect(merged.get('data')).toBe(10)
+      expect(merged.get('date')).toBe(8)
+    })
+
+    it('should keep non-similar terms separate', () => {
+      const termFreq = new Map([
+        ['visual', 10],
+        ['network', 8],
+        ['analyt', 6]
+      ])
+
+      const merged = ConceptService._mergeTermFrequencies(termFreq)
+
+      expect(merged.size).toBe(3)
+    })
+
+    it('should merge multiple related terms', () => {
+      const termFreq = new Map([
+        ['comput', 12],
+        ['computation', 10],
+        ['computing', 8],
+        ['computational', 6]
+      ])
+
+      const merged = ConceptService._mergeTermFrequencies(termFreq)
+
+      expect(merged.size).toBe(1)
+      expect(merged.get('comput')).toBe(36)
+    })
+
+    it('should handle empty map', () => {
+      const merged = ConceptService._mergeTermFrequencies(new Map())
+      expect(merged.size).toBe(0)
+    })
+
+    it('should handle single term', () => {
+      const termFreq = new Map([['visual', 10]])
+      const merged = ConceptService._mergeTermFrequencies(termFreq)
+
+      expect(merged.size).toBe(1)
+      expect(merged.get('visual')).toBe(10)
+    })
+  })
 })
