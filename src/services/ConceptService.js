@@ -567,7 +567,7 @@ export class ConceptService {
       if (similar.length > 0) {
         // Merge: use the shortest term as the representative
         const allTerms = [term, ...similar]
-        const shortest = allTerms.reduce((a, b) => (a.length < b.length ? a : b))
+        const shortest = allTerms.reduce((a, b) => (a.length < b.length ? a : b), term)
         const totalFreq = allTerms.reduce((sum, t) => sum + (termFreq.get(t) || 0), 0)
 
         merged.set(shortest, totalFreq)
