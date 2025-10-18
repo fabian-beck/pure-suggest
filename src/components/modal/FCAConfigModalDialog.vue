@@ -164,6 +164,10 @@ watch(
         conceptsPreview.value = fcaStore.concepts
         sortedConceptsPreview.value = fcaStore.sortedConcepts
         conceptMetadataPreview.value = fcaStore.conceptMetadata
+      } else {
+        conceptsPreview.value = []
+        sortedConceptsPreview.value = []
+        conceptMetadataPreview.value = new Map()
       }
     }
   }
