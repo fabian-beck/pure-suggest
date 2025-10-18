@@ -56,6 +56,14 @@ function getConceptCitations(concept) {
   return concept.attributes.filter((attr) => attr.startsWith('10.'))
 }
 
+function getCitationTooltip(doi) {
+  const pub = sessionStore.selectedPublications.find((p) => p.doi === doi)
+  if (!pub) return doi
+
+  const authorInfo = pub.authorShort || 'Unknown authors'
+  return `${pub.title || 'Untitled'} (${authorInfo})`
+}
+
 function getConceptName(index) {
   const metadata = conceptMetadataPreview.value.get(index)
   return metadata?.name || `C${index + 1}`
@@ -291,6 +299,7 @@ watch(
                     <v-chip
                       v-for="citation in getConceptCitations(concept)"
                       :key="citation"
+                      v-tippy="getCitationTooltip(citation)"
                       size="small"
                       label
                       class="ma-1 citation-chip"
