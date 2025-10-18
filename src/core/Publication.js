@@ -155,7 +155,7 @@ export default class Publication {
     this.isActive = this.isLinkedToActive = this.isSelected = this.isRead = false
     this.isHovered = this.isKeywordHovered = this.isAuthorHovered = this.wasFetched = false
     this.isNewlyAdded = false
-    this.fcaConcepts = null
+    this.concepts = null
   }
 
   /**
@@ -328,21 +328,21 @@ export default class Publication {
   }
 
   /**
-   * Gets all tags for this publication, including dynamic FCA concept tags
+   * Gets all tags for this publication, including dynamic concept tags
    * @returns {Array} Array of tag configuration objects
    */
   getTags() {
     const tags = [...PUBLICATION_TAGS.filter((tag) => this[tag.value])]
 
-    // Add FCA concept tags if they exist
-    if (this.fcaConcepts && this.fcaConcepts.length > 0) {
-      this.fcaConcepts.forEach((conceptName) => {
+    // Add concept tags if they exist
+    if (this.concepts && this.concepts.length > 0) {
+      this.concepts.forEach((conceptName) => {
         // conceptName is either a number (legacy) or "C1 - TERM" format
         const displayName = typeof conceptName === 'number' ? `Concept ${conceptName}` : conceptName
         const value =
           typeof conceptName === 'number'
-            ? `fcaConcept${conceptName}`
-            : `fcaConcept${conceptName.split(' ')[0]}`
+            ? `concept${conceptName}`
+            : `concept${conceptName.split(' ')[0]}`
         tags.push({
           value,
           name: displayName

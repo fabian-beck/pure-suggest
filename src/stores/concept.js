@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
 
-import { FCAService } from '@/services/FCAService.js'
+import { ConceptService } from '@/services/ConceptService.js'
 import { findKeywordMatches } from '@/utils/scoringUtils.js'
 
-export const useFcaStore = defineStore('fca', {
+export const useConceptStore = defineStore('concept', {
   state: () => {
     return {
       concepts: [],
@@ -17,9 +17,9 @@ export const useFcaStore = defineStore('fca', {
 
   actions: {
     computeAndStoreConcepts(selectedPublications, boostKeywords) {
-      this.concepts = FCAService.computeFormalConcepts(selectedPublications, boostKeywords)
-      this.sortedConcepts = FCAService.sortConceptsByImportance(this.concepts)
-      this.conceptMetadata = FCAService.generateConceptNames(
+      this.concepts = ConceptService.computeConcepts(selectedPublications, boostKeywords)
+      this.sortedConcepts = ConceptService.sortConceptsByImportance(this.concepts)
+      this.conceptMetadata = ConceptService.generateConceptNames(
         this.sortedConcepts,
         selectedPublications
       )
@@ -45,11 +45,11 @@ export const useFcaStore = defineStore('fca', {
         })
 
         if (matchingConcepts.length > 0) {
-          publication.fcaConcepts = matchingConcepts
-          publication.fcaConceptMetadata = metadata
+          publication.concepts = matchingConcepts
+          publication.conceptMetadata = metadata
         } else {
-          publication.fcaConcepts = null
-          publication.fcaConceptMetadata = null
+          publication.concepts = null
+          publication.conceptMetadata = null
         }
       })
     },
@@ -58,7 +58,7 @@ export const useFcaStore = defineStore('fca', {
       const keywordAttributes = attributes.filter((attr) => !attr.startsWith('10.'))
       const citationAttributes = attributes.filter((attr) => attr.startsWith('10.'))
 
-      // Check keyword attributes using same logic as FCAService
+      // Check keyword attributes using same logic as ConceptService
       const matches = findKeywordMatches(publication.title, keywordAttributes)
       const matchedKeywords = matches.map((match) => match.keyword)
       const hasAllKeywords = keywordAttributes.every((keyword) => matchedKeywords.includes(keyword))

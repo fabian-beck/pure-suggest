@@ -63,15 +63,15 @@ describe('Publication Bug Regression Tests', () => {
     })
   })
 
-  describe('getTags - FCA Concept Tags', () => {
+  describe('getTags - Concept Tags', () => {
     beforeEach(() => {
       publication = new Publication('10.1234/test')
     })
 
-    it('should return base tags without FCA concepts', () => {
+    it('should return base tags without concepts', () => {
       publication.isNew = 'published within this or the previous two calendar years'
       publication.isHighlyCited = 'more than 10 citations per year'
-      publication.fcaConcepts = null
+      publication.concepts = null
 
       const tags = publication.getTags()
 
@@ -80,30 +80,30 @@ describe('Publication Bug Regression Tests', () => {
       expect(tags).toContainEqual({ value: 'isHighlyCited', name: 'Highly cited' })
     })
 
-    it('should include FCA concept tags when present', () => {
-      publication.fcaConcepts = [1, 3]
+    it('should include concept tags when present', () => {
+      publication.concepts = [1, 3]
 
       const tags = publication.getTags()
 
-      expect(tags).toContainEqual({ value: 'fcaConcept1', name: 'Concept 1' })
-      expect(tags).toContainEqual({ value: 'fcaConcept3', name: 'Concept 3' })
+      expect(tags).toContainEqual({ value: 'concept1', name: 'Concept 1' })
+      expect(tags).toContainEqual({ value: 'concept3', name: 'Concept 3' })
     })
 
-    it('should combine base tags and FCA concept tags', () => {
+    it('should combine base tags and concept tags', () => {
       publication.isNew = 'published within this or the previous two calendar years'
-      publication.fcaConcepts = [1, 2]
+      publication.concepts = [1, 2]
 
       const tags = publication.getTags()
 
       expect(tags.length).toBeGreaterThanOrEqual(3)
       expect(tags).toContainEqual({ value: 'isNew', name: 'New' })
-      expect(tags).toContainEqual({ value: 'fcaConcept1', name: 'Concept 1' })
-      expect(tags).toContainEqual({ value: 'fcaConcept2', name: 'Concept 2' })
+      expect(tags).toContainEqual({ value: 'concept1', name: 'Concept 1' })
+      expect(tags).toContainEqual({ value: 'concept2', name: 'Concept 2' })
     })
 
-    it('should return only base tags when fcaConcepts is empty array', () => {
+    it('should return only base tags when concepts is empty array', () => {
       publication.isSurvey = 'more than 50 references'
-      publication.fcaConcepts = []
+      publication.concepts = []
 
       const tags = publication.getTags()
 
@@ -112,7 +112,7 @@ describe('Publication Bug Regression Tests', () => {
     })
 
     it('should handle no tags at all', () => {
-      publication.fcaConcepts = null
+      publication.concepts = null
 
       const tags = publication.getTags()
 

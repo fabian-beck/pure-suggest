@@ -10,7 +10,7 @@ import { useSessionStore } from '@/stores/session.js'
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
-const { showConfirmDialog, openSearchModal, openAuthorModal, openQueueModal, openFcaConfigModal } = useModalManager()
+const { showConfirmDialog, openSearchModal, openAuthorModal, openQueueModal, openConceptConfigModal } = useModalManager()
 const queueStore = useQueueStore()
 const {
   isEmpty,
@@ -89,8 +89,8 @@ onMounted(() => {
         <div class="level-item">
           <CompactButton
             icon="mdi-group has-text-white"
-            v-tippy="`Cluster selected publications using Formal Concept Analysis.`"
-            @click="openFcaConfigModal()"
+            v-tippy="`Cluster selected publications using concept analysis.`"
+            @click="openConceptConfigModal()"
           ></CompactButton>
           <CompactButton
             icon="mdi-account-group has-text-white"

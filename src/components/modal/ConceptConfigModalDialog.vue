@@ -2,14 +2,14 @@
 import { ref, computed, watch } from 'vue'
 
 import { useAppState } from '@/composables/useAppState.js'
-import { FCAService } from '@/services/FCAService.js'
-import { useFcaStore } from '@/stores/fca.js'
+import { ConceptService } from '@/services/ConceptService.js'
+import { useConceptStore } from '@/stores/concept.js'
 import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
 import { findKeywordMatches } from '@/utils/scoringUtils.js'
 
 const sessionStore = useSessionStore()
-const fcaStore = useFcaStore()
+const conceptStore = useConceptStore()
 const modalStore = useModalStore()
 const { updateScores } = useAppState()
 
@@ -84,7 +84,7 @@ function computeConcepts() {
   let concepts
   if (includeCitations.value) {
     // Use normal computation with citations
-    concepts = FCAService.computeFormalConcepts(publications, boostKeywords)
+    concepts = ConceptService.computeConcepts(publications, boostKeywords)
   } else {
     // Build context without citations (keywords only)
     const context = {
@@ -106,12 +106,12 @@ function computeConcepts() {
       context.matrix.push(row)
     })
 
-    concepts = context.attributes.length > 0 ? FCAService._extractFormalConcepts(context) : []
+    concepts = context.attributes.length > 0 ? ConceptService._extractConcepts(context) : []
   }
 
   conceptsPreview.value = concepts
-  sortedConceptsPreview.value = FCAService.sortConceptsByImportance(concepts)
-  conceptMetadataPreview.value = FCAService.generateConceptNames(
+  sortedConceptsPreview.value = ConceptService.sortConceptsByImportance(concepts)
+  conceptMetadataPreview.value = ConceptService.generateConceptNames(
     sortedConceptsPreview.value,
     publications
   )
@@ -120,37 +120,37 @@ function computeConcepts() {
 function applyConcepts() {
   if (conceptsPreview.value.length === 0) return
 
-  // Store the computed concepts in the FCA store
-  fcaStore.concepts = conceptsPreview.value
-  fcaStore.sortedConcepts = sortedConceptsPreview.value
-  fcaStore.conceptMetadata = conceptMetadataPreview.value
+  // Store the computed concepts in the concept store
+  conceptStore.concepts = conceptsPreview.value
+  conceptStore.sortedConcepts = sortedConceptsPreview.value
+  conceptStore.conceptMetadata = conceptMetadataPreview.value
 
   // Apply tags to publications
-  fcaStore.assignConceptTagsToPublications(sessionStore.selectedPublications)
+  conceptStore.assignConceptTagsToPublications(sessionStore.selectedPublications)
 
   if (sessionStore.suggestedPublications.length > 0) {
-    fcaStore.assignConceptTagsToPublications(sessionStore.suggestedPublications)
+    conceptStore.assignConceptTagsToPublications(sessionStore.suggestedPublications)
   }
 
   // Update scores to reflect new concept tags
   updateScores()
 
   isEnabled.value = true
-  modalStore.isFcaConfigModalDialogShown = false
+  modalStore.isConceptConfigModalDialogShown = false
 }
 
 function disableConcepts() {
-  fcaStore.clear()
+  conceptStore.clear()
 
   // Clear concept tags from all publications
   sessionStore.selectedPublications.forEach((pub) => {
-    pub.fcaConcepts = null
-    pub.fcaConceptMetadata = null
+    pub.concepts = null
+    pub.conceptMetadata = null
   })
 
   sessionStore.suggestedPublications.forEach((pub) => {
-    pub.fcaConcepts = null
-    pub.fcaConceptMetadata = null
+    pub.concepts = null
+    pub.conceptMetadata = null
   })
 
   updateScores()
@@ -159,19 +159,19 @@ function disableConcepts() {
   conceptsPreview.value = []
   sortedConceptsPreview.value = []
   conceptMetadataPreview.value = new Map()
-  modalStore.isFcaConfigModalDialogShown = false
+  modalStore.isConceptConfigModalDialogShown = false
 }
 
 // Initialize state from existing concepts
 watch(
-  () => modalStore.isFcaConfigModalDialogShown,
+  () => modalStore.isConceptConfigModalDialogShown,
   (newValue) => {
     if (newValue) {
-      isEnabled.value = fcaStore.hasConcepts
-      if (fcaStore.hasConcepts) {
-        conceptsPreview.value = fcaStore.concepts
-        sortedConceptsPreview.value = fcaStore.sortedConcepts
-        conceptMetadataPreview.value = fcaStore.conceptMetadata
+      isEnabled.value = conceptStore.hasConcepts
+      if (conceptStore.hasConcepts) {
+        conceptsPreview.value = conceptStore.concepts
+        sortedConceptsPreview.value = conceptStore.sortedConcepts
+        conceptMetadataPreview.value = conceptStore.conceptMetadata
       } else {
         conceptsPreview.value = []
         sortedConceptsPreview.value = []
@@ -185,14 +185,14 @@ watch(
 <template>
   <ModalDialog
     header-color="primary"
-    title="Formal Concept Analysis"
+    title="Concept Analysis"
     icon="mdi-group"
-    v-model="modalStore.isFcaConfigModalDialogShown"
+    v-model="modalStore.isConceptConfigModalDialogShown"
   >
     <template #sticky>
       <v-sheet class="has-background-primary-95 pa-3">
         <p class="mb-3">
-          Configure and compute formal concepts to cluster selected publications based on shared
+          Configure and compute concepts to cluster selected publications based on shared
           attributes.
         </p>
 

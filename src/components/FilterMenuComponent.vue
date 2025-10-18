@@ -149,8 +149,8 @@ function getTagIcon(tagValue) {
     isUnnoted: 'mdi-alert-box-outline'
   }
 
-  // FCA concept tags use group icon
-  if (tagValue.startsWith('fcaConcept')) {
+  // Concept tags use group icon
+  if (tagValue.startsWith('concept')) {
     return 'mdi-group'
   }
 
@@ -158,9 +158,9 @@ function getTagIcon(tagValue) {
 }
 
 function getTagLabel(tagValue) {
-  // For FCA concept tags, extract the concept identifier (e.g., "C1" from "fcaConceptC1")
-  if (tagValue.startsWith('fcaConcept')) {
-    return tagValue.replace('fcaConcept', '')
+  // For concept tags, extract the concept identifier (e.g., "C1" from "conceptC1")
+  if (tagValue.startsWith('concept')) {
+    return tagValue.replace('concept', '')
   }
   return ''
 }
@@ -179,8 +179,8 @@ function isTagActive(tagValue) {
   return sessionStore.filter.tags.includes(tagValue)
 }
 
-function getActiveFcaConceptTags() {
-  return sessionStore.filter.tags.filter((tag) => tag.startsWith('fcaConcept'))
+function getActiveConceptTags() {
+  return sessionStore.filter.tags.filter((tag) => tag.startsWith('concept'))
 }
 
 </script>
@@ -355,21 +355,21 @@ function getActiveFcaConceptTags() {
             </div>
           </v-col>
         </v-row>
-        <v-row dense v-if="getActiveFcaConceptTags().length > 0" :class="{ 'opacity-50': !sessionStore.filter.isActive }">
+        <v-row dense v-if="getActiveConceptTags().length > 0" :class="{ 'opacity-50': !sessionStore.filter.isActive }">
           <v-col class="py-1">
             <div class="d-flex align-center">
               <v-icon class="mr-2" size="20">mdi-group</v-icon>
               <span class="text-body-2 mr-3">Concepts:</span>
               <div class="d-flex flex-wrap">
                 <v-chip
-                  v-for="tagValue in getActiveFcaConceptTags()"
+                  v-for="tagValue in getActiveConceptTags()"
                   :key="tagValue"
                   class="ma-1 doi-chip"
                   size="small"
                   closable
                   @click:close="toggleTag(tagValue)"
                   @keydown="handleChipKeydown($event, tagValue)"
-                  v-tippy="`Active FCA concept filter; click to remove`"
+                  v-tippy="`Active concept filter; click to remove`"
                 >
                   {{ getTagLabel(tagValue) }}
                 </v-chip>

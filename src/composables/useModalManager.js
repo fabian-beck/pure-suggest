@@ -71,10 +71,10 @@ export function useModalManager() {
   }
 
   /**
-   * Opens the FCA configuration modal dialog
+   * Opens the concept configuration modal dialog
    */
-  const openFcaConfigModal = () => {
-    modalStore.isFcaConfigModalDialogShown = true
+  const openConceptConfigModal = () => {
+    modalStore.isConceptConfigModalDialogShown = true
   }
 
   /**
@@ -121,7 +121,7 @@ export function useModalManager() {
     modalStore.isAboutModalDialogShown = false
     modalStore.isKeyboardControlsModalDialogShown = false
     modalStore.isShareSessionModalDialogShown = false
-    modalStore.isFcaConfigModalDialogShown = false
+    modalStore.isConceptConfigModalDialogShown = false
     modalStore.confirmDialog.isShown = false
     modalStore.infoDialog.isShown = false
   }
@@ -135,7 +135,7 @@ export function useModalManager() {
     openAboutModal,
     openKeyboardControlsModal,
     openShareSessionModal,
-    openFcaConfigModal,
+    openConceptConfigModal,
 
     // Dialog functions
     showConfirmDialog,

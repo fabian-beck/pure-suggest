@@ -5,7 +5,7 @@ import { PAGINATION } from '@/constants/config.js'
 import { clearCache as clearCacheUtil } from '@/lib/Cache.js'
 import { SuggestionService } from '@/services/SuggestionService.js'
 import { useAuthorStore } from '@/stores/author.js'
-import { useFcaStore } from '@/stores/fca.js'
+import { useConceptStore } from '@/stores/concept.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useQueueStore } from '@/stores/queue.js'
 import { useSessionStore } from '@/stores/session.js'
@@ -16,7 +16,7 @@ export function useAppState() {
   const sessionStore = useSessionStore()
   const interfaceStore = useInterfaceStore()
   const authorStore = useAuthorStore()
-  const fcaStore = useFcaStore()
+  const conceptStore = useConceptStore()
   const queueStore = useQueueStore()
   const { showConfirmDialog } = useModalManager()
 
@@ -39,7 +39,7 @@ export function useAppState() {
     sessionStore.clear()
     queueStore.clear()
     authorStore.selectedPublicationsAuthors = []
-    fcaStore.clear()
+    conceptStore.clear()
     // do not reset read publications as the user might to carry this information to the next session
     interfaceStore.clear()
     // Network will naturally clear when it detects empty state, no need for expensive replot
@@ -137,9 +137,9 @@ export function useAppState() {
 
     updateScores()
 
-    // Apply FCA concepts to suggested publications if concepts exist
-    if (fcaStore.hasConcepts && sessionStore.suggestedPublications.length > 0) {
-      fcaStore.assignConceptTagsToPublications(sessionStore.suggestedPublications)
+    // Apply concepts to suggested publications if concepts exist
+    if (conceptStore.hasConcepts && sessionStore.suggestedPublications.length > 0) {
+      conceptStore.assignConceptTagsToPublications(sessionStore.suggestedPublications)
     }
   }
 
@@ -287,12 +287,12 @@ export function useAppState() {
       // Mark the newly added publications (only if session wasn't empty before)
       sessionStore.markPublicationsAsNewlyAdded(newlyAddedDois, wasSessionEmpty)
 
-      // Apply FCA concepts to newly added selected publications if concepts exist
-      if (fcaStore.hasConcepts) {
+      // Apply concepts to newly added selected publications if concepts exist
+      if (conceptStore.hasConcepts) {
         const newlyAddedPublications = sessionStore.selectedPublications.filter((pub) =>
           newlyAddedDois.includes(pub.doi)
         )
-        fcaStore.assignConceptTagsToPublications(newlyAddedPublications)
+        conceptStore.assignConceptTagsToPublications(newlyAddedPublications)
       }
     }
     await updateSuggestions()
@@ -318,12 +318,12 @@ export function useAppState() {
     // Mark the newly added publications (only if session wasn't empty before)
     sessionStore.markPublicationsAsNewlyAdded(dois, wasSessionEmpty)
 
-    // Apply FCA concepts to newly added selected publications if concepts exist
-    if (fcaStore.hasConcepts) {
+    // Apply concepts to newly added selected publications if concepts exist
+    if (conceptStore.hasConcepts) {
       const newlyAddedPublications = sessionStore.selectedPublications.filter((pub) =>
         dois.includes(pub.doi)
       )
-      fcaStore.assignConceptTagsToPublications(newlyAddedPublications)
+      conceptStore.assignConceptTagsToPublications(newlyAddedPublications)
     }
 
     await updateSuggestions()

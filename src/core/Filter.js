@@ -57,14 +57,14 @@ export default class Filter {
   matchesTag(publication) {
     if (!this.tags || this.tags.length === 0) return true
     return this.tags.some((tag) => {
-      // Handle FCA concept tags (fcaConcept1, fcaConcept2, etc.)
-      if (tag.startsWith('fcaConcept')) {
-        if (!publication.fcaConcepts || publication.fcaConcepts.length === 0) {
+      // Handle concept tags (concept1, concept2, etc.)
+      if (tag.startsWith('concept')) {
+        if (!publication.concepts || publication.concepts.length === 0) {
           return false
         }
-        // Extract concept identifier from tag (e.g., "fcaConceptC1" -> "C1")
-        const conceptId = tag.replace('fcaConcept', '')
-        return publication.fcaConcepts.some((conceptName) => {
+        // Extract concept identifier from tag (e.g., "conceptC1" -> "C1")
+        const conceptId = tag.replace('concept', '')
+        return publication.concepts.some((conceptName) => {
           // Handle both legacy number format and "C1 - TERM" format
           if (typeof conceptName === 'number') {
             return `${conceptName}` === conceptId

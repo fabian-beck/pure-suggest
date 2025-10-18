@@ -75,17 +75,17 @@ function tokenize(text) {
 }
 
 /**
- * Service for computing Formal Concept Analysis (FCA) on selected publications
- * Groups publications based on shared boost keywords
+ * Service for computing concepts on selected publications
+ * Groups publications based on shared boost keywords and citations
  */
-export class FCAService {
+export class ConceptService {
   /**
-   * Computes all formal concepts from publications and keywords
+   * Computes all concepts from publications and keywords
    * @param {Array} publications - Array of publication objects
    * @param {string[]} boostKeywords - Array of boost keyword strings
-   * @returns {Array} Array of formal concepts
+   * @returns {Array} Array of concepts
    */
-  static computeFormalConcepts(publications, boostKeywords) {
+  static computeConcepts(publications, boostKeywords) {
     if (!publications || publications.length === 0) {
       return []
     }
@@ -98,7 +98,7 @@ export class FCAService {
       return []
     }
 
-    return this._extractFormalConcepts(context)
+    return this._extractConcepts(context)
   }
 
   /**
@@ -173,12 +173,12 @@ export class FCAService {
   }
 
   /**
-   * Extracts all formal concepts using FCA algorithm
+   * Extracts all concepts using formal concept analysis algorithm
    * @private
    * @param {Object} context - Context object with publications, attributes, and matrix
-   * @returns {Array} Array of formal concepts
+   * @returns {Array} Array of concepts
    */
-  static _extractFormalConcepts(context) {
+  static _extractConcepts(context) {
     const concepts = []
     const { publications, attributes, matrix } = context
 
@@ -192,7 +192,7 @@ export class FCAService {
       // Find all attributes shared by these publications (intent)
       const intent = this._computeIntent(extent, publications, attributes, matrix)
 
-      // Check if this is a formal concept (closure property)
+      // Check if this is a concept (closure property)
       if (this._isEqualSet(attributeSet, intent)) {
         concepts.push({
           publications: extent.sort(),
@@ -201,7 +201,7 @@ export class FCAService {
       }
     })
 
-    // Remove duplicate concepts
+    // Remove duplicates
     return this._removeDuplicateConcepts(concepts)
   }
 
@@ -420,7 +420,7 @@ export class FCAService {
   /**
    * Assigns concept tags to publications based on their membership in concepts
    * @param {Array} publications - Array of publication objects to tag
-   * @param {Array} concepts - Array of formal concepts (sorted by importance)
+   * @param {Array} concepts - Array of concepts (sorted by importance)
    * @returns {Map} Map of DOI to array of concept names
    */
   static assignConceptTags(publications, concepts) {
@@ -458,11 +458,11 @@ export class FCAService {
     publications.forEach((publication) => {
       const conceptNames = tagMap.get(publication.doi) || []
       if (conceptNames.length > 0) {
-        publication.fcaConcepts = conceptNames
-        publication.fcaConceptMetadata = termsMap.get(publication.doi) || new Map()
+        publication.concepts = conceptNames
+        publication.conceptMetadata = termsMap.get(publication.doi) || new Map()
       } else {
-        publication.fcaConcepts = null
-        publication.fcaConceptMetadata = null
+        publication.concepts = null
+        publication.conceptMetadata = null
       }
     })
 
@@ -555,13 +555,13 @@ export class FCAService {
   }
 
   /**
-   * Logs formal concepts to console with TF-IDF based descriptive terms
-   * @param {Array} concepts - Array of formal concepts
+   * Logs concepts to console with TF-IDF based descriptive terms
+   * @param {Array} concepts - Array of concepts
    * @param {Array} allPublications - All publication objects
    */
-  static logFormalConcepts(concepts, allPublications = []) {
+  static logConcepts(concepts, allPublications = []) {
     if (!concepts || concepts.length === 0) {
-      console.log('[FCA] No formal concepts found.')
+      console.log('[Concepts] No concepts found.')
       return
     }
 
@@ -572,9 +572,9 @@ export class FCAService {
 
     // Update header to indicate if showing subset
     if (totalCount > 10) {
-      console.log(`\n[FCA] Formal Concept Analysis Results: Top 10 concepts (${totalCount} total)`)
+      console.log(`\n[Concepts] Concept Analysis Results: Top 10 concepts (${totalCount} total)`)
     } else {
-      console.log(`\n[FCA] Formal Concept Analysis Results: ${totalCount} concepts found`)
+      console.log(`\n[Concepts] Concept Analysis Results: ${totalCount} concepts found`)
     }
 
     console.log('═'.repeat(80))

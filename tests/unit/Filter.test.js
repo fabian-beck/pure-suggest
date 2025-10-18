@@ -239,60 +239,60 @@ describe('Filter', () => {
       expect(filter.matchesTag(mockPublication)).toBe(false)
     })
 
-    describe('FCA concept tags', () => {
-      it('should return true when publication has matching FCA concept (string format)', () => {
-        mockPublication.fcaConcepts = ['C1 - VISUAL', 'C2 - DATA']
-        filter.tags = ['fcaConceptC1']
+    describe('concept tags', () => {
+      it('should return true when publication has matching concept (string format)', () => {
+        mockPublication.concepts = ['C1 - VISUAL', 'C2 - DATA']
+        filter.tags = ['conceptC1']
         expect(filter.matchesTag(mockPublication)).toBe(true)
       })
 
-      it('should return true when publication has matching FCA concept (number format)', () => {
-        mockPublication.fcaConcepts = [1, 2]
-        filter.tags = ['fcaConcept1']
+      it('should return true when publication has matching concept (number format)', () => {
+        mockPublication.concepts = [1, 2]
+        filter.tags = ['concept1']
         expect(filter.matchesTag(mockPublication)).toBe(true)
       })
 
-      it('should return false when publication does not have matching FCA concept', () => {
-        mockPublication.fcaConcepts = ['C1 - VISUAL', 'C2 - DATA']
-        filter.tags = ['fcaConceptC3']
+      it('should return false when publication does not have matching concept', () => {
+        mockPublication.concepts = ['C1 - VISUAL', 'C2 - DATA']
+        filter.tags = ['conceptC3']
         expect(filter.matchesTag(mockPublication)).toBe(false)
       })
 
-      it('should return false when publication has no FCA concepts', () => {
-        mockPublication.fcaConcepts = null
-        filter.tags = ['fcaConceptC1']
+      it('should return false when publication has no concepts', () => {
+        mockPublication.concepts = null
+        filter.tags = ['conceptC1']
         expect(filter.matchesTag(mockPublication)).toBe(false)
       })
 
-      it('should return false when publication has empty FCA concepts array', () => {
-        mockPublication.fcaConcepts = []
-        filter.tags = ['fcaConceptC1']
+      it('should return false when publication has empty concepts array', () => {
+        mockPublication.concepts = []
+        filter.tags = ['conceptC1']
         expect(filter.matchesTag(mockPublication)).toBe(false)
       })
 
-      it('should return true when publication has at least one matching FCA concept', () => {
-        mockPublication.fcaConcepts = ['C1 - VISUAL', 'C2 - DATA']
-        filter.tags = ['fcaConceptC1', 'fcaConceptC3']
+      it('should return true when publication has at least one matching concept', () => {
+        mockPublication.concepts = ['C1 - VISUAL', 'C2 - DATA']
+        filter.tags = ['conceptC1', 'conceptC3']
         expect(filter.matchesTag(mockPublication)).toBe(true)
       })
 
-      it('should match FCA concept with complex name format', () => {
-        mockPublication.fcaConcepts = ['C1 - NEUROMORPHIC COMPUTING']
-        filter.tags = ['fcaConceptC1']
+      it('should match concept with complex name format', () => {
+        mockPublication.concepts = ['C1 - NEUROMORPHIC COMPUTING']
+        filter.tags = ['conceptC1']
         expect(filter.matchesTag(mockPublication)).toBe(true)
       })
 
-      it('should work with mixed tag types (regular and FCA)', () => {
-        mockPublication.fcaConcepts = ['C1 - VISUAL']
+      it('should work with mixed tag types (regular and concept)', () => {
+        mockPublication.concepts = ['C1 - VISUAL']
         mockPublication.someTag = true
-        filter.tags = ['fcaConceptC1', 'someTag']
+        filter.tags = ['conceptC1', 'someTag']
         expect(filter.matchesTag(mockPublication)).toBe(true)
       })
 
-      it('should not match when only FCA tag is set but publication does not have it', () => {
-        mockPublication.fcaConcepts = ['C2 - DATA']
+      it('should not match when only concept tag is set but publication does not have it', () => {
+        mockPublication.concepts = ['C2 - DATA']
         mockPublication.someTag = true
-        filter.tags = ['fcaConceptC1']
+        filter.tags = ['conceptC1']
         expect(filter.matchesTag(mockPublication)).toBe(false)
       })
     })

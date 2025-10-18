@@ -161,12 +161,12 @@ function buildConceptTermsTooltip(topTerms) {
 }
 
 function getTagTooltip(tagValue, tagName) {
-  // FCA concept tags have a different tooltip
-  if (tagValue.startsWith('fcaConcept')) {
-    let tooltip = `Member of FCA concept ${tagName}.`
+  // Concept tags have a different tooltip
+  if (tagValue.startsWith('concept')) {
+    let tooltip = `Member of concept ${tagName}.`
 
     const metadata =
-      props.publication.fcaConceptMetadata?.get(tagName)
+      props.publication.conceptMetadata?.get(tagName)
 
     if (metadata) {
       tooltip += buildConceptAttributesTooltip(metadata.attributes)
@@ -196,8 +196,8 @@ function getTagIcon(tagValue) {
     isUnnoted: 'mdi-alert-box-outline'
   }
 
-  // FCA concept tags use group icon
-  if (tagValue.startsWith('fcaConcept')) {
+  // Concept tags use group icon
+  if (tagValue.startsWith('concept')) {
     return 'mdi-group'
   }
 
