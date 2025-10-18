@@ -173,7 +173,9 @@ export class ConceptService {
   }
 
   /**
-   * Extracts all concepts using formal concept analysis algorithm
+   * Extracts all concepts using NextClosure algorithm (Ganter's algorithm)
+   * More efficient than power set approach - O(|L| × n² × m) instead of O(2^n × m)
+   * where |L| = number of concepts (typically << 2^n)
    * @private
    * @param {Object} context - Context object with publications, attributes, and matrix
    * @returns {Array} Array of concepts
@@ -182,27 +184,89 @@ export class ConceptService {
     const concepts = []
     const { publications, attributes, matrix } = context
 
-    // Generate all possible attribute subsets (power set)
-    const attributeSubsets = this._powerSet(attributes)
+    if (attributes.length === 0) {
+      return concepts
+    }
 
-    attributeSubsets.forEach((attributeSet) => {
-      // Find publications that have all attributes in the set (extent)
-      const extent = this._computeExtent(attributeSet, publications, attributes, matrix)
+    // Start with empty intent (corresponds to top concept - all publications)
+    let currentIntent = []
 
-      // Find all attributes shared by these publications (intent)
-      const intent = this._computeIntent(extent, publications, attributes, matrix)
+    while (currentIntent !== null) {
+      // Compute closure of current intent
+      const extent = this._computeExtent(currentIntent, publications, attributes, matrix)
+      const closure = this._computeIntent(extent, publications, attributes, matrix)
 
-      // Check if this is a concept (closure property)
-      if (this._isEqualSet(attributeSet, intent)) {
-        concepts.push({
-          publications: extent.sort(),
-          attributes: attributeSet.sort()
+      // Add concept (intent is already closed by construction of NextClosure)
+      concepts.push({
+        publications: extent.slice().sort(),
+        attributes: closure.slice().sort()
+      })
+
+      // Generate next intent in lexicographic order
+      currentIntent = this._nextClosure(currentIntent, closure, attributes, publications, matrix)
+    }
+
+    return concepts
+  }
+
+  /**
+   * Computes the next closure in lexicographic order (NextClosure algorithm step)
+   * @private
+   * @param {Array} current - Current intent (attribute set)
+   * @param {Array} closure - Closure of current intent
+   * @param {Array} attributes - All attributes
+   * @param {Array} publications - All publications
+   * @param {Array} matrix - Binary context matrix
+   * @returns {Array|null} Next intent, or null if no more concepts exist
+   */
+  static _nextClosure(current, closure, attributes, publications, matrix) {
+    const n = attributes.length
+
+    // Try to extend intent by adding attributes in reverse lexicographic order
+    for (let i = n - 1; i >= 0; i--) {
+      const attr = attributes[i]
+
+      // Check if attribute is already in closure
+      if (closure.includes(attr)) {
+        // Remove this attribute and all attributes after it
+        current = current.filter((a) => {
+          const aIndex = attributes.indexOf(a)
+          return aIndex < i
         })
-      }
-    })
+      } else {
+        // Try adding this attribute
+        const candidate = [...current, attr].sort((a, b) => {
+          return attributes.indexOf(a) - attributes.indexOf(b)
+        })
 
-    // Remove duplicates
-    return this._removeDuplicateConcepts(concepts)
+        // Compute closure of candidate
+        const candidateExtent = this._computeExtent(candidate, publications, attributes, matrix)
+        const candidateClosure = this._computeIntent(
+          candidateExtent,
+          publications,
+          attributes,
+          matrix
+        )
+
+        // Check if this is the next closure (canonical test)
+        // A set is canonical if adding attribute i doesn't introduce any attribute j < i
+        let isCanonical = true
+        for (const closedAttr of candidateClosure) {
+          const closedIndex = attributes.indexOf(closedAttr)
+          if (closedIndex < i && !candidate.includes(closedAttr)) {
+            isCanonical = false
+            break
+          }
+        }
+
+        if (isCanonical) {
+          return candidateClosure
+        }
+      }
+    }
+
+    // No more concepts
+    return null
   }
 
   /**
@@ -251,58 +315,6 @@ export class ConceptService {
     return intent
   }
 
-  /**
-   * Generates power set (all subsets) of an array
-   * @private
-   */
-  static _powerSet(array) {
-    const result = [[]]
-
-    for (const element of array) {
-      const length = result.length
-      for (let i = 0; i < length; i++) {
-        result.push([...result[i], element])
-      }
-    }
-
-    return result
-  }
-
-  /**
-   * Checks if two sets are equal
-   * @private
-   */
-  static _isEqualSet(set1, set2) {
-    if (set1.length !== set2.length) return false
-
-    const sorted1 = [...set1].sort()
-    const sorted2 = [...set2].sort()
-
-    return sorted1.every((val, index) => val === sorted2[index])
-  }
-
-  /**
-   * Removes duplicate concepts
-   * @private
-   */
-  static _removeDuplicateConcepts(concepts) {
-    const seen = new Set()
-    const unique = []
-
-    concepts.forEach((concept) => {
-      const key = JSON.stringify({
-        pubs: concept.publications.sort(),
-        attrs: concept.attributes.sort()
-      })
-
-      if (!seen.has(key)) {
-        seen.add(key)
-        unique.push(concept)
-      }
-    })
-
-    return unique
-  }
 
   /**
    * Sorts concepts using greedy algorithm based on remaining importance
