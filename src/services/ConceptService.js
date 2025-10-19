@@ -463,11 +463,28 @@ export class ConceptService {
       const topScore = topTerms[0].score
       const tiedTerms = topTerms.filter((t) => Math.abs(t.score - topScore) < 0.0001)
 
-      if (tiedTerms.length > 1) {
-        // Multiple terms with same score - too arbitrary to pick one
+      if (tiedTerms.length === 2 && topTerms.length >= 3) {
+        // Two terms with same/similar score - check if third is clearly different
+        const thirdScore = topTerms[2].score
+        const scoreDiff = topScore - thirdScore
+        const relativeGap = topScore > 0 ? scoreDiff / topScore : 0
+
+        // Use both terms if third term has clearly different score (>10% gap or absolute diff > 0.5)
+        if (relativeGap > 0.1 || scoreDiff > 0.5) {
+          const combinedLabel = `${tiedTerms[0].term.toUpperCase()}+${tiedTerms[1].term.toUpperCase()}`
+          nameMap.set(index, {
+            name: `C${index + 1} - ${combinedLabel}`,
+            topTerms: top10
+          })
+        } else {
+          // Third term is also similar - too arbitrary
+          nameMap.set(index, { name: `C${index + 1}`, topTerms: top10 })
+        }
+      } else if (tiedTerms.length > 2) {
+        // More than two terms with same score - too arbitrary to pick
         nameMap.set(index, { name: `C${index + 1}`, topTerms: top10 })
       } else {
-        // Clear winner
+        // Clear winner (single top term)
         nameMap.set(index, {
           name: `C${index + 1} - ${topTerms[0].term.toUpperCase()}`,
           topTerms: top10
