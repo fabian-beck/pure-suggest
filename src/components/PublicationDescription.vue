@@ -129,10 +129,11 @@ function isTagFiltered(tagValue) {
 function buildConceptAttributesTooltip(attributes) {
   if (!attributes || attributes.length === 0) return ''
 
-  const keywords = attributes.filter((attr) => !attr.startsWith('10.'))
-  const citationDois = attributes.filter((attr) => attr.startsWith('10.'))
+  const keywords = attributes.filter((attr) => attr.type === 'keyword').map((attr) => attr.value)
+  const citationDois = attributes.filter((attr) => attr.type === 'citation').map((attr) => attr.value)
+  const authors = attributes.filter((attr) => attr.type === 'author').map((attr) => attr.value)
 
-  if (keywords.length === 0 && citationDois.length === 0) return ''
+  if (keywords.length === 0 && citationDois.length === 0 && authors.length === 0) return ''
 
   let section = '<br/><br/>Defining properties:'
   if (keywords.length > 0) {
@@ -146,6 +147,9 @@ function buildConceptAttributesTooltip(attributes) {
       const title = publication?.title || doi
       section += `<br/>• ${title}`
     })
+  }
+  if (authors.length > 0) {
+    section += `<br/>Authors: ${authors.join(', ')}`
   }
   return section
 }
