@@ -426,12 +426,14 @@ export class ConceptService {
   }
 
   /**
-   * Generates concept names and metadata from TF-IDF terms
+   * Generates concept names and metadata from term scores
    * @param {Array} concepts - Array of formal concepts
    * @param {Array} allPublications - All publication objects
+   * @param {Object} options - Options for term computation
+   * @param {boolean} options.useSimpleMetric - Use simple exclusivity metric instead of TF-IDF
    * @returns {Map} Map of concept index to {name, topTerms} object
    */
-  static generateConceptNames(concepts, allPublications) {
+  static generateConceptNames(concepts, allPublications, options = {}) {
     const nameMap = new Map()
 
     if (!allPublications || allPublications.length === 0) {
@@ -446,7 +448,8 @@ export class ConceptService {
       const topTerms = this.computeConceptTerms(
         concept.publications,
         allPublications,
-        concept.attributes
+        concept.attributes,
+        options
       )
 
       const top10 = topTerms.slice(0, 10)
@@ -586,13 +589,17 @@ export class ConceptService {
   }
 
   /**
-   * Computes TF-IDF scores for terms in a concept's publications
+   * Computes term scores for a concept using either TF-IDF or simple exclusivity
    * @param {Array} conceptPublications - Array of publication DOIs in the concept
    * @param {Array} allPublications - All publication objects
    * @param {Array} conceptAttributes - Array of attributes (keywords and citation DOIs) for the concept
-   * @returns {Array} Array of {term, score, tf, df, idf, totalDocs} objects sorted by score descending
+   * @param {Object} options - Options for computation
+   * @param {boolean} options.useSimpleMetric - Use simple exclusivity (in-concept - out-of-concept) instead of TF-IDF
+   * @param {boolean} options.boostKeywordMatches - Double the count for keyword matches (default: true)
+   * @returns {Array} Array of {term, score, ...metadata} objects sorted by score descending
    */
-  static computeConceptTerms(conceptPublications, allPublications, conceptAttributes = []) {
+  static computeConceptTerms(conceptPublications, allPublications, conceptAttributes = [], options = {}) {
+    const { useSimpleMetric = false, boostKeywordMatches = true } = options
     // Build a map of DOI to publication for quick lookup
     const pubMap = new Map(allPublications.map((pub) => [pub.doi, pub]))
 
@@ -630,25 +637,27 @@ export class ConceptService {
     // Tokenize all titles (bag of words)
     const conceptTokens = allTitles.flatMap((title) => tokenize(title))
 
-    // Count term frequency in concept, doubling frequency for keyword matches
+    // Count term frequency in concept, optionally doubling frequency for keyword matches
     // Match using substring logic similar to findKeywordMatches
     const termFreq = new Map()
     conceptTokens.forEach((term) => {
       let isKeywordMatch = false
 
-      // Check if this term matches any keyword alternative
-      for (const keyword of keywordAlternatives) {
-        if (keyword.length <= 3) {
-          // Word boundary match for short keywords - check if term starts with keyword
-          if (term.toUpperCase().startsWith(keyword)) {
-            isKeywordMatch = true
-            break
-          }
-        } else {
-          // Substring match for longer keywords
-          if (term.toUpperCase().includes(keyword)) {
-            isKeywordMatch = true
-            break
+      if (boostKeywordMatches) {
+        // Check if this term matches any keyword alternative
+        for (const keyword of keywordAlternatives) {
+          if (keyword.length <= 3) {
+            // Word boundary match for short keywords - check if term starts with keyword
+            if (term.toUpperCase().startsWith(keyword)) {
+              isKeywordMatch = true
+              break
+            }
+          } else {
+            // Substring match for longer keywords
+            if (term.toUpperCase().includes(keyword)) {
+              isKeywordMatch = true
+              break
+            }
           }
         }
       }
@@ -657,34 +666,62 @@ export class ConceptService {
       termFreq.set(term, (termFreq.get(term) || 0) + increment)
     })
 
-    // Merge similar terms BEFORE computing TF-IDF
+    // Merge similar terms BEFORE computing scores
     const mergedTermFreq = this._mergeTermFrequencies(termFreq)
 
-    // Count document frequency across all publications (also needs merging)
-    const docFreqRaw = new Map()
-    allPublications.forEach((pub) => {
-      const tokens = new Set(tokenize(pub.title))
-      tokens.forEach((term) => {
-        docFreqRaw.set(term, (docFreqRaw.get(term) || 0) + 1)
+    if (useSimpleMetric) {
+      // Simple exclusivity metric: count in concept minus count outside concept
+      const conceptDois = new Set(conceptPublications)
+      const outsidePublications = allPublications.filter((pub) => !conceptDois.has(pub.doi))
+
+      // Count term frequency outside the concept
+      const outsideTermFreqRaw = new Map()
+      outsidePublications.forEach((pub) => {
+        const tokens = tokenize(pub.title)
+        tokens.forEach((term) => {
+          outsideTermFreqRaw.set(term, (outsideTermFreqRaw.get(term) || 0) + 1)
+        })
       })
-    })
 
-    // Merge document frequencies
-    const docFreq = this._mergeTermFrequencies(docFreqRaw)
+      const mergedOutsideTermFreq = this._mergeTermFrequencies(outsideTermFreqRaw)
 
-    const totalDocs = allPublications.length
+      // Compute exclusivity score: inConcept - outsideConcept
+      const exclusivityScores = []
+      mergedTermFreq.forEach((inCount, term) => {
+        const outCount = mergedOutsideTermFreq.get(term) || 0
+        const score = inCount - outCount
+        exclusivityScores.push({ term, score, inCount, outCount })
+      })
 
-    // Compute TF-IDF for each merged term with detailed metadata
-    const tfidfScores = []
-    mergedTermFreq.forEach((tf, term) => {
-      const df = docFreq.get(term) || 1
-      const idf = Math.log(totalDocs / df)
-      const tfidf = tf * idf
-      tfidfScores.push({ term, score: tfidf, tf, df, idf, totalDocs })
-    })
+      return exclusivityScores.sort((a, b) => b.score - a.score)
+    } else {
+      // TF-IDF metric
+      // Count document frequency across all publications (also needs merging)
+      const docFreqRaw = new Map()
+      allPublications.forEach((pub) => {
+        const tokens = new Set(tokenize(pub.title))
+        tokens.forEach((term) => {
+          docFreqRaw.set(term, (docFreqRaw.get(term) || 0) + 1)
+        })
+      })
 
-    // Sort by score descending
-    return tfidfScores.sort((a, b) => b.score - a.score)
+      // Merge document frequencies
+      const docFreq = this._mergeTermFrequencies(docFreqRaw)
+
+      const totalDocs = allPublications.length
+
+      // Compute TF-IDF for each merged term with detailed metadata
+      const tfidfScores = []
+      mergedTermFreq.forEach((tf, term) => {
+        const df = docFreq.get(term) || 1
+        const idf = Math.log(totalDocs / df)
+        const tfidf = tf * idf
+        tfidfScores.push({ term, score: tfidf, tf, df, idf, totalDocs })
+      })
+
+      // Sort by score descending
+      return tfidfScores.sort((a, b) => b.score - a.score)
+    }
   }
 
   /**

@@ -15,6 +15,8 @@ const { updateScores } = useAppState()
 const includeKeywords = ref(true)
 const includeCitations = ref(true)
 const includeAuthors = ref(true)
+const useSimpleMetric = ref(true)
+const boostKeywordMatches = ref(false)
 const isEnabled = ref(false)
 
 const conceptsPreview = ref([])
@@ -111,13 +113,22 @@ function getConceptTopTerms(index) {
 }
 
 function getTermTooltip(term) {
-  if (!term.tf || !term.idf) return `${term.term}: <b>${term.score.toFixed(2)}</b>`
+  const boostNote = boostKeywordMatches.value ? ' (keyword matches count double)' : ''
 
-  return `TF-IDF score of <b>${term.score.toFixed(2)} = ${term.tf.toFixed(2)} &middot; ${term.idf.toFixed(2)}</b>, ` +
-         `where TF (term frequency) = <b>${term.tf.toFixed(2)}</b> occurrences in concept titles ` +
-         `(keyword matches count double), ` +
-         `and IDF (inverse document frequency) = <b>ln(${term.totalDocs} / ${term.df}) = ${term.idf.toFixed(2)}</b> ` +
-         `(term appears in <b>${term.df}</b> of <b>${term.totalDocs}</b> total publications)`
+  if (term.inCount !== undefined && term.outCount !== undefined) {
+    // Simple metric
+    return `Exclusivity score of <b>${term.score} = ${term.inCount} - ${term.outCount}</b>, ` +
+           `where <b>${term.inCount}</b> occurrences in concept titles${boostNote} ` +
+           `and <b>${term.outCount}</b> occurrences outside concept`
+  } else if (term.tf && term.idf) {
+    // TF-IDF metric
+    return `TF-IDF score of <b>${term.score.toFixed(2)} = ${term.tf.toFixed(2)} &middot; ${term.idf.toFixed(2)}</b>, ` +
+           `where TF (term frequency) = <b>${term.tf.toFixed(2)}</b> occurrences in concept titles${boostNote}, ` +
+           `and IDF (inverse document frequency) = <b>ln(${term.totalDocs} / ${term.df}) = ${term.idf.toFixed(2)}</b> ` +
+           `(term appears in <b>${term.df}</b> of <b>${term.totalDocs}</b> total publications)`
+  } else {
+    return `${term.term}: <b>${term.score.toFixed(2)}</b>`
+  }
 }
 
 function computeConcepts() {
@@ -135,7 +146,11 @@ function computeConcepts() {
   sortedConceptsPreview.value = ConceptService.sortConceptsByImportance(concepts)
   conceptMetadataPreview.value = ConceptService.generateConceptNames(
     sortedConceptsPreview.value,
-    publications
+    publications,
+    {
+      useSimpleMetric: useSimpleMetric.value,
+      boostKeywordMatches: boostKeywordMatches.value
+    }
   )
 }
 
@@ -240,6 +255,27 @@ watch(
               hide-details
             ></v-checkbox>
           </div>
+        </div>
+
+        <div class="mb-3">
+          <h3 class="is-size-6 mb-2"><b>Term ranking metric:</b></h3>
+          <div class="d-flex flex-wrap ga-2">
+            <v-checkbox
+              v-model="useSimpleMetric"
+              label="Use simple exclusivity (in-concept - out-of-concept)"
+              density="compact"
+              hide-details
+            ></v-checkbox>
+            <v-checkbox
+              v-model="boostKeywordMatches"
+              label="Boost keyword matches (count double)"
+              density="compact"
+              hide-details
+            ></v-checkbox>
+          </div>
+          <p v-if="!useSimpleMetric" class="is-size-7 mt-1 text-grey">
+            Using TF-IDF metric (default)
+          </p>
         </div>
 
         <div class="d-flex ga-2">
@@ -363,7 +399,7 @@ watch(
                   <div v-if="getConceptTopTerms(index).length > 0" class="is-size-7">
                     <span class="attribute-label">Top terms:</span>
                     <v-chip
-                      v-for="term in getConceptTopTerms(index).slice(0, 5)"
+                      v-for="term in getConceptTopTerms(index).slice(0, 10)"
                       :key="term.term"
                       v-tippy="getTermTooltip(term)"
                       size="small"
