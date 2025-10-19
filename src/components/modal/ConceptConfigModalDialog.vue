@@ -112,6 +112,16 @@ function getConceptTopTerms(index) {
   return metadata?.topTerms || []
 }
 
+function formatTermScore(term) {
+  if (term.inCount !== undefined && term.outCount !== undefined) {
+    // Simple metric - use integer
+    return term.score.toString()
+  } else {
+    // TF-IDF metric - use 2 decimals
+    return term.score.toFixed(2)
+  }
+}
+
 function getTermTooltip(term) {
   const boostNote = boostKeywordMatches.value ? ' (keyword matches count double)' : ''
 
@@ -406,7 +416,7 @@ watch(
                       label
                       class="ma-1 term-chip"
                     >
-                      {{ term.term }} ({{ term.score.toFixed(2) }})
+                      {{ term.term.toUpperCase() }} ({{ formatTermScore(term) }})
                     </v-chip>
                   </div>
                 </div>
