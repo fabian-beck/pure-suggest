@@ -110,6 +110,16 @@ function getConceptTopTerms(index) {
   return metadata?.topTerms || []
 }
 
+function getTermTooltip(term) {
+  if (!term.tf || !term.idf) return `${term.term}: <b>${term.score.toFixed(2)}</b>`
+
+  return `TF-IDF score of <b>${term.score.toFixed(2)} = ${term.tf.toFixed(2)} &middot; ${term.idf.toFixed(2)}</b>, ` +
+         `where TF (term frequency) = <b>${term.tf.toFixed(2)}</b> occurrences in concept titles ` +
+         `(keyword matches count double), ` +
+         `and IDF (inverse document frequency) = <b>ln(${term.totalDocs} / ${term.df}) = ${term.idf.toFixed(2)}</b> ` +
+         `(term appears in <b>${term.df}</b> of <b>${term.totalDocs}</b> total publications)`
+}
+
 function computeConcepts() {
   if (!canCompute.value) return
 
@@ -355,6 +365,7 @@ watch(
                     <v-chip
                       v-for="term in getConceptTopTerms(index).slice(0, 5)"
                       :key="term.term"
+                      v-tippy="getTermTooltip(term)"
                       size="small"
                       label
                       class="ma-1 term-chip"

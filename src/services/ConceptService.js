@@ -590,7 +590,7 @@ export class ConceptService {
    * @param {Array} conceptPublications - Array of publication DOIs in the concept
    * @param {Array} allPublications - All publication objects
    * @param {Array} conceptAttributes - Array of attributes (keywords and citation DOIs) for the concept
-   * @returns {Array} Array of {term, score} objects sorted by score descending
+   * @returns {Array} Array of {term, score, tf, df, idf, totalDocs} objects sorted by score descending
    */
   static computeConceptTerms(conceptPublications, allPublications, conceptAttributes = []) {
     // Build a map of DOI to publication for quick lookup
@@ -674,13 +674,13 @@ export class ConceptService {
 
     const totalDocs = allPublications.length
 
-    // Compute TF-IDF for each merged term
+    // Compute TF-IDF for each merged term with detailed metadata
     const tfidfScores = []
     mergedTermFreq.forEach((tf, term) => {
       const df = docFreq.get(term) || 1
       const idf = Math.log(totalDocs / df)
       const tfidf = tf * idf
-      tfidfScores.push({ term, score: tfidf })
+      tfidfScores.push({ term, score: tfidf, tf, df, idf, totalDocs })
     })
 
     // Sort by score descending
