@@ -18,7 +18,7 @@ export const useConceptStore = defineStore('concept', {
   actions: {
     computeAndStoreConcepts(selectedPublications, boostKeywords) {
       this.concepts = ConceptService.computeConcepts(selectedPublications, boostKeywords)
-      this.sortedConcepts = ConceptService.sortConceptsByImportance(this.concepts)
+      this.sortedConcepts = ConceptService.sortConceptsByImportance(this.concepts, selectedPublications.length)
       this.conceptMetadata = ConceptService.generateConceptNames(
         this.sortedConcepts,
         selectedPublications

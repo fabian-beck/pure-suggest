@@ -361,19 +361,26 @@ export class ConceptService {
    * Sorts concepts using greedy algorithm based on remaining importance
    * Iteratively picks concepts that cover the most uncovered publications
    * @param {Array} concepts - Array of formal concepts
+   * @param {number} totalPublications - Total number of publications for calculating max size
    * @returns {Array} Sorted array with importance and remaining importance
    */
-  static sortConceptsByImportance(concepts) {
+  static sortConceptsByImportance(concepts, totalPublications = 0) {
     if (!concepts || concepts.length === 0) {
       return []
     }
 
     const minPublications = 3
+    const maxPublications = totalPublications > 0 ? Math.floor(totalPublications / 2) : Infinity
 
-    // Filter out concepts with fewer than minimum publications and calculate initial importance
+    // Filter out concepts with fewer than minimum publications or more than half
     // Also skip concepts with 0 attributes (importance = 0)
     const allConcepts = concepts
-      .filter((concept) => concept.publications.length >= minPublications && concept.attributes.length > 0)
+      .filter(
+        (concept) =>
+          concept.publications.length >= minPublications &&
+          concept.publications.length <= maxPublications &&
+          concept.attributes.length > 0
+      )
       .map((concept) => ({
         ...concept,
         importance: concept.publications.length * concept.attributes.length,
@@ -504,7 +511,7 @@ export class ConceptService {
     const termsMap = new Map()
 
     // Sort concepts by importance
-    const sortedConcepts = this.sortConceptsByImportance(concepts)
+    const sortedConcepts = this.sortConceptsByImportance(concepts, publications.length)
 
     // Generate concept names and metadata
     const conceptMetadata = this.generateConceptNames(sortedConcepts, publications)
@@ -751,7 +758,7 @@ export class ConceptService {
     }
 
     // Sort by importance and limit to top 10
-    const sortedConcepts = this.sortConceptsByImportance(concepts)
+    const sortedConcepts = this.sortConceptsByImportance(concepts, allPublications.length)
     const conceptsToShow = sortedConcepts.slice(0, 10)
     const totalCount = concepts.length
 

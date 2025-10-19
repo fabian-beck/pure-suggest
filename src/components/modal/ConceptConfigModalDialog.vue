@@ -153,7 +153,7 @@ function computeConcepts() {
   })
 
   conceptsPreview.value = concepts
-  sortedConceptsPreview.value = ConceptService.sortConceptsByImportance(concepts)
+  sortedConceptsPreview.value = ConceptService.sortConceptsByImportance(concepts, publications.length)
   conceptMetadataPreview.value = ConceptService.generateConceptNames(
     sortedConceptsPreview.value,
     publications,
@@ -333,8 +333,14 @@ watch(
           <v-icon size="large" class="mb-2" color="warning">mdi-filter-outline</v-icon>
           <p>
             <strong>No meaningful concepts found.</strong><br>
-            Concepts require at least 2 publications and 1 shared attribute.<br>
-            Try selecting more publications or enabling additional attribute types.
+            <template v-if="sessionStore.selectedPublicationsCount < 6">
+              You need at least <b>6 selected publications</b> to form concepts (current: {{ sessionStore.selectedPublicationsCount }}).<br>
+              Concepts require 3+ publications and must not exceed half of your selection.
+            </template>
+            <template v-else>
+              Concepts require <b>3-{{ Math.floor(sessionStore.selectedPublicationsCount / 2) }} publications</b> and <b>1+ shared attributes</b>.<br>
+              Try enabling additional attribute types or adjusting your boost keywords.
+            </template>
           </p>
         </div>
 

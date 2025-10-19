@@ -31,6 +31,30 @@ describe('Concept Store', () => {
           title: 'Visual Framework',
           citationDois: [],
           referenceDois: []
+        },
+        {
+          doi: '10.1/d',
+          title: 'Other Topic One',
+          citationDois: [],
+          referenceDois: []
+        },
+        {
+          doi: '10.1/e',
+          title: 'Other Topic Two',
+          citationDois: [],
+          referenceDois: []
+        },
+        {
+          doi: '10.1/f',
+          title: 'Other Topic Three',
+          citationDois: [],
+          referenceDois: []
+        },
+        {
+          doi: '10.1/g',
+          title: 'Other Topic Four',
+          citationDois: [],
+          referenceDois: []
         }
       ]
 
@@ -61,6 +85,30 @@ describe('Concept Store', () => {
         {
           doi: '10.1/c',
           title: 'Visual Framework',
+          citationDois: [],
+          referenceDois: []
+        },
+        {
+          doi: '10.1/e',
+          title: 'Other Topic One',
+          citationDois: [],
+          referenceDois: []
+        },
+        {
+          doi: '10.1/f',
+          title: 'Other Topic Two',
+          citationDois: [],
+          referenceDois: []
+        },
+        {
+          doi: '10.1/g',
+          title: 'Other Topic Three',
+          citationDois: [],
+          referenceDois: []
+        },
+        {
+          doi: '10.1/h',
+          title: 'Other Topic Four',
           citationDois: [],
           referenceDois: []
         }
@@ -107,6 +155,30 @@ describe('Concept Store', () => {
           title: 'Data Framework',
           citationDois: [],
           referenceDois: []
+        },
+        {
+          doi: '10.1/e',
+          title: 'Other Topic One',
+          citationDois: [],
+          referenceDois: []
+        },
+        {
+          doi: '10.1/f',
+          title: 'Other Topic Two',
+          citationDois: [],
+          referenceDois: []
+        },
+        {
+          doi: '10.1/g',
+          title: 'Other Topic Three',
+          citationDois: [],
+          referenceDois: []
+        },
+        {
+          doi: '10.1/h',
+          title: 'Other Topic Four',
+          citationDois: [],
+          referenceDois: []
         }
       ]
 
@@ -150,6 +222,30 @@ describe('Concept Store', () => {
           title: 'Visual Framework',
           citationDois: [],
           referenceDois: []
+        },
+        {
+          doi: '10.1/e',
+          title: 'Other Topic One',
+          citationDois: [],
+          referenceDois: []
+        },
+        {
+          doi: '10.1/f',
+          title: 'Other Topic Two',
+          citationDois: [],
+          referenceDois: []
+        },
+        {
+          doi: '10.1/g',
+          title: 'Other Topic Three',
+          citationDois: [],
+          referenceDois: []
+        },
+        {
+          doi: '10.1/h',
+          title: 'Other Topic Four',
+          citationDois: [],
+          referenceDois: []
         }
       ]
 
@@ -191,6 +287,30 @@ describe('Concept Store', () => {
         {
           doi: '10.1/c',
           title: 'Data Framework',
+          citationDois: [],
+          referenceDois: []
+        },
+        {
+          doi: '10.1/e',
+          title: 'Other Topic One',
+          citationDois: [],
+          referenceDois: []
+        },
+        {
+          doi: '10.1/f',
+          title: 'Other Topic Two',
+          citationDois: [],
+          referenceDois: []
+        },
+        {
+          doi: '10.1/g',
+          title: 'Other Topic Three',
+          citationDois: [],
+          referenceDois: []
+        },
+        {
+          doi: '10.1/h',
+          title: 'Other Topic Four',
           citationDois: [],
           referenceDois: []
         }
@@ -243,6 +363,30 @@ describe('Concept Store', () => {
         {
           doi: '10.1/c',
           title: 'Visual Framework',
+          citationDois: [],
+          referenceDois: []
+        },
+        {
+          doi: '10.1/d',
+          title: 'Other Topic One',
+          citationDois: [],
+          referenceDois: []
+        },
+        {
+          doi: '10.1/e',
+          title: 'Other Topic Two',
+          citationDois: [],
+          referenceDois: []
+        },
+        {
+          doi: '10.1/f',
+          title: 'Other Topic Three',
+          citationDois: [],
+          referenceDois: []
+        },
+        {
+          doi: '10.1/g',
+          title: 'Other Topic Four',
           citationDois: [],
           referenceDois: []
         }

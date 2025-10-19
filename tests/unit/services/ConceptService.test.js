@@ -400,6 +400,20 @@ describe('ConceptService', () => {
       expect(sorted[0].publications).toHaveLength(3)
     })
 
+    it('should filter out concepts with more than half of total publications', () => {
+      const concepts = [
+        { publications: ['10.1/a', '10.1/b', '10.1/c'], attributes: [{ type: 'keyword', value: 'DATA' }], importance: 0 },
+        { publications: ['10.1/a', '10.1/b', '10.1/c', '10.1/d', '10.1/e', '10.1/f'], attributes: [{ type: 'keyword', value: 'VISUAL' }], importance: 0 }
+      ]
+
+      const totalPublications = 10
+      const sorted = ConceptService.sortConceptsByImportance(concepts, totalPublications)
+
+      // Should only include concepts with at most 5 publications (half of 10)
+      expect(sorted).toHaveLength(1)
+      expect(sorted[0].publications).toHaveLength(3)
+    })
+
     it('should not mutate original array', () => {
       const concepts = [
         { publications: ['10.1/a'], attributes: [{ type: 'keyword', value: 'VISUAL' }], importance: 0 },
@@ -520,7 +534,9 @@ describe('ConceptService', () => {
         { doi: '10.1/b', concepts: null, title: 'Visual Design Patterns' },
         { doi: '10.1/c', concepts: null, title: 'Analytical Methods' },
         { doi: '10.1/d', concepts: null, title: 'Visual System' },
-        { doi: '10.1/e', concepts: null, title: 'Analytical Framework' }
+        { doi: '10.1/e', concepts: null, title: 'Analytical Framework' },
+        { doi: '10.1/f', concepts: null, title: 'Other Topic One' },
+        { doi: '10.1/g', concepts: null, title: 'Other Topic Two' }
       ]
 
       const concepts = [
@@ -550,7 +566,10 @@ describe('ConceptService', () => {
         { doi: '10.1/a', concepts: null, title: 'Visual Study' },
         { doi: '10.1/b', concepts: null, title: 'Visual Analysis' },
         { doi: '10.1/c', concepts: null, title: 'Other Topic' },
-        { doi: '10.1/d', concepts: null, title: 'Visual System' }
+        { doi: '10.1/d', concepts: null, title: 'Visual System' },
+        { doi: '10.1/e', concepts: null, title: 'Another Topic' },
+        { doi: '10.1/f', concepts: null, title: 'Different Topic' },
+        { doi: '10.1/g', concepts: null, title: 'More Topics' }
       ]
 
       const concepts = [
@@ -607,7 +626,11 @@ describe('ConceptService', () => {
       const publications = [
         { doi: '10.1/a', concepts: null, title: 'Visual Study' },
         { doi: '10.1/b', concepts: null, title: 'Visual Analysis' },
-        { doi: '10.1/c', concepts: null, title: 'Visual System' }
+        { doi: '10.1/c', concepts: null, title: 'Visual System' },
+        { doi: '10.1/d', concepts: null, title: 'Other Topic One' },
+        { doi: '10.1/e', concepts: null, title: 'Other Topic Two' },
+        { doi: '10.1/f', concepts: null, title: 'Other Topic Three' },
+        { doi: '10.1/g', concepts: null, title: 'Other Topic Four' }
       ]
 
       const concepts = [
@@ -643,7 +666,11 @@ describe('ConceptService', () => {
       const publications = [
         { doi: '10.1/a', concepts: null, title: 'Study' },
         { doi: '10.1/b', concepts: null, title: 'Research' },
-        { doi: '10.1/c', concepts: null, title: 'Analysis' }
+        { doi: '10.1/c', concepts: null, title: 'Analysis' },
+        { doi: '10.1/d', concepts: null, title: 'Other Topic One' },
+        { doi: '10.1/e', concepts: null, title: 'Other Topic Two' },
+        { doi: '10.1/f', concepts: null, title: 'Other Topic Three' },
+        { doi: '10.1/g', concepts: null, title: 'Other Topic Four' }
       ]
 
       const concepts = [
