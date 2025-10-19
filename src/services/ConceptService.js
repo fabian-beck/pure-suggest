@@ -368,9 +368,7 @@ export class ConceptService {
       return []
     }
 
-    // Determine minimum publication threshold based on total concepts
-    // For small datasets, require at least 2 publications; for larger, require 3
-    const minPublications = concepts.length <= 10 ? 2 : 3
+    const minPublications = 3
 
     // Filter out concepts with fewer than minimum publications and calculate initial importance
     // Also skip concepts with 0 attributes (importance = 0)
