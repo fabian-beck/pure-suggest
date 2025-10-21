@@ -26,6 +26,10 @@ const boostKeywordStringHtml = computed(() => {
   return html
 })
 
+const buttonColor = computed(() => {
+  return appliedBoostKeywordString.value ? 'default' : 'grey-darken-1'
+})
+
 function handleMenuInput(value) {
   if (value) {
     nextTick(() => {
@@ -76,13 +80,14 @@ function clearKeywords() {
         :icon="interfaceStore.isMobile"
         @click="handleMenuInput(true)"
         :density="interfaceStore.isMobile ? 'compact' : 'default'"
+        :color="buttonColor"
       >
         <v-icon size="18">mdi-chevron-double-up</v-icon>
         <span class="is-hidden-touch ml-2 boost-keywords-display">
           <span
             class="keywords-text"
-            v-html="boostKeywordStringHtml ? boostKeywordStringHtml : '[Set keywords]'"
-            :class="{ 'has-text-warning-dark': !boostKeywordStringHtml }"
+            v-html="boostKeywordStringHtml ? boostKeywordStringHtml : '[SET KEYWORDS]'"
+            :class="{ 'has-text-grey': !boostKeywordStringHtml }"
           ></span>
           <v-icon class="ml-2"> mdi-menu-down </v-icon>
         </span>
