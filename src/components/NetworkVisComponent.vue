@@ -193,8 +193,8 @@ export default {
     },
     'interfaceStore.networkReplotTrigger': {
       handler (newValue, oldValue) {
-        // Only replot if author nodes are visible and the trigger value changed
-        if (newValue !== oldValue && this.showAuthorNodes) {
+        // Replot when the trigger value changes
+        if (newValue !== oldValue) {
           this.$nextTick(() => {
             // Trigger a full replot with force simulation restart
             this.plot(true)

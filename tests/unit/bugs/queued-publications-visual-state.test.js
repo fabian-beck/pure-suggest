@@ -7,14 +7,15 @@
  * However, when updating the suggestion, this visual state is not correctly
  * updated—in the vis, they show like queueing publications, although they
  * are already part of the selected publications.
+ * 
+ * Root cause: The network replot watcher only triggered when author nodes were visible,
+ * so when updateQueued() was called with author nodes hidden, the network never replotted
+ * and the queued publications continued to show the blurred/plus icon visual state.
  */
 
-import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import NetworkVisComponent from '@/components/NetworkVisComponent.vue'
-import { useAppState } from '@/composables/useAppState.js'
 import Publication from '@/core/Publication.js'
 import { useQueueStore } from '@/stores/queue.js'
 import { useSessionStore } from '@/stores/session.js'
@@ -26,7 +27,6 @@ global.fetch = vi.fn()
 describe('Queued Publications Visual State Bug', () => {
   let sessionStore
   let queueStore
-  let appState
 
   beforeEach(() => {
     const pinia = createPinia()
@@ -34,7 +34,25 @@ describe('Queued Publications Visual State Bug', () => {
 
     sessionStore = useSessionStore()
     queueStore = useQueueStore()
-    appState = useAppState()
+
+    // Mock DOM methods that D3 uses
+    global.document.getElementById = vi.fn((id) => {
+      if (id === 'network-svg-container') {
+        return {
+          clientWidth: 800,
+          clientHeight: 400,
+          getBoundingClientRect: () => ({
+            width: 800,
+            height: 400,
+            top: 0,
+            left: 0,
+            right: 800,
+            bottom: 400
+          })
+        }
+      }
+      return null
+    })
 
     // Mock fetch for publication data
     global.fetch.mockResolvedValue({
@@ -111,45 +129,48 @@ describe('Queued Publications Visual State Bug', () => {
     expect(pub2NodeAfter.publication.isSelected).toBe(true)
   })
 
-  it('should update visual classes when queue is cleared during network update', async () => {
-    // This test verifies that the updatePublicationNodes correctly updates
-    // CSS classes based on current node data
+  it('should create nodes with correct queueing flags based on current queue state', () => {
+    // This test verifies that when nodes are created, they reflect the current queue state
     const pub1Doi = '10.1000/pub1'
     const pub1 = new Publication(pub1Doi)
     pub1.title = 'Publication 1'
     pub1.year = 2020
     pub1.isSelected = false
 
-    // Queue the publication
-    queueStore.selectedQueue.push(pub1Doi)
-
-    // Create node with queueing flag
+    // Initially queue is empty
     const doiToIndex = {}
-    const nodes = createPublicationNodes(
+    let nodes = createPublicationNodes(
       [pub1],
       doiToIndex,
       queueStore.selectedQueue,
       queueStore.excludedQueue
     )
 
-    const node = nodes[0]
-    expect(node.isQueuingForSelected).toBe(true)
+    expect(nodes[0].isQueuingForSelected).toBe(false)
+    expect(nodes[0].isQueuingForExcluded).toBe(false)
 
-    // Simulate what happens during updateQueued:
-    // 1. Publication moves to selected
-    pub1.isSelected = true
+    // Add to queue
+    queueStore.selectedQueue.push(pub1Doi)
+    nodes = createPublicationNodes(
+      [pub1],
+      doiToIndex,
+      queueStore.selectedQueue,
+      queueStore.excludedQueue
+    )
 
-    // 2. Queue is cleared
+    expect(nodes[0].isQueuingForSelected).toBe(true)
+    expect(nodes[0].isQueuingForExcluded).toBe(false)
+
+    // Clear queue
     queueStore.clear()
+    nodes = createPublicationNodes(
+      [pub1],
+      doiToIndex,
+      queueStore.selectedQueue,
+      queueStore.excludedQueue
+    )
 
-    // 3. Network should replot with new node data
-    // But if it uses old node objects, the flag won't update
-
-    // The bug is that even though the queue is cleared,
-    // if the node object still has isQueuingForSelected = true,
-    // the visual state will be wrong
-    expect(node.isQueuingForSelected).toBe(true) // This is the bug!
-
-    // The fix should ensure that node data is refreshed from current queue state
+    expect(nodes[0].isQueuingForSelected).toBe(false)
+    expect(nodes[0].isQueuingForExcluded).toBe(false)
   })
 })
