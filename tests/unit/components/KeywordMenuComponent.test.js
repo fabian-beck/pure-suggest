@@ -32,14 +32,16 @@ describe('KeywordMenuComponent', () => {
     // Set up default values
     sessionStore.boostKeywordString = 'test, example'
     sessionStore.isBoost = true
-    sessionStore.setBoostKeywordString = vi.fn()
+    sessionStore.setBoostKeywordString = vi.fn((value) => {
+      sessionStore.boostKeywordString = value
+    })
     interfaceStore.isMobile = false
 
     // Reset the mock before each test
     mockUpdateScores.mockReset()
   })
 
-  it('generates correct HTML for boost keyword string', () => {
+  it('generates correct HTML for boost keyword string from store', () => {
     sessionStore.boostKeywordString = 'word1, word2|alt, word3'
     sessionStore.selectedPublications = [{ doi: '10.1000/test' }] // Make not empty
 
@@ -121,17 +123,18 @@ describe('KeywordMenuComponent', () => {
         }
       })
 
-      // Simulate menu opening (this should store the initial value)
+      // Simulate menu opening (this should sync local value with store)
       await wrapper.vm.handleMenuToggle(true)
 
-      // Simulate user changing the keyword string
-      sessionStore.boostKeywordString = 'new keywords'
+      // Simulate user changing the local keyword string
+      wrapper.vm.localKeywordString = 'new keywords'
 
       // Simulate menu closing
       await wrapper.vm.handleMenuToggle(false)
 
-      // updateScores should be called when menu closes with changes
+      // updateScores should be called and store should be updated
       expect(mockUpdateScores).toHaveBeenCalled()
+      expect(sessionStore.setBoostKeywordString).toHaveBeenCalledWith('new keywords')
     })
 
     it('should not call updateScores when menu closes without any changes', async () => {
@@ -167,10 +170,10 @@ describe('KeywordMenuComponent', () => {
         }
       })
 
-      // Simulate menu opening (this should store the initial value)
+      // Simulate menu opening
       await wrapper.vm.handleMenuToggle(true)
 
-      // No changes made to keyword string (it remains 'original keywords')
+      // Local keyword string is automatically synced from store, no changes made
 
       // Simulate menu closing
       await wrapper.vm.handleMenuToggle(false)
@@ -256,26 +259,25 @@ describe('KeywordMenuComponent', () => {
         }
       })
 
-      // Open menu and apply initial keywords
-      await wrapper.vm.handleMenuToggle(true)
-      await wrapper.vm.applyKeywords()
-
       // Verify initial keywords are in the header
       const initialHtml = wrapper.vm.boostKeywordStringHtml
       expect(initialHtml).toContain('INITIAL KEYWORDS')
 
-      // Simulate user typing new keywords
-      sessionStore.boostKeywordString = 'typing new keywords'
+      // Open menu
+      await wrapper.vm.handleMenuToggle(true)
 
-      // Header should still show the initial keywords (not updated yet)
+      // Simulate user typing new keywords in local input (not in store yet)
+      wrapper.vm.localKeywordString = 'typing new keywords'
+
+      // Header should still show the initial keywords from store
       const stillInitialHtml = wrapper.vm.boostKeywordStringHtml
       expect(stillInitialHtml).toContain('INITIAL KEYWORDS')
       expect(stillInitialHtml).not.toContain('TYPING NEW KEYWORDS')
 
-      // Now apply the new keywords
+      // Now apply the new keywords (updates the store)
       await wrapper.vm.applyKeywords()
 
-      // Header should now show the new keywords
+      // Header should now show the new keywords from store
       const updatedHtml = wrapper.vm.boostKeywordStringHtml
       expect(updatedHtml).toContain('TYPING NEW KEYWORDS')
       expect(updatedHtml).not.toContain('INITIAL KEYWORDS')
@@ -314,19 +316,19 @@ describe('KeywordMenuComponent', () => {
         }
       })
 
-      // Apply initial keywords
-      await wrapper.vm.applyKeywords()
+      // Header shows original keywords from store
+      expect(wrapper.vm.boostKeywordStringHtml).toContain('ORIGINAL')
 
       // Open menu
       await wrapper.vm.handleMenuToggle(true)
 
-      // Change keywords
-      sessionStore.boostKeywordString = 'changed'
+      // Change local keywords
+      wrapper.vm.localKeywordString = 'changed'
 
-      // Header should still show original (not updated yet)
+      // Header should still show original from store
       expect(wrapper.vm.boostKeywordStringHtml).toContain('ORIGINAL')
 
-      // Close menu - this should update the header
+      // Close menu - this should update the store and header
       await wrapper.vm.handleMenuToggle(false)
 
       // Header should now show changed keywords
@@ -370,16 +372,46 @@ describe('KeywordMenuComponent', () => {
         }
       })
 
-      // Apply initial keywords to header
-      await wrapper.vm.applyKeywords()
+      // Header shows test keywords from store
       expect(wrapper.vm.boostKeywordStringHtml).toContain('TEST KEYWORDS')
 
       // Clear keywords using the clear button
       await wrapper.vm.clearKeywords()
 
-      // Header should now be empty (updated immediately)
+      // Header should now be empty (store was updated)
       expect(wrapper.vm.boostKeywordStringHtml).toBe('')
       expect(mockUpdateScores).toHaveBeenCalled()
+    })
+
+    it('should update header when session store keywords change externally (e.g., session import)', async () => {
+      sessionStore.selectedPublications = [{ doi: '10.1000/test' }] // Make not empty
+      sessionStore.boostKeywordString = 'old keywords'
+
+      const wrapper = mount(KeywordMenuComponent, {
+        global: {
+          plugins: [pinia],
+          stubs: {
+            'v-menu': { template: '<div class="v-menu"><slot></slot></div>' },
+            'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
+            'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
+            'v-sheet': { template: '<div class="v-sheet"><slot></slot></div>' },
+            'v-text-field': { template: '<input class="v-text-field" />' },
+            'v-checkbox': { template: '<input type="checkbox" class="v-checkbox" />' }
+          }
+        }
+      })
+
+      // Apply initial keywords
+      await wrapper.vm.applyKeywords()
+      expect(wrapper.vm.boostKeywordStringHtml).toContain('OLD KEYWORDS')
+
+      // Simulate session import that changes keywords externally
+      sessionStore.boostKeywordString = 'imported keywords'
+      await wrapper.vm.$nextTick()
+
+      // Header should update to show imported keywords
+      expect(wrapper.vm.boostKeywordStringHtml).toContain('IMPORTED KEYWORDS')
+      expect(wrapper.vm.boostKeywordStringHtml).not.toContain('OLD KEYWORDS')
     })
   })
 })

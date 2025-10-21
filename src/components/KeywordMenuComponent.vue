@@ -12,18 +12,19 @@ const { updateScores } = useAppState()
 
 const boost = ref(null)
 const isMenuOpen = ref(false)
-const initialKeywordString = ref('')
-const appliedBoostKeywordString = ref(sessionStore.boostKeywordString)
+const localKeywordString = ref(sessionStore.boostKeywordString)
 
 const boostKeywordStringHtml = computed(() => {
-  let html = appliedBoostKeywordString.value
-  // wrap comma seperated words in span.word
+  const normalized = normalizeBoostKeywordString(sessionStore.boostKeywordString)
+  let html = normalized
   html = html.replace(/\s*([^,|]+)/g, "<span class='word'>$1</span>")
-  // wrap | in span.alt
   html = html.replace(/\|/g, "<span class='alt'>|</span>")
-  // wrap , in span.comma
   html = html.replace(/,/g, "<span class='comma'>,</span>")
   return html
+})
+
+const buttonColor = computed(() => {
+  return sessionStore.boostKeywordString ? 'default' : 'grey-darken-1'
 })
 
 function handleMenuInput(value) {
@@ -36,26 +37,23 @@ function handleMenuInput(value) {
 
 function handleMenuToggle(isOpen) {
   if (isOpen) {
-    // Menu is opening - store the initial value to compare later
-    initialKeywordString.value = sessionStore.boostKeywordString
+    localKeywordString.value = sessionStore.boostKeywordString
   } else {
-    // Menu is closing - check if changes were made and update scores if needed
-    const currentKeywordString = sessionStore.boostKeywordString
-    if (currentKeywordString !== initialKeywordString.value) {
-      appliedBoostKeywordString.value = normalizeBoostKeywordString(currentKeywordString)
+    if (localKeywordString.value !== sessionStore.boostKeywordString) {
+      sessionStore.setBoostKeywordString(localKeywordString.value)
       updateScores()
     }
   }
 }
 
 function applyKeywords() {
-  appliedBoostKeywordString.value = normalizeBoostKeywordString(sessionStore.boostKeywordString)
+  sessionStore.setBoostKeywordString(localKeywordString.value)
   updateScores()
 }
 
 function clearKeywords() {
+  localKeywordString.value = ''
   sessionStore.setBoostKeywordString('')
-  appliedBoostKeywordString.value = ''
   updateScores()
 }
 </script>
@@ -76,13 +74,14 @@ function clearKeywords() {
         :icon="interfaceStore.isMobile"
         @click="handleMenuInput(true)"
         :density="interfaceStore.isMobile ? 'compact' : 'default'"
+        :color="buttonColor"
       >
         <v-icon size="18">mdi-chevron-double-up</v-icon>
         <span class="is-hidden-touch ml-2 boost-keywords-display">
           <span
             class="keywords-text"
-            v-html="boostKeywordStringHtml ? boostKeywordStringHtml : '[Set keywords]'"
-            :class="{ 'has-text-warning-dark': !boostKeywordStringHtml }"
+            v-html="boostKeywordStringHtml ? boostKeywordStringHtml : '[SET KEYWORDS]'"
+            :class="{ 'has-text-grey': !boostKeywordStringHtml }"
           ></span>
           <v-icon class="ml-2"> mdi-menu-down </v-icon>
         </span>
@@ -94,7 +93,7 @@ function clearKeywords() {
           ref="boost"
           class="boost"
           density="compact"
-          v-model="sessionStore.boostKeywordString"
+          v-model="localKeywordString"
           label="Keywords"
           variant="solo"
           append-inner-icon="mdi-close"

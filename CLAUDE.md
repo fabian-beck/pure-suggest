@@ -7,7 +7,7 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 ## Architecture
 
 - **Framework**: Vue 3 with Composition API
-- **State Management**: Pinia stores (`session.js`, `interface.js`, `queue.js`, `author.js`)
+- **State Management**: Pinia stores (`session.js`, `interface.js`, `queue.js`, `author.js`, `modal.js`)
 - **UI Framework**: Vuetify 3 + Bulma CSS hybrid approach
 - **Visualization**: D3.js for network diagrams
 - **Build Tool**: Vite
@@ -41,17 +41,40 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 ## Composables (Vue 3)
 
 - `useAppState.js`: Core application logic extracted from stores (session management, suggestions, queuing)
+- `useModalManager.js`: Modal dialog management and state coordination
 
 ## Testing Strategy
 
-- **Unit Tests**: `tests/unit/` - Component and utility testing
-- **Performance Tests**: `tests/performance/` - Load and rendering benchmarks
-- **Browser Testing**: Use Playwright for UI and mobile interface testing
-- **Test Commands**:
-  - `npm test` - Run unit tests
-  - `npm run test:perf` - Run performance tests
-  - `npm run test:all` - Run both test suites
-- **Development Server**: Usually running at http://localhost:8080/ for testing
+- **Framework**: Vitest with Happy DOM for unit tests
+- **Browser Testing**: Puppeteer for performance testing and UI automation
+- **Test Organization**:
+  - `tests/unit/` - Component and utility tests
+  - `tests/performance/` - Load and rendering benchmarks using Puppeteer
+  - `tests/helpers/` - Shared test utilities and mock factories
+  - `tests/README.md` - Comprehensive testing best practices guide
+
+### Running Tests
+
+**Prerequisites**: Development server should be running at http://localhost:8080 for browser-based tests.
+
+**Unit Tests**:
+- `npm test` - Run all unit tests once
+- `npm run test:watch` - Run tests in watch mode for development
+- `npm run test:ui` - Launch interactive Vitest UI
+- `npm run test:coverage` - Generate coverage report
+
+**Performance Tests**:
+- `npm run test:perf` - Run performance benchmarks using Puppeteer
+- `npm run test:perf:watch` - Watch mode for performance tests
+
+**All Tests**:
+- `npm run test:all` - Run both unit and performance test suites
+
+**Testing Best Practices**: See [tests/README.md](tests/README.md) for detailed guidelines on:
+- Behavior-driven testing patterns
+- Mock factories and utilities (`testUtils.js`)
+- Store mocking patterns
+- Anti-patterns to avoid
 
 ## Development Commands
 
@@ -75,8 +98,10 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 - **Session Store**: Selected publications, excluded publications, suggestions, filters, boost keywords, active publication
 - **Queue Store**: Temporary queues for batch operations (add/exclude publications)
 - **Author Store**: Independent author aggregation and scoring (extracted from session store)
-- **Interface Store**: UI state, modals, loading states, mobile responsiveness
+- **Interface Store**: UI state, loading states, mobile responsiveness
+- **Modal Store**: Modal dialog states and search provider configuration
 - **useAppState Composable**: Business logic layer coordinating between stores (session management, suggestion computation, queuing operations)
+- **useModalManager Composable**: Modal dialog management and state coordination
 
 ## Performance Features
 
