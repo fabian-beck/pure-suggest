@@ -720,28 +720,27 @@ export class ConceptService {
     const mergeMap = new Map()
     const processed = new Set()
 
-    // Sort by frequency descending to prioritize high-frequency terms
-    const sorted = terms.sort((a, b) => (termFreq.get(b) || 0) - (termFreq.get(a) || 0))
+    // Sort by length ascending, then by frequency descending
+    // This ensures shorter terms are processed first and become representatives
+    const sorted = terms.sort((a, b) => {
+      if (a.length !== b.length) {
+        return a.length - b.length // Shorter first
+      }
+      return (termFreq.get(b) || 0) - (termFreq.get(a) || 0) // Higher frequency first
+    })
 
     sorted.forEach((term) => {
       if (processed.has(term)) return
 
-      // Find all terms that share a common prefix with this term
+      // Find all terms where this term is a PREFIX of the other term
       const similar = sorted.filter((other) => {
         if (processed.has(other) || other === term) return false
 
-        // Find common prefix length
-        const minLen = Math.min(term.length, other.length)
-        let commonPrefixLen = 0
-        for (let i = 0; i < minLen; i++) {
-          if (term[i] === other[i]) {
-            commonPrefixLen++
-          } else {
-            break
-          }
-        }
+        // Require one term to be a prefix of the other (not just share a prefix)
+        const isTermPrefixOfOther = other.startsWith(term) && term.length >= MIN_PREFIX_LENGTH
+        const isOtherPrefixOfTerm = term.startsWith(other) && other.length >= MIN_PREFIX_LENGTH
 
-        return commonPrefixLen >= MIN_PREFIX_LENGTH
+        return isTermPrefixOfOther || isOtherPrefixOfTerm
       })
 
       if (similar.length > 0) {

@@ -780,6 +780,23 @@ describe('ConceptService', () => {
       expect(mergeMap.get('generation')).toBe('generat')
     })
 
+    it('should NOT merge general and generat (not prefix relationship)', () => {
+      const termFreq = new Map([
+        ['general', 10],
+        ['generat', 8],
+        ['generation', 6]
+      ])
+
+      const mergeMap = ConceptService._buildTermMergeMap(termFreq)
+
+      // "general" and "generat" are NOT prefixes of each other, so they stay separate
+      expect(mergeMap.get('general')).toBe('general')
+      expect(mergeMap.get('generat')).toBe('generat')
+
+      // "generat" IS a prefix of "generation", so they merge
+      expect(mergeMap.get('generation')).toBe('generat')
+    })
+
     it('should not merge terms with prefix shorter than 5', () => {
       const termFreq = new Map([
         ['data', 10],
@@ -832,6 +849,29 @@ describe('ConceptService', () => {
       const mergeMap = ConceptService._buildTermMergeMap(termFreq)
 
       expect(mergeMap.get('visual')).toBe('visual')
+    })
+
+    it('should only merge when one term is prefix of another', () => {
+      const termFreq = new Map([
+        ['network', 20],
+        ['networking', 15],
+        ['neural', 10],
+        ['neuron', 8],
+        ['neurons', 5]
+      ])
+
+      const mergeMap = ConceptService._buildTermMergeMap(termFreq)
+
+      // "network" is prefix of "networking" (7 chars >= 5)
+      expect(mergeMap.get('network')).toBe('network')
+      expect(mergeMap.get('networking')).toBe('network')
+
+      // "neuron" is prefix of "neurons" (6 chars >= 5)
+      expect(mergeMap.get('neuron')).toBe('neuron')
+      expect(mergeMap.get('neurons')).toBe('neuron')
+
+      // "neural" and "neuron" share prefix "neuro" but neither is prefix of other
+      expect(mergeMap.get('neural')).toBe('neural')
     })
   })
 
