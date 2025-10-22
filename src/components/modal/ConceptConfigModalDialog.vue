@@ -15,8 +15,6 @@ const { updateScores } = useAppState()
 const includeKeywords = ref(true)
 const includeCitations = ref(true)
 const includeAuthors = ref(true)
-const useSimpleMetric = ref(true)
-const boostKeywordMatches = ref(false)
 const isEnabled = ref(false)
 
 const conceptsPreview = ref([])
@@ -107,38 +105,19 @@ function getConceptName(index) {
   return metadata?.name || `C${index + 1}`
 }
 
-function getConceptTopTerms(index) {
+function getConceptCharacteristicTerms(index) {
   const metadata = conceptMetadataPreview.value.get(index)
-  return metadata?.topTerms || []
+  return metadata?.exclusivityTerms || []
 }
 
 function formatTermScore(term) {
-  if (term.inCount !== undefined && term.outCount !== undefined) {
-    // Simple metric - use integer
-    return term.score.toString()
-  } else {
-    // TF-IDF metric - use 2 decimals
-    return term.score.toFixed(2)
-  }
+  return term.score.toFixed(2)
 }
 
-function getTermTooltip(term) {
-  const boostNote = boostKeywordMatches.value ? ' (keyword matches count double)' : ''
-
-  if (term.inCount !== undefined && term.outCount !== undefined) {
-    // Simple metric
-    return `Exclusivity score of <b>${term.score} = ${term.inCount} - ${term.outCount}</b>, ` +
-           `where <b>${term.inCount}</b> occurrences in concept titles${boostNote} ` +
-           `and <b>${term.outCount}</b> occurrences outside concept`
-  } else if (term.tf && term.idf) {
-    // TF-IDF metric
-    return `TF-IDF score of <b>${term.score.toFixed(2)} = ${term.tf.toFixed(2)} &middot; ${term.idf.toFixed(2)}</b>, ` +
-           `where TF (term frequency) = <b>${term.tf.toFixed(2)}</b> occurrences in concept titles${boostNote}, ` +
-           `and IDF (inverse document frequency) = <b>ln(${term.totalDocs} / ${term.df}) = ${term.idf.toFixed(2)}</b> ` +
-           `(term appears in <b>${term.df}</b> of <b>${term.totalDocs}</b> total publications)`
-  } else {
-    return `${term.term}: <b>${term.score.toFixed(2)}</b>`
-  }
+function getCharacteristicTooltip(term) {
+  return `Characteristic score of <b>${term.score.toFixed(2)} = ${term.inCount} / (${term.outCount} + 1)</b>, ` +
+         `where <b>${term.inCount}</b> occurrences in concept titles ` +
+         `and <b>${term.outCount}</b> occurrences outside concept`
 }
 
 function computeConcepts() {
@@ -156,11 +135,7 @@ function computeConcepts() {
   sortedConceptsPreview.value = ConceptService.sortConceptsByImportance(concepts, publications.length)
   conceptMetadataPreview.value = ConceptService.generateConceptNames(
     sortedConceptsPreview.value,
-    publications,
-    {
-      useSimpleMetric: useSimpleMetric.value,
-      boostKeywordMatches: boostKeywordMatches.value
-    }
+    publications
   )
 }
 
@@ -265,27 +240,6 @@ watch(
               hide-details
             ></v-checkbox>
           </div>
-        </div>
-
-        <div class="mb-3">
-          <h3 class="is-size-6 mb-2"><b>Term ranking metric:</b></h3>
-          <div class="d-flex flex-wrap ga-2">
-            <v-checkbox
-              v-model="useSimpleMetric"
-              label="Use simple exclusivity (in-concept - out-of-concept)"
-              density="compact"
-              hide-details
-            ></v-checkbox>
-            <v-checkbox
-              v-model="boostKeywordMatches"
-              label="Boost keyword matches (count double)"
-              density="compact"
-              hide-details
-            ></v-checkbox>
-          </div>
-          <p v-if="!useSimpleMetric" class="is-size-7 mt-1 text-grey">
-            Using TF-IDF metric (default)
-          </p>
         </div>
 
         <div class="d-flex ga-2">
@@ -412,12 +366,12 @@ watch(
                     </v-chip>
                   </div>
 
-                  <div v-if="getConceptTopTerms(index).length > 0" class="is-size-7">
-                    <span class="attribute-label">Top terms:</span>
+                  <div v-if="getConceptCharacteristicTerms(index).length > 0" class="is-size-7">
+                    <span class="attribute-label">Characteristic terms:</span>
                     <v-chip
-                      v-for="term in getConceptTopTerms(index).slice(0, 10)"
+                      v-for="term in getConceptCharacteristicTerms(index)"
                       :key="term.term"
-                      v-tippy="getTermTooltip(term)"
+                      v-tippy="getCharacteristicTooltip(term)"
                       size="small"
                       label
                       class="ma-1 term-chip"

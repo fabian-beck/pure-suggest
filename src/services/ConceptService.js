@@ -434,11 +434,9 @@ export class ConceptService {
    * Generates concept names and metadata from term scores
    * @param {Array} concepts - Array of formal concepts
    * @param {Array} allPublications - All publication objects
-   * @param {Object} options - Options for term computation
-   * @param {boolean} options.useSimpleMetric - Use simple exclusivity metric instead of TF-IDF
    * @returns {Map} Map of concept index to {name, topTerms} object
    */
-  static generateConceptNames(concepts, allPublications, options = {}) {
+  static generateConceptNames(concepts, allPublications) {
     const nameMap = new Map()
 
     if (!allPublications || allPublications.length === 0) {
@@ -450,27 +448,30 @@ export class ConceptService {
     }
 
     concepts.forEach((concept, index) => {
-      const topTerms = this.computeConceptTerms(
+      const { exclusivityTerms, frequencyTerms } = this.computeConceptTerms(
         concept.publications,
-        allPublications,
-        concept.attributes,
-        options
+        allPublications
       )
 
-      const top10 = topTerms.slice(0, 10)
+      const top10Exclusive = exclusivityTerms.slice(0, 10)
+      const top10Frequent = frequencyTerms.slice(0, 10)
 
-      if (topTerms.length === 0) {
-        nameMap.set(index, { name: `C${index + 1}`, topTerms: [] })
+      if (exclusivityTerms.length === 0) {
+        nameMap.set(index, {
+          name: `C${index + 1}`,
+          exclusivityTerms: [],
+          frequencyTerms: []
+        })
         return
       }
 
       // Check if top score is tied with other terms
-      const topScore = topTerms[0].score
-      const tiedTerms = topTerms.filter((t) => Math.abs(t.score - topScore) < 0.0001)
+      const topScore = exclusivityTerms[0].score
+      const tiedTerms = exclusivityTerms.filter((t) => Math.abs(t.score - topScore) < 0.0001)
 
-      if (tiedTerms.length === 2 && topTerms.length >= 3) {
+      if (tiedTerms.length === 2 && exclusivityTerms.length >= 3) {
         // Two terms with same/similar score - check if third is clearly different
-        const thirdScore = topTerms[2].score
+        const thirdScore = exclusivityTerms[2].score
         const scoreDiff = topScore - thirdScore
         const relativeGap = topScore > 0 ? scoreDiff / topScore : 0
 
@@ -479,20 +480,30 @@ export class ConceptService {
           const combinedLabel = `${tiedTerms[0].term.toUpperCase()}+${tiedTerms[1].term.toUpperCase()}`
           nameMap.set(index, {
             name: `C${index + 1} - ${combinedLabel}`,
-            topTerms: top10
+            exclusivityTerms: top10Exclusive,
+            frequencyTerms: top10Frequent
           })
         } else {
           // Third term is also similar - too arbitrary
-          nameMap.set(index, { name: `C${index + 1}`, topTerms: top10 })
+          nameMap.set(index, {
+            name: `C${index + 1}`,
+            exclusivityTerms: top10Exclusive,
+            frequencyTerms: top10Frequent
+          })
         }
       } else if (tiedTerms.length > 2) {
         // More than two terms with same score - too arbitrary to pick
-        nameMap.set(index, { name: `C${index + 1}`, topTerms: top10 })
+        nameMap.set(index, {
+          name: `C${index + 1}`,
+          exclusivityTerms: top10Exclusive,
+          frequencyTerms: top10Frequent
+        })
       } else {
         // Clear winner (single top term)
         nameMap.set(index, {
-          name: `C${index + 1} - ${topTerms[0].term.toUpperCase()}`,
-          topTerms: top10
+          name: `C${index + 1} - ${exclusivityTerms[0].term.toUpperCase()}`,
+          exclusivityTerms: top10Exclusive,
+          frequencyTerms: top10Frequent
         })
       }
     })
@@ -611,17 +622,12 @@ export class ConceptService {
   }
 
   /**
-   * Computes term scores for a concept using either TF-IDF or simple exclusivity
+   * Computes term scores for a concept using exclusivity metric
    * @param {Array} conceptPublications - Array of publication DOIs in the concept
    * @param {Array} allPublications - All publication objects
-   * @param {Array} conceptAttributes - Array of attributes (keywords and citation DOIs) for the concept
-   * @param {Object} options - Options for computation
-   * @param {boolean} options.useSimpleMetric - Use simple exclusivity (in-concept - out-of-concept) instead of TF-IDF
-   * @param {boolean} options.boostKeywordMatches - Double the count for keyword matches (default: true)
-   * @returns {Array} Array of {term, score, ...metadata} objects sorted by score descending
+   * @returns {Object} Object with exclusivityTerms and frequencyTerms arrays
    */
-  static computeConceptTerms(conceptPublications, allPublications, conceptAttributes = [], options = {}) {
-    const { useSimpleMetric = false, boostKeywordMatches = true } = options
+  static computeConceptTerms(conceptPublications, allPublications) {
     // Build a map of DOI to publication for quick lookup
     const pubMap = new Map(allPublications.map((pub) => [pub.doi, pub]))
 
@@ -631,123 +637,67 @@ export class ConceptService {
       .filter((title) => title)
 
     if (conceptTitles.length === 0) {
-      return []
+      return { exclusivityTerms: [], frequencyTerms: [] }
     }
 
-    // Extract keywords and citation DOIs from typed attributes
-    const keywords = conceptAttributes.filter((attr) => attr.type === 'keyword').map((attr) => attr.value)
-    const citationDois = conceptAttributes.filter((attr) => attr.type === 'citation').map((attr) => attr.value)
+    // Tokenize concept titles (bag of words)
+    const conceptTokens = conceptTitles.flatMap((title) => tokenize(title))
 
-    // Get titles of publications that are citation attributes
-    const citationTitles = citationDois
-      .map((doi) => pubMap.get(doi)?.title)
-      .filter((title) => title)
-
-    // Combine concept titles with citation attribute titles
-    const allTitles = [...conceptTitles, ...citationTitles]
-
-    // Expand keyword alternatives (pipe-separated)
-    const keywordAlternatives = []
-    keywords.forEach((keyword) => {
-      // Split by pipe to handle alternatives like "vis|graph"
-      const alternatives = keyword.split('|').filter((alt) => alt.trim())
-      alternatives.forEach((alternative) => {
-        keywordAlternatives.push(alternative.toUpperCase())
-      })
-    })
-
-    // Tokenize all titles (bag of words)
-    const conceptTokens = allTitles.flatMap((title) => tokenize(title))
-
-    // Count term frequency in concept, optionally doubling frequency for keyword matches
-    // Match using substring logic similar to findKeywordMatches
+    // Count term frequency in concept
     const termFreq = new Map()
     conceptTokens.forEach((term) => {
-      let isKeywordMatch = false
-
-      if (boostKeywordMatches) {
-        // Check if this term matches any keyword alternative
-        for (const keyword of keywordAlternatives) {
-          if (keyword.length <= 3) {
-            // Word boundary match for short keywords - check if term starts with keyword
-            if (term.toUpperCase().startsWith(keyword)) {
-              isKeywordMatch = true
-              break
-            }
-          } else {
-            // Substring match for longer keywords
-            if (term.toUpperCase().includes(keyword)) {
-              isKeywordMatch = true
-              break
-            }
-          }
-        }
-      }
-
-      const increment = isKeywordMatch ? 2 : 1
-      termFreq.set(term, (termFreq.get(term) || 0) + increment)
+      termFreq.set(term, (termFreq.get(term) || 0) + 1)
     })
 
     // Merge similar terms BEFORE computing scores
     const mergedTermFreq = this._mergeTermFrequencies(termFreq)
 
-    if (useSimpleMetric) {
-      // Simple exclusivity metric: count in concept minus count outside concept
-      const conceptDois = new Set(conceptPublications)
-      const outsidePublications = allPublications.filter((pub) => !conceptDois.has(pub.doi))
+    // Exclusivity metric: count in concept minus count outside concept
+    const conceptDois = new Set(conceptPublications)
+    const outsidePublications = allPublications.filter((pub) => !conceptDois.has(pub.doi))
 
-      // Count term frequency outside the concept
-      const outsideTermFreqRaw = new Map()
-      outsidePublications.forEach((pub) => {
-        const tokens = tokenize(pub.title)
-        tokens.forEach((term) => {
-          outsideTermFreqRaw.set(term, (outsideTermFreqRaw.get(term) || 0) + 1)
-        })
+    // Count term frequency outside the concept
+    const outsideTermFreqRaw = new Map()
+    outsidePublications.forEach((pub) => {
+      const tokens = tokenize(pub.title)
+      tokens.forEach((term) => {
+        outsideTermFreqRaw.set(term, (outsideTermFreqRaw.get(term) || 0) + 1)
+      })
+    })
+
+    const mergedOutsideTermFreq = this._mergeTermFrequencies(outsideTermFreqRaw)
+
+    // Filter: only include terms that appear in at least 2 publications and 20% of concept publications
+    const minPublications = Math.max(2, Math.ceil(conceptTitles.length * 0.2))
+
+    const filteredTerms = []
+    mergedTermFreq.forEach((inCount, term) => {
+      // Count how many publications contain this term
+      let pubsWithTerm = 0
+      conceptTitles.forEach((title) => {
+        const tokens = tokenize(title)
+        const merged = this._mergeTermFrequencies(new Map(tokens.map(t => [t, 1])))
+        if (merged.has(term)) {
+          pubsWithTerm++
+        }
       })
 
-      const mergedOutsideTermFreq = this._mergeTermFrequencies(outsideTermFreqRaw)
-
-      // Compute exclusivity score: inConcept - outsideConcept
-      const exclusivityScores = []
-      mergedTermFreq.forEach((inCount, term) => {
+      if (pubsWithTerm >= minPublications) {
         const outCount = mergedOutsideTermFreq.get(term) || 0
-        const score = inCount - outCount
-        exclusivityScores.push({ term, score, inCount, outCount })
-      })
+        // Exclusivity formula: inCount / (outCount + 1)
+        const score = inCount / (outCount + 1)
+        filteredTerms.push({ term, score, inCount, outCount })
+      }
+    })
 
-      return exclusivityScores.sort((a, b) => b.score - a.score)
-    } else {
-      // TF-IDF metric
-      // Count document frequency across all publications (also needs merging)
-      const docFreqRaw = new Map()
-      allPublications.forEach((pub) => {
-        const tokens = new Set(tokenize(pub.title))
-        tokens.forEach((term) => {
-          docFreqRaw.set(term, (docFreqRaw.get(term) || 0) + 1)
-        })
-      })
-
-      // Merge document frequencies
-      const docFreq = this._mergeTermFrequencies(docFreqRaw)
-
-      const totalDocs = allPublications.length
-
-      // Compute TF-IDF for each merged term with detailed metadata
-      const tfidfScores = []
-      mergedTermFreq.forEach((tf, term) => {
-        const df = docFreq.get(term) || 1
-        const idf = Math.log(totalDocs / df)
-        const tfidf = tf * idf
-        tfidfScores.push({ term, score: tfidf, tf, df, idf, totalDocs })
-      })
-
-      // Sort by score descending
-      return tfidfScores.sort((a, b) => b.score - a.score)
+    return {
+      exclusivityTerms: filteredTerms.slice().sort((a, b) => b.score - a.score),
+      frequencyTerms: filteredTerms.slice().sort((a, b) => b.inCount - a.inCount)
     }
   }
 
   /**
-   * Logs concepts to console with TF-IDF based descriptive terms
+   * Logs concepts to console with exclusivity-based descriptive terms
    * @param {Array} concepts - Array of concepts
    * @param {Array} allPublications - All publication objects
    */
@@ -790,16 +740,15 @@ export class ConceptService {
       console.log(`  Citations (${citations.length}): ${citations.length === 0 ? '∅' : citations.join(', ')}`)
       console.log(`  Authors (${authors.length}): ${authors.length === 0 ? '∅' : authors.join(', ')}`)
 
-      // Compute and display top TF-IDF terms if publications available
+      // Compute and display top terms if publications available
       if (allPublications.length > 0 && concept.publications.length > 0) {
-        const topTerms = this.computeConceptTerms(
+        const { exclusivityTerms } = this.computeConceptTerms(
           concept.publications,
-          allPublications,
-          concept.attributes
+          allPublications
         )
-        const top10 = topTerms.slice(0, 10)
+        const top10 = exclusivityTerms.slice(0, 10)
         if (top10.length > 0) {
-          const termString = top10.map((t) => `${t.term} (${t.score.toFixed(2)})`).join(', ')
+          const termString = top10.map((t) => `${t.term} (${t.score})`).join(', ')
           console.log(`  Top Terms: ${termString}`)
         }
       }
