@@ -753,7 +753,7 @@ describe('ConceptService', () => {
     })
   })
 
-  describe('_mergeTermFrequencies', () => {
+  describe('_buildTermMergeMap', () => {
     it('should merge terms with common prefix of length >= 5', () => {
       const termFreq = new Map([
         ['visualiz', 10],
@@ -761,10 +761,11 @@ describe('ConceptService', () => {
         ['visual', 6]
       ])
 
-      const merged = ConceptService._mergeTermFrequencies(termFreq)
+      const mergeMap = ConceptService._buildTermMergeMap(termFreq)
 
-      expect(merged.size).toBe(1)
-      expect(merged.get('visual')).toBe(24)
+      expect(mergeMap.get('visualiz')).toBe('visual')
+      expect(mergeMap.get('visualization')).toBe('visual')
+      expect(mergeMap.get('visual')).toBe('visual')
     })
 
     it('should merge generat and generation', () => {
@@ -773,10 +774,10 @@ describe('ConceptService', () => {
         ['generation', 7]
       ])
 
-      const merged = ConceptService._mergeTermFrequencies(termFreq)
+      const mergeMap = ConceptService._buildTermMergeMap(termFreq)
 
-      expect(merged.size).toBe(1)
-      expect(merged.get('generat')).toBe(22)
+      expect(mergeMap.get('generat')).toBe('generat')
+      expect(mergeMap.get('generation')).toBe('generat')
     })
 
     it('should not merge terms with prefix shorter than 5', () => {
@@ -785,11 +786,10 @@ describe('ConceptService', () => {
         ['date', 8]
       ])
 
-      const merged = ConceptService._mergeTermFrequencies(termFreq)
+      const mergeMap = ConceptService._buildTermMergeMap(termFreq)
 
-      expect(merged.size).toBe(2)
-      expect(merged.get('data')).toBe(10)
-      expect(merged.get('date')).toBe(8)
+      expect(mergeMap.get('data')).toBe('data')
+      expect(mergeMap.get('date')).toBe('date')
     })
 
     it('should keep non-similar terms separate', () => {
@@ -799,9 +799,11 @@ describe('ConceptService', () => {
         ['analyt', 6]
       ])
 
-      const merged = ConceptService._mergeTermFrequencies(termFreq)
+      const mergeMap = ConceptService._buildTermMergeMap(termFreq)
 
-      expect(merged.size).toBe(3)
+      expect(mergeMap.get('visual')).toBe('visual')
+      expect(mergeMap.get('network')).toBe('network')
+      expect(mergeMap.get('analyt')).toBe('analyt')
     })
 
     it('should merge multiple related terms', () => {
@@ -812,23 +814,88 @@ describe('ConceptService', () => {
         ['computational', 6]
       ])
 
-      const merged = ConceptService._mergeTermFrequencies(termFreq)
+      const mergeMap = ConceptService._buildTermMergeMap(termFreq)
 
-      expect(merged.size).toBe(1)
-      expect(merged.get('comput')).toBe(36)
+      expect(mergeMap.get('comput')).toBe('comput')
+      expect(mergeMap.get('computation')).toBe('comput')
+      expect(mergeMap.get('computing')).toBe('comput')
+      expect(mergeMap.get('computational')).toBe('comput')
     })
 
     it('should handle empty map', () => {
-      const merged = ConceptService._mergeTermFrequencies(new Map())
-      expect(merged.size).toBe(0)
+      const mergeMap = ConceptService._buildTermMergeMap(new Map())
+      expect(mergeMap.size).toBe(0)
     })
 
     it('should handle single term', () => {
       const termFreq = new Map([['visual', 10]])
-      const merged = ConceptService._mergeTermFrequencies(termFreq)
+      const mergeMap = ConceptService._buildTermMergeMap(termFreq)
 
-      expect(merged.size).toBe(1)
-      expect(merged.get('visual')).toBe(10)
+      expect(mergeMap.get('visual')).toBe('visual')
+    })
+  })
+
+  describe('computeConceptTerms - consistent term merging', () => {
+    it('should merge terms consistently across in-concept and out-concept', () => {
+      const conceptPublications = [
+        { doi: '10.1/a', title: 'Study on visual analytics' },
+        { doi: '10.1/b', title: 'Visual design patterns' },
+        { doi: '10.1/c', title: 'Visualization methods' }
+      ]
+
+      const outsidePublications = [
+        { doi: '10.1/d', title: 'Visual computing' },
+        { doi: '10.1/e', title: 'Data visualization' },
+        { doi: '10.1/f', title: 'Visualizing networks' }
+      ]
+
+      const allPublications = [...conceptPublications, ...outsidePublications]
+      const conceptDois = conceptPublications.map(p => p.doi)
+
+      const result = ConceptService.computeConceptTerms(conceptDois, allPublications)
+
+      // "visual", "visualiz", "visualization" should all merge to "visual"
+      // Check that the merged term appears in results
+      const visualTerm = result.exclusivityTerms.find(t => t.term === 'visual')
+      expect(visualTerm).toBeDefined()
+
+      // Should not have separate entries for variants
+      const visualizTerm = result.exclusivityTerms.find(t => t.term === 'visualiz')
+      const visualizationTerm = result.exclusivityTerms.find(t => t.term === 'visualization')
+      expect(visualizTerm).toBeUndefined()
+      expect(visualizationTerm).toBeUndefined()
+
+      // The counts should reflect merged frequencies
+      // In-concept: "visual" (2) + "visualiz" (0) + "visualization" (1) = 3
+      // Out-concept: "visual" (1) + "visualiz" (1) + "visualization" (1) = 3
+      expect(visualTerm.inCount).toBe(3)
+      expect(visualTerm.outCount).toBe(3)
+    })
+
+    it('should use same merge mapping for publication counting', () => {
+      const conceptPublications = [
+        { doi: '10.1/a', title: 'Computing systems' },
+        { doi: '10.1/b', title: 'Computational methods' },
+        { doi: '10.1/c', title: 'Computation theory' }
+      ]
+
+      const outsidePublications = [
+        { doi: '10.1/d', title: 'Network analysis' },
+        { doi: '10.1/e', title: 'Data processing' }
+      ]
+
+      const allPublications = [...conceptPublications, ...outsidePublications]
+      const conceptDois = conceptPublications.map(p => p.doi)
+
+      const result = ConceptService.computeConceptTerms(conceptDois, allPublications)
+
+      // All "comput*" variants should merge to "comput"
+      const computTerm = result.exclusivityTerms.find(t => t.term === 'comput')
+      expect(computTerm).toBeDefined()
+
+      // All 3 concept publications contain "comput" (after merging)
+      // The publication count should be 3 (not counting duplicates from same pub)
+      expect(computTerm.inCount).toBe(3)
     })
   })
 

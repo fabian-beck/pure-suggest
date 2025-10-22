@@ -640,51 +640,63 @@ export class ConceptService {
       return { exclusivityTerms: [], frequencyTerms: [] }
     }
 
-    // Tokenize concept titles (bag of words)
-    const conceptTokens = conceptTitles.flatMap((title) => tokenize(title))
-
-    // Count term frequency in concept
-    const termFreq = new Map()
-    conceptTokens.forEach((term) => {
-      termFreq.set(term, (termFreq.get(term) || 0) + 1)
-    })
-
-    // Merge similar terms BEFORE computing scores
-    const mergedTermFreq = this._mergeTermFrequencies(termFreq)
-
-    // Exclusivity metric: count in concept minus count outside concept
     const conceptDois = new Set(conceptPublications)
     const outsidePublications = allPublications.filter((pub) => !conceptDois.has(pub.doi))
 
-    // Count term frequency outside the concept
-    const outsideTermFreqRaw = new Map()
-    outsidePublications.forEach((pub) => {
+    // Step 1: Collect ALL raw terms from ALL publications (concept + outside)
+    const allRawTerms = new Map()
+
+    allPublications.forEach((pub) => {
       const tokens = tokenize(pub.title)
       tokens.forEach((term) => {
-        outsideTermFreqRaw.set(term, (outsideTermFreqRaw.get(term) || 0) + 1)
+        allRawTerms.set(term, (allRawTerms.get(term) || 0) + 1)
       })
     })
 
-    const mergedOutsideTermFreq = this._mergeTermFrequencies(outsideTermFreqRaw)
+    // Step 2: Build global term merge mapping (consistent across concept/outside)
+    const termMergeMap = this._buildTermMergeMap(allRawTerms)
 
-    // Filter: only include terms that appear in at least 2 publications and 20% of concept publications
+    // Step 3: Count merged term frequencies in concept and outside using the same mapping
+    const mergedTermFreq = new Map()
+    const mergedOutsideTermFreq = new Map()
+
+    conceptTitles.forEach((title) => {
+      const tokens = tokenize(title)
+      tokens.forEach((rawTerm) => {
+        const mergedTerm = termMergeMap.get(rawTerm) || rawTerm
+        mergedTermFreq.set(mergedTerm, (mergedTermFreq.get(mergedTerm) || 0) + 1)
+      })
+    })
+
+    outsidePublications.forEach((pub) => {
+      const tokens = tokenize(pub.title)
+      tokens.forEach((rawTerm) => {
+        const mergedTerm = termMergeMap.get(rawTerm) || rawTerm
+        mergedOutsideTermFreq.set(mergedTerm, (mergedOutsideTermFreq.get(mergedTerm) || 0) + 1)
+      })
+    })
+
+    // Step 4: Count publications containing each merged term
+    const pubsPerTerm = new Map()
+    conceptTitles.forEach((title) => {
+      const tokens = tokenize(title)
+      const mergedTermsInTitle = new Set(
+        tokens.map((rawTerm) => termMergeMap.get(rawTerm) || rawTerm)
+      )
+      mergedTermsInTitle.forEach((mergedTerm) => {
+        pubsPerTerm.set(mergedTerm, (pubsPerTerm.get(mergedTerm) || 0) + 1)
+      })
+    })
+
+    // Step 5: Filter and score terms
     const minPublications = Math.max(2, Math.ceil(conceptTitles.length * 0.2))
 
     const filteredTerms = []
     mergedTermFreq.forEach((inCount, term) => {
-      // Count how many publications contain this term
-      let pubsWithTerm = 0
-      conceptTitles.forEach((title) => {
-        const tokens = tokenize(title)
-        const merged = this._mergeTermFrequencies(new Map(tokens.map(t => [t, 1])))
-        if (merged.has(term)) {
-          pubsWithTerm++
-        }
-      })
+      const pubsWithTerm = pubsPerTerm.get(term) || 0
 
       if (pubsWithTerm >= minPublications) {
         const outCount = mergedOutsideTermFreq.get(term) || 0
-        // Exclusivity formula: inCount / (outCount + 1)
         const score = inCount / (outCount + 1)
         filteredTerms.push({ term, score, inCount, outCount })
       }
@@ -694,6 +706,62 @@ export class ConceptService {
       exclusivityTerms: filteredTerms.slice().sort((a, b) => b.score - a.score),
       frequencyTerms: filteredTerms.slice().sort((a, b) => b.inCount - a.inCount)
     }
+  }
+
+  /**
+   * Builds a global term merge mapping
+   * @private
+   * @param {Map} termFreq - Map of raw term to frequency
+   * @returns {Map} Map of raw term to merged term
+   */
+  static _buildTermMergeMap(termFreq) {
+    const MIN_PREFIX_LENGTH = 5
+    const terms = Array.from(termFreq.keys())
+    const mergeMap = new Map()
+    const processed = new Set()
+
+    // Sort by frequency descending to prioritize high-frequency terms
+    const sorted = terms.sort((a, b) => (termFreq.get(b) || 0) - (termFreq.get(a) || 0))
+
+    sorted.forEach((term) => {
+      if (processed.has(term)) return
+
+      // Find all terms that share a common prefix with this term
+      const similar = sorted.filter((other) => {
+        if (processed.has(other) || other === term) return false
+
+        // Find common prefix length
+        const minLen = Math.min(term.length, other.length)
+        let commonPrefixLen = 0
+        for (let i = 0; i < minLen; i++) {
+          if (term[i] === other[i]) {
+            commonPrefixLen++
+          } else {
+            break
+          }
+        }
+
+        return commonPrefixLen >= MIN_PREFIX_LENGTH
+      })
+
+      if (similar.length > 0) {
+        // Merge: use the shortest term as the representative
+        const allTerms = [term, ...similar]
+        const shortest = allTerms.reduce((a, b) => (a.length < b.length ? a : b), term)
+
+        // Map all variants to the shortest
+        allTerms.forEach((t) => {
+          mergeMap.set(t, shortest)
+          processed.add(t)
+        })
+      } else {
+        // No similar terms, map to itself
+        mergeMap.set(term, term)
+        processed.add(term)
+      }
+    })
+
+    return mergeMap
   }
 
   /**
