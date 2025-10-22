@@ -36,7 +36,7 @@ const hasFilteredConcepts = computed(() => {
 
 const conceptsToShow = computed(() => {
   if (!hasFilteredConcepts.value) return []
-  return sortedConceptsPreview.value.slice(0, 10)
+  return sortedConceptsPreview.value
 })
 
 const totalConceptCount = computed(() => {
@@ -44,9 +44,7 @@ const totalConceptCount = computed(() => {
 })
 
 const previewTitle = computed(() => {
-  if (totalConceptCount.value > 10) {
-    return `Top 10 concepts (${totalConceptCount.value} total)`
-  } else if (totalConceptCount.value > 0) {
+  if (totalConceptCount.value > 0) {
     return `${totalConceptCount.value} concept${totalConceptCount.value > 1 ? 's' : ''} found`
   }
   return ''

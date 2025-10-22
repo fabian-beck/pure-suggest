@@ -417,8 +417,8 @@ export class ConceptService {
       // Pick top concept
       const topConcept = remaining.shift()
 
-      // Skip concepts with remaining importance <= 3
-      if (topConcept.remainingImportance <= 3) {
+      // Skip concepts with remaining importance < 6 or less than half of original importance
+      if (topConcept.remainingImportance < 6 || topConcept.remainingImportance < topConcept.importance / 2) {
         break
       }
 
