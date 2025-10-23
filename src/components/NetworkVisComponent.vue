@@ -198,20 +198,22 @@ export default {
       deep: true,
       handler () {
         // Replot when publications are queued for selection
+        // Use plot() without restart to avoid simulation restart since structure doesn't change
         if (this.interfaceStore.isLoading) {
           return
         }
-        this.plot(true)
+        this.plot()
       }
     },
     excludedQueue: {
       deep: true,
       handler () {
         // Replot when publications are queued for exclusion
+        // Use plot() without restart to avoid simulation restart since structure doesn't change
         if (this.interfaceStore.isLoading) {
           return
         }
-        this.plot(true)
+        this.plot()
       }
     },
     'interfaceStore.networkReplotTrigger': {
