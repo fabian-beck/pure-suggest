@@ -79,6 +79,7 @@ export default {
     const interfaceStore = useInterfaceStore()
     const { isNetworkClusters } = storeToRefs(interfaceStore)
     const queueStore = useQueueStore()
+    const { selectedQueue, excludedQueue } = storeToRefs(queueStore)
     const authorStore = useAuthorStore()
     const { isEmpty, activatePublicationComponentByDoi, updateQueued } = useAppState()
     const { openAuthorModal } = useModalManager()
@@ -90,6 +91,8 @@ export default {
       interfaceStore,
       isNetworkClusters,
       queueStore,
+      selectedQueue,
+      excludedQueue,
       authorStore,
       isEmpty,
       activatePublicationComponentByDoi,
@@ -191,10 +194,32 @@ export default {
         this.plot()
       }
     },
+    selectedQueue: {
+      deep: true,
+      handler () {
+        // Replot when publications are queued for selection
+        // Use plot() without restart to avoid simulation restart since structure doesn't change
+        if (this.interfaceStore.isLoading) {
+          return
+        }
+        this.plot()
+      }
+    },
+    excludedQueue: {
+      deep: true,
+      handler () {
+        // Replot when publications are queued for exclusion
+        // Use plot() without restart to avoid simulation restart since structure doesn't change
+        if (this.interfaceStore.isLoading) {
+          return
+        }
+        this.plot()
+      }
+    },
     'interfaceStore.networkReplotTrigger': {
       handler (newValue, oldValue) {
-        // Only replot if author nodes are visible and the trigger value changed
-        if (newValue !== oldValue && this.showAuthorNodes) {
+        // Replot when the trigger value changes
+        if (newValue !== oldValue) {
           this.$nextTick(() => {
             // Trigger a full replot with force simulation restart
             this.plot(true)
