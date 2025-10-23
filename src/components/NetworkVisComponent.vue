@@ -79,6 +79,7 @@ export default {
     const interfaceStore = useInterfaceStore()
     const { isNetworkClusters } = storeToRefs(interfaceStore)
     const queueStore = useQueueStore()
+    const { selectedQueue, excludedQueue } = storeToRefs(queueStore)
     const authorStore = useAuthorStore()
     const { isEmpty, activatePublicationComponentByDoi, updateQueued } = useAppState()
     const { openAuthorModal } = useModalManager()
@@ -90,6 +91,8 @@ export default {
       interfaceStore,
       isNetworkClusters,
       queueStore,
+      selectedQueue,
+      excludedQueue,
       authorStore,
       isEmpty,
       activatePublicationComponentByDoi,
@@ -189,6 +192,26 @@ export default {
           return
         }
         this.plot()
+      }
+    },
+    selectedQueue: {
+      deep: true,
+      handler () {
+        // Replot when publications are queued for selection
+        if (this.interfaceStore.isLoading) {
+          return
+        }
+        this.plot(true)
+      }
+    },
+    excludedQueue: {
+      deep: true,
+      handler () {
+        // Replot when publications are queued for exclusion
+        if (this.interfaceStore.isLoading) {
+          return
+        }
+        this.plot(true)
       }
     },
     'interfaceStore.networkReplotTrigger': {
