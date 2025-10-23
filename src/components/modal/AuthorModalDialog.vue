@@ -389,23 +389,15 @@ export default {
             <div class="media-content">
               <div class="content">
                 <div class="mb-2">
-                  <v-icon
+                  <b class="author-name">{{ author.name }}</b
+                  ><v-icon
                     v-if="isAuthorFiltered(author.id)"
                     size="16"
-                    class="mr-1"
+                    class="ml-1"
                     @click.stop="toggleAuthorFilter(author.id)"
                     v-tippy="'Author is in filter.'"
                     >mdi-filter</v-icon
                   >
-                  <v-icon
-                    v-else
-                    size="16"
-                    class="mr-1 author-filter-icon"
-                    @click.stop="toggleAuthorFilter(author.id)"
-                    v-tippy="'Add author to f<span class=&quot;key&quot;>i</span>lter'"
-                    >mdi-filter-outline</v-icon
-                  >
-                  <b class="author-name">{{ author.name }}</b
                   >&nbsp;<span v-if="author.orcid">
                     <a :href="`https://orcid.org/${author.orcid}`" @click.stop
                       ><img
@@ -564,16 +556,6 @@ export default {
         text-decoration: underline;
         text-decoration-color: hsl(48, 100%, 67%);
         text-decoration-thickness: 0.2rem;
-      }
-    }
-
-    & .author-filter-icon {
-      cursor: pointer;
-      opacity: 0.3;
-      transition: opacity 0.2s ease;
-
-      &:hover {
-        opacity: 1;
       }
     }
 
