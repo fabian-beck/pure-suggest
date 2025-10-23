@@ -11,6 +11,7 @@ export default class Filter {
     this.tags = []
     this.doi = ''
     this.dois = []
+    this.authors = []
     this.isActive = true
     this.applyToSelected = true
     this.applyToSuggested = true
@@ -97,6 +98,24 @@ export default class Filter {
     console.log(`Remaining DOIs: ${this.dois}`)
   }
 
+  toggleAuthor(authorId) {
+    if (this.authors.includes(authorId)) {
+      this.removeAuthor(authorId)
+    } else {
+      this.addAuthor(authorId)
+    }
+  }
+
+  addAuthor(authorId) {
+    if (!this.authors.includes(authorId)) {
+      this.authors.push(authorId)
+    }
+  }
+
+  removeAuthor(authorId) {
+    this.authors = this.authors.filter((a) => a !== authorId)
+  }
+
   matchesDois(publication) {
     if (!this.dois.length) return true
     return this.dois.some(
@@ -107,20 +126,47 @@ export default class Filter {
     )
   }
 
+  matchesAuthors(publication) {
+    if (!this.authors.length) return true
+    if (!publication.author) return false
+    
+    // Split authors by semicolon to get individual author names
+    const authorNames = publication.author.split(';').map((name) => name.trim())
+    
+    // Check if any of the publication's authors match any of the filtered author IDs
+    return this.authors.some((authorId) => {
+      return authorNames.some((authorName) => {
+        // Normalize author name to ID format for comparison
+        const normalizedName = authorName
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[øØ]/g, 'o')
+          .replace(/[åÅ]/g, 'a')
+          .replace(/[æÆ]/g, 'ae')
+          .replace(/[ðÐ]/g, 'd')
+          .replace(/[þÞ]/g, 'th')
+          .replace(/[ßẞ]/g, 'ss')
+          .toLowerCase()
+        return normalizedName === authorId
+      })
+    })
+  }
+
   matches(publication) {
     if (!this.isActive) return true
     return (
       this.matchesString(publication) &&
       this.matchesTag(publication) &&
       this.matchesYear(publication) &&
-      this.matchesDois(publication)
+      this.matchesDois(publication) &&
+      this.matchesAuthors(publication)
     )
   }
 
   hasActiveFilters() {
     return (
       this.isActive &&
-      Boolean(this.string || this.tags.length > 0 || this.isYearActive() || this.dois.length > 0) &&
+      Boolean(this.string || this.tags.length > 0 || this.isYearActive() || this.dois.length > 0 || this.authors.length > 0) &&
       (this.applyToSelected || this.applyToSuggested)
     )
   }

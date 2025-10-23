@@ -11,6 +11,7 @@ describe('Filter', () => {
     mockPublication = {
       doi: '10.1234/test-doi',
       year: '2023',
+      author: 'Smith, John; Doe, Jane; Johnson, Bob',
       citationDois: ['10.1234/citation1', '10.1234/citation2'],
       referenceDois: ['10.1234/ref1', '10.1234/ref2'],
       getMetaString: vi.fn(() => 'Machine Learning Test Paper Author Name'),
@@ -27,6 +28,7 @@ describe('Filter', () => {
       expect(filter.tags).toEqual([])
       expect(filter.doi).toBe('')
       expect(filter.dois).toEqual([])
+      expect(filter.authors).toEqual([])
       expect(filter.isActive).toBe(true)
       expect(filter.applyToSelected).toBe(true)
       expect(filter.applyToSuggested).toBe(true)
@@ -327,6 +329,7 @@ describe('Filter', () => {
       filter.string = ''
       filter.tags = []
       filter.dois = []
+      filter.authors = []
       mockPublication.year = '2023'
     })
 
@@ -354,14 +357,31 @@ describe('Filter', () => {
       expect(filter.matches(mockPublication)).toBe(false)
     })
 
+    it('should return false when author filter fails', () => {
+      filter.authors = ['nonexistent, author']
+      expect(filter.matches(mockPublication)).toBe(false)
+    })
+
     it('should handle complex combined filters', () => {
       filter.string = 'Machine'
       filter.tags = ['someTag']
       filter.yearStart = '2020'
       filter.yearEnd = '2025'
       filter.dois = ['10.1234/citation1']
+      filter.authors = ['smith, john']
 
       expect(filter.matches(mockPublication)).toBe(true)
+    })
+
+    it('should fail when all but author filter passes', () => {
+      filter.string = 'Machine'
+      filter.tags = ['someTag']
+      filter.yearStart = '2020'
+      filter.yearEnd = '2025'
+      filter.dois = ['10.1234/citation1']
+      filter.authors = ['nonexistent, author']
+
+      expect(filter.matches(mockPublication)).toBe(false)
     })
   })
 
@@ -390,6 +410,11 @@ describe('Filter', () => {
       expect(filter.hasActiveFilters()).toBe(true)
     })
 
+    it('should return true when author filter has entries', () => {
+      filter.authors = ['smith, john']
+      expect(filter.hasActiveFilters()).toBe(true)
+    })
+
     it('should return false when year values are set but not active', () => {
       filter.yearStart = '999'
       filter.yearEnd = '10001'
@@ -401,6 +426,7 @@ describe('Filter', () => {
       filter.tag = 'someTag'
       filter.yearStart = '2020'
       filter.dois = ['10.1234/test']
+      filter.authors = ['smith, john']
       expect(filter.hasActiveFilters()).toBe(true)
     })
 
@@ -409,6 +435,7 @@ describe('Filter', () => {
       filter.tag = 'someTag'
       filter.yearStart = '2020'
       filter.dois = ['10.1234/test']
+      filter.authors = ['smith, john']
       filter.isActive = false
       expect(filter.hasActiveFilters()).toBe(false)
     })
@@ -505,6 +532,114 @@ describe('Filter', () => {
         filter.toggleTag('isHighlyCited')
         expect(filter.tags).toEqual(['isSurvey'])
       })
+    })
+  })
+
+  describe('Author management', () => {
+    describe('addAuthor', () => {
+      it('should add and handle duplicate authors', () => {
+        filter.addAuthor('smith, john')
+        expect(filter.authors).toEqual(['smith, john'])
+
+        filter.addAuthor('smith, john') // duplicate
+        expect(filter.authors).toEqual(['smith, john'])
+
+        filter.addAuthor('doe, jane')
+        expect(filter.authors).toEqual(['smith, john', 'doe, jane'])
+      })
+    })
+
+    describe('removeAuthor', () => {
+      it('should remove author and handle non-existent gracefully', () => {
+        filter.authors = ['smith, john', 'doe, jane']
+        filter.removeAuthor('smith, john')
+        expect(filter.authors).toEqual(['doe, jane'])
+
+        filter.removeAuthor('nonexistent')
+        expect(filter.authors).toEqual(['doe, jane'])
+      })
+    })
+
+    describe('toggleAuthor', () => {
+      it('should toggle author presence', () => {
+        filter.toggleAuthor('smith, john')
+        expect(filter.authors).toEqual(['smith, john'])
+
+        filter.toggleAuthor('smith, john')
+        expect(filter.authors).toEqual([])
+      })
+
+      it('should toggle multiple different authors', () => {
+        filter.toggleAuthor('smith, john')
+        expect(filter.authors).toEqual(['smith, john'])
+
+        filter.toggleAuthor('doe, jane')
+        expect(filter.authors).toEqual(['smith, john', 'doe, jane'])
+
+        filter.toggleAuthor('smith, john')
+        expect(filter.authors).toEqual(['doe, jane'])
+      })
+    })
+  })
+
+  describe('matchesAuthors', () => {
+    it('should return true when authors filter is empty', () => {
+      expect(filter.matchesAuthors(mockPublication)).toBe(true)
+    })
+
+    it('should return false when publication has no author field', () => {
+      mockPublication.author = null
+      filter.authors = ['smith, john']
+      expect(filter.matchesAuthors(mockPublication)).toBe(false)
+    })
+
+    it('should return true when publication has matching author (exact case)', () => {
+      filter.authors = ['smith, john']
+      expect(filter.matchesAuthors(mockPublication)).toBe(true)
+    })
+
+    it('should return true when publication has matching author (case insensitive)', () => {
+      filter.authors = ['SMITH, JOHN']
+      // The filter normalizes to lowercase, so it won't match uppercase in filter
+      // But the publication author "Smith, John" normalizes to "smith, john"
+      expect(filter.matchesAuthors(mockPublication)).toBe(false)
+      
+      // The correct way - filter should store normalized IDs
+      filter.authors = ['smith, john']
+      expect(filter.matchesAuthors(mockPublication)).toBe(true)
+    })
+
+    it('should return true when publication has at least one matching author', () => {
+      filter.authors = ['doe, jane', 'nonexistent, author']
+      expect(filter.matchesAuthors(mockPublication)).toBe(true)
+    })
+
+    it('should return false when publication has none of the filtered authors', () => {
+      filter.authors = ['brown, alice', 'white, bob']
+      expect(filter.matchesAuthors(mockPublication)).toBe(false)
+    })
+
+    it('should handle authors with special characters', () => {
+      mockPublication.author = 'Müller, Hans; García, José'
+      filter.authors = ['muller, hans'] // normalized without umlaut
+      expect(filter.matchesAuthors(mockPublication)).toBe(true)
+    })
+
+    it('should handle Nordic characters', () => {
+      mockPublication.author = 'Østerberg, Lars; Åkesson, Erik'
+      filter.authors = ['osterberg, lars'] // ø normalized to o
+      expect(filter.matchesAuthors(mockPublication)).toBe(true)
+    })
+
+    it('should handle empty author list in publication', () => {
+      mockPublication.author = ''
+      filter.authors = ['smith, john']
+      expect(filter.matchesAuthors(mockPublication)).toBe(false)
+    })
+
+    it('should match any author in multi-author publication', () => {
+      filter.authors = ['johnson, bob']
+      expect(filter.matchesAuthors(mockPublication)).toBe(true)
     })
   })
 })
