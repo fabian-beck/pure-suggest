@@ -390,14 +390,6 @@ export default {
               <div class="content">
                 <div class="mb-2">
                   <b class="author-name">{{ author.name }}</b
-                  ><v-icon
-                    v-if="isAuthorFiltered(author.id)"
-                    size="16"
-                    class="ml-1"
-                    @click.stop="toggleAuthorFilter(author.id)"
-                    v-tippy="'Author is in filter.'"
-                    >mdi-filter</v-icon
-                  >
                   >&nbsp;<span v-if="author.orcid">
                     <a :href="`https://orcid.org/${author.orcid}`" @click.stop
                       ><img
@@ -474,6 +466,12 @@ export default {
                 :href="`https://scholar.google.com/scholar?q=${author.id}`"
                 @click.stop
                 v-tippy="'Search author on Google Scholar'"
+              ></CompactButton>
+              <CompactButton
+                icon="mdi-filter"
+                :active="isAuthorFiltered(author.id)"
+                @click.stop="toggleAuthorFilter(author.id)"
+                v-tippy="isAuthorFiltered(author.id) ? 'Author is in filter. Click to remove.' : 'Add author to filter.'"
               ></CompactButton>
             </div>
           </li>
