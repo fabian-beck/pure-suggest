@@ -216,9 +216,12 @@ export default {
 
     toggleAuthorFilter(authorId) {
       this.sessionStore.filter.toggleAuthor(authorId)
-      
+
       // If filters are disabled and we just added an author, enable filters
-      if (!this.sessionStore.filter.isActive && this.sessionStore.filter.authors.includes(authorId)) {
+      if (
+        !this.sessionStore.filter.isActive &&
+        this.sessionStore.filter.authors.includes(authorId)
+      ) {
         this.sessionStore.filter.isActive = true
       }
     },
@@ -289,7 +292,7 @@ export default {
   },
   watch: {
     'modalStore.isAuthorModalDialogShown': {
-      handler (newValue, oldValue) {
+      handler(newValue, oldValue) {
         // Detect when modal is closed (was true, now false)
         if (oldValue === true && newValue === false) {
           this.handleModalClose()
@@ -304,7 +307,7 @@ export default {
     },
     // Reset pagination when switching between author list and single author view
     'authorStore.activeAuthorId': {
-      handler (newValue, oldValue) {
+      handler(newValue, oldValue) {
         // Reset pagination when returning to the full author list
         if (oldValue && !newValue) {
           this.resetPagination()
@@ -313,7 +316,7 @@ export default {
     },
     // Reset pagination when author data changes
     'authorStore.selectedPublicationsAuthors': {
-      handler () {
+      handler() {
         this.resetPagination()
       }
     }
@@ -468,10 +471,14 @@ export default {
                 v-tippy="'Search author on Google Scholar'"
               ></CompactButton>
               <CompactButton
-                icon="mdi-filter"
+                icon="mdi-filter-plus"
                 :active="isAuthorFiltered(author.id)"
                 @click.stop="toggleAuthorFilter(author.id)"
-                v-tippy="isAuthorFiltered(author.id) ? 'Author is in filter. Click to remove.' : 'Add author to filter.'"
+                v-tippy="
+                  isAuthorFiltered(author.id)
+                    ? 'Author is in filter. Click to remove.'
+                    : 'Add author to filter.'
+                "
               ></CompactButton>
             </div>
           </li>
