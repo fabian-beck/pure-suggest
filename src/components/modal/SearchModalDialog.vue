@@ -177,6 +177,10 @@ export default {
       this.lastSearchQuery = ''
     },
 
+    // Re-ranking after publication data is fully loaded
+    // This duplicates the logic in PublicationSearch.js intentionally:
+    // - PublicationSearch ranks with potentially incomplete data immediately after API responses
+    // - This method re-ranks with complete data after all publications have been fetched
     rankResults(results) {
       const queryWords = this.extractWords(this.cleanedSearchQuery)
       
