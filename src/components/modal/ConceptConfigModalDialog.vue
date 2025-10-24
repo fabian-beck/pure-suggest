@@ -211,36 +211,27 @@ watch(
   >
     <template #sticky>
       <v-sheet class="has-background-primary-95 pa-3">
-        <p class="mb-3">
-          Configure and compute concepts to cluster selected publications based on shared
-          attributes.
-        </p>
-
-        <div class="mb-3">
-          <h3 class="is-size-6 mb-2"><b>Attributes:</b></h3>
-          <div class="d-flex flex-wrap ga-2">
-            <v-checkbox
-              v-model="includeKeywords"
-              label="Keywords"
-              density="compact"
-              hide-details
-            ></v-checkbox>
-            <v-checkbox
-              v-model="includeCitations"
-              label="Citations"
-              density="compact"
-              hide-details
-            ></v-checkbox>
-            <v-checkbox
-              v-model="includeAuthors"
-              label="Authors"
-              density="compact"
-              hide-details
-            ></v-checkbox>
-          </div>
-        </div>
-
-        <div class="d-flex ga-2">
+        <div class="d-flex flex-wrap align-center ga-2">
+          <span>Compute concepts based on shared <b>attributes</b>:</span>
+          <v-checkbox
+            v-model="includeKeywords"
+            label="Keywords"
+            density="compact"
+            hide-details
+          ></v-checkbox>
+          <v-checkbox
+            v-model="includeCitations"
+            label="Citations"
+            density="compact"
+            hide-details
+          ></v-checkbox>
+          <v-checkbox
+            v-model="includeAuthors"
+            label="Authors"
+            density="compact"
+            hide-details
+          ></v-checkbox>
+          <v-spacer></v-spacer>
           <v-btn
             :disabled="!canCompute"
             @click="computeConcepts"
@@ -248,7 +239,7 @@ watch(
             prepend-icon="mdi-play"
             class="has-background-primary has-text-white"
           >
-            Compute Concepts
+            Compute
           </v-btn>
 
           <v-btn
