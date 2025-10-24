@@ -14,18 +14,26 @@ const ENLARGE_FACTOR = 1.5
 /**
  * Create publication node data from publications
  */
-export function createPublicationNodes(publications, doiToIndex, selectedQueue, excludedQueue) {
+export function createPublicationNodes(publications, doiToIndex, options = {}) {
+  const { selectedQueue = [], excludedQueue = [], filter = null, onlyShowFiltered = false } = options
   const nodes = []
   let i = 0
 
   publications.forEach((publication) => {
     if (publication.year) {
       doiToIndex[publication.doi] = i
+      
+      // Determine if this publication matches the filter
+      // When onlyShowFiltered is true, all shown publications match by definition
+      // When onlyShowFiltered is false, we need to check each publication
+      const matchesFilter = onlyShowFiltered || !filter || !filter.hasActiveFilters() || filter.matches(publication)
+      
       nodes.push({
         id: publication.doi,
         publication,
         isQueuingForSelected: selectedQueue.includes(publication.doi),
         isQueuingForExcluded: excludedQueue.includes(publication.doi),
+        isFilteredOut: !matchesFilter,
         type: 'publication'
       })
       i++
@@ -89,6 +97,7 @@ export function updatePublicationNodes(nodeSelection, activePublication, existin
     )
     .classed('queuingForSelected', (d) => d.isQueuingForSelected)
     .classed('queuingForExcluded', (d) => d.isQueuingForExcluded)
+    .classed('filtered-out', (d) => d.isFilteredOut)
     .classed('is-keyword-hovered', (d) => d.publication.isKeywordHovered)
     .classed('is-author-hovered', (d) => d.publication.isAuthorHovered)
 

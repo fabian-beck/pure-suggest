@@ -94,12 +94,10 @@ describe('Queued Publications Visual State Bug', () => {
 
     const publications = [pub1, pub2]
     const doiToIndex = {}
-    let nodes = createPublicationNodes(
-      publications,
-      doiToIndex,
-      queueStore.selectedQueue,
-      queueStore.excludedQueue
-    )
+    let nodes = createPublicationNodes(publications, doiToIndex, {
+      selectedQueue: queueStore.selectedQueue,
+      excludedQueue: queueStore.excludedQueue
+    })
 
     // Verify that pub2 node has the queueing flag
     const pub2Node = nodes.find((n) => n.id === pub2Doi)
@@ -115,12 +113,10 @@ describe('Queued Publications Visual State Bug', () => {
     expect(queueStore.isQueuingForSelected(pub2Doi)).toBe(false)
 
     // Create nodes again (simulating network replot after updateQueued)
-    nodes = createPublicationNodes(
-      publications,
-      doiToIndex,
-      queueStore.selectedQueue,
-      queueStore.excludedQueue
-    )
+    nodes = createPublicationNodes(publications, doiToIndex, {
+      selectedQueue: queueStore.selectedQueue,
+      excludedQueue: queueStore.excludedQueue
+    })
 
     // Verify that pub2 node no longer has the queueing flag
     const pub2NodeAfter = nodes.find((n) => n.id === pub2Doi)
@@ -139,36 +135,30 @@ describe('Queued Publications Visual State Bug', () => {
 
     // Initially queue is empty
     const doiToIndex = {}
-    let nodes = createPublicationNodes(
-      [pub1],
-      doiToIndex,
-      queueStore.selectedQueue,
-      queueStore.excludedQueue
-    )
+    let nodes = createPublicationNodes([pub1], doiToIndex, {
+      selectedQueue: queueStore.selectedQueue,
+      excludedQueue: queueStore.excludedQueue
+    })
 
     expect(nodes[0].isQueuingForSelected).toBe(false)
     expect(nodes[0].isQueuingForExcluded).toBe(false)
 
     // Add to queue
     queueStore.selectedQueue.push(pub1Doi)
-    nodes = createPublicationNodes(
-      [pub1],
-      doiToIndex,
-      queueStore.selectedQueue,
-      queueStore.excludedQueue
-    )
+    nodes = createPublicationNodes([pub1], doiToIndex, {
+      selectedQueue: queueStore.selectedQueue,
+      excludedQueue: queueStore.excludedQueue
+    })
 
     expect(nodes[0].isQueuingForSelected).toBe(true)
     expect(nodes[0].isQueuingForExcluded).toBe(false)
 
     // Clear queue
     queueStore.clear()
-    nodes = createPublicationNodes(
-      [pub1],
-      doiToIndex,
-      queueStore.selectedQueue,
-      queueStore.excludedQueue
-    )
+    nodes = createPublicationNodes([pub1], doiToIndex, {
+      selectedQueue: queueStore.selectedQueue,
+      excludedQueue: queueStore.excludedQueue
+    })
 
     expect(nodes[0].isQueuingForSelected).toBe(false)
     expect(nodes[0].isQueuingForExcluded).toBe(false)
