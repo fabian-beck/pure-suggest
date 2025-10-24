@@ -142,6 +142,8 @@ export default {
         })
         this.loaded = loaded
         if (loaded === this.filteredSearchResults.length) {
+          // Re-rank results now that all data is loaded
+          this.searchResults.results = this.rankResults(this.searchResults.results)
           this.isLoading = false
           return
         }
@@ -173,6 +175,54 @@ export default {
       this.searchCancelled = false
       this.loaded = 0
       this.lastSearchQuery = ''
+    },
+
+    rankResults(results) {
+      const queryWords = this.extractWords(this.cleanedSearchQuery)
+      
+      // Calculate match scores for each publication
+      const scoredResults = results.map((publication) => {
+        const score = this.calculateMatchScore(publication, queryWords)
+        return { publication, score }
+      })
+      
+      // Sort by score descending
+      scoredResults.sort((a, b) => b.score - a.score)
+      
+      return scoredResults.map((item) => item.publication)
+    },
+
+    extractWords(text) {
+      return text
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .filter((word) => word.length >= 3)
+    },
+
+    calculateMatchScore(publication, queryWords) {
+      let score = 0
+      
+      const TITLE_WEIGHT = 3
+      const AUTHOR_WEIGHT = 2
+      const VENUE_WEIGHT = 1
+      
+      const titleWords = this.extractWords(publication.title || '')
+      const authorWords = this.extractWords((publication.authors || []).join(' '))
+      const venueWords = this.extractWords(publication.venue || '')
+      
+      queryWords.forEach((queryWord) => {
+        const titleMatches = titleWords.filter((word) => word.includes(queryWord) || queryWord.includes(word)).length
+        score += titleMatches * TITLE_WEIGHT
+        
+        const authorMatches = authorWords.filter((word) => word.includes(queryWord) || queryWord.includes(word)).length
+        score += authorMatches * AUTHOR_WEIGHT
+        
+        const venueMatches = venueWords.filter((word) => word.includes(queryWord) || queryWord.includes(word)).length
+        score += venueMatches * VENUE_WEIGHT
+      })
+      
+      return score
     }
   }
 }
