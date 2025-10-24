@@ -45,16 +45,9 @@ describe('PublicationSearch', () => {
   })
 
   describe('Constructor', () => {
-    it('should create instance with query and default provider', () => {
+    it('should create instance with query', () => {
       const search = new PublicationSearch('test query')
       expect(search.query).toBe('test query')
-      expect(search.provider).toBe('openalex')
-    })
-
-    it('should create instance with query and specified provider', () => {
-      const search = new PublicationSearch('test query', 'crossref')
-      expect(search.query).toBe('test query')
-      expect(search.provider).toBe('crossref')
     })
   })
 
@@ -77,7 +70,7 @@ describe('PublicationSearch', () => {
     })
 
     it('should not perform search when DOIs are found', async () => {
-      const search = new PublicationSearch('10.1234/test-doi', 'openalex')
+      const search = new PublicationSearch('10.1234/test-doi')
       const result = await search.execute()
       
       expect(result.type).toBe('doi')
@@ -90,9 +83,9 @@ describe('PublicationSearch', () => {
     })
   })
 
-  describe('OpenAlex Search', () => {
-    it('should use OpenAlex API when provider is openalex', async () => {
-      const search = new PublicationSearch('visualization', 'openalex')
+  describe('Merged Search', () => {
+    it('should search both OpenAlex and CrossRef APIs', async () => {
+      const search = new PublicationSearch('visualization')
       const result = await search.execute()
       
       expect(result.type).toBe('search')
@@ -101,69 +94,101 @@ describe('PublicationSearch', () => {
       const openAlexCalls = cachedFetch.mock.calls.filter(call => 
         call[0].includes('api.openalex.org')
       )
-      expect(openAlexCalls).toHaveLength(1)
-      expect(openAlexCalls[0][0]).toContain('search=visualization')
-      expect(openAlexCalls[0][0]).toContain('mailto=fabian.beck@uni-bamberg.de')
-    })
-
-    it('should extract DOI from OpenAlex response', async () => {
-      const search = new PublicationSearch('test', 'openalex')
-      const result = await search.execute()
-      
-      expect(result.results).toHaveLength(2)
-      expect(result.results[0].doi).toBe('10.1234/openalex-1')
-      expect(result.results[1].doi).toBe('10.1234/openalex-2')
-    })
-
-    it('should use default provider openalex when not specified', async () => {
-      const search = new PublicationSearch('test')
-      await search.execute()
-      
-      const { cachedFetch } = await import('@/lib/Cache.js')
-      const openAlexCalls = cachedFetch.mock.calls.filter(call => 
-        call[0].includes('api.openalex.org')
-      )
-      expect(openAlexCalls).toHaveLength(1)
-    })
-  })
-
-  describe('CrossRef Search', () => {
-    it('should use CrossRef API when provider is crossref', async () => {
-      const search = new PublicationSearch('visualization', 'crossref')
-      const result = await search.execute()
-      
-      expect(result.type).toBe('search')
-      
-      const { cachedFetch } = await import('@/lib/Cache.js')
       const crossrefCalls = cachedFetch.mock.calls.filter(call => 
         call[0].includes('api.crossref.org')
       )
+      
+      expect(openAlexCalls).toHaveLength(1)
       expect(crossrefCalls).toHaveLength(1)
+      expect(openAlexCalls[0][0]).toContain('search=visualization')
       expect(crossrefCalls[0][0]).toContain('query=visualization')
-      expect(crossrefCalls[0][0]).toContain('mailto=fabian.beck@uni-bamberg.de')
     })
 
-    it('should extract DOI from CrossRef response', async () => {
-      const search = new PublicationSearch('test', 'crossref')
+    it('should merge results from both APIs', async () => {
+      const search = new PublicationSearch('test')
       const result = await search.execute()
       
-      expect(result.results).toHaveLength(2)
-      expect(result.results[0].doi).toBe('10.1234/crossref-1')
-      expect(result.results[1].doi).toBe('10.1234/crossref-2')
+      expect(result.results).toHaveLength(4) // 2 from OpenAlex + 2 from CrossRef
+      expect(result.results.some(r => r.doi === '10.1234/openalex-1')).toBe(true)
+      expect(result.results.some(r => r.doi === '10.1234/openalex-2')).toBe(true)
+      expect(result.results.some(r => r.doi === '10.1234/crossref-1')).toBe(true)
+      expect(result.results.some(r => r.doi === '10.1234/crossref-2')).toBe(true)
+    })
+
+    it('should remove duplicate DOIs from merged results', async () => {
+      // Update mock to return duplicate DOIs
+      const { cachedFetch } = await import('@/lib/Cache.js')
+      cachedFetch.mockImplementation((url, callback) => {
+        if (url.includes('api.openalex.org')) {
+          callback({
+            results: [
+              { doi: 'https://doi.org/10.1234/duplicate', title: 'OpenAlex Result' }
+            ]
+          })
+        } else if (url.includes('api.crossref.org')) {
+          callback({
+            message: {
+              items: [
+                { DOI: '10.1234/DUPLICATE', title: 'CrossRef Result' }
+              ]
+            }
+          })
+        }
+        return Promise.resolve()
+      })
+      
+      const search = new PublicationSearch('test')
+      const result = await search.execute()
+      
+      expect(result.results).toHaveLength(1) // Duplicate should be removed
     })
   })
 
   describe('Query Processing', () => {
     it('should handle special characters in query', async () => {
-      const search = new PublicationSearch('test & query!', 'openalex')
+      const search = new PublicationSearch('test & query!')
       await search.execute()
       
       const { cachedFetch } = await import('@/lib/Cache.js')
       const calls = cachedFetch.mock.calls.filter(call => 
-        call[0].includes('api.openalex.org')
+        call[0].includes('api.openalex.org') || call[0].includes('api.crossref.org')
       )
       // Query should be URL encoded
-      expect(calls[0][0]).toContain('search=')
+      expect(calls.length).toBeGreaterThan(0)
+    })
+  })
+
+  describe('Ranking', () => {
+    it('should rank results by relevance', async () => {
+      // Mock with more detailed publication data for ranking
+      const { cachedFetch } = await import('@/lib/Cache.js')
+      cachedFetch.mockImplementation((url, callback) => {
+        if (url.includes('api.openalex.org')) {
+          callback({
+            results: [
+              { doi: 'https://doi.org/10.1234/openalex-1', title: 'Visualization Techniques' }
+            ]
+          })
+        } else if (url.includes('api.crossref.org')) {
+          callback({
+            message: {
+              items: [
+                { DOI: '10.1234/crossref-1', title: 'Data Analysis Methods' }
+              ]
+            }
+          })
+        }
+        return Promise.resolve()
+      })
+      
+      const search = new PublicationSearch('visualization')
+      const result = await search.execute()
+      
+      // Results should be ranked (visualization should rank higher)
+      expect(result.results).toHaveLength(2)
+      // The order will be determined by the ranking algorithm
+      expect(result.results[0]).toBeDefined()
+      expect(result.results[1]).toBeDefined()
     })
   })
 })

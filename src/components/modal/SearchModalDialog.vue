@@ -33,12 +33,7 @@ export default {
       loaded: 0,
       cleanedSearchQuery: '',
       searchCancelled: false,
-      lastSearchQuery: '',
-      lastSearchProvider: '',
-      searchProviders: [
-        { title: 'OpenAlex', value: 'openalex' },
-        { title: 'CrossRef', value: 'crossref' }
-      ]
+      lastSearchQuery: ''
     }
   },
   computed: {
@@ -99,11 +94,8 @@ export default {
     },
 
     async search() {
-      // Don't perform search if query and provider are the same as last search
-      if (
-        this.modalStore.searchQuery === this.lastSearchQuery &&
-        this.modalStore.searchProvider === this.lastSearchProvider
-      ) {
+      // Don't perform search if query is the same as last search
+      if (this.modalStore.searchQuery === this.lastSearchQuery) {
         return
       }
 
@@ -117,17 +109,12 @@ export default {
       if (!this.modalStore.searchQuery) {
         this.searchResults = { results: [], type: 'empty' }
         this.lastSearchQuery = ''
-        this.lastSearchProvider = ''
         return
       }
       this.isLoading = true
       this.lastSearchQuery = this.modalStore.searchQuery
-      this.lastSearchProvider = this.modalStore.searchProvider
       this.cleanedSearchQuery = this.modalStore.searchQuery.replace(/[^a-zA-Z0-9 ]/g, ' ')
-      const publicationSearch = new PublicationSearch(
-        this.modalStore.searchQuery,
-        this.modalStore.searchProvider
-      )
+      const publicationSearch = new PublicationSearch(this.modalStore.searchQuery)
       this.searchResults = await publicationSearch.execute()
 
       // Check if search was cancelled during execution
@@ -186,7 +173,6 @@ export default {
       this.searchCancelled = false
       this.loaded = 0
       this.lastSearchQuery = ''
-      this.lastSearchProvider = ''
     }
   }
 }
@@ -212,20 +198,10 @@ export default {
             @click:append="search"
             @keydown.enter="search"
             density="compact"
-            hint="Search for keywords or by providing DOI(s) in any format. If searching also by author names or publication venue, use CrossRef; for keywords, OpenAlex usually provides better results."
+            hint="Search for keywords or by providing DOI(s) in any format. Results are merged from both OpenAlex and CrossRef and ranked by relevance."
             class="search-field"
           >
           </v-text-field>
-          <v-select
-            v-model="modalStore.searchProvider"
-            :items="searchProviders"
-            variant="solo"
-            density="compact"
-            hide-details
-            @update:model-value="search"
-            class="search-provider-select flex-grow-0 flex-shrink-0"
-          >
-          </v-select>
         </div>
       </form>
     </template>
@@ -305,11 +281,6 @@ form {
 
 .search-field {
   flex: 1;
-}
-
-.search-provider-select {
-  width: 150px;
-  flex-shrink: 0;
 }
 
 .content {
