@@ -299,7 +299,7 @@ watch(
               class="media p-3 m-0 concept-item"
             >
               <div class="media-left concept-icon">
-                <v-icon size="large" color="primary">mdi-group</v-icon>
+                <v-icon size="large">mdi-group</v-icon>
               </div>
               <div class="media-content">
                 <div class="content">
