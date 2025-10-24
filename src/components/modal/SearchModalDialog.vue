@@ -208,17 +208,17 @@ export default {
       const VENUE_WEIGHT = 1
       
       const titleWords = this.extractWords(publication.title || '')
-      const authorWords = this.extractWords((publication.authors || []).join(' '))
-      const venueWords = this.extractWords(publication.venue || '')
+      const authorWords = this.extractWords(publication.author || '')
+      const venueWords = this.extractWords(publication.container || '')
       
       queryWords.forEach((queryWord) => {
-        const titleMatches = titleWords.filter((word) => word.includes(queryWord) || queryWord.includes(word)).length
+        const titleMatches = titleWords.filter((word) => word === queryWord).length
         score += titleMatches * TITLE_WEIGHT
         
-        const authorMatches = authorWords.filter((word) => word.includes(queryWord) || queryWord.includes(word)).length
+        const authorMatches = authorWords.filter((word) => word === queryWord).length
         score += authorMatches * AUTHOR_WEIGHT
         
-        const venueMatches = venueWords.filter((word) => word.includes(queryWord) || queryWord.includes(word)).length
+        const venueMatches = venueWords.filter((word) => word === queryWord).length
         score += venueMatches * VENUE_WEIGHT
       })
       
