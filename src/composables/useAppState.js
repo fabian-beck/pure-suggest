@@ -107,10 +107,15 @@ export function useAppState() {
    * Updates both publication and author scores in the correct sequence
    * Also triggers network visualization updates
    */
-  const updateScores = () => {
+  const updateScores = (keepConceptPreview = false) => {
     sessionStore.updatePublicationScores()
     authorStore.computeSelectedPublicationsAuthors(sessionStore.selectedPublications)
     interfaceStore.triggerNetworkReplot()
+
+    // Clear concept preview when scores change, unless explicitly told to keep it
+    if (!keepConceptPreview && !conceptStore.hasConcepts) {
+      conceptStore.clearPreview()
+    }
   }
 
 

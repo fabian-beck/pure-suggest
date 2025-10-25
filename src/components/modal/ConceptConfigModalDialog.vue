@@ -3,10 +3,10 @@ import { ref, computed, watch } from 'vue'
 
 import { useAppState } from '@/composables/useAppState.js'
 import { ConceptService } from '@/services/ConceptService.js'
+import { useAuthorStore } from '@/stores/author.js'
 import { useConceptStore } from '@/stores/concept.js'
 import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
-import { useAuthorStore } from '@/stores/author.js'
 import { calculateAuthorColor } from '@/utils/authorColor.js'
 
 const sessionStore = useSessionStore()
@@ -26,9 +26,9 @@ const includeCitations = ref(true)
 const includeAuthors = ref(true)
 const isEnabled = ref(false)
 
-const conceptsPreview = ref([])
-const sortedConceptsPreview = ref([])
-const conceptMetadataPreview = ref(new Map())
+const conceptsPreview = computed(() => conceptStore.previewConcepts)
+const sortedConceptsPreview = computed(() => conceptStore.previewSortedConcepts)
+const conceptMetadataPreview = computed(() => conceptStore.previewConceptMetadata)
 
 const canCompute = computed(() => {
   return (includeKeywords.value || includeCitations.value || includeAuthors.value) &&
@@ -157,10 +157,10 @@ function computeConcepts() {
     includeAuthors: includeAuthors.value
   })
 
-  conceptsPreview.value = concepts
-  sortedConceptsPreview.value = ConceptService.sortConceptsByImportance(concepts, publications.length)
-  conceptMetadataPreview.value = ConceptService.generateConceptNames(
-    sortedConceptsPreview.value,
+  conceptStore.previewConcepts = concepts
+  conceptStore.previewSortedConcepts = ConceptService.sortConceptsByImportance(concepts, publications.length)
+  conceptStore.previewConceptMetadata = ConceptService.generateConceptNames(
+    conceptStore.previewSortedConcepts,
     publications
   )
 }
@@ -168,10 +168,13 @@ function computeConcepts() {
 function applyConcepts() {
   if (conceptsPreview.value.length === 0) return
 
-  // Store the computed concepts in the concept store
-  conceptStore.concepts = conceptsPreview.value
-  conceptStore.sortedConcepts = sortedConceptsPreview.value
-  conceptStore.conceptMetadata = conceptMetadataPreview.value
+  // Move preview to active concepts
+  conceptStore.concepts = conceptStore.previewConcepts
+  conceptStore.sortedConcepts = conceptStore.previewSortedConcepts
+  conceptStore.conceptMetadata = conceptStore.previewConceptMetadata
+
+  // Clear preview after applying
+  conceptStore.clearPreview()
 
   // Apply tags to publications
   conceptStore.assignConceptTagsToPublications(sessionStore.selectedPublications)
@@ -180,8 +183,8 @@ function applyConcepts() {
     conceptStore.assignConceptTagsToPublications(sessionStore.suggestedPublications)
   }
 
-  // Update scores to reflect new concept tags
-  updateScores()
+  // Update scores to reflect new concept tags (keep preview during this operation)
+  updateScores(true)
 
   isEnabled.value = true
   modalStore.isConceptConfigModalDialogShown = false
@@ -189,6 +192,7 @@ function applyConcepts() {
 
 function disableConcepts() {
   conceptStore.clear()
+  conceptStore.clearPreview()
 
   // Clear concept tags from all publications
   sessionStore.selectedPublications.forEach((pub) => {
@@ -201,12 +205,9 @@ function disableConcepts() {
     pub.conceptMetadata = null
   })
 
-  updateScores()
+  updateScores(true)
 
   isEnabled.value = false
-  conceptsPreview.value = []
-  sortedConceptsPreview.value = []
-  conceptMetadataPreview.value = new Map()
   modalStore.isConceptConfigModalDialogShown = false
 }
 
@@ -216,15 +217,13 @@ watch(
   (newValue) => {
     if (newValue) {
       isEnabled.value = conceptStore.hasConcepts
-      if (conceptStore.hasConcepts) {
-        conceptsPreview.value = conceptStore.concepts
-        sortedConceptsPreview.value = conceptStore.sortedConcepts
-        conceptMetadataPreview.value = conceptStore.conceptMetadata
-      } else {
-        conceptsPreview.value = []
-        sortedConceptsPreview.value = []
-        conceptMetadataPreview.value = new Map()
+      // If concepts are applied but no preview exists, show them in preview
+      if (conceptStore.hasConcepts && !conceptStore.hasPreview) {
+        conceptStore.previewConcepts = conceptStore.concepts
+        conceptStore.previewSortedConcepts = conceptStore.sortedConcepts
+        conceptStore.previewConceptMetadata = conceptStore.conceptMetadata
       }
+      // Preview state persists automatically via store
     }
   }
 )

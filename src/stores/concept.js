@@ -8,11 +8,15 @@ export const useConceptStore = defineStore('concept', {
     return {
       concepts: [],
       sortedConcepts: [],
-      conceptMetadata: new Map()
+      conceptMetadata: new Map(),
+      previewConcepts: [],
+      previewSortedConcepts: [],
+      previewConceptMetadata: new Map()
     }
   },
   getters: {
-    hasConcepts: (state) => state.concepts.length > 0
+    hasConcepts: (state) => state.concepts.length > 0,
+    hasPreview: (state) => state.previewConcepts.length > 0
   },
 
   actions: {
@@ -78,6 +82,12 @@ export const useConceptStore = defineStore('concept', {
       this.concepts = []
       this.sortedConcepts = []
       this.conceptMetadata = new Map()
+    },
+
+    clearPreview() {
+      this.previewConcepts = []
+      this.previewSortedConcepts = []
+      this.previewConceptMetadata = new Map()
     }
   }
 })
