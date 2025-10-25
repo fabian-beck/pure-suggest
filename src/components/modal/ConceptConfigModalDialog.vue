@@ -15,6 +15,12 @@ const modalStore = useModalStore()
 const authorStore = useAuthorStore()
 const { updateScores } = useAppState()
 
+function openAuthorDialog(authorId) {
+  authorStore.setActiveAuthor(authorId)
+  modalStore.isConceptConfigModalDialogShown = false
+  modalStore.isAuthorModalDialogShown = true
+}
+
 const includeKeywords = ref(true)
 const includeCitations = ref(true)
 const includeAuthors = ref(true)
@@ -371,8 +377,9 @@ watch(
                       :key="author"
                       size="small"
                       label
-                      class="ma-1 author-chip"
+                      class="ma-1 author-chip clickable-chip"
                       :style="getAuthorChipStyle(author)"
+                      @click.stop="openAuthorDialog(author)"
                     >
                       {{ getAuthorDisplayName(author) }}
                     </v-chip>
@@ -452,6 +459,14 @@ watch(
 
     .term-chip {
       background-color: hsla(180, 100%, 85%, 0.3) !important;
+    }
+
+    .clickable-chip {
+      cursor: pointer;
+
+      &:hover {
+        opacity: 0.8;
+      }
     }
   }
 }
