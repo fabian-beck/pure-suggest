@@ -6,10 +6,13 @@ import { ConceptService } from '@/services/ConceptService.js'
 import { useConceptStore } from '@/stores/concept.js'
 import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
+import { useAuthorStore } from '@/stores/author.js'
+import { calculateAuthorColor } from '@/utils/authorColor.js'
 
 const sessionStore = useSessionStore()
 const conceptStore = useConceptStore()
 const modalStore = useModalStore()
+const authorStore = useAuthorStore()
 const { updateScores } = useAppState()
 
 const includeKeywords = ref(true)
@@ -88,6 +91,25 @@ function getAuthorDisplayName(authorId) {
     })
 
   return authors?.name || authorId
+}
+
+function getAuthorChipStyle(authorId) {
+  const author = authorStore.selectedPublicationsAuthors.find(a => a.id === authorId)
+
+  if (!author) {
+    return {
+      backgroundColor: 'hsla(270, 70%, 85%, 0.3)'
+    }
+  }
+
+  const authorColor = calculateAuthorColor(author.score, authorStore)
+  const lightnessMatch = authorColor.match(/hsl\(0, 0%, (\d+)%\)/)
+  const lightness = lightnessMatch ? parseInt(lightnessMatch[1], 10) : 70
+
+  return {
+    backgroundColor: `hsla(0, 0%, ${lightness}%, 0.8)`,
+    color: '#ffffff'
+  }
 }
 
 function getCitationTooltip(doi) {
@@ -350,6 +372,7 @@ watch(
                       size="small"
                       label
                       class="ma-1 author-chip"
+                      :style="getAuthorChipStyle(author)"
                     >
                       {{ getAuthorDisplayName(author) }}
                     </v-chip>
@@ -425,10 +448,6 @@ watch(
       background-color: hsla(0, 0%, 70%, 0.3) !important;
       font-family: monospace;
       font-size: 0.7rem;
-    }
-
-    .author-chip {
-      background-color: hsla(270, 70%, 85%, 0.3) !important;
     }
 
     .term-chip {
