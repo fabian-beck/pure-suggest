@@ -89,15 +89,20 @@ onMounted(() => {
         <div class="level-item">
           <CompactButton
             icon="mdi-group has-text-white"
-            v-tippy="`Cluster selected publications using concept analysis.`"
+            class="has-text-white"
+            v-tippy="`Cluster selected publications using c<span class='key'>o</span>ncept analysis.`"
             @click="openConceptConfigModal()"
-          ></CompactButton>
+          >
+            <template #default>C<span class="key">o</span>ncepts</template>
+          </CompactButton>
           <CompactButton
             icon="mdi-account-group has-text-white"
-            class="ml-2"
+            class="ml-2 has-text-white"
             v-tippy="`List <span class='key'>a</span>uthors of selected publications.`"
             @click="openAuthorModal()"
-          ></CompactButton>
+          >
+            <template #default><span class="key">A</span>uthors</template>
+          </CompactButton>
           <CompactButton
             icon="mdi-magnify"
             class="ml-2 has-text-white"
@@ -105,7 +110,9 @@ onMounted(() => {
               `<span class='key'>S</span>earch/add specific publications to be added to selected.`
             "
             @click="openSearchModal()"
-          ></CompactButton>
+          >
+            <template #default><span class="key">S</span>earch/add</template>
+          </CompactButton>
         </div>
       </div>
     </div>
