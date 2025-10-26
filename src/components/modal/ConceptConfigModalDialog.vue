@@ -118,6 +118,26 @@ function getAuthorChipStyle(authorId) {
   }
 }
 
+function getAuthorChipTooltip(authorId) {
+  const author = authorStore.selectedPublicationsAuthors.find(a => a.id === authorId)
+  const displayName = getAuthorDisplayName(authorId)
+
+  if (!author) {
+    return `<b>${displayName}</b> (author not found in selected publications)`
+  }
+
+  const pubCount = author.count || 0
+  const totalPubs = sessionStore.selectedPublicationsCount
+
+  let explanation = `<b>${displayName}</b> appears in <b>${pubCount} of ${totalPubs}</b> selected publication${pubCount > 1 ? 's' : ''}. `
+
+  explanation += `Author score: <b>${author.score.toFixed(2)}</b>. `
+
+  explanation += `Grayscale background indicates author prominence (darker = higher score). Click to view author details.`
+
+  return explanation
+}
+
 function getCitationTooltip(doi) {
   const pub = sessionStore.selectedPublications.find((p) => p.doi === doi)
   if (!pub) return doi
@@ -397,6 +417,7 @@ watch(
                     <v-chip
                       v-for="author in getConceptAuthors(concept)"
                       :key="'auth-' + author"
+                      v-tippy="getAuthorChipTooltip(author)"
                       size="small"
                       label
                       class="ma-1 author-chip clickable-chip"
