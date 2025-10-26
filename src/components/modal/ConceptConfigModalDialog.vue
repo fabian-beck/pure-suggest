@@ -286,6 +286,15 @@ watch(
     icon="mdi-group"
     v-model="modalStore.isConceptConfigModalDialogShown"
   >
+    <template #header-menu>
+      <v-icon
+        size="small"
+        class="mr-2"
+        v-tippy="'<b>Concept Analysis</b> automatically discovers clusters in your selected publications by identifying groups that share common attributes (keywords, citations, or authors). Each concept represents a thematic subfield where publications are connected through shared characteristics. Concepts are ranked by <b>importance</b> (publications × attributes), helping you identify the most significant research themes in your selection.'"
+      >
+        mdi-information-outline
+      </v-icon>
+    </template>
     <template #sticky>
       <v-sheet class="has-background-primary-95 pa-3">
         <div class="d-flex flex-wrap align-center ga-2">
