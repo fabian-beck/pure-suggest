@@ -351,24 +351,20 @@ watch(
                     (remaining: <b>{{ concept.remainingImportance }}</b>)
                   </div>
 
-                  <div v-if="getConceptKeywords(concept).length > 0" class="mb-2 is-size-7">
-                    <span class="attribute-label">Keywords:</span>
+                  <div v-if="concept.attributes.length > 0" class="mb-2 is-size-7">
+                    <span class="attribute-label">Attributes:</span>
                     <v-chip
                       v-for="keyword in getConceptKeywords(concept)"
-                      :key="keyword"
+                      :key="'kw-' + keyword"
                       size="small"
                       label
                       class="ma-1 keyword-chip"
                     >
                       {{ keyword }}
                     </v-chip>
-                  </div>
-
-                  <div v-if="getConceptCitations(concept).length > 0" class="mb-2 is-size-7">
-                    <span class="attribute-label">Citations:</span>
                     <v-chip
                       v-for="citation in getConceptCitations(concept)"
-                      :key="citation"
+                      :key="'cite-' + citation"
                       v-tippy="getCitationTooltip(citation)"
                       size="small"
                       label
@@ -376,13 +372,9 @@ watch(
                     >
                       {{ citation }}
                     </v-chip>
-                  </div>
-
-                  <div v-if="getConceptAuthors(concept).length > 0" class="mb-2 is-size-7">
-                    <span class="attribute-label">Authors:</span>
                     <v-chip
                       v-for="author in getConceptAuthors(concept)"
-                      :key="author"
+                      :key="'auth-' + author"
                       size="small"
                       label
                       class="ma-1 author-chip clickable-chip"
@@ -394,7 +386,7 @@ watch(
                   </div>
 
                   <div v-if="getConceptCharacteristicTerms(index).length > 0" class="is-size-7">
-                    <span class="attribute-label">Characteristic terms:</span>
+                    <span class="attribute-label">Terms:</span>
                     <v-chip
                       v-for="term in getConceptCharacteristicTerms(index)"
                       :key="term.term"
