@@ -123,7 +123,8 @@ function getCitationTooltip(doi) {
   if (!pub) return doi
 
   const authorInfo = pub.authorShort || 'Unknown authors'
-  return `${pub.title || 'Untitled'} (${authorInfo})`
+  const year = pub.year || 'n.d.'
+  return `<b>${pub.title || 'Untitled'}</b> (${authorInfo}, ${year})`
 }
 
 function getConceptName(index) {
