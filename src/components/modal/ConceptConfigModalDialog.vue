@@ -142,9 +142,17 @@ function formatTermScore(term) {
 }
 
 function getCharacteristicTooltip(term) {
-  return `Characteristic score of <b>${term.score.toFixed(2)} = ${term.inCount} / (${term.outCount} + 1)</b>, ` +
-         `where <b>${term.inCount}</b> occurrences in concept titles ` +
-         `and <b>${term.outCount}</b> occurrences outside concept`
+  const isCharacteristic = term.score >= 1
+  const scoreExplanation = `Characteristic score of <b>${term.score.toFixed(2)} = ${term.inCount} / (${term.outCount} + 1)</b>, where <b>${term.inCount}</b> occurrences in concept titles and <b>${term.outCount}</b> occurrences outside concept.`
+
+  if (isCharacteristic) {
+    return `${scoreExplanation} <b>Score ≥ 1</b> indicates this term is characteristic of the concept (darker background).`
+  }
+  return scoreExplanation
+}
+
+function getTermChipClass(term) {
+  return term.score >= 1 ? 'term-chip characteristic-term' : 'term-chip'
 }
 
 function computeConcepts() {
@@ -393,7 +401,8 @@ watch(
                       v-tippy="getCharacteristicTooltip(term)"
                       size="small"
                       label
-                      class="ma-1 term-chip"
+                      class="ma-1"
+                      :class="getTermChipClass(term)"
                     >
                       {{ term.term.toUpperCase() }} ({{ formatTermScore(term) }})
                     </v-chip>
@@ -459,6 +468,10 @@ watch(
 
     .term-chip {
       background-color: hsla(180, 100%, 85%, 0.3) !important;
+    }
+
+    .characteristic-term {
+      background-color: hsla(180, 100%, 75%, 0.5) !important;
     }
 
     .clickable-chip {

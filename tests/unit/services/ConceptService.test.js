@@ -751,6 +751,38 @@ describe('ConceptService', () => {
       expect(conceptName).toMatch(/^C1/) // Has a concept tag
       // If there's a clear winner after boosting, it should be VIS or GRAPH related
     })
+
+    it('should only use terms with characteristic score >= 1 for concept names', () => {
+      const publications = [
+        { doi: '10.1/a', concepts: null, title: 'Research on quantum computing methods' },
+        { doi: '10.1/b', concepts: null, title: 'Quantum algorithms and applications' },
+        { doi: '10.1/c', concepts: null, title: 'Advanced quantum systems' }
+      ]
+
+      // Add many publications that also contain "research" (makes it non-exclusive)
+      for (let i = 0; i < 10; i++) {
+        publications.push({
+          doi: `10.1/other${i}`,
+          concepts: null,
+          title: `Research on different topic ${i}`
+        })
+      }
+
+      const concepts = [
+        {
+          publications: ['10.1/a', '10.1/b', '10.1/c'],
+          attributes: [{ type: 'keyword', value: 'QUANTUM' }],
+          importance: 3
+        }
+      ]
+
+      ConceptService.assignConceptTags(publications, concepts)
+
+      // "quantum" appears only in concept (inCount=3, outCount=0) -> score = 3/1 = 3 >= 1
+      // "research" appears in concept and outside (inCount=1, outCount=10) -> score = 1/11 < 1
+      // Only "quantum" should be used for naming (characteristic score >= 1)
+      expect(publications[0].concepts[0]).toMatch(/^C1 - QUANTUM/)
+    })
   })
 
   describe('_buildTermMergeMap', () => {

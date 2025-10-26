@@ -456,22 +456,25 @@ export class ConceptService {
       const top10Exclusive = exclusivityTerms.slice(0, 10)
       const top10Frequent = frequencyTerms.slice(0, 10)
 
-      if (exclusivityTerms.length === 0) {
+      // Filter to only characteristic terms (score >= 1) for naming
+      const characteristicTerms = exclusivityTerms.filter((t) => t.score >= 1)
+
+      if (characteristicTerms.length === 0) {
         nameMap.set(index, {
           name: `C${index + 1}`,
-          exclusivityTerms: [],
-          frequencyTerms: []
+          exclusivityTerms: top10Exclusive,
+          frequencyTerms: top10Frequent
         })
         return
       }
 
-      // Check if top score is tied with other terms
-      const topScore = exclusivityTerms[0].score
-      const tiedTerms = exclusivityTerms.filter((t) => Math.abs(t.score - topScore) < 0.0001)
+      // Check if top score is tied with other terms (among characteristic terms only)
+      const topScore = characteristicTerms[0].score
+      const tiedTerms = characteristicTerms.filter((t) => Math.abs(t.score - topScore) < 0.0001)
 
-      if (tiedTerms.length === 2 && exclusivityTerms.length >= 3) {
+      if (tiedTerms.length === 2 && characteristicTerms.length >= 3) {
         // Two terms with same/similar score - check if third is clearly different
-        const thirdScore = exclusivityTerms[2].score
+        const thirdScore = characteristicTerms[2].score
         const scoreDiff = topScore - thirdScore
         const relativeGap = topScore > 0 ? scoreDiff / topScore : 0
 
@@ -499,9 +502,9 @@ export class ConceptService {
           frequencyTerms: top10Frequent
         })
       } else {
-        // Clear winner (single top term)
+        // Clear winner (single top term from characteristic terms)
         nameMap.set(index, {
-          name: `C${index + 1} - ${exclusivityTerms[0].term.toUpperCase()}`,
+          name: `C${index + 1} - ${characteristicTerms[0].term.toUpperCase()}`,
           exclusivityTerms: top10Exclusive,
           frequencyTerms: top10Frequent
         })
