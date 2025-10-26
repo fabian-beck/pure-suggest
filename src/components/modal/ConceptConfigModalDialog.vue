@@ -155,6 +155,27 @@ function getTermChipClass(term) {
   return term.score >= 1 ? 'term-chip characteristic-term' : 'term-chip'
 }
 
+function getConceptSummaryTooltip(concept) {
+  const importance = concept.importance
+  const remaining = concept.remainingImportance
+  const importanceLost = importance - remaining
+  const pubCount = concept.publications.length
+  const attrCount = concept.attributes.length
+
+  let explanation = `This concept groups <b>${pubCount} publication${pubCount > 1 ? 's' : ''}</b> sharing <b>${attrCount} attribute${attrCount > 1 ? 's' : ''}</b>. `
+
+  explanation += `Importance: <b>${importance} = ${pubCount} × ${attrCount}</b>. `
+
+  if (importanceLost > 0) {
+    const coveredPubs = importanceLost / attrCount
+    explanation += `Since <b>${coveredPubs}</b> of these publication${coveredPubs > 1 ? 's were' : ' was'} already covered by higher-ranked concepts, <b>${importanceLost}</b> importance is lost (<b>${coveredPubs} × ${attrCount}</b>), leaving <b>${remaining}</b> remaining.`
+  } else {
+    explanation += `All <b>${remaining}</b> importance remains (no publications overlap with higher-ranked concepts).`
+  }
+
+  return explanation
+}
+
 function computeConcepts() {
   if (!canCompute.value) return
 
@@ -343,12 +364,13 @@ watch(
                     <b class="concept-name">{{ getConceptName(index) }}</b>
                   </div>
                   <div class="mb-2 is-size-7">
-                    <b>{{ concept.publications.length }}</b> publication{{ concept.publications.length > 1 ? 's' : '' }}
-                    &bull;
-                    <b>{{ concept.attributes.length }}</b> attribute{{ concept.attributes.length > 1 ? 's' : '' }}
-                    &bull;
-                    Importance: <b>{{ concept.importance }}</b>
-                    (remaining: <b>{{ concept.remainingImportance }}</b>)
+                    <span v-tippy="getConceptSummaryTooltip(concept)">
+                      <b>{{ concept.publications.length }}</b> publication{{ concept.publications.length > 1 ? 's' : '' }}
+                      &bull;
+                      <b>{{ concept.attributes.length }}</b> attribute{{ concept.attributes.length > 1 ? 's' : '' }}
+                      &bull;
+                      Importance: <b>{{ concept.importance }}</b><template v-if="concept.remainingImportance !== concept.importance"> (<b>{{ concept.remainingImportance }}</b>)</template>
+                    </span>
                   </div>
 
                   <div v-if="concept.attributes.length > 0" class="mb-2 is-size-7">
