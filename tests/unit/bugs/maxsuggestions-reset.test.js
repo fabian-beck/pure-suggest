@@ -180,4 +180,29 @@ describe('maxSuggestions preservation within session', () => {
     // Assert: maxSuggestions should still be 180 after all operations
     expect(sessionStore.maxSuggestions).toBe(180)
   })
+
+  it('should use current maxSuggestions value at call time, not definition time', async () => {
+    // This test explicitly verifies that default parameters are evaluated at call time
+    // Arrange: Start with initial default value
+    expect(sessionStore.maxSuggestions).toBe(PAGINATION.INITIAL_SUGGESTIONS_COUNT) // 100
+    sessionStore.selectedPublications = [new Publication('10.1234/test')]
+
+    // Act 1: Change maxSuggestions and call updateSuggestions without parameter
+    sessionStore.maxSuggestions = 250
+    await appState.addPublicationsAndUpdate(['10.1234/pub1'])
+
+    // Assert 1: Should preserve the new value
+    expect(sessionStore.maxSuggestions).toBe(250)
+
+    // Act 2: Change maxSuggestions again and call another function that uses updateSuggestions
+    sessionStore.maxSuggestions = 350
+    const publication = sessionStore.selectedPublications[0]
+    const mockActivate = vi.spyOn(appState, 'activatePublicationComponentByDoi').mockImplementation(() => {})
+    await appState.retryLoadingPublication(publication)
+
+    // Assert 2: Should preserve this new value too
+    expect(sessionStore.maxSuggestions).toBe(350)
+
+    mockActivate.mockRestore()
+  })
 })
