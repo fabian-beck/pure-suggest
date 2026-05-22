@@ -235,6 +235,9 @@ describe('PublicationComponent Hover Bug', () => {
       }
     })
 
-    expect(wrapper.find('.publication-metadata-warning-level').exists()).toBe(true)
+    const warningLevel = wrapper.find('.publication-metadata-warning-level')
+    expect(warningLevel.exists()).toBe(true)
+    expect(warningLevel.find('.level-left').exists()).toBe(true)
+    expect(warningLevel.find('.level-right button').exists()).toBe(true)
   })
 })
