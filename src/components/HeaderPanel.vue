@@ -112,6 +112,7 @@ const filterMenuComponent = ref(null)
           min-width: 0; /* Allow flex items to shrink below their content size */
           overflow: hidden;
           gap: 1vw; /* Modern gap instead of margins */
+          font-size: 0.875rem;
 
           /* Session state button - never shrink, always readable */
           & .session-state-button {
@@ -143,6 +144,29 @@ const filterMenuComponent = ref(null)
       }
     }
   }
+}
+
+:global(.session-state-button.v-btn:not(.v-btn--icon)),
+:global(.boost-button.v-btn:not(.v-btn--icon)),
+:global(.filter-button.v-btn:not(.v-btn--icon)) {
+  min-height: 32px;
+  height: 32px;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  font-size: 0.875rem;
+  letter-spacing: 0;
+}
+
+:global(.session-state-button .v-btn__content),
+:global(.boost-button .v-btn__content),
+:global(.filter-button .v-btn__content) {
+  gap: 0.125rem;
+}
+
+:global(.session-state-button .mdi-menu-down),
+:global(.boost-button .mdi-menu-down),
+:global(.filter-button .mdi-menu-down) {
+  font-size: 18px;
 }
 
 .intro-message,

@@ -215,6 +215,17 @@ body {
   }
 }
 
+#app .v-btn:not(.session-state-button):not(.filter-button):not(.boost-button):not(.v-btn--icon) {
+  min-height: 36px;
+  padding: 0 16px;
+  font-size: 0.875rem;
+}
+
+#app .v-btn:not(.session-state-button):not(.filter-button):not(.boost-button) .v-btn__content {
+  letter-spacing: 0.0892857143em;
+  text-transform: uppercase;
+}
+
 #app .v-application__wrap {
   display: grid;
   grid-template-areas:
