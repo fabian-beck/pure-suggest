@@ -221,7 +221,7 @@ function handleMouseLeave() {
             (!publication.year || !publication.title || !publication.author) && publication.isActive
           "
         >
-          <div class="level">
+          <div class="level publication-metadata-warning-level">
             <div class="level-left">
               <div class="level-item">
                 No or only partial metadata could be retrieved for the publication.
@@ -453,6 +453,19 @@ function handleMouseLeave() {
       & .notification {
         padding: 0.5rem;
         margin: 0.5rem 0;
+      }
+
+      & .publication-metadata-warning-level {
+        flex-wrap: wrap;
+        row-gap: 0.5rem;
+
+        & .level-left {
+          min-width: 0;
+        }
+
+        & .level-right {
+          flex-shrink: 0;
+        }
       }
     }
 
