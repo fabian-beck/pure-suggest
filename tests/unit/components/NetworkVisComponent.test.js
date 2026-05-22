@@ -198,11 +198,12 @@ describe('NetworkVisComponent', () => {
         }
       })
 
-      await wrapper.setData({ errorMessage: 'Test error message' })
+      wrapper.vm.errorMessage = 'Test error message'
+      await wrapper.vm.$nextTick()
 
-      const errorDiv = wrapper.find('.has-text-danger.has-background-danger-light')
-      expect(errorDiv.exists()).toBe(true)
-      expect(errorDiv.text()).toBe('Test error message')
+      const header = wrapper.findComponent({ name: 'NetworkHeader' })
+      expect(header.exists()).toBe(true)
+      expect(header.props('errorMessage')).toBe('Test error message')
     })
 
     it('hides controls when session is empty', () => {
