@@ -214,4 +214,27 @@ describe('PublicationComponent Hover Bug', () => {
     // This test documents the bug - the network doesn't update from external hover events
     expect(mockInterfaceStore.setHoveredPublication).toHaveBeenCalledWith(mockPublication)
   })
+
+  it('adds a wrap-enabled layout class for metadata warning retry actions', () => {
+    wrapper = mount(PublicationComponent, {
+      props: {
+        publication: {
+          ...mockPublication,
+          isActive: true,
+          title: null
+        }
+      },
+      global: {
+        components: {
+          InlineIcon: MockInlineIcon,
+          CompactButton: MockCompactButton,
+          tippy: MockTippy,
+          'v-btn': MockVBtn,
+          'v-icon': MockVIcon
+        }
+      }
+    })
+
+    expect(wrapper.find('.publication-metadata-warning-level').exists()).toBe(true)
+  })
 })
