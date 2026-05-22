@@ -97,18 +97,13 @@ export function findKeywordMatches(title, boostKeywords) {
 
     // Find first matching alternative for this keyword group
     for (const alternativeKeyword of alternatives) {
-      let position = -1
-      
-      // Use word boundary matching for short keywords (3 chars or less)
-      if (alternativeKeyword.length <= 3) {
-        const wordBoundaryRegex = new RegExp(`\\b${alternativeKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'gi')
-        const regexMatch = wordBoundaryRegex.exec(title)
-        position = regexMatch?.index ?? -1
-      } else {
-        // Use substring matching for longer keywords
-        const upperAlternativeKeyword = alternativeKeyword.toUpperCase()
-        position = upperTitle.indexOf(upperAlternativeKeyword)
-      }
+      const position = alternativeKeyword.length <= 3
+        ? (() => {
+            const wordBoundaryRegex = new RegExp(`\\b${alternativeKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'gi')
+            const regexMatch = wordBoundaryRegex.exec(title)
+            return regexMatch?.index ?? -1
+          })()
+        : upperTitle.indexOf(alternativeKeyword.toUpperCase())
       
       // Try to add match and break if successful (only match first alternative per keyword group)
       if (tryAddMatch(matches, boostKeyword, alternativeKeyword, position)) {
