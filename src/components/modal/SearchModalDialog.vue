@@ -306,11 +306,11 @@ export default {
             theme="dark"
           >
             <div class="d-flex flex-column align-center justify-center">
-              <div>
-                <v-progress-circular indeterminate size="64"></v-progress-circular>
+              <v-progress-circular color="white" indeterminate size="64"></v-progress-circular>
+              <div class="search-loading-message" v-if="this.searchResults.type === 'empty'">
+                Searching
               </div>
-              <div class="comment" v-if="this.searchResults.type === 'empty'">Searching</div>
-              <div class="comment" v-else>
+              <div class="search-loading-message" v-else>
                 Loading {{ loaded }}/{{ filteredSearchResults.length }}
               </div>
             </div>
@@ -356,6 +356,19 @@ form {
   & button {
     margin-bottom: 0 !important;
   }
+}
+
+.search-loading-message {
+  max-width: min(80vw, 24rem);
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 52%);
+  color: white;
+  line-height: 1.35;
+  text-align: center;
+  overflow-wrap: anywhere;
+  box-shadow: 0 0.25rem 1rem rgb(0 0 0 / 20%);
 }
 
 @include comment;
