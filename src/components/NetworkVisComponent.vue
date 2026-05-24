@@ -418,14 +418,8 @@ export default {
           publicationNodes
             .select('rect')
             .on('click', this.activatePublication)
-            .on('mouseover', (event, d) => {
-              this.interfaceStore.setHoveredPublication(d.publication)
-              this.updatePublicationHighlighting()
-            })
-            .on('mouseout', () => {
-              this.interfaceStore.setHoveredPublication(null)
-              this.updatePublicationHighlighting()
-            })
+            .on('mouseover', this.onPublicationNodeMouseover)
+            .on('mouseout', this.onPublicationNodeMouseout)
 
           // Initialize keyword nodes using module
           const keywordNodes = initializeKeywordNodes(g)
@@ -653,6 +647,12 @@ export default {
     },
     keywordNodeClick (event, d) {
       releaseKeywordPosition(event, d, this, SIMULATION_ALPHA)
+    },
+    onPublicationNodeMouseover (event, d) {
+      this.interfaceStore.setHoveredPublication(d.publication)
+    },
+    onPublicationNodeMouseout () {
+      this.interfaceStore.setHoveredPublication(null)
     },
     onKeywordNodeMouseover (event, d) {
       highlightKeywordPublications(d, this.sessionStore.publicationsFiltered || [])
