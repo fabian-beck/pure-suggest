@@ -45,7 +45,7 @@ export default {
 
       return this.searchResults.results.filter(
         (publication) =>
-          !this.sessionStore.selectedPublicationsDois.includes(publication.doi) &&
+          !this.sessionStore.selectedPublicationsDoiSet.has(publication.doi) &&
           !this.queueStore.selectedQueue.includes(publication.doi)
       )
     }
