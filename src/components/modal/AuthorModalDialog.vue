@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 
 import PublicationComponent from '@/components/PublicationComponent.vue'
+import Author from '@/core/Author.js'
 import { useAuthorStore } from '@/stores/author.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useModalStore } from '@/stores/modal.js'
@@ -39,47 +40,19 @@ export default {
      * @returns {Array} Publications authored by the active author
      */
     const selectedPublicationsForAuthor = computed(() => {
-      if (!authorStore.activeAuthorId) return []
+      const activeAuthor = authorStore.activeAuthor
+      if (!activeAuthor) return []
+
+      const normalizedAltNames = new Set(
+        activeAuthor.alternativeNames.map((name) => Author.nameToId(name))
+      )
 
       return sessionStore.selectedPublications.filter((publication) => {
         if (!publication.author) return false
-        // Check if the active author is mentioned in the publication's author list
-        // Split only on semicolons, not commas (commas are part of "Last, First" format)
-        const authorNames = publication.author.split(';').map((name) => name.trim())
-        const activeAuthor = authorStore.selectedPublicationsAuthors.find(
-          (author) => author.id === authorStore.activeAuthorId
-        )
-        if (!activeAuthor) return false
 
-        // Normalize author names using the same method as Author.nameToId for exact matching
-        const normalizedPubAuthors = authorNames.map((name) =>
-          name
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[øØ]/g, 'o')
-            .replace(/[åÅ]/g, 'a')
-            .replace(/[æÆ]/g, 'ae')
-            .replace(/[ðÐ]/g, 'd')
-            .replace(/[þÞ]/g, 'th')
-            .replace(/[ßẞ]/g, 'ss')
-            .toLowerCase()
-        )
-
-        const normalizedAltNames = activeAuthor.alternativeNames.map((name) =>
-          name
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[øØ]/g, 'o')
-            .replace(/[åÅ]/g, 'a')
-            .replace(/[æÆ]/g, 'ae')
-            .replace(/[ðÐ]/g, 'd')
-            .replace(/[þÞ]/g, 'th')
-            .replace(/[ßẞ]/g, 'ss')
-            .toLowerCase()
-        )
-
-        // Check for exact matches between normalized IDs
-        return normalizedAltNames.some((altName) => normalizedPubAuthors.includes(altName))
+        return publication.author
+          .split(';') // Do not split on commas; they are part of "Last, First" names.
+          .some((name) => normalizedAltNames.has(Author.nameToId(name.trim())))
       })
     })
 
