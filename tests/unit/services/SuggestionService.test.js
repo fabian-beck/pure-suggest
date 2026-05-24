@@ -23,15 +23,17 @@ describe('SuggestionService', () => {
     vi.clearAllMocks()
 
     // Mock Publication constructor
-    Publication.mockImplementation((doi) => ({
-      doi,
-      citationCount: 0,
-      referenceCount: 0,
-      citationDois: [],
-      referenceDois: [],
-      fetchData: vi.fn().mockResolvedValue(),
-      isRead: false
-    }))
+    Publication.mockImplementation(function (doi) {
+      return {
+        doi,
+        citationCount: 0,
+        referenceCount: 0,
+        citationDois: [],
+        referenceDois: [],
+        fetchData: vi.fn().mockResolvedValue(),
+        isRead: false
+      }
+    })
 
     mockSelectedPublications = [
       {

@@ -457,7 +457,9 @@ export default {
         )
         this.publicationTooltips = publicationResult.tooltips
       } catch (error) {
-        throw new Error(`Cannot update publication nodes in network: ${error.message}`)
+        throw new Error(`Cannot update publication nodes in network: ${error.message}`, {
+          cause: error
+        })
       }
       try {
         // Update keyword nodes using module
@@ -468,7 +470,9 @@ export default {
         )
         this.keywordTooltips = keywordResult.tooltips
       } catch (error) {
-        throw new Error(`Cannot update keyword nodes in network: ${error.message}`)
+        throw new Error(`Cannot update keyword nodes in network: ${error.message}`, {
+          cause: error
+        })
       }
       try {
         // Update author nodes using module
@@ -479,7 +483,9 @@ export default {
         )
         this.authorTooltips = authorResult.tooltips
       } catch (error) {
-        throw new Error(`Cannot update author nodes in network: ${error.message}`)
+        throw new Error(`Cannot update author nodes in network: ${error.message}`, {
+          cause: error
+        })
       }
     },
 

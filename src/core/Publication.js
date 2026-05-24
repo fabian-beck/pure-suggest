@@ -236,7 +236,7 @@ export default class Publication {
 
     this.container = ''
     data.container?.split(' ').forEach((word) => {
-      let mappedWord = ''
+      let mappedWord
       // Optimized with negated character class to prevent backtracking
       // eslint-disable-next-line sonarjs/slow-regex
       if (/\([^)]+\)/.test(word)) {
