@@ -187,7 +187,7 @@ export default {
         <div>
           <v-progress-circular color="white" indeterminate size="64"></v-progress-circular>
         </div>
-        <div class="has-text-white mt-4" v-if="interfaceStore.loadingMessage">
+        <div class="global-loading-message has-text-white mt-4" v-if="interfaceStore.loadingMessage">
           {{ interfaceStore.loadingMessage }}
         </div>
       </div>
@@ -340,6 +340,17 @@ body {
 
 .main-overlay {
   z-index: 6000 !important;
+}
+
+.global-loading-message {
+  max-width: min(80vw, 36rem);
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 52%);
+  line-height: 1.35;
+  text-align: center;
+  overflow-wrap: anywhere;
+  box-shadow: 0 0.25rem 1rem rgb(0 0 0 / 20%);
 }
 
 /* Global modal dialog overlay styles - ensures all modals appear above header and block interaction */
