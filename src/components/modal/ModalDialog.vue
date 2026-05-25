@@ -1,8 +1,10 @@
 <script>
+import CompactButton from '@/components/basic/CompactButton.vue'
 import { useInterfaceStore } from '@/stores/interface.js'
 
 export default {
   name: 'ModalDialog',
+  components: { CompactButton },
   props: {
     modelValue: Boolean,
     headerColor: {
@@ -56,14 +58,14 @@ export default {
       <v-card-title
         :class="`has-background-${headerColor} ${headerColor.startsWith('light') ? 'has-text-dark' : 'has-text-light'}`"
       >
-        <v-toolbar color="transparent" density="compact">
-          <v-icon class="title-icon ml-2">{{ icon }}</v-icon>
-          <v-toolbar-title>{{ title }}</v-toolbar-title>
-          <slot name="header-menu"></slot>
-          <v-btn icon @click="hideDialog">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-toolbar>
+        <div class="modal-title-bar">
+          <v-icon size="24">{{ icon }}</v-icon>
+          <span class="modal-title-text">{{ title }}</span>
+          <div class="modal-title-actions">
+            <slot name="header-menu"></slot>
+            <CompactButton icon="mdi-close" @click="hideDialog" />
+          </div>
+        </div>
       </v-card-title>
       <div class="sticky">
         <slot name="sticky"></slot>
@@ -85,13 +87,24 @@ export default {
     margin-bottom: 0;
     padding: 0.5rem;
 
-    & .v-toolbar-title {
-      font-size: 1.2rem;
-      font-weight: 600;
-    }
+    & .modal-title-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0 0.25rem;
+      font-size: 1rem;
 
-    & .v-btn {
-      margin-right: 0 !important;
+      & .modal-title-text {
+        font-size: 1.2rem;
+        font-weight: 600;
+        flex-grow: 1;
+      }
+
+      & .modal-title-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
     }
   }
 

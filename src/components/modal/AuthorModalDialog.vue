@@ -527,6 +527,11 @@ export default {
       align-items: center;
     }
 
+    & .media-right {
+      display: flex;
+      gap: 0.5rem;
+    }
+
     & .tag {
       margin: 0.25rem;
       position: relative;
