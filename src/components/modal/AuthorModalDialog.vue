@@ -60,21 +60,23 @@ export default {
      * Prepare author data when modal opens
      */
     const prepareAuthorData = () => {
-      // Check if we need to compute author data
-      if (sessionStore.selectedPublications?.length > 0) {
+      const selectedPublications = sessionStore.selectedPublications
+
+      if (selectedPublications?.length > 0) {
+        const needsScoreUpdate = publicationsNeedScoreUpdate(selectedPublications)
+
         // Only recompute if no authors exist OR publications need score updates
         const needsRecomputation =
-          authorStore.selectedPublicationsAuthors.length === 0 ||
-          publicationsNeedScoreUpdate(sessionStore.selectedPublications)
+          authorStore.selectedPublicationsAuthors.length === 0 || needsScoreUpdate
 
         if (needsRecomputation) {
           // IMPORTANT: Publications need to have their scores updated before computing author data
           // Otherwise authors will have score=0 and no keywords
-          if (publicationsNeedScoreUpdate(sessionStore.selectedPublications)) {
+          if (needsScoreUpdate) {
             sessionStore.updatePublicationScores()
           }
 
-          authorStore.computeSelectedPublicationsAuthors(sessionStore.selectedPublications)
+          authorStore.computeSelectedPublicationsAuthors(selectedPublications)
         }
       }
     }
