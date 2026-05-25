@@ -9,11 +9,15 @@ import { useSessionStore } from '@/stores/session.js'
 
 // Mock useAppState for the functions the component uses
 const mockLoadExample = vi.fn()
-const mockImportSession = vi.fn()
+const mockImportSessionWithConfirmation = vi.fn()
+const mockImportBibtexWithConfirmation = vi.fn()
+const mockUpdateQueued = vi.fn()
 vi.mock('@/composables/useAppState.js', () => ({
   useAppState: () => ({
     loadExample: mockLoadExample,
-    importSession: mockImportSession,
+    importSessionWithConfirmation: mockImportSessionWithConfirmation,
+    importBibtexWithConfirmation: mockImportBibtexWithConfirmation,
+    updateQueued: mockUpdateQueued,
     isEmpty: { value: false }
   })
 }))
@@ -45,7 +49,9 @@ describe('SelectedPublicationsComponent', () => {
 
     vi.clearAllMocks()
     mockLoadExample.mockClear()
-    mockImportSession.mockClear()
+    mockImportSessionWithConfirmation.mockClear()
+    mockImportBibtexWithConfirmation.mockClear()
+    mockUpdateQueued.mockClear()
 
     // Set up default store state
     sessionStore.selectedPublications = []

@@ -30,7 +30,7 @@ const mockAppState = {
   isEmpty: false,
   clearSession: vi.fn(),
   importSessionWithConfirmation: vi.fn(),
-  loadSession: vi.fn()
+  importBibtexWithConfirmation: vi.fn()
 }
 
 vi.mock('@/stores/session.js', () => ({
@@ -58,6 +58,7 @@ describe('SessionMenuComponent', () => {
     mockSessionStore.selectedPublicationsCount = 5
     mockSessionStore.excludedPublicationsCount = 2
     mockAppState.isEmpty = false
+    mockAppState.importBibtexWithConfirmation.mockClear()
   })
 
   const createWrapper = () => {
@@ -239,6 +240,22 @@ describe('SessionMenuComponent', () => {
       expect(importItem).toBeTruthy()
       await importItem.trigger('click')
       expect(mockAppState.importSessionWithConfirmation).toHaveBeenCalled()
+    })
+  })
+
+  describe('Import BibTeX functionality', () => {
+    it('should show import BibTeX menu item and trigger shared import action with warning', async () => {
+      wrapper = createWrapper()
+      const importBibtexItem = wrapper
+        .findAll('.v-list-item')
+        .find(item =>
+          item.attributes('title')?.includes('Import') &&
+          item.attributes('title')?.includes('BibTeX')
+        )
+
+      expect(importBibtexItem).toBeTruthy()
+      await importBibtexItem.trigger('click')
+      expect(mockAppState.importBibtexWithConfirmation).toHaveBeenCalledWith({ alwaysWarn: true })
     })
   })
 

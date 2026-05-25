@@ -3,14 +3,14 @@ import { computed, ref, watch } from 'vue'
 
 import { useAppState } from '@/composables/useAppState.js'
 import { useModalManager } from '@/composables/useModalManager.js'
-import { bibtexParser } from '@/lib/Util.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
-const { showConfirmDialog, openShareSessionModal, openExcludedModal } = useModalManager()
-const { clearSession, importSessionWithConfirmation, loadSession } = useAppState()
+const { openShareSessionModal, openExcludedModal } = useModalManager()
+const { clearSession, importSessionWithConfirmation, importBibtexWithConfirmation } =
+  useAppState()
 
 const sessionName = ref(sessionStore.sessionName)
 
@@ -36,30 +36,7 @@ const clearSessionName = () => {
 }
 
 const importBibtex = () => {
-  const warningMessage = '<p style="color: #d32f2f; margin-bottom: 16px;"><strong>This will clear and replace the current session.</strong></p>'
-
-  showConfirmDialog(
-    `${warningMessage}<label>Choose a BibTeX file:&nbsp;</label>
-    <input type="file" id="import-bibtex-input" accept=".bib"/>`,
-    async () => {
-      const fileInput = document.getElementById('import-bibtex-input')
-      const file = fileInput.files[0]
-
-      if (!file) {
-        console.error('No file selected')
-        return
-      }
-
-      try {
-        const parsedData = await bibtexParser(file)
-        loadSession(parsedData)
-      } catch (error) {
-        console.error('Error parsing BibTeX file:', error)
-        interfaceStore.showErrorMessage('Error parsing BibTeX file. Please check the file format.')
-      }
-    },
-    'Import BibTeX'
-  )
+  importBibtexWithConfirmation({ alwaysWarn: true })
 }
 
 // Watch for changes in the store to keep the local ref in sync

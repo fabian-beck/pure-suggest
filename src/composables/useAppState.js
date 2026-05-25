@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useModalManager } from '@/composables/useModalManager.js'
 import { PAGINATION } from '@/constants/config.js'
 import { clearCache as clearCacheUtil } from '@/lib/Cache.js'
+import { bibtexParser } from '@/lib/Util.js'
 import { SuggestionService } from '@/services/SuggestionService.js'
 import { useAuthorStore } from '@/stores/author.js'
 import { useInterfaceStore } from '@/stores/interface.js'
@@ -233,6 +234,44 @@ export function useAppState() {
   }
 
   /**
+   * Imports a BibTeX file as a new session.
+   */
+  const importBibtex = async (file) => {
+    if (!file) {
+      console.error('No file selected')
+      return
+    }
+
+    try {
+      const parsedData = await bibtexParser(file)
+      loadSession(parsedData)
+    } catch (error) {
+      console.error('Error parsing BibTeX file:', error)
+      interfaceStore.showErrorMessage('Error parsing BibTeX file. Please check the file format.')
+    }
+  }
+
+  /**
+   * Shows import BibTeX confirmation dialog with file input.
+   */
+  const importBibtexWithConfirmation = ({ alwaysWarn = false } = {}) => {
+    const warningMessage =
+      alwaysWarn || !isEmpty.value
+        ? '<p style="color: #d32f2f; margin-bottom: 16px;"><strong>This will clear and replace the current session.</strong></p>'
+        : ''
+
+    showConfirmDialog(
+      `${warningMessage}<label>Choose a BibTeX file:&nbsp;</label>
+      <input type="file" id="import-bibtex-input" accept=".bib"/>`,
+      () => {
+        const fileInput = document.getElementById('import-bibtex-input')
+        importBibtex(fileInput?.files?.[0])
+      },
+      'Import BibTeX'
+    )
+  }
+
+  /**
    * Loads more suggestions incrementally
    */
   const loadMoreSuggestions = () => {
@@ -361,6 +400,8 @@ export function useAppState() {
     loadSession,
     importSession,
     importSessionWithConfirmation,
+    importBibtex,
+    importBibtexWithConfirmation,
     loadMoreSuggestions,
     updateQueued,
     addPublicationsAndUpdate,
