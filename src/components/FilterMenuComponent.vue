@@ -10,7 +10,6 @@ const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
 
 const filterSwitch = ref(null)
-const filterInput = ref(null)
 
 const yearRules = [
   (value) => {
@@ -301,7 +300,6 @@ function isTagActive(tagValue) {
         >
           <v-col cols="12" md="6" class="py-1">
             <v-text-field
-              ref="filterInput"
               label="Search"
               v-model="sessionStore.filter.string"
               placeholder="Text"
