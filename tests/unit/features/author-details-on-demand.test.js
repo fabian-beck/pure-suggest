@@ -8,7 +8,6 @@ import { useSessionStore } from '@/stores/session.js'
 
 // Mock external dependencies
 vi.mock('@/lib/Keys.js')
-vi.mock('@/core/Publication.js')
 
 describe('Author Details On Demand Feature', () => {
   let modalStore, authorStore, sessionStore, modalManager

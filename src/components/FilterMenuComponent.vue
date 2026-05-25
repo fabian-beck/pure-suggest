@@ -240,8 +240,8 @@ function isTagActive(tagValue) {
       </v-btn>
     </template>
     <v-sheet class="has-background-grey-lighten-4 p-2 pt-4" style="width: 700px; max-width: 95vw">
-      <form>
-        <v-row dense>
+      <form class="filter-form">
+        <v-row density="comfortable">
           <v-col cols="12" class="py-0">
             <!-- Mobile: Stack vertically, Desktop: Inline -->
             <div :class="interfaceStore.isMobile ? 'd-block' : 'd-flex align-center'">
@@ -294,7 +294,11 @@ function isTagActive(tagValue) {
             </div>
           </v-col>
         </v-row>
-        <v-row dense :class="{ 'opacity-50': !sessionStore.filter.isActive }">
+        <v-row
+          density="comfortable"
+          class="filter-input-row"
+          :class="{ 'opacity-50': !sessionStore.filter.isActive }"
+        >
           <v-col cols="12" md="6" class="py-1">
             <v-text-field
               ref="filterInput"
@@ -302,42 +306,41 @@ function isTagActive(tagValue) {
               v-model="sessionStore.filter.string"
               placeholder="Text"
               variant="underlined"
+              density="compact"
               prepend-inner-icon="mdi-card-search"
               clearable
               hide-details
             />
           </v-col>
           <v-col cols="12" md="6" class="py-1">
-            <v-row no-gutters>
-              <v-col cols="12" md="7">
-                <v-text-field
-                  label="Year from"
-                  v-model="sessionStore.filter.yearStart"
-                  placeholder="YYYY"
-                  variant="underlined"
-                  prepend-inner-icon="mdi-calendar"
-                  clearable
-                  :rules="yearRules"
-                  validate-on="blur"
-                  hide-details
-                />
-              </v-col>
-              <v-col cols="12" md="5">
-                <v-text-field
-                  label="to"
-                  v-model="sessionStore.filter.yearEnd"
-                  placeholder="YYYY"
-                  variant="underlined"
-                  clearable
-                  :rules="yearRules"
-                  validate-on="blur"
-                  hide-details
-                />
-              </v-col>
-            </v-row>
+            <div class="filter-year-fields">
+              <v-text-field
+                label="Year from"
+                v-model="sessionStore.filter.yearStart"
+                placeholder="YYYY"
+                variant="underlined"
+                density="compact"
+                prepend-inner-icon="mdi-calendar"
+                clearable
+                :rules="yearRules"
+                validate-on="blur"
+                hide-details
+              />
+              <v-text-field
+                label="to"
+                v-model="sessionStore.filter.yearEnd"
+                placeholder="YYYY"
+                variant="underlined"
+                density="compact"
+                clearable
+                :rules="yearRules"
+                validate-on="blur"
+                hide-details
+              />
+            </div>
           </v-col>
         </v-row>
-        <v-row dense :class="{ 'opacity-50': !sessionStore.filter.isActive }">
+        <v-row density="comfortable" :class="{ 'opacity-50': !sessionStore.filter.isActive }">
           <v-col cols="12" class="py-1">
             <div class="d-flex align-center">
               <v-icon class="mr-2" size="20">mdi-tag</v-icon>
@@ -357,7 +360,7 @@ function isTagActive(tagValue) {
             </div>
           </v-col>
         </v-row>
-        <v-row dense v-if="sessionStore.filter.dois.length > 0" :class="{ 'opacity-50': !sessionStore.filter.isActive }">
+        <v-row density="comfortable" v-if="sessionStore.filter.dois.length > 0" :class="{ 'opacity-50': !sessionStore.filter.isActive }">
           <v-col class="py-1">
             <div class="d-flex align-center">
               <v-icon class="mr-2" size="20">mdi-file-document</v-icon>
@@ -379,7 +382,7 @@ function isTagActive(tagValue) {
             </div>
           </v-col>
         </v-row>
-        <v-row dense v-if="sessionStore.filter.authors.length > 0" :class="{ 'opacity-50': !sessionStore.filter.isActive }">
+        <v-row density="comfortable" v-if="sessionStore.filter.authors.length > 0" :class="{ 'opacity-50': !sessionStore.filter.isActive }">
           <v-col class="py-1">
             <div class="d-flex align-center">
               <v-icon class="mr-2" size="20">mdi-account</v-icon>
@@ -435,6 +438,34 @@ function isTagActive(tagValue) {
       margin: 0 !important;
     }
   }
+}
+
+.filter-form {
+  :deep(.v-row) {
+    margin-top: 0.125rem;
+    margin-bottom: 0.375rem;
+  }
+
+  :deep(.v-col) {
+    padding-top: 0.125rem !important;
+    padding-bottom: 0.125rem !important;
+  }
+
+  :deep(.v-input--density-compact) {
+    --v-input-control-height: 36px;
+  }
+}
+
+.filter-input-row {
+  align-items: flex-start;
+}
+
+.filter-year-fields {
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+  width: 100%;
+  align-items: start;
+  column-gap: 0;
 }
 
 .opacity-50 {

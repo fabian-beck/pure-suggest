@@ -69,7 +69,7 @@ export function useAppState() {
   /**
    * Updates suggestions based on selected publications
    */
-  const updateSuggestions = async (maxSuggestions = PAGINATION.INITIAL_SUGGESTIONS_COUNT) => {
+  const updateSuggestions = async (maxSuggestions = sessionStore.maxSuggestions) => {
     sessionStore.maxSuggestions = maxSuggestions
     interfaceStore.startLoading()
     let publicationsLoaded = 0

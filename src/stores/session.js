@@ -30,7 +30,12 @@ export const useSessionStore = defineStore('session', {
     }
   },
   getters: {
-    selectedPublicationsDois: (state) => state.selectedPublications.map((publication) => publication.doi),
+    selectedPublicationsDois: (state) =>
+      state.selectedPublications.map((publication) => publication.doi),
+    selectedPublicationsDoiSet: (state) =>
+      new Set(state.selectedPublications.map((publication) => publication.doi)),
+    selectedPublicationsByDoi: (state) =>
+      new Map(state.selectedPublications.map((publication) => [publication.doi, publication])),
     selectedPublicationsCount: (state) => state.selectedPublications.length,
     excludedPublicationsCount: (state) => state.excludedPublicationsDois.length,
     suggestedPublications: (state) => (state.suggestion ? state.suggestion.publications : []),
@@ -102,10 +107,13 @@ export const useSessionStore = defineStore('session', {
     isKeywordLinkedToActive: (state) => (keyword) =>
       state.activePublication && state.activePublication.boostKeywords.includes(keyword),
     uniqueBoostKeywords: (state) => parseUniqueBoostKeywords(state.boostKeywordString),
-    isSelected: (state) => (doi) => state.selectedPublicationsDois.includes(doi),
+    isSelected() {
+      return (doi) => this.selectedPublicationsDoiSet.has(doi)
+    },
     isExcluded: (state) => (doi) => state.excludedPublicationsDois.includes(doi),
-    getSelectedPublicationByDoi: (state) => (doi) =>
-      state.selectedPublications.filter((publication) => publication.doi === doi)[0]
+    getSelectedPublicationByDoi() {
+      return (doi) => this.selectedPublicationsByDoi.get(doi)
+    }
   },
   actions: {
     clear() {

@@ -105,7 +105,7 @@ onMounted(() => {
     </div>
     <div class="header">
       <div>
-        <div class="notification queue-panel pa-3" v-show="queueStore.isUpdatable">
+        <div class="notification queue-panel" v-show="queueStore.isUpdatable">
           <div class="d-flex align-center ga-2">
             <div class="flex-grow-1 has-text-centered queue-description">
               <p>
@@ -242,5 +242,10 @@ onMounted(() => {
   border-left: 3px solid var(--bulma-primary) !important;
   border-bottom: 2px solid var(--bulma-primary) !important;
   margin: 0 !important;
+  padding: 0.375rem 0.75rem !important;
+
+  & p {
+    margin: 0;
+  }
 }
 </style>

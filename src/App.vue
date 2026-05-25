@@ -187,7 +187,7 @@ export default {
         <div>
           <v-progress-circular color="white" indeterminate size="64"></v-progress-circular>
         </div>
-        <div class="has-text-white mt-4" v-if="interfaceStore.loadingMessage">
+        <div class="global-loading-message has-text-white mt-4" v-if="interfaceStore.loadingMessage">
           {{ interfaceStore.loadingMessage }}
         </div>
       </div>
@@ -213,6 +213,17 @@ body {
   &::-webkit-scrollbar {
     display: none; /* Chrome, Safari, Opera */
   }
+}
+
+#app .v-btn:not(.session-state-button):not(.filter-button):not(.boost-button):not(.v-btn--icon) {
+  min-height: 36px;
+  padding: 0 16px;
+  font-size: 0.875rem;
+}
+
+#app .v-btn:not(.session-state-button):not(.filter-button):not(.boost-button) .v-btn__content {
+  letter-spacing: 0.0892857143em;
+  text-transform: uppercase;
 }
 
 #app .v-application__wrap {
@@ -329,6 +340,17 @@ body {
 
 .main-overlay {
   z-index: 6000 !important;
+}
+
+.global-loading-message {
+  max-width: min(80vw, 36rem);
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 52%);
+  line-height: 1.35;
+  text-align: center;
+  overflow-wrap: anywhere;
+  box-shadow: 0 0.25rem 1rem rgb(0 0 0 / 20%);
 }
 
 /* Global modal dialog overlay styles - ensures all modals appear above header and block interaction */

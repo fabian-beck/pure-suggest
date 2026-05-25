@@ -194,6 +194,16 @@ const authorNumberFactorModel = computed({
   z-index: 1;
 }
 
+.v-btn-toggle {
+  :deep(.v-btn--active) {
+    background-color: color-mix(in srgb, currentColor 14%, white);
+  }
+
+  :deep(.v-btn--active > .v-btn__overlay) {
+    opacity: 0;
+  }
+}
+
 // Fix for slider thumb being cut off when at minimum and maximum values
 .v-list-item .v-slider {
   padding-left: 16px;

@@ -33,12 +33,7 @@ export default {
       loaded: 0,
       cleanedSearchQuery: '',
       searchCancelled: false,
-      lastSearchQuery: '',
-      lastSearchProvider: '',
-      searchProviders: [
-        { title: 'OpenAlex', value: 'openalex' },
-        { title: 'CrossRef', value: 'crossref' }
-      ]
+      lastSearchQuery: ''
     }
   },
   computed: {
@@ -50,7 +45,7 @@ export default {
 
       return this.searchResults.results.filter(
         (publication) =>
-          !this.sessionStore.selectedPublicationsDois.includes(publication.doi) &&
+          !this.sessionStore.selectedPublicationsDoiSet.has(publication.doi) &&
           !this.queueStore.selectedQueue.includes(publication.doi)
       )
     }
@@ -99,11 +94,8 @@ export default {
     },
 
     async search() {
-      // Don't perform search if query and provider are the same as last search
-      if (
-        this.modalStore.searchQuery === this.lastSearchQuery &&
-        this.modalStore.searchProvider === this.lastSearchProvider
-      ) {
+      // Don't perform search if query is the same as last search
+      if (this.modalStore.searchQuery === this.lastSearchQuery) {
         return
       }
 
@@ -117,17 +109,12 @@ export default {
       if (!this.modalStore.searchQuery) {
         this.searchResults = { results: [], type: 'empty' }
         this.lastSearchQuery = ''
-        this.lastSearchProvider = ''
         return
       }
       this.isLoading = true
       this.lastSearchQuery = this.modalStore.searchQuery
-      this.lastSearchProvider = this.modalStore.searchProvider
       this.cleanedSearchQuery = this.modalStore.searchQuery.replace(/[^a-zA-Z0-9 ]/g, ' ')
-      const publicationSearch = new PublicationSearch(
-        this.modalStore.searchQuery,
-        this.modalStore.searchProvider
-      )
+      const publicationSearch = new PublicationSearch(this.modalStore.searchQuery)
       this.searchResults = await publicationSearch.execute()
 
       // Check if search was cancelled during execution
@@ -155,6 +142,8 @@ export default {
         })
         this.loaded = loaded
         if (loaded === this.filteredSearchResults.length) {
+          // Re-rank results now that all data is loaded
+          this.searchResults.results = this.rankResults(this.searchResults.results)
           this.isLoading = false
           return
         }
@@ -186,7 +175,58 @@ export default {
       this.searchCancelled = false
       this.loaded = 0
       this.lastSearchQuery = ''
-      this.lastSearchProvider = ''
+    },
+
+    // Re-ranking after publication data is fully loaded
+    // This duplicates the logic in PublicationSearch.js intentionally:
+    // - PublicationSearch ranks with potentially incomplete data immediately after API responses
+    // - This method re-ranks with complete data after all publications have been fetched
+    rankResults(results) {
+      const queryWords = this.extractWords(this.cleanedSearchQuery)
+      
+      // Calculate match scores for each publication
+      const scoredResults = results.map((publication) => {
+        const score = this.calculateMatchScore(publication, queryWords)
+        return { publication, score }
+      })
+      
+      // Sort by score descending
+      scoredResults.sort((a, b) => b.score - a.score)
+      
+      return scoredResults.map((item) => item.publication)
+    },
+
+    extractWords(text) {
+      return text
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .filter((word) => word.length >= 3)
+    },
+
+    calculateMatchScore(publication, queryWords) {
+      let score = 0
+      
+      const TITLE_WEIGHT = 3
+      const AUTHOR_WEIGHT = 2
+      const VENUE_WEIGHT = 1
+      
+      const titleWords = this.extractWords(publication.title || '')
+      const authorWords = this.extractWords(publication.author || '')
+      const venueWords = this.extractWords(publication.container || '')
+      
+      queryWords.forEach((queryWord) => {
+        const titleMatches = titleWords.filter((word) => word === queryWord).length
+        score += titleMatches * TITLE_WEIGHT
+        
+        const authorMatches = authorWords.filter((word) => word === queryWord).length
+        score += authorMatches * AUTHOR_WEIGHT
+        
+        const venueMatches = venueWords.filter((word) => word === queryWord).length
+        score += venueMatches * VENUE_WEIGHT
+      })
+      
+      return score
     }
   }
 }
@@ -212,20 +252,10 @@ export default {
             @click:append="search"
             @keydown.enter="search"
             density="compact"
-            hint="Search for keywords or by providing DOI(s) in any format. If searching also by author names or publication venue, use CrossRef; for keywords, OpenAlex usually provides better results."
+            hint="Search for keywords or by providing DOI(s) in any format. Results are merged from both OpenAlex and CrossRef and ranked by relevance."
             class="search-field"
           >
           </v-text-field>
-          <v-select
-            v-model="modalStore.searchProvider"
-            :items="searchProviders"
-            variant="solo"
-            density="compact"
-            hide-details
-            @update:model-value="search"
-            class="search-provider-select flex-grow-0 flex-shrink-0"
-          >
-          </v-select>
         </div>
       </form>
     </template>
@@ -276,11 +306,11 @@ export default {
             theme="dark"
           >
             <div class="d-flex flex-column align-center justify-center">
-              <div>
-                <v-progress-circular indeterminate size="64"></v-progress-circular>
+              <v-progress-circular color="white" indeterminate size="64"></v-progress-circular>
+              <div class="search-loading-message" v-if="this.searchResults.type === 'empty'">
+                Searching
               </div>
-              <div class="comment" v-if="this.searchResults.type === 'empty'">Searching</div>
-              <div class="comment" v-else>
+              <div class="search-loading-message" v-else>
                 Loading {{ loaded }}/{{ filteredSearchResults.length }}
               </div>
             </div>
@@ -307,11 +337,6 @@ form {
   flex: 1;
 }
 
-.search-provider-select {
-  width: 150px;
-  flex-shrink: 0;
-}
-
 .content {
   & .publication-list {
     padding: 0;
@@ -331,6 +356,19 @@ form {
   & button {
     margin-bottom: 0 !important;
   }
+}
+
+.search-loading-message {
+  max-width: min(80vw, 24rem);
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 52%);
+  color: white;
+  line-height: 1.35;
+  text-align: center;
+  overflow-wrap: anywhere;
+  box-shadow: 0 0.25rem 1rem rgb(0 0 0 / 20%);
 }
 
 @include comment;
