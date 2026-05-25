@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 
 import { useModalManager } from '@/composables/useModalManager.js'
+import Author from '@/core/Author.js'
 import Publication from '@/core/Publication.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
@@ -171,8 +172,7 @@ function handleAuthorClick(event) {
     event.stopPropagation()
     const authorName = authorElement.getAttribute('data-author')
     if (authorName) {
-      // Convert the author name to an author ID and open modal with that ID
-      const authorId = findAuthorIdByName(authorName.trim())
+      const authorId = Author.nameToId(authorName.trim())
       if (authorId) {
         openAuthorModal(authorId)
       }
@@ -183,22 +183,6 @@ function handleAuthorClick(event) {
   refocus()
 }
 
-function findAuthorIdByName(authorName) {
-  // Use the same nameToId logic as Author.js
-  return (
-    authorName
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      // Handle Nordic and other extended Latin characters not covered by NFD
-      .replace(/[øØ]/g, 'o')
-      .replace(/[åÅ]/g, 'a')
-      .replace(/[æÆ]/g, 'ae')
-      .replace(/[ðÐ]/g, 'd')
-      .replace(/[þÞ]/g, 'th')
-      .replace(/[ßẞ]/g, 'ss')
-      .toLowerCase()
-  )
-}
 </script>
 
 <template>

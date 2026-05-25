@@ -2,6 +2,7 @@
 import { computed, ref, nextTick } from 'vue'
 
 import PublicationTag from '@/components/PublicationTag.vue'
+import Author from '@/core/Author.js'
 import Publication from '@/core/Publication.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
@@ -162,19 +163,7 @@ function getAuthorName(authorId) {
       if (!pub.author) return []
       return pub.author.split(';').map(name => name.trim())
     })
-    .find(name => {
-      const normalizedName = name
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[øØ]/g, 'o')
-        .replace(/[åÅ]/g, 'a')
-        .replace(/[æÆ]/g, 'ae')
-        .replace(/[ðÐ]/g, 'd')
-        .replace(/[þÞ]/g, 'th')
-        .replace(/[ßẞ]/g, 'ss')
-        .toLowerCase()
-      return normalizedName === authorId
-    })
+    .find(name => Author.nameToId(name) === authorId)
   return author || authorId
 }
 

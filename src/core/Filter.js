@@ -1,3 +1,5 @@
+import Author from './Author.js'
+
 const VALIDATION = {
   MIN_YEAR: 1000,
   MAX_YEAR: 10000
@@ -129,27 +131,12 @@ export default class Filter {
   matchesAuthors(publication) {
     if (!this.authors.length) return true
     if (!publication.author) return false
-    
-    // Split authors by semicolon to get individual author names
+
     const authorNames = publication.author.split(';').map((name) => name.trim())
-    
-    // Check if any of the publication's authors match any of the filtered author IDs
-    return this.authors.some((authorId) => {
-      return authorNames.some((authorName) => {
-        // Normalize author name to ID format for comparison
-        const normalizedName = authorName
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(/[øØ]/g, 'o')
-          .replace(/[åÅ]/g, 'a')
-          .replace(/[æÆ]/g, 'ae')
-          .replace(/[ðÐ]/g, 'd')
-          .replace(/[þÞ]/g, 'th')
-          .replace(/[ßẞ]/g, 'ss')
-          .toLowerCase()
-        return normalizedName === authorId
-      })
-    })
+
+    return this.authors.some((authorId) =>
+      authorNames.some((authorName) => Author.nameToId(authorName) === authorId)
+    )
   }
 
   matches(publication) {
@@ -166,7 +153,13 @@ export default class Filter {
   hasActiveFilters() {
     return (
       this.isActive &&
-      Boolean(this.string || this.tags.length > 0 || this.isYearActive() || this.dois.length > 0 || this.authors.length > 0) &&
+      Boolean(
+        this.string ||
+          this.tags.length > 0 ||
+          this.isYearActive() ||
+          this.dois.length > 0 ||
+          this.authors.length > 0
+      ) &&
       (this.applyToSelected || this.applyToSuggested)
     )
   }
