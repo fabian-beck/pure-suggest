@@ -25,6 +25,7 @@ const props = defineProps({
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
 const { showAbstract: showAbstractModal, openAuthorModal } = useModalManager()
+const ORCID_ICON_URL = 'https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png'
 
 const showDetails = computed(() => {
   return props.alwaysShowDetails || props.publication.isActive
@@ -34,6 +35,23 @@ const visibleTags = computed(() => {
   return Publication.TAGS.filter((tag) => props.publication[tag.value])
 })
 
+const authorsWithOrcid = computed(() => {
+  if (!props.publication.author) {
+    return []
+  }
+
+  const authors = props.publication.author.split('; ')
+  const orcidData = props.publication.authorOrcidData || []
+
+  return authors.map((author, index) => {
+    const orcidInfo = orcidData.find(data => data.index === index)
+    return {
+      name: author.trim(),
+      orcidId: orcidInfo?.orcidId,
+      hasOrcid: Boolean(orcidInfo)
+    }
+  })
+})
 
 function highlight(string) {
   if (!string) {
@@ -181,32 +199,6 @@ function findAuthorIdByName(authorName) {
       .toLowerCase()
   )
 }
-
-function getOrcidUrl(orcidId) {
-  return `https://orcid.org/${orcidId}`
-}
-
-function getOrcidIconUrl() {
-  return 'https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png'
-}
-
-function getAuthorsWithOrcid() {
-  if (!props.publication.author) {
-    return []
-  }
-
-  const authors = props.publication.author.split('; ')
-  const orcidData = props.publication.authorOrcidData || []
-
-  return authors.map((author, index) => {
-    const orcidInfo = orcidData.find(data => data.index === index)
-    return {
-      name: author.trim(),
-      orcidId: orcidInfo?.orcidId,
-      hasOrcid: Boolean(orcidInfo)
-    }
-  })
-}
 </script>
 
 <template>
@@ -216,7 +208,7 @@ function getAuthorsWithOrcid() {
         v-if="sessionStore.filter.dois?.includes(publication.doi)"
         size="16"
         class="mr-1"
-        @click.stop="addToFilter(publication.doi)"
+        @click.stop
         v-tippy="'DOI is in filter.'"
         >mdi-filter</v-icon
       >
@@ -261,7 +253,7 @@ function getAuthorsWithOrcid() {
     </div>
     <div v-if="showDetails">
       <span v-if="publication.author">
-        <template v-for="(author, index) in getAuthorsWithOrcid()" :key="index">
+        <template v-for="(author, index) in authorsWithOrcid" :key="index">
           <span
             v-if="publicationType === 'selected'"
             class="clickable-author"
@@ -276,18 +268,18 @@ function getAuthorsWithOrcid() {
           ></span>
           <a
             v-if="author.hasOrcid"
-            :href="getOrcidUrl(author.orcidId)"
+            :href="`https://orcid.org/${author.orcidId}`"
             @click.stop
             class="ml-1"
           >
             <img
-              :src="getOrcidIconUrl()"
+              :src="ORCID_ICON_URL"
               alt="ORCID logo"
               width="14"
               height="14"
             />
           </a>
-          <span v-if="index < getAuthorsWithOrcid().length - 1">; </span>
+          <span v-if="index < authorsWithOrcid.length - 1">; </span>
         </template>
         <span>. </span>
       </span>
