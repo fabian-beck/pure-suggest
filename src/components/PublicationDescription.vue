@@ -83,23 +83,11 @@ function exportBibtex() {
 }
 
 function toggleDoi(doi) {
-  // Remember the states before we do anything
   const wasMenuOpen = interfaceStore.isFilterMenuOpen
   const wasDoiFiltered = isDoiFiltered(doi)
 
-  // Always toggle the DOI
   sessionStore.filter.toggleDoi(doi)
-
-  // Handle menu state based on original state
-  if (!wasMenuOpen && !wasDoiFiltered) {
-    // Menu was closed and we just added a DOI - open the menu
-    interfaceStore.openFilterMenu()
-  } else if (wasMenuOpen) {
-    // Menu was open - ensure it stays open after Vuetify's close behavior
-    setTimeout(() => {
-      interfaceStore.setFilterMenuState(true)
-    }, 0)
-  }
+  keepFilterMenuOpenAfterToggle(wasMenuOpen, wasDoiFiltered)
 }
 
 function isDoiFiltered(doi) {
@@ -118,24 +106,22 @@ function refocus() {
 }
 
 function toggleTag(tagValue) {
-  // Remember the states before we do anything
   const wasMenuOpen = interfaceStore.isFilterMenuOpen
   const wasTagFiltered = isTagFiltered(tagValue)
 
-  // Always toggle the tag
   sessionStore.filter.toggleTag(tagValue)
 
-  // If filters are disabled and we just activated a tag, enable filters
   if (!sessionStore.filter.isActive && !wasTagFiltered) {
     sessionStore.filter.isActive = true
   }
 
-  // Handle menu state based on original state
-  if (!wasMenuOpen && !wasTagFiltered) {
-    // Menu was closed and we just added a tag - open the menu
+  keepFilterMenuOpenAfterToggle(wasMenuOpen, wasTagFiltered)
+}
+
+function keepFilterMenuOpenAfterToggle(wasMenuOpen, wasFilteredBeforeToggle) {
+  if (!wasMenuOpen && !wasFilteredBeforeToggle) {
     interfaceStore.openFilterMenu()
   } else if (wasMenuOpen) {
-    // Menu was open - ensure it stays open after Vuetify's close behavior
     setTimeout(() => {
       interfaceStore.setFilterMenuState(true)
     }, 0)

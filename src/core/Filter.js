@@ -62,60 +62,58 @@ export default class Filter {
     return this.tags.some((tag) => Boolean(publication[tag]))
   }
 
-  toggleTag(tagValue) {
-    if (this.tags.includes(tagValue)) {
-      this.removeTag(tagValue)
+  toggleFilterValue(filterKey, value) {
+    if (this[filterKey].includes(value)) {
+      this.removeFilterValue(filterKey, value)
     } else {
-      this.addTag(tagValue)
+      this.addFilterValue(filterKey, value)
     }
+  }
+
+  addFilterValue(filterKey, value) {
+    if (!this[filterKey].includes(value)) {
+      this[filterKey].push(value)
+    }
+  }
+
+  removeFilterValue(filterKey, value) {
+    this[filterKey] = this[filterKey].filter((item) => item !== value)
+  }
+
+  toggleTag(tagValue) {
+    this.toggleFilterValue('tags', tagValue)
   }
 
   addTag(tagValue) {
-    if (!this.tags.includes(tagValue)) {
-      this.tags.push(tagValue)
-    }
+    this.addFilterValue('tags', tagValue)
   }
 
   removeTag(tagValue) {
-    this.tags = this.tags.filter((t) => t !== tagValue)
+    this.removeFilterValue('tags', tagValue)
   }
 
   toggleDoi(doi) {
-    if (this.dois.includes(doi)) {
-      this.removeDoi(doi)
-    } else {
-      this.addDoi(doi)
-    }
+    this.toggleFilterValue('dois', doi)
   }
 
   addDoi(doi) {
-    if (!this.dois.includes(doi)) {
-      this.dois.push(doi)
-    }
+    this.addFilterValue('dois', doi)
   }
 
   removeDoi(doi) {
-    console.log(`Removing DOI: ${doi}`)
-    this.dois = this.dois.filter((d) => d !== doi)
-    console.log(`Remaining DOIs: ${this.dois}`)
+    this.removeFilterValue('dois', doi)
   }
 
   toggleAuthor(authorId) {
-    if (this.authors.includes(authorId)) {
-      this.removeAuthor(authorId)
-    } else {
-      this.addAuthor(authorId)
-    }
+    this.toggleFilterValue('authors', authorId)
   }
 
   addAuthor(authorId) {
-    if (!this.authors.includes(authorId)) {
-      this.authors.push(authorId)
-    }
+    this.addFilterValue('authors', authorId)
   }
 
   removeAuthor(authorId) {
-    this.authors = this.authors.filter((a) => a !== authorId)
+    this.removeFilterValue('authors', authorId)
   }
 
   matchesDois(publication) {
