@@ -85,23 +85,6 @@ export const createD3ModuleMock = () => {
   }
 }
 
-// Setup DOM mocks for D3 tests
-export const setupD3DomMocks = () => {
-  global.document.getElementById = vi.fn((id) => {
-    if (id === 'network-svg-container') {
-      return { clientWidth: 800, clientHeight: 400 }
-    }
-    return null
-  })
-
-  if (!Element.prototype.getBoundingClientRect) {
-    Element.prototype.getBoundingClientRect = vi.fn(() => ({
-      width: 800, height: 400, x: 0, y: 0,
-      top: 0, left: 0, right: 800, bottom: 400
-    }))
-  }
-}
-
 // Standard store mocks - essential state only
 export const createMockSessionStore = (overrides = {}) => ({
   isEmpty: false,
