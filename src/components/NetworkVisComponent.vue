@@ -235,7 +235,6 @@ export default {
     }
   },
   mounted() {
-    const that = this
     const container = document.getElementById('network-svg-container')
     this.svgWidth = container.clientWidth
     // if not mobile set height to 1/5 of width to make assumption that aspect ratio is 5:1
@@ -245,9 +244,8 @@ export default {
       'viewBox',
       `${-this.svgWidth / 2} ${-this.svgHeight / 2} ${this.svgWidth} ${this.svgHeight}`
     )
-    // eslint-disable-next-line no-unused-vars
-    this.zoom = d3.zoom().on('zoom', (event, d) => {
-      that.svg.attr('transform', event.transform)
+    this.zoom = d3.zoom().on('zoom', (event) => {
+      this.svg.attr('transform', event.transform)
     })
     this.svg = d3.select('#network-svg').call(this.zoom).select('g')
     this.label = this.svg.append('g').attr('class', 'labels').selectAll('text')
