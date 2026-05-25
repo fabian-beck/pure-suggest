@@ -333,12 +333,12 @@ export default {
       let nodes = []
 
       // Create publication nodes
-      const publicationNodes = createPublicationNodes(
-        publications,
-        doiToIndex,
-        this.queueStore.selectedQueue || [],
-        this.queueStore.excludedQueue || []
-      )
+      const publicationNodes = createPublicationNodes(publications, doiToIndex, {
+        selectedQueue: this.queueStore.selectedQueue || [],
+        excludedQueue: this.queueStore.excludedQueue || [],
+        filter: this.sessionStore.filter,
+        onlyShowFiltered: this.onlyShowFiltered
+      })
       nodes = nodes.concat(publicationNodes)
 
       // Create keyword nodes
@@ -1204,6 +1204,11 @@ export default {
 
     &.queuingForExcluded text.labelQueuingForExcluded {
       visibility: visible;
+    }
+
+    &.filtered-out {
+      opacity: 0.5;
+      filter: blur(0.5px);
     }
   }
 
