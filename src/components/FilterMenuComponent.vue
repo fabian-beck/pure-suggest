@@ -173,6 +173,7 @@ function removeAuthor(authorId) {
 
 function getTagIcon(tagValue) {
   const iconMap = {
+    isAiRecommended: 'mdi-robot-outline',
     isHighlyCited: 'mdi-star',
     isSurvey: 'mdi-table',
     isNew: 'mdi-alarm',

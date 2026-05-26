@@ -226,6 +226,27 @@ export const useSessionStore = defineStore('session', {
       })
     },
 
+    clearAiRecommendations() {
+      this.suggestedPublications.forEach((publication) => {
+        publication.isAiRecommended = false
+      })
+    },
+
+    applyAiRecommendations(recommendations) {
+      this.clearAiRecommendations()
+
+      const recommendationsByDoi = new Map(
+        recommendations.map((recommendation) => [
+          recommendation.doi.toLowerCase(),
+          recommendation.explanation
+        ])
+      )
+
+      this.suggestedPublications.forEach((publication) => {
+        publication.isAiRecommended = recommendationsByDoi.get(publication.doi) || false
+      })
+    },
+
     updatePublicationScores() {
       console.log('Updating scores of publications and reordering them.')
 

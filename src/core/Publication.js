@@ -61,6 +61,10 @@ const TITLE_WORD_MAP = {
 
 const PUBLICATION_TAGS = [
   {
+    value: 'isAiRecommended',
+    name: 'AI recommended'
+  },
+  {
     value: 'isHighlyCited',
     name: 'Highly cited'
   },
@@ -152,6 +156,7 @@ export default class Publication {
 
     // Boolean flags (tags and interface state)
     this.isSurvey = this.isHighlyCited = this.isNew = this.isUnnoted = false
+    this.isAiRecommended = false
     this.isActive = this.isLinkedToActive = this.isSelected = this.isRead = false
     this.isHovered = this.isKeywordHovered = this.isAuthorHovered = this.wasFetched = false
     this.isNewlyAdded = false
