@@ -131,6 +131,7 @@ export function useAppState() {
         interfaceStore.loadingMessage = message
       }
     })
+    sessionStore.clearAiRecommendations()
 
     updateScores()
   }

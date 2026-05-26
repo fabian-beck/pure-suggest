@@ -11,6 +11,7 @@ const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
 
 const filterSwitch = ref(null)
+const AI_RECOMMENDED_TAG = 'isAiRecommended'
 
 const yearRules = [
   (value) => {
@@ -96,6 +97,18 @@ const buttonColor = computed(() => {
   } else {
     return 'default'
   }
+})
+
+const hasAiRecommendations = computed(() => {
+  return sessionStore.suggestedPublications.some((publication) =>
+    Boolean(publication[AI_RECOMMENDED_TAG])
+  )
+})
+
+const visibleTags = computed(() => {
+  return Publication.TAGS.filter(
+    (tag) => tag.value !== AI_RECOMMENDED_TAG || hasAiRecommendations.value
+  )
 })
 
 function handleMenuToggle(isOpen) {
@@ -335,7 +348,7 @@ function isTagActive(tagValue) {
               <span class="text-body-2 mr-3">Tags:</span>
               <div class="tag-group">
                 <PublicationTag
-                  v-for="tag in Publication.TAGS"
+                  v-for="tag in visibleTags"
                   :key="tag.value"
                   :icon="getTagIcon(tag.value)"
                   clickable

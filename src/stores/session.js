@@ -234,6 +234,7 @@ export const useSessionStore = defineStore('session', {
       this.suggestedPublications.forEach((publication) => {
         publication[AI_RECOMMENDED_TAG] = false
       })
+      this.filter.removeTag(AI_RECOMMENDED_TAG)
     },
 
     applyAiRecommendations(recommendations) {

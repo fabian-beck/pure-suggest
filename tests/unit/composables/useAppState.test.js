@@ -162,6 +162,31 @@ describe('useAppState - Session Loading', () => {
     })
   })
 
+  describe('computeSuggestions', () => {
+    it('clears AI recommendation filter when suggestions are recomputed', async () => {
+      sessionStore.filter.tags = ['isAiRecommended', 'isNew']
+      sessionStore.suggestion = {
+        publications: [
+          {
+            doi: '10.1234/old-ai',
+            title: 'Old AI recommendation',
+            isAiRecommended: 'Previously recommended.',
+            citationCount: 0,
+            referenceCount: 0,
+            boostMatches: 0,
+            boostKeywords: [],
+            boostFactor: 1,
+            isSelected: false
+          }
+        ]
+      }
+
+      await appState.computeSuggestions()
+
+      expect(sessionStore.filter.tags).toEqual(['isNew'])
+    })
+  })
+
   describe('importSessionWithConfirmation', () => {
     it('should be exposed by useAppState', () => {
       expect(appState.importSessionWithConfirmation).toBeDefined()
