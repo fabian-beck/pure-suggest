@@ -76,7 +76,8 @@ describe('AiRecommendationService', () => {
       selectedPublications,
       suggestedPublications,
       boostKeywordString: 'visualization, survey',
-      keywords: ['VISUALIZATION', 'SURVEY']
+      keywords: ['VISUALIZATION', 'SURVEY'],
+      steeringComment: 'Prefer recent survey papers that bridge the seed papers.'
     })
 
     expect(window.prompt).toHaveBeenCalledOnce()
@@ -91,6 +92,9 @@ describe('AiRecommendationService', () => {
     expect(requestBody.model).toBe('gpt-5.4-mini')
     expect(context.userKeywords).toEqual(['VISUALIZATION', 'SURVEY'])
     expect(context.rawKeywordQuery).toBe('visualization, survey')
+    expect(context.userSteeringComment).toBe(
+      'Prefer recent survey papers that bridge the seed papers.'
+    )
     expect(context.selectedSeedPapers[0].doi).toBe('10.1000/seed')
     expect(context.suggestedPapers.map((publication) => publication.doi)).toEqual([
       '10.2000/suggested-a',

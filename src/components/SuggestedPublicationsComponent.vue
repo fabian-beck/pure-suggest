@@ -76,8 +76,23 @@ const updateMaxSuggestions = async (newValue) => {
   }
 }
 
+const requestAiRecommendationComment = () => {
+  const comment = window.prompt(
+    'Optional: add a short comment to steer the AI recommendations.',
+    sessionStore.aiRecommendationComment
+  )
+
+  if (comment === null) return null
+
+  sessionStore.aiRecommendationComment = comment.trim()
+  return sessionStore.aiRecommendationComment
+}
+
 const requestAiRecommendations = async () => {
   if (!canRequestAiRecommendations.value) return
+
+  const steeringComment = requestAiRecommendationComment()
+  if (steeringComment === null) return
 
   isAiRecommendationLoading.value = true
   interfaceStore.startLoading()
@@ -88,7 +103,8 @@ const requestAiRecommendations = async () => {
       selectedPublications: sessionStore.selectedPublications,
       suggestedPublications: sessionStore.suggestedPublicationsFiltered,
       boostKeywordString: sessionStore.boostKeywordString,
-      keywords: sessionStore.uniqueBoostKeywords
+      keywords: sessionStore.uniqueBoostKeywords,
+      steeringComment
     })
 
     if (recommendations) {

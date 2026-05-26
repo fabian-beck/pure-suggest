@@ -123,6 +123,7 @@ function buildRecommendationContext({
   suggestedPublications,
   boostKeywordString,
   keywords,
+  steeringComment,
   targetCount
 }) {
   const selectedPublicationMap = new Map(
@@ -136,6 +137,7 @@ function buildRecommendationContext({
       `Pick about 10% of the suggestions: ${targetCount} paper${targetCount === 1 ? '' : 's'}.`,
     userKeywords: keywords.filter(Boolean),
     rawKeywordQuery: boostKeywordString || '',
+    userSteeringComment: truncateText(steeringComment, 700),
     selectedSeedPapers: selectedPublications.map(serializeSelectedPublication),
     suggestedPapers: suggestedPublications.map((publication) =>
       serializeSuggestedPublication(publication, selectedPublicationMap)
@@ -183,6 +185,7 @@ function buildOpenAiRequest(context, suggestedPublications, targetCount) {
     instructions: [
       'You are an expert research assistant for citation-based literature discovery.',
       'Judge relevance from the selected seed papers, user keywords, matched keywords, abstracts, venues, years, tags, scores, and citation links.',
+      'Use the optional user steering comment to adjust priorities when it is present, while still choosing only papers supported by the provided evidence.',
       'Prefer papers that are central to the topic, connect multiple seed papers, match the user keywords, or provide strong survey/bridge value.',
       'Return only suggested-paper DOIs from the provided candidates.',
       'Each explanation must be one brief sentence suitable for a tooltip.'
@@ -256,7 +259,8 @@ export async function selectAiRecommendedPublications({
   selectedPublications,
   suggestedPublications,
   boostKeywordString,
-  keywords
+  keywords,
+  steeringComment = ''
 }) {
   if (!suggestedPublications.length) return []
 
@@ -269,6 +273,7 @@ export async function selectAiRecommendedPublications({
     suggestedPublications,
     boostKeywordString,
     keywords,
+    steeringComment,
     targetCount
   })
   const requestBody = buildOpenAiRequest(context, suggestedPublications, targetCount)

@@ -26,7 +26,8 @@ export const useSessionStore = defineStore('session', {
       readPublicationsDois: new Set(),
       filter: new Filter(),
       addQuery: '',
-      sessionName: ''
+      sessionName: '',
+      aiRecommendationComment: ''
     }
   },
   getters: {
@@ -128,6 +129,7 @@ export const useSessionStore = defineStore('session', {
       this.filter = new Filter()
       this.addQuery = ''
       this.sessionName = ''
+      this.aiRecommendationComment = ''
       // Note: newly added flags are automatically cleared when selectedPublications is reset
     },
 

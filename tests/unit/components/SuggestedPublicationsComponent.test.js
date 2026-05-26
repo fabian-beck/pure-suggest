@@ -1,12 +1,17 @@
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 import { commonComponentStubs } from '../../helpers/testUtils.js'
 
 import SuggestedPublicationsComponent from '@/components/SuggestedPublicationsComponent.vue'
+import { selectAiRecommendedPublications } from '@/services/AiRecommendationService.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
+
+vi.mock('@/services/AiRecommendationService.js', () => ({
+  selectAiRecommendedPublications: vi.fn(() => Promise.resolve([]))
+}))
 
 describe('SuggestedPublicationsComponent', () => {
   let pinia
@@ -25,6 +30,8 @@ describe('SuggestedPublicationsComponent', () => {
     sessionStore.suggestion = null
     sessionStore.selectedPublications = []
     sessionStore.excludedPublicationsDois = []
+    selectAiRecommendedPublications.mockResolvedValue([])
+    window.prompt = vi.fn()
   })
 
   it('shows suggestion count when suggestions are available', () => {
@@ -190,6 +197,56 @@ describe('SuggestedPublicationsComponent', () => {
 
     const publicationList = wrapper.findComponent('.publication-list')
     expect(publicationList.exists()).toBe(true)
+  })
+
+  it('prompts for a steering comment and stores it for repeated AI recommendations', async () => {
+    sessionStore.suggestion = {
+      totalSuggestions: 1,
+      publications: [{ doi: 'test-doi-1', title: 'Test Publication 1' }]
+    }
+    sessionStore.aiRecommendationComment = 'Prefer survey papers'
+    window.prompt.mockReturnValue('Prefer recent papers')
+
+    const wrapper = mount(SuggestedPublicationsComponent, {
+      global: {
+        plugins: [pinia],
+        stubs: {
+          'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
+          'v-badge': { template: '<div class="v-badge"><slot></slot></div>' },
+          CompactButton: {
+            template:
+              '<button class="compact-button" :data-icon="icon" :disabled="disabled" @click="$emit(\'click\')"><slot></slot></button>',
+            props: ['disabled', 'icon'],
+            emits: ['click']
+          },
+          'v-menu': {
+            template: '<div class="v-menu"><slot name="activator" :props="{}"></slot><slot></slot></div>'
+          },
+          'v-list': { template: '<div class="v-list"><slot></slot></div>' },
+          'v-list-item': { template: '<div class="v-list-item"><slot></slot></div>' },
+          'v-list-item-title': { template: '<div class="v-list-item-title"><slot></slot></div>' },
+          'v-slider': { template: '<div class="v-slider"></div>' },
+          tippy: { template: '<div class="tippy"><slot></slot></div>' },
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
+        }
+      }
+    })
+
+    const aiButton = wrapper
+      .findAll('.compact-button')
+      .find((button) => button.attributes('data-icon')?.includes('mdi-robot-outline'))
+
+    await aiButton.trigger('click')
+    await flushPromises()
+
+    expect(window.prompt).toHaveBeenCalledWith(
+      'Optional: add a short comment to steer the AI recommendations.',
+      'Prefer survey papers'
+    )
+    expect(sessionStore.aiRecommendationComment).toBe('Prefer recent papers')
+    expect(selectAiRecommendedPublications).toHaveBeenCalledWith(
+      expect.objectContaining({ steeringComment: 'Prefer recent papers' })
+    )
   })
 
   it('hides count and settings menu when no suggestions are available', () => {
