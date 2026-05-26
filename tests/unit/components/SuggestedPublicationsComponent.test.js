@@ -206,6 +206,12 @@ describe('SuggestedPublicationsComponent', () => {
     }
     sessionStore.aiRecommendationComment = 'Prefer survey papers'
     window.prompt.mockReturnValue('Prefer recent papers')
+    selectAiRecommendedPublications.mockResolvedValue([
+      {
+        doi: 'test-doi-1',
+        explanation: 'It matches the requested steering comment.'
+      }
+    ])
 
     const wrapper = mount(SuggestedPublicationsComponent, {
       global: {
@@ -246,6 +252,12 @@ describe('SuggestedPublicationsComponent', () => {
     expect(sessionStore.aiRecommendationComment).toBe('Prefer recent papers')
     expect(selectAiRecommendedPublications).toHaveBeenCalledWith(
       expect.objectContaining({ steeringComment: 'Prefer recent papers' })
+    )
+    expect(sessionStore.filter.tags).toContain('isAiRecommended')
+    expect(sessionStore.filter.isActive).toBe(true)
+    expect(sessionStore.filter.applyToSuggested).toBe(true)
+    expect(sessionStore.suggestion.publications[0].isAiRecommended).toBe(
+      'It matches the requested steering comment.'
     )
   })
 
