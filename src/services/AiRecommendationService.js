@@ -1,5 +1,6 @@
 const OPENAI_API_KEY_STORAGE_KEY = 'pureSuggest.openaiApiKey'
-const OPENAI_MODEL = 'gpt-5.4-mini'
+const OPENAI_MODEL = 'gpt-5.4'
+const OPENAI_REASONING_EFFORT = 'low'
 const OPENAI_RESPONSES_URL = 'https://api.openai.com/v1/responses'
 const ABSTRACT_MAX_LENGTH = 900
 const TEXT_MAX_LENGTH = 320
@@ -182,6 +183,9 @@ function buildResponseSchema(suggestedPublications, targetCount) {
 function buildOpenAiRequest(context, suggestedPublications, targetCount) {
   return {
     model: OPENAI_MODEL,
+    reasoning: {
+      effort: OPENAI_REASONING_EFFORT
+    },
     instructions: [
       'You are an expert research assistant for citation-based literature discovery.',
       'Judge relevance from the selected seed papers, user keywords, matched keywords, abstracts, venues, years, tags, scores, and citation links.',

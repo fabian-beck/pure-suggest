@@ -89,7 +89,8 @@ describe('AiRecommendationService', () => {
 
     const requestBody = JSON.parse(request.body)
     const context = JSON.parse(requestBody.input)
-    expect(requestBody.model).toBe('gpt-5.4-mini')
+    expect(requestBody.model).toBe('gpt-5.4')
+    expect(requestBody.reasoning).toEqual({ effort: 'low' })
     expect(context.userKeywords).toEqual(['VISUALIZATION', 'SURVEY'])
     expect(context.rawKeywordQuery).toBe('visualization, survey')
     expect(context.userSteeringComment).toBe(
