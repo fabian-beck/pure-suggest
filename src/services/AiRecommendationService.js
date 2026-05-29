@@ -5,6 +5,7 @@ const OPENAI_RESPONSES_URL = 'https://api.openai.com/v1/responses'
 const ABSTRACT_MAX_LENGTH = 900
 const TEXT_MAX_LENGTH = 320
 const EXPLANATION_MAX_LENGTH = 180
+const MAX_RECOMMENDATION_MULTIPLIER = 2
 
 const TAG_FIELDS = [
   { field: 'isHighlyCited', label: 'Highly cited' },
@@ -119,13 +120,24 @@ function serializeSuggestedPublication(publication, selectedPublicationMap) {
   }
 }
 
+function buildRecommendationCountGuidance(suggestedPublicationCount, referenceCount) {
+  return {
+    referenceCount,
+    minCount: 0,
+    maxCount: Math.min(
+      suggestedPublicationCount,
+      Math.max(referenceCount + 2, Math.ceil(referenceCount * MAX_RECOMMENDATION_MULTIPLIER))
+    )
+  }
+}
+
 function buildRecommendationContext({
   selectedPublications,
   suggestedPublications,
   boostKeywordString,
   keywords,
   steeringComment,
-  targetCount
+  countGuidance
 }) {
   const selectedPublicationMap = new Map(
     selectedPublications.map((publication) => [publication.doi, publication])
@@ -135,7 +147,10 @@ function buildRecommendationContext({
     task:
       'Select the suggested papers that are most useful for continuing this literature search.',
     selectionTarget:
-      `Pick about 10% of the suggestions: ${targetCount} paper${targetCount === 1 ? '' : 's'}.`,
+      `Use ${countGuidance.referenceCount} paper${countGuidance.referenceCount === 1 ? '' : 's'} as a reference count, not a quota. Return fewer, including zero, when few candidates fit well; return more, up to ${countGuidance.maxCount}, when many candidates are clearly useful.`,
+    recommendationCount: countGuidance,
+    priorityPolicy:
+      'If userSteeringComment is present, satisfying it is the primary ranking criterion. Use the general relevance signals only to evaluate evidence and break ties between papers that fit the steering comment.',
     userKeywords: keywords.filter(Boolean),
     rawKeywordQuery: boostKeywordString || '',
     userSteeringComment: truncateText(steeringComment, 700),
@@ -146,7 +161,7 @@ function buildRecommendationContext({
   }
 }
 
-function buildResponseSchema(suggestedPublications, targetCount) {
+function buildResponseSchema(suggestedPublications, countGuidance) {
   return {
     type: 'json_schema',
     name: 'ai_recommendations',
@@ -158,8 +173,8 @@ function buildResponseSchema(suggestedPublications, targetCount) {
       properties: {
         recommendations: {
           type: 'array',
-          minItems: targetCount,
-          maxItems: targetCount,
+          minItems: countGuidance.minCount,
+          maxItems: countGuidance.maxCount,
           items: {
             type: 'object',
             additionalProperties: false,
@@ -180,7 +195,7 @@ function buildResponseSchema(suggestedPublications, targetCount) {
   }
 }
 
-function buildOpenAiRequest(context, suggestedPublications, targetCount) {
+function buildOpenAiRequest(context, suggestedPublications, countGuidance) {
   return {
     model: OPENAI_MODEL,
     reasoning: {
@@ -188,17 +203,20 @@ function buildOpenAiRequest(context, suggestedPublications, targetCount) {
     },
     instructions: [
       'You are an expert research assistant for citation-based literature discovery.',
-      'Judge relevance from the selected seed papers, user keywords, matched keywords, abstracts, venues, years, tags, scores, and citation links.',
-      'Use the optional user steering comment to adjust priorities when it is present, while still choosing only papers supported by the provided evidence.',
-      'Prefer papers that are central to the topic, connect multiple seed papers, match the user keywords, or provide strong survey/bridge value.',
+      'The recommendation count is flexible: use the reference count as a starting point, return fewer if the candidates are weak or off-topic, and return more if many candidates strongly fit the seed papers, keywords, or steering comment.',
+      'Follow this priority order: (1) the user steering comment when present, (2) fit to the selected seed papers and user keywords, (3) citation/link evidence, tags, scores, venues, years, and abstracts.',
+      'When userSteeringComment is non-empty, treat it as the primary user intent: first identify candidates that satisfy it, then rank those candidates by the other evidence. Do not select a paper that conflicts with the steering comment unless too few supported candidates fit it.',
+      'Without a steering comment, prefer papers that are central to the topic, connect multiple seed papers, match the user keywords, or provide strong survey/bridge value.',
+      'Ground every choice in the provided candidate evidence; do not invent metadata or recommend papers outside the list.',
+      'When the steering comment influenced a selection, reflect that fit in the explanation.',
       'Return only suggested-paper DOIs from the provided candidates.',
       'Each explanation must be one brief sentence suitable for a tooltip.'
     ].join(' '),
     input: JSON.stringify(context, null, 2),
     text: {
-      format: buildResponseSchema(suggestedPublications, targetCount)
+      format: buildResponseSchema(suggestedPublications, countGuidance)
     },
-    max_output_tokens: Math.max(800, targetCount * 90)
+    max_output_tokens: Math.max(800, countGuidance.maxCount * 90)
   }
 }
 
@@ -271,16 +289,20 @@ export async function selectAiRecommendedPublications({
   const apiKey = requestOpenAiApiKey()
   if (!apiKey) return null
 
-  const targetCount = Math.max(1, Math.round(suggestedPublications.length * 0.1))
+  const referenceCount = Math.max(1, Math.round(suggestedPublications.length * 0.1))
+  const countGuidance = buildRecommendationCountGuidance(
+    suggestedPublications.length,
+    referenceCount
+  )
   const context = buildRecommendationContext({
     selectedPublications,
     suggestedPublications,
     boostKeywordString,
     keywords,
     steeringComment,
-    targetCount
+    countGuidance
   })
-  const requestBody = buildOpenAiRequest(context, suggestedPublications, targetCount)
+  const requestBody = buildOpenAiRequest(context, suggestedPublications, countGuidance)
   const responseData = await callOpenAi(apiKey, requestBody)
   const outputText = getOutputText(responseData)
 

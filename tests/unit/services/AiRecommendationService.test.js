@@ -91,6 +91,30 @@ describe('AiRecommendationService', () => {
     const context = JSON.parse(requestBody.input)
     expect(requestBody.model).toBe('gpt-5.4')
     expect(requestBody.reasoning).toEqual({ effort: 'low' })
+    expect(requestBody.instructions).toContain(
+      'The recommendation count is flexible: use the reference count as a starting point'
+    )
+    expect(requestBody.instructions).toContain(
+      'Follow this priority order: (1) the user steering comment when present'
+    )
+    expect(requestBody.instructions).toContain(
+      'Do not select a paper that conflicts with the steering comment unless too few supported candidates fit it.'
+    )
+    expect(context.priorityPolicy).toContain(
+      'satisfying it is the primary ranking criterion'
+    )
+    expect(context.selectionTarget).toContain('as a reference count, not a quota')
+    expect(context.recommendationCount).toEqual({
+      referenceCount: 1,
+      minCount: 0,
+      maxCount: 2
+    })
+    expect(
+      requestBody.text.format.schema.properties.recommendations.minItems
+    ).toBe(0)
+    expect(
+      requestBody.text.format.schema.properties.recommendations.maxItems
+    ).toBe(2)
     expect(context.userKeywords).toEqual(['VISUALIZATION', 'SURVEY'])
     expect(context.rawKeywordQuery).toBe('visualization, survey')
     expect(context.userSteeringComment).toBe(
