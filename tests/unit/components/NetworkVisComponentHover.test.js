@@ -96,4 +96,28 @@ describe('NetworkVisComponent Hover Integration', () => {
 
     expect(mockComponent.updatePublicationHighlighting).toHaveBeenCalled()
   })
+
+  it('publication node hover should update state only once and let the watcher update D3 classes', () => {
+    const mockPublication = { doi: '10.1234/hovered' }
+    const mockComponent = {
+      interfaceStore: {
+        setHoveredPublication: vi.fn()
+      },
+      updatePublicationHighlighting: vi.fn()
+    }
+
+    NetworkVisComponent.methods.onPublicationNodeMouseover.call(mockComponent, {}, {
+      publication: mockPublication
+    })
+
+    expect(mockComponent.interfaceStore.setHoveredPublication).toHaveBeenCalledWith(
+      mockPublication
+    )
+    expect(mockComponent.updatePublicationHighlighting).not.toHaveBeenCalled()
+
+    NetworkVisComponent.methods.onPublicationNodeMouseout.call(mockComponent)
+
+    expect(mockComponent.interfaceStore.setHoveredPublication).toHaveBeenCalledWith(null)
+    expect(mockComponent.updatePublicationHighlighting).not.toHaveBeenCalled()
+  })
 })

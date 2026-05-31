@@ -235,7 +235,6 @@ export default {
     }
   },
   mounted() {
-    const that = this
     const container = document.getElementById('network-svg-container')
     this.svgWidth = container.clientWidth
     // if not mobile set height to 1/5 of width to make assumption that aspect ratio is 5:1
@@ -245,9 +244,8 @@ export default {
       'viewBox',
       `${-this.svgWidth / 2} ${-this.svgHeight / 2} ${this.svgWidth} ${this.svgHeight}`
     )
-    // eslint-disable-next-line no-unused-vars
-    this.zoom = d3.zoom().on('zoom', (event, d) => {
-      that.svg.attr('transform', event.transform)
+    this.zoom = d3.zoom().on('zoom', (event) => {
+      this.svg.attr('transform', event.transform)
     })
     this.svg = d3.select('#network-svg').call(this.zoom).select('g')
     this.label = this.svg.append('g').attr('class', 'labels').selectAll('text')
@@ -333,12 +331,12 @@ export default {
       let nodes = []
 
       // Create publication nodes
-      const publicationNodes = createPublicationNodes(
-        publications,
-        doiToIndex,
-        this.queueStore.selectedQueue || [],
-        this.queueStore.excludedQueue || []
-      )
+      const publicationNodes = createPublicationNodes(publications, doiToIndex, {
+        selectedQueue: this.queueStore.selectedQueue || [],
+        excludedQueue: this.queueStore.excludedQueue || [],
+        filter: this.sessionStore.filter,
+        onlyShowFiltered: this.onlyShowFiltered
+      })
       nodes = nodes.concat(publicationNodes)
 
       // Create keyword nodes
@@ -418,14 +416,8 @@ export default {
           publicationNodes
             .select('rect')
             .on('click', this.activatePublication)
-            .on('mouseover', (event, d) => {
-              this.interfaceStore.setHoveredPublication(d.publication)
-              this.updatePublicationHighlighting()
-            })
-            .on('mouseout', () => {
-              this.interfaceStore.setHoveredPublication(null)
-              this.updatePublicationHighlighting()
-            })
+            .on('mouseover', this.onPublicationNodeMouseover)
+            .on('mouseout', this.onPublicationNodeMouseout)
 
           // Initialize keyword nodes using module
           const keywordNodes = initializeKeywordNodes(g)
@@ -457,7 +449,9 @@ export default {
         )
         this.publicationTooltips = publicationResult.tooltips
       } catch (error) {
-        throw new Error(`Cannot update publication nodes in network: ${error.message}`)
+        throw new Error(`Cannot update publication nodes in network: ${error.message}`, {
+          cause: error
+        })
       }
       try {
         // Update keyword nodes using module
@@ -468,7 +462,9 @@ export default {
         )
         this.keywordTooltips = keywordResult.tooltips
       } catch (error) {
-        throw new Error(`Cannot update keyword nodes in network: ${error.message}`)
+        throw new Error(`Cannot update keyword nodes in network: ${error.message}`, {
+          cause: error
+        })
       }
       try {
         // Update author nodes using module
@@ -479,7 +475,9 @@ export default {
         )
         this.authorTooltips = authorResult.tooltips
       } catch (error) {
-        throw new Error(`Cannot update author nodes in network: ${error.message}`)
+        throw new Error(`Cannot update author nodes in network: ${error.message}`, {
+          cause: error
+        })
       }
     },
 
@@ -647,6 +645,12 @@ export default {
     },
     keywordNodeClick (event, d) {
       releaseKeywordPosition(event, d, this, SIMULATION_ALPHA)
+    },
+    onPublicationNodeMouseover (event, d) {
+      this.interfaceStore.setHoveredPublication(d.publication)
+    },
+    onPublicationNodeMouseout () {
+      this.interfaceStore.setHoveredPublication(null)
     },
     onKeywordNodeMouseover (event, d) {
       highlightKeywordPublications(d, this.sessionStore.publicationsFiltered || [])
@@ -1198,6 +1202,11 @@ export default {
 
     &.queuingForExcluded text.labelQueuingForExcluded {
       visibility: visible;
+    }
+
+    &.filtered-out {
+      opacity: 0.5;
+      filter: blur(0.5px);
     }
   }
 

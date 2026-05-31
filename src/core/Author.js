@@ -135,6 +135,39 @@ export default class Author {
     isFirstAuthorBoostEnabled,
     isAuthorNewBoostEnabled
   ) {
+    function sortById(authorA, authorB) {
+      return authorA.id.localeCompare(authorB.id)
+    }
+
+    function lowerBoundById(sortedAuthors, id) {
+      let start = 0
+      let end = sortedAuthors.length
+
+      while (start < end) {
+        const middle = Math.floor((start + end) / 2)
+        if (sortedAuthors[middle].id.localeCompare(id) < 0) {
+          start = middle + 1
+        } else {
+          end = middle
+        }
+      }
+
+      return start
+    }
+
+    function findAuthorsByPrefix(sortedAuthors, prefix, maxMatches = Infinity) {
+      const matches = []
+      let index = lowerBoundById(sortedAuthors, prefix)
+
+      while (index < sortedAuthors.length && sortedAuthors[index].id.startsWith(prefix)) {
+        matches.push(sortedAuthors[index])
+        if (matches.length >= maxMatches) break
+        index++
+      }
+
+      return matches
+    }
+
     function deleteAuthor(authorId, newAuthorId) {
       delete authors[authorId]
       Object.values(authors).forEach((author) => {
@@ -164,13 +197,13 @@ export default class Author {
     // Sort authors to ensure deterministic processing order
     const orcidAuthors = Object.values(authors)
       .filter((author) => author.orcid)
-      .sort((a, b) => a.id.localeCompare(b.id))
+      .sort(sortById)
     orcidAuthors.forEach((author) => {
       const authorMatches = orcidAuthors.filter((author2) => author2.orcid === author.orcid)
       if (authorMatches.length > 1) {
         // Sort matches to ensure deterministic processing order
         authorMatches
-          .sort((a, b) => a.id.localeCompare(b.id))
+          .sort(sortById)
           .forEach((author2) => {
             if (author.id.length > author2.id.length) {
               author.mergeWith(author2)
@@ -181,59 +214,63 @@ export default class Author {
     })
     // match authors with abbreviated names and merge them
     // Sort authors to ensure deterministic processing order
-    const authorsWithAbbreviatedNames = Object.values(authors)
-      .filter((author) => author.id.match(/^\w+,\s\w\.?(\s\w\.?)?$/))
-      .sort((a, b) => a.id.localeCompare(b.id))
-    Object.values(authors)
-      .filter((author) => !authorsWithAbbreviatedNames.includes(author))
-      .sort((a, b) => a.id.localeCompare(b.id))
+    const sortedAuthors = Object.values(authors).sort(sortById)
+    const authorsWithAbbreviatedNames = sortedAuthors.filter((author) =>
+      author.id.match(/^\w+,\s\w\.?(\s\w\.?)?$/)
+    )
+    const abbreviatedAuthorSet = new Set(authorsWithAbbreviatedNames)
+
+    sortedAuthors
+      .filter((author) => !abbreviatedAuthorSet.has(author))
       .forEach((author) => {
-        // check if author has version with additional first name
-        if (
-          Object.values(authors).filter((author2) => author2.id.startsWith(author.id)).length > 1
-        ) {
+        // Check if author has a version with an additional first name.
+        if (findAuthorsByPrefix(sortedAuthors, author.id, 2).length > 1) {
           authorsWithAbbreviatedNames.push(author)
+          abbreviatedAuthorSet.add(author)
         }
       })
-    const authorsWithoutAbbreviatedNames = Object.values(authors)
-      .filter((author) => !authorsWithAbbreviatedNames.includes(author))
-      .sort((a, b) => a.id.localeCompare(b.id))
-    authorsWithAbbreviatedNames
-      .sort((a, b) => a.id.localeCompare(b.id))
-      .forEach((author) => {
-        const authorId = author.id.replace(/^(\w+,\s\w)\.?(\s\w\.?)?$/, '$1')
-        const authorMatches = authorsWithoutAbbreviatedNames.filter((author2) =>
-          author2.id.startsWith(authorId)
-        )
-        if (
-          authorMatches.length === 1 &&
-          (!author.orcid || !authorMatches[0].orcid || author.orcid === authorMatches[0].orcid)
-        ) {
-          authorMatches[0].mergeWith(author)
-          deleteAuthor(author.id, authorMatches[0].id)
-        }
-      })
+    const authorsWithoutAbbreviatedNames = sortedAuthors.filter(
+      (author) => !abbreviatedAuthorSet.has(author)
+    )
+    authorsWithAbbreviatedNames.sort(sortById).forEach((author) => {
+      const authorId = author.id.replace(/^(\w+,\s\w)\.?(\s\w\.?)?$/, '$1')
+      const authorMatches = findAuthorsByPrefix(authorsWithoutAbbreviatedNames, authorId)
+      if (
+        authorMatches.length === 1 &&
+        (!author.orcid || !authorMatches[0].orcid || author.orcid === authorMatches[0].orcid)
+      ) {
+        authorMatches[0].mergeWith(author)
+        deleteAuthor(author.id, authorMatches[0].id)
+      }
+    })
 
     // merge authors with Eszett transcription variants
     // Sort authors by ID to ensure deterministic processing order
-    const remainingAuthors = Object.values(authors).sort((a, b) => a.id.localeCompare(b.id))
+    const remainingAuthors = Object.values(authors).sort(sortById)
     const processedAuthors = new Set()
+    const eszettVariantMatches = new Map()
+
+    remainingAuthors.forEach((author) => {
+      Author.generateEszettVariants(author.id).forEach((variant) => {
+        if (!eszettVariantMatches.has(variant)) {
+          eszettVariantMatches.set(variant, [])
+        }
+        eszettVariantMatches.get(variant).push(author)
+      })
+    })
 
     remainingAuthors.forEach((author) => {
       if (processedAuthors.has(author.id)) return
 
-      const authorVariants = Author.generateEszettVariants(author.id)
-      const matchingAuthors = remainingAuthors.filter((otherAuthor) => {
-        if (otherAuthor.id === author.id || processedAuthors.has(otherAuthor.id)) return false
-
-        const otherVariants = Author.generateEszettVariants(otherAuthor.id)
-
-        // Check if any variant of one author matches any variant of the other
-        return (
-          authorVariants.some((variant) => otherVariants.includes(variant)) ||
-          otherVariants.some((variant) => authorVariants.includes(variant))
-        )
+      const matchingAuthorsById = new Map()
+      Author.generateEszettVariants(author.id).forEach((variant) => {
+        eszettVariantMatches.get(variant)?.forEach((otherAuthor) => {
+          if (otherAuthor.id !== author.id && !processedAuthors.has(otherAuthor.id)) {
+            matchingAuthorsById.set(otherAuthor.id, otherAuthor)
+          }
+        })
       })
+      const matchingAuthors = [...matchingAuthorsById.values()]
 
       if (matchingAuthors.length > 0) {
         // Merge all matching authors into the first one found

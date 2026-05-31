@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 
 import { useModalManager } from '@/composables/useModalManager.js'
+import Author from '@/core/Author.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
 
@@ -24,6 +25,7 @@ const props = defineProps({
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
 const { showAbstract: showAbstractModal, openAuthorModal } = useModalManager()
+const ORCID_ICON_URL = 'https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png'
 
 const showDetails = computed(() => {
   return props.alwaysShowDetails || props.publication.isActive
@@ -33,6 +35,23 @@ const visibleTags = computed(() => {
   return props.publication.getTags ? props.publication.getTags() : []
 })
 
+const authorsWithOrcid = computed(() => {
+  if (!props.publication.author) {
+    return []
+  }
+
+  const authors = props.publication.author.split('; ')
+  const orcidData = props.publication.authorOrcidData || []
+
+  return authors.map((author, index) => {
+    const orcidInfo = orcidData.find(data => data.index === index)
+    return {
+      name: author.trim(),
+      orcidId: orcidInfo?.orcidId,
+      hasOrcid: Boolean(orcidInfo)
+    }
+  })
+})
 
 function highlight(string) {
   if (!string) {
@@ -63,23 +82,11 @@ function exportBibtex() {
 }
 
 function toggleDoi(doi) {
-  // Remember the states before we do anything
   const wasMenuOpen = interfaceStore.isFilterMenuOpen
   const wasDoiFiltered = isDoiFiltered(doi)
 
-  // Always toggle the DOI
   sessionStore.filter.toggleDoi(doi)
-
-  // Handle menu state based on original state
-  if (!wasMenuOpen && !wasDoiFiltered) {
-    // Menu was closed and we just added a DOI - open the menu
-    interfaceStore.openFilterMenu()
-  } else if (wasMenuOpen) {
-    // Menu was open - ensure it stays open after Vuetify's close behavior
-    setTimeout(() => {
-      interfaceStore.setFilterMenuState(true)
-    }, 0)
-  }
+  keepFilterMenuOpenAfterToggle(wasMenuOpen, wasDoiFiltered)
 }
 
 function isDoiFiltered(doi) {
@@ -98,24 +105,22 @@ function refocus() {
 }
 
 function toggleTag(tagValue) {
-  // Remember the states before we do anything
   const wasMenuOpen = interfaceStore.isFilterMenuOpen
   const wasTagFiltered = isTagFiltered(tagValue)
 
-  // Always toggle the tag
   sessionStore.filter.toggleTag(tagValue)
 
-  // If filters are disabled and we just activated a tag, enable filters
   if (!sessionStore.filter.isActive && !wasTagFiltered) {
     sessionStore.filter.isActive = true
   }
 
-  // Handle menu state based on original state
-  if (!wasMenuOpen && !wasTagFiltered) {
-    // Menu was closed and we just added a tag - open the menu
+  keepFilterMenuOpenAfterToggle(wasMenuOpen, wasTagFiltered)
+}
+
+function keepFilterMenuOpenAfterToggle(wasMenuOpen, wasFilteredBeforeToggle) {
+  if (!wasMenuOpen && !wasFilteredBeforeToggle) {
     interfaceStore.openFilterMenu()
   } else if (wasMenuOpen) {
-    // Menu was open - ensure it stays open after Vuetify's close behavior
     setTimeout(() => {
       interfaceStore.setFilterMenuState(true)
     }, 0)
@@ -216,8 +221,7 @@ function handleAuthorClick(event) {
     event.stopPropagation()
     const authorName = authorElement.getAttribute('data-author')
     if (authorName) {
-      // Convert the author name to an author ID and open modal with that ID
-      const authorId = findAuthorIdByName(authorName.trim())
+      const authorId = Author.nameToId(authorName.trim())
       if (authorId) {
         openAuthorModal(authorId)
       }
@@ -228,48 +232,6 @@ function handleAuthorClick(event) {
   refocus()
 }
 
-function findAuthorIdByName(authorName) {
-  // Use the same nameToId logic as Author.js
-  return (
-    authorName
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      // Handle Nordic and other extended Latin characters not covered by NFD
-      .replace(/[øØ]/g, 'o')
-      .replace(/[åÅ]/g, 'a')
-      .replace(/[æÆ]/g, 'ae')
-      .replace(/[ðÐ]/g, 'd')
-      .replace(/[þÞ]/g, 'th')
-      .replace(/[ßẞ]/g, 'ss')
-      .toLowerCase()
-  )
-}
-
-function getOrcidUrl(orcidId) {
-  return `https://orcid.org/${orcidId}`
-}
-
-function getOrcidIconUrl() {
-  return 'https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png'
-}
-
-function getAuthorsWithOrcid() {
-  if (!props.publication.author) {
-    return []
-  }
-
-  const authors = props.publication.author.split('; ')
-  const orcidData = props.publication.authorOrcidData || []
-
-  return authors.map((author, index) => {
-    const orcidInfo = orcidData.find(data => data.index === index)
-    return {
-      name: author.trim(),
-      orcidId: orcidInfo?.orcidId,
-      hasOrcid: Boolean(orcidInfo)
-    }
-  })
-}
 </script>
 
 <template>
@@ -279,7 +241,7 @@ function getAuthorsWithOrcid() {
         v-if="sessionStore.filter.dois?.includes(publication.doi)"
         size="16"
         class="mr-1"
-        @click.stop="addToFilter(publication.doi)"
+        @click.stop
         v-tippy="'DOI is in filter.'"
         >mdi-filter</v-icon
       >
@@ -324,7 +286,7 @@ function getAuthorsWithOrcid() {
     </div>
     <div v-if="showDetails">
       <span v-if="publication.author">
-        <template v-for="(author, index) in getAuthorsWithOrcid()" :key="index">
+        <template v-for="(author, index) in authorsWithOrcid" :key="index">
           <span
             v-if="publicationType === 'selected'"
             class="clickable-author"
@@ -339,18 +301,18 @@ function getAuthorsWithOrcid() {
           ></span>
           <a
             v-if="author.hasOrcid"
-            :href="getOrcidUrl(author.orcidId)"
+            :href="`https://orcid.org/${author.orcidId}`"
             @click.stop
             class="ml-1"
           >
             <img
-              :src="getOrcidIconUrl()"
+              :src="ORCID_ICON_URL"
               alt="ORCID logo"
               width="14"
               height="14"
             />
           </a>
-          <span v-if="index < getAuthorsWithOrcid().length - 1">; </span>
+          <span v-if="index < authorsWithOrcid.length - 1">; </span>
         </template>
         <span>. </span>
       </span>

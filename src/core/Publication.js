@@ -22,6 +22,8 @@ const TEXT_PROCESSING = {
   TITLE_TRUNCATION_SUFFIX: '[...]'
 }
 
+const FETCH_RETRY_DELAY_MS = 1000
+
 const SURVEY_KEYWORDS = /(survey|state|review|advances|future)/i
 
 // Optimized with non-capturing group to prevent backtracking
@@ -164,18 +166,87 @@ export default class Publication {
    */
   async fetchData(noCache = false) {
     if (this.wasFetched && !noCache) return
+    const attempts = [await this.loadData(noCache)]
+
+    if (!this.title && !noCache) {
+      await delay(FETCH_RETRY_DELAY_MS)
+      attempts.push(await this.loadData(true))
+    }
+
+    if (!this.title) {
+      this.logLoadError(attempts)
+    }
+    this.wasFetched = true
+  }
+
+  /**
+   * Loads publication data once, tracking the request context for diagnostics.
+   * @param {boolean} noCache - Whether to bypass cache.
+   * @returns {Promise<Object>} The request attempt details.
+   */
+  async loadData(noCache) {
+    const url = `${API_ENDPOINTS.PUBLICATIONS}?doi=${this.doi}${noCache ? API_PARAMS.NO_CACHE_PARAM : ''}`
+    const attempt = {
+      url,
+      noCache,
+      responseData: undefined,
+      fetchError: undefined
+    }
+
     try {
       // load data from data service
       await cachedFetch(
-        `${API_ENDPOINTS.PUBLICATIONS}?doi=${this.doi}${noCache ? API_PARAMS.NO_CACHE_PARAM : ''}`,
-        this.processData.bind(this),
+        url,
+        (data) => {
+          attempt.responseData = data
+          this.processData(data)
+        },
         undefined,
         noCache
       )
     } catch (error) {
-      console.log(error)
+      attempt.fetchError = error
     }
-    this.wasFetched = true
+
+    return attempt
+  }
+
+  /**
+   * Logs useful context when publication metadata could not be loaded.
+   * @param {Object[]} attempts - Request attempts made while loading metadata.
+   */
+  logLoadError(attempts) {
+    const lastAttempt = attempts[attempts.length - 1]
+    const hasResponseData = lastAttempt.responseData !== undefined
+    const details = {
+      doi: this.doi,
+      url: lastAttempt.url,
+      noCache: lastAttempt.noCache,
+      reason: hasResponseData
+        ? 'The response was processed but no title was available.'
+        : 'No metadata response was processed.',
+      attempts: attempts.map((attempt, index) => ({
+        attempt: index + 1,
+        url: attempt.url,
+        noCache: attempt.noCache,
+        reason:
+          attempt.responseData !== undefined
+            ? 'The response was processed but no title was available.'
+            : 'No metadata response was processed.',
+        response: attempt.responseData,
+        error: attempt.fetchError
+      }))
+    }
+
+    if (hasResponseData) {
+      details.response = lastAttempt.responseData
+    }
+
+    if (lastAttempt.fetchError) {
+      details.error = lastAttempt.fetchError
+    }
+
+    console.error(`[Publication] Unable to load metadata for DOI "${this.doi}".`, details)
   }
 
   /**
@@ -237,7 +308,7 @@ export default class Publication {
 
     this.container = ''
     data.container?.split(' ').forEach((word) => {
-      let mappedWord = ''
+      let mappedWord
       // Optimized with negated character class to prevent backtracking
       // eslint-disable-next-line sonarjs/slow-regex
       if (/\([^)]+\)/.test(word)) {
@@ -439,4 +510,10 @@ function cleanAbstract(abstract) {
 
   // Then remove leading "Abstract" (case-insensitive) followed by optional punctuation and whitespace
   return withoutTags.replace(/^Abstract[\s:.–-]*/i, '').trim()
+}
+
+function delay(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
 }

@@ -1,3 +1,5 @@
+import Author from './Author.js'
+
 const VALIDATION = {
   MIN_YEAR: 1000,
   MAX_YEAR: 10000
@@ -79,60 +81,58 @@ export default class Filter {
     })
   }
 
-  toggleTag(tagValue) {
-    if (this.tags.includes(tagValue)) {
-      this.removeTag(tagValue)
+  toggleFilterValue(filterKey, value) {
+    if (this[filterKey].includes(value)) {
+      this.removeFilterValue(filterKey, value)
     } else {
-      this.addTag(tagValue)
+      this.addFilterValue(filterKey, value)
     }
+  }
+
+  addFilterValue(filterKey, value) {
+    if (!this[filterKey].includes(value)) {
+      this[filterKey].push(value)
+    }
+  }
+
+  removeFilterValue(filterKey, value) {
+    this[filterKey] = this[filterKey].filter((item) => item !== value)
+  }
+
+  toggleTag(tagValue) {
+    this.toggleFilterValue('tags', tagValue)
   }
 
   addTag(tagValue) {
-    if (!this.tags.includes(tagValue)) {
-      this.tags.push(tagValue)
-    }
+    this.addFilterValue('tags', tagValue)
   }
 
   removeTag(tagValue) {
-    this.tags = this.tags.filter((t) => t !== tagValue)
+    this.removeFilterValue('tags', tagValue)
   }
 
   toggleDoi(doi) {
-    if (this.dois.includes(doi)) {
-      this.removeDoi(doi)
-    } else {
-      this.addDoi(doi)
-    }
+    this.toggleFilterValue('dois', doi)
   }
 
   addDoi(doi) {
-    if (!this.dois.includes(doi)) {
-      this.dois.push(doi)
-    }
+    this.addFilterValue('dois', doi)
   }
 
   removeDoi(doi) {
-    console.log(`Removing DOI: ${doi}`)
-    this.dois = this.dois.filter((d) => d !== doi)
-    console.log(`Remaining DOIs: ${this.dois}`)
+    this.removeFilterValue('dois', doi)
   }
 
   toggleAuthor(authorId) {
-    if (this.authors.includes(authorId)) {
-      this.removeAuthor(authorId)
-    } else {
-      this.addAuthor(authorId)
-    }
+    this.toggleFilterValue('authors', authorId)
   }
 
   addAuthor(authorId) {
-    if (!this.authors.includes(authorId)) {
-      this.authors.push(authorId)
-    }
+    this.addFilterValue('authors', authorId)
   }
 
   removeAuthor(authorId) {
-    this.authors = this.authors.filter((a) => a !== authorId)
+    this.removeFilterValue('authors', authorId)
   }
 
   matchesDois(publication) {
@@ -148,27 +148,12 @@ export default class Filter {
   matchesAuthors(publication) {
     if (!this.authors.length) return true
     if (!publication.author) return false
-    
-    // Split authors by semicolon to get individual author names
+
     const authorNames = publication.author.split(';').map((name) => name.trim())
-    
-    // Check if any of the publication's authors match any of the filtered author IDs
-    return this.authors.some((authorId) => {
-      return authorNames.some((authorName) => {
-        // Normalize author name to ID format for comparison
-        const normalizedName = authorName
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(/[øØ]/g, 'o')
-          .replace(/[åÅ]/g, 'a')
-          .replace(/[æÆ]/g, 'ae')
-          .replace(/[ðÐ]/g, 'd')
-          .replace(/[þÞ]/g, 'th')
-          .replace(/[ßẞ]/g, 'ss')
-          .toLowerCase()
-        return normalizedName === authorId
-      })
-    })
+
+    return this.authors.some((authorId) =>
+      authorNames.some((authorName) => Author.nameToId(authorName) === authorId)
+    )
   }
 
   matches(publication) {
@@ -185,7 +170,13 @@ export default class Filter {
   hasActiveFilters() {
     return (
       this.isActive &&
-      Boolean(this.string || this.tags.length > 0 || this.isYearActive() || this.dois.length > 0 || this.authors.length > 0) &&
+      Boolean(
+        this.string ||
+          this.tags.length > 0 ||
+          this.isYearActive() ||
+          this.dois.length > 0 ||
+          this.authors.length > 0
+      ) &&
       (this.applyToSelected || this.applyToSuggested)
     )
   }

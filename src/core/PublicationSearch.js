@@ -3,9 +3,8 @@ import { API_ENDPOINTS, API_PARAMS } from '../constants/config.js'
 import { cachedFetch } from '../lib/Cache.js'
 
 export default class PublicationSearch {
-  constructor(query, provider = 'openalex') {
+  constructor(query) {
     this.query = query
-    this.provider = provider
   }
 
   async execute() {
@@ -36,15 +35,19 @@ export default class PublicationSearch {
       return { results, type: 'doi' }
     }
     
-    console.log(`Searching for publications matching '${this.query}' using ${this.provider}.`)
+    console.log(`Searching for publications matching '${this.query}' using both OpenAlex and CrossRef.`)
     
-    if (this.provider === 'openalex') {
-      await this.searchOpenAlex(results)
-    } else {
-      await this.searchCrossRef(results)
-    }
+    // Search both APIs in parallel and merge results
+    await Promise.all([
+      this.searchOpenAlex(results),
+      this.searchCrossRef(results)
+    ])
     
-    return { results, type: 'search' }
+    // Remove duplicates and rank results
+    const uniqueResults = this.removeDuplicates(results)
+    const rankedResults = this.rankResults(uniqueResults)
+    
+    return { results: rankedResults, type: 'search' }
   }
 
   async searchCrossRef(results) {
@@ -79,5 +82,74 @@ export default class PublicationSearch {
           })
       }
     )
+  }
+
+  removeDuplicates(results) {
+    const seenDois = new Set()
+    return results.filter((publication) => {
+      const normalizedDoi = publication.doi.toLowerCase()
+      if (seenDois.has(normalizedDoi)) {
+        return false
+      }
+      seenDois.add(normalizedDoi)
+      return true
+    })
+  }
+
+  rankResults(results) {
+    const queryWords = this.extractWords(this.query)
+    
+    // Calculate match scores for each publication
+    const scoredResults = results.map((publication) => {
+      const score = this.calculateMatchScore(publication, queryWords)
+      return { publication, score }
+    })
+    
+    // Sort by score descending
+    scoredResults.sort((a, b) => b.score - a.score)
+    
+    return scoredResults.map((item) => item.publication)
+  }
+
+  extractWords(text) {
+    // Normalize and extract words (3+ characters for meaningful matching)
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter((word) => word.length >= 3)
+  }
+
+  calculateMatchScore(publication, queryWords) {
+    let score = 0
+    
+    // Weight factors for different fields
+    const TITLE_WEIGHT = 3
+    const AUTHOR_WEIGHT = 2
+    const VENUE_WEIGHT = 1
+    
+    // Wait for publication data to be fetched before scoring
+    // Since publications are fetched asynchronously, we'll score based on available data
+    // The Publication object will have these fields populated after fetchData() completes
+    
+    const titleWords = this.extractWords(publication.title || '')
+    const authorWords = this.extractWords(publication.author || '')
+    const venueWords = this.extractWords(publication.container || '')
+    
+    queryWords.forEach((queryWord) => {
+      // Count matches in title
+      const titleMatches = titleWords.filter((word) => word === queryWord).length
+      score += titleMatches * TITLE_WEIGHT
+      
+      // Count matches in authors
+      const authorMatches = authorWords.filter((word) => word === queryWord).length
+      score += authorMatches * AUTHOR_WEIGHT
+      
+      // Count matches in venue
+      const venueMatches = venueWords.filter((word) => word === queryWord).length
+      score += venueMatches * VENUE_WEIGHT
+    })
+    
+    return score
   }
 }

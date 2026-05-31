@@ -217,4 +217,51 @@ describe('useAppState - Session Loading', () => {
       expect(message).toContain('Choose an exported session JSON file')
     })
   })
+
+  describe('importBibtexWithConfirmation', () => {
+    it('should be exposed by useAppState', () => {
+      expect(appState.importBibtex).toBeDefined()
+      expect(typeof appState.importBibtex).toBe('function')
+      expect(appState.importBibtexWithConfirmation).toBeDefined()
+      expect(typeof appState.importBibtexWithConfirmation).toBe('function')
+    })
+
+    it('should show confirmation dialog with BibTeX file input', () => {
+      mockShowConfirmDialog.mockClear()
+
+      appState.importBibtexWithConfirmation()
+
+      expect(mockShowConfirmDialog).toHaveBeenCalled()
+      const [message, , title] = mockShowConfirmDialog.mock.calls[0]
+
+      expect(message).toContain('Choose a BibTeX file')
+      expect(message).toContain('accept=".bib"')
+      expect(title).toBe('Import BibTeX')
+    })
+
+    it('should show warning message when requested explicitly', () => {
+      sessionStore.clear()
+      queueStore.clear()
+      mockShowConfirmDialog.mockClear()
+
+      appState.importBibtexWithConfirmation({ alwaysWarn: true })
+
+      const [message] = mockShowConfirmDialog.mock.calls[0]
+      expect(message).toContain('This will clear and replace the current session')
+      expect(message).toContain('Choose a BibTeX file')
+    })
+
+    it('should show warning message when session is not empty', () => {
+      sessionStore.selectedPublications = [{ doi: '10.1234/test1' }]
+      mockShowConfirmDialog.mockClear()
+
+      appState.importBibtexWithConfirmation()
+
+      const [message] = mockShowConfirmDialog.mock.calls[0]
+      expect(message).toContain('This will clear and replace the current session')
+      expect(message).toContain('Choose a BibTeX file')
+
+      sessionStore.clear()
+    })
+  })
 })
