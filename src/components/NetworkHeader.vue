@@ -38,18 +38,18 @@ const isNetworkClustersModel = computed({
 </script>
 
 <template>
-  <div class="level" :class="{ 'mb-0': interfaceStore.isNetworkCollapsed }">
-    <div class="level-left has-text-white">
+  <div class="level network-header" :class="{ 'mb-0': interfaceStore.isNetworkCollapsed }">
+    <div class="level-left">
       <div
         class="level-item"
         v-tippy="
-          `Showing publications as nodes (<b class='has-text-primary'>selected</b>; 
+          `Showing publications as nodes (<b class='has-text-primary'>selected</b>;
         <b class='has-text-info'>suggested</b>) with citations as links.<br><br>
         You can click a publication for details as well as zoom and pan the diagram.`
         "
       >
-        <v-icon class="has-text-white">mdi-chart-bubble</v-icon>
-        <h2 class="is-size-5 ml-2">Citation network</h2>
+        <v-icon class="has-text-info">mdi-water-plus-outline</v-icon>
+        <h2 class="is-size-5 ml-2 has-text-grey-dark">Citation map</h2>
       </div>
       <div class="has-text-danger has-background-danger-light p-1" v-if="errorMessage">
         {{ errorMessage }}
@@ -57,7 +57,7 @@ const isNetworkClustersModel = computed({
     </div>
     <div class="level-right" v-if="!isEmpty">
       <div
-        class="level-item has-text-white mr-4 mb-0"
+        class="level-item has-text-grey-dark mr-4 mb-0"
         v-show="!interfaceStore.isNetworkCollapsed"
         v-tippy="
           `There are two display <span class='key'>m</span>odes:<br><br><b>Timeline:</b>
@@ -79,14 +79,14 @@ const isNetworkClustersModel = computed({
         v-tippy="'Hide diagram'"
         v-show="!interfaceStore.isNetworkCollapsed && !interfaceStore.isMobile && !interfaceStore.isWideScreen"
         @click="$emit('collapseNetwork')"
-        class="ml-4 has-text-white"
+        class="ml-4 has-text-grey"
       ></CompactButton>
       <CompactButton
         icon="mdi-arrow-up"
         v-tippy="'Show diagram'"
         v-show="interfaceStore.isNetworkCollapsed && !interfaceStore.isMobile && !interfaceStore.isWideScreen"
         @click="$emit('restoreNetwork')"
-        class="ml-4 has-text-white"
+        class="ml-4 has-text-grey"
       ></CompactButton>
       <CompactButton
         icon="mdi-arrow-expand"
@@ -98,14 +98,14 @@ const isNetworkClustersModel = computed({
             $emit('expandNetwork', true)
           }
         "
-        class="is-hidden-touch has-text-white"
+        class="is-hidden-touch has-text-grey"
       ></CompactButton>
       <CompactButton
         icon="mdi-arrow-collapse"
         v-tippy="'Return to normal size'"
         v-show="interfaceStore.isNetworkExpanded"
         @click="$emit('expandNetwork', false)"
-        class="is-hidden-touch has-text-white"
+        class="is-hidden-touch has-text-grey"
       ></CompactButton>
     </div>
   </div>

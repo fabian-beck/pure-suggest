@@ -94,30 +94,30 @@ export function calculateLinkPath(d, nodeX) {
 }
 
 /**
+ * Active-state classes for a citation link relative to the active publication.
+ * source = citing paper, target = cited paper:
+ * active is source -> it cites the target ('outgoing'); active is target -> cited by source ('incoming')
+ */
+function citationActiveClasses(d) {
+  if (d.source.publication.isActive || d.target.publication.isActive) {
+    return ['active', d.source.publication.isActive ? 'outgoing' : 'incoming']
+  }
+  return ['non-active']
+}
+
+/**
  * Calculate CSS classes for link styling based on state
  */
 export function calculateLinkClasses(d, activePublication) {
   const classes = [d.type]
 
   if (d.type === 'citation') {
-    if (activePublication) {
-      if (d.source.publication.isActive || d.target.publication.isActive) {
-        classes.push('active')
-      } else {
-        classes.push('non-active')
-      }
-    }
+    if (activePublication) classes.push(...citationActiveClasses(d))
     if (!(d.source.publication.isSelected && d.target.publication.isSelected)) {
       classes.push('external')
     }
-  } else if (d.type === 'keyword' || d.type === 'author') {
-    if (activePublication) {
-      if (d.target.publication.isActive) {
-        classes.push('active')
-      } else {
-        classes.push('non-active')
-      }
-    }
+  } else if ((d.type === 'keyword' || d.type === 'author') && activePublication) {
+    classes.push(d.target.publication.isActive ? 'active' : 'non-active')
   }
 
   return classes.join(' ')

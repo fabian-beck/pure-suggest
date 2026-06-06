@@ -10,8 +10,14 @@ import { useSessionStore } from '@/stores/session.js'
 vi.mock('@/components/HeaderPanel.vue', () => ({
   default: { template: '<div>HeaderPanel Mock</div>' }
 }))
-vi.mock('@/components/SelectedPublicationsComponent.vue', () => ({
-  default: { template: '<div>SelectedPublications Mock</div>' }
+vi.mock('@/components/SeedBar.vue', () => ({
+  default: { template: '<div>SeedBar Mock</div>' }
+}))
+vi.mock('@/components/MapEmptyState.vue', () => ({
+  default: { template: '<div>MapEmptyState Mock</div>' }
+}))
+vi.mock('@/components/PublicationDetailPanel.vue', () => ({
+  default: { template: '<div>PublicationDetailPanel Mock</div>' }
 }))
 vi.mock('@/components/SuggestedPublicationsComponent.vue', () => ({
   default: { template: '<div>SuggestedPublications Mock</div>' }

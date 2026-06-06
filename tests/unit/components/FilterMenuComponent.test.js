@@ -133,7 +133,7 @@ describe('FilterMenuComponent', () => {
       }
       const wrapper = createWrapper({ filter: filterState, selectedPublications: [] })
 
-      expect(wrapper.vm.displayText).toBe('[FILTERS OFF]')
+      expect(wrapper.vm.displayText).toBe('Filters off')
     })
 
     it('formats year ranges with en dash', () => {

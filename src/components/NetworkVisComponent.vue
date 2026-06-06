@@ -127,7 +127,12 @@ export default {
       // X position caching for performance optimization
       nodeXPositionsCache: new Map(), // Cache X positions to avoid redundant calculations
       // Reactive tick count for CSS animation control
-      currentTickCount: 0 // Synchronized with performance monitor
+      currentTickCount: 0, // Synchronized with performance monitor
+      resizeObserver: null,
+      resizeTimer: null,
+      // Auto-fit: scale & center the content to fill the container after a (re)plot
+      pendingFit: false,
+      fitFallbackTimer: null
     }
   },
   computed: {
@@ -237,8 +242,9 @@ export default {
   mounted() {
     const container = document.getElementById('network-svg-container')
     this.svgWidth = container.clientWidth
-    // if not mobile set height to 1/5 of width to make assumption that aspect ratio is 5:1
-    this.svgHeight = this.interfaceStore.isMobile ? container.clientHeight : this.svgWidth / 5
+    // Use the actual container height so the map fills its (large, central) panel.
+    // Fall back to a wide aspect ratio if the container has not been laid out yet.
+    this.svgHeight = container.clientHeight || this.svgWidth / 5
     // set viewbox to center
     d3.select('#network-svg').attr(
       'viewBox',
@@ -264,12 +270,32 @@ export default {
 
     // Set initial state of "only show filtered" based on whether filters are active
     this.onlyShowFiltered = this.sessionStore.filter.hasActiveFilters()
+
+    // Keep the map adapted to its container size (debounced). Replotting preserves zoom.
+    if (typeof ResizeObserver !== 'undefined') {
+      this.resizeObserver = new ResizeObserver(() => {
+        if (this.resizeTimer) clearTimeout(this.resizeTimer)
+        this.resizeTimer = setTimeout(() => {
+          if (this.interfaceStore.isLoading || this.isEmpty) return
+          if (this.syncContainerSize()) {
+            this.plot()
+          }
+        }, 200)
+      })
+      this.resizeObserver.observe(container)
+    }
   },
   beforeUnmount() {
     // Cleanup D3 simulation (moved from useNetworkSimulation)
     if (this.simulation) {
       this.simulation.stop()
       this.simulation = null
+    }
+    if (this.resizeTimer) clearTimeout(this.resizeTimer)
+    if (this.fitFallbackTimer) clearTimeout(this.fitFallbackTimer)
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect()
+      this.resizeObserver = null
     }
   },
   methods: {
@@ -414,7 +440,7 @@ export default {
           
           // Add event handlers to publication nodes
           publicationNodes
-            .select('rect')
+            .select('circle.node-shape')
             .on('click', this.activatePublication)
             .on('mouseover', this.onPublicationNodeMouseover)
             .on('mouseout', this.onPublicationNodeMouseout)
@@ -507,6 +533,10 @@ export default {
       }
 
       try {
+        // Refresh SVG dimensions/viewBox from the current container size so the map
+        // adapts to its container (e.g. after pressing Update). Does not touch zoom.
+        this.syncContainerSize()
+
         // Update simulation configuration
         this.updateSimulation({
           svgWidth: this.svgWidth,
@@ -547,6 +577,8 @@ export default {
         this.resetOptimizationMetrics()
 
         if (restart) {
+          // After this layout settles, scale & center the content to fill the container
+          this.scheduleFit()
           this.restart(SIMULATION_ALPHA)
         } else {
           this.start()
@@ -715,6 +747,96 @@ export default {
       return newNodes.map((d) => Object.assign(oldPositions.get(d.id) || { x: 0, y: 0 }, d))
     },
 
+    /**
+     * Sync the SVG dimensions and viewBox with the current container size.
+     * Updates only the viewBox (the coordinate system) — never the zoom transform,
+     * so the user's pan/zoom is preserved. Returns true if the size changed.
+     */
+    syncContainerSize() {
+      const container = document.getElementById('network-svg-container')
+      if (!container) return false
+      const width = container.clientWidth
+      const height = container.clientHeight
+      if (!width || !height) return false
+      if (width === this.svgWidth && height === this.svgHeight) return false
+
+      this.svgWidth = width
+      this.svgHeight = height
+      d3.select('#network-svg').attr(
+        'viewBox',
+        `${-width / 2} ${-height / 2} ${width} ${height}`
+      )
+      return true
+    },
+
+    /**
+     * Request a fit once the current (re)layout settles. Primary trigger is the
+     * simulation 'end' event; a fallback poller guarantees it runs even if 'end'
+     * is preempted (e.g. the competing replots during an Update).
+     */
+    scheduleFit() {
+      this.pendingFit = true
+      if (this.fitFallbackTimer) clearTimeout(this.fitFallbackTimer)
+      const tryFit = () => {
+        if (!this.pendingFit) return
+        if (this.simulation && this.simulation.alpha() > 0.05) {
+          this.fitFallbackTimer = setTimeout(tryFit, 250)
+          return
+        }
+        this.pendingFit = false
+        this.fitToContainer()
+      }
+      this.fitFallbackTimer = setTimeout(tryFit, 600)
+    },
+
+    /**
+     * Scale & center the content to fill the visible map. Measures the SVG's real
+     * rendered size so the viewBox centre (0,0) is the centre of the visible area,
+     * then centers the content there via the zoom behavior (manual zoom keeps working).
+     */
+    fitToContainer(padding = 40) {
+      if (!this.svg || !this.zoom || !this.graph.nodes?.length) return
+      const svgEl = document.getElementById('network-svg')
+      if (!svgEl) return
+      const rect = svgEl.getBoundingClientRect()
+      const width = rect.width
+      const height = rect.height
+      if (!width || !height) return
+
+      // Match the coordinate system to the actual rendered SVG size
+      this.svgWidth = width
+      this.svgHeight = height
+      d3.select('#network-svg').attr('viewBox', `${-width / 2} ${-height / 2} ${width} ${height}`)
+
+      // Measure the settled layout
+      this.cacheNodeXPositions()
+      let minX = Infinity
+      let maxX = -Infinity
+      let minY = Infinity
+      let maxY = -Infinity
+      this.graph.nodes.forEach((node) => {
+        const x = this.getNodeDisplayX(node)
+        const y = node.y || 0
+        if (x < minX) minX = x
+        if (x > maxX) maxX = x
+        if (y < minY) minY = y
+        if (y > maxY) maxY = y
+      })
+      if (!isFinite(minX)) return
+
+      const contentWidth = Math.max(maxX - minX, 1)
+      const contentHeight = Math.max(maxY - minY, 1)
+      const scale = Math.max(
+        0.1,
+        Math.min((width - padding * 2) / contentWidth, (height - padding * 2) / contentHeight, 2.5)
+      )
+      const centerX = (minX + maxX) / 2
+      const centerY = (minY + maxY) / 2
+      const transform = d3.zoomIdentity.translate(-scale * centerX, -scale * centerY).scale(scale)
+
+      d3.select('#network-svg').transition().duration(400).call(this.zoom.transform, transform)
+    },
+
     // D3 Simulation methods (moved from useNetworkSimulation)
     initializeSimulation(config) {
       const {
@@ -734,6 +856,17 @@ export default {
         yearXCalculator,
         tickHandler
       })
+
+      // Auto-fit the content to the container once the layout settles
+      if (typeof this.simulation.on === 'function') {
+        this.simulation.on('end', () => {
+          if (this.pendingFit) {
+            this.pendingFit = false
+            if (this.fitFallbackTimer) clearTimeout(this.fitFallbackTimer)
+            this.fitToContainer()
+          }
+        })
+      }
 
       return this.simulation
     },
@@ -1000,7 +1133,7 @@ export default {
 
 <template>
   <div class="network-of-references">
-    <div class="box has-background-grey">
+    <div class="box network-box">
       <NetworkHeader
         :error-message="errorMessage"
         :has-no-content="isEmpty.value"
@@ -1052,6 +1185,20 @@ export default {
         @plot="plot"
         v-show="!isNetworkActuallyCollapsed && !isEmpty"
       />
+      <div
+        class="map-legend"
+        v-show="!isNetworkActuallyCollapsed && !isEmpty && !interfaceStore.isMobile"
+      >
+        <span class="legend-item">
+          <span class="legend-dot selected"></span>Selected
+        </span>
+        <span class="legend-item">
+          <span class="legend-dot suggested"></span>Suggested
+        </span>
+        <span class="legend-item legend-size-item">
+          <span class="legend-size"><i></i><i></i></span>Size = citations
+        </span>
+      </div>
     </div>
   </div>
 </template>
@@ -1078,6 +1225,91 @@ export default {
       position: absolute;
       top: calc(1vw + 2.5rem);
       left: 1vw;
+    }
+  }
+}
+
+/* Modern light "map" surface (Litmaps-style) */
+.network-box.box {
+  background: #fff;
+  padding: 0;
+  overflow: hidden;
+
+  /* NetworkHeader becomes a slim light toolbar */
+  & > .level:first-child {
+    margin: 0;
+    padding: 0.4rem 0.7rem;
+    background: #f7f8fa;
+    border-bottom: 1px solid #ececf1;
+  }
+
+  & .controls-header-left {
+    top: calc(1vw + 3rem);
+  }
+}
+
+/* Map legend (Litmaps-style) */
+.map-legend {
+  position: absolute;
+  bottom: max(1vw, 1rem);
+  left: max(1vw, 1rem);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.75rem;
+  color: var(--bulma-grey-dark);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e8eaed;
+  border-radius: 999px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.12);
+
+  & .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+  }
+
+  & .legend-dot {
+    width: 0.85rem;
+    height: 0.85rem;
+    border-radius: 50%;
+    border: 2px solid;
+    box-sizing: border-box;
+
+    &.selected {
+      border-color: var(--bulma-primary);
+      background: var(--bulma-primary-95);
+    }
+
+    &.suggested {
+      border-color: var(--bulma-info);
+      background: white;
+    }
+  }
+
+  & .legend-size {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+
+    & i {
+      display: block;
+      border-radius: 50%;
+      border: 1.5px solid var(--bulma-grey);
+      background: white;
+    }
+
+    & i:nth-child(1) {
+      width: 0.5rem;
+      height: 0.5rem;
+    }
+
+    & i:nth-child(2) {
+      width: 0.85rem;
+      height: 0.85rem;
     }
   }
 }
@@ -1110,72 +1342,76 @@ export default {
   & g.publication.node-container {
     cursor: pointer;
 
-    & rect {
+    & circle.node-shape {
       cursor: pointer;
-      stroke-width: 2;
+      fill: white;
+      stroke-width: 2.5;
       @include light-shadow-svg;
     }
 
-    & circle {
+    & circle.boost {
       fill: var(--bulma-warning);
-      stroke-width: 1f;
+      stroke: black;
+      stroke-width: 0.5;
       @include light-shadow-svg;
     }
 
-    & text {
+    & text.node-label {
+      text-anchor: middle;
+      dominant-baseline: hanging;
+      font-size: 10px;
+      fill: var(--bulma-grey-dark);
+      /* White halo so labels stay readable over links and other nodes */
+      paint-order: stroke;
+      stroke: white;
+      stroke-width: 3px;
+      stroke-linejoin: round;
+    }
+
+    & text.labelQueuingForSelected,
+    & text.labelQueuingForExcluded {
       text-anchor: middle;
       dominant-baseline: middle;
-      filter: drop-shadow(0px 0px 1px white);
-
-      &.unread {
-        fill: hsl(var(--bulma-info-h), var(--bulma-info-s), calc(var(--bulma-info-l) - 20%));
-        font-weight: 1000;
-      }
-
-      &.labelQueuingForSelected,
-      &.labelQueuingForExcluded {
-        visibility: hidden;
-        font-weight: 1000;
-        stroke: white;
-        stroke-width: 0.5;
-      }
+      visibility: hidden;
+      font-weight: 1000;
+      stroke: white;
+      stroke-width: 0.5;
     }
 
-    &.is-hovered {
-      & rect,
-      & circle {
-        transform: scale(1.1);
-        animation: node-pulse 2s ease-in-out infinite;
-      }
+    &.is-hovered circle.node-shape {
+      transform: scale(1.1);
+      animation: node-pulse 2s ease-in-out infinite;
     }
 
-    &.selected {
-      & rect,
-      & circle {
-        stroke: var(--bulma-primary);
-      }
+    &.selected circle.node-shape {
+      stroke: var(--bulma-primary);
+      fill: var(--bulma-primary-95);
     }
 
-    &.suggested {
-      & rect,
-      & circle {
-        stroke: var(--bulma-info);
-      }
+    &.suggested circle.node-shape {
+      stroke: var(--bulma-info);
+      fill: white;
     }
 
-    &.active rect {
-      stroke-width: 6;
+    &.active circle.node-shape {
+      stroke-width: 5;
+      filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.35));
     }
 
-    &.linkedToActive rect {
+    &.active text.node-label {
+      font-weight: 700;
+      font-size: 11px;
+    }
+
+    &.linkedToActive circle.node-shape {
       stroke-width: 4;
     }
 
     &.non-active {
-      opacity: 0.3;
+      opacity: 0.18;
     }
 
-    &.is-keyword-hovered rect {
+    &.is-keyword-hovered circle.node-shape {
       filter: drop-shadow(0px 0px 10px var(--bulma-warning));
       stroke: hsl(
         var(--bulma-warning-h),
@@ -1184,7 +1420,7 @@ export default {
       );
     }
 
-    &.is-author-hovered rect {
+    &.is-author-hovered circle.node-shape {
       filter: drop-shadow(0px 0px 10px black);
       stroke: black;
     }
@@ -1285,12 +1521,23 @@ export default {
       opacity: 0.1;
     }
 
+    /* Emphasize the active publication's links and encode direction by color:
+       outgoing = papers it cites (primary), incoming = papers citing it (info) */
     &.active {
-      opacity: 0.5;
+      opacity: 0.75;
+      stroke-width: 3.5;
+    }
+
+    &.active.outgoing {
+      stroke: var(--bulma-primary);
+    }
+
+    &.active.incoming {
+      stroke: var(--bulma-info);
     }
 
     &.non-active {
-      opacity: 0.05;
+      opacity: 0.04;
     }
   }
 

@@ -14,7 +14,9 @@ const props = defineProps({
     type: String,
     default: 'suggested',
     validator: (value) => ['selected', 'suggested', 'general'].includes(value)
-  }
+  },
+  // When true, the active publication is not expanded inline (details shown in the side panel)
+  suppressActiveDetails: Boolean
 })
 const emit = defineEmits(['activate'])
 const queueStore = useQueueStore()
@@ -42,6 +44,11 @@ const minusButtonTooltip = computed(() => {
     ? 'Remove publication from selected and mark to stay excluded.'
     : 'Mark publication to be excluded for suggestions.'
 })
+
+// When details are not expanded inline, show compact citing/cited counts on the card
+const showCompactStats = computed(
+  () => props.publication.wasFetched && !(props.publication.isActive && !props.suppressActiveDetails)
+)
 
 let isActivating = false
 
@@ -133,31 +140,11 @@ function handleMouseLeave() {
           v-show="publication.wasFetched"
         >
           <div class="tooltip-target">
-            <div class="is-size-3 is-inline-block score">
+            <div class="is-size-5 is-inline-block score">
               {{ publication.score }}
             </div>
             <div class="boost-indicator" :class="chevronType" v-if="publication.boostFactor > 1">
-              <v-icon size="small">mdi-{{ chevronType }}</v-icon>
-            </div>
-          </div>
-          <div class="reference-counts is-size-6">
-            <div class="is-pulled-left">
-              <span
-                v-if="publication.citationCount > 0 || publication.referenceDois.length === 0"
-                :class="publication.referenceDois.length ? '' : 'unknown'"
-              >
-                <InlineIcon
-                  icon="mdi-arrow-bottom-left-thick"
-                  :color="publication.referenceDois.length ? '' : 'danger'"
-                />
-                {{ publication.citationCount ? publication.citationCount : '-' }}
-              </span>
-            </div>
-            <div class="is-pulled-right">
-              <span v-if="publication.referenceCount > 0">
-                {{ publication.referenceCount }}
-                <InlineIcon icon="mdi-arrow-top-left-thick" />
-              </span>
+              <v-icon size="x-small">mdi-{{ chevronType }}</v-icon>
             </div>
           </div>
         </div>
@@ -214,7 +201,24 @@ function handleMouseLeave() {
         <PublicationDescription
           :publication="publication"
           :publication-type="publicationType"
+          :suppress-active-details="suppressActiveDetails"
         ></PublicationDescription>
+        <div class="card-stats" v-if="showCompactStats">
+          <span
+            :class="publication.referenceDois?.length ? '' : 'unknown'"
+            v-tippy="'Number of publications this one cites (references).'"
+          >
+            <InlineIcon
+              icon="mdi-arrow-bottom-left-thick"
+              :color="publication.referenceDois?.length ? 'dark' : 'danger'"
+            />
+            {{ publication.referenceDois?.length ? publication.referenceDois.length : '–' }}
+          </span>
+          <span v-tippy="'Number of publications citing this one.'">
+            <InlineIcon icon="mdi-arrow-top-left-thick" color="dark" />
+            {{ publication.tooManyCitations ? '≥1000' : (publication.citationDois?.length ?? 0) }}
+          </span>
+        </div>
         <div
           class="notification has-background-danger-light has-text-danger-dark"
           v-if="
@@ -278,12 +282,13 @@ function handleMouseLeave() {
 <style lang="scss">
 .publication-component-wrapper {
   position: relative;
+  border-bottom: 1px solid #eef0f2;
 
   .publication-component {
     padding: 0;
     margin: 0;
     cursor: pointer;
-    min-height: 5rem;
+    min-height: 3.25rem;
     outline-offset: -0.25rem;
     z-index: -1;
     text-shadow: 0 0 15px white;
@@ -292,75 +297,41 @@ function handleMouseLeave() {
       margin: 0;
 
       & .glyph {
-        width: 5rem;
-        height: 5rem;
-        margin: 0.6rem;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.6rem;
+        height: 2.6rem;
+        margin: 0.5rem;
+        border-radius: 6px;
         border-width: 0.125rem;
         border-color: var(--bulma-info);
         border-style: solid;
+        font-weight: 700;
         @include light-shadow;
 
         & .tooltip-target {
           position: relative;
-        }
-
-        & .reference-counts {
-          .v-icon {
-            margin: -0.4em;
-          }
-
-          div {
-            width: 50%;
-          }
+          line-height: 1;
         }
 
         & .boost-indicator {
           border-radius: 50%;
           position: absolute;
-          top: -7px;
-          right: -7px;
+          top: -0.45rem;
+          right: -0.45rem;
+          width: 1.1rem;
+          height: 1.1rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           @include light-shadow;
           background: var(--bulma-warning);
-          font-size: 1.25rem;
           border: 1px solid var(--bulma-info);
 
           & .v-icon {
-            position: relative;
-          }
-
-          &.chevron-up {
-            top: -7px;
-            right: -7px;
-            width: 1.2rem;
-            height: 1.2rem;
-
-            & .v-icon {
-              top: -0.6rem;
-              left: -0.17rem;
-            }
-          }
-
-          &.chevron-double-up {
-            top: -8px;
-            right: -8px;
-            width: 1.5rem;
-            height: 1.5rem;
-
-            & .v-icon {
-              top: -0.5rem;
-              left: -0.05rem;
-            }
-          }
-
-          &.chevron-triple-up {
-            top: -9px;
-            right: -9px;
-            width: 1.8rem;
-            height: 1.8rem;
-
-            & .v-icon {
-              top: -0.3rem;
-            }
+            font-size: 0.85rem;
           }
         }
       }
@@ -449,6 +420,18 @@ function handleMouseLeave() {
     & .media-content {
       padding: 0.5rem;
       overflow: auto;
+
+      & .card-stats {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.25rem;
+        font-size: 0.8rem;
+        color: var(--bulma-grey-dark);
+
+        & .unknown {
+          color: var(--bulma-danger);
+        }
+      }
 
       & .notification {
         padding: 0.5rem;

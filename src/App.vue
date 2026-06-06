@@ -156,12 +156,18 @@ export default {
       @click="sessionStore.clearActivePublication('clicked anywhere')"
       :class="{
         'network-expanded': interfaceStore.isNetworkExpanded,
-        'network-collapsed': interfaceStore.isNetworkCollapsed
+        'is-empty': isEmpty
       }"
     >
-      <SelectedPublicationsComponent id="selected" v-show="!interfaceStore.isNetworkExpanded" />
-      <SuggestedPublicationsComponent id="suggested" v-show="!interfaceStore.isNetworkExpanded" />
-      <NetworkVisComponent id="network" :svg-width="1500" :svg-height="600" />
+      <SeedBar id="seeds" v-show="!isEmpty && !interfaceStore.isNetworkExpanded" />
+      <div id="map">
+        <NetworkVisComponent :svg-width="1500" :svg-height="600" />
+        <MapEmptyState v-if="isEmpty" />
+      </div>
+      <div id="side" v-show="!isEmpty && !interfaceStore.isNetworkExpanded">
+        <PublicationDetailPanel class="side__detail" />
+        <SuggestedPublicationsComponent class="side__list" />
+      </div>
     </div>
     <QuickAccessBar
       id="quick-access"
@@ -271,36 +277,72 @@ body {
     margin-top: 0;
     display: grid;
     grid-template-areas:
-      'selected suggested'
-      'vis vis';
+      'seeds seeds'
+      'list  map';
     height: calc(100% - 0.5vw);
     overflow: hidden;
-    grid-template-columns: 50fr 50fr;
-    grid-template-rows: auto 35vh;
+    grid-template-columns: minmax(340px, 30vw) 1fr;
+    grid-template-rows: max-content 1fr;
     gap: 0.5vw;
 
+    /* Empty session: the map fills everything and shows the onboarding overlay */
+    &.is-empty {
+      grid-template-areas: 'map';
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr;
+    }
+
+    /* Maximized map: hide the suggestions list */
     &.network-expanded {
-      grid-template-areas: 'vis';
-      grid-template-columns: auto;
-      grid-template-rows: auto;
+      grid-template-areas: 'map';
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr;
     }
 
-    &.network-collapsed {
-      grid-template-rows: auto max-content;
+    & #seeds {
+      grid-area: seeds;
     }
 
-    & #selected {
-      grid-area: selected;
-      overflow-y: auto;
+    & #map {
+      grid-area: map;
+      position: relative;
+      overflow: hidden;
+      min-height: 0;
+      min-width: 0;
+
+      /* Anchor the network to exactly fill the map cell so the SVG measures the
+         column (not its content width / the screen) — keeps the map centered. */
+      & .network-of-references {
+        position: absolute;
+        inset: 0;
+
+        & .box {
+          border-radius: 8px;
+          box-shadow: 0 1px 8px rgba(0, 0, 0, 0.12);
+          overflow: hidden;
+        }
+      }
     }
 
-    & #suggested {
-      grid-area: suggested;
-      overflow-y: auto;
-    }
+    & #side {
+      grid-area: list;
+      overflow: hidden;
+      min-height: 0;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5vw;
 
-    & #network {
-      grid-area: vis;
+      & .side__detail {
+        flex: 0 0 auto;
+        max-height: 50%;
+        overflow: hidden;
+      }
+
+      & .side__list {
+        flex: 1 1 0;
+        min-height: 0;
+      }
     }
 
     & .box {
@@ -399,21 +441,13 @@ body {
       z-index: 1000;
       background: white;
 
-      /* Keep header toolbar fixed but intro message flows */
+      /* Keep header toolbar fixed */
       & .v-app-bar {
         position: fixed !important;
         top: 0;
         left: 0;
         right: 0;
         z-index: 1000;
-      }
-
-      /* Intro message flows naturally after fixed toolbar */
-      & .intro-message {
-        margin-top: 3rem; /* Space for fixed toolbar */
-        position: relative;
-        background: white;
-        z-index: 500;
       }
     }
 
@@ -429,16 +463,28 @@ body {
         padding: 0.25rem;
       }
 
-      & #selected {
-        min-height: 20rem;
+      & #seeds {
+        margin: 0.25rem;
       }
 
-      & #suggested {
-        min-height: 20rem;
-      }
-
-      & #network .box {
+      & #map {
         min-height: 70vh;
+        overflow: visible;
+      }
+
+      & #side {
+        display: block;
+        overflow: visible;
+
+        & .side__detail {
+          max-height: none;
+          overflow: visible;
+          margin-bottom: 0.5rem;
+        }
+
+        & .side__list {
+          min-height: 24rem;
+        }
       }
 
       & .level-left + .level-right {
@@ -484,10 +530,9 @@ body {
 }
 
 @media screen and (min-width: 2400px) {
-  #app .v-application__wrap #main {
-    grid-template-areas: 'selected suggested vis';
-    grid-template-columns: 50fr 50fr 75fr;
-    grid-template-rows: auto;
+  /* On ultra-wide screens give the suggestions list a fixed comfortable width */
+  #app .v-application__wrap #main:not(.is-empty):not(.network-expanded) {
+    grid-template-columns: 30rem 1fr;
   }
 }
 </style>

@@ -17,6 +17,9 @@ const props = defineProps({
     default: ''
   },
   alwaysShowDetails: Boolean,
+  // When true, do not expand inline details for the active publication
+  // (used in the suggestions list, where details live in the detail panel)
+  suppressActiveDetails: Boolean,
   publicationType: {
     type: String,
     default: 'suggested',
@@ -29,7 +32,7 @@ const { showAbstract: showAbstractModal, openAuthorModal } = useModalManager()
 const ORCID_ICON_URL = 'https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png'
 
 const showDetails = computed(() => {
-  return props.alwaysShowDetails || props.publication.isActive
+  return props.alwaysShowDetails || (props.publication.isActive && !props.suppressActiveDetails)
 })
 
 const visibleTags = computed(() => {
@@ -212,6 +215,7 @@ function handleAuthorClick(event) {
           v-for="tag in visibleTags"
           :key="tag.value"
           :icon="getTagIcon(tag.value)"
+          :color="tag.color"
           clickable
           :active="isTagFiltered(tag.value)"
           @click="toggleTag(tag.value)"

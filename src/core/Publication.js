@@ -64,19 +64,23 @@ const TITLE_WORD_MAP = {
 const PUBLICATION_TAGS = [
   {
     value: 'isHighlyCited',
-    name: 'Highly cited'
+    name: 'Highly cited',
+    color: 'warning'
   },
   {
     value: 'isSurvey',
-    name: 'Literature survey'
+    name: 'Literature survey',
+    color: 'link'
   },
   {
     value: 'isNew',
-    name: 'New'
+    name: 'New',
+    color: 'success'
   },
   {
     value: 'isUnnoted',
-    name: 'Unnoted'
+    name: 'Unnoted',
+    color: 'grey'
   }
 ]
 
