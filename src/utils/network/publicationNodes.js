@@ -101,32 +101,33 @@ export function updatePublicationNodes(nodeSelection, activePublication, existin
     .classed('is-keyword-hovered', (d) => d.publication.isKeywordHovered)
     .classed('is-author-hovered', (d) => d.publication.isAuthorHovered)
 
-  // Clean up existing tooltips
-  if (existingTooltips) {
-    existingTooltips.forEach((tooltip) => tooltip.destroy())
-  }
-
-  // Set up tooltip content
-  publicationNodes.attr('data-tippy-content', (d) => {
+  // Build tooltip content strings
+  const nodes = publicationNodes.nodes()
+  const contents = nodes.map((_, i) => {
+    const d = nodes[i].__data__
     let queueStatus = ''
     if (d.isQueuingForSelected) {
       queueStatus = ' and marked to be added to selected publications'
     } else if (d.isQueuingForExcluded) {
       queueStatus = ' and marked to be added to excluded publications'
     }
-
     return `<b>${d.publication.title ? d.publication.title : '[unknown title]'}</b> (${
-      d.publication.authorShort ? `${d.publication.authorShort  }, ` : ''
+      d.publication.authorShort ? `${d.publication.authorShort}, ` : ''
     }${d.publication.year ? d.publication.year : '[unknown year]'})
         <br><br>
         The publication is <b>${d.publication.isSelected ? 'selected' : 'suggested'}</b>${queueStatus}.`
   })
 
-  // Create new tooltips
-  const newTooltips = tippy(publicationNodes.nodes(), {
-    maxWidth: 'min(400px,70vw)',
-    allowHTML: true
-  })
+  let newTooltips
+  if (existingTooltips && existingTooltips.length === nodes.length) {
+    // Update content in-place — no destroy/recreate needed
+    existingTooltips.forEach((tooltip, i) => tooltip.setContent(contents[i]))
+    newTooltips = existingTooltips
+  } else {
+    if (existingTooltips) existingTooltips.forEach((t) => t.destroy())
+    nodes.forEach((el, i) => el.setAttribute('data-tippy-content', contents[i]))
+    newTooltips = tippy(nodes, { maxWidth: 'min(400px,70vw)', allowHTML: true })
+  }
 
   // Update main circle (radius encodes citations)
   publicationNodes.select('circle.node-shape').attr('r', getNodeRadius)

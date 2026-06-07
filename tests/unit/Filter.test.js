@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
+import Author from '@/core/Author.js'
 import Filter from '@/core/Filter.js'
 
 describe('Filter', () => {
@@ -18,6 +19,11 @@ describe('Filter', () => {
       someTag: true,
       otherTag: false
     }
+    // Arrow function closes over mockPublication so overriding .author in tests is reflected
+    mockPublication.getAuthorIds = () =>
+      mockPublication.author
+        ? mockPublication.author.split(';').map((name) => Author.nameToId(name.trim()))
+        : []
   })
 
   describe('constructor', () => {

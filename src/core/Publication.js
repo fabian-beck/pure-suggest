@@ -1,4 +1,5 @@
 import { SCORING, CURRENT_YEAR, API_ENDPOINTS, API_PARAMS } from '../constants/config.js'
+import Author from './Author.js'
 import { cachedFetch } from '../lib/Cache.js'
 
 
@@ -151,6 +152,7 @@ export default class Publication {
     this.citationDois = new Set()
     this.referenceDois = new Set()
     this._metaString = null
+    this._authorIds = null
     this.citationCount = this.referenceCount = this.boostMatches = this.score = 0
     this.boostKeywords = []
     this.boostFactor = SCORING.DEFAULT_BOOST_FACTOR
@@ -374,6 +376,7 @@ export default class Publication {
    */
   processData(data) {
     this._metaString = null
+    this._authorIds = null
     this.processTitle(data)
     this.processAuthor(data)
     this.processContainer(data)
@@ -388,6 +391,15 @@ export default class Publication {
       this._metaString = `${[this.title, this.author, this.container].filter(Boolean).join(' ')} `
     }
     return this._metaString
+  }
+
+  getAuthorIds() {
+    if (this._authorIds === null) {
+      this._authorIds = this.author
+        ? this.author.split(';').map((name) => Author.nameToId(name.trim()))
+        : []
+    }
+    return this._authorIds
   }
 
 
