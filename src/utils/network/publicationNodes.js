@@ -153,7 +153,7 @@ export function updatePublicationNodes(nodeSelection, activePublication, existin
  * Number of citations used to size the node
  */
 function getCitationMagnitude(d) {
-  return d.publication.citationDois?.length ?? d.publication.citationCount ?? 0
+  return d.publication.citationDois?.size ?? d.publication.citationCount ?? 0
 }
 
 /**

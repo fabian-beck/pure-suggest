@@ -282,8 +282,8 @@ describe('Author Details On Demand Feature', () => {
         year: 2023,
         wasFetched: true,
         isActive: true,
-        referenceDois: ['10.1000/ref1', '10.1000/ref2'],
-        citationDois: ['10.1000/cit1'],
+        referenceDois: new Set(['10.1000/ref1', '10.1000/ref2']),
+        citationDois: new Set(['10.1000/cit1']),
         tooManyCitations: false,
         citationsPerYear: 2.5
       }
@@ -330,8 +330,8 @@ describe('Author Details On Demand Feature', () => {
         year: 2023,
         wasFetched: true,
         isActive: true,
-        referenceDois: ['10.1000/ref1', '10.1000/ref2'],
-        citationDois: ['10.1000/cit1'],
+        referenceDois: new Set(['10.1000/ref1', '10.1000/ref2']),
+        citationDois: new Set(['10.1000/cit1']),
         tooManyCitations: false,
         citationsPerYear: 2.5
       }
@@ -483,8 +483,8 @@ describe('Author Details On Demand Feature', () => {
         year: 2023,
         wasFetched: true,
         isActive: true,
-        referenceDois: ['10.1000/ref1'],
-        citationDois: ['10.1000/cit1'],
+        referenceDois: new Set(['10.1000/ref1']),
+        citationDois: new Set(['10.1000/cit1']),
         tooManyCitations: false,
         citationsPerYear: 1.5
       }

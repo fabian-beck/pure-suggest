@@ -162,9 +162,9 @@ function handleMouseLeave() {
             citing <b>{{ publication.citationCount }}</b> (
             <InlineIcon
               icon="mdi-arrow-bottom-left-thick"
-              :color="publication.referenceDois.length ? 'white' : 'danger'"
+              :color="publication.referenceDois.size ? 'white' : 'danger'"
             />
-            <span v-if="!publication.referenceDois.length" class="unknown"
+            <span v-if="!publication.referenceDois.size" class="unknown"
               >, citing data not available</span
             >) and cited by <b>{{ publication.referenceCount }}</b> (
             <InlineIcon icon="mdi-arrow-top-left-thick" color="white" />) selected publications<span
@@ -212,11 +212,11 @@ function handleMouseLeave() {
               icon="mdi-arrow-bottom-left-thick"
               :color="publication.referenceDois?.length ? 'dark' : 'danger'"
             />
-            {{ publication.referenceDois?.length ? publication.referenceDois.length : '–' }}
+            {{ publication.referenceDois?.length ? publication.referenceDois.size : '–' }}
           </span>
           <span v-tippy="'Number of publications citing this one.'">
             <InlineIcon icon="mdi-arrow-top-left-thick" color="dark" />
-            {{ publication.tooManyCitations ? '≥1000' : (publication.citationDois?.length ?? 0) }}
+            {{ publication.tooManyCitations ? '≥1000' : (publication.citationDois?.size ?? 0) }}
           </span>
         </div>
         <div
