@@ -20,7 +20,8 @@ const props = defineProps({
     type: String,
     default: 'general',
     validator: (value) => ['selected', 'suggested', 'general'].includes(value)
-  }
+  },
+  suppressActiveDetails: Boolean
 })
 const emit = defineEmits(['activate'])
 const sessionStore = useSessionStore()
@@ -219,6 +220,7 @@ function scrollToActivated() {
         :publication="item.publication"
         :publication-type="publicationType"
         :is-mobile="interfaceStore.isMobile"
+        :suppress-active-details="suppressActiveDetails"
         @activate="activatePublication"
       />
     </template>
@@ -235,22 +237,19 @@ function scrollToActivated() {
 
   .section-header-text {
     margin: 0;
-    padding: 0.5rem 0.75rem;
-    font-size: 0.75rem;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.7rem;
     font-weight: 600;
-    color: var(--bulma-primary-dark);
-    background: linear-gradient(135deg, var(--bulma-primary-95) 0%, var(--bulma-primary-90) 100%);
-    border-left: 3px solid var(--bulma-primary);
-    border-bottom: 1px solid var(--bulma-primary-85);
+    letter-spacing: 0.04em;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    @include light-shadow;
+    color: var(--bulma-grey-dark);
+    background: var(--surface-bg-alt);
+    border-bottom: 1px solid var(--border-subtle);
 
     &.info-theme {
       color: var(--bulma-info-dark);
-      background: linear-gradient(135deg, var(--bulma-info-95) 0%, var(--bulma-info-90) 100%);
-      border-left-color: var(--bulma-info);
-      border-bottom-color: var(--bulma-info-85);
+      background: var(--bulma-info-95);
+      border-bottom-color: var(--bulma-info-90);
     }
   }
 }

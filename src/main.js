@@ -40,7 +40,10 @@ const pinia = createPinia()
 app.use(pinia)
 const vuetify = createVuetify({
   components,
-  directives
+  directives,
+  theme: {
+    defaultTheme: 'light'
+  }
 })
 app.use(vuetify)
 app.use(VueTippy, {

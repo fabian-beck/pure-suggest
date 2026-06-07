@@ -9,6 +9,17 @@
  */
 
 :root {
+  --surface-bg: white;
+  --surface-bg-alt: #f5f6f8;
+  --surface-bg-subtle: #f7f8fa;
+  --border-subtle: #e6e8eb;
+  --legend-bg: rgba(255, 255, 255, 0.92);
+  --node-label-halo: white;
+  --author-node-bg: black;
+  --author-node-color: white;
+}
+
+:root {
   /* Original Bulma 0.9.4 Primary Color (Turquoise) */
   --bulma-primary-h: 171deg;
   --bulma-primary-s: 100%;

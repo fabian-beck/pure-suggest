@@ -219,8 +219,8 @@ describe('NetworkVisComponent - Loading State Behavior', () => {
       wrapper.vm.sessionStore.filter.yearMin = 2021
       await wrapper.vm.$nextTick()
 
-      // Verify plot was called
-      expect(plotSpy).toHaveBeenCalledWith(true)
+      // Verify plot was called (no restart needed when only filter changes)
+      expect(plotSpy).toHaveBeenCalledWith()
     })
 
     it('should trigger plot when isNetworkClusters changes and NOT loading', async () => {

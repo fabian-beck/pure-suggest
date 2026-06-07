@@ -17,6 +17,9 @@ const props = defineProps({
     default: ''
   },
   alwaysShowDetails: Boolean,
+  // When true, do not expand inline details for the active publication
+  // (used in the suggestions list, where details live in the detail panel)
+  suppressActiveDetails: Boolean,
   publicationType: {
     type: String,
     default: 'suggested',
@@ -29,7 +32,7 @@ const { showAbstract: showAbstractModal, openAuthorModal } = useModalManager()
 const ORCID_ICON_URL = 'https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png'
 
 const showDetails = computed(() => {
-  return props.alwaysShowDetails || props.publication.isActive
+  return props.alwaysShowDetails || (props.publication.isActive && !props.suppressActiveDetails)
 })
 
 const visibleTags = computed(() => {
@@ -212,6 +215,7 @@ function handleAuthorClick(event) {
           v-for="tag in visibleTags"
           :key="tag.value"
           :icon="getTagIcon(tag.value)"
+          :color="tag.color"
           clickable
           :active="isTagFiltered(tag.value)"
           @click="toggleTag(tag.value)"
@@ -268,24 +272,24 @@ function handleAuthorClick(event) {
     </div>
     <div v-if="showDetails" class="stats-and-links level">
       <div class="level-left">
-        <div :class="`level-item ${publication.referenceDois.length ? '' : 'unknown'}`">
+        <div :class="`level-item ${publication.referenceDois.size ? '' : 'unknown'}`">
           <label>
             <InlineIcon
               icon="mdi-arrow-bottom-left-thick"
-              :color="publication.referenceDois.length ? 'dark' : 'danger'"
+              :color="publication.referenceDois.size ? 'dark' : 'danger'"
             />
             Citing:
           </label>
           <b>{{
-            publication.referenceDois.length
-              ? publication.referenceDois.length.toLocaleString('en')
+            publication.referenceDois.size
+              ? publication.referenceDois.size.toLocaleString('en')
               : 'not available'
           }}</b>
         </div>
         <div class="level-item">
           <label> <InlineIcon icon="mdi-arrow-top-left-thick" color="dark" /> Cited by: </label>
           <b v-if="!publication.tooManyCitations">{{
-            publication.citationDois.length.toLocaleString('en')
+            publication.citationDois.size.toLocaleString('en')
           }}</b>
           <span v-if="publication.citationsPerYear > 0 && !publication.tooManyCitations">
             &nbsp;({{ publication.citationsPerYear.toFixed(1) }}/year)

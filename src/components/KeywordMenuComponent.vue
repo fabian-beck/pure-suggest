@@ -27,6 +27,8 @@ const buttonColor = computed(() => {
   return sessionStore.boostKeywordString ? 'default' : 'grey-darken-1'
 })
 
+const keywordCount = computed(() => sessionStore.uniqueBoostKeywords.length)
+
 function handleMenuInput(value) {
   if (value) {
     nextTick(() => {
@@ -78,11 +80,13 @@ function clearKeywords() {
       >
         <v-icon size="18">mdi-chevron-double-up</v-icon>
         <span class="is-hidden-touch ml-2 boost-keywords-display">
+          <span v-if="keywordCount" class="header-chip-count">{{ keywordCount }}</span>
           <span
+            v-if="boostKeywordStringHtml"
             class="keywords-text"
-            v-html="boostKeywordStringHtml ? boostKeywordStringHtml : '[SET KEYWORDS]'"
-            :class="{ 'has-text-grey': !boostKeywordStringHtml }"
+            v-html="boostKeywordStringHtml"
           ></span>
+          <span v-else class="keywords-text has-text-grey">Keywords</span>
           <v-icon class="ml-2"> mdi-menu-down </v-icon>
         </span>
       </v-btn>
@@ -168,6 +172,18 @@ function clearKeywords() {
     display: inline-flex;
     align-items: center;
     overflow: hidden;
+
+    .header-chip-count {
+      flex: 0 0 auto;
+      background: var(--bulma-warning);
+      color: var(--bulma-warning-dark, #946c00);
+      border-radius: 999px;
+      padding: 0 0.4rem;
+      margin-right: 0.4rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      line-height: 1.3;
+    }
 
     .keywords-text {
       overflow: hidden;

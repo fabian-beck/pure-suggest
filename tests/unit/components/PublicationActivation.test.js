@@ -60,7 +60,7 @@ describe('Publication Activation', () => {
       scoreColor: '#00ff00',
       citationCount: 10,
       referenceCount: 5,
-      referenceDois: ['10.1234/ref1'],
+      referenceDois: new Set(['10.1234/ref1']),
       boostMatches: 0
     }
 

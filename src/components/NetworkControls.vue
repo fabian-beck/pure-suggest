@@ -192,6 +192,13 @@ const authorNumberFactorModel = computed({
   bottom: max(1vw, 1rem);
   right: max(1vw, 1rem);
   z-index: 1;
+  display: flex;
+  align-items: center;
+  padding: 0.25rem 0.6rem;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e8eaed;
+  border-radius: 999px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.12);
 }
 
 .v-btn-toggle {

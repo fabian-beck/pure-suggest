@@ -116,7 +116,7 @@ export class SuggestionService {
     if (!suggestedPublications[doi]) {
       suggestedPublications[doi] = new Publication(doi)
     }
-    suggestedPublications[doi].referenceDois.push(sourceDoi)
+    suggestedPublications[doi].referenceDois.add(sourceDoi)
     suggestedPublications[doi].citationCount++
   }
 
@@ -128,7 +128,7 @@ export class SuggestionService {
     if (!suggestedPublications[doi]) {
       suggestedPublications[doi] = new Publication(doi)
     }
-    suggestedPublications[doi].citationDois.push(sourceDoi)
+    suggestedPublications[doi].citationDois.add(sourceDoi)
     suggestedPublications[doi].referenceCount++
   }
 
@@ -163,13 +163,13 @@ export class SuggestionService {
       publication.referenceDois.forEach((citedDoi) => {
         try {
           const citedPub = getSelectedPublicationByDoi(citedDoi)
-          if (citedPub && !citedPub.citationDois.includes(publication.doi)) {
+          if (citedPub && !citedPub.citationDois.has(publication.doi)) {
             inconsistenciesFound++
             console.warn(
               `[SuggestionService] Citation inconsistency: ${publication.doi} claims to cite ${citedDoi}, ` +
               `but ${citedDoi} doesn't list ${publication.doi} in citationDois. Adding reverse relationship.`
             )
-            citedPub.citationDois.push(publication.doi)
+            citedPub.citationDois.add(publication.doi)
             inconsistenciesFixed++
           }
         } catch {
@@ -181,13 +181,13 @@ export class SuggestionService {
       publication.citationDois.forEach((citingDoi) => {
         try {
           const citingPub = getSelectedPublicationByDoi(citingDoi)
-          if (citingPub && !citingPub.referenceDois.includes(publication.doi)) {
+          if (citingPub && !citingPub.referenceDois.has(publication.doi)) {
             inconsistenciesFound++
             console.warn(
               `[SuggestionService] Citation inconsistency: ${publication.doi} claims ${citingDoi} cites it, ` +
               `but ${citingDoi} doesn't list ${publication.doi} in referenceDois. Adding forward relationship.`
             )
-            citingPub.referenceDois.push(publication.doi)
+            citingPub.referenceDois.add(publication.doi)
             inconsistenciesFixed++
           }
         } catch {

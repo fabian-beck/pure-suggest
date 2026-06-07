@@ -88,7 +88,7 @@ onUnmounted(() => {
         }"
         @click="scrollTo('network')"
       >
-        <v-icon class="has-text-white" top>mdi-chart-bubble</v-icon>
+        <v-icon class="has-text-white" top>mdi-water-plus-outline</v-icon>
         <div class="button-label">Network</div>
       </v-btn>
     </v-btn-toggle>
@@ -96,7 +96,7 @@ onUnmounted(() => {
 </template>
 <style lang="scss" scoped>
 .v-btn-group {
-  background-color: white;
+  background-color: var(--surface-bg);
 
   & button,
   & button:focus {

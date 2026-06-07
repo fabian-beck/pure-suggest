@@ -112,7 +112,7 @@ export default {
     position: sticky;
     top: 0;
     z-index: 3000;
-    background-color: white;
+    background-color: var(--surface-bg);
   }
 
   & .v-card-text {

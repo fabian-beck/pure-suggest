@@ -141,7 +141,7 @@ icon="mdi-cog has-text-white" class="ml-2"
         </div>
       </div>
     </div>
-    <PublicationListComponent ref="publicationList" :publications="sessionStore.suggestedPublicationsFiltered" show-section-headers publication-type="suggested" />
+    <PublicationListComponent ref="publicationList" :publications="sessionStore.suggestedPublicationsFiltered" show-section-headers publication-type="suggested" suppress-active-details />
   </div>
 </template>
 

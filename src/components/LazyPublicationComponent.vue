@@ -10,7 +10,7 @@ const props = defineProps({
   },
   estimatedHeight: {
     type: Number,
-    default: 85 // Based on typical PublicationComponent height
+    default: 70 // Based on typical PublicationComponent height
   },
   publicationType: {
     type: String,
@@ -20,7 +20,8 @@ const props = defineProps({
   isMobile: {
     type: Boolean,
     default: false
-  }
+  },
+  suppressActiveDetails: Boolean
 })
 const emit = defineEmits(['activate'])
 const hasLoaded = ref(false)
@@ -198,6 +199,7 @@ function handleKeyDown(event) {
     ref="targetRef"
     :publication="publication"
     :publication-type="publicationType"
+    :suppress-active-details="suppressActiveDetails"
     @activate="$emit('activate', $event)"
   />
 </template>
@@ -216,7 +218,7 @@ function handleKeyDown(event) {
   animation: pulse 1.5s ease-in-out infinite alternate;
   cursor: pointer;
   outline-offset: -0.25rem;
-  min-height: 5rem; // Match PublicationComponent min-height
+  min-height: 3.25rem; // Match PublicationComponent min-height
 
   &:focus {
     outline: 1px solid var(--bulma-dark);
@@ -244,11 +246,11 @@ function handleKeyDown(event) {
   }
 
   .skeleton-glyph {
-    width: 5rem;
-    height: 5rem;
+    width: 2.6rem;
+    height: 2.6rem;
     background: var(--bulma-background);
-    border-radius: 4px;
-    margin-right: 0.6rem;
+    border-radius: 6px;
+    margin: 0.5rem;
   }
 
   .skeleton-content {

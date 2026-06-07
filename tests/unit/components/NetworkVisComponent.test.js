@@ -174,7 +174,7 @@ describe('NetworkVisComponent', () => {
       })
 
       expect(wrapper.find('.network-of-references').exists()).toBe(true)
-      expect(wrapper.find('.box.has-background-grey').exists()).toBe(true)
+      expect(wrapper.find('.box.network-box').exists()).toBe(true)
       expect(wrapper.find('#network-svg-container').exists()).toBe(true)
       expect(wrapper.find('#network-svg').exists()).toBe(true)
     })
@@ -188,7 +188,7 @@ describe('NetworkVisComponent', () => {
 
       const header = wrapper.find('h2.is-size-5')
       expect(header.exists()).toBe(true)
-      expect(header.text()).toBe('Citation network')
+      expect(header.text()).toBe('Citation map')
     })
 
     it('shows error message when errorMessage is set', async () => {

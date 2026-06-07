@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, nextTick } from 'vue'
+import { computed, ref, watch, nextTick } from 'vue'
 
 import PublicationTag from '@/components/PublicationTag.vue'
 import Author from '@/core/Author.js'
@@ -11,6 +11,18 @@ const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
 
 const filterSwitch = ref(null)
+
+// Local ref with 300ms debounce so each keystroke doesn't trigger a full network replot
+const localFilterString = ref(sessionStore.filter.string)
+let filterStringTimer = null
+watch(localFilterString, (value) => {
+  clearTimeout(filterStringTimer)
+  filterStringTimer = setTimeout(() => { sessionStore.filter.string = value }, 300)
+})
+// Sync back when filter string is cleared externally (e.g. "Clear all filters" button)
+watch(() => sessionStore.filter.string, (value) => {
+  if (localFilterString.value !== value) localFilterString.value = value
+})
 
 const yearRules = [
   (value) => {
@@ -73,12 +85,23 @@ const hasFilterValues = computed(() => {
 
 const displayText = computed(() => {
   if (!sessionStore.filter.isActive && hasFilterValues.value) {
-    return '[FILTERS OFF]'
+    return 'Filters off'
   }
   if (sessionStore.filter.hasActiveFilters()) {
     return filterSummaryHtml.value
   }
-  return '[SET FILTERS]'
+  return 'Filters'
+})
+
+const filterCount = computed(() => {
+  const filter = sessionStore.filter
+  let count = 0
+  if (filter.string) count++
+  if (filter.isYearActive()) count++
+  count += filter.tags?.length || 0
+  count += filter.dois?.length || 0
+  count += filter.authors?.length || 0
+  return count
 })
 
 const buttonColor = computed(() => {
@@ -215,7 +238,8 @@ function isTagActive(tagValue) {
         :color="buttonColor"
       >
         <v-icon size="18">mdi-filter</v-icon>
-        <span class="is-hidden-touch ml-2">
+        <span class="is-hidden-touch ml-2 filter-display">
+          <span v-if="filterCount" class="header-chip-count">{{ filterCount }}</span>
           <span
             v-html="displayText"
             :class="{
@@ -290,7 +314,7 @@ function isTagActive(tagValue) {
           <v-col cols="12" md="6" class="py-1">
             <v-text-field
               label="Search"
-              v-model="sessionStore.filter.string"
+              v-model="localFilterString"
               placeholder="Text"
               variant="underlined"
               density="compact"
@@ -337,6 +361,7 @@ function isTagActive(tagValue) {
                   v-for="tag in Publication.TAGS"
                   :key="tag.value"
                   :icon="getTagIcon(tag.value)"
+                  :color="tag.color"
                   clickable
                   :active="isTagActive(tag.value)"
                   @click="toggleTag(tag.value)"
@@ -404,6 +429,23 @@ function isTagActive(tagValue) {
 :deep(.filter-separator) {
   color: #aaa;
   margin: 0 0.2rem;
+}
+
+.filter-display {
+  display: inline-flex;
+  align-items: center;
+}
+
+.header-chip-count {
+  flex: 0 0 auto;
+  background: var(--bulma-grey-dark);
+  color: white;
+  border-radius: 999px;
+  padding: 0 0.4rem;
+  margin-right: 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
 .filter-button {
