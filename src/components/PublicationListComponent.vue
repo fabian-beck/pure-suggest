@@ -201,7 +201,7 @@ function scrollToActivated() {
 
 <template>
   <ul
-    class="publication-list"
+    class="publication-list has-background-white"
     :class="{ 'empty-list': publications.length === 0 }"
     @click="handleDelegatedClick"
     @mouseenter="handleDelegatedMouseEnter"
