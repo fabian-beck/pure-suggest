@@ -205,14 +205,14 @@ function handleMouseLeave() {
         ></PublicationDescription>
         <div class="card-stats" v-if="showCompactStats">
           <span
-            :class="publication.referenceDois?.length ? '' : 'unknown'"
+            :class="publication.referenceDois?.size ? '' : 'unknown'"
             v-tippy="'Number of publications this one cites (references).'"
           >
             <InlineIcon
               icon="mdi-arrow-bottom-left-thick"
-              :color="publication.referenceDois?.length ? 'dark' : 'danger'"
+              :color="publication.referenceDois?.size ? 'dark' : 'danger'"
             />
-            {{ publication.referenceDois?.length ? publication.referenceDois.size : '–' }}
+            {{ publication.referenceDois?.size ? publication.referenceDois.size : '–' }}
           </span>
           <span v-tippy="'Number of publications citing this one.'">
             <InlineIcon icon="mdi-arrow-top-left-thick" color="dark" />

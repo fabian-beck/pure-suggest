@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, nextTick } from 'vue'
+import { computed, ref, watch, nextTick } from 'vue'
 
 import PublicationTag from '@/components/PublicationTag.vue'
 import Author from '@/core/Author.js'
@@ -11,6 +11,18 @@ const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
 
 const filterSwitch = ref(null)
+
+// Local ref with 300ms debounce so each keystroke doesn't trigger a full network replot
+const localFilterString = ref(sessionStore.filter.string)
+let filterStringTimer = null
+watch(localFilterString, (value) => {
+  clearTimeout(filterStringTimer)
+  filterStringTimer = setTimeout(() => { sessionStore.filter.string = value }, 300)
+})
+// Sync back when filter string is cleared externally (e.g. "Clear all filters" button)
+watch(() => sessionStore.filter.string, (value) => {
+  if (localFilterString.value !== value) localFilterString.value = value
+})
 
 const yearRules = [
   (value) => {
@@ -302,7 +314,7 @@ function isTagActive(tagValue) {
           <v-col cols="12" md="6" class="py-1">
             <v-text-field
               label="Search"
-              v-model="sessionStore.filter.string"
+              v-model="localFilterString"
               placeholder="Text"
               variant="underlined"
               density="compact"

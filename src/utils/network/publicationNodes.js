@@ -131,6 +131,7 @@ export function updatePublicationNodes(nodeSelection, activePublication, existin
   // Update main circle (radius encodes citations)
   publicationNodes.select('circle.node-shape').attr('r', getNodeRadius)
 
+
   // Update boost indicator circle (top-right edge of the node)
   publicationNodes
     .select('circle.boost')
@@ -147,6 +148,22 @@ export function updatePublicationNodes(nodeSelection, activePublication, existin
     .text(getNodeLabel)
 
   return { nodes: publicationNodes, tooltips: newTooltips }
+}
+
+/**
+ * Lightweight update for active/linked-to-active state changes.
+ * Avoids a full D3 join — only updates CSS classes and the active node's radius.
+ */
+export function updateActiveState(nodeSelection, activePublication) {
+  const publicationNodes = nodeSelection.filter((d) => d.type === 'publication')
+  publicationNodes
+    .classed('active', (d) => d.publication.isActive)
+    .classed('linkedToActive', (d) => d.publication.isLinkedToActive)
+    .classed(
+      'non-active',
+      (d) => activePublication && !d.publication.isActive && !d.publication.isLinkedToActive
+    )
+  publicationNodes.select('circle.node-shape').attr('r', getNodeRadius)
 }
 
 /**

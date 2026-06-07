@@ -51,6 +51,7 @@ import {
 import {
   initializePublicationNodes,
   updatePublicationNodes,
+  updateActiveState,
   createPublicationNodes
 } from '@/utils/network/publicationNodes.js'
 
@@ -188,15 +189,17 @@ export default {
         if (this.interfaceStore.isLoading) {
           return
         }
-        this.plot(true)
+        // No simulation restart needed — filtering only changes node visibility, not graph structure
+        this.plot()
       }
     },
     activePublication: {
       handler () {
-        if (this.interfaceStore.isLoading) {
+        if (this.interfaceStore.isLoading || !this.node) {
           return
         }
-        this.plot()
+        // Only update active/linked CSS classes and the active node's radius
+        updateActiveState(this.node, this.sessionStore.activePublication)
       }
     },
     selectedQueue: {
