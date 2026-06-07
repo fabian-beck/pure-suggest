@@ -15,6 +15,9 @@
   --surface-bg-subtle: #f7f8fa;
   --border-subtle: #e6e8eb;
   --legend-bg: rgba(255, 255, 255, 0.92);
+  --node-label-halo: white;
+  --author-node-bg: black;
+  --author-node-color: white;
 }
 
 [data-theme="dark"] {
@@ -23,6 +26,9 @@
   --surface-bg-subtle: #252525;
   --border-subtle: #3a3a3a;
   --legend-bg: rgba(30, 30, 30, 0.92);
+  --node-label-halo: #1e1e1e;
+  --author-node-bg: #555;
+  --author-node-color: white;
 }
 
 :root {

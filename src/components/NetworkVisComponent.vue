@@ -1361,9 +1361,8 @@ export default {
       dominant-baseline: hanging;
       font-size: 10px;
       fill: var(--bulma-grey-dark);
-      /* White halo so labels stay readable over links and other nodes */
       paint-order: stroke;
-      stroke: white;
+      stroke: var(--node-label-halo);
       stroke-width: 3px;
       stroke-linejoin: round;
     }
@@ -1374,7 +1373,7 @@ export default {
       dominant-baseline: middle;
       visibility: hidden;
       font-weight: 1000;
-      stroke: white;
+      stroke: var(--node-label-halo);
       stroke-width: 0.5;
     }
 
@@ -1476,14 +1475,14 @@ export default {
     cursor: pointer;
 
     & circle {
-      fill: black;
+      fill: var(--author-node-bg);
       @include light-shadow-svg;
     }
 
     & text {
       text-anchor: middle;
       dominant-baseline: middle;
-      fill: white;
+      fill: var(--author-node-color);
       font-size: 0.85rem;
       font-weight: 600;
       transform: translate(0px, 1px);
