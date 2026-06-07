@@ -6,6 +6,7 @@ import KeywordMenuComponent from '@/components/KeywordMenuComponent.vue'
 import SessionMenuComponent from '@/components/SessionMenuComponent.vue'
 import { useAppState } from '@/composables/useAppState.js'
 import { useModalManager } from '@/composables/useModalManager.js'
+import { isDark, toggleDarkMode } from '@/composables/useDarkMode.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 
 const appMeta = inject('appMeta')
@@ -18,7 +19,7 @@ const filterMenuComponent = ref(null)
 
 <template>
   <div>
-    <v-app-bar color="white" density="compact">
+    <v-app-bar color="surface" density="compact">
       <v-icon class="mr-1" :size="interfaceStore.isMobile ? 24 : 32">mdi-water-plus-outline</v-icon>
       <v-app-bar-title>
         <div class="app-name" v-html="appMeta.nameHtml"></div>
@@ -28,6 +29,9 @@ const filterMenuComponent = ref(null)
           <FilterMenuComponent ref="filterMenuComponent" />
         </div>
       </v-app-bar-title>
+      <v-btn icon density="compact" class="mr-1" @click="toggleDarkMode()">
+        <v-icon>{{ isDark ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
+      </v-btn>
       <v-menu bottom left offset-y transition="slide-y-transition">
         <template #activator="{ props }">
           <v-btn icon v-bind="props" class="mr-1" density="compact">

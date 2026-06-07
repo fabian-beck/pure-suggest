@@ -130,7 +130,7 @@ function close() {
 
 <style lang="scss" scoped>
 .detail-panel {
-  background: white;
+  background: var(--surface-bg);
   border-radius: 6px;
   border-top: 3px solid var(--bulma-info);
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.15);

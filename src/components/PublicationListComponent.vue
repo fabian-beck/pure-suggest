@@ -201,7 +201,7 @@ function scrollToActivated() {
 
 <template>
   <ul
-    class="publication-list has-background-white"
+    class="publication-list"
     :class="{ 'empty-list': publications.length === 0 }"
     @click="handleDelegatedClick"
     @mouseenter="handleDelegatedMouseEnter"
@@ -243,8 +243,8 @@ function scrollToActivated() {
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--bulma-grey-dark);
-    background: #f5f6f8;
-    border-bottom: 1px solid #e6e8eb;
+    background: var(--surface-bg-alt);
+    border-bottom: 1px solid var(--border-subtle);
 
     &.info-theme {
       color: var(--bulma-info-dark);

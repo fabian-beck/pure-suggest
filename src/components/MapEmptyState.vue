@@ -50,7 +50,7 @@ const { importSessionWithConfirmation, importBibtexWithConfirmation, loadExample
   text-align: center;
   padding: 2rem;
   gap: 0.5rem;
-  background: white;
+  background: var(--surface-bg);
   border-radius: 6px;
   overflow-y: auto;
 }

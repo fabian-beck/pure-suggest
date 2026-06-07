@@ -1,7 +1,10 @@
 <script>
 import LZString from 'lz-string'
+import { watch } from 'vue'
+import { useTheme } from 'vuetify'
 
 import { useAppState } from './composables/useAppState.js'
+import { isDark } from './composables/useDarkMode.js'
 import { onKey } from './lib/Keys.js'
 import { useInterfaceStore } from './stores/interface.js'
 import { useModalStore } from './stores/modal.js'
@@ -22,9 +25,17 @@ export default {
     const interfaceStore = useInterfaceStore()
     const modalStore = useModalStore()
     const { isEmpty, loadSession } = useAppState()
-    // check if mobile
     interfaceStore.checkMobile()
     window.addEventListener('resize', interfaceStore.checkMobile)
+    const theme = useTheme()
+    watch(
+      isDark,
+      (dark) => {
+        theme.global.name.value = dark ? 'dark' : 'light'
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+      },
+      { immediate: true }
+    )
     return { sessionStore, interfaceStore, modalStore, isEmpty, loadSession }
   },
   methods: {
@@ -439,7 +450,7 @@ body {
       left: auto;
       right: auto;
       z-index: 1000;
-      background: white;
+      background: var(--surface-bg);
 
       /* Keep header toolbar fixed */
       & .v-app-bar {

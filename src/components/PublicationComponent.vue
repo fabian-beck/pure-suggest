@@ -478,7 +478,7 @@ function handleMouseLeave() {
     color: var(--bulma-dark);
     border-left: 4px solid var(--bulma-dark);
     padding: 0.5rem;
-    background-color: white;
+    background-color: var(--surface-bg);
     top: 1.5rem;
     left: 50%;
     transform: translateX(-50%);

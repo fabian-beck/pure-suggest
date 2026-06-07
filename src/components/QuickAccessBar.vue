@@ -96,7 +96,7 @@ onUnmounted(() => {
 </template>
 <style lang="scss" scoped>
 .v-btn-group {
-  background-color: white;
+  background-color: var(--surface-bg);
 
   & button,
   & button:focus {

@@ -1218,7 +1218,7 @@ export default {
       width: 50%;
       max-width: 50rem;
       min-width: 40rem;
-      background: white;
+      background: var(--surface-bg);
     }
 
     & .controls-header-left {
@@ -1231,7 +1231,7 @@ export default {
 
 /* Modern light "map" surface (Litmaps-style) */
 .network-box.box {
-  background: #fff;
+  background: var(--surface-bg);
   padding: 0;
   overflow: hidden;
 
@@ -1239,8 +1239,8 @@ export default {
   & > .level:first-child {
     margin: 0;
     padding: 0.4rem 0.7rem;
-    background: #f7f8fa;
-    border-bottom: 1px solid #ececf1;
+    background: var(--surface-bg-subtle);
+    border-bottom: 1px solid var(--border-subtle);
   }
 
   & .controls-header-left {
@@ -1260,8 +1260,8 @@ export default {
   padding: 0.3rem 0.7rem;
   font-size: 0.75rem;
   color: var(--bulma-grey-dark);
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid #e8eaed;
+  background: var(--legend-bg);
+  border: 1px solid var(--border-subtle);
   border-radius: 999px;
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.12);
 
@@ -1286,7 +1286,7 @@ export default {
 
     &.suggested {
       border-color: var(--bulma-info);
-      background: white;
+      background: var(--surface-bg);
     }
   }
 
@@ -1299,7 +1299,7 @@ export default {
       display: block;
       border-radius: 50%;
       border: 1.5px solid var(--bulma-grey);
-      background: white;
+      background: var(--surface-bg);
     }
 
     & i:nth-child(1) {
@@ -1331,7 +1331,7 @@ export default {
 }
 
 #network-svg {
-  background: white;
+  background: var(--surface-bg);
   width: 100%;
   height: 100%;
 

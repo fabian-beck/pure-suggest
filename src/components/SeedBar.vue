@@ -158,7 +158,7 @@ function exclude(publication) {
 .seed-chip {
   flex: 0 0 auto;
   max-width: 16rem;
-  background: white !important;
+  background: var(--surface-bg) !important;
   border: 1px solid var(--bulma-primary-light);
   cursor: pointer;
 
