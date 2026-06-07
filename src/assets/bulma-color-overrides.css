@@ -8,8 +8,7 @@
  * components that Bulma v1.0 uses to generate all color variants.
  */
 
-:root,
-[data-theme="light"] {
+:root {
   --surface-bg: white;
   --surface-bg-alt: #f5f6f8;
   --surface-bg-subtle: #f7f8fa;
@@ -17,17 +16,6 @@
   --legend-bg: rgba(255, 255, 255, 0.92);
   --node-label-halo: white;
   --author-node-bg: black;
-  --author-node-color: white;
-}
-
-[data-theme="dark"] {
-  --surface-bg: #1e1e1e;
-  --surface-bg-alt: #2d2d2d;
-  --surface-bg-subtle: #252525;
-  --border-subtle: #3a3a3a;
-  --legend-bg: rgba(30, 30, 30, 0.92);
-  --node-label-halo: #1e1e1e;
-  --author-node-bg: #555;
   --author-node-color: white;
 }
 

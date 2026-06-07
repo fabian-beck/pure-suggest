@@ -1,10 +1,7 @@
 <script>
 import LZString from 'lz-string'
-import { watch } from 'vue'
-import { useTheme } from 'vuetify'
 
 import { useAppState } from './composables/useAppState.js'
-import { isDark } from './composables/useDarkMode.js'
 import { onKey } from './lib/Keys.js'
 import { useInterfaceStore } from './stores/interface.js'
 import { useModalStore } from './stores/modal.js'
@@ -27,15 +24,6 @@ export default {
     const { isEmpty, loadSession } = useAppState()
     interfaceStore.checkMobile()
     window.addEventListener('resize', interfaceStore.checkMobile)
-    const theme = useTheme()
-    watch(
-      isDark,
-      (dark) => {
-        theme.global.name.value = dark ? 'dark' : 'light'
-        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
-      },
-      { immediate: true }
-    )
     return { sessionStore, interfaceStore, modalStore, isEmpty, loadSession }
   },
   methods: {
