@@ -576,8 +576,12 @@ export default {
         return true
       }
 
-      // Early return if graph is empty - no nodes to update
+      // Early return if graph is empty - no nodes to update. Also clear the
+      // early-tick-skipping flag since with no nodes it will never be cleared
+      // by an actual tick, which would otherwise leave the network (and the
+      // controls bound to the same fade state) stuck faded indefinitely.
       if (!this.graph.nodes || this.graph.nodes.length === 0) {
+        this.shouldSkipEarlyTicks = false
         this.$refs.performanceMonitor?.trackFps() // Still track FPS for debugging
         return true
       }
@@ -1079,6 +1083,7 @@ export default {
         @reset="resetZoom"
         @plot="plot"
         v-show="!isNetworkActuallyCollapsed && !isEmpty"
+        :class="networkCssClasses"
       />
     </div>
   </div>
@@ -1130,6 +1135,7 @@ export default {
   background: white;
   width: 100%;
   height: 100%;
+  will-change: opacity;
 
   & g:focus {
     outline: none;

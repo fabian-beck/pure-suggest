@@ -375,6 +375,24 @@ describe('NetworkVisComponent', () => {
       wrapper.vm.showNodes = ['selected', 'suggested', 'keyword']
       expect(wrapper.vm.showAuthorNodes).toBe(false)
     })
+
+    it('does not stay faded when all node types are switched off and the graph becomes empty', () => {
+      const wrapper = mount(NetworkVisComponent, {
+        global: {
+          stubs: commonComponentStubs
+        }
+      })
+
+      // Simulate a restart (e.g. from toggling a node type) followed by the graph
+      // ending up empty because the user switched off every node type.
+      wrapper.vm.shouldSkipEarlyTicks = true
+      wrapper.vm.currentTickCount = 0
+      wrapper.vm.graph.nodes = []
+
+      wrapper.vm.tick()
+
+      expect(wrapper.vm.networkCssClasses).toBe('network-visible')
+    })
   })
 
   describe('D3.js Graph Rendering', () => {

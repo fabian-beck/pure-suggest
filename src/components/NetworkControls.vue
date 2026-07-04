@@ -192,16 +192,27 @@ const authorNumberFactorModel = computed({
   bottom: max(1vw, 1rem);
   right: max(1vw, 1rem);
   z-index: 1;
+  will-change: opacity;
 }
 
 .v-btn-toggle {
   :deep(.v-btn--active) {
     background-color: color-mix(in srgb, currentColor 14%, white);
+    transition: background-color 0.5s ease-in;
   }
 
   :deep(.v-btn--active > .v-btn__overlay) {
     opacity: 0;
   }
+}
+
+// The active-state background is a near-white tint; on a darker backdrop it
+// stays visibly "lit" even at low opacity, so it needs to be neutralized
+// while the whole control bar is fading out (see .network-fading in
+// NetworkVisComponent.vue), otherwise only active buttons look unnaturally light.
+.controls-footer-right.network-fading .v-btn-toggle :deep(.v-btn--active) {
+  background-color: transparent;
+  transition: background-color 0.3s ease-out;
 }
 
 // Fix for slider thumb being cut off when at minimum and maximum values
