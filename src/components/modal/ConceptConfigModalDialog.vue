@@ -290,7 +290,6 @@ watch(
           <v-btn
             :disabled="!canCompute"
             @click="computeConcepts"
-            size="small"
             prepend-icon="mdi-play"
             class="has-background-primary has-text-white"
           >
@@ -300,7 +299,6 @@ watch(
           <v-btn
             :disabled="conceptsPreview.length === 0"
             @click="applyConcepts"
-            size="small"
             prepend-icon="mdi-check"
             class="has-background-primary has-text-white"
           >
@@ -310,9 +308,8 @@ watch(
           <v-btn
             :disabled="!isEnabled && conceptsPreview.length === 0"
             @click="disableConcepts"
-            size="small"
             prepend-icon="mdi-close"
-            class="has-background-primary-90"
+            class="has-background-primary-95 has-text-dark"
           >
             Disable
           </v-btn>
