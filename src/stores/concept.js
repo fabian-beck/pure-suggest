@@ -20,12 +20,20 @@ export const useConceptStore = defineStore('concept', {
   },
 
   actions: {
-    computeAndStoreConcepts(selectedPublications, boostKeywords) {
-      this.concepts = ConceptService.computeConcepts(selectedPublications, boostKeywords)
-      this.sortedConcepts = ConceptService.sortConceptsByImportance(this.concepts, selectedPublications.length)
-      this.conceptMetadata = ConceptService.generateConceptNames(
-        this.sortedConcepts,
-        selectedPublications
+    computePreview(publications, boostKeywords, includeCitations = true, includeAuthors = false) {
+      this.previewConcepts = ConceptService.computeConcepts(
+        publications,
+        boostKeywords,
+        includeCitations,
+        includeAuthors
+      )
+      this.previewSortedConcepts = ConceptService.sortConceptsByImportance(
+        this.previewConcepts,
+        publications.length
+      )
+      this.previewConceptMetadata = ConceptService.generateConceptNames(
+        this.previewSortedConcepts,
+        publications
       )
     },
 

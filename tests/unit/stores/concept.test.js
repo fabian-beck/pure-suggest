@@ -12,8 +12,8 @@ describe('Concept Store', () => {
     conceptStore = useConceptStore()
   })
 
-  describe('computeAndStoreConcepts', () => {
-    it('should compute and store concepts from selected publications', () => {
+  describe('computePreview', () => {
+    it('should compute and store preview concepts from selected publications', () => {
       const publications = [
         {
           doi: '10.1/a',
@@ -59,11 +59,11 @@ describe('Concept Store', () => {
         }
       ]
 
-      conceptStore.computeAndStoreConcepts(publications, ['visual'])
+      conceptStore.computePreview(publications, ['visual'])
 
-      expect(conceptStore.hasConcepts).toBe(true)
-      expect(conceptStore.concepts.length).toBeGreaterThan(0)
-      expect(conceptStore.sortedConcepts.length).toBeGreaterThan(0)
+      expect(conceptStore.hasPreview).toBe(true)
+      expect(conceptStore.previewConcepts.length).toBeGreaterThan(0)
+      expect(conceptStore.previewSortedConcepts.length).toBeGreaterThan(0)
     })
   })
 
@@ -115,8 +115,8 @@ describe('Concept Store', () => {
         }
       ]
 
-      conceptStore.computeAndStoreConcepts(selectedPublications, ['visual'])
-      conceptStore.assignConceptTagsToPublications(selectedPublications)
+      conceptStore.computePreview(selectedPublications, ['visual'])
+      conceptStore.applyPreview(selectedPublications, new Filter())
 
       // Now test: Apply concepts to a suggested publication that matches the criteria
       const suggestedPublications = [
@@ -183,8 +183,8 @@ describe('Concept Store', () => {
         }
       ]
 
-      conceptStore.computeAndStoreConcepts(initialPublications, ['data'])
-      conceptStore.assignConceptTagsToPublications(initialPublications)
+      conceptStore.computePreview(initialPublications, ['data'])
+      conceptStore.applyPreview(initialPublications, new Filter())
 
       // Test: Apply concepts to newly added publication
       const newlyAddedPublications = [
@@ -250,8 +250,8 @@ describe('Concept Store', () => {
         }
       ]
 
-      conceptStore.computeAndStoreConcepts(selectedPublications, ['visual'])
-      conceptStore.assignConceptTagsToPublications(selectedPublications)
+      conceptStore.computePreview(selectedPublications, ['visual'])
+      conceptStore.applyPreview(selectedPublications, new Filter())
 
       // Test with publication that doesn't match
       const nonMatchingPublications = [
@@ -376,8 +376,8 @@ describe('Concept Store', () => {
         }
       ]
 
-      conceptStore.computeAndStoreConcepts(selectedPublications, ['data'])
-      conceptStore.assignConceptTagsToPublications(selectedPublications)
+      conceptStore.computePreview(selectedPublications, ['data'])
+      conceptStore.applyPreview(selectedPublications, new Filter())
 
       // Debug: Check what concepts exist
       const hasValidConcepts = conceptStore.sortedConcepts.length > 0
@@ -510,7 +510,8 @@ describe('Concept Store', () => {
         }
       ]
 
-      conceptStore.computeAndStoreConcepts(publications, ['visual'])
+      conceptStore.computePreview(publications, ['visual'])
+      conceptStore.applyPreview(publications, new Filter())
       expect(conceptStore.hasConcepts).toBe(true)
 
       conceptStore.clear()

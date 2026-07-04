@@ -84,23 +84,17 @@ export class ConceptService {
    * Computes all concepts from publications and keywords
    * @param {Array} publications - Array of publication objects
    * @param {string[]} boostKeywords - Array of boost keyword strings
-   * @param {Object} options - Optional configuration
-   * @param {boolean} options.includeCitations - Whether to include citation attributes (default: true)
-   * @param {boolean} options.includeAuthors - Whether to include author attributes (default: false)
+   * @param {boolean} includeCitations - Whether to include citation attributes
+   * @param {boolean} includeAuthors - Whether to include author attributes
    * @returns {Array} Array of concepts
    */
-  static computeConcepts(publications, boostKeywords, options = {}) {
+  static computeConcepts(publications, boostKeywords, includeCitations = true, includeAuthors = false) {
     if (!publications || publications.length === 0) {
       return []
     }
 
-    const { includeCitations = true, includeAuthors = false } = options
-
     // Allow empty keywords array - citations/authors can still form concepts
-    const context = this.buildContext(publications, boostKeywords || [], {
-      includeCitations,
-      includeAuthors
-    })
+    const context = this.buildContext(publications, boostKeywords || [], includeCitations, includeAuthors)
 
     // Return empty if no attributes at all (no keywords, citations, or authors)
     if (context.attributes.length === 0) {
@@ -115,14 +109,11 @@ export class ConceptService {
    * Attributes include keywords, citation relationships, and co-authors
    * @param {Array} publications - Array of publication objects
    * @param {string[]} boostKeywords - Array of boost keyword strings
-   * @param {Object} options - Optional configuration
-   * @param {boolean} options.includeCitations - Whether to include citation attributes (default: true)
-   * @param {boolean} options.includeAuthors - Whether to include author attributes (default: false)
+   * @param {boolean} includeCitations - Whether to include citation attributes
+   * @param {boolean} includeAuthors - Whether to include author attributes
    * @returns {Object} Context object with publications, attributes, and matrix
    */
-  static buildContext(publications, boostKeywords, options = {}) {
-    const { includeCitations = true, includeAuthors = false } = options
-
+  static buildContext(publications, boostKeywords, includeCitations = true, includeAuthors = false) {
     // Create set of selected publication DOIs for filtering
     const selectedDois = new Set(publications.map((pub) => pub.doi))
 
@@ -511,116 +502,6 @@ export class ConceptService {
   }
 
   /**
-   * Assigns concept tags to publications based on their membership in concepts
-   * @param {Array} publications - Array of publication objects to tag
-   * @param {Array} concepts - Array of concepts (sorted by importance)
-   * @returns {Map} Map of DOI to array of concept names
-   */
-  static assignConceptTags(publications, concepts) {
-    const tagMap = new Map()
-    const termsMap = new Map()
-
-    // Sort concepts by importance
-    const sortedConcepts = this.sortConceptsByImportance(concepts, publications.length)
-
-    // Generate concept names and metadata
-    const conceptMetadata = this.generateConceptNames(sortedConcepts, publications)
-
-    // Assign each publication to the concepts it belongs to
-    sortedConcepts.forEach((concept, index) => {
-      const metadata = conceptMetadata.get(index)
-      const conceptName = metadata.name
-      concept.publications.forEach((doi) => {
-        if (!tagMap.has(doi)) {
-          tagMap.set(doi, [])
-        }
-        tagMap.get(doi).push(conceptName)
-
-        // Store metadata (top terms and attributes) for this concept
-        if (!termsMap.has(doi)) {
-          termsMap.set(doi, new Map())
-        }
-        termsMap.get(doi).set(conceptName, {
-          topTerms: metadata.topTerms,
-          attributes: concept.attributes
-        })
-      })
-    })
-
-    // Update publication objects with concept tags and metadata
-    publications.forEach((publication) => {
-      const conceptNames = tagMap.get(publication.doi) || []
-      if (conceptNames.length > 0) {
-        publication.concepts = conceptNames
-        publication.conceptMetadata = termsMap.get(publication.doi) || new Map()
-      } else {
-        publication.concepts = null
-        publication.conceptMetadata = null
-      }
-    })
-
-    return tagMap
-  }
-
-  /**
-   * Merges similar terms by finding common prefixes and combining their frequencies
-   * @param {Map} termFreq - Map of term to frequency
-   * @returns {Map} Map with merged term frequencies
-   */
-  static _mergeTermFrequencies(termFreq) {
-    if (termFreq.size === 0) return new Map()
-
-    const MIN_PREFIX_LENGTH = 5
-    const terms = Array.from(termFreq.keys())
-    const merged = new Map()
-    const processed = new Set()
-
-    // Sort by frequency descending to prioritize high-frequency terms
-    const sorted = terms.sort((a, b) => (termFreq.get(b) || 0) - (termFreq.get(a) || 0))
-
-    sorted.forEach((term) => {
-      if (processed.has(term)) return
-
-      // Find all terms that share a common prefix with this term
-      const similar = sorted.filter((other) => {
-        if (processed.has(other) || other === term) return false
-
-        // Find common prefix length
-        const minLen = Math.min(term.length, other.length)
-        let commonPrefixLen = 0
-        for (let i = 0; i < minLen; i++) {
-          if (term[i] === other[i]) {
-            commonPrefixLen++
-          } else {
-            break
-          }
-        }
-
-        return commonPrefixLen >= MIN_PREFIX_LENGTH
-      })
-
-      if (similar.length > 0) {
-        // Merge: use the shortest term as the representative
-        const allTerms = [term, ...similar]
-        const shortest = allTerms.reduce((a, b) => (a.length < b.length ? a : b), term)
-        const totalFreq = allTerms.reduce((sum, t) => sum + (termFreq.get(t) || 0), 0)
-
-        merged.set(shortest, totalFreq)
-
-        // Mark all as processed
-        processed.add(term)
-        similar.forEach((s) => processed.add(s))
-      } else {
-        // No similar terms, add as-is
-        merged.set(term, termFreq.get(term))
-        processed.add(term)
-      }
-    })
-
-    return merged
-  }
-
-  /**
    * Computes term scores for a concept using exclusivity metric
    * @param {Array} conceptPublications - Array of publication DOIs in the concept
    * @param {Array} allPublications - All publication objects
@@ -762,64 +643,4 @@ export class ConceptService {
     return mergeMap
   }
 
-  /**
-   * Logs concepts to console with exclusivity-based descriptive terms
-   * @param {Array} concepts - Array of concepts
-   * @param {Array} allPublications - All publication objects
-   */
-  static logConcepts(concepts, allPublications = []) {
-    if (!concepts || concepts.length === 0) {
-      console.log('[Concepts] No concepts found.')
-      return
-    }
-
-    // Sort by importance and limit to top 10
-    const sortedConcepts = this.sortConceptsByImportance(concepts, allPublications.length)
-    const conceptsToShow = sortedConcepts.slice(0, 10)
-    const totalCount = concepts.length
-
-    // Update header to indicate if showing subset
-    if (totalCount > 10) {
-      console.log(`\n[Concepts] Concept Analysis Results: Top 10 concepts (${totalCount} total)`)
-    } else {
-      console.log(`\n[Concepts] Concept Analysis Results: ${totalCount} concepts found`)
-    }
-
-    console.log('═'.repeat(80))
-
-    conceptsToShow.forEach((concept, index) => {
-      const pubCount = concept.publications.length
-      const attrCount = concept.attributes.length
-
-      // Separate keywords, citation DOIs, and authors
-      const keywords = concept.attributes.filter((attr) => attr.type === 'keyword').map((attr) => attr.value)
-      const citations = concept.attributes.filter((attr) => attr.type === 'citation').map((attr) => attr.value)
-      const authors = concept.attributes.filter((attr) => attr.type === 'author').map((attr) => attr.value)
-
-      console.log(`\nConcept ${index + 1}:`)
-      console.log(
-        `  Importance: ${concept.importance} (${pubCount} publications × ${attrCount} attributes)`
-      )
-      console.log(`  Remaining Importance: ${concept.remainingImportance}`)
-      console.log(`  Publications (${pubCount}): ${pubCount === 0 ? '∅' : concept.publications.join(', ')}`)
-      console.log(`  Keywords (${keywords.length}): ${keywords.length === 0 ? '∅' : keywords.join(', ')}`)
-      console.log(`  Citations (${citations.length}): ${citations.length === 0 ? '∅' : citations.join(', ')}`)
-      console.log(`  Authors (${authors.length}): ${authors.length === 0 ? '∅' : authors.join(', ')}`)
-
-      // Compute and display top terms if publications available
-      if (allPublications.length > 0 && concept.publications.length > 0) {
-        const { exclusivityTerms } = this.computeConceptTerms(
-          concept.publications,
-          allPublications
-        )
-        const top10 = exclusivityTerms.slice(0, 10)
-        if (top10.length > 0) {
-          const termString = top10.map((t) => `${t.term} (${t.score})`).join(', ')
-          console.log(`  Top Terms: ${termString}`)
-        }
-      }
-    })
-
-    console.log(`\n${'═'.repeat(80)}`)
-  }
 }

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+﻿import { describe, it, expect } from 'vitest'
 
 import { ConceptService } from '@/services/ConceptService.js'
 
@@ -455,281 +455,67 @@ describe('ConceptService', () => {
     })
   })
 
-  describe('logConcepts', () => {
-    it('should log concepts to console', () => {
-      const consoleSpy = vi.spyOn(console, 'log')
+  describe('generateConceptNames', () => {
+    it('should number concepts by their index', () => {
+      const publications = [
+        { doi: '10.1/a', title: 'Visual Analytics Study' },
+        { doi: '10.1/b', title: 'Visual Design Patterns' },
+        { doi: '10.1/c', title: 'Analytical Methods' }
+      ]
 
       const concepts = [
         {
           publications: ['10.1/a', '10.1/b'],
-          attributes: [{ type: 'keyword', value: 'VISUAL' }],
-          importance: 2
+          attributes: [{ type: 'keyword', value: 'VISUAL' }]
         },
         {
-          publications: ['10.1/a'],
-          attributes: [{ type: 'keyword', value: 'VISUAL' }, { type: 'keyword', value: 'ANALYT' }],
-          importance: 2
+          publications: ['10.1/a', '10.1/c'],
+          attributes: [{ type: 'keyword', value: 'ANALYT' }]
         }
       ]
 
-      ConceptService.logConcepts(concepts)
+      const names = ConceptService.generateConceptNames(concepts, publications)
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Concept Analysis')
-      )
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('concepts found')
-      )
-    })
-
-    it('should log empty result appropriately', () => {
-      const consoleSpy = vi.spyOn(console, 'log')
-
-      ConceptService.logConcepts([])
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('No concepts')
-      )
-    })
-
-    it('should only log top 10 concepts when more than 10 exist', () => {
-      const consoleSpy = vi.spyOn(console, 'log')
-
-      const concepts = Array.from({ length: 15 }, (_, i) => ({
-        publications: [`10.1/${i}`],
-        attributes: [{ type: 'keyword', value: 'VISUAL' }],
-        importance: 15 - i
-      }))
-
-      ConceptService.logConcepts(concepts)
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Top 10 concepts')
-      )
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('15 total')
-      )
-    })
-
-    it('should include importance score in log output', () => {
-      const consoleSpy = vi.spyOn(console, 'log')
-
-      const concepts = [
-        {
-          publications: ['10.1/a', '10.1/b', '10.1/c'],
-          attributes: [{ type: 'keyword', value: 'VISUAL' }, { type: 'keyword', value: 'DATA' }],
-          importance: 6
-        }
-      ]
-
-      ConceptService.logConcepts(concepts)
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Importance: 6')
-      )
-    })
-
-    it('should distinguish between keyword and citation attributes in output', () => {
-      const consoleSpy = vi.spyOn(console, 'log')
-
-      const concepts = [
-        {
-          publications: ['10.1/a', '10.1/b', '10.1/c'],
-          attributes: [
-            { type: 'keyword', value: 'VISUAL' },
-            { type: 'citation', value: '10.1/cited' }
-          ],
-          importance: 6
-        }
-      ]
-
-      ConceptService.logConcepts(concepts)
-
-      // Should show both types of attributes
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringMatching(/Keywords.*VISUAL/)
-      )
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringMatching(/Citations.*10\.1\/cited/)
-      )
-    })
-  })
-
-  describe('assignConceptTags', () => {
-    it('should assign concept tags to publications', () => {
-      const publications = [
-        { doi: '10.1/a', concepts: null, title: 'Visual Analytics Study' },
-        { doi: '10.1/b', concepts: null, title: 'Visual Design Patterns' },
-        { doi: '10.1/c', concepts: null, title: 'Analytical Methods' },
-        { doi: '10.1/d', concepts: null, title: 'Visual System' },
-        { doi: '10.1/e', concepts: null, title: 'Analytical Framework' },
-        { doi: '10.1/f', concepts: null, title: 'Other Topic One' },
-        { doi: '10.1/g', concepts: null, title: 'Other Topic Two' }
-      ]
-
-      const concepts = [
-        {
-          publications: ['10.1/a', '10.1/b', '10.1/d'],
-          attributes: [{ type: 'keyword', value: 'VISUAL' }, { type: 'keyword', value: 'DESIGN' }],
-          importance: 6
-        }
-      ]
-
-      ConceptService.assignConceptTags(publications, concepts)
-
-      // Publication a should be in the concept
-      expect(publications[0].concepts).toHaveLength(1)
-      expect(publications[0].concepts[0]).toMatch(/^C\d+/)
-
-      // Publication b should be in concept 1
-      expect(publications[1].concepts).toHaveLength(1)
-      expect(publications[1].concepts[0]).toMatch(/^C\d+/)
-
-      // Publication c should not be in any concept
-      expect(publications[2].concepts).toBeNull()
-    })
-
-    it('should handle publications not in any concept', () => {
-      const publications = [
-        { doi: '10.1/a', concepts: null, title: 'Visual Study' },
-        { doi: '10.1/b', concepts: null, title: 'Visual Analysis' },
-        { doi: '10.1/c', concepts: null, title: 'Other Topic' },
-        { doi: '10.1/d', concepts: null, title: 'Visual System' },
-        { doi: '10.1/e', concepts: null, title: 'Another Topic' },
-        { doi: '10.1/f', concepts: null, title: 'Different Topic' },
-        { doi: '10.1/g', concepts: null, title: 'More Topics' }
-      ]
-
-      const concepts = [
-        {
-          publications: ['10.1/a', '10.1/b', '10.1/d'],
-          attributes: [{ type: 'keyword', value: 'VISUAL' }],
-          importance: 0
-        }
-      ]
-
-      ConceptService.assignConceptTags(publications, concepts)
-
-      expect(publications[0].concepts).toHaveLength(1)
-      expect(publications[0].concepts[0]).toMatch(/^C1/)
-      expect(publications[1].concepts).toHaveLength(1)
-      expect(publications[1].concepts[0]).toMatch(/^C1/)
-      expect(publications[2].concepts).toBeNull()
-    })
-
-    it('should assign tags based on sorted importance', () => {
-      const publications = [
-        { doi: '10.1/a', concepts: null, title: 'Visual Study' },
-        { doi: '10.1/b', concepts: null, title: 'Data Analytics Methods' },
-        { doi: '10.1/c', concepts: null, title: 'Analytical Data Processing' },
-        { doi: '10.1/d', concepts: null, title: 'Visual System' },
-        { doi: '10.1/e', concepts: null, title: 'Data Visualization' },
-        { doi: '10.1/f', concepts: null, title: 'Analytics Framework' }
-      ]
-
-      const concepts = [
-        {
-          publications: ['10.1/a', '10.1/d', '10.1/e'],
-          attributes: [{ type: 'keyword', value: 'VISUAL' }],
-          importance: 3
-        },
-        {
-          publications: ['10.1/b', '10.1/c', '10.1/e', '10.1/f'],
-          attributes: ['DATA', 'ANALYT'],
-          importance: 8
-        }
-      ]
-
-      ConceptService.assignConceptTags(publications, concepts)
-
-      // Should be assigned concept names after sorting by importance
-      // Concept with 2 attributes has higher importance (4*2 = 8) - picked first
-      // Concept with 1 attribute has 3 pubs, after first concept covers e, has 2 uncovered * 1 attr = 2 remaining (filtered out)
-      // Publication e should be in only the first concept picked
-      expect(publications[4].concepts).toHaveLength(1)
-      expect(publications[4].concepts[0]).toMatch(/^C1/)
-    })
-
-    it('should return a map of DOI to concept names', () => {
-      const publications = [
-        { doi: '10.1/a', concepts: null, title: 'Visual Study' },
-        { doi: '10.1/b', concepts: null, title: 'Visual Analysis' },
-        { doi: '10.1/c', concepts: null, title: 'Visual System' },
-        { doi: '10.1/d', concepts: null, title: 'Other Topic One' },
-        { doi: '10.1/e', concepts: null, title: 'Other Topic Two' },
-        { doi: '10.1/f', concepts: null, title: 'Other Topic Three' },
-        { doi: '10.1/g', concepts: null, title: 'Other Topic Four' }
-      ]
-
-      const concepts = [
-        {
-          publications: ['10.1/a', '10.1/b', '10.1/c'],
-          attributes: [{ type: 'keyword', value: 'VISUAL' }],
-          importance: 3
-        }
-      ]
-
-      const tagMap = ConceptService.assignConceptTags(publications, concepts)
-
-      expect(tagMap.get('10.1/a')).toHaveLength(1)
-      expect(tagMap.get('10.1/a')[0]).toMatch(/^C1/)
-      expect(tagMap.get('10.1/b')).toHaveLength(1)
-      expect(tagMap.get('10.1/b')[0]).toMatch(/^C1/)
-      expect(tagMap.get('10.1/c')).toHaveLength(1)
-      expect(tagMap.get('10.1/c')[0]).toMatch(/^C1/)
-    })
-
-    it('should handle empty concepts array', () => {
-      const publications = [
-        { doi: '10.1/a', concepts: null }
-      ]
-
-      const tagMap = ConceptService.assignConceptTags(publications, [])
-
-      expect(publications[0].concepts).toBeNull()
-      expect(tagMap.size).toBe(0)
+      expect(names.get(0).name).toMatch(/^C1/)
+      expect(names.get(1).name).toMatch(/^C2/)
     })
 
     it('should not add term name when top scores are tied', () => {
       const publications = [
-        { doi: '10.1/a', concepts: null, title: 'Study' },
-        { doi: '10.1/b', concepts: null, title: 'Research' },
-        { doi: '10.1/c', concepts: null, title: 'Analysis' },
-        { doi: '10.1/d', concepts: null, title: 'Other Topic One' },
-        { doi: '10.1/e', concepts: null, title: 'Other Topic Two' },
-        { doi: '10.1/f', concepts: null, title: 'Other Topic Three' },
-        { doi: '10.1/g', concepts: null, title: 'Other Topic Four' }
+        { doi: '10.1/a', title: 'Study' },
+        { doi: '10.1/b', title: 'Research' },
+        { doi: '10.1/c', title: 'Analysis' },
+        { doi: '10.1/d', title: 'Other Topic One' },
+        { doi: '10.1/e', title: 'Other Topic Two' },
+        { doi: '10.1/f', title: 'Other Topic Three' },
+        { doi: '10.1/g', title: 'Other Topic Four' }
       ]
 
       const concepts = [
         {
           publications: ['10.1/a', '10.1/b', '10.1/c'],
-          attributes: [{ type: 'keyword', value: 'VISUAL' }],
-          importance: 3
+          attributes: [{ type: 'keyword', value: 'VISUAL' }]
         }
       ]
 
-      ConceptService.assignConceptTags(publications, concepts)
+      const names = ConceptService.generateConceptNames(concepts, publications)
 
-      // All publications have different single-word titles with same TF-IDF
+      // All concept publications have different single-word titles with the same score
       // Should get concept number only (no term name)
-      expect(publications[0].concepts[0]).toBe('C1')
-      expect(publications[1].concepts[0]).toBe('C1')
-      expect(publications[2].concepts[0]).toBe('C1')
+      expect(names.get(0).name).toBe('C1')
     })
 
     it('should add term name when there is a clear winner', () => {
       const publications = [
-        { doi: '10.1/a', concepts: null, title: 'Unique neuromorphic computing systems' },
-        { doi: '10.1/b', concepts: null, title: 'Neuromorphic design patterns' },
-        { doi: '10.1/c', concepts: null, title: 'Advanced neuromorphic architectures' }
+        { doi: '10.1/a', title: 'Unique neuromorphic computing systems' },
+        { doi: '10.1/b', title: 'Neuromorphic design patterns' },
+        { doi: '10.1/c', title: 'Advanced neuromorphic architectures' }
       ]
 
       // Add many other publications with diverse titles to increase IDF
       for (let i = 0; i < 10; i++) {
         publications.push({
           doi: `10.1/other${i}`,
-          concepts: null,
           title: `Different topic ${i} with various words`
         })
       }
@@ -737,61 +523,27 @@ describe('ConceptService', () => {
       const concepts = [
         {
           publications: ['10.1/a', '10.1/b', '10.1/c'],
-          attributes: [{ type: 'keyword', value: 'VISUAL' }],
-          importance: 3
+          attributes: [{ type: 'keyword', value: 'VISUAL' }]
         }
       ]
 
-      ConceptService.assignConceptTags(publications, concepts)
+      const names = ConceptService.generateConceptNames(concepts, publications)
 
-      // "neuromorphic" appears only in concept publications - should have highest TF-IDF
-      expect(publications[0].concepts[0]).toMatch(/^C1 - NEUROMORPHIC/)
-    })
-
-    it('should boost keyword alternatives separated by pipe', () => {
-      const publications = [
-        { doi: '10.1/a', concepts: null, title: 'Visual data analysis methods' },
-        { doi: '10.1/b', concepts: null, title: 'Graphic representation techniques' },
-        { doi: '10.1/c', concepts: null, title: 'Visualization and graphics systems' }
-      ]
-
-      // Add other publications
-      for (let i = 0; i < 10; i++) {
-        publications.push({
-          doi: `10.1/other${i}`,
-          concepts: null,
-          title: `Different topic ${i} with other terms`
-        })
-      }
-
-      const concepts = [
-        {
-          publications: ['10.1/a', '10.1/b', '10.1/c'],
-          attributes: ['VIS|GRAPH'], // Pipe-separated alternatives
-          importance: 0
-        }
-      ]
-
-      ConceptService.assignConceptTags(publications, concepts)
-
-      // Should match "visual" and "graphic" via keyword alternatives and boost them
-      const conceptName = publications[0].concepts[0]
-      expect(conceptName).toMatch(/^C1/) // Has a concept tag
-      // If there's a clear winner after boosting, it should be VIS or GRAPH related
+      // "neuromorphic" appears only in concept publications - should have highest score
+      expect(names.get(0).name).toMatch(/^C1 - NEUROMORPHIC/)
     })
 
     it('should only use terms with characteristic score >= 1 for concept names', () => {
       const publications = [
-        { doi: '10.1/a', concepts: null, title: 'Research on quantum computing methods' },
-        { doi: '10.1/b', concepts: null, title: 'Quantum algorithms and applications' },
-        { doi: '10.1/c', concepts: null, title: 'Advanced quantum systems' }
+        { doi: '10.1/a', title: 'Research on quantum computing methods' },
+        { doi: '10.1/b', title: 'Quantum algorithms and applications' },
+        { doi: '10.1/c', title: 'Advanced quantum systems' }
       ]
 
       // Add many publications that also contain "research" (makes it non-exclusive)
       for (let i = 0; i < 10; i++) {
         publications.push({
           doi: `10.1/other${i}`,
-          concepts: null,
           title: `Research on different topic ${i}`
         })
       }
@@ -799,17 +551,15 @@ describe('ConceptService', () => {
       const concepts = [
         {
           publications: ['10.1/a', '10.1/b', '10.1/c'],
-          attributes: [{ type: 'keyword', value: 'QUANTUM' }],
-          importance: 3
+          attributes: [{ type: 'keyword', value: 'QUANTUM' }]
         }
       ]
 
-      ConceptService.assignConceptTags(publications, concepts)
+      const names = ConceptService.generateConceptNames(concepts, publications)
 
       // "quantum" appears only in concept (inCount=3, outCount=0) -> score = 3/1 = 3 >= 1
       // "research" appears in concept and outside (inCount=1, outCount=10) -> score = 1/11 < 1
-      // Only "quantum" should be used for naming (characteristic score >= 1)
-      expect(publications[0].concepts[0]).toMatch(/^C1 - QUANTUM/)
+      expect(names.get(0).name).toMatch(/^C1 - QUANTUM/)
     })
   })
 
@@ -1007,7 +757,7 @@ describe('ConceptService', () => {
         { doi: '10.1/c', title: 'Paper C', year: 2022, authorOrcid: 'Jones, Mary; White, Alice', citationDois: [], referenceDois: [], boostKeywords: [] }
       ]
 
-      const context = ConceptService.buildContext(pubs, [], { includeCitations: false, includeAuthors: true })
+      const context = ConceptService.buildContext(pubs, [], false, true)
 
       // Should include all authors (top 10), not just those appearing multiple times
       const authorAttrs = context.attributes.filter((attr) => attr.type === 'author')
@@ -1023,7 +773,7 @@ describe('ConceptService', () => {
         { doi: '10.1/c', title: 'Paper C', year: 2022, authorOrcid: 'Jones, Mary; White, Alice', citationDois: [], referenceDois: [], boostKeywords: [] }
       ]
 
-      const concepts = ConceptService.computeConcepts(pubs, [], { includeCitations: false, includeAuthors: true })
+      const concepts = ConceptService.computeConcepts(pubs, [], false, true)
 
       // Should have a concept for Smith (papers A and B)
       const smithConcept = concepts.find((c) =>
@@ -1048,7 +798,7 @@ describe('ConceptService', () => {
         { doi: '10.1/b', title: 'Paper B', year: 2021, authorOrcid: 'Jones, Mary', citationDois: [], referenceDois: [], boostKeywords: [] }
       ]
 
-      const context = ConceptService.buildContext(pubs, [], { includeCitations: false, includeAuthors: true })
+      const context = ConceptService.buildContext(pubs, [], false, true)
 
       // Authors are included even if they appear only once - FCA will determine concept relevance
       const authorAttrs = context.attributes.filter((attr) => attr.type === 'author')
@@ -1062,7 +812,7 @@ describe('ConceptService', () => {
         { doi: '10.1/c', title: 'Paper C', year: 2022, authorOrcid: 'Jones, Mary', citationDois: [], referenceDois: [], boostKeywords: [] }
       ]
 
-      const concepts = ConceptService.computeConcepts(pubs, [], { includeCitations: false, includeAuthors: true })
+      const concepts = ConceptService.computeConcepts(pubs, [], false, true)
 
       // Attribute IDs are ORCID-stripped; the matrix must match despite the ORCID in authorOrcid
       const smithConcept = concepts.find((c) =>
@@ -1078,7 +828,7 @@ describe('ConceptService', () => {
         { doi: '10.1/b', title: 'Paper B', year: 2020, authorOrcid: 'Smith, John', citationDois: [], referenceDois: [], boostKeywords: [] }
       ]
 
-      const context = ConceptService.buildContext(pubs, [], { includeCitations: false, includeAuthors: true })
+      const context = ConceptService.buildContext(pubs, [], false, true)
 
       // Only one author (Smith)
       const authorAttrs = context.attributes.filter((attr) => attr.type === 'author')

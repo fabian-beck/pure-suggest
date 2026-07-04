@@ -2,7 +2,6 @@
 import { ref, computed, watch } from 'vue'
 
 import { useAppState } from '@/composables/useAppState.js'
-import { ConceptService } from '@/services/ConceptService.js'
 import { useAuthorStore } from '@/stores/author.js'
 import { useConceptStore } from '@/stores/concept.js'
 import { useModalStore } from '@/stores/modal.js'
@@ -199,19 +198,11 @@ function getConceptSummaryTooltip(concept) {
 function computeConcepts() {
   if (!canCompute.value) return
 
-  const publications = sessionStore.selectedPublications
-  const boostKeywords = includeKeywords.value ? sessionStore.uniqueBoostKeywords : []
-
-  const concepts = ConceptService.computeConcepts(publications, boostKeywords, {
-    includeCitations: includeCitations.value,
-    includeAuthors: includeAuthors.value
-  })
-
-  conceptStore.previewConcepts = concepts
-  conceptStore.previewSortedConcepts = ConceptService.sortConceptsByImportance(concepts, publications.length)
-  conceptStore.previewConceptMetadata = ConceptService.generateConceptNames(
-    conceptStore.previewSortedConcepts,
-    publications
+  conceptStore.computePreview(
+    sessionStore.selectedPublications,
+    includeKeywords.value ? sessionStore.uniqueBoostKeywords : [],
+    includeCitations.value,
+    includeAuthors.value
   )
 }
 
