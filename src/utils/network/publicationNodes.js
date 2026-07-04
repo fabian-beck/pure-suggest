@@ -95,13 +95,10 @@ export function updatePublicationNodes(nodeSelection, activePublication, existin
     .classed('is-keyword-hovered', (d) => d.publication.isKeywordHovered)
     .classed('is-author-hovered', (d) => d.publication.isAuthorHovered)
 
-  // Clean up existing tooltips
-  if (existingTooltips) {
-    existingTooltips.forEach((tooltip) => tooltip.destroy())
-  }
-
-  // Set up tooltip content
-  publicationNodes.attr('data-tippy-content', (d) => {
+  // Build tooltip content per node
+  const nodes = publicationNodes.nodes()
+  const contents = []
+  publicationNodes.each((d) => {
     let queueStatus = ''
     if (d.isQueuingForSelected) {
       queueStatus = ' and marked to be added to selected publications'
@@ -109,18 +106,33 @@ export function updatePublicationNodes(nodeSelection, activePublication, existin
       queueStatus = ' and marked to be added to excluded publications'
     }
 
-    return `<b>${d.publication.title ? d.publication.title : '[unknown title]'}</b> (${
+    contents.push(`<b>${d.publication.title ? d.publication.title : '[unknown title]'}</b> (${
       d.publication.authorShort ? `${d.publication.authorShort  }, ` : ''
     }${d.publication.year ? d.publication.year : '[unknown year]'})
         <br><br>
-        The publication is <b>${d.publication.isSelected ? 'selected' : 'suggested'}</b>${queueStatus}.`
+        The publication is <b>${d.publication.isSelected ? 'selected' : 'suggested'}</b>${queueStatus}.`)
   })
 
-  // Create new tooltips
-  const newTooltips = tippy(publicationNodes.nodes(), {
-    maxWidth: 'min(400px,70vw)',
-    allowHTML: true
-  })
+  // Reuse tooltip instances in place if they still belong to the same elements;
+  // otherwise destroy and recreate them
+  let newTooltips
+  const canReuseTooltips =
+    existingTooltips &&
+    existingTooltips.length === nodes.length &&
+    existingTooltips.every((tooltip, i) => tooltip.reference === nodes[i])
+  if (canReuseTooltips) {
+    existingTooltips.forEach((tooltip, i) => tooltip.setContent(contents[i]))
+    newTooltips = existingTooltips
+  } else {
+    if (existingTooltips) {
+      existingTooltips.forEach((tooltip) => tooltip.destroy())
+    }
+    nodes.forEach((node, i) => node.setAttribute('data-tippy-content', contents[i]))
+    newTooltips = tippy(nodes, {
+      maxWidth: 'min(400px,70vw)',
+      allowHTML: true
+    })
+  }
 
   // Update rect fill (size and stroke depend on the active state)
   publicationNodes.select('rect').attr('fill', (d) => d.publication.scoreColor)
