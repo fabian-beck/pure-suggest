@@ -89,12 +89,6 @@ export function updatePublicationNodes(nodeSelection, activePublication, existin
   publicationNodes
     .classed('selected', (d) => d.publication.isSelected)
     .classed('suggested', (d) => !d.publication.isSelected)
-    .classed('active', (d) => d.publication.isActive)
-    .classed('linkedToActive', (d) => d.publication.isLinkedToActive)
-    .classed(
-      'non-active',
-      (d) => activePublication && !d.publication.isActive && !d.publication.isLinkedToActive
-    )
     .classed('queuingForSelected', (d) => d.isQueuingForSelected)
     .classed('queuingForExcluded', (d) => d.isQueuingForExcluded)
     .classed('filtered-out', (d) => d.isFilteredOut)
@@ -128,7 +122,41 @@ export function updatePublicationNodes(nodeSelection, activePublication, existin
     allowHTML: true
   })
 
-  // Update rect attributes
+  // Update rect fill (size and stroke depend on the active state)
+  publicationNodes.select('rect').attr('fill', (d) => d.publication.scoreColor)
+
+  // Update score text
+  publicationNodes
+    .select('text.score')
+    .attr('y', 1)
+    .attr('font-size', '0.8em')
+    .text((d) => d.publication.score)
+
+  // Update boost indicator circle
+  publicationNodes.select('circle').attr('stroke', 'black')
+
+  // Apply all active-state-dependent classes and attributes
+  updateActiveState(nodeSelection, activePublication)
+
+  return { nodes: publicationNodes, tooltips: newTooltips }
+}
+
+/**
+ * Update only the visual properties that depend on the active publication.
+ * Used as a lightweight alternative to a full replot when the activation changes.
+ */
+export function updateActiveState(nodeSelection, activePublication) {
+  const publicationNodes = nodeSelection.filter((d) => d.type === 'publication')
+
+  publicationNodes
+    .classed('active', (d) => d.publication.isActive)
+    .classed('linkedToActive', (d) => d.publication.isLinkedToActive)
+    .classed(
+      'non-active',
+      (d) => activePublication && !d.publication.isActive && !d.publication.isLinkedToActive
+    )
+
+  // The active node is enlarged, affecting the rect and the boost indicator
   publicationNodes
     .select('rect')
     .attr('width', getRectSize)
@@ -136,25 +164,19 @@ export function updatePublicationNodes(nodeSelection, activePublication, existin
     .attr('x', (d) => -getRectSize(d) / 2)
     .attr('y', (d) => -getRectSize(d) / 2)
     .attr('stroke-width', (d) => (d.publication.isActive ? 4 : 3))
-    .attr('fill', (d) => d.publication.scoreColor)
 
-  // Update score text
-  publicationNodes
-    .select('text.score')
-    .classed('unread', (d) => !d.publication.isRead && !d.publication.isSelected)
-    .attr('y', 1)
-    .attr('font-size', '0.8em')
-    .text((d) => d.publication.score)
-
-  // Update boost indicator circle
   publicationNodes
     .select('circle')
     .attr('cx', (d) => getRectSize(d) / 2 - 1)
     .attr('cy', (d) => -getRectSize(d) / 2 + 1)
     .attr('r', (d) => (d.publication.boostFactor > 1 ? getBoostIndicatorSize(d) / 6 : 0))
-    .attr('stroke', 'black')
 
-  return { nodes: publicationNodes, tooltips: newTooltips }
+  // Activating a suggested publication marks it as read
+  publicationNodes
+    .select('text.score')
+    .classed('unread', (d) => !d.publication.isRead && !d.publication.isSelected)
+
+  return publicationNodes
 }
 
 /**

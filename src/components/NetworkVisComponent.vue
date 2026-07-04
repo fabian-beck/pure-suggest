@@ -51,6 +51,7 @@ import {
 import {
   initializePublicationNodes,
   updatePublicationNodes,
+  updateActiveState,
   createPublicationNodes
 } from '@/utils/network/publicationNodes.js'
 
@@ -191,7 +192,9 @@ export default {
         if (this.interfaceStore.isLoading) {
           return
         }
-        this.plot()
+        // Activation only changes highlighting, not the graph structure, so a
+        // full replot with simulation resume is not needed
+        this.updateActiveHighlighting()
       }
     },
     selectedQueue: {
@@ -992,6 +995,33 @@ export default {
           )
           .classed('is-keyword-hovered', (d) => d.publication.isKeywordHovered)
           .classed('is-author-hovered', (d) => d.publication.isAuthorHovered)
+      }
+    },
+
+    /**
+     * Lightweight update when the active publication changes: refreshes highlight
+     * classes, node sizes, and link styles without a full replot or simulation restart.
+     */
+    updateActiveHighlighting() {
+      if (!this.node || !this.link) {
+        return
+      }
+      const activePublication = this.sessionStore.activePublication
+      try {
+        updateActiveState(this.node, activePublication)
+        this.keywordTooltips = updateKeywordNodes(
+          this.node,
+          activePublication,
+          this.keywordTooltips
+        ).tooltips
+        this.authorTooltips = updateAuthorNodes(
+          this.node,
+          activePublication,
+          this.authorTooltips
+        ).tooltips
+        this.link.attr('class', (d) => calculateLinkClasses(d, activePublication))
+      } catch (error) {
+        console.error(`Cannot update active highlighting in network: ${error.message}`)
       }
     }
   }

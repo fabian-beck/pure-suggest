@@ -705,6 +705,45 @@ describe('NetworkVisComponent', () => {
     })
   })
 
+  describe('Active Publication Highlighting', () => {
+    it('updates highlighting without a full replot when the active publication changes', () => {
+      const wrapper = mount(NetworkVisComponent, {
+        global: {
+          stubs: commonComponentStubs
+        }
+      })
+      const plotSpy = vi.spyOn(wrapper.vm, 'plot').mockImplementation(() => {})
+      const highlightSpy = vi
+        .spyOn(wrapper.vm, 'updateActiveHighlighting')
+        .mockImplementation(() => {})
+
+      wrapper.vm.$options.watch.activePublication.handler.call(wrapper.vm)
+
+      expect(highlightSpy).toHaveBeenCalledTimes(1)
+      expect(plotSpy).not.toHaveBeenCalled()
+      plotSpy.mockRestore()
+      highlightSpy.mockRestore()
+    })
+
+    it('skips highlighting updates while loading', () => {
+      const wrapper = mount(NetworkVisComponent, {
+        global: {
+          stubs: commonComponentStubs
+        }
+      })
+      const highlightSpy = vi
+        .spyOn(wrapper.vm, 'updateActiveHighlighting')
+        .mockImplementation(() => {})
+
+      wrapper.vm.interfaceStore.isLoading = true
+      wrapper.vm.$options.watch.activePublication.handler.call(wrapper.vm)
+      wrapper.vm.interfaceStore.isLoading = false
+
+      expect(highlightSpy).not.toHaveBeenCalled()
+      highlightSpy.mockRestore()
+    })
+  })
+
   describe('Node and Link Data Handling', () => {
     let wrapper
     let mockSessionStore
