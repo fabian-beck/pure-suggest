@@ -143,8 +143,9 @@ export function useAppState() {
 
     updateScores()
 
-    // Apply concepts to suggested publications if concepts exist
-    if (conceptStore.hasConcepts && sessionStore.suggestedPublications.length > 0) {
+    // Apply concepts to all publications now that their metadata is fetched
+    if (conceptStore.hasConcepts) {
+      conceptStore.assignConceptTagsToPublications(sessionStore.selectedPublications)
       conceptStore.assignConceptTagsToPublications(sessionStore.suggestedPublications)
     }
   }
@@ -330,14 +331,6 @@ export function useAppState() {
       sessionStore.addPublicationsToSelection(newlyAddedDois)
       // Mark the newly added publications (only if session wasn't empty before)
       sessionStore.markPublicationsAsNewlyAdded(newlyAddedDois, wasSessionEmpty)
-
-      // Apply concepts to newly added selected publications if concepts exist
-      if (conceptStore.hasConcepts) {
-        const newlyAddedPublications = sessionStore.selectedPublications.filter((pub) =>
-          newlyAddedDois.includes(pub.doi)
-        )
-        conceptStore.assignConceptTagsToPublications(newlyAddedPublications)
-      }
     }
     await updateSuggestions()
     queueStore.clear()
@@ -361,14 +354,6 @@ export function useAppState() {
     await sessionStore.addPublicationsToSelection(dois)
     // Mark the newly added publications (only if session wasn't empty before)
     sessionStore.markPublicationsAsNewlyAdded(dois, wasSessionEmpty)
-
-    // Apply concepts to newly added selected publications if concepts exist
-    if (conceptStore.hasConcepts) {
-      const newlyAddedPublications = sessionStore.selectedPublications.filter((pub) =>
-        dois.includes(pub.doi)
-      )
-      conceptStore.assignConceptTagsToPublications(newlyAddedPublications)
-    }
 
     await updateSuggestions()
   }
