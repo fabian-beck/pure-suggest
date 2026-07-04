@@ -298,6 +298,7 @@ function handleMouseLeave() {
         border-width: 0.125rem;
         border-color: var(--bulma-info);
         border-style: solid;
+        --glyph-accent-color: var(--bulma-info);
         @include light-shadow;
 
         & .tooltip-target {
@@ -417,6 +418,7 @@ function handleMouseLeave() {
 
     &.is-selected .glyph {
       border-color: var(--bulma-primary);
+      --glyph-accent-color: var(--bulma-primary);
 
       & .boost-indicator {
         border-color: var(--bulma-primary);
@@ -438,7 +440,9 @@ function handleMouseLeave() {
 
     &.is-active .glyph,
     &.is-linked-to-active .glyph {
-      border-width: 0.3rem;
+      // Adds to the border outward (box-shadow doesn't affect layout/box-sizing),
+      // rather than thickening the border inward into the glyph's content.
+      box-shadow: 0 0 0 0.175rem var(--glyph-accent-color);
     }
 
     & .glyph > div:focus > div {
