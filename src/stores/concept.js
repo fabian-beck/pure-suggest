@@ -83,6 +83,32 @@ export const useConceptStore = defineStore('concept', {
       return hasAllKeywords && hasAllCitations && hasAllAuthors
     },
 
+    applyPreview(publications, filter) {
+      this.concepts = this.previewConcepts
+      this.sortedConcepts = this.previewSortedConcepts
+      this.conceptMetadata = this.previewConceptMetadata
+      this.clearPreview()
+
+      this.assignConceptTagsToPublications(publications)
+
+      // Drop filter tags that no longer resolve to an existing concept
+      const conceptTags = new Set(
+        this.sortedConcepts.map((concept, index) => `concept${this.conceptMetadata.get(index).name.split(' ')[0]}`)
+      )
+      filter.tags = filter.tags.filter((tag) => !tag.startsWith('concept') || conceptTags.has(tag))
+    },
+
+    disable(publications, filter) {
+      this.clear()
+
+      publications.forEach((publication) => {
+        publication.concepts = null
+        publication.conceptMetadata = null
+      })
+
+      filter.tags = filter.tags.filter((tag) => !tag.startsWith('concept'))
+    },
+
     clear() {
       this.concepts = []
       this.sortedConcepts = []

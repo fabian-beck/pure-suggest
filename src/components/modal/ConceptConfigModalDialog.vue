@@ -218,44 +218,22 @@ function computeConcepts() {
 function applyConcepts() {
   if (conceptsPreview.value.length === 0) return
 
-  // Move preview to active concepts
-  conceptStore.concepts = conceptStore.previewConcepts
-  conceptStore.sortedConcepts = conceptStore.previewSortedConcepts
-  conceptStore.conceptMetadata = conceptStore.previewConceptMetadata
-
-  // Clear preview after applying
-  conceptStore.clearPreview()
-
-  // Apply tags to publications
-  conceptStore.assignConceptTagsToPublications(sessionStore.selectedPublications)
-
-  if (sessionStore.suggestedPublications.length > 0) {
-    conceptStore.assignConceptTagsToPublications(sessionStore.suggestedPublications)
-  }
-
-  // Update scores to reflect new concept tags (keep preview during this operation)
-  updateScores(true)
+  conceptStore.applyPreview(
+    [...sessionStore.selectedPublications, ...sessionStore.suggestedPublications],
+    sessionStore.filter
+  )
+  updateScores()
 
   isEnabled.value = true
   modalStore.isConceptConfigModalDialogShown = false
 }
 
 function disableConcepts() {
-  conceptStore.clear()
-  conceptStore.clearPreview()
-
-  // Clear concept tags from all publications
-  sessionStore.selectedPublications.forEach((pub) => {
-    pub.concepts = null
-    pub.conceptMetadata = null
-  })
-
-  sessionStore.suggestedPublications.forEach((pub) => {
-    pub.concepts = null
-    pub.conceptMetadata = null
-  })
-
-  updateScores(true)
+  conceptStore.disable(
+    [...sessionStore.selectedPublications, ...sessionStore.suggestedPublications],
+    sessionStore.filter
+  )
+  updateScores()
 
   isEnabled.value = false
   modalStore.isConceptConfigModalDialogShown = false

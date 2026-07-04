@@ -1,6 +1,7 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it } from 'vitest'
 
+import Filter from '@/core/Filter.js'
 import { useConceptStore } from '@/stores/concept.js'
 
 describe('Concept Store', () => {
@@ -401,6 +402,64 @@ describe('Concept Store', () => {
 
       // Should have concept tags based on keyword match
       expect(suggestedPublications[0].concepts).not.toBeNull()
+    })
+  })
+
+  describe('applyPreview', () => {
+    it('should activate preview concepts, tag publications, and drop stale concept filter tags', () => {
+      conceptStore.previewConcepts = [
+        { publications: ['10.1/a'], attributes: [{ type: 'keyword', value: 'VISUAL' }] }
+      ]
+      conceptStore.previewSortedConcepts = conceptStore.previewConcepts
+      conceptStore.previewConceptMetadata = new Map([
+        [0, { name: 'C1 - VISUAL', exclusivityTerms: [], frequencyTerms: [] }]
+      ])
+
+      const publications = [
+        { doi: '10.1/a', title: 'Visual Analytics', citationDois: [], referenceDois: [] }
+      ]
+      const filter = new Filter()
+      filter.tags = ['conceptC1', 'conceptC9', 'isNew']
+
+      conceptStore.applyPreview(publications, filter)
+
+      expect(conceptStore.hasConcepts).toBe(true)
+      expect(conceptStore.hasPreview).toBe(false)
+      expect(publications[0].concepts).toEqual(['C1 - VISUAL'])
+      // conceptC9 no longer resolves to an existing concept
+      expect(filter.tags).toEqual(['conceptC1', 'isNew'])
+    })
+  })
+
+  describe('disable', () => {
+    it('should clear concepts, remove publication tags, and remove concept filter tags', () => {
+      conceptStore.concepts = [
+        { publications: ['10.1/a'], attributes: [{ type: 'keyword', value: 'VISUAL' }] }
+      ]
+      conceptStore.sortedConcepts = conceptStore.concepts
+      conceptStore.conceptMetadata = new Map([
+        [0, { name: 'C1 - VISUAL', exclusivityTerms: [], frequencyTerms: [] }]
+      ])
+
+      const publications = [
+        {
+          doi: '10.1/a',
+          title: 'Visual Analytics',
+          citationDois: [],
+          referenceDois: [],
+          concepts: ['C1 - VISUAL'],
+          conceptMetadata: new Map()
+        }
+      ]
+      const filter = new Filter()
+      filter.tags = ['conceptC1', 'isNew']
+
+      conceptStore.disable(publications, filter)
+
+      expect(conceptStore.hasConcepts).toBe(false)
+      expect(publications[0].concepts).toBeNull()
+      expect(publications[0].conceptMetadata).toBeNull()
+      expect(filter.tags).toEqual(['isNew'])
     })
   })
 
