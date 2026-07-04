@@ -802,7 +802,7 @@ describe('ConceptService', () => {
 
       // Authors are included even if they appear only once - FCA will determine concept relevance
       const authorAttrs = context.attributes.filter((attr) => attr.type === 'author')
-      expect(authorAttrs.length).toBe(2)
+      expect(authorAttrs).toHaveLength(2)
     })
 
     it('should match author attributes for ORCID-annotated authors', () => {
@@ -832,7 +832,7 @@ describe('ConceptService', () => {
 
       // Only one author (Smith)
       const authorAttrs = context.attributes.filter((attr) => attr.type === 'author')
-      expect(authorAttrs.length).toBe(1)
+      expect(authorAttrs).toHaveLength(1)
     })
   })
 })

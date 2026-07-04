@@ -379,13 +379,8 @@ describe('Concept Store', () => {
       conceptStore.computePreview(selectedPublications, ['data'])
       conceptStore.applyPreview(selectedPublications, new Filter())
 
-      // Debug: Check what concepts exist
-      const hasValidConcepts = conceptStore.sortedConcepts.length > 0
-      if (!hasValidConcepts) {
-        // If greedy algorithm filtered all concepts, skip this test
-        expect(true).toBe(true)
-        return
-      }
+      // Three of seven publications share the keyword, so a concept must survive filtering
+      expect(conceptStore.sortedConcepts.length).toBeGreaterThan(0)
 
       // Test with publication that matches keyword
       const suggestedPublications = [
