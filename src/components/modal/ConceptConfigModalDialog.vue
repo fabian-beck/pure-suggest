@@ -265,55 +265,57 @@ watch(
       </v-icon>
     </template>
     <template #sticky>
-      <v-sheet class="has-background-primary-95 pa-3">
-        <div class="d-flex flex-wrap align-center ga-2 mb-2">
-          <span>Compute concepts based on shared <b>attributes</b>:</span>
-          <v-checkbox
-            v-model="includeKeywords"
-            label="Keywords"
-            density="compact"
-            hide-details
-          ></v-checkbox>
-          <v-checkbox
-            v-model="includeCitations"
-            label="Citations"
-            density="compact"
-            hide-details
-          ></v-checkbox>
-          <v-checkbox
-            v-model="includeAuthors"
-            label="Authors"
-            density="compact"
-            hide-details
-          ></v-checkbox>
-        </div>
-        <div class="d-flex flex-wrap ga-2 justify-end">
-          <v-btn
-            :disabled="!canCompute"
-            @click="computeConcepts"
-            prepend-icon="mdi-play"
-            class="has-background-primary has-text-white"
-          >
-            Compute
-          </v-btn>
+      <v-sheet class="has-background-primary-95 pa-3 px-4">
+        <div class="d-flex flex-wrap align-center justify-space-between ga-2">
+          <div class="d-flex flex-wrap align-center ga-2">
+            <span>Compute concepts based on shared <b>attributes</b>:</span>
+            <v-checkbox
+              v-model="includeKeywords"
+              label="Keywords"
+              density="compact"
+              hide-details
+            ></v-checkbox>
+            <v-checkbox
+              v-model="includeCitations"
+              label="Citations"
+              density="compact"
+              hide-details
+            ></v-checkbox>
+            <v-checkbox
+              v-model="includeAuthors"
+              label="Authors"
+              density="compact"
+              hide-details
+            ></v-checkbox>
+          </div>
+          <div class="d-flex flex-wrap ga-2 ml-auto justify-end">
+            <v-btn
+              :disabled="!canCompute"
+              @click="computeConcepts"
+              class="has-background-primary-95"
+            >
+              <v-icon left class="mr-2">mdi-play</v-icon>
+              Compute
+            </v-btn>
 
-          <v-btn
-            :disabled="conceptsPreview.length === 0"
-            @click="applyConcepts"
-            prepend-icon="mdi-check"
-            class="has-background-primary has-text-white"
-          >
-            Apply
-          </v-btn>
+            <v-btn
+              :disabled="conceptsPreview.length === 0"
+              @click="applyConcepts"
+              class="has-background-primary-95"
+            >
+              <v-icon left class="mr-2">mdi-check</v-icon>
+              Apply
+            </v-btn>
 
-          <v-btn
-            :disabled="!isEnabled && conceptsPreview.length === 0"
-            @click="disableConcepts"
-            prepend-icon="mdi-close"
-            class="has-background-primary-95 has-text-dark"
-          >
-            Disable
-          </v-btn>
+            <v-btn
+              :disabled="!isEnabled && conceptsPreview.length === 0"
+              @click="disableConcepts"
+              class="has-background-primary-95"
+            >
+              <v-icon left class="mr-2">mdi-close</v-icon>
+              Disable
+            </v-btn>
+          </div>
         </div>
       </v-sheet>
     </template>
