@@ -42,7 +42,7 @@ export const useConceptStore = defineStore('concept', {
             const conceptName = conceptMetadata.name
             matchingConcepts.push(conceptName)
             metadata.set(conceptName, {
-              topTerms: conceptMetadata.topTerms,
+              topTerms: conceptMetadata.exclusivityTerms,
               attributes: concept.attributes
             })
           }

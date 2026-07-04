@@ -430,7 +430,7 @@ export class ConceptService {
    * Generates concept names and metadata from term scores
    * @param {Array} concepts - Array of formal concepts
    * @param {Array} allPublications - All publication objects
-   * @returns {Map} Map of concept index to {name, topTerms} object
+   * @returns {Map} Map of concept index to {name, exclusivityTerms, frequencyTerms} object
    */
   static generateConceptNames(concepts, allPublications) {
     const nameMap = new Map()
@@ -438,7 +438,7 @@ export class ConceptService {
     if (!allPublications || allPublications.length === 0) {
       // Fallback to concept numbers only
       concepts.forEach((concept, index) => {
-        nameMap.set(index, { name: `C${index + 1}`, topTerms: [] })
+        nameMap.set(index, { name: `C${index + 1}`, exclusivityTerms: [], frequencyTerms: [] })
       })
       return nameMap
     }

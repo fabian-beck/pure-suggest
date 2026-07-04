@@ -301,6 +301,33 @@ describe('Concept Store', () => {
       expect(publications[1].concepts).toBeNull()
     })
 
+    it('should expose concept terms as topTerms in assigned publication metadata', () => {
+      conceptStore.concepts = [
+        { publications: ['10.1/x'], attributes: [{ type: 'keyword', value: 'VISUAL' }] }
+      ]
+      conceptStore.sortedConcepts = conceptStore.concepts
+      conceptStore.conceptMetadata = new Map([
+        [
+          0,
+          {
+            name: 'C1 - VISUAL',
+            exclusivityTerms: [{ term: 'VISUAL', score: 2 }],
+            frequencyTerms: []
+          }
+        ]
+      ])
+
+      const publications = [
+        { doi: '10.1/x', title: 'Visual Analytics', citationDois: [], referenceDois: [] }
+      ]
+
+      conceptStore.assignConceptTagsToPublications(publications)
+
+      expect(publications[0].conceptMetadata.get('C1 - VISUAL').topTerms).toEqual([
+        { term: 'VISUAL', score: 2 }
+      ])
+    })
+
     it('should handle keyword matching across different publications', () => {
       // Use the EXACT same setup as the first passing test but with different titles
       const selectedPublications = [
