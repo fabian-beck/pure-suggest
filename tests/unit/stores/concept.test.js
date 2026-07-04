@@ -460,5 +460,17 @@ describe('Concept Store', () => {
       expect(conceptStore.concepts).toEqual([])
       expect(conceptStore.sortedConcepts).toEqual([])
     })
+
+    it('should clear preview state so it cannot leak into a new session', () => {
+      conceptStore.previewConcepts = [
+        { publications: ['10.1/a'], attributes: [{ type: 'keyword', value: 'VISUAL' }] }
+      ]
+      conceptStore.previewSortedConcepts = conceptStore.previewConcepts
+
+      conceptStore.clear()
+
+      expect(conceptStore.hasPreview).toBe(false)
+      expect(conceptStore.previewSortedConcepts).toEqual([])
+    })
   })
 })

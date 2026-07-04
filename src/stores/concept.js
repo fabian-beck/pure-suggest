@@ -87,6 +87,7 @@ export const useConceptStore = defineStore('concept', {
       this.concepts = []
       this.sortedConcepts = []
       this.conceptMetadata = new Map()
+      this.clearPreview()
     },
 
     clearPreview() {
