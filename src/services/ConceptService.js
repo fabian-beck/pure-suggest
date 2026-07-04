@@ -243,8 +243,8 @@ export class ConceptService {
         attributes: closure.slice().sort()
       })
 
-      // Generate next intent in lexicographic order
-      currentIntent = this._nextClosure(currentIntent, closure, attributes, publications, matrix)
+      // Generate next intent in lexicographic order, starting from the closed intent
+      currentIntent = this._nextClosure(closure, attributes, publications, matrix)
     }
 
     return concepts
@@ -253,15 +253,15 @@ export class ConceptService {
   /**
    * Computes the next closure in lexicographic order (NextClosure algorithm step)
    * @private
-   * @param {Array} current - Current intent (attribute set)
-   * @param {Array} closure - Closure of current intent
+   * @param {Array} closure - Closed intent of the current concept
    * @param {Array} attributes - All attributes
    * @param {Array} publications - All publications
    * @param {Array} matrix - Binary context matrix
    * @returns {Array|null} Next intent, or null if no more concepts exist
    */
-  static _nextClosure(current, closure, attributes, publications, matrix) {
+  static _nextClosure(closure, attributes, publications, matrix) {
     const n = attributes.length
+    let current = closure
 
     // Try to extend intent by adding attributes in reverse lexicographic order
     for (let i = n - 1; i >= 0; i--) {

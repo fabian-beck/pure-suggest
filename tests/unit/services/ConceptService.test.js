@@ -41,6 +41,34 @@ describe('ConceptService', () => {
       )
     })
 
+    it('should find sub-clusters when one attribute is shared by all publications', () => {
+      const pubs = [
+        { doi: '10.1/a', title: 'Visual Network Exploration', citationDois: [], referenceDois: [] },
+        { doi: '10.1/b', title: 'Visual Network Analysis', citationDois: [], referenceDois: [] },
+        { doi: '10.1/c', title: 'Visual Graph Drawing', citationDois: [], referenceDois: [] },
+        { doi: '10.1/d', title: 'Visual Graph Layout', citationDois: [], referenceDois: [] },
+        { doi: '10.1/e', title: 'Visual Network and Graph Methods', citationDois: [], referenceDois: [] },
+        { doi: '10.1/f', title: 'Visual Encoding', citationDois: [], referenceDois: [] }
+      ]
+      const keywords = ['VISUAL', 'NETWORK', 'GRAPH']
+
+      const result = ConceptService.computeConcepts(pubs, keywords)
+
+      // VISUAL is shared by all publications; sub-clusters must still be enumerated
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            publications: ['10.1/a', '10.1/b', '10.1/e'],
+            attributes: expect.arrayContaining([{ type: 'keyword', value: 'NETWORK' }])
+          }),
+          expect.objectContaining({
+            publications: ['10.1/c', '10.1/d', '10.1/e'],
+            attributes: expect.arrayContaining([{ type: 'keyword', value: 'GRAPH' }])
+          })
+        ])
+      )
+    })
+
     it('should identify publications with multiple attributes', () => {
       const pubs = [
         { doi: '10.1/a', title: 'Visual Analytics', citationDois: [], referenceDois: [] },
