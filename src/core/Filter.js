@@ -58,21 +58,16 @@ export default class Filter {
   matchesTag(publication) {
     if (!this.tags || this.tags.length === 0) return true
     return this.tags.some((tag) => {
-      // Handle concept tags (concept1, concept2, etc.)
+      // Handle concept tags (conceptC1, conceptC2, etc.)
       if (tag.startsWith('concept')) {
         if (!publication.concepts || publication.concepts.length === 0) {
           return false
         }
         // Extract concept identifier from tag (e.g., "conceptC1" -> "C1")
         const conceptId = tag.replace('concept', '')
-        return publication.concepts.some((conceptName) => {
-          // Handle both legacy number format and "C1 - TERM" format
-          if (typeof conceptName === 'number') {
-            return `${conceptName}` === conceptId
-          }
-          // Match the concept number prefix (e.g., "C1" from "C1 - VISUAL")
-          return conceptName.startsWith(conceptId)
-        })
+        // Compare against the concept ID (e.g., "C1" from "C1 - VISUAL") exactly,
+        // so "C1" does not also match "C10"
+        return publication.concepts.some((conceptName) => conceptName.split(' ')[0] === conceptId)
       }
       // Handle regular boolean tag properties
       return Boolean(publication[tag])

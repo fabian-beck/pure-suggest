@@ -91,24 +91,24 @@ describe('Publication Bug Regression Tests', () => {
     })
 
     it('should include concept tags when present', () => {
-      publication.concepts = [1, 3]
+      publication.concepts = ['C1 - VISUAL', 'C3 - DATA']
 
       const tags = publication.getTags()
 
-      expect(tags).toContainEqual({ value: 'concept1', name: 'Concept 1' })
-      expect(tags).toContainEqual({ value: 'concept3', name: 'Concept 3' })
+      expect(tags).toContainEqual({ value: 'conceptC1', name: 'C1 - VISUAL' })
+      expect(tags).toContainEqual({ value: 'conceptC3', name: 'C3 - DATA' })
     })
 
     it('should combine base tags and concept tags', () => {
       publication.isNew = 'published within this or the previous two calendar years'
-      publication.concepts = [1, 2]
+      publication.concepts = ['C1 - VISUAL', 'C2 - DATA']
 
       const tags = publication.getTags()
 
       expect(tags.length).toBeGreaterThanOrEqual(3)
       expect(tags).toContainEqual({ value: 'isNew', name: 'New' })
-      expect(tags).toContainEqual({ value: 'concept1', name: 'Concept 1' })
-      expect(tags).toContainEqual({ value: 'concept2', name: 'Concept 2' })
+      expect(tags).toContainEqual({ value: 'conceptC1', name: 'C1 - VISUAL' })
+      expect(tags).toContainEqual({ value: 'conceptC2', name: 'C2 - DATA' })
     })
 
     it('should return only base tags when concepts is empty array', () => {

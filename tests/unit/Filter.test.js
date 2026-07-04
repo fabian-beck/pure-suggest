@@ -252,10 +252,10 @@ describe('Filter', () => {
         expect(filter.matchesTag(mockPublication)).toBe(true)
       })
 
-      it('should return true when publication has matching concept (number format)', () => {
-        mockPublication.concepts = [1, 2]
-        filter.tags = ['concept1']
-        expect(filter.matchesTag(mockPublication)).toBe(true)
+      it('should not match concepts whose ID only shares a prefix', () => {
+        mockPublication.concepts = ['C10 - VISUAL', 'C11 - DATA']
+        filter.tags = ['conceptC1']
+        expect(filter.matchesTag(mockPublication)).toBe(false)
       })
 
       it('should return false when publication does not have matching concept', () => {

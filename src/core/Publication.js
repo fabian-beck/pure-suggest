@@ -428,15 +428,10 @@ export default class Publication {
     // Add concept tags if they exist
     if (this.concepts && this.concepts.length > 0) {
       this.concepts.forEach((conceptName) => {
-        // conceptName is either a number (legacy) or "C1 - TERM" format
-        const displayName = typeof conceptName === 'number' ? `Concept ${conceptName}` : conceptName
-        const value =
-          typeof conceptName === 'number'
-            ? `concept${conceptName}`
-            : `concept${conceptName.split(' ')[0]}`
+        // conceptName has "C1 - TERM" format
         tags.push({
-          value,
-          name: displayName
+          value: `concept${conceptName.split(' ')[0]}`,
+          name: conceptName
         })
       })
     }
