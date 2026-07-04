@@ -1055,6 +1055,23 @@ describe('ConceptService', () => {
       expect(authorAttrs.length).toBe(2)
     })
 
+    it('should match author attributes for ORCID-annotated authors', () => {
+      const pubs = [
+        { doi: '10.1/a', title: 'Paper A', year: 2020, authorOrcid: 'Smith, John, 0000-0001-2345-6789', citationDois: [], referenceDois: [], boostKeywords: [] },
+        { doi: '10.1/b', title: 'Paper B', year: 2021, authorOrcid: 'Smith, John, 0000-0001-2345-6789', citationDois: [], referenceDois: [], boostKeywords: [] },
+        { doi: '10.1/c', title: 'Paper C', year: 2022, authorOrcid: 'Jones, Mary', citationDois: [], referenceDois: [], boostKeywords: [] }
+      ]
+
+      const concepts = ConceptService.computeConcepts(pubs, [], { includeCitations: false, includeAuthors: true })
+
+      // Attribute IDs are ORCID-stripped; the matrix must match despite the ORCID in authorOrcid
+      const smithConcept = concepts.find((c) =>
+        c.attributes.some((a) => a.type === 'author' && a.value === 'smith, john')
+      )
+      expect(smithConcept).toBeDefined()
+      expect(smithConcept.publications).toEqual(['10.1/a', '10.1/b'])
+    })
+
     it('should handle publications without author data', () => {
       const pubs = [
         { doi: '10.1/a', title: 'Paper A', citationDois: [], referenceDois: [] },

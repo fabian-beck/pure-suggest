@@ -156,20 +156,21 @@ export class ConceptService {
     let topAuthors = []
     if (includeAuthors) {
       // Use existing Author disambiguation logic
-      const authors = Author.computePublicationsAuthors(publications, false, false, false)
-
-      // Get top 10 most frequent authors as attributes (include all authors with at least 1 publication)
       // Note: The FCA algorithm will naturally only create concepts for authors appearing in 2+ publications
-      topAuthors = authors
-        .slice(0, 10) // Take top 10 (already sorted by score/count)
-        .map((author) => author.id)
+      const authors = Author.computePublicationsAuthors(publications, false, false, false)
+      topAuthors = authors.slice(0, 10) // Take top 10 (already sorted by score/count)
     }
+
+    // Author membership by disambiguated ID (handles ORCID annotations and merged name variants)
+    const authorDoisById = new Map(
+      topAuthors.map((author) => [author.id, new Set(author.publicationDois)])
+    )
 
     // Combine keywords, citation DOIs, and authors as attributes (with type information)
     const attributes = [
       ...boostKeywords.map((keyword) => ({ type: 'keyword', value: keyword })),
       ...topCitedDois.map((doi) => ({ type: 'citation', value: doi })),
-      ...topAuthors.map((author) => ({ type: 'author', value: author }))
+      ...topAuthors.map((author) => ({ type: 'author', value: author.id }))
     ]
 
     // Build binary matrix
@@ -180,11 +181,6 @@ export class ConceptService {
       // Match keywords
       const matches = findKeywordMatches(publication.title, boostKeywords)
       const matchedKeywords = matches.map((match) => match.keyword)
-
-      // Get publication author IDs (normalized names)
-      const publicationAuthors = publication.authorOrcid
-        ? publication.authorOrcid.split('; ').map((authorString) => Author.nameToId(authorString))
-        : []
 
       // Check each attribute
       attributes.forEach((attribute) => {
@@ -199,7 +195,7 @@ export class ConceptService {
           row.push(isSelf || hasCitation || hasReference)
         } else if (attribute.type === 'author') {
           // Author attribute - check if publication has this author
-          row.push(publicationAuthors.includes(attribute.value))
+          row.push(authorDoisById.get(attribute.value).has(publication.doi))
         }
       })
 

@@ -61,6 +61,7 @@ export const useConceptStore = defineStore('concept', {
     _publicationMatchesConceptAttributes(publication, attributes) {
       const keywordAttributes = attributes.filter((attr) => attr.type === 'keyword').map((attr) => attr.value)
       const citationAttributes = attributes.filter((attr) => attr.type === 'citation').map((attr) => attr.value)
+      const authorAttributes = attributes.filter((attr) => attr.type === 'author').map((attr) => attr.value)
 
       // Check keyword attributes using same logic as ConceptService
       const matches = findKeywordMatches(publication.title, keywordAttributes)
@@ -75,7 +76,11 @@ export const useConceptStore = defineStore('concept', {
         return isSelf || hasCitation || hasReference
       })
 
-      return hasAllKeywords && hasAllCitations
+      // Check author attributes against the publication's normalized author IDs
+      const publicationAuthorIds = authorAttributes.length > 0 ? publication.getAuthorIds?.() || [] : []
+      const hasAllAuthors = authorAttributes.every((authorId) => publicationAuthorIds.includes(authorId))
+
+      return hasAllKeywords && hasAllCitations && hasAllAuthors
     },
 
     clear() {

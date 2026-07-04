@@ -269,6 +269,38 @@ describe('Concept Store', () => {
       expect(nonMatchingPublications[0].concepts).toBeNull()
     })
 
+    it('should only match author-based concepts against publications sharing the authors', () => {
+      conceptStore.concepts = [
+        { publications: ['10.1/a', '10.1/b'], attributes: [{ type: 'author', value: 'smith, john' }] }
+      ]
+      conceptStore.sortedConcepts = conceptStore.concepts
+      conceptStore.conceptMetadata = new Map([
+        [0, { name: 'C1 - SMITH', exclusivityTerms: [], frequencyTerms: [] }]
+      ])
+
+      const publications = [
+        {
+          doi: '10.1/x',
+          title: 'Paper by Smith',
+          citationDois: [],
+          referenceDois: [],
+          getAuthorIds: () => ['smith, john', 'jones, mary']
+        },
+        {
+          doi: '10.1/y',
+          title: 'Paper by Someone Else',
+          citationDois: [],
+          referenceDois: [],
+          getAuthorIds: () => ['white, alice']
+        }
+      ]
+
+      conceptStore.assignConceptTagsToPublications(publications)
+
+      expect(publications[0].concepts).toEqual(['C1 - SMITH'])
+      expect(publications[1].concepts).toBeNull()
+    })
+
     it('should handle keyword matching across different publications', () => {
       // Use the EXACT same setup as the first passing test but with different titles
       const selectedPublications = [
