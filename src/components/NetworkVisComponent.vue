@@ -699,9 +699,7 @@ export default {
       })
     },
     zoomByFactor(factor) {
-      const transform = d3.zoomTransform(this.svg.node())
-      transform.k = transform.k * factor
-      this.svg.attr('transform', transform)
+      d3.select('#network-svg').call(this.zoom.scaleBy, factor)
     },
     resetZoom() {
       const svg = d3.select('#network-svg')
