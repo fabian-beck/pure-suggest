@@ -1,3 +1,4 @@
+import Author from './Author.js'
 import { SCORING, CURRENT_YEAR, API_ENDPOINTS, API_PARAMS } from '../constants/config.js'
 import { cachedFetch } from '../lib/Cache.js'
 
@@ -142,6 +143,10 @@ export default class Publication {
     this.title = this.titleHighlighted = ''
     this.year = this.author = this.authorOrcidData = undefined
     this.container = this.volume = this.issue = this.page = this.abstract = undefined
+
+    // Caches derived from meta-data (invalidated on processData)
+    this._metaString = null
+    this._authorIds = null
 
     // Citation sets and counts
     this.citationDois = new Set()
@@ -368,7 +373,8 @@ export default class Publication {
    * @param {Object} data - Raw publication data from API.
    */
   processData(data) {
-    // Process specific aspects of the publication data
+    this._metaString = null
+    this._authorIds = null
     this.processTitle(data)
     this.processAuthor(data)
     this.processContainer(data)
@@ -379,11 +385,27 @@ export default class Publication {
 
 
   /**
-   * Returns concatenated metadata for search purposes.
+   * Returns concatenated metadata for search purposes (cached).
    * @returns {string} Combined title, author, and container string.
    */
   getMetaString() {
-    return `${[this.title, this.author, this.container].filter(Boolean).join(' ')  } `
+    if (this._metaString === null) {
+      this._metaString = `${[this.title, this.author, this.container].filter(Boolean).join(' ')} `
+    }
+    return this._metaString
+  }
+
+  /**
+   * Returns normalized author IDs for filtering (cached).
+   * @returns {Array} Author IDs derived from the author string.
+   */
+  getAuthorIds() {
+    if (this._authorIds === null) {
+      this._authorIds = this.author
+        ? this.author.split(';').map((name) => Author.nameToId(name.trim()))
+        : []
+    }
+    return this._authorIds
   }
 
 
