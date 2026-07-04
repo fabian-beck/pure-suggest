@@ -76,13 +76,12 @@ export const useConceptStore = defineStore('concept', {
       const matchedKeywords = matches.map((match) => match.keyword)
       const hasAllKeywords = keywordAttributes.every((keyword) => matchedKeywords.includes(keyword))
 
-      // Check citation attributes
-      const hasAllCitations = citationAttributes.every((doi) => {
-        const isSelf = publication.doi === doi
-        const hasCitation = (publication.citationDois || []).includes(doi)
-        const hasReference = (publication.referenceDois || []).includes(doi)
-        return isSelf || hasCitation || hasReference
-      })
+      // Check citation attributes (DOIs are Sets on Publication objects, arrays elsewhere)
+      const citationDois = new Set(publication.citationDois)
+      const referenceDois = new Set(publication.referenceDois)
+      const hasAllCitations = citationAttributes.every(
+        (doi) => publication.doi === doi || citationDois.has(doi) || referenceDois.has(doi)
+      )
 
       // Check author attributes against the publication's normalized author IDs
       const publicationAuthorIds = authorAttributes.length > 0 ? publication.getAuthorIds?.() || [] : []

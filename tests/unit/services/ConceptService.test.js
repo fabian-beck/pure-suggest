@@ -114,6 +114,21 @@ describe('ConceptService', () => {
       expect(conceptWithA).toBeDefined()
     })
 
+    it('should handle citation DOIs stored as Sets like on real Publication objects', () => {
+      const pubs = [
+        { doi: '10.1/a', title: 'Paper A', citationDois: new Set(['10.1/b']), referenceDois: new Set() },
+        { doi: '10.1/b', title: 'Paper B', citationDois: new Set(['10.1/a']), referenceDois: new Set() }
+      ]
+
+      const result = ConceptService.computeConcepts(pubs, [])
+
+      const conceptWithA = result.find(c =>
+        c.publications.includes('10.1/a') &&
+        c.attributes.some(attr => attr.type === 'citation' && attr.value === '10.1/b')
+      )
+      expect(conceptWithA).toBeDefined()
+    })
+
     it('should handle mixed keyword and citation attributes', () => {
       const pubs = [
         { doi: '10.1/a', title: 'Visual Analytics', citationDois: ['10.1/b'], referenceDois: [] },

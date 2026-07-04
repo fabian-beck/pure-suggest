@@ -173,6 +173,10 @@ export class ConceptService {
       const matches = findKeywordMatches(publication.title, boostKeywords)
       const matchedKeywords = matches.map((match) => match.keyword)
 
+      // Normalize citation DOIs (Sets on Publication objects, arrays elsewhere)
+      const citationDois = new Set(publication.citationDois)
+      const referenceDois = new Set(publication.referenceDois)
+
       // Check each attribute
       attributes.forEach((attribute) => {
         if (attribute.type === 'keyword') {
@@ -181,9 +185,7 @@ export class ConceptService {
         } else if (attribute.type === 'citation') {
           // Citation attribute - check if publication cites or is cited by this DOI, or is itself
           const isSelf = publication.doi === attribute.value
-          const hasCitation = (publication.citationDois || []).includes(attribute.value)
-          const hasReference = (publication.referenceDois || []).includes(attribute.value)
-          row.push(isSelf || hasCitation || hasReference)
+          row.push(isSelf || citationDois.has(attribute.value) || referenceDois.has(attribute.value))
         } else if (attribute.type === 'author') {
           // Author attribute - check if publication has this author
           row.push(authorDoisById.get(attribute.value).has(publication.doi))

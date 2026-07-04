@@ -302,6 +302,29 @@ describe('Concept Store', () => {
       expect(publications[1].concepts).toBeNull()
     })
 
+    it('should match citation attributes against DOIs stored as Sets', () => {
+      conceptStore.concepts = [
+        { publications: ['10.1/a'], attributes: [{ type: 'citation', value: '10.1/cited' }] }
+      ]
+      conceptStore.sortedConcepts = conceptStore.concepts
+      conceptStore.conceptMetadata = new Map([
+        [0, { name: 'C1 - CITED', exclusivityTerms: [], frequencyTerms: [] }]
+      ])
+
+      const publications = [
+        {
+          doi: '10.1/x',
+          title: 'Some Paper',
+          citationDois: new Set(['10.1/cited']),
+          referenceDois: new Set()
+        }
+      ]
+
+      conceptStore.assignConceptTagsToPublications(publications)
+
+      expect(publications[0].concepts).toEqual(['C1 - CITED'])
+    })
+
     it('should expose concept terms as topTerms in assigned publication metadata', () => {
       conceptStore.concepts = [
         { publications: ['10.1/x'], attributes: [{ type: 'keyword', value: 'VISUAL' }] }
