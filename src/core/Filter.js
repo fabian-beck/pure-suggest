@@ -121,8 +121,8 @@ export default class Filter {
     return this.dois.some(
       (doi) =>
         publication.doi === doi ||
-        publication.citationDois.includes(doi) ||
-        publication.referenceDois.includes(doi)
+        publication.citationDois.has(doi) ||
+        publication.referenceDois.has(doi)
     )
   }
 

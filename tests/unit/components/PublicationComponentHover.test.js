@@ -101,7 +101,7 @@ describe('PublicationComponent Hover Bug', () => {
       isAuthorHovered: false,
       citationCount: 0,
       referenceCount: 0,
-      referenceDois: []
+      referenceDois: new Set([])
     }
   })
 

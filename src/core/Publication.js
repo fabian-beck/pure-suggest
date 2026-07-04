@@ -107,7 +107,7 @@ export default class Publication {
    */
   get citationsPerYear() {
     const yearDiff = this.year ? CURRENT_YEAR - this.year : 1
-    return this.citationDois.length / Math.max(1, yearDiff)
+    return this.citationDois.size / Math.max(1, yearDiff)
   }
 
   /**
@@ -143,9 +143,9 @@ export default class Publication {
     this.year = this.author = this.authorOrcidData = undefined
     this.container = this.volume = this.issue = this.page = this.abstract = undefined
 
-    // Citation arrays and counts
-    this.citationDois = []
-    this.referenceDois = []
+    // Citation sets and counts
+    this.citationDois = new Set()
+    this.referenceDois = new Set()
     this.citationCount = this.referenceCount = this.boostMatches = this.score = 0
     this.boostKeywords = []
     this.boostFactor = SCORING.DEFAULT_BOOST_FACTOR
@@ -332,10 +332,8 @@ export default class Publication {
    * @param {Object} data - Raw publication data from API.
    */
   processCitations(data) {
-    const addUniqueDoi = (list, doi) =>
-      doi && !list.includes(doi.toLowerCase()) && list.push(doi.toLowerCase())
-    data.reference?.split('; ').forEach((doi) => addUniqueDoi(this.referenceDois, doi))
-    data.citation?.split('; ').forEach((doi) => addUniqueDoi(this.citationDois, doi))
+    data.reference?.split('; ').forEach((doi) => doi && this.referenceDois.add(doi.toLowerCase()))
+    data.citation?.split('; ').forEach((doi) => doi && this.citationDois.add(doi.toLowerCase()))
     this.tooManyCitations = data.tooManyCitations
   }
 
@@ -343,13 +341,13 @@ export default class Publication {
    * Analyzes publication data to assign classification tags.
    */
   processTags() {
-    if (this.referenceDois.length > SURVEY_THRESHOLDS.REFERENCE_COUNT_HIGH) {
-      this.isSurvey = `more than ${SURVEY_THRESHOLDS.REFERENCE_COUNT_HIGH} references (${this.referenceDois.length})`
+    if (this.referenceDois.size > SURVEY_THRESHOLDS.REFERENCE_COUNT_HIGH) {
+      this.isSurvey = `more than ${SURVEY_THRESHOLDS.REFERENCE_COUNT_HIGH} references (${this.referenceDois.size})`
     } else if (
-      this.referenceDois.length >= SURVEY_THRESHOLDS.REFERENCE_COUNT_MIN &&
+      this.referenceDois.size >= SURVEY_THRESHOLDS.REFERENCE_COUNT_MIN &&
       SURVEY_KEYWORDS.test(this.title)
     ) {
-      this.isSurvey = `more than ${SURVEY_THRESHOLDS.REFERENCE_COUNT_MIN} references (${this.referenceDois.length}) and "${SURVEY_KEYWORDS.exec(this.title)[0]}" in the title`
+      this.isSurvey = `more than ${SURVEY_THRESHOLDS.REFERENCE_COUNT_MIN} references (${this.referenceDois.size}) and "${SURVEY_KEYWORDS.exec(this.title)[0]}" in the title`
     }
     this.isHighlyCited =
       this.citationsPerYear > CITATION_THRESHOLDS.HIGHLY_CITED_PER_YEAR || this.tooManyCitations

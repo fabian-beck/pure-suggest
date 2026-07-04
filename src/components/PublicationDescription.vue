@@ -268,24 +268,24 @@ function handleAuthorClick(event) {
     </div>
     <div v-if="showDetails" class="stats-and-links level">
       <div class="level-left">
-        <div :class="`level-item ${publication.referenceDois.length ? '' : 'unknown'}`">
+        <div :class="`level-item ${publication.referenceDois.size ? '' : 'unknown'}`">
           <label>
             <InlineIcon
               icon="mdi-arrow-bottom-left-thick"
-              :color="publication.referenceDois.length ? 'dark' : 'danger'"
+              :color="publication.referenceDois.size ? 'dark' : 'danger'"
             />
             Citing:
           </label>
           <b>{{
-            publication.referenceDois.length
-              ? publication.referenceDois.length.toLocaleString('en')
+            publication.referenceDois.size
+              ? publication.referenceDois.size.toLocaleString('en')
               : 'not available'
           }}</b>
         </div>
         <div class="level-item">
           <label> <InlineIcon icon="mdi-arrow-top-left-thick" color="dark" /> Cited by: </label>
           <b v-if="!publication.tooManyCitations">{{
-            publication.citationDois.length.toLocaleString('en')
+            publication.citationDois.size.toLocaleString('en')
           }}</b>
           <span v-if="publication.citationsPerYear > 0 && !publication.tooManyCitations">
             &nbsp;({{ publication.citationsPerYear.toFixed(1) }}/year)

@@ -12,8 +12,8 @@ describe('Filter', () => {
       doi: '10.1234/test-doi',
       year: '2023',
       author: 'Smith, John; Doe, Jane; Johnson, Bob',
-      citationDois: ['10.1234/citation1', '10.1234/citation2'],
-      referenceDois: ['10.1234/ref1', '10.1234/ref2'],
+      citationDois: new Set(['10.1234/citation1', '10.1234/citation2']),
+      referenceDois: new Set(['10.1234/ref1', '10.1234/ref2']),
       getMetaString: vi.fn(() => 'Machine Learning Test Paper Author Name'),
       someTag: true,
       otherTag: false
@@ -308,16 +308,16 @@ describe('Filter', () => {
       expect(filter.matchesDois(mockPublication)).toBe(false)
     })
 
-    it('should handle publications with missing DOI arrays', () => {
+    it('should handle publications with missing DOI sets', () => {
       mockPublication.citationDois = undefined
       mockPublication.referenceDois = null
       filter.dois = ['10.1234/test']
       expect(() => filter.matchesDois(mockPublication)).toThrow()
     })
 
-    it('should handle empty publication DOI arrays', () => {
-      mockPublication.citationDois = []
-      mockPublication.referenceDois = []
+    it('should handle empty publication DOI sets', () => {
+      mockPublication.citationDois = new Set([])
+      mockPublication.referenceDois = new Set([])
       filter.dois = ['10.1234/test']
       expect(filter.matchesDois(mockPublication)).toBe(false)
     })

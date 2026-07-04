@@ -143,12 +143,12 @@ function handleMouseLeave() {
           <div class="reference-counts is-size-6">
             <div class="is-pulled-left">
               <span
-                v-if="publication.citationCount > 0 || publication.referenceDois.length === 0"
-                :class="publication.referenceDois.length ? '' : 'unknown'"
+                v-if="publication.citationCount > 0 || publication.referenceDois.size === 0"
+                :class="publication.referenceDois.size ? '' : 'unknown'"
               >
                 <InlineIcon
                   icon="mdi-arrow-bottom-left-thick"
-                  :color="publication.referenceDois.length ? '' : 'danger'"
+                  :color="publication.referenceDois.size ? '' : 'danger'"
                 />
                 {{ publication.citationCount ? publication.citationCount : '-' }}
               </span>
@@ -175,9 +175,9 @@ function handleMouseLeave() {
             citing <b>{{ publication.citationCount }}</b> (
             <InlineIcon
               icon="mdi-arrow-bottom-left-thick"
-              :color="publication.referenceDois.length ? 'white' : 'danger'"
+              :color="publication.referenceDois.size ? 'white' : 'danger'"
             />
-            <span v-if="!publication.referenceDois.length" class="unknown"
+            <span v-if="!publication.referenceDois.size" class="unknown"
               >, citing data not available</span
             >) and cited by <b>{{ publication.referenceCount }}</b> (
             <InlineIcon icon="mdi-arrow-top-left-thick" color="white" />) selected publications<span

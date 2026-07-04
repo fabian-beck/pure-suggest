@@ -18,8 +18,8 @@ function createPublication(doi, overrides = {}) {
     isLinkedToActive: false,
     isSelected: false,
     isRead: false,
-    citationDois: [],
-    referenceDois: [],
+    citationDois: new Set(),
+    referenceDois: new Set(),
     ...overrides
   }
 }
@@ -30,21 +30,12 @@ function createPublications(prefix, count, overrides = {}) {
   )
 }
 
-function countIndexOfCalls(array, onCall) {
-  const originalIndexOf = array.indexOf
-  array.indexOf = function countedIndexOf(...args) {
-    onCall()
-    return originalIndexOf.apply(this, args)
-  }
-  return array
-}
-
 describe('Session Store Activation Performance', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
   })
 
-  it('activates publications with dense citation neighborhoods without linear membership scans', () => {
+  it('activates publications with dense citation neighborhoods quickly', () => {
     const sessionStore = useSessionStore()
     const selectedPublications = createPublications('selected', 2_000, { isSelected: true })
     const suggestedPublications = createPublications('suggested', 2_000)
@@ -52,14 +43,9 @@ describe('Session Store Activation Performance', () => {
       (publication) => publication.doi
     )
     const activePublication = selectedPublications[0]
-    let indexOfCalls = 0
 
-    activePublication.citationDois = countIndexOfCalls([...allDois], () => {
-      indexOfCalls++
-    })
-    activePublication.referenceDois = countIndexOfCalls([...allDois].reverse(), () => {
-      indexOfCalls++
-    })
+    activePublication.citationDois = new Set(allDois)
+    activePublication.referenceDois = new Set([...allDois].reverse())
 
     sessionStore.selectedPublications = selectedPublications
     sessionStore.suggestion = {
@@ -74,7 +60,6 @@ describe('Session Store Activation Performance', () => {
     expect(activePublication.isActive).toBe(true)
     expect(selectedPublications[1].isLinkedToActive).toBe(true)
     expect(suggestedPublications.at(-1).isLinkedToActive).toBe(true)
-    expect(indexOfCalls).toBe(0)
     expect(activationTime).toBeLessThan(150)
   })
 })

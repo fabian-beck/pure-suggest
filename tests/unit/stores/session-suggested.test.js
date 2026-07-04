@@ -47,8 +47,8 @@ describe('Session Store - Suggested Publications Filtering', () => {
       doi: '10.1234/pub1',
       year: '2023',
       score: 10,
-      citationDois: ['10.1234/citation1'],
-      referenceDois: ['10.1234/ref1'],
+      citationDois: new Set(['10.1234/citation1']),
+      referenceDois: new Set(['10.1234/ref1']),
       getMetaString: vi.fn(() => 'Machine Learning Paper'),
       someTag: true
     }
@@ -57,8 +57,8 @@ describe('Session Store - Suggested Publications Filtering', () => {
       doi: '10.1234/pub2',
       year: '2020',
       score: 15,
-      citationDois: ['10.1234/citation2'],
-      referenceDois: ['10.1234/ref2'],
+      citationDois: new Set(['10.1234/citation2']),
+      referenceDois: new Set(['10.1234/ref2']),
       getMetaString: vi.fn(() => 'Deep Learning Research'),
       someTag: false
     }
@@ -67,8 +67,8 @@ describe('Session Store - Suggested Publications Filtering', () => {
       doi: '10.1234/pub3',
       year: '2021',
       score: 5,
-      citationDois: ['10.1234/citation3'],
-      referenceDois: ['10.1234/ref3'],
+      citationDois: new Set(['10.1234/citation3']),
+      referenceDois: new Set(['10.1234/ref3']),
       getMetaString: vi.fn(() => 'Computer Vision Study'),
       someTag: true
     }

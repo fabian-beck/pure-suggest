@@ -28,8 +28,8 @@ describe('SuggestionService', () => {
         doi,
         citationCount: 0,
         referenceCount: 0,
-        citationDois: [],
-        referenceDois: [],
+        citationDois: new Set([]),
+        referenceDois: new Set([]),
         fetchData: vi.fn().mockResolvedValue(),
         isRead: false
       }
@@ -40,15 +40,15 @@ describe('SuggestionService', () => {
         doi: '10.1234/selected1',
         citationCount: 0,
         referenceCount: 0,
-        citationDois: ['10.1234/citation1', '10.1234/citation2'],
-        referenceDois: ['10.1234/reference1']
+        citationDois: new Set(['10.1234/citation1', '10.1234/citation2']),
+        referenceDois: new Set(['10.1234/reference1'])
       },
       {
         doi: '10.1234/selected2',
         citationCount: 0,
         referenceCount: 0,
-        citationDois: ['10.1234/citation2'],
-        referenceDois: ['10.1234/reference2']
+        citationDois: new Set(['10.1234/citation2']),
+        referenceDois: new Set(['10.1234/reference2'])
       }
     ]
 

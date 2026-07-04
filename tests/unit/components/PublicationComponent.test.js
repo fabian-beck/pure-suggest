@@ -140,7 +140,7 @@ describe('PublicationComponent', () => {
     scoreColor: '#blue',
     citationCount: 2,
     referenceCount: 3,
-    referenceDois: ['10.1234/ref1'],
+    referenceDois: new Set(['10.1234/ref1']),
     isActive: false,
     isSelected: false,
     isRead: true,
