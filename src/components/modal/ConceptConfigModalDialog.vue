@@ -266,7 +266,7 @@ watch(
     </template>
     <template #sticky>
       <v-sheet class="has-background-primary-95 pa-3">
-        <div class="d-flex flex-wrap align-center ga-2">
+        <div class="d-flex flex-wrap align-center ga-2 mb-2">
           <span>Compute concepts based on shared <b>attributes</b>:</span>
           <v-checkbox
             v-model="includeKeywords"
@@ -286,7 +286,8 @@ watch(
             density="compact"
             hide-details
           ></v-checkbox>
-          <v-spacer></v-spacer>
+        </div>
+        <div class="d-flex flex-wrap ga-2 justify-end">
           <v-btn
             :disabled="!canCompute"
             @click="computeConcepts"
