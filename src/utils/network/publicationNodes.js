@@ -89,25 +89,16 @@ export function updatePublicationNodes(nodeSelection, activePublication, existin
   publicationNodes
     .classed('selected', (d) => d.publication.isSelected)
     .classed('suggested', (d) => !d.publication.isSelected)
-    .classed('active', (d) => d.publication.isActive)
-    .classed('linkedToActive', (d) => d.publication.isLinkedToActive)
-    .classed(
-      'non-active',
-      (d) => activePublication && !d.publication.isActive && !d.publication.isLinkedToActive
-    )
     .classed('queuingForSelected', (d) => d.isQueuingForSelected)
     .classed('queuingForExcluded', (d) => d.isQueuingForExcluded)
     .classed('filtered-out', (d) => d.isFilteredOut)
     .classed('is-keyword-hovered', (d) => d.publication.isKeywordHovered)
     .classed('is-author-hovered', (d) => d.publication.isAuthorHovered)
 
-  // Clean up existing tooltips
-  if (existingTooltips) {
-    existingTooltips.forEach((tooltip) => tooltip.destroy())
-  }
-
-  // Set up tooltip content
-  publicationNodes.attr('data-tippy-content', (d) => {
+  // Build tooltip content per node
+  const nodes = publicationNodes.nodes()
+  const contents = []
+  publicationNodes.each((d) => {
     let queueStatus = ''
     if (d.isQueuingForSelected) {
       queueStatus = ' and marked to be added to selected publications'
@@ -115,20 +106,69 @@ export function updatePublicationNodes(nodeSelection, activePublication, existin
       queueStatus = ' and marked to be added to excluded publications'
     }
 
-    return `<b>${d.publication.title ? d.publication.title : '[unknown title]'}</b> (${
+    contents.push(`<b>${d.publication.title ? d.publication.title : '[unknown title]'}</b> (${
       d.publication.authorShort ? `${d.publication.authorShort  }, ` : ''
     }${d.publication.year ? d.publication.year : '[unknown year]'})
         <br><br>
-        The publication is <b>${d.publication.isSelected ? 'selected' : 'suggested'}</b>${queueStatus}.`
+        The publication is <b>${d.publication.isSelected ? 'selected' : 'suggested'}</b>${queueStatus}.`)
   })
 
-  // Create new tooltips
-  const newTooltips = tippy(publicationNodes.nodes(), {
-    maxWidth: 'min(400px,70vw)',
-    allowHTML: true
-  })
+  // Reuse tooltip instances in place if they still belong to the same elements;
+  // otherwise destroy and recreate them
+  let newTooltips
+  const canReuseTooltips =
+    existingTooltips &&
+    existingTooltips.length === nodes.length &&
+    existingTooltips.every((tooltip, i) => tooltip.reference === nodes[i])
+  if (canReuseTooltips) {
+    existingTooltips.forEach((tooltip, i) => tooltip.setContent(contents[i]))
+    newTooltips = existingTooltips
+  } else {
+    if (existingTooltips) {
+      existingTooltips.forEach((tooltip) => tooltip.destroy())
+    }
+    nodes.forEach((node, i) => node.setAttribute('data-tippy-content', contents[i]))
+    newTooltips = tippy(nodes, {
+      maxWidth: 'min(400px,70vw)',
+      allowHTML: true
+    })
+  }
 
-  // Update rect attributes
+  // Update rect fill (size and stroke depend on the active state)
+  publicationNodes.select('rect').attr('fill', (d) => d.publication.scoreColor)
+
+  // Update score text
+  publicationNodes
+    .select('text.score')
+    .attr('y', 1)
+    .attr('font-size', '0.8em')
+    .text((d) => d.publication.score)
+
+  // Update boost indicator circle
+  publicationNodes.select('circle').attr('stroke', 'black')
+
+  // Apply all active-state-dependent classes and attributes
+  updateActiveState(nodeSelection, activePublication)
+
+  return { nodes: publicationNodes, tooltips: newTooltips }
+}
+
+/**
+ * Update only the visual properties that depend on the active publication.
+ * Used as a lightweight alternative to a full replot when the activation changes.
+ */
+export function updateActiveState(nodeSelection, activePublication) {
+  const publicationNodes = nodeSelection.filter((d) => d.type === 'publication')
+
+  publicationNodes
+    .classed('active', (d) => d.publication.isActive)
+    .classed('linkedToActive', (d) => d.publication.isLinkedToActive)
+    .classed(
+      'non-active',
+      (d) => activePublication && !d.publication.isActive && !d.publication.isLinkedToActive
+    )
+
+  // The active node is enlarged, affecting the rect and the boost indicator
   publicationNodes
     .select('rect')
     .attr('width', getRectSize)
@@ -136,25 +176,19 @@ export function updatePublicationNodes(nodeSelection, activePublication, existin
     .attr('x', (d) => -getRectSize(d) / 2)
     .attr('y', (d) => -getRectSize(d) / 2)
     .attr('stroke-width', (d) => (d.publication.isActive ? 4 : 3))
-    .attr('fill', (d) => d.publication.scoreColor)
 
-  // Update score text
-  publicationNodes
-    .select('text.score')
-    .classed('unread', (d) => !d.publication.isRead && !d.publication.isSelected)
-    .attr('y', 1)
-    .attr('font-size', '0.8em')
-    .text((d) => d.publication.score)
-
-  // Update boost indicator circle
   publicationNodes
     .select('circle')
     .attr('cx', (d) => getRectSize(d) / 2 - 1)
     .attr('cy', (d) => -getRectSize(d) / 2 + 1)
     .attr('r', (d) => (d.publication.boostFactor > 1 ? getBoostIndicatorSize(d) / 6 : 0))
-    .attr('stroke', 'black')
 
-  return { nodes: publicationNodes, tooltips: newTooltips }
+  // Activating a suggested publication marks it as read
+  publicationNodes
+    .select('text.score')
+    .classed('unread', (d) => !d.publication.isRead && !d.publication.isSelected)
+
+  return publicationNodes
 }
 
 /**

@@ -143,12 +143,12 @@ function handleMouseLeave() {
           <div class="reference-counts is-size-6">
             <div class="is-pulled-left">
               <span
-                v-if="publication.citationCount > 0 || publication.referenceDois.length === 0"
-                :class="publication.referenceDois.length ? '' : 'unknown'"
+                v-if="publication.citationCount > 0 || publication.referenceDois.size === 0"
+                :class="publication.referenceDois.size ? '' : 'unknown'"
               >
                 <InlineIcon
                   icon="mdi-arrow-bottom-left-thick"
-                  :color="publication.referenceDois.length ? '' : 'danger'"
+                  :color="publication.referenceDois.size ? '' : 'danger'"
                 />
                 {{ publication.citationCount ? publication.citationCount : '-' }}
               </span>
@@ -175,9 +175,9 @@ function handleMouseLeave() {
             citing <b>{{ publication.citationCount }}</b> (
             <InlineIcon
               icon="mdi-arrow-bottom-left-thick"
-              :color="publication.referenceDois.length ? 'white' : 'danger'"
+              :color="publication.referenceDois.size ? 'white' : 'danger'"
             />
-            <span v-if="!publication.referenceDois.length" class="unknown"
+            <span v-if="!publication.referenceDois.size" class="unknown"
               >, citing data not available</span
             >) and cited by <b>{{ publication.referenceCount }}</b> (
             <InlineIcon icon="mdi-arrow-top-left-thick" color="white" />) selected publications<span
@@ -298,6 +298,7 @@ function handleMouseLeave() {
         border-width: 0.125rem;
         border-color: var(--bulma-info);
         border-style: solid;
+        --glyph-accent-color: var(--bulma-info);
         @include light-shadow;
 
         & .tooltip-target {
@@ -417,6 +418,7 @@ function handleMouseLeave() {
 
     &.is-selected .glyph {
       border-color: var(--bulma-primary);
+      --glyph-accent-color: var(--bulma-primary);
 
       & .boost-indicator {
         border-color: var(--bulma-primary);
@@ -438,7 +440,9 @@ function handleMouseLeave() {
 
     &.is-active .glyph,
     &.is-linked-to-active .glyph {
-      border-width: 0.3rem;
+      // Adds to the border outward (box-shadow doesn't affect layout/box-sizing),
+      // rather than thickening the border inward into the glyph's content.
+      box-shadow: 0 0 0 0.175rem var(--glyph-accent-color);
     }
 
     & .glyph > div:focus > div {

@@ -10,6 +10,9 @@ const CACHE_CONFIG = {
 const memoryCache = new Map()
 const MAX_MEMORY_CACHE_SIZE = 2000 // Keep 2000 most recent items in memory
 
+// Deduplicates concurrent network fetches for the same URL
+const inFlightRequests = new Map()
+
 // Only access IndexedDB if available (not in test environment)
 if (typeof indexedDB !== 'undefined') {
   try {
@@ -92,16 +95,18 @@ async function handleCacheCleanupAndRetry(url, cacheObject) {
 }
 
 export async function cachedFetch(url, processData, fetchParameters = {}, noCache = false) {
+  const canonicalUrl = noCache ? url.replace('&noCache=true', '') : url
+
   try {
     if (noCache) throw new Error('No cache')
 
     // Check memory cache first
-    if (memoryCache.has(url)) {
-      const cachedData = memoryCache.get(url)
+    if (memoryCache.has(canonicalUrl)) {
+      const cachedData = memoryCache.get(canonicalUrl)
 
       // Move to end (mark as recently used)
-      memoryCache.delete(url)
-      memoryCache.set(url, cachedData)
+      memoryCache.delete(canonicalUrl)
+      memoryCache.set(canonicalUrl, cachedData)
 
       processData(cachedData)
       return
@@ -112,10 +117,10 @@ export async function cachedFetch(url, processData, fetchParameters = {}, noCach
       throw new Error('IndexedDB not available')
     }
 
-    const cacheObject = await get(url)
+    const cacheObject = await get(canonicalUrl)
 
-    if (cacheObject.timestamp < Date.now() - CACHE_CONFIG.EXPIRY_MS) {
-      throw new Error('Cached data is too old')
+    if (!cacheObject || cacheObject.timestamp < Date.now() - CACHE_CONFIG.EXPIRY_MS) {
+      throw new Error('Cached data is missing or too old')
     }
 
     const data = JSON.parse(LZString.decompress(cacheObject.data))
@@ -123,39 +128,52 @@ export async function cachedFetch(url, processData, fetchParameters = {}, noCach
     if (!data) throw new Error('Cached data is empty')
 
     // Add to memory cache for future use
-    addToMemoryCache(url, data)
+    addToMemoryCache(canonicalUrl, data)
 
     processData(data)
   } catch {
-    // Network fetch (cache miss)
-    try {
-      const response = await fetch(url, fetchParameters)
-
-      if (!response.ok) {
-        throw new Error(`Received response with status ${response.status}`)
+    // Network fetch (cache miss); join an in-flight request for the same URL if
+    // possible, but noCache requests must reach the network themselves to
+    // bypass the server-side cache
+    if (!noCache && inFlightRequests.has(canonicalUrl)) {
+      try {
+        const data = await inFlightRequests.get(canonicalUrl)
+        processData(data)
+      } catch (error) {
+        console.error(`Unable to fetch or process data for "${url}": ${error}`)
       }
+      return
+    }
 
-      const data = await response.json()
+    const fetchPromise = fetch(url, fetchParameters).then((response) => {
+      if (!response.ok) throw new Error(`Received response with status ${response.status}`)
+      return response.json()
+    })
+    inFlightRequests.set(canonicalUrl, fetchPromise)
+
+    try {
+      const data = await fetchPromise
 
       const compressedData = LZString.compress(JSON.stringify(data))
-
       const cacheObject = { data: compressedData, timestamp: Date.now() }
       try {
-        if (noCache) {
-          url = url.replace('&noCache=true', '')
-        }
-        await set(url, cacheObject)
+        await set(canonicalUrl, cacheObject)
       } catch {
-        await handleCacheCleanupAndRetry(url, cacheObject)
+        await handleCacheCleanupAndRetry(canonicalUrl, cacheObject)
       }
       console.log(`Successfully fetched data for "${url}"`)
 
       // Add to memory cache for future use
-      addToMemoryCache(url, data)
+      addToMemoryCache(canonicalUrl, data)
 
       processData(data)
-    } catch (error3) {
-      console.error(`Unable to fetch or process data for "${url}": ${error3}`)
+    } catch (error) {
+      console.error(`Unable to fetch or process data for "${url}": ${error}`)
+    } finally {
+      // Guarded delete: a concurrent noCache request may have replaced the entry
+      if (inFlightRequests.get(canonicalUrl) === fetchPromise) {
+        inFlightRequests.delete(canonicalUrl)
+      }
     }
   }
 }

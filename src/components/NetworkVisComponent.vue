@@ -51,6 +51,7 @@ import {
 import {
   initializePublicationNodes,
   updatePublicationNodes,
+  updateActiveState,
   createPublicationNodes
 } from '@/utils/network/publicationNodes.js'
 
@@ -191,7 +192,9 @@ export default {
         if (this.interfaceStore.isLoading) {
           return
         }
-        this.plot()
+        // Activation only changes highlighting, not the graph structure, so a
+        // full replot with simulation resume is not needed
+        this.updateActiveHighlighting()
       }
     },
     selectedQueue: {
@@ -573,8 +576,12 @@ export default {
         return true
       }
 
-      // Early return if graph is empty - no nodes to update
+      // Early return if graph is empty - no nodes to update. Also clear the
+      // early-tick-skipping flag since with no nodes it will never be cleared
+      // by an actual tick, which would otherwise leave the network (and the
+      // controls bound to the same fade state) stuck faded indefinitely.
       if (!this.graph.nodes || this.graph.nodes.length === 0) {
+        this.shouldSkipEarlyTicks = false
         this.$refs.performanceMonitor?.trackFps() // Still track FPS for debugging
         return true
       }
@@ -696,9 +703,7 @@ export default {
       })
     },
     zoomByFactor(factor) {
-      const transform = d3.zoomTransform(this.svg.node())
-      transform.k = transform.k * factor
-      this.svg.attr('transform', transform)
+      d3.select('#network-svg').call(this.zoom.scaleBy, factor)
     },
     resetZoom() {
       const svg = d3.select('#network-svg')
@@ -993,6 +998,33 @@ export default {
           .classed('is-keyword-hovered', (d) => d.publication.isKeywordHovered)
           .classed('is-author-hovered', (d) => d.publication.isAuthorHovered)
       }
+    },
+
+    /**
+     * Lightweight update when the active publication changes: refreshes highlight
+     * classes, node sizes, and link styles without a full replot or simulation restart.
+     */
+    updateActiveHighlighting() {
+      if (!this.node || !this.link) {
+        return
+      }
+      const activePublication = this.sessionStore.activePublication
+      try {
+        updateActiveState(this.node, activePublication)
+        this.keywordTooltips = updateKeywordNodes(
+          this.node,
+          activePublication,
+          this.keywordTooltips
+        ).tooltips
+        this.authorTooltips = updateAuthorNodes(
+          this.node,
+          activePublication,
+          this.authorTooltips
+        ).tooltips
+        this.link.attr('class', (d) => calculateLinkClasses(d, activePublication))
+      } catch (error) {
+        console.error(`Cannot update active highlighting in network: ${error.message}`)
+      }
     }
   }
 }
@@ -1051,6 +1083,7 @@ export default {
         @reset="resetZoom"
         @plot="plot"
         v-show="!isNetworkActuallyCollapsed && !isEmpty"
+        :class="networkCssClasses"
       />
     </div>
   </div>
@@ -1102,6 +1135,7 @@ export default {
   background: white;
   width: 100%;
   height: 100%;
+  will-change: opacity;
 
   & g:focus {
     outline: none;

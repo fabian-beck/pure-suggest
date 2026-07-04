@@ -375,6 +375,24 @@ describe('NetworkVisComponent', () => {
       wrapper.vm.showNodes = ['selected', 'suggested', 'keyword']
       expect(wrapper.vm.showAuthorNodes).toBe(false)
     })
+
+    it('does not stay faded when all node types are switched off and the graph becomes empty', () => {
+      const wrapper = mount(NetworkVisComponent, {
+        global: {
+          stubs: commonComponentStubs
+        }
+      })
+
+      // Simulate a restart (e.g. from toggling a node type) followed by the graph
+      // ending up empty because the user switched off every node type.
+      wrapper.vm.shouldSkipEarlyTicks = true
+      wrapper.vm.currentTickCount = 0
+      wrapper.vm.graph.nodes = []
+
+      wrapper.vm.tick()
+
+      expect(wrapper.vm.networkCssClasses).toBe('network-visible')
+    })
   })
 
   describe('D3.js Graph Rendering', () => {
@@ -702,6 +720,45 @@ describe('NetworkVisComponent', () => {
         expect(plotSpy).toHaveBeenCalled()
         plotSpy.mockRestore()
       })
+    })
+  })
+
+  describe('Active Publication Highlighting', () => {
+    it('updates highlighting without a full replot when the active publication changes', () => {
+      const wrapper = mount(NetworkVisComponent, {
+        global: {
+          stubs: commonComponentStubs
+        }
+      })
+      const plotSpy = vi.spyOn(wrapper.vm, 'plot').mockImplementation(() => {})
+      const highlightSpy = vi
+        .spyOn(wrapper.vm, 'updateActiveHighlighting')
+        .mockImplementation(() => {})
+
+      wrapper.vm.$options.watch.activePublication.handler.call(wrapper.vm)
+
+      expect(highlightSpy).toHaveBeenCalledTimes(1)
+      expect(plotSpy).not.toHaveBeenCalled()
+      plotSpy.mockRestore()
+      highlightSpy.mockRestore()
+    })
+
+    it('skips highlighting updates while loading', () => {
+      const wrapper = mount(NetworkVisComponent, {
+        global: {
+          stubs: commonComponentStubs
+        }
+      })
+      const highlightSpy = vi
+        .spyOn(wrapper.vm, 'updateActiveHighlighting')
+        .mockImplementation(() => {})
+
+      wrapper.vm.interfaceStore.isLoading = true
+      wrapper.vm.$options.watch.activePublication.handler.call(wrapper.vm)
+      wrapper.vm.interfaceStore.isLoading = false
+
+      expect(highlightSpy).not.toHaveBeenCalled()
+      highlightSpy.mockRestore()
     })
   })
 

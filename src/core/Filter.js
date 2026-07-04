@@ -1,5 +1,3 @@
-import Author from './Author.js'
-
 const VALIDATION = {
   MIN_YEAR: 1000,
   MAX_YEAR: 10000
@@ -140,20 +138,16 @@ export default class Filter {
     return this.dois.some(
       (doi) =>
         publication.doi === doi ||
-        publication.citationDois.includes(doi) ||
-        publication.referenceDois.includes(doi)
+        publication.citationDois.has(doi) ||
+        publication.referenceDois.has(doi)
     )
   }
 
   matchesAuthors(publication) {
     if (!this.authors.length) return true
     if (!publication.author) return false
-
-    const authorNames = publication.author.split(';').map((name) => name.trim())
-
-    return this.authors.some((authorId) =>
-      authorNames.some((authorName) => Author.nameToId(authorName) === authorId)
-    )
+    const authorIds = publication.getAuthorIds()
+    return this.authors.some((authorId) => authorIds.includes(authorId))
   }
 
   matches(publication) {
