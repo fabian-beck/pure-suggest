@@ -39,8 +39,12 @@ export default {
     :active="active"
     :class="{ 'is-selected': active }"
     flat
-    :height="label || $slots.default ? undefined : 30"
+    height="30"
     :width="label || $slots.default ? undefined : 30"
+    :style="{
+      minHeight: '30px',
+      padding: label || $slots.default ? '0 8px' : undefined
+    }"
     >
     <v-icon v-if="icon">{{ icon }}</v-icon>
     <span v-if="label" class="ml-1">{{ label }}</span>
