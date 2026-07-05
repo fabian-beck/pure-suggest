@@ -94,87 +94,114 @@ async function handleCacheCleanupAndRetry(url, cacheObject) {
   }
 }
 
+/**
+ * Reads a cached entry from the memory cache, falling back to IndexedDB.
+ * @param {string} canonicalUrl - The cache key.
+ * @returns {Promise<object|undefined>} Cached data, or undefined on a miss.
+ */
+async function readCache(canonicalUrl) {
+  if (memoryCache.has(canonicalUrl)) {
+    const cachedData = memoryCache.get(canonicalUrl)
+    // Move to end (mark as recently used)
+    memoryCache.delete(canonicalUrl)
+    memoryCache.set(canonicalUrl, cachedData)
+    return cachedData
+  }
+
+  if (typeof indexedDB === 'undefined') return undefined
+
+  const cacheObject = await get(canonicalUrl)
+  if (!cacheObject || cacheObject.timestamp < Date.now() - CACHE_CONFIG.EXPIRY_MS) {
+    return undefined
+  }
+
+  const data = JSON.parse(LZString.decompress(cacheObject.data))
+  if (!data) return undefined
+
+  addToMemoryCache(canonicalUrl, data)
+  return data
+}
+
+/**
+ * Writes an entry to both IndexedDB and the memory cache.
+ * @param {string} canonicalUrl - The cache key.
+ * @param {object} data - The data to store.
+ */
+async function writeCache(canonicalUrl, data) {
+  const compressedData = LZString.compress(JSON.stringify(data))
+  const cacheObject = { data: compressedData, timestamp: Date.now() }
+  try {
+    await set(canonicalUrl, cacheObject)
+  } catch {
+    await handleCacheCleanupAndRetry(canonicalUrl, cacheObject)
+  }
+  addToMemoryCache(canonicalUrl, data)
+}
+
 export async function cachedFetch(url, processData, fetchParameters = {}, noCache = false) {
   const canonicalUrl = noCache ? url.replace('&noCache=true', '') : url
 
-  try {
-    if (noCache) throw new Error('No cache')
-
-    // Check memory cache first
-    if (memoryCache.has(canonicalUrl)) {
-      const cachedData = memoryCache.get(canonicalUrl)
-
-      // Move to end (mark as recently used)
-      memoryCache.delete(canonicalUrl)
-      memoryCache.set(canonicalUrl, cachedData)
-
+  if (!noCache) {
+    const cachedData = await readCache(canonicalUrl)
+    if (cachedData !== undefined) {
       processData(cachedData)
       return
     }
 
-    // Skip IndexedDB operations if not available
-    if (typeof indexedDB === 'undefined') {
-      throw new Error('IndexedDB not available')
-    }
-
-    const cacheObject = await get(canonicalUrl)
-
-    if (!cacheObject || cacheObject.timestamp < Date.now() - CACHE_CONFIG.EXPIRY_MS) {
-      throw new Error('Cached data is missing or too old')
-    }
-
-    const data = JSON.parse(LZString.decompress(cacheObject.data))
-
-    if (!data) throw new Error('Cached data is empty')
-
-    // Add to memory cache for future use
-    addToMemoryCache(canonicalUrl, data)
-
-    processData(data)
-  } catch {
-    // Network fetch (cache miss); join an in-flight request for the same URL if
-    // possible, but noCache requests must reach the network themselves to
-    // bypass the server-side cache
-    if (!noCache && inFlightRequests.has(canonicalUrl)) {
+    // Join an in-flight request for the same URL; noCache requests must reach
+    // the network themselves to bypass the server-side cache
+    if (inFlightRequests.has(canonicalUrl)) {
       try {
-        const data = await inFlightRequests.get(canonicalUrl)
-        processData(data)
+        processData(await inFlightRequests.get(canonicalUrl))
       } catch (error) {
         console.error(`Unable to fetch or process data for "${url}": ${error}`)
       }
       return
     }
+  }
 
-    const fetchPromise = fetch(url, fetchParameters).then((response) => {
-      if (!response.ok) throw new Error(`Received response with status ${response.status}`)
-      return response.json()
-    })
-    inFlightRequests.set(canonicalUrl, fetchPromise)
+  const fetchPromise = fetch(url, fetchParameters).then((response) => {
+    if (!response.ok) throw new Error(`Received response with status ${response.status}`)
+    return response.json()
+  })
+  // Only normal requests are shareable; noCache requests bypass caches and must
+  // not be joined by concurrent normal requests
+  if (!noCache) inFlightRequests.set(canonicalUrl, fetchPromise)
 
-    try {
-      const data = await fetchPromise
-
-      const compressedData = LZString.compress(JSON.stringify(data))
-      const cacheObject = { data: compressedData, timestamp: Date.now() }
-      try {
-        await set(canonicalUrl, cacheObject)
-      } catch {
-        await handleCacheCleanupAndRetry(canonicalUrl, cacheObject)
-      }
-      console.log(`Successfully fetched data for "${url}"`)
-
-      // Add to memory cache for future use
-      addToMemoryCache(canonicalUrl, data)
-
-      processData(data)
-    } catch (error) {
-      console.error(`Unable to fetch or process data for "${url}": ${error}`)
-    } finally {
-      // Guarded delete: a concurrent noCache request may have replaced the entry
-      if (inFlightRequests.get(canonicalUrl) === fetchPromise) {
-        inFlightRequests.delete(canonicalUrl)
-      }
+  try {
+    const data = await fetchPromise
+    await writeCache(canonicalUrl, data)
+    console.log(`Successfully fetched data for "${url}"`)
+    processData(data)
+  } catch (error) {
+    console.error(`Unable to fetch or process data for "${url}": ${error}`)
+  } finally {
+    // Guarded delete: a concurrent noCache request may have replaced the entry
+    if (inFlightRequests.get(canonicalUrl) === fetchPromise) {
+      inFlightRequests.delete(canonicalUrl)
     }
+  }
+}
+
+/**
+ * Warms the per-URL cache for many items using a single bulk request. URLs that
+ * are already cached (memory or IndexedDB) are skipped; the remaining misses are
+ * fetched together via `bulkFetch` and written back under their individual URLs,
+ * so subsequent `cachedFetch` calls for the same URLs become cache hits. This
+ * keeps bulk loading aligned with per-item caching.
+ * @param {string[]} urls - Individual cache-key URLs to warm.
+ * @param {(missedUrls: string[]) => Promise<Map<string, object>>} bulkFetch -
+ *   Fetches the misses, returning a Map from URL to its data.
+ */
+export async function cacheBulk(urls, bulkFetch) {
+  const cached = await Promise.all(urls.map((url) => readCache(url)))
+  const missedUrls = urls.filter((_url, index) => cached[index] === undefined)
+  if (!missedUrls.length) return
+
+  const fetched = await bulkFetch(missedUrls)
+  for (const url of missedUrls) {
+    const data = fetched.get(url)
+    if (data) await writeCache(url, data)
   }
 }
 
