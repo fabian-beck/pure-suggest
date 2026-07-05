@@ -287,20 +287,14 @@ export default class Author {
     // match authors with abbreviated names and merge them
     // Sort authors to ensure deterministic processing order
     const sortedAuthors = Object.values(authors).sort(sortById)
+    // Only names consisting solely of initials (e.g. "Smith, J" or "Smith, J. R.") are
+    // considered abbreviated. Matching on arbitrary name prefixes (e.g. "He, Qi" vs.
+    // "He, Qiang") is unsafe, since a shorter full given name is not necessarily an
+    // abbreviation of a longer one - it can belong to an entirely different person.
     const authorsWithAbbreviatedNames = sortedAuthors.filter((author) =>
       author.id.match(/^\w+,\s\w\.?(\s\w\.?)?$/)
     )
     const abbreviatedAuthorSet = new Set(authorsWithAbbreviatedNames)
-
-    sortedAuthors
-      .filter((author) => !abbreviatedAuthorSet.has(author))
-      .forEach((author) => {
-        // Check if author has a version with an additional first name.
-        if (findAuthorsByPrefix(sortedAuthors, author.id, 2).length > 1) {
-          authorsWithAbbreviatedNames.push(author)
-          abbreviatedAuthorSet.add(author)
-        }
-      })
     const authorsWithoutAbbreviatedNames = sortedAuthors.filter(
       (author) => !abbreviatedAuthorSet.has(author)
     )
