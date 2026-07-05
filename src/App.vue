@@ -185,6 +185,15 @@ export default {
       class="align-center justify-center main-overlay"
       persistent
     >
+      <v-btn
+        v-if="interfaceStore.isLoadingCancelable"
+        class="loading-cancel-button"
+        icon="mdi-close"
+        variant="text"
+        size="small"
+        v-tippy="'Stop loading (Esc)'"
+        @click="interfaceStore.cancelLoading()"
+      ></v-btn>
       <div class="d-flex flex-column align-center justify-center">
         <div>
           <v-progress-circular color="white" indeterminate size="64"></v-progress-circular>
@@ -351,6 +360,13 @@ body {
 
 .main-overlay {
   z-index: 6000 !important;
+}
+
+.loading-cancel-button {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  color: white;
 }
 
 .global-loading-message {

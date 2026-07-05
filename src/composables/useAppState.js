@@ -79,6 +79,7 @@ export function useAppState() {
     let publicationsLoaded = 0
     interfaceStore.loadingMessage = `${publicationsLoaded}/${sessionStore.selectedPublicationsCount} selected publications loaded`
 
+    // Loading selected publications must always complete, so it cannot be cancelled by the user.
     await Publication.fetchAll(sessionStore.selectedPublications, (publication) => {
       publication.isSelected = true
       publicationsLoaded++
@@ -127,6 +128,9 @@ export function useAppState() {
     )
     sessionStore.clearActivePublication('updating suggestions')
 
+    // Computing suggestions may be cancelled by the user, since selected publications
+    // are already fully loaded and consistent at this point.
+    interfaceStore.setLoadingCancelable(true)
     sessionStore.suggestion = await SuggestionService.computeSuggestions({
       selectedPublications: sessionStore.selectedPublications,
       isExcluded: sessionStore.isExcluded,
@@ -136,8 +140,10 @@ export function useAppState() {
       readPublicationsDois: sessionStore.readPublicationsDois,
       updateLoadingMessage: (message) => {
         interfaceStore.loadingMessage = message
-      }
+      },
+      cancelToken: interfaceStore.loadingCancelToken
     })
+    interfaceStore.setLoadingCancelable(false)
 
     updateScores()
 
