@@ -77,14 +77,14 @@ describe('Publication.prefetch', () => {
     const fetchMock = bulkFetchMock()
     vi.stubGlobal('fetch', fetchMock)
 
-    const publications = Array.from({ length: 120 }, (_, i) => new Publication(`10.1000/chunk-${i}`))
+    const publications = Array.from({ length: 24 }, (_, i) => new Publication(`10.1000/chunk-${i}`))
     await Publication.prefetch(publications)
-    expect(fetchMock).toHaveBeenCalledTimes(3) // 50 + 50 + 20
+    expect(fetchMock).toHaveBeenCalledTimes(3) // 10 + 10 + 4
 
     // All publications were cached, so individual fetches need no further network calls
     await Promise.all(publications.map((publication) => publication.fetchData()))
     expect(fetchMock).toHaveBeenCalledTimes(3)
-    expect(publications[119].title).toBe('Title 10.1000/chunk-119')
+    expect(publications[23].title).toBe('Title 10.1000/chunk-23')
   })
 
   it('continues with remaining chunks when one bulk request fails', async () => {
@@ -92,15 +92,15 @@ describe('Publication.prefetch', () => {
     const fetchMock = bulkFetchMock().mockResolvedValueOnce({ ok: false, status: 500 })
     vi.stubGlobal('fetch', fetchMock)
 
-    const publications = Array.from({ length: 60 }, (_, i) => new Publication(`10.1000/fail-chunk-${i}`))
+    const publications = Array.from({ length: 20 }, (_, i) => new Publication(`10.1000/fail-chunk-${i}`))
     await Publication.prefetch(publications)
     expect(fetchMock).toHaveBeenCalledTimes(2)
     expect(warnSpy).toHaveBeenCalledTimes(1)
 
     // The second chunk was still cached despite the first one failing
-    await publications[59].fetchData()
+    await publications[19].fetchData()
     expect(fetchMock).toHaveBeenCalledTimes(2)
-    expect(publications[59].title).toBe('Title 10.1000/fail-chunk-59')
+    expect(publications[19].title).toBe('Title 10.1000/fail-chunk-19')
 
     warnSpy.mockRestore()
   })
@@ -128,7 +128,7 @@ describe('Publication.fetchAll', () => {
     const fetchMock = bulkFetchMock()
     vi.stubGlobal('fetch', fetchMock)
 
-    const publications = Array.from({ length: 60 }, (_, i) => new Publication(`10.1000/all-${i}`))
+    const publications = Array.from({ length: 20 }, (_, i) => new Publication(`10.1000/all-${i}`))
     const loadedDois = []
     await Publication.fetchAll(publications, (publication) => loadedDois.push(publication.doi))
 
@@ -138,7 +138,7 @@ describe('Publication.fetchAll', () => {
       expect(options?.body || url).toContain('dois')
     })
 
-    expect(loadedDois).toHaveLength(60)
+    expect(loadedDois).toHaveLength(20)
     expect(publications.every((publication) => publication.wasFetched)).toBe(true)
     expect(publications[0].title).toBe('Title 10.1000/all-0')
   })

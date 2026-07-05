@@ -13,7 +13,7 @@ export const API_PARAMS = {
   // Above this query length the bulk publications request switches from GET to POST
   BULK_GET_MAX_QUERY_LENGTH: 1800,
   // Publications per bulk request; bounds request size and allows progress updates in between
-  BULK_FETCH_CHUNK_SIZE: 50,
+  BULK_FETCH_CHUNK_SIZE: 10,
   CROSSREF_EMAIL: 'fabian.beck@uni-bamberg.de',
   CROSSREF_FILTER: 'has-references:true',
   CROSSREF_SORT: 'relevance',
