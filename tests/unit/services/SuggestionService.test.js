@@ -25,10 +25,12 @@ describe('SuggestionService', () => {
     // Static bulk prefetch is a no-op in tests; per-pub fetchData is asserted instead
     Publication.prefetch = vi.fn().mockResolvedValue()
     Publication.fetchAll = vi.fn(async (publications, onPublicationLoaded) => {
-      for (const publication of publications) {
-        await publication.fetchData()
-        onPublicationLoaded?.(publication)
-      }
+      await Promise.all(
+        publications.map(async (publication) => {
+          await publication.fetchData()
+          onPublicationLoaded?.(publication)
+        })
+      )
     })
 
     // Mock Publication constructor
