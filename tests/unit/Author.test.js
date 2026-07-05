@@ -92,8 +92,8 @@ describe('Author Bug Regression Tests', () => {
       author1.mergeWith(author2)
 
       // When both are undefined, should remain undefined (not Infinity/-Infinity)
-      expect(author1.yearMin).toBe(undefined)
-      expect(author1.yearMax).toBe(undefined)
+      expect(author1.yearMin).toBeUndefined()
+      expect(author1.yearMax).toBeUndefined()
       expect(Number.isNaN(author1.yearMin)).toBe(false)
       expect(Number.isNaN(author1.yearMax)).toBe(false)
     })

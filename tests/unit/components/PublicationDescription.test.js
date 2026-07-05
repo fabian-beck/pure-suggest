@@ -151,6 +151,6 @@ describe('PublicationDescription', () => {
       props: { publication: pubWithTags },
       global: { stubs: defaultStubs }
     })
-    expect(wrapper.findAll('.tag').length).toBe(3)
+    expect(wrapper.findAll('.tag')).toHaveLength(3)
   })
 })

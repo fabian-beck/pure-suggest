@@ -67,7 +67,7 @@ describe('Eszett (ß) Transcription Matching Bug Fix', () => {
       )
 
       // Now we expect only 1 Hans author after merging variants
-      expect(hansAuthors.length).toBe(1)
+      expect(hansAuthors).toHaveLength(1)
       const mergedAuthor = hansAuthors[0]
       expect(mergedAuthor.alternativeNames).toEqual(
         expect.arrayContaining(['Weiß, Hans', 'Weiss, Hans', 'Weis, Hans'])
@@ -88,7 +88,7 @@ describe('Eszett (ß) Transcription Matching Bug Fix', () => {
       )
 
       // We expect only 1 Hans author after merging
-      expect(hansAuthors.length).toBe(1)
+      expect(hansAuthors).toHaveLength(1)
 
       // The merged author should have publications from all variants
       const mergedHans = hansAuthors[0]
@@ -128,7 +128,7 @@ describe('Eszett (ß) Transcription Matching Bug Fix', () => {
       )
 
       // We expect only 1 Hans author after merging all variants
-      expect(hansAuthors.length).toBe(1)
+      expect(hansAuthors).toHaveLength(1)
 
       // The merged author should have publications from all four variants
       const mergedHans = hansAuthors[0]
@@ -180,7 +180,7 @@ describe('Eszett (ß) Transcription Matching Bug Fix', () => {
           (author.id.includes('weis') || author.id.includes('wei'))
       )
 
-      expect(hansAuthors.length).toBe(1)
+      expect(hansAuthors).toHaveLength(1)
       expect(hansAuthors[0].publicationDois).toHaveLength(3)
     })
   })
@@ -259,7 +259,7 @@ describe('Eszett (ß) Transcription Matching Bug Fix', () => {
 
       // Should remain separate authors due to different first names
       const weissAuthors = authors.filter((author) => author.id.includes('weis'))
-      expect(weissAuthors.length).toBe(2)
+      expect(weissAuthors).toHaveLength(2)
     })
 
     it('should preserve ORCID-based matching priority', () => {
@@ -286,7 +286,7 @@ describe('Eszett (ß) Transcription Matching Bug Fix', () => {
 
       // Should be merged based on ORCID (existing behavior should be preserved)
       const hansAuthors = authors.filter((author) => author.name.includes('Hans'))
-      expect(hansAuthors.length).toBe(1)
+      expect(hansAuthors).toHaveLength(1)
       expect(hansAuthors[0].orcid).toBe('0000-0000-0000-0001')
     })
   })

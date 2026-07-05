@@ -35,7 +35,7 @@ describe('Bug: Author.mergeWith sets yearMin/yearMax to Infinity when both autho
     author1.mergeWith(author2)
 
     // After merge, yearMin should remain undefined, not become Infinity
-    expect(author1.yearMin).toBe(undefined)
+    expect(author1.yearMin).toBeUndefined()
     expect(author1.yearMin).not.toBe(Infinity)
   })
 
@@ -50,7 +50,7 @@ describe('Bug: Author.mergeWith sets yearMin/yearMax to Infinity when both autho
     author1.mergeWith(author2)
 
     // After merge, yearMax should remain undefined, not become -Infinity
-    expect(author1.yearMax).toBe(undefined)
+    expect(author1.yearMax).toBeUndefined()
     expect(author1.yearMax).not.toBe(-Infinity)
   })
 

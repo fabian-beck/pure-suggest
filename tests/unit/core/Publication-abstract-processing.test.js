@@ -11,31 +11,6 @@ describe('Publication Abstract Processing', () => {
   let publication
 
   beforeEach(() => {
-    // Mock constants
-    vi.doMock('@/constants/publication.js', () => ({
-      CURRENT_YEAR: 2024,
-      SCORING: { DEFAULT_BOOST_FACTOR: 1 },
-      SURVEY_THRESHOLDS: {},
-      CITATION_THRESHOLDS: {},
-      PUBLICATION_AGE: {},
-      TEXT_PROCESSING: {
-        MAX_TITLE_LENGTH: 300,
-        TITLE_TRUNCATION_POINT: 295,
-        TITLE_TRUNCATION_SUFFIX: '[...]'
-      },
-      SURVEY_KEYWORDS: [],
-      // eslint-disable-next-line sonarjs/slow-regex
-      ORDINAL_REGEX: /\d+(?:st|nd|rd|th)/i,
-      ROMAN_NUMERAL_REGEX: /^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})(\?.?)$/i,
-      ORCID_REGEX: /\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]/,
-      TITLE_WORD_MAP: {
-        'of': 'of',
-        'and': 'and',
-        'the': 'the'
-      },
-      PUBLICATION_TAGS: {}
-    }))
-    
     publication = new Publication('10.1234/test')
   })
 
@@ -222,7 +197,7 @@ describe('Publication Abstract Processing', () => {
       publication.processTitle(data)
       
       expect(publication.abstract).toBe(longContent)
-      expect(publication.abstract.length).toBe(1000)
+      expect(publication.abstract).toHaveLength(1000)
     })
   })
 

@@ -27,9 +27,7 @@ const FETCH_RETRY_DELAY_MS = 1000
 
 const SURVEY_KEYWORDS = /(survey|state|review|advances|future)/i
 
-// Optimized with non-capturing group to prevent backtracking
-// eslint-disable-next-line sonarjs/slow-regex
-const ORDINAL_REGEX = /\d+(?:st|nd|rd|th)/i
+const ORDINAL_REGEX = /\d(?:st|nd|rd|th)/i
 
 const ROMAN_NUMERAL_REGEX = /^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})(\?.?)$/i
 
@@ -314,8 +312,7 @@ export default class Publication {
     this.container = ''
     data.container?.split(' ').forEach((word) => {
       let mappedWord
-      // Optimized with negated character class to prevent backtracking
-      // eslint-disable-next-line sonarjs/slow-regex
+      // eslint-disable-next-line sonarjs/super-linear-regex -- safe on short word tokens
       if (/\([^)]+\)/.test(word)) {
         mappedWord = word.toUpperCase()
       } else if (ORDINAL_REGEX.test(word)) {
@@ -327,8 +324,7 @@ export default class Publication {
       }
       this.container += `${mappedWord ? mappedWord : word  } `
     })
-    // Optimized with separate replace calls to avoid alternation backtracking
-    // eslint-disable-next-line sonarjs/slow-regex
+    // eslint-disable-next-line sonarjs/super-linear-regex -- safe on short container strings
     this.container = this.container.trim().replace(/^[. ]+/, '').replace(/[. ]+$/, '')
     this.container = cleanTitle(this.container)
   }

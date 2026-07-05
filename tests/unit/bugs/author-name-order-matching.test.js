@@ -32,7 +32,7 @@ describe('Author name order matching ("First Last" vs "Last, First")', () => {
     const authors = Author.computePublicationsAuthors(publications, true, false, false)
 
     const maAuthors = authors.filter((author) => author.id.includes('kwan-liu'))
-    expect(maAuthors.length).toBe(1)
+    expect(maAuthors).toHaveLength(1)
 
     const mergedMa = maAuthors[0]
     expect(mergedMa.name).toBe('Ma, Kwan-Liu')
@@ -55,7 +55,7 @@ describe('Author name order matching ("First Last" vs "Last, First")', () => {
 
     // "richard p. van duyne" flips to "duyne, richard p. van" which does not match —
     // conservative behavior: multi-word surnames stay separate rather than mismerge
-    expect(authors.length).toBe(2)
+    expect(authors).toHaveLength(2)
   })
 
   it('should not merge "First Last" authors with different surnames', () => {
@@ -65,7 +65,7 @@ describe('Author name order matching ("First Last" vs "Last, First")', () => {
     ]
 
     const authors = Author.computePublicationsAuthors(publications, true, false, false)
-    expect(authors.length).toBe(2)
+    expect(authors).toHaveLength(2)
   })
 
   it('should not merge when both authors have conflicting ORCIDs', () => {
@@ -75,7 +75,7 @@ describe('Author name order matching ("First Last" vs "Last, First")', () => {
     ]
 
     const authors = Author.computePublicationsAuthors(publications, true, false, false)
-    expect(authors.length).toBe(2)
+    expect(authors).toHaveLength(2)
   })
 
   it('should update coauthor references after merging name order variants', () => {

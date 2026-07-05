@@ -165,10 +165,8 @@ export const useSessionStore = defineStore('session', {
         .replace(/[^a-z0-9_-]/g, '_')
         // Replace multiple underscores with single underscore
         .replace(/_+/g, '_')
-        // Remove leading/trailing underscores
-        // Optimized with separate replace calls to avoid alternation backtracking
-        // eslint-disable-next-line sonarjs/slow-regex
-        .replace(/^_+/, '').replace(/_+$/, '')
+        // Remove leading/trailing underscore (runs already collapsed to one above)
+        .replace(/^_/, '').replace(/_$/, '')
 
       // Handle edge case of empty filename after sanitization
       if (!filename || filename === '_') {

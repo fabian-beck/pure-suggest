@@ -247,7 +247,7 @@ describe('NetworkVisComponent', () => {
       expect(wrapper.vm.simulation).toBeDefined()
       expect(wrapper.vm.showNodes).toEqual(['selected', 'suggested', 'keyword', 'author'])
       expect(wrapper.vm.errorMessage).toBe('')
-      expect(wrapper.vm.suggestedNumberFactor).toBe(0.3)
+      expect(wrapper.vm.suggestedNumberFactor).toBeCloseTo(0.3)
       expect(wrapper.vm.authorNumberFactor).toBe(0.5)
       expect(wrapper.vm.onlyShowFiltered).toBe(false)
     })
@@ -889,17 +889,17 @@ describe('NetworkVisComponent', () => {
     })
 
     it('respects suggested number factor settings', () => {
-      expect(wrapper.vm.suggestedNumberFactor).toBe(0.3)
+      expect(wrapper.vm.suggestedNumberFactor).toBeCloseTo(0.3)
 
       wrapper.vm.suggestedNumberFactor = 0.8
-      expect(wrapper.vm.suggestedNumberFactor).toBe(0.8)
+      expect(wrapper.vm.suggestedNumberFactor).toBeCloseTo(0.8)
     })
 
     it('respects author number factor settings', () => {
       expect(wrapper.vm.authorNumberFactor).toBe(0.5)
 
       wrapper.vm.authorNumberFactor = 1.2
-      expect(wrapper.vm.authorNumberFactor).toBe(1.2)
+      expect(wrapper.vm.authorNumberFactor).toBeCloseTo(1.2)
     })
 
     it('handles plot method execution with data', () => {
@@ -1008,7 +1008,7 @@ describe('NetworkVisComponent', () => {
 
       // Should filter entire list (10 matches), then show top 15 of those
       // Since only 10 match total, should return all 10
-      expect(filtered.length).toBe(10)
+      expect(filtered).toHaveLength(10)
 
       // Verify filter was applied to full list, not just first 15
       expect(mockSessionStore.filter.matches.mock.calls.length).toBeGreaterThanOrEqual(10)

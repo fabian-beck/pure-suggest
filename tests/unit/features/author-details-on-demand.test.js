@@ -310,7 +310,7 @@ describe('Author Details On Demand Feature', () => {
 
       await suggestedWrapper.vm.$nextTick()
       const suggestedClickableAuthors = suggestedWrapper.findAll('.clickable-author')
-      expect(suggestedClickableAuthors.length).toBe(0)
+      expect(suggestedClickableAuthors).toHaveLength(0)
 
       // Verify that the author names are still displayed (just not clickable)
       expect(suggestedWrapper.text()).toContain('John Doe')

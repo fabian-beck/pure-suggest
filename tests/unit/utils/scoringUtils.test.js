@@ -265,7 +265,7 @@ describe('scoringUtils', () => {
       // Should only highlight the word-boundary "AI", not within "contained"
       expect(highlighted).toContain('<u')
       expect(highlighted.indexOf('<u')).toBe(0) // Should start highlighting at position 0
-      expect((highlighted.match(/<u/g) || []).length).toBe(1) // Only one highlight
+      expect(highlighted.match(/<u/g) || []).toHaveLength(1) // Only one highlight
     })
 
     it('should highlight only first occurrence when keyword appears multiple times', () => {
@@ -276,7 +276,7 @@ describe('scoringUtils', () => {
       const highlighted = highlightTitle(title, matches)
 
       // Should only highlight the first "AI"
-      expect((highlighted.match(/<u/g) || []).length).toBe(1) // Only one highlight
+      expect(highlighted.match(/<u/g) || []).toHaveLength(1) // Only one highlight
       expect(highlighted.indexOf('<u')).toBe(0) // Should start highlighting at position 0
     })
   })

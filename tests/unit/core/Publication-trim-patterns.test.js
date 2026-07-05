@@ -11,29 +11,6 @@ describe('Publication Trim Pattern Processing', () => {
   let publication
 
   beforeEach(() => {
-    // Mock constants
-    vi.doMock('@/constants/publication.js', () => ({
-      CURRENT_YEAR: 2024,
-      SCORING: { DEFAULT_BOOST_FACTOR: 1 },
-      SURVEY_THRESHOLDS: {},
-      CITATION_THRESHOLDS: {},
-      PUBLICATION_AGE: {},
-      TEXT_PROCESSING: {},
-      SURVEY_KEYWORDS: [],
-      // eslint-disable-next-line sonarjs/slow-regex
-      ORDINAL_REGEX: /\d+(?:st|nd|rd|th)/i,
-      ROMAN_NUMERAL_REGEX: /^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})(\?.?)$/i,
-      ORCID_REGEX: /\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]/,
-      TITLE_WORD_MAP: {
-        'of': 'of',
-        'and': 'and',
-        'the': 'the',
-        'journal': 'journal',
-        'conference': 'conference'
-      },
-      PUBLICATION_TAGS: {}
-    }))
-    
     publication = new Publication('10.1234/test')
   })
 
@@ -76,8 +53,7 @@ describe('Publication Trim Pattern Processing', () => {
       publication.processContainer(data)
       
       expect(publication.container).toBe('Journal of Science')
-      // eslint-disable-next-line sonarjs/slow-regex -- Test pattern for edge cases
-      expect(publication.container).not.toMatch(/[\s.]+$/)
+      expect(publication.container).not.toMatch(/[\s.]$/)
     })
 
     it('should remove multiple trailing dots and spaces', () => {
@@ -219,8 +195,7 @@ describe('Publication Trim Pattern Processing', () => {
       // Should clean both leading and trailing
       expect(publication.container).toBe('Journal')
       expect(publication.container).not.toMatch(/^[\s.]+/)
-      // eslint-disable-next-line sonarjs/slow-regex -- Test pattern for edge case validation
-      expect(publication.container).not.toMatch(/[\s.]+$/)
+      expect(publication.container).not.toMatch(/[\s.]$/)
     })
   })
 })
