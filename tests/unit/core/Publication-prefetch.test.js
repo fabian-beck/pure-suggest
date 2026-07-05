@@ -142,4 +142,29 @@ describe('Publication.fetchAll', () => {
     expect(publications.every((publication) => publication.wasFetched)).toBe(true)
     expect(publications[0].title).toBe('Title 10.1000/all-0')
   })
+
+  it('loads chunks concurrently instead of one after another', async () => {
+    const resolvers = []
+    const fetchMock = vi.fn(
+      (url, options) =>
+        new Promise((resolve) => {
+          resolvers.push(() =>
+            resolve(
+              jsonResponse(doisFromRequest(url, options).map((doi) => ({ title: `Title ${doi}` })))
+            )
+          )
+        })
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const publications = Array.from({ length: 20 }, (_, i) => new Publication(`10.1000/conc-${i}`))
+    const done = Publication.fetchAll(publications)
+
+    // Both chunk requests must be in flight before the first one resolves
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
+
+    resolvers.forEach((resolve) => resolve())
+    await done
+    expect(publications.every((publication) => publication.wasFetched)).toBe(true)
+  })
 })
