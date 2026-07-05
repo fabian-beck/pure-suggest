@@ -10,6 +10,9 @@ export const useInterfaceStore = defineStore('interface', {
       loadingMessage: '',
       // Token allowing the user to cancel the current loading operation (esc key/close button)
       loadingCancelToken: null,
+      // Whether the current loading phase may be cancelled (e.g. loading selected
+      // publications must always complete, but computing suggestions may be skipped)
+      isLoadingCancelable: false,
       errorToast: {
         message: '',
         isShown: false,
@@ -48,16 +51,24 @@ export const useInterfaceStore = defineStore('interface', {
     startLoading() {
       this.isLoading = true
       this.loadingCancelToken = markRaw(createCancellationToken())
+      this.isLoadingCancelable = false
     },
 
     endLoading() {
       this.isLoading = false
       this.loadingMessage = ''
       this.loadingCancelToken = null
+      this.isLoadingCancelable = false
+    },
+
+    setLoadingCancelable(isCancelable) {
+      this.isLoadingCancelable = isCancelable
     },
 
     cancelLoading() {
-      this.loadingCancelToken?.cancel()
+      if (this.isLoadingCancelable) {
+        this.loadingCancelToken?.cancel()
+      }
     },
 
     showErrorMessage(errorMessage) {

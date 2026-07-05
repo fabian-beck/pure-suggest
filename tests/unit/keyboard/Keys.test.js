@@ -263,8 +263,9 @@ describe('Keys Module - Keyboard Event Handling', () => {
   })
 
   describe('Escaping data loading', () => {
-    it('should cancel loading when Escape is pressed while loading', () => {
+    it('should cancel loading when Escape is pressed while loading and cancelable', () => {
       interfaceStore.isLoading = true
+      interfaceStore.isLoadingCancelable = true
       interfaceStore.cancelLoading = vi.fn()
 
       const event = { key: 'Escape', preventDefault: vi.fn() }
@@ -272,6 +273,21 @@ describe('Keys Module - Keyboard Event Handling', () => {
 
       expect(event.preventDefault).toHaveBeenCalled()
       expect(interfaceStore.cancelLoading).toHaveBeenCalled()
+    })
+
+    it('should not cancel loading when Escape is pressed while loading but not cancelable', () => {
+      interfaceStore.isLoading = true
+      interfaceStore.isLoadingCancelable = false
+      interfaceStore.cancelLoading = vi.fn()
+      Object.defineProperty(document, 'activeElement', {
+        value: { nodeName: 'BODY', className: '', blur: vi.fn() },
+        configurable: true
+      })
+
+      const event = { key: 'Escape', preventDefault: vi.fn() }
+      onKey(event)
+
+      expect(interfaceStore.cancelLoading).not.toHaveBeenCalled()
     })
 
     it('should not cancel loading when Escape is pressed while not loading', () => {

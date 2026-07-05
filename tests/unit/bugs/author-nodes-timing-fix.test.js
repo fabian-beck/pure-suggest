@@ -65,7 +65,8 @@ const mockInterfaceStore = {
   isLoading: false,
   endLoading: vi.fn(),
   loadingMessage: null,
-  triggerNetworkReplot: vi.fn()
+  triggerNetworkReplot: vi.fn(),
+  setLoadingCancelable: vi.fn()
 }
 
 // Mock the stores

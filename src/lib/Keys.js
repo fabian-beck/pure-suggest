@@ -185,7 +185,7 @@ function handleLoadingEscape(e) {
   if (e.key !== 'Escape') return false
 
   const interfaceStore = useInterfaceStore()
-  if (!interfaceStore.isLoading) return false
+  if (!interfaceStore.isLoading || !interfaceStore.isLoadingCancelable) return false
 
   e.preventDefault()
   interfaceStore.cancelLoading()

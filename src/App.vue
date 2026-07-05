@@ -186,6 +186,7 @@ export default {
       persistent
     >
       <v-btn
+        v-if="interfaceStore.isLoadingCancelable"
         class="loading-cancel-button"
         icon="mdi-close"
         variant="text"

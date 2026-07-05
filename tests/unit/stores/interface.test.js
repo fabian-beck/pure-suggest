@@ -27,8 +27,9 @@ describe('Interface Store - Loading Cancellation', () => {
     expect(interfaceStore.loadingCancelToken).toBeNull()
   })
 
-  it('should mark the token as cancelled and resolve its promise when cancelLoading is called', async () => {
+  it('should mark the token as cancelled and resolve its promise when cancelLoading is called while cancelable', async () => {
     interfaceStore.startLoading()
+    interfaceStore.setLoadingCancelable(true)
     const token = interfaceStore.loadingCancelToken
 
     interfaceStore.cancelLoading()
@@ -40,5 +41,14 @@ describe('Interface Store - Loading Cancellation', () => {
   it('should do nothing when cancelLoading is called while not loading', () => {
     expect(() => interfaceStore.cancelLoading()).not.toThrow()
     expect(interfaceStore.loadingCancelToken).toBeNull()
+  })
+
+  it('should not cancel the token when cancelLoading is called while loading but not cancelable', () => {
+    interfaceStore.startLoading()
+    const token = interfaceStore.loadingCancelToken
+
+    interfaceStore.cancelLoading()
+
+    expect(token.isCancelled).toBe(false)
   })
 })
