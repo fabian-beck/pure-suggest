@@ -27,13 +27,9 @@ export default {
       queueStore.excludedQueue.forEach((doi) => {
         excludedQueue.push(new Publication(doi))
       })
-      // async fetch publication data
-      selectedQueue.forEach((publication) => {
-        publication.fetchData()
-      })
-      excludedQueue.forEach((publication) => {
-        publication.fetchData()
-      })
+      // async bulk fetch publication data; displays update reactively as chunks load
+      Publication.fetchAll(selectedQueue)
+      Publication.fetchAll(excludedQueue)
     }
 
     watch(
