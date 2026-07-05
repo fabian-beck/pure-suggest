@@ -16,6 +16,7 @@ export class SuggestionService {
    * @param {number} options.maxSuggestions - Maximum number of suggestions to return
    * @param {Set} options.readPublicationsDois - Set of DOIs that have been read
    * @param {Function} options.updateLoadingMessage - Callback to update loading progress
+   * @param {Object} [options.cancelToken] - Optional cancellation token to let the user escape loading early
    * @returns {Promise<Object>} Suggestion result with publications and metadata
    */
   static async computeSuggestions({
@@ -25,7 +26,8 @@ export class SuggestionService {
     getSelectedPublicationByDoi,
     maxSuggestions,
     readPublicationsDois,
-    updateLoadingMessage
+    updateLoadingMessage,
+    cancelToken
   }) {
     console.log(
       `Starting to compute new suggestions based on ${selectedPublications.length} selected publications.`
@@ -88,7 +90,15 @@ export class SuggestionService {
     console.log(
       `Filtered suggestions to ${filteredSuggestions.length} top candidates, loading metadata for these.`
     )
-    await this._loadSuggestionsMetadata(filteredSuggestions, updateLoadingMessage)
+    await this._loadSuggestionsMetadata(filteredSuggestions, updateLoadingMessage, cancelToken)
+
+    // If the user cancelled loading, keep only the suggestions that finished loading in time
+    if (cancelToken?.isCancelled) {
+      filteredSuggestions = filteredSuggestions.filter((publication) => publication.wasFetched)
+      console.log(
+        `Loading was cancelled by the user; continuing with ${filteredSuggestions.length} suggestions loaded so far.`
+      )
+    }
 
     // Mark read status
     filteredSuggestions.forEach((publication) => {
@@ -134,20 +144,26 @@ export class SuggestionService {
    * Loads metadata for suggestions with progress tracking
    * @private
    */
-  static async _loadSuggestionsMetadata(suggestions, updateLoadingMessage) {
+  static async _loadSuggestionsMetadata(suggestions, updateLoadingMessage, cancelToken) {
     let publicationsLoadedCount = 0
     updateLoadingMessage(`${publicationsLoadedCount}/${suggestions.length} suggestions loaded`)
 
     // Warm the per-DOI cache with one bulk request so the fetches below are cache hits
     await Publication.prefetch(suggestions)
 
-    await Promise.all(
+    const loadingAllSuggestions = Promise.all(
       suggestions.map(async (suggestedPublication) => {
         await suggestedPublication.fetchData()
         publicationsLoadedCount++
         updateLoadingMessage(`${publicationsLoadedCount}/${suggestions.length} suggestions loaded`)
       })
     )
+
+    // Racing against the cancellation token lets the user escape loading early; any
+    // still-pending fetches keep running in the background and simply get discarded.
+    await (cancelToken
+      ? Promise.race([loadingAllSuggestions, cancelToken.promise])
+      : loadingAllSuggestions)
   }
 
   /**

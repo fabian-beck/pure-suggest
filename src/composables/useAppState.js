@@ -76,13 +76,14 @@ export function useAppState() {
   const updateSuggestions = async (maxSuggestions = sessionStore.maxSuggestions) => {
     sessionStore.maxSuggestions = maxSuggestions
     interfaceStore.startLoading()
+    const cancelToken = interfaceStore.loadingCancelToken
     let publicationsLoaded = 0
     interfaceStore.loadingMessage = `${publicationsLoaded}/${sessionStore.selectedPublicationsCount} selected publications loaded`
 
     // Warm the per-DOI cache with one bulk request so the fetches below are cache hits
     await Publication.prefetch(sessionStore.selectedPublications)
 
-    await Promise.all(
+    const loadingSelectedPublications = Promise.all(
       sessionStore.selectedPublications.map(async (publication) => {
         await publication.fetchData()
         publication.isSelected = true
@@ -90,6 +91,12 @@ export function useAppState() {
         interfaceStore.loadingMessage = `${publicationsLoaded}/${sessionStore.selectedPublicationsCount} selected publications loaded`
       })
     )
+
+    // Racing against the cancellation token lets the user escape loading early; any
+    // still-pending fetches keep running in the background and simply get discarded.
+    await (cancelToken
+      ? Promise.race([loadingSelectedPublications, cancelToken.promise])
+      : loadingSelectedPublications)
 
     await computeSuggestions()
 
@@ -142,7 +149,8 @@ export function useAppState() {
       readPublicationsDois: sessionStore.readPublicationsDois,
       updateLoadingMessage: (message) => {
         interfaceStore.loadingMessage = message
-      }
+      },
+      cancelToken: interfaceStore.loadingCancelToken
     })
 
     updateScores()

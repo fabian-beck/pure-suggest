@@ -178,6 +178,19 @@ function handlePublicationActions(e) {
 }
 
 /**
+ * Lets the user escape a long-running data loading operation via the Escape key
+ * @returns {boolean} True if the key was handled (loading was active)
+ */
+function handleLoadingEscape(e) {
+  const interfaceStore = useInterfaceStore()
+  if (e.key !== 'Escape' || !interfaceStore.isLoading) return false
+
+  e.preventDefault()
+  interfaceStore.cancelLoading()
+  return true
+}
+
+/**
  * Handle shortcuts that work when a publication is active
  */
 function handleActivePublicationShortcuts(e) {
@@ -205,6 +218,8 @@ export function onKey(e) {
   ) {
     return
   }
+
+  if (handleLoadingEscape(e)) return
 
   // Handle overlay states
   if (isAnyOverlayShown && document.activeElement.nodeName != 'INPUT') {

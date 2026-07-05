@@ -262,6 +262,34 @@ describe('Keys Module - Keyboard Event Handling', () => {
     })
   })
 
+  describe('Escaping data loading', () => {
+    it('should cancel loading when Escape is pressed while loading', () => {
+      interfaceStore.isLoading = true
+      interfaceStore.cancelLoading = vi.fn()
+
+      const event = { key: 'Escape', preventDefault: vi.fn() }
+      onKey(event)
+
+      expect(event.preventDefault).toHaveBeenCalled()
+      expect(interfaceStore.cancelLoading).toHaveBeenCalled()
+    })
+
+    it('should not cancel loading when Escape is pressed while not loading', () => {
+      interfaceStore.isLoading = false
+      interfaceStore.cancelLoading = vi.fn()
+      const mockInput = { nodeName: 'INPUT', type: 'text', className: '', blur: vi.fn() }
+      Object.defineProperty(document, 'activeElement', {
+        value: mockInput,
+        configurable: true
+      })
+
+      const event = { key: 'Escape', preventDefault: vi.fn() }
+      onKey(event)
+
+      expect(interfaceStore.cancelLoading).not.toHaveBeenCalled()
+    })
+  })
+
   describe('Publication Queuing (+ and - keys)', () => {
     it('should queue publication for selection when pressing + with active publication', () => {
       sessionStore.selectedPublications = [{ doi: '10.1234/test' }]

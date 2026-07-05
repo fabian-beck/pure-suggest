@@ -143,5 +143,50 @@ describe('SuggestionService', () => {
         expect(pub.fetchData).toHaveBeenCalled()
       })
     })
+
+    it('should keep only suggestions that finished loading when the cancellation token is triggered', async () => {
+      // One suggestion loads instantly, the other never resolves (simulating a stuck request)
+      Publication.mockImplementation(function (doi) {
+        return {
+          doi,
+          citationCount: 0,
+          referenceCount: 0,
+          citationDois: new Set([]),
+          referenceDois: new Set([]),
+          wasFetched: false,
+          fetchData: vi.fn().mockImplementation(function () {
+            if (doi === '10.1234/citation1') {
+              this.wasFetched = true
+              return Promise.resolve()
+            }
+            return new Promise(() => {})
+          }),
+          isRead: false
+        }
+      })
+
+      const cancelToken = {
+        isCancelled: true,
+        promise: Promise.resolve()
+      }
+
+      const result = await SuggestionService.computeSuggestions({ ...mockOptions, cancelToken })
+
+      expect(result.publications.length).toBeGreaterThan(0)
+      result.publications.forEach((pub) => {
+        expect(pub.wasFetched).toBe(true)
+      })
+    })
+
+    it('should not filter suggestions when the cancellation token was not triggered', async () => {
+      const cancelToken = {
+        isCancelled: false,
+        promise: new Promise(() => {})
+      }
+
+      const result = await SuggestionService.computeSuggestions({ ...mockOptions, cancelToken })
+
+      expect(result.publications.length).toBeGreaterThan(0)
+    })
   })
 })

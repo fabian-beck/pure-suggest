@@ -1,10 +1,15 @@
 import { defineStore } from 'pinia'
+import { markRaw } from 'vue'
+
+import { createCancellationToken } from '@/lib/Cancellation.js'
 
 export const useInterfaceStore = defineStore('interface', {
   state: () => {
     return {
       isLoading: false,
       loadingMessage: '',
+      // Token allowing the user to cancel the current loading operation (esc key/close button)
+      loadingCancelToken: null,
       errorToast: {
         message: '',
         isShown: false,
@@ -42,11 +47,17 @@ export const useInterfaceStore = defineStore('interface', {
 
     startLoading() {
       this.isLoading = true
+      this.loadingCancelToken = markRaw(createCancellationToken())
     },
 
     endLoading() {
       this.isLoading = false
       this.loadingMessage = ''
+      this.loadingCancelToken = null
+    },
+
+    cancelLoading() {
+      this.loadingCancelToken?.cancel()
     },
 
     showErrorMessage(errorMessage) {
