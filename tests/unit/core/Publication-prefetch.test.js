@@ -17,6 +17,21 @@ function jsonResponse(data) {
   return { ok: true, json: () => Promise.resolve(data) }
 }
 
+// Extracts the requested DOIs from a bulk request (GET query or POST body)
+function doisFromRequest(url, options) {
+  if (options?.body) return JSON.parse(options.body).dois
+  return decodeURIComponent(new URL(url).searchParams.get('dois')).split(',')
+}
+
+// Answers any bulk request with one title per requested DOI
+function bulkFetchMock() {
+  return vi.fn((url, options) =>
+    Promise.resolve(
+      jsonResponse(doisFromRequest(url, options).map((doi) => ({ title: `Title ${doi}` })))
+    )
+  )
+}
+
 describe('Publication.prefetch', () => {
   afterEach(() => {
     vi.unstubAllGlobals()
@@ -56,6 +71,38 @@ describe('Publication.prefetch', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
+  it('splits large batches into chunked bulk requests', async () => {
+    const fetchMock = bulkFetchMock()
+    vi.stubGlobal('fetch', fetchMock)
+
+    const publications = Array.from({ length: 120 }, (_, i) => new Publication(`10.1000/chunk-${i}`))
+    await Publication.prefetch(publications)
+    expect(fetchMock).toHaveBeenCalledTimes(3) // 50 + 50 + 20
+
+    // All publications were cached, so individual fetches need no further network calls
+    await Promise.all(publications.map((publication) => publication.fetchData()))
+    expect(fetchMock).toHaveBeenCalledTimes(3)
+    expect(publications[119].title).toBe('Title 10.1000/chunk-119')
+  })
+
+  it('continues with remaining chunks when one bulk request fails', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const fetchMock = bulkFetchMock().mockResolvedValueOnce({ ok: false, status: 500 })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const publications = Array.from({ length: 60 }, (_, i) => new Publication(`10.1000/fail-chunk-${i}`))
+    await Publication.prefetch(publications)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(warnSpy).toHaveBeenCalledTimes(1)
+
+    // The second chunk was still cached despite the first one failing
+    await publications[59].fetchData()
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(publications[59].title).toBe('Title 10.1000/fail-chunk-59')
+
+    warnSpy.mockRestore()
+  })
+
   it('degrades gracefully when the bulk request fails', async () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const fetchMock = vi.fn().mockResolvedValue({ ok: false, status: 500 })
@@ -67,5 +114,30 @@ describe('Publication.prefetch', () => {
     expect(publication.wasFetched).toBe(false)
 
     warnSpy.mockRestore()
+  })
+})
+
+describe('Publication.fetchAll', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('loads all publications with one bulk request per chunk and reports progress', async () => {
+    const fetchMock = bulkFetchMock()
+    vi.stubGlobal('fetch', fetchMock)
+
+    const publications = Array.from({ length: 60 }, (_, i) => new Publication(`10.1000/all-${i}`))
+    const loadedDois = []
+    await Publication.fetchAll(publications, (publication) => loadedDois.push(publication.doi))
+
+    // Only the two bulk requests hit the network; the individual fetches were cache hits
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    fetchMock.mock.calls.forEach(([url, options]) => {
+      expect(options?.body || url).toContain('dois')
+    })
+
+    expect(loadedDois).toHaveLength(60)
+    expect(publications.every((publication) => publication.wasFetched)).toBe(true)
+    expect(publications[0].title).toBe('Title 10.1000/all-0')
   })
 })
