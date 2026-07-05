@@ -143,6 +143,46 @@ describe('Publication.fetchAll', () => {
     expect(publications[0].title).toBe('Title 10.1000/all-0')
   })
 
+  it('loads cached publications immediately and requests only the misses in chunks', async () => {
+    // Warm the cache for the first 12 publications
+    vi.stubGlobal('fetch', bulkFetchMock())
+    await Publication.prefetch(
+      Array.from({ length: 12 }, (_, i) => new Publication(`10.1000/mix-${i}`))
+    )
+
+    // Fresh publication objects: 12 cached and 3 uncached
+    const publications = Array.from({ length: 15 }, (_, i) => new Publication(`10.1000/mix-${i}`))
+    const resolvers = []
+    const deferredFetch = vi.fn(
+      (url, options) =>
+        new Promise((resolve) => {
+          resolvers.push(() =>
+            resolve(
+              jsonResponse(doisFromRequest(url, options).map((doi) => ({ title: `Title ${doi}` })))
+            )
+          )
+        })
+    )
+    vi.stubGlobal('fetch', deferredFetch)
+
+    const loadedDois = []
+    const done = Publication.fetchAll(publications, (publication) => loadedDois.push(publication.doi))
+
+    // All cached publications report progress while the bulk request is still pending
+    await vi.waitFor(() => expect(loadedDois).toHaveLength(12))
+    expect(deferredFetch).toHaveBeenCalledTimes(1)
+    expect(doisFromRequest(...deferredFetch.mock.calls[0])).toEqual([
+      '10.1000/mix-12',
+      '10.1000/mix-13',
+      '10.1000/mix-14'
+    ])
+
+    resolvers.forEach((resolve) => resolve())
+    await done
+    expect(loadedDois).toHaveLength(15)
+    expect(publications.every((publication) => publication.wasFetched)).toBe(true)
+  })
+
   it('loads chunks concurrently instead of one after another', async () => {
     const resolvers = []
     const fetchMock = vi.fn(

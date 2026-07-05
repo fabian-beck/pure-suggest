@@ -1,6 +1,6 @@
 import Author from './Author.js'
 import { SCORING, CURRENT_YEAR, API_ENDPOINTS, API_PARAMS } from '../constants/config.js'
-import { cacheBulk, cachedFetch } from '../lib/Cache.js'
+import { cacheBulk, cachedFetch, readCacheMany } from '../lib/Cache.js'
 
 
 const SURVEY_THRESHOLDS = {
@@ -419,26 +419,47 @@ export default class Publication {
   }
 
   /**
-   * Loads metadata for many publications in concurrently loaded chunks: each
-   * chunk is warmed with one bulk request before its publications are fetched,
-   * so requests stay bounded in size and progress becomes visible as chunks
-   * complete.
+   * Loads metadata for many publications: already cached publications load and
+   * report progress immediately, while the cache misses are grouped into
+   * concurrently loaded chunks, each warmed with one bulk request. Requests
+   * stay bounded in size and progress becomes visible as chunks complete.
    * @param {Publication[]} publications - Publications to load.
    * @param {(publication: Publication) => void} [onPublicationLoaded] - Called
    *   after each publication finished loading, e.g. to update a progress message.
    */
   static async fetchAll(publications, onPublicationLoaded) {
-    await Promise.all(
-      chunked(publications).map(async (chunk) => {
+    const loadPublication = async (publication) => {
+      await publication.fetchData()
+      onPublicationLoaded?.(publication)
+    }
+
+    // A failing cache lookup must not prevent loading; treat everything as uncached then
+    let cachedData = new Map()
+    try {
+      cachedData = await readCacheMany(
+        publications.map((publication) => publicationUrl(publication.doi))
+      )
+    } catch (error) {
+      console.warn(`[Publication] Cache lookup failed, loading everything in chunks: ${error}`)
+    }
+
+    const cached = []
+    const uncached = []
+    publications.forEach((publication) => {
+      if (publication.wasFetched || cachedData.has(publicationUrl(publication.doi))) {
+        cached.push(publication)
+      } else {
+        uncached.push(publication)
+      }
+    })
+
+    await Promise.all([
+      ...cached.map(loadPublication),
+      ...chunked(uncached).map(async (chunk) => {
         await prefetchChunk(chunk)
-        await Promise.all(
-          chunk.map(async (publication) => {
-            await publication.fetchData()
-            onPublicationLoaded?.(publication)
-          })
-        )
+        await Promise.all(chunk.map(loadPublication))
       })
-    )
+    ])
   }
 
   /**

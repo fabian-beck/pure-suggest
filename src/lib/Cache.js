@@ -96,7 +96,7 @@ async function handleCacheCleanupAndRetry(url, cacheObject) {
  * @param {string[]} canonicalUrls - The cache keys.
  * @returns {Promise<Map<string, object>>} Cached data by key; misses are absent.
  */
-async function readCacheMany(canonicalUrls) {
+export async function readCacheMany(canonicalUrls) {
   const dataByUrl = new Map()
   const missingUrls = []
 
