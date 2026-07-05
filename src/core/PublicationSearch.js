@@ -7,7 +7,7 @@ export default class PublicationSearch {
     this.query = query
   }
 
-  async execute() {
+  async execute(onProgress) {
     const dois = []
     const results = []
     // removing whitespace (e.g., through line breaks) in DOIs
@@ -19,35 +19,43 @@ export default class PublicationSearch {
       // cutting characters that might be included in DOI, but very unlikely at the end
       doi = doi
         .trim()
-        // Optimized with separate replace calls to avoid alternation backtracking
-        // eslint-disable-next-line sonarjs/slow-regex
+        // eslint-disable-next-line sonarjs/super-linear-regex -- safe on short DOI tokens
         .replace(/^[.,;]+/, '').replace(/[.,;]+$/, '')
         .replace('\\_', '_')
       if (doi.indexOf('10.') === 0 && !dois.includes(doi)) {
         dois.push(doi)
-        const publication = new Publication(doi)
-        publication.fetchData()
-        results.push(publication)
+        results.push(new Publication(doi))
       }
     })
     if (dois.length) {
       console.log(`Identified ${results.length} DOI(s) in input; do not perform search.`)
+      await this.fetchAll(results, onProgress)
       return { results, type: 'doi' }
     }
-    
+
     console.log(`Searching for publications matching '${this.query}' using both OpenAlex and CrossRef.`)
-    
+
     // Search both APIs in parallel and merge results
     await Promise.all([
       this.searchOpenAlex(results),
       this.searchCrossRef(results)
     ])
-    
-    // Remove duplicates and rank results
+
+    // Remove duplicates, then load metadata before ranking so scores are based on fetched data
     const uniqueResults = this.removeDuplicates(results)
+    await this.fetchAll(uniqueResults, onProgress)
     const rankedResults = this.rankResults(uniqueResults)
-    
+
     return { results: rankedResults, type: 'search' }
+  }
+
+  /**
+   * Loads metadata for all result publications in chunked bulk requests,
+   * reporting progress after each loaded publication.
+   */
+  async fetchAll(publications, onProgress) {
+    let loaded = 0
+    await Publication.fetchAll(publications, () => onProgress?.(++loaded, publications.length))
   }
 
   async searchCrossRef(results) {
@@ -58,9 +66,7 @@ export default class PublicationSearch {
         data.message.items
           .filter((item) => item.title)
           .forEach((item) => {
-            const publication = new Publication(item.DOI)
-            publication.fetchData()
-            results.push(publication)
+            results.push(new Publication(item.DOI))
           })
       }
     )
@@ -76,9 +82,7 @@ export default class PublicationSearch {
           .forEach((item) => {
             // Extract DOI from the full URL (OpenAlex returns it as https://doi.org/...)
             const doi = item.doi.replace('https://doi.org/', '')
-            const publication = new Publication(doi)
-            publication.fetchData()
-            results.push(publication)
+            results.push(new Publication(doi))
           })
       }
     )
@@ -127,10 +131,6 @@ export default class PublicationSearch {
     const TITLE_WEIGHT = 3
     const AUTHOR_WEIGHT = 2
     const VENUE_WEIGHT = 1
-    
-    // Wait for publication data to be fetched before scoring
-    // Since publications are fetched asynchronously, we'll score based on available data
-    // The Publication object will have these fields populated after fetchData() completes
     
     const titleWords = this.extractWords(publication.title || '')
     const authorWords = this.extractWords(publication.author || '')

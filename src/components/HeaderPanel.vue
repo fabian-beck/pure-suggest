@@ -58,24 +58,7 @@ const filterMenuComponent = ref(null)
         </v-list>
       </v-menu>
     </v-app-bar>
-    <div class="columns intro-message" v-if="isEmpty">
-      <div class="column">
-        <div class="subtitle level-item mt-2">
-          {{ appMeta.subtitle }}
-        </div>
-      </div>
-      <div class="column is-two-thirds">
-        <div class="notification has-text-centered p-2" v-show="isEmpty">
-          <p>
-            Based on a set of selected publications,
-            <b class="has-text-info">suggest</b>ing related
-            <b class="has-text-primary">pu</b>blications connected by
-            <b class="has-text-primary">re</b>ferences.
-          </p>
-        </div>
-      </div>
-    </div>
-    <div v-else class="intro-message-placeholder"></div>
+    <div class="header-spacer"></div>
   </div>
 </template>
 
@@ -169,13 +152,8 @@ const filterMenuComponent = ref(null)
   font-size: 18px;
 }
 
-.intro-message,
-.intro-message-placeholder {
+.header-spacer {
   margin-top: 0.5rem;
-
-  & .column {
-    margin: var(--bulma-block-spacing, 1.5rem);
-  }
 }
 
 @media screen and (max-width: 1023px) {

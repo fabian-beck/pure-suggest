@@ -191,7 +191,7 @@ The project uses GitHub Actions (`.github/workflows/node.js.yml`):
 - **Framework**: Vue 3 with Composition API
 - **Build Tool**: Vite (fast development and production builds)
 - **State Management**: Pinia stores with clear separation of concerns
-- **UI Framework**: Vuetify 3 + Bulma CSS hybrid approach
+- **UI Framework**: Vuetify 4 + Bulma CSS hybrid approach
 - **Visualization**: D3.js for interactive citation networks
 - **Testing**: Vitest with Happy DOM environment
 - **Caching**: IndexedDB with LZ-string compression for metadata

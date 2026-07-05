@@ -31,6 +31,7 @@ export default {
       searchResults: { results: [], type: 'empty' },
       isLoading: false,
       loaded: 0,
+      total: 0,
       cleanedSearchQuery: '',
       searchCancelled: false,
       lastSearchQuery: ''
@@ -90,6 +91,7 @@ export default {
       this.searchCancelled = true
       this.isLoading = false
       this.loaded = 0
+      this.total = 0
       this.searchResults = { results: [], type: 'empty' }
     },
 
@@ -105,6 +107,7 @@ export default {
       }
 
       this.loaded = 0
+      this.total = 0
       this.searchCancelled = false
       if (!this.modalStore.searchQuery) {
         this.searchResults = { results: [], type: 'empty' }
@@ -115,7 +118,10 @@ export default {
       this.lastSearchQuery = this.modalStore.searchQuery
       this.cleanedSearchQuery = this.modalStore.searchQuery.replace(/[^a-zA-Z0-9 ]/g, ' ')
       const publicationSearch = new PublicationSearch(this.modalStore.searchQuery)
-      this.searchResults = await publicationSearch.execute()
+      this.searchResults = await publicationSearch.execute((loaded, total) => {
+        this.loaded = loaded
+        this.total = total
+      })
 
       // Check if search was cancelled during execution
       if (this.searchCancelled) {
@@ -124,32 +130,8 @@ export default {
 
       if (this.filteredSearchResults.length === 0) {
         this.interfaceStore.showErrorMessage('No matching publications found')
-        this.isLoading = false
-        return
       }
-      // Poll for publication data loading completion
-      const check = () => {
-        // Check if search was cancelled
-        if (this.searchCancelled) {
-          return
-        }
-
-        let loaded = 0
-        this.filteredSearchResults.forEach((publication) => {
-          if (publication.wasFetched) {
-            loaded++
-          }
-        })
-        this.loaded = loaded
-        if (loaded === this.filteredSearchResults.length) {
-          // Re-rank results now that all data is loaded
-          this.searchResults.results = this.rankResults(this.searchResults.results)
-          this.isLoading = false
-          return
-        }
-        setTimeout(check.bind(this), 200)
-      }
-      check.bind(this)()
+      this.isLoading = false
     },
 
     addPublication(doi) {
@@ -174,59 +156,8 @@ export default {
       this.isLoading = false
       this.searchCancelled = false
       this.loaded = 0
+      this.total = 0
       this.lastSearchQuery = ''
-    },
-
-    // Re-ranking after publication data is fully loaded
-    // This duplicates the logic in PublicationSearch.js intentionally:
-    // - PublicationSearch ranks with potentially incomplete data immediately after API responses
-    // - This method re-ranks with complete data after all publications have been fetched
-    rankResults(results) {
-      const queryWords = this.extractWords(this.cleanedSearchQuery)
-      
-      // Calculate match scores for each publication
-      const scoredResults = results.map((publication) => {
-        const score = this.calculateMatchScore(publication, queryWords)
-        return { publication, score }
-      })
-      
-      // Sort by score descending
-      scoredResults.sort((a, b) => b.score - a.score)
-      
-      return scoredResults.map((item) => item.publication)
-    },
-
-    extractWords(text) {
-      return text
-        .toLowerCase()
-        .replace(/[^a-z0-9\s]/g, ' ')
-        .split(/\s+/)
-        .filter((word) => word.length >= 3)
-    },
-
-    calculateMatchScore(publication, queryWords) {
-      let score = 0
-      
-      const TITLE_WEIGHT = 3
-      const AUTHOR_WEIGHT = 2
-      const VENUE_WEIGHT = 1
-      
-      const titleWords = this.extractWords(publication.title || '')
-      const authorWords = this.extractWords(publication.author || '')
-      const venueWords = this.extractWords(publication.container || '')
-      
-      queryWords.forEach((queryWord) => {
-        const titleMatches = titleWords.filter((word) => word === queryWord).length
-        score += titleMatches * TITLE_WEIGHT
-        
-        const authorMatches = authorWords.filter((word) => word === queryWord).length
-        score += authorMatches * AUTHOR_WEIGHT
-        
-        const venueMatches = venueWords.filter((word) => word === queryWord).length
-        score += venueMatches * VENUE_WEIGHT
-      })
-      
-      return score
     }
   }
 }
@@ -307,12 +238,8 @@ export default {
           >
             <div class="d-flex flex-column align-center justify-center">
               <v-progress-circular color="white" indeterminate size="64"></v-progress-circular>
-              <div class="search-loading-message" v-if="this.searchResults.type === 'empty'">
-                Searching
-              </div>
-              <div class="search-loading-message" v-else>
-                Loading {{ loaded }}/{{ filteredSearchResults.length }}
-              </div>
+              <div class="search-loading-message" v-if="total === 0">Searching</div>
+              <div class="search-loading-message" v-else>Loading {{ loaded }}/{{ total }}</div>
             </div>
           </v-overlay>
         </ul>

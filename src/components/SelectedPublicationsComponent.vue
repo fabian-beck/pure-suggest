@@ -9,13 +9,7 @@ import { useSessionStore } from '@/stores/session.js'
 const sessionStore = useSessionStore()
 const { openSearchModal, openAuthorModal, openQueueModal, openConceptConfigModal } = useModalManager()
 const queueStore = useQueueStore()
-const {
-  isEmpty,
-  importSessionWithConfirmation,
-  importBibtexWithConfirmation,
-  loadExample,
-  updateQueued
-} = useAppState()
+const { isEmpty, updateQueued } = useAppState()
 
 const publicationList = ref(null)
 
@@ -123,40 +117,6 @@ onMounted(() => {
                 size="small"
               >
                 <span class="key">U</span>pdate
-              </v-btn>
-            </div>
-          </div>
-        </div>
-        <div class="notification has-text-centered has-background-primary-95 p-2" v-show="isEmpty">
-          <p>
-            <i>To start, <b>add publications</b> to selected:</i>
-          </p>
-          <div class="columns is-multiline is-centered mt-4 mb-2">
-            <div class="column is-narrow py-1">
-              <v-btn
-                class="has-background-primary-95"
-                @click.stop="openSearchModal()"
-              >
-                <v-icon left class="mr-2">mdi-magnify</v-icon>
-                Search/add</v-btn
-              >
-            </div>
-            <div class="column is-narrow py-1">
-              <v-btn class="has-background-primary-95" @click.stop="importSessionWithConfirmation">
-                <v-icon left class="mr-2">mdi-import</v-icon>
-                Import session
-              </v-btn>
-            </div>
-            <div class="column is-narrow py-1">
-              <v-btn class="has-background-primary-95" @click.stop="importBibtexWithConfirmation">
-                <v-icon left class="mr-2">mdi-import</v-icon>
-                Import BibTeX
-              </v-btn>
-            </div>
-            <div class="column is-narrow py-1">
-              <v-btn class="has-background-primary-95" @click.stop="loadExample()">
-                <v-icon left class="mr-2">mdi-file-document</v-icon>
-                Load example
               </v-btn>
             </div>
           </div>

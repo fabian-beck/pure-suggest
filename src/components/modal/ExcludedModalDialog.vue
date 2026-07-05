@@ -22,10 +22,8 @@ export default {
       sessionStore.excludedPublicationsDois.forEach((doi) => {
         excludedPublications.push(new Publication(doi))
       })
-      // fetch publication data (Important note: as this is async, it needs to work on the publications after pushing them to the array; otherwise, the updates will not be noted)
-      excludedPublications.forEach((publication) => {
-        publication.fetchData()
-      })
+      // async bulk fetch publication data (Important note: as this is async, it needs to work on the publications after pushing them to the array; otherwise, the updates will not be noted)
+      Publication.fetchAll(excludedPublications)
     }
 
     watch(

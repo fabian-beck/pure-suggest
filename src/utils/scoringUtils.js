@@ -29,9 +29,9 @@ const SCORE_LIGHTNESS = {
 // @indirection-reviewed: meaningful-abstraction - clear business logic for user input normalization
 export function normalizeBoostKeywordString(boostKeywordString) {
   return boostKeywordString
-    // eslint-disable-next-line sonarjs/slow-regex -- Safe whitespace pattern
+    // eslint-disable-next-line sonarjs/super-linear-regex -- safe on short keyword input
     .replace(/\s*,\s*/g, ', ') // treat spaces before/after commas
-    // eslint-disable-next-line sonarjs/slow-regex -- Safe whitespace pattern
+    // eslint-disable-next-line sonarjs/super-linear-regex -- safe on short keyword input
     .replace(/\s*\|\s*/g, '|') // remove spaces before/after vertical line
     .toUpperCase() // upper case
 }

@@ -22,7 +22,9 @@ global.indexedDB = {
 vi.mock('idb-keyval', () => ({
   keys: vi.fn(() => Promise.resolve([])),
   get: vi.fn(() => Promise.resolve(null)),
+  getMany: vi.fn((requestedKeys) => Promise.resolve(requestedKeys.map(() => undefined))),
   set: vi.fn(() => Promise.resolve()),
+  setMany: vi.fn(() => Promise.resolve()),
   del: vi.fn(() => Promise.resolve())
 }))
 

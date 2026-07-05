@@ -1,10 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
+import Publication from '@/core/Publication.js'
 import PublicationSearch from '@/core/PublicationSearch.js'
 
-// Mock the Cache module
-vi.mock('@/lib/Cache.js', () => ({
-  cachedFetch: vi.fn((url, callback) => {
+// Default search API responses; restored in beforeEach so tests that override
+// the implementation do not leak into later tests
+const { defaultCachedFetch } = vi.hoisted(() => ({
+  defaultCachedFetch: (url, callback) => {
     // Simulate different responses based on the URL
     if (url.includes('api.openalex.org')) {
       // OpenAlex response
@@ -26,22 +28,42 @@ vi.mock('@/lib/Cache.js', () => ({
       })
     }
     return Promise.resolve()
-  })
+  }
 }))
 
-// Mock the Publication class
+// Mock the Cache module
+vi.mock('@/lib/Cache.js', () => ({
+  cachedFetch: vi.fn(defaultCachedFetch)
+}))
+
+// Mock the Publication class; fetchData resolves titles from a configurable map
+// to simulate metadata arriving asynchronously from the network
 vi.mock('@/core/Publication.js', () => ({
   default: class MockPublication {
+    static fetchAll = vi.fn(async (publications, onPublicationLoaded) => {
+      for (const publication of publications) {
+        await publication.fetchData()
+        onPublicationLoaded?.(publication)
+      }
+    })
+    static titleByDoi = {}
     constructor(doi) {
       this.doi = doi
+      this.title = ''
     }
-    fetchData() {}
+    async fetchData() {
+      this.title = MockPublication.titleByDoi[this.doi] || this.title
+      this.wasFetched = true
+    }
   }
 }))
 
 describe('PublicationSearch', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
+    Publication.titleByDoi = {}
+    const { cachedFetch } = await import('@/lib/Cache.js')
+    cachedFetch.mockImplementation(defaultCachedFetch)
   })
 
   describe('Constructor', () => {
@@ -141,6 +163,45 @@ describe('PublicationSearch', () => {
       const result = await search.execute()
       
       expect(result.results).toHaveLength(1) // Duplicate should be removed
+    })
+  })
+
+  describe('Bulk Loading', () => {
+    it('should bulk load detected DOIs and report progress', async () => {
+      const progress = []
+      const search = new PublicationSearch('10.1234/publication-alpha 10.5678/publication-beta')
+      const result = await search.execute((loaded, total) => progress.push([loaded, total]))
+
+      expect(Publication.fetchAll).toHaveBeenCalledTimes(1)
+      expect(Publication.fetchAll.mock.calls[0][0]).toBe(result.results)
+      expect(result.results.every((publication) => publication.wasFetched)).toBe(true)
+      expect(progress).toEqual([
+        [1, 2],
+        [2, 2]
+      ])
+    })
+
+    it('should bulk load merged search results after deduplication', async () => {
+      const search = new PublicationSearch('visualization')
+      const result = await search.execute()
+
+      expect(Publication.fetchAll).toHaveBeenCalledTimes(1)
+      expect(Publication.fetchAll.mock.calls[0][0]).toHaveLength(4) // 2 OpenAlex + 2 CrossRef, no duplicates
+      expect(result.results.every((publication) => publication.wasFetched)).toBe(true)
+    })
+
+    it('should rank based on metadata fetched before ranking', async () => {
+      Publication.titleByDoi = {
+        '10.1234/openalex-1': 'Unrelated Topic',
+        '10.1234/openalex-2': 'Unrelated Topic',
+        '10.1234/crossref-1': 'Visualization Techniques for Visualization',
+        '10.1234/crossref-2': 'Unrelated Topic'
+      }
+
+      const search = new PublicationSearch('visualization')
+      const result = await search.execute()
+
+      expect(result.results[0].doi).toBe('10.1234/crossref-1')
     })
   })
 

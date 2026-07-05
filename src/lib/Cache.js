@@ -1,4 +1,4 @@
-import { get, set, keys, del, clear } from 'idb-keyval'
+import { getMany, set, setMany, keys, del, clear } from 'idb-keyval'
 import LZString from 'lz-string'
 
 const CACHE_CONFIG = {
@@ -23,28 +23,24 @@ if (typeof indexedDB !== 'undefined') {
   }
 }
 
-// Warm up memory cache by loading IndexedDB entries
+// Warm up memory cache by loading IndexedDB entries with a single batched read
 async function warmUpMemoryCache() {
   try {
-    const allKeys = await keys()
-    const warmUpCount = Math.min(500, allKeys.length) // Load up to 500 entries
+    const warmUpKeys = (await keys()).slice(0, 500) // Load up to 500 entries
 
-    console.log(`🔥 Warming up memory cache with ${warmUpCount} entries...`)
+    console.log(`🔥 Warming up memory cache with ${warmUpKeys.length} entries...`)
 
-    for (let i = 0; i < warmUpCount; i++) {
+    const cacheObjects = await getMany(warmUpKeys)
+    cacheObjects.forEach((cacheObject, index) => {
       try {
-        const key = allKeys[i]
-        const cacheObject = await get(key)
-
         if (cacheObject && cacheObject.data) {
           const data = JSON.parse(LZString.decompress(cacheObject.data))
-          addToMemoryCache(key, data)
+          addToMemoryCache(warmUpKeys[index], data)
         }
       } catch {
         // Skip problematic entries
-        continue
       }
-    }
+    })
 
     console.log(`✅ Memory cache warmed up: ${memoryCache.size} entries loaded`)
   } catch (error) {
@@ -95,31 +91,40 @@ async function handleCacheCleanupAndRetry(url, cacheObject) {
 }
 
 /**
- * Reads a cached entry from the memory cache, falling back to IndexedDB.
- * @param {string} canonicalUrl - The cache key.
- * @returns {Promise<object|undefined>} Cached data, or undefined on a miss.
+ * Reads many cached entries at once from the memory cache, falling back to a
+ * single batched IndexedDB read for the rest.
+ * @param {string[]} canonicalUrls - The cache keys.
+ * @returns {Promise<Map<string, object>>} Cached data by key; misses are absent.
  */
-async function readCache(canonicalUrl) {
-  if (memoryCache.has(canonicalUrl)) {
-    const cachedData = memoryCache.get(canonicalUrl)
-    // Move to end (mark as recently used)
-    memoryCache.delete(canonicalUrl)
-    memoryCache.set(canonicalUrl, cachedData)
-    return cachedData
+export async function readCacheMany(canonicalUrls) {
+  const dataByUrl = new Map()
+  const missingUrls = []
+
+  for (const url of canonicalUrls) {
+    if (memoryCache.has(url)) {
+      const cachedData = memoryCache.get(url)
+      // Move to end (mark as recently used)
+      memoryCache.delete(url)
+      memoryCache.set(url, cachedData)
+      dataByUrl.set(url, cachedData)
+    } else {
+      missingUrls.push(url)
+    }
   }
 
-  if (typeof indexedDB === 'undefined') return undefined
+  if (typeof indexedDB === 'undefined' || !missingUrls.length) return dataByUrl
 
-  const cacheObject = await get(canonicalUrl)
-  if (!cacheObject || cacheObject.timestamp < Date.now() - CACHE_CONFIG.EXPIRY_MS) {
-    return undefined
-  }
+  const cacheObjects = await getMany(missingUrls)
+  cacheObjects.forEach((cacheObject, index) => {
+    if (!cacheObject || cacheObject.timestamp < Date.now() - CACHE_CONFIG.EXPIRY_MS) return
 
-  const data = JSON.parse(LZString.decompress(cacheObject.data))
-  if (!data) return undefined
+    const data = JSON.parse(LZString.decompress(cacheObject.data))
+    if (!data) return
 
-  addToMemoryCache(canonicalUrl, data)
-  return data
+    addToMemoryCache(missingUrls[index], data)
+    dataByUrl.set(missingUrls[index], data)
+  })
+  return dataByUrl
 }
 
 /**
@@ -142,7 +147,7 @@ export async function cachedFetch(url, processData, fetchParameters = {}, noCach
   const canonicalUrl = noCache ? url.replace('&noCache=true', '') : url
 
   if (!noCache) {
-    const cachedData = await readCache(canonicalUrl)
+    const cachedData = (await readCacheMany([canonicalUrl])).get(canonicalUrl)
     if (cachedData !== undefined) {
       processData(cachedData)
       return
@@ -194,14 +199,31 @@ export async function cachedFetch(url, processData, fetchParameters = {}, noCach
  *   Fetches the misses, returning a Map from URL to its data.
  */
 export async function cacheBulk(urls, bulkFetch) {
-  const cached = await Promise.all(urls.map((url) => readCache(url)))
-  const missedUrls = urls.filter((_url, index) => cached[index] === undefined)
+  const cached = await readCacheMany(urls)
+  const missedUrls = urls.filter((url) => !cached.has(url))
   if (!missedUrls.length) return
 
   const fetched = await bulkFetch(missedUrls)
+  const entries = []
   for (const url of missedUrls) {
     const data = fetched.get(url)
-    if (data) await writeCache(url, data)
+    if (!data) continue
+    entries.push([url, { data: LZString.compress(JSON.stringify(data)), timestamp: Date.now() }])
+    addToMemoryCache(url, data)
+  }
+  if (!entries.length) return
+
+  try {
+    await setMany(entries)
+  } catch {
+    // Storage full: fall back to per-entry writes, which clean up and retry
+    for (const [url, cacheObject] of entries) {
+      try {
+        await set(url, cacheObject)
+      } catch {
+        await handleCacheCleanupAndRetry(url, cacheObject)
+      }
+    }
   }
 }
 

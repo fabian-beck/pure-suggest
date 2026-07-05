@@ -11,33 +11,6 @@ describe('Publication ORDINAL_REGEX Pattern', () => {
   let publication
 
   beforeEach(() => {
-    // Mock constants with the current ORDINAL_REGEX pattern
-    vi.doMock('@/constants/publication.js', () => ({
-      CURRENT_YEAR: 2024,
-      SCORING: { DEFAULT_BOOST_FACTOR: 1 },
-      SURVEY_THRESHOLDS: {},
-      CITATION_THRESHOLDS: {},
-      PUBLICATION_AGE: {},
-      TEXT_PROCESSING: {},
-      SURVEY_KEYWORDS: [],
-      // eslint-disable-next-line sonarjs/slow-regex
-      ORDINAL_REGEX: /\d+(?:st|nd|rd|th)/i, // Using the new non-capturing group pattern
-      ROMAN_NUMERAL_REGEX: /^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})(\?.?)$/i,
-      ORCID_REGEX: /\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]/,
-      TITLE_WORD_MAP: {
-        'of': 'of',
-        'and': 'and',
-        'the': 'the',
-        'in': 'in',
-        'on': 'on',
-        'for': 'for',
-        'edition': 'edition',
-        'conference': 'conference',
-        'journal': 'journal'
-      },
-      PUBLICATION_TAGS: {}
-    }))
-    
     publication = new Publication('10.1234/test')
   })
 

@@ -1,6 +1,6 @@
 import Author from './Author.js'
 import { SCORING, CURRENT_YEAR, API_ENDPOINTS, API_PARAMS } from '../constants/config.js'
-import { cacheBulk, cachedFetch } from '../lib/Cache.js'
+import { cacheBulk, cachedFetch, readCacheMany } from '../lib/Cache.js'
 
 
 const SURVEY_THRESHOLDS = {
@@ -27,9 +27,7 @@ const FETCH_RETRY_DELAY_MS = 1000
 
 const SURVEY_KEYWORDS = /(survey|state|review|advances|future)/i
 
-// Optimized with non-capturing group to prevent backtracking
-// eslint-disable-next-line sonarjs/slow-regex
-const ORDINAL_REGEX = /\d+(?:st|nd|rd|th)/i
+const ORDINAL_REGEX = /\d(?:st|nd|rd|th)/i
 
 const ROMAN_NUMERAL_REGEX = /^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})(\?.?)$/i
 
@@ -314,8 +312,7 @@ export default class Publication {
     this.container = ''
     data.container?.split(' ').forEach((word) => {
       let mappedWord
-      // Optimized with negated character class to prevent backtracking
-      // eslint-disable-next-line sonarjs/slow-regex
+      // eslint-disable-next-line sonarjs/super-linear-regex -- safe on short word tokens
       if (/\([^)]+\)/.test(word)) {
         mappedWord = word.toUpperCase()
       } else if (ORDINAL_REGEX.test(word)) {
@@ -327,8 +324,7 @@ export default class Publication {
       }
       this.container += `${mappedWord ? mappedWord : word  } `
     })
-    // Optimized with separate replace calls to avoid alternation backtracking
-    // eslint-disable-next-line sonarjs/slow-regex
+    // eslint-disable-next-line sonarjs/super-linear-regex -- safe on short container strings
     this.container = this.container.trim().replace(/^[. ]+/, '').replace(/[. ]+$/, '')
     this.container = cleanTitle(this.container)
   }
@@ -411,30 +407,59 @@ export default class Publication {
 
 
   /**
-   * Warms the per-DOI cache for many publications with a single bulk request,
-   * so the subsequent individual fetchData() calls become cache hits. Purely an
-   * optimization: if the bulk endpoint is unavailable it degrades gracefully and
-   * the individual fetches proceed as before.
+   * Warms the per-DOI cache for many publications with concurrently issued
+   * chunked bulk requests, so the subsequent individual fetchData() calls
+   * become cache hits. Purely an optimization: a failed chunk degrades
+   * gracefully and the individual fetches for its publications proceed as before.
    * @param {Publication[]} publications - Publications to prefetch.
    */
   static async prefetch(publications) {
     const pending = publications.filter((publication) => !publication.wasFetched)
-    if (!pending.length) return
+    await Promise.all(chunked(pending).map(prefetchChunk))
+  }
 
-    const doiByUrl = new Map(pending.map((publication) => [publicationUrl(publication.doi), publication.doi]))
-
-    try {
-      await cacheBulk([...doiByUrl.keys()], async (missedUrls) => {
-        const results = await bulkLoad(missedUrls.map((url) => doiByUrl.get(url)))
-        const dataByUrl = new Map()
-        missedUrls.forEach((url, index) => {
-          if (results[index]) dataByUrl.set(url, results[index])
-        })
-        return dataByUrl
-      })
-    } catch (error) {
-      console.warn(`[Publication] Bulk prefetch failed, falling back to individual fetches: ${error}`)
+  /**
+   * Loads metadata for many publications: already cached publications load and
+   * report progress immediately, while the cache misses are grouped into
+   * concurrently loaded chunks, each warmed with one bulk request. Requests
+   * stay bounded in size and progress becomes visible as chunks complete.
+   * @param {Publication[]} publications - Publications to load.
+   * @param {(publication: Publication) => void} [onPublicationLoaded] - Called
+   *   after each publication finished loading, e.g. to update a progress message.
+   */
+  static async fetchAll(publications, onPublicationLoaded) {
+    const loadPublication = async (publication) => {
+      await publication.fetchData()
+      onPublicationLoaded?.(publication)
     }
+
+    // A failing cache lookup must not prevent loading; treat everything as uncached then
+    let cachedData = new Map()
+    try {
+      cachedData = await readCacheMany(
+        publications.map((publication) => publicationUrl(publication.doi))
+      )
+    } catch (error) {
+      console.warn(`[Publication] Cache lookup failed, loading everything in chunks: ${error}`)
+    }
+
+    const cached = []
+    const uncached = []
+    publications.forEach((publication) => {
+      if (publication.wasFetched || cachedData.has(publicationUrl(publication.doi))) {
+        cached.push(publication)
+      } else {
+        uncached.push(publication)
+      }
+    })
+
+    await Promise.all([
+      ...cached.map(loadPublication),
+      ...chunked(uncached).map(async (chunk) => {
+        await prefetchChunk(chunk)
+        await Promise.all(chunk.map(loadPublication))
+      })
+    ])
   }
 
   /**
@@ -561,6 +586,44 @@ function cleanAbstract(abstract) {
  */
 function publicationUrl(doi) {
   return `${API_ENDPOINTS.PUBLICATIONS}?doi=${doi}`
+}
+
+/**
+ * Splits publications into chunks of the configured bulk request size.
+ * @param {Publication[]} publications - Publications to split.
+ * @returns {Publication[][]} The chunks.
+ */
+function chunked(publications) {
+  const chunks = []
+  for (let i = 0; i < publications.length; i += API_PARAMS.BULK_FETCH_CHUNK_SIZE) {
+    chunks.push(publications.slice(i, i + API_PARAMS.BULK_FETCH_CHUNK_SIZE))
+  }
+  return chunks
+}
+
+/**
+ * Warms the per-DOI cache for one chunk of publications with a single bulk
+ * request; skips publications that were already fetched.
+ * @param {Publication[]} publications - The chunk to prefetch.
+ */
+async function prefetchChunk(publications) {
+  const pending = publications.filter((publication) => !publication.wasFetched)
+  if (!pending.length) return
+
+  const doiByUrl = new Map(pending.map((publication) => [publicationUrl(publication.doi), publication.doi]))
+
+  try {
+    await cacheBulk([...doiByUrl.keys()], async (missedUrls) => {
+      const results = await bulkLoad(missedUrls.map((url) => doiByUrl.get(url)))
+      const dataByUrl = new Map()
+      missedUrls.forEach((url, index) => {
+        if (results[index]) dataByUrl.set(url, results[index])
+      })
+      return dataByUrl
+    })
+  } catch (error) {
+    console.warn(`[Publication] Bulk prefetch failed for ${pending.length} publications, falling back to individual fetches: ${error}`)
+  }
 }
 
 /**

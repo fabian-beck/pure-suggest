@@ -8,7 +8,7 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 
 - **Framework**: Vue 3 with Composition API
 - **State Management**: Pinia stores (`session.js`, `interface.js`, `queue.js`, `author.js`, `modal.js`)
-- **UI Framework**: Vuetify 3 + Bulma CSS hybrid approach
+- **UI Framework**: Vuetify 4 + Bulma CSS hybrid approach
 - **Visualization**: D3.js for network diagrams
 - **Build Tool**: Vite
 - **Testing**: Vitest with Happy DOM
@@ -143,7 +143,7 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 
 ## UI Framework Guidelines
 
-- **Primary UI**: Use Vuetify 3 components over Bulma CSS when possible
+- **Primary UI**: Use Vuetify 4 components over Bulma CSS when possible
 - **Text Fields**: Use default variant (no variant attribute) for standard inputs
 - **Button Alignment**: Use `v-slot:append-inner` for buttons inside text fields, not `v-slot:append`
 - **Density**: Use `density="compact"` for space-efficient layouts

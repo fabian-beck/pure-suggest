@@ -80,16 +80,13 @@ export function useAppState() {
     let publicationsLoaded = 0
     interfaceStore.loadingMessage = `${publicationsLoaded}/${sessionStore.selectedPublicationsCount} selected publications loaded`
 
-    // Warm the per-DOI cache with one bulk request so the fetches below are cache hits
-    await Publication.prefetch(sessionStore.selectedPublications)
-
-    const loadingSelectedPublications = Promise.all(
-      sessionStore.selectedPublications.map(async (publication) => {
-        await publication.fetchData()
+    const loadingSelectedPublications = Publication.fetchAll(
+      sessionStore.selectedPublications,
+      (publication) => {
         publication.isSelected = true
         publicationsLoaded++
         interfaceStore.loadingMessage = `${publicationsLoaded}/${sessionStore.selectedPublicationsCount} selected publications loaded`
-      })
+      }
     )
 
     // Racing against the cancellation token lets the user escape loading early; any

@@ -8,15 +8,9 @@ import { useQueueStore } from '@/stores/queue.js'
 import { useSessionStore } from '@/stores/session.js'
 
 // Mock useAppState for the functions the component uses
-const mockLoadExample = vi.fn()
-const mockImportSessionWithConfirmation = vi.fn()
-const mockImportBibtexWithConfirmation = vi.fn()
 const mockUpdateQueued = vi.fn()
 vi.mock('@/composables/useAppState.js', () => ({
   useAppState: () => ({
-    loadExample: mockLoadExample,
-    importSessionWithConfirmation: mockImportSessionWithConfirmation,
-    importBibtexWithConfirmation: mockImportBibtexWithConfirmation,
     updateQueued: mockUpdateQueued,
     isEmpty: { value: false }
   })
@@ -52,9 +46,6 @@ describe('SelectedPublicationsComponent', () => {
     queueStore = useQueueStore()
 
     vi.clearAllMocks()
-    mockLoadExample.mockClear()
-    mockImportSessionWithConfirmation.mockClear()
-    mockImportBibtexWithConfirmation.mockClear()
     mockUpdateQueued.mockClear()
 
     // Set up default store state
@@ -85,32 +76,6 @@ describe('SelectedPublicationsComponent', () => {
     })
 
     expect(wrapper.text()).toContain('Selected')
-  })
-
-  it('shows empty state when sessionStore is empty', () => {
-    // Ensure session and queue stores are empty to trigger empty state
-    sessionStore.selectedPublications = []
-    sessionStore.excludedPublicationsDois = []
-    queueStore.selectedQueue = []
-    queueStore.excludedQueue = []
-
-    const wrapper = mount(SelectedPublicationsComponent, {
-      global: {
-        plugins: [pinia],
-        stubs: {
-          'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
-          InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
-          'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
-        }
-      }
-    })
-
-    expect(wrapper.text()).toContain('To start, add publications to selected')
-    expect(wrapper.text()).toContain('Search/add')
-    expect(wrapper.text()).toContain('Import session')
-    expect(wrapper.text()).toContain('Load example')
   })
 
   it('shows queue panel when sessionStore is updatable', () => {
@@ -185,31 +150,6 @@ describe('SelectedPublicationsComponent', () => {
     const searchButton = compactButtons[2] // Third CompactButton is the search button (after concept and authors buttons)
     await searchButton.trigger('click')
     expect(mockOpenSearchModal).toHaveBeenCalled()
-  })
-
-  it('calls loadExample when load example button is clicked', async () => {
-    // Set up empty state to show the load example button
-    sessionStore.selectedPublications = []
-    sessionStore.excludedPublicationsDois = []
-    queueStore.selectedQueue = []
-    queueStore.excludedQueue = []
-
-    mount(SelectedPublicationsComponent, {
-      global: {
-        plugins: [pinia],
-        stubs: {
-          'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
-          CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
-          InlineIcon: { template: '<i class="inline-icon"><slot></slot></i>' },
-          'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
-          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
-        }
-      }
-    })
-
-    // Directly call the component's loadExample method through useAppState
-    await mockLoadExample()
-    expect(mockLoadExample).toHaveBeenCalled()
   })
 
   it('renders PublicationListComponent with correct props', () => {

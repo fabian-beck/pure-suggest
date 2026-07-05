@@ -5,7 +5,9 @@ import { cacheBulk, cachedFetch } from '@/lib/Cache.js'
 vi.mock('idb-keyval', () => ({
   keys: vi.fn(() => Promise.resolve([])),
   get: vi.fn(() => Promise.resolve(undefined)),
+  getMany: vi.fn((requestedKeys) => Promise.resolve(requestedKeys.map(() => undefined))),
   set: vi.fn(() => Promise.resolve()),
+  setMany: vi.fn(() => Promise.resolve()),
   del: vi.fn(() => Promise.resolve()),
   clear: vi.fn(() => Promise.resolve())
 }))
@@ -174,6 +176,22 @@ describe('cacheBulk', () => {
     })
     await cacheBulk([cachedUrl, missUrl], bulkFetch)
     expect(bulkFetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('batches IndexedDB access into one read and one write', async () => {
+    vi.stubGlobal('indexedDB', {})
+    vi.clearAllMocks()
+    const { get, getMany, set, setMany } = await import('idb-keyval')
+
+    const urls = ['https://api.test/batch?doi=a', 'https://api.test/batch?doi=b']
+    await cacheBulk(urls, async (missed) => new Map(missed.map((url) => [url, { url }])))
+
+    expect(getMany).toHaveBeenCalledTimes(1)
+    expect(getMany).toHaveBeenCalledWith(urls)
+    expect(setMany).toHaveBeenCalledTimes(1)
+    expect(setMany.mock.calls[0][0]).toHaveLength(2)
+    expect(get).not.toHaveBeenCalled()
+    expect(set).not.toHaveBeenCalled()
   })
 
   it('does nothing when every URL is already cached', async () => {

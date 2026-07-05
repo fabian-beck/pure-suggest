@@ -162,11 +162,12 @@ export default {
       <SelectedPublicationsComponent id="selected" v-show="!interfaceStore.isNetworkExpanded" />
       <SuggestedPublicationsComponent id="suggested" v-show="!interfaceStore.isNetworkExpanded" />
       <NetworkVisComponent id="network" :svg-width="1500" :svg-height="600" />
+      <LandingComponent v-if="isEmpty" />
     </div>
     <QuickAccessBar
       id="quick-access"
       class="is-hidden-desktop"
-      v-show="!modalStore.isAnyOverlayShown"
+      v-show="!modalStore.isAnyOverlayShown && !isEmpty"
     >
     </QuickAccessBar>
     <!-- Modal dialogs -->
@@ -284,6 +285,7 @@ body {
 
   & #main {
     grid-area: main;
+    position: relative;
     margin: 0.5vw;
     margin-top: 0;
     display: grid;
@@ -416,28 +418,19 @@ body {
     overflow: visible !important;
 
     & #header {
-      position: static; /* Change to static so intro message flows naturally */
+      position: static;
       top: auto;
       left: auto;
       right: auto;
       z-index: 1000;
       background: white;
 
-      /* Keep header toolbar fixed but intro message flows */
       & .v-app-bar {
         position: fixed !important;
         top: 0;
         left: 0;
         right: 0;
         z-index: 1000;
-      }
-
-      /* Intro message flows naturally after fixed toolbar */
-      & .intro-message {
-        margin-top: 3rem; /* Space for fixed toolbar */
-        position: relative;
-        background: white;
-        z-index: 500;
       }
     }
 
