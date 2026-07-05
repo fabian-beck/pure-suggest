@@ -23,16 +23,15 @@ export default {
         <p>You can use the following keyboard shortcuts to control the application.</p>
         <h2>General</h2>
         <ul class="keys">
-          <li><v-icon>mdi-alpha-s-box-outline</v-icon> Open "Search" dialog</li>
+          <li><v-icon>mdi-alpha-s-box-outline</v-icon> Open "Search/add" dialog</li>
+          <li><v-icon>mdi-alpha-a-box-outline</v-icon> Open "Authors" modal</li>
+          <li><v-icon>mdi-alpha-o-box-outline</v-icon> Open "Concepts" modal</li>
           <li><v-icon>mdi-alpha-b-box-outline</v-icon> Jump to "Boost" input</li>
           <li>
             <v-icon>mdi-alpha-u-box-outline</v-icon> Update selected publications (if publications
             are waiting)
           </li>
           <li><v-icon>mdi-alpha-f-box-outline</v-icon> Switch on/off filtering of suggestions</li>
-          <li>
-            <v-icon>mdi-alpha-a-box-outline</v-icon> Open list of authors of selected publications
-          </li>
           <li>
             <v-icon>mdi-arrow-left-bold-box-outline</v-icon> Jump to first publication of "Selected"
           </li>

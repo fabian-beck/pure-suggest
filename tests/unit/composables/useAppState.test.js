@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import { useAppState } from '@/composables/useAppState.js'
 import { useAuthorStore } from '@/stores/author.js'
+import { useConceptStore } from '@/stores/concept.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useQueueStore } from '@/stores/queue.js'
 import { useSessionStore } from '@/stores/session.js'
@@ -159,6 +160,36 @@ describe('useAppState - Session Loading', () => {
         '10.1234/new1',
         '10.1234/new2'
       ])
+    })
+  })
+
+  describe('concept tagging on suggestion updates', () => {
+    it('should assign concept tags to selected publications after their metadata is fetched', async () => {
+      const conceptStore = useConceptStore()
+      conceptStore.concepts = [
+        { publications: ['10.1234/a'], attributes: [{ type: 'keyword', value: 'VISUAL' }] }
+      ]
+      conceptStore.sortedConcepts = conceptStore.concepts
+      conceptStore.conceptMetadata = new Map([
+        [0, { name: 'C1 - VISUAL', exclusivityTerms: [], frequencyTerms: [] }]
+      ])
+
+      // Newly added publication: title only becomes available through fetchData
+      const publication = {
+        doi: '10.1234/new',
+        title: '',
+        citationDois: [],
+        referenceDois: [],
+        fetchData: vi.fn().mockImplementation(async function () {
+          this.title = 'Visual Analytics'
+        })
+      }
+      sessionStore.selectedPublications = [publication]
+      sessionStore.updatePublicationScores = vi.fn()
+
+      await appState.updateSuggestions()
+
+      expect(publication.concepts).toEqual(['C1 - VISUAL'])
     })
   })
 

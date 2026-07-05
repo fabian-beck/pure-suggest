@@ -113,7 +113,7 @@ function clearKeywords() {
           density="compact"
           hint="Each matched keyword in a title will double the score of a publication"
           persistent-hint
-          @change="updateScores"
+          @change="updateScores()"
         ></v-checkbox>
       </form>
     </v-sheet>

@@ -162,6 +162,7 @@ export default class Publication {
     this.isActive = this.isLinkedToActive = this.isSelected = this.isRead = false
     this.isHovered = this.isKeywordHovered = this.isAuthorHovered = this.wasFetched = false
     this.isNewlyAdded = false
+    this.concepts = null
   }
 
   /**
@@ -415,6 +416,27 @@ export default class Publication {
    */
   static get TAGS() {
     return PUBLICATION_TAGS
+  }
+
+  /**
+   * Gets all tags for this publication, including dynamic concept tags
+   * @returns {Array} Array of tag configuration objects
+   */
+  getTags() {
+    const tags = [...PUBLICATION_TAGS.filter((tag) => this[tag.value])]
+
+    // Add concept tags if they exist
+    if (this.concepts && this.concepts.length > 0) {
+      this.concepts.forEach((conceptName) => {
+        // conceptName has "C1 - TERM" format
+        tags.push({
+          value: `concept${conceptName.split(' ')[0]}`,
+          name: conceptName
+        })
+      })
+    }
+
+    return tags
   }
 
   /**

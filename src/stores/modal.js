@@ -10,6 +10,7 @@ export const useModalStore = defineStore('modal', {
       isAboutModalDialogShown: false,
       isShareSessionModalDialogShown: false,
       isKeyboardControlsModalDialogShown: false,
+      isConceptConfigModalDialogShown: false,
       confirmDialog: {
         message: '',
         action: () => {},
@@ -35,7 +36,8 @@ export const useModalStore = defineStore('modal', {
         this.isQueueModalDialogShown ||
         this.isAboutModalDialogShown ||
         this.isShareSessionModalDialogShown ||
-        this.isKeyboardControlsModalDialogShown
+        this.isKeyboardControlsModalDialogShown ||
+        this.isConceptConfigModalDialogShown
       )
     }
   },

@@ -134,10 +134,21 @@ describe('PublicationDescription', () => {
   })
 
   it('renders publication tags', () => {
+    const pubWithTags = {
+      ...mockPublication,
+      isHighlyCited: 'more than 10 citations per year',
+      isSurvey: 'more than 50 references',
+      isNew: 'published within this or the previous two calendar years',
+      getTags() {
+        return [
+          { value: 'isHighlyCited', name: 'Highly cited' },
+          { value: 'isSurvey', name: 'Literature survey' },
+          { value: 'isNew', name: 'New' }
+        ]
+      }
+    }
     const wrapper = mount(PublicationDescription, {
-      props: {
-        publication: { ...mockPublication, isHighlyCited: true, isSurvey: true, isNew: true }
-      },
+      props: { publication: pubWithTags },
       global: { stubs: defaultStubs }
     })
     expect(wrapper.findAll('.tag').length).toBe(3)

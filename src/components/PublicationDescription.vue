@@ -3,7 +3,6 @@ import { computed } from 'vue'
 
 import { useModalManager } from '@/composables/useModalManager.js'
 import Author from '@/core/Author.js'
-import Publication from '@/core/Publication.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
 
@@ -33,7 +32,7 @@ const showDetails = computed(() => {
 })
 
 const visibleTags = computed(() => {
-  return Publication.TAGS.filter((tag) => props.publication[tag.value])
+  return props.publication.getTags ? props.publication.getTags() : []
 })
 
 const authorsWithOrcid = computed(() => {
@@ -132,7 +131,65 @@ function isTagFiltered(tagValue) {
   return sessionStore.filter.tags.includes(tagValue)
 }
 
+function buildConceptAttributesTooltip(attributes) {
+  if (!attributes || attributes.length === 0) return ''
+
+  const keywords = attributes.filter((attr) => attr.type === 'keyword').map((attr) => attr.value)
+  const citationDois = attributes.filter((attr) => attr.type === 'citation').map((attr) => attr.value)
+  const authors = attributes.filter((attr) => attr.type === 'author').map((attr) => attr.value)
+
+  if (keywords.length === 0 && citationDois.length === 0 && authors.length === 0) return ''
+
+  let section = '<br/><br/>Defining properties:'
+  if (keywords.length > 0) {
+    section += `<br/>Keywords: ${keywords.join(', ')}`
+  }
+  if (citationDois.length > 0) {
+    section += '<br/>Citations:'
+    // Look up titles from selected publications
+    citationDois.forEach((doi) => {
+      const publication = sessionStore.selectedPublications.find((pub) => pub.doi === doi)
+      const title = publication?.title || doi
+      section += `<br/>• ${title}`
+    })
+  }
+  if (authors.length > 0) {
+    section += `<br/>Authors: ${authors.join(', ')}`
+  }
+  return section
+}
+
+function buildConceptTermsTooltip(topTerms) {
+  if (!topTerms || topTerms.length === 0) return ''
+
+  let section = '<br/><br/>Top terms:'
+  topTerms.forEach((termObj) => {
+    section += `<br/>• ${termObj.term} (${termObj.score.toFixed(2)})`
+  })
+  return section
+}
+
 function getTagTooltip(tagValue, tagName) {
+  // Concept tags have a different tooltip
+  if (tagValue.startsWith('concept')) {
+    let tooltip = `Member of concept ${tagName}.`
+
+    const metadata =
+      props.publication.conceptMetadata?.get(tagName)
+
+    if (metadata) {
+      tooltip += buildConceptAttributesTooltip(metadata.attributes)
+      tooltip += buildConceptTermsTooltip(metadata.topTerms)
+    }
+
+    const action = isTagFiltered(tagValue)
+      ? `<br/><br/>Active as filter; click to remove from filter.`
+      : `<br/><br/>Click to add to filter.`
+    tooltip += action
+
+    return tooltip
+  }
+
   const description = `Identified as ${tagName.toLowerCase()}: ${props.publication[tagValue]}.`
   const action = isTagFiltered(tagValue)
     ? `Active as filter; click to remove from filter.`
@@ -147,6 +204,12 @@ function getTagIcon(tagValue) {
     isNew: 'mdi-alarm',
     isUnnoted: 'mdi-alert-box-outline'
   }
+
+  // Concept tags use group icon
+  if (tagValue.startsWith('concept')) {
+    return 'mdi-group'
+  }
+
   return iconMap[tagValue] || ''
 }
 

@@ -194,7 +194,7 @@ function handleActivePublicationShortcuts(e) {
 
 export function onKey(e) {
   const { isEmpty } = useAppState()
-  const { isAnyOverlayShown, openSearchModal, openAuthorModal } = useModalManager()
+  const { isAnyOverlayShown, openSearchModal, openAuthorModal, openConceptConfigModal } = useModalManager()
 
   // Early returns for modifier keys and repeats
   if (
@@ -234,6 +234,13 @@ export function onKey(e) {
   if (!isEmpty.value && e.key === 'a') {
     e.preventDefault()
     openAuthorModal()
+    return
+  }
+
+  // Concepts shortcut (works when not empty)
+  if (!isEmpty.value && e.key === 'o') {
+    e.preventDefault()
+    openConceptConfigModal()
     return
   }
 

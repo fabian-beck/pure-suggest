@@ -73,6 +73,63 @@ describe('Publication Bug Regression Tests', () => {
     })
   })
 
+  describe('getTags - Concept Tags', () => {
+    beforeEach(() => {
+      publication = new Publication('10.1234/test')
+    })
+
+    it('should return base tags without concepts', () => {
+      publication.isNew = 'published within this or the previous two calendar years'
+      publication.isHighlyCited = 'more than 10 citations per year'
+      publication.concepts = null
+
+      const tags = publication.getTags()
+
+      expect(tags).toHaveLength(2)
+      expect(tags).toContainEqual({ value: 'isNew', name: 'New' })
+      expect(tags).toContainEqual({ value: 'isHighlyCited', name: 'Highly cited' })
+    })
+
+    it('should include concept tags when present', () => {
+      publication.concepts = ['C1 - VISUAL', 'C3 - DATA']
+
+      const tags = publication.getTags()
+
+      expect(tags).toContainEqual({ value: 'conceptC1', name: 'C1 - VISUAL' })
+      expect(tags).toContainEqual({ value: 'conceptC3', name: 'C3 - DATA' })
+    })
+
+    it('should combine base tags and concept tags', () => {
+      publication.isNew = 'published within this or the previous two calendar years'
+      publication.concepts = ['C1 - VISUAL', 'C2 - DATA']
+
+      const tags = publication.getTags()
+
+      expect(tags.length).toBeGreaterThanOrEqual(3)
+      expect(tags).toContainEqual({ value: 'isNew', name: 'New' })
+      expect(tags).toContainEqual({ value: 'conceptC1', name: 'C1 - VISUAL' })
+      expect(tags).toContainEqual({ value: 'conceptC2', name: 'C2 - DATA' })
+    })
+
+    it('should return only base tags when concepts is empty array', () => {
+      publication.isSurvey = 'more than 50 references'
+      publication.concepts = []
+
+      const tags = publication.getTags()
+
+      expect(tags).toHaveLength(1)
+      expect(tags).toContainEqual({ value: 'isSurvey', name: 'Literature survey' })
+    })
+
+    it('should handle no tags at all', () => {
+      publication.concepts = null
+
+      const tags = publication.getTags()
+
+      expect(tags).toEqual([])
+    })
+  })
+
   describe('fetchData diagnostics', () => {
     it('should retry a failed default metadata load once after a delay', async () => {
       vi.useFakeTimers()

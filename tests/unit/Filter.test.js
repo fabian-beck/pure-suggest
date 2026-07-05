@@ -244,6 +244,64 @@ describe('Filter', () => {
       filter.tags = ['nonExistentTag', 'anotherNonExistentTag']
       expect(filter.matchesTag(mockPublication)).toBe(false)
     })
+
+    describe('concept tags', () => {
+      it('should return true when publication has matching concept (string format)', () => {
+        mockPublication.concepts = ['C1 - VISUAL', 'C2 - DATA']
+        filter.tags = ['conceptC1']
+        expect(filter.matchesTag(mockPublication)).toBe(true)
+      })
+
+      it('should not match concepts whose ID only shares a prefix', () => {
+        mockPublication.concepts = ['C10 - VISUAL', 'C11 - DATA']
+        filter.tags = ['conceptC1']
+        expect(filter.matchesTag(mockPublication)).toBe(false)
+      })
+
+      it('should return false when publication does not have matching concept', () => {
+        mockPublication.concepts = ['C1 - VISUAL', 'C2 - DATA']
+        filter.tags = ['conceptC3']
+        expect(filter.matchesTag(mockPublication)).toBe(false)
+      })
+
+      it('should return false when publication has no concepts', () => {
+        mockPublication.concepts = null
+        filter.tags = ['conceptC1']
+        expect(filter.matchesTag(mockPublication)).toBe(false)
+      })
+
+      it('should return false when publication has empty concepts array', () => {
+        mockPublication.concepts = []
+        filter.tags = ['conceptC1']
+        expect(filter.matchesTag(mockPublication)).toBe(false)
+      })
+
+      it('should return true when publication has at least one matching concept', () => {
+        mockPublication.concepts = ['C1 - VISUAL', 'C2 - DATA']
+        filter.tags = ['conceptC1', 'conceptC3']
+        expect(filter.matchesTag(mockPublication)).toBe(true)
+      })
+
+      it('should match concept with complex name format', () => {
+        mockPublication.concepts = ['C1 - NEUROMORPHIC COMPUTING']
+        filter.tags = ['conceptC1']
+        expect(filter.matchesTag(mockPublication)).toBe(true)
+      })
+
+      it('should work with mixed tag types (regular and concept)', () => {
+        mockPublication.concepts = ['C1 - VISUAL']
+        mockPublication.someTag = true
+        filter.tags = ['conceptC1', 'someTag']
+        expect(filter.matchesTag(mockPublication)).toBe(true)
+      })
+
+      it('should not match when only concept tag is set but publication does not have it', () => {
+        mockPublication.concepts = ['C2 - DATA']
+        mockPublication.someTag = true
+        filter.tags = ['conceptC1']
+        expect(filter.matchesTag(mockPublication)).toBe(false)
+      })
+    })
   })
 
   describe('DOI management', () => {

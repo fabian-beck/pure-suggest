@@ -26,11 +26,15 @@ vi.mock('@/composables/useAppState.js', () => ({
 const mockShowConfirmDialog = vi.fn()
 const mockOpenSearchModal = vi.fn()
 const mockOpenAuthorModal = vi.fn()
+const mockOpenQueueModal = vi.fn()
+const mockOpenConceptConfigModal = vi.fn()
 vi.mock('@/composables/useModalManager.js', () => ({
   useModalManager: () => ({
     showConfirmDialog: mockShowConfirmDialog,
     openSearchModal: mockOpenSearchModal,
-    openAuthorModal: mockOpenAuthorModal
+    openAuthorModal: mockOpenAuthorModal,
+    openQueueModal: mockOpenQueueModal,
+    openConceptConfigModal: mockOpenConceptConfigModal
   })
 }))
 
@@ -59,6 +63,8 @@ describe('SelectedPublicationsComponent', () => {
     interfaceStore.isMobile = false
     mockOpenSearchModal.mockClear()
     mockOpenAuthorModal.mockClear()
+    mockOpenQueueModal.mockClear()
+    mockOpenConceptConfigModal.mockClear()
     mockShowConfirmDialog.mockClear()
     queueStore.selectedQueue = []
     queueStore.excludedQueue = []
@@ -151,7 +157,7 @@ describe('SelectedPublicationsComponent', () => {
     })
 
     const compactButtons = wrapper.findAll('.compact-button')
-    const authorsButton = compactButtons[0] // First CompactButton is the authors button
+    const authorsButton = compactButtons[1] // Second CompactButton is the authors button (after concept button)
     await authorsButton.trigger('click')
     expect(mockOpenAuthorModal).toHaveBeenCalled()
   })
@@ -176,7 +182,7 @@ describe('SelectedPublicationsComponent', () => {
     })
 
     const compactButtons = wrapper.findAll('.compact-button')
-    const searchButton = compactButtons[1] // Second CompactButton is the search button
+    const searchButton = compactButtons[2] // Third CompactButton is the search button (after concept and authors buttons)
     await searchButton.trigger('click')
     expect(mockOpenSearchModal).toHaveBeenCalled()
   })

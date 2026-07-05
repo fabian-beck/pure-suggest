@@ -177,6 +177,7 @@ export default {
     <AboutModalDialog />
     <KeyboardControlsModalDialog />
     <ShareSessionModalDialog />
+    <ConceptConfigModalDialog />
     <!-- Other dialogs and overlays -->
     <v-overlay
       v-model="interfaceStore.isLoading"
@@ -215,13 +216,21 @@ body {
   }
 }
 
-#app .v-btn:not(.session-state-button):not(.filter-button):not(.boost-button):not(.v-btn--icon) {
+// Vuetify teleports dialog overlays to `body > .v-overlay-container`, outside
+// `#app`, so modal buttons need the same baseline as in-app buttons to match.
+// Explicitly-small buttons keep their size.
+#app .v-btn:not(.session-state-button):not(.filter-button):not(.boost-button):not(.v-btn--icon),
+.v-overlay-container
+  .v-btn:not(.session-state-button):not(.filter-button):not(.boost-button):not(.v-btn--icon):not(.v-btn--size-small) {
   min-height: 36px;
   padding: 0 16px;
   font-size: 0.875rem;
 }
 
-#app .v-btn:not(.session-state-button):not(.filter-button):not(.boost-button) .v-btn__content {
+#app .v-btn:not(.session-state-button):not(.filter-button):not(.boost-button) .v-btn__content,
+.v-overlay-container
+  .v-btn:not(.session-state-button):not(.filter-button):not(.boost-button):not(.v-btn--size-small)
+  .v-btn__content {
   letter-spacing: 0.0892857143em;
   text-transform: uppercase;
 }

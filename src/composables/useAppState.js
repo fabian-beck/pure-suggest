@@ -6,6 +6,7 @@ import { clearCache as clearCacheUtil } from '@/lib/Cache.js'
 import { bibtexParser } from '@/lib/Util.js'
 import { SuggestionService } from '@/services/SuggestionService.js'
 import { useAuthorStore } from '@/stores/author.js'
+import { useConceptStore } from '@/stores/concept.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useQueueStore } from '@/stores/queue.js'
 import { useSessionStore } from '@/stores/session.js'
@@ -16,6 +17,7 @@ export function useAppState() {
   const sessionStore = useSessionStore()
   const interfaceStore = useInterfaceStore()
   const authorStore = useAuthorStore()
+  const conceptStore = useConceptStore()
   const queueStore = useQueueStore()
   const { showConfirmDialog } = useModalManager()
 
@@ -37,8 +39,8 @@ export function useAppState() {
   const clear = () => {
     sessionStore.clear()
     queueStore.clear()
-    // Clear author store
     authorStore.selectedPublicationsAuthors = []
+    conceptStore.clear()
     // do not reset read publications as the user might to carry this information to the next session
     interfaceStore.clear()
     // Network will naturally clear when it detects empty state, no need for expensive replot
@@ -86,6 +88,7 @@ export function useAppState() {
     )
 
     await computeSuggestions()
+
     interfaceStore.endLoading()
 
     // Log end-to-end workflow timing if we're tracking one
@@ -109,7 +112,13 @@ export function useAppState() {
     sessionStore.updatePublicationScores()
     authorStore.computeSelectedPublicationsAuthors(sessionStore.selectedPublications)
     interfaceStore.triggerNetworkReplot()
+
+    // Invalidate any computed concept preview when scores change
+    if (!conceptStore.hasConcepts) {
+      conceptStore.clearPreview()
+    }
   }
+
 
   /**
    * Computes suggestions based on selected publications
@@ -133,6 +142,12 @@ export function useAppState() {
     })
 
     updateScores()
+
+    // Apply concepts to all publications now that their metadata is fetched
+    if (conceptStore.hasConcepts) {
+      conceptStore.assignConceptTagsToPublications(sessionStore.selectedPublications)
+      conceptStore.assignConceptTagsToPublications(sessionStore.suggestedPublications)
+    }
   }
 
   /**
@@ -312,9 +327,10 @@ export function useAppState() {
       )
     }
     if (queueStore.selectedQueue.length) {
-      sessionStore.addPublicationsToSelection(queueStore.selectedQueue)
+      const newlyAddedDois = [...queueStore.selectedQueue]
+      sessionStore.addPublicationsToSelection(newlyAddedDois)
       // Mark the newly added publications (only if session wasn't empty before)
-      sessionStore.markPublicationsAsNewlyAdded(queueStore.selectedQueue, wasSessionEmpty)
+      sessionStore.markPublicationsAsNewlyAdded(newlyAddedDois, wasSessionEmpty)
     }
     await updateSuggestions()
     queueStore.clear()
@@ -338,6 +354,7 @@ export function useAppState() {
     await sessionStore.addPublicationsToSelection(dois)
     // Mark the newly added publications (only if session wasn't empty before)
     sessionStore.markPublicationsAsNewlyAdded(dois, wasSessionEmpty)
+
     await updateSuggestions()
   }
 
