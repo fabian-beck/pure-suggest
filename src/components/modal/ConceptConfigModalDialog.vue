@@ -29,9 +29,13 @@ const conceptsPreview = computed(() => conceptStore.previewConcepts)
 const sortedConceptsPreview = computed(() => conceptStore.previewSortedConcepts)
 const conceptMetadataPreview = computed(() => conceptStore.previewConceptMetadata)
 
+const hasEnoughPublications = computed(() => {
+  return sessionStore.selectedPublicationsCount >= 6
+})
+
 const canCompute = computed(() => {
   return (includeKeywords.value || includeCitations.value || includeAuthors.value) &&
-         sessionStore.selectedPublicationsCount > 0
+         hasEnoughPublications.value
 })
 
 const hasPreview = computed(() => {
@@ -322,7 +326,16 @@ watch(
 
     <div class="content">
       <section>
-        <div v-if="!hasPreview" class="pa-3 text-center empty-state">
+        <div v-if="!hasEnoughPublications" class="pa-3 text-center empty-state">
+          <v-icon size="large" class="mb-2" color="warning">mdi-filter-outline</v-icon>
+          <p>
+            <strong>No meaningful concepts found.</strong><br>
+            You need at least <b>6 selected publications</b> to form concepts (current: {{ sessionStore.selectedPublicationsCount }}).<br>
+            Concepts require 3+ publications and must not exceed half of your selection.
+          </p>
+        </div>
+
+        <div v-else-if="!hasPreview" class="pa-3 text-center empty-state">
           <v-icon size="large" class="mb-2">mdi-information-outline</v-icon>
           <p>No concepts to preview. Click "Compute Concepts" to generate results.</p>
         </div>
@@ -331,14 +344,8 @@ watch(
           <v-icon size="large" class="mb-2" color="warning">mdi-filter-outline</v-icon>
           <p>
             <strong>No meaningful concepts found.</strong><br>
-            <template v-if="sessionStore.selectedPublicationsCount < 6">
-              You need at least <b>6 selected publications</b> to form concepts (current: {{ sessionStore.selectedPublicationsCount }}).<br>
-              Concepts require 3+ publications and must not exceed half of your selection.
-            </template>
-            <template v-else>
-              Concepts require <b>3-{{ Math.floor(sessionStore.selectedPublicationsCount / 2) }} publications</b> and <b>1+ shared attributes</b>.<br>
-              Try enabling additional attribute types or adjusting your boost keywords.
-            </template>
+            Concepts require <b>3-{{ Math.floor(sessionStore.selectedPublicationsCount / 2) }} publications</b> and <b>1+ shared attributes</b>.<br>
+            Try enabling additional attribute types or adjusting your boost keywords.
           </p>
         </div>
 
