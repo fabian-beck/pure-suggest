@@ -144,7 +144,7 @@ describe('SuggestionService', () => {
       })
     })
 
-    it('should keep only suggestions that finished loading when the cancellation token is triggered', async () => {
+    it('should keep only loaded suggestions when cancelled', async () => {
       const { createCancellationToken } = await import('@/lib/Cancellation.js')
       const cancelToken = createCancellationToken()
       let resolveStuckFetch

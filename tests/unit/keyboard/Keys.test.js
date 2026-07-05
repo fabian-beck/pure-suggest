@@ -277,9 +277,8 @@ describe('Keys Module - Keyboard Event Handling', () => {
     it('should not cancel loading when Escape is pressed while not loading', () => {
       interfaceStore.isLoading = false
       interfaceStore.cancelLoading = vi.fn()
-      const mockInput = { nodeName: 'INPUT', type: 'text', className: '', blur: vi.fn() }
       Object.defineProperty(document, 'activeElement', {
-        value: mockInput,
+        value: { nodeName: 'BODY', className: '', blur: vi.fn() },
         configurable: true
       })
 
