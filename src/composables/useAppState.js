@@ -147,8 +147,7 @@ export function useAppState() {
       readPublicationsDois: sessionStore.readPublicationsDois,
       updateLoadingMessage: (message) => {
         interfaceStore.loadingMessage = message
-      },
-      cancelToken: interfaceStore.loadingCancelToken
+      }
     })
 
     updateScores()
