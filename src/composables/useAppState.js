@@ -2,6 +2,7 @@ import { computed } from 'vue'
 
 import { useModalManager } from '@/composables/useModalManager.js'
 import { PAGINATION } from '@/constants/config.js'
+import Publication from '@/core/Publication.js'
 import { clearCache as clearCacheUtil } from '@/lib/Cache.js'
 import { bibtexParser } from '@/lib/Util.js'
 import { SuggestionService } from '@/services/SuggestionService.js'
@@ -75,6 +76,9 @@ export function useAppState() {
     interfaceStore.startLoading()
     let publicationsLoaded = 0
     interfaceStore.loadingMessage = `${publicationsLoaded}/${sessionStore.selectedPublicationsCount} selected publications loaded`
+
+    // Warm the per-DOI cache with one bulk request so the fetches below are cache hits
+    await Publication.prefetch(sessionStore.selectedPublications)
 
     await Promise.all(
       sessionStore.selectedPublications.map(async (publication) => {

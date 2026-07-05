@@ -22,6 +22,9 @@ describe('SuggestionService', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
+    // Static bulk prefetch is a no-op in tests; per-pub fetchData is asserted instead
+    Publication.prefetch = vi.fn().mockResolvedValue()
+
     // Mock Publication constructor
     Publication.mockImplementation(function (doi) {
       return {
