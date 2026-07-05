@@ -79,17 +79,11 @@ export function useAppState() {
     let publicationsLoaded = 0
     interfaceStore.loadingMessage = `${publicationsLoaded}/${sessionStore.selectedPublicationsCount} selected publications loaded`
 
-    // Warm the per-DOI cache with one bulk request so the fetches below are cache hits
-    await Publication.prefetch(sessionStore.selectedPublications)
-
-    await Promise.all(
-      sessionStore.selectedPublications.map(async (publication) => {
-        await publication.fetchData()
-        publication.isSelected = true
-        publicationsLoaded++
-        interfaceStore.loadingMessage = `${publicationsLoaded}/${sessionStore.selectedPublicationsCount} selected publications loaded`
-      })
-    )
+    await Publication.fetchAll(sessionStore.selectedPublications, (publication) => {
+      publication.isSelected = true
+      publicationsLoaded++
+      interfaceStore.loadingMessage = `${publicationsLoaded}/${sessionStore.selectedPublicationsCount} selected publications loaded`
+    })
 
     await computeSuggestions()
 

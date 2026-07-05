@@ -138,16 +138,10 @@ export class SuggestionService {
     let publicationsLoadedCount = 0
     updateLoadingMessage(`${publicationsLoadedCount}/${suggestions.length} suggestions loaded`)
 
-    // Warm the per-DOI cache with one bulk request so the fetches below are cache hits
-    await Publication.prefetch(suggestions)
-
-    await Promise.all(
-      suggestions.map(async (suggestedPublication) => {
-        await suggestedPublication.fetchData()
-        publicationsLoadedCount++
-        updateLoadingMessage(`${publicationsLoadedCount}/${suggestions.length} suggestions loaded`)
-      })
-    )
+    await Publication.fetchAll(suggestions, () => {
+      publicationsLoadedCount++
+      updateLoadingMessage(`${publicationsLoadedCount}/${suggestions.length} suggestions loaded`)
+    })
   }
 
   /**
