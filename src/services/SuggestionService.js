@@ -161,9 +161,7 @@ export class SuggestionService {
 
     // Racing against the cancellation token lets the user escape loading early; any
     // still-pending fetches keep running in the background and simply get discarded.
-    await (cancelToken
-      ? Promise.race([loadingAllSuggestions, cancelToken.promise])
-      : loadingAllSuggestions)
+    await Promise.race([loadingAllSuggestions, cancelToken?.promise ?? loadingAllSuggestions])
   }
 
   /**

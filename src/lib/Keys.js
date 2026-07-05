@@ -182,8 +182,10 @@ function handlePublicationActions(e) {
  * @returns {boolean} True if the key was handled (loading was active)
  */
 function handleLoadingEscape(e) {
+  if (e.key !== 'Escape') return false
+
   const interfaceStore = useInterfaceStore()
-  if (e.key !== 'Escape' || !interfaceStore.isLoading) return false
+  if (!interfaceStore.isLoading) return false
 
   e.preventDefault()
   interfaceStore.cancelLoading()

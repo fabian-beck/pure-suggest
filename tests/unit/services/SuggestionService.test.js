@@ -145,7 +145,11 @@ describe('SuggestionService', () => {
     })
 
     it('should keep only suggestions that finished loading when the cancellation token is triggered', async () => {
-      // One suggestion loads instantly, the other never resolves (simulating a stuck request)
+      const { createCancellationToken } = await import('@/lib/Cancellation.js')
+      const cancelToken = createCancellationToken()
+      let resolveStuckFetch
+
+      // One suggestion loads and triggers cancellation, the other stays pending (simulating a stuck request)
       Publication.mockImplementation(function (doi) {
         return {
           doi,
@@ -157,25 +161,26 @@ describe('SuggestionService', () => {
           fetchData: vi.fn().mockImplementation(function () {
             if (doi === '10.1234/citation1') {
               this.wasFetched = true
-              return Promise.resolve()
+              return Promise.resolve().then(() => cancelToken.cancel())
             }
-            return new Promise(() => {})
+            return new Promise((resolve) => {
+              resolveStuckFetch = resolve
+            })
           }),
           isRead: false
         }
       })
 
-      const cancelToken = {
-        isCancelled: true,
-        promise: Promise.resolve()
-      }
-
       const result = await SuggestionService.computeSuggestions({ ...mockOptions, cancelToken })
 
+      expect(cancelToken.isCancelled).toBe(true)
       expect(result.publications.length).toBeGreaterThan(0)
       result.publications.forEach((pub) => {
         expect(pub.wasFetched).toBe(true)
       })
+
+      // Clean up the still-pending fetch so it doesn't linger past the test
+      resolveStuckFetch?.()
     })
 
     it('should not filter suggestions when the cancellation token was not triggered', async () => {

@@ -94,9 +94,10 @@ export function useAppState() {
 
     // Racing against the cancellation token lets the user escape loading early; any
     // still-pending fetches keep running in the background and simply get discarded.
-    await (cancelToken
-      ? Promise.race([loadingSelectedPublications, cancelToken.promise])
-      : loadingSelectedPublications)
+    await Promise.race([
+      loadingSelectedPublications,
+      cancelToken?.promise ?? loadingSelectedPublications
+    ])
 
     await computeSuggestions()
 
