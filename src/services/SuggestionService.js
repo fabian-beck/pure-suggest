@@ -97,10 +97,8 @@ export class SuggestionService {
 
     console.log('Completed computing and loading of new suggestions.')
 
-    // Preload next batch in background
-    preloadSuggestions.forEach((publication) => {
-      publication.fetchData()
-    })
+    // Preload next batch in background with a single bulk request
+    Publication.prefetch(preloadSuggestions)
 
     return {
       publications: filteredSuggestions,
@@ -139,6 +137,9 @@ export class SuggestionService {
   static async _loadSuggestionsMetadata(suggestions, updateLoadingMessage) {
     let publicationsLoadedCount = 0
     updateLoadingMessage(`${publicationsLoadedCount}/${suggestions.length} suggestions loaded`)
+
+    // Warm the per-DOI cache with one bulk request so the fetches below are cache hits
+    await Publication.prefetch(suggestions)
 
     await Promise.all(
       suggestions.map(async (suggestedPublication) => {

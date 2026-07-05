@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { cachedFetch } from '@/lib/Cache.js'
+import { cacheBulk, cachedFetch } from '@/lib/Cache.js'
 
 vi.mock('idb-keyval', () => ({
   keys: vi.fn(() => Promise.resolve([])),
@@ -96,7 +96,8 @@ describe('cachedFetch', () => {
     await Promise.all([first, second])
 
     expect(fetchMock).toHaveBeenCalledTimes(2)
-    expect(fetchMock).toHaveBeenLastCalledWith('https://api.test/fresh?doi=x&noCache=true', {})
+    expect(fetchMock).toHaveBeenCalledWith('https://api.test/fresh?doi=x&noCache=true', {})
+    expect(fetchMock).toHaveBeenCalledWith('https://api.test/fresh?doi=x', {})
     expect(results).toContainEqual({ fresh: true })
   })
 
@@ -126,5 +127,63 @@ describe('cachedFetch', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(results).toEqual([{ found: true }])
+  })
+})
+
+describe('cacheBulk', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('fetches all uncached URLs in a single bulk call and writes them back', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    const urls = ['https://api.test/bulk?doi=a', 'https://api.test/bulk?doi=b']
+    const bulkFetch = vi.fn(async (missed) => {
+      expect(missed).toEqual(urls)
+      return new Map([
+        [urls[0], { doi: 'a' }],
+        [urls[1], { doi: 'b' }]
+      ])
+    })
+
+    await cacheBulk(urls, bulkFetch)
+    expect(bulkFetch).toHaveBeenCalledTimes(1)
+
+    // Written-back entries turn later single fetches into cache hits (no network)
+    const results = []
+    await cachedFetch(urls[0], (data) => results.push(data))
+    await cachedFetch(urls[1], (data) => results.push(data))
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(results).toEqual([{ doi: 'a' }, { doi: 'b' }])
+  })
+
+  it('skips URLs already cached and only requests the misses', async () => {
+    vi.stubGlobal('fetch', vi.fn())
+
+    const cachedUrl = 'https://api.test/skip?doi=cached'
+    const missUrl = 'https://api.test/skip?doi=miss'
+
+    // Prime the cache for one URL via a bulk call
+    await cacheBulk([cachedUrl], async () => new Map([[cachedUrl, { doi: 'cached' }]]))
+
+    const bulkFetch = vi.fn(async (missed) => {
+      expect(missed).toEqual([missUrl])
+      return new Map([[missUrl, { doi: 'miss' }]])
+    })
+    await cacheBulk([cachedUrl, missUrl], bulkFetch)
+    expect(bulkFetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('does nothing when every URL is already cached', async () => {
+    vi.stubGlobal('fetch', vi.fn())
+
+    const url = 'https://api.test/allcached?doi=x'
+    await cacheBulk([url], async () => new Map([[url, { doi: 'x' }]]))
+
+    const bulkFetch = vi.fn()
+    await cacheBulk([url], bulkFetch)
+    expect(bulkFetch).not.toHaveBeenCalled()
   })
 })

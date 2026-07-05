@@ -1,6 +1,6 @@
 import Author from './Author.js'
 import { SCORING, CURRENT_YEAR, API_ENDPOINTS, API_PARAMS } from '../constants/config.js'
-import { cachedFetch } from '../lib/Cache.js'
+import { cacheBulk, cachedFetch } from '../lib/Cache.js'
 
 
 const SURVEY_THRESHOLDS = {
@@ -190,7 +190,7 @@ export default class Publication {
    * @returns {Promise<Object>} The request attempt details.
    */
   async loadData(noCache) {
-    const url = `${API_ENDPOINTS.PUBLICATIONS}?doi=${this.doi}${noCache ? API_PARAMS.NO_CACHE_PARAM : ''}`
+    const url = `${publicationUrl(this.doi)}${noCache ? API_PARAMS.NO_CACHE_PARAM : ''}`
     const attempt = {
       url,
       noCache,
@@ -411,6 +411,33 @@ export default class Publication {
 
 
   /**
+   * Warms the per-DOI cache for many publications with a single bulk request,
+   * so the subsequent individual fetchData() calls become cache hits. Purely an
+   * optimization: if the bulk endpoint is unavailable it degrades gracefully and
+   * the individual fetches proceed as before.
+   * @param {Publication[]} publications - Publications to prefetch.
+   */
+  static async prefetch(publications) {
+    const pending = publications.filter((publication) => !publication.wasFetched)
+    if (!pending.length) return
+
+    const doiByUrl = new Map(pending.map((publication) => [publicationUrl(publication.doi), publication.doi]))
+
+    try {
+      await cacheBulk([...doiByUrl.keys()], async (missedUrls) => {
+        const results = await bulkLoad(missedUrls.map((url) => doiByUrl.get(url)))
+        const dataByUrl = new Map()
+        missedUrls.forEach((url, index) => {
+          if (results[index]) dataByUrl.set(url, results[index])
+        })
+        return dataByUrl
+      })
+    } catch (error) {
+      console.warn(`[Publication] Bulk prefetch failed, falling back to individual fetches: ${error}`)
+    }
+  }
+
+  /**
    * Gets the available publication tag definitions.
    * @returns {Array} Array of tag configuration objects.
    */
@@ -525,6 +552,35 @@ function cleanAbstract(abstract) {
 
   // Then remove leading "Abstract" (case-insensitive) followed by optional punctuation and whitespace
   return withoutTags.replace(/^Abstract[\s:.–-]*/i, '').trim()
+}
+
+/**
+ * Builds the per-DOI data-service URL used as the cache key for a publication.
+ * @param {string} doi - The (lowercased) DOI.
+ * @returns {string} The single-publication request URL.
+ */
+function publicationUrl(doi) {
+  return `${API_ENDPOINTS.PUBLICATIONS}?doi=${doi}`
+}
+
+/**
+ * Fetches metadata for many DOIs in a single request. Uses GET for small
+ * requests and switches to POST once the query grows too long for a URL.
+ * @param {string[]} dois - DOIs to load.
+ * @returns {Promise<object[]>} Results in the same order as the submitted DOIs.
+ */
+async function bulkLoad(dois) {
+  const query = `dois=${encodeURIComponent(dois.join(','))}`
+  const response =
+    query.length <= API_PARAMS.BULK_GET_MAX_QUERY_LENGTH
+      ? await fetch(`${API_ENDPOINTS.PUBLICATIONS}?${query}`)
+      : await fetch(API_ENDPOINTS.PUBLICATIONS, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ dois })
+        })
+  if (!response.ok) throw new Error(`Bulk request failed with status ${response.status}`)
+  return response.json()
 }
 
 function delay(ms) {
