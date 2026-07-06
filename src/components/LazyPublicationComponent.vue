@@ -1,7 +1,9 @@
 <script setup>
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { nextTick, ref, watch, onMounted, onUnmounted } from 'vue'
 
 import PublicationComponent from './PublicationComponent.vue'
+
+import { useAppState } from '@/composables/useAppState.js'
 
 const props = defineProps({
   publication: {
@@ -23,9 +25,11 @@ const props = defineProps({
   }
 })
 const emit = defineEmits(['activate'])
+const { activatePublicationComponentByDoi } = useAppState()
 const hasLoaded = ref(false)
 const targetRef = ref(null)
 let observer = null
+let isActivating = false
 
 // Load immediately if publication is active/selected to avoid navigation issues, or if on mobile
 const shouldLoadImmediately = () => {
@@ -107,32 +111,41 @@ function forceLoad() {
 
     // If skeleton was focused, transfer focus to real component when it loads
     if (wasFocused) {
-      setTimeout(() => {
-        // After loading, targetRef.value is a Vue component instance, not a DOM element
-        // We need to access its $el property to get the DOM element
+      nextTick(() => {
         const componentEl = targetRef.value?.$el
-        if (componentEl) {
-          const realComponent = componentEl.querySelector('.publication-component')
-          if (realComponent) {
-            realComponent.focus()
-          }
+        const realComponent = componentEl?.querySelector('.publication-component')
+        if (realComponent) {
+          realComponent.focus()
         }
-      }, 10)
+      })
     }
   }
 }
 
+function activateSkeleton() {
+  if (isActivating) {
+    return
+  }
+
+  isActivating = true
+  forceLoad()
+  activatePublicationComponentByDoi(props.publication.doi)
+  emit('activate', props.publication.doi)
+
+  setTimeout(() => {
+    isActivating = false
+  }, 100)
+}
+
 // Handle focus on skeleton (should behave like PublicationComponent)
 function handleFocus() {
-  forceLoad()
-  emit('activate', props.publication.doi)
+  activateSkeleton()
 }
 
 // Handle click on skeleton
 function handleClick(event) {
   event.stopPropagation()
-  forceLoad()
-  emit('activate', props.publication.doi)
+  activateSkeleton()
 }
 
 // Handle keyboard events on skeleton
@@ -140,10 +153,7 @@ function handleKeyDown(event) {
   // For Enter and Space, activate the publication
   if (event.key === 'Enter' || event.key === ' ') {
     event.preventDefault()
-    if (!hasLoaded.value) {
-      forceLoad()
-    }
-    emit('activate', props.publication.doi)
+    activateSkeleton()
     return
   }
 
