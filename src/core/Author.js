@@ -12,6 +12,11 @@ function deleteAuthor(authors, authorId, newAuthorId) {
   })
 }
 
+function sharePublication(authorA, authorB) {
+  const authorADois = new Set(authorA.publicationDois)
+  return authorB.publicationDois.some((doi) => authorADois.has(doi))
+}
+
 function mergeEszettTranscriptionVariants(authors, sortById) {
   // Sort authors by ID to ensure deterministic processing order
   const remainingAuthors = Object.values(authors).sort(sortById)
@@ -253,23 +258,35 @@ export default class Author {
       })
     })
     // merge author with same ORCID
-    // Sort authors to ensure deterministic processing order
-    const orcidAuthors = Object.values(authors)
+    // If the same ORCID is assigned to coauthors on one publication, the API data
+    // is ambiguous; keep those author records separate instead of merging them.
+    const authorsByOrcid = new Map()
+    Object.values(authors)
       .filter((author) => author.orcid)
       .sort(sortById)
-    orcidAuthors.forEach((author) => {
-      const authorMatches = orcidAuthors.filter((author2) => author2.orcid === author.orcid)
-      if (authorMatches.length > 1) {
-        // Sort matches to ensure deterministic processing order
-        authorMatches
-          .sort(sortById)
-          .forEach((author2) => {
-            if (author.id.length > author2.id.length) {
-              author.mergeWith(author2)
-              deleteAuthor(authors, author2.id, author.id)
-            }
-          })
-      }
+      .forEach((author) => {
+        if (!authorsByOrcid.has(author.orcid)) {
+          authorsByOrcid.set(author.orcid, [])
+        }
+        authorsByOrcid.get(author.orcid).push(author)
+      })
+
+    authorsByOrcid.forEach((authorMatches) => {
+      if (authorMatches.length <= 1) return
+
+      const sortedMatches = authorMatches.sort((authorA, authorB) => {
+        const lengthDiff = authorB.id.length - authorA.id.length
+        if (lengthDiff !== 0) return lengthDiff
+        return authorA.id.localeCompare(authorB.id)
+      })
+      const primaryAuthor = sortedMatches[0]
+
+      sortedMatches.slice(1).forEach((author) => {
+        if (!authors[author.id] || sharePublication(primaryAuthor, author)) return
+
+        primaryAuthor.mergeWith(author)
+        deleteAuthor(authors, author.id, primaryAuthor.id)
+      })
     })
     // merge authors listed as "First Last" into their "Last, First" counterparts
     Object.values(authors)

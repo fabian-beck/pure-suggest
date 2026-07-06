@@ -52,6 +52,24 @@ describe('Fix wrong author alias (Issue #620)', () => {
     expect(heQi.alternativeNames).toEqual(['He, Qi'])
   })
 
+  it('should not merge coauthors when the API returns the same ORCID for both', () => {
+    const publications = [
+      createPublication(
+        '10.1109/tvcg.2023.3326932',
+        'Huang, Zeyuan, 0000-0002-2639-0487; He, Qiang, 0000-0002-2639-0487; Maher, Kevin, 0000-0002-6486-4866; Deng, Xiaoming, 0000-0001-8576-1201; Lai, Yu-Kun, 0000-0002-2094-5680; Ma, Cuixia, 0000-0003-3999-7429; Qin, Sheng-feng, 0000-0001-8538-8136; Liu, Yong-Jin, 0000-0001-5774-1916; Wang, Hongan, 0000-0002-9320-4920'
+      )
+    ]
+
+    const authors = Author.computePublicationsAuthors(publications, true, false, false)
+
+    const huang = authors.find((author) => author.id === 'huang, zeyuan')
+    const heQiang = authors.find((author) => author.id === 'he, qiang')
+
+    expect(huang).toBeDefined()
+    expect(heQiang).toBeDefined()
+    expect(huang.alternativeNames).toEqual(['Huang, Zeyuan'])
+    expect(heQiang.alternativeNames).toEqual(['He, Qiang'])
+  })
   it('should still merge genuine single-initial abbreviations', () => {
     const publications = [
       createPublication('10.1234/full', 'Schmidt, Klaus'),
