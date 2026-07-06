@@ -198,7 +198,10 @@ export default {
         <div>
           <v-progress-circular color="white" indeterminate size="64"></v-progress-circular>
         </div>
-        <div class="global-loading-message has-text-white mt-4" v-if="interfaceStore.loadingMessage">
+        <div
+          class="global-loading-message has-text-white mt-4"
+          v-if="interfaceStore.loadingMessage"
+        >
           {{ interfaceStore.loadingMessage }}
         </div>
       </div>
@@ -231,7 +234,9 @@ body {
 // Explicitly-small buttons keep their size.
 #app .v-btn:not(.session-state-button):not(.filter-button):not(.boost-button):not(.v-btn--icon),
 .v-overlay-container
-  .v-btn:not(.session-state-button):not(.filter-button):not(.boost-button):not(.v-btn--icon):not(.v-btn--size-small) {
+  .v-btn:not(.session-state-button):not(.filter-button):not(.boost-button):not(.v-btn--icon):not(
+    .v-btn--size-small
+  ) {
   min-height: 36px;
   padding: 0 16px;
   font-size: 0.875rem;
@@ -296,7 +301,7 @@ body {
     height: calc(100% - 0.5vw);
     overflow: hidden;
     grid-template-columns: 50fr 50fr;
-    grid-template-rows: auto 35vh;
+    grid-template-rows: auto 42vh;
     gap: 0.5vw;
 
     &.network-expanded {
@@ -328,7 +333,16 @@ body {
       padding: min(0.5vw, 1rem);
 
       & > .level {
-        margin-bottom: 0.5rem;
+        margin-bottom: calc(0.5rem - 2px);
+
+        & .v-btn {
+          height: 28px !important;
+          min-height: 28px !important;
+        }
+
+        & .v-btn--icon {
+          width: 28px !important;
+        }
       }
     }
   }

@@ -21,10 +21,10 @@ defineEmits(['click'])
   <v-chip
     :class="{
       'has-background-dark has-text-white': active,
-      'has-background-white has-text-black': !active,
+      'publication-tag-default has-text-black': !active,
       'tag-clickable': clickable
     }"
-    :color="active ? 'black' : 'white'"
+    :color="active ? 'black' : undefined"
     :prepend-icon="icon"
     size="small"
     @click="clickable ? $emit('click') : null"
@@ -40,6 +40,11 @@ defineEmits(['click'])
   height: 1.5rem;
   border-radius: 0.25rem;
   font-size: 0.8rem;
+  border: 1px solid white;
+
+  &.publication-tag-default {
+    background-color: #d0d0d0;
+  }
 
   &.has-background-dark {
     border-color: #363636;

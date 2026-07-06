@@ -280,10 +280,10 @@ function handleMouseLeave() {
   position: relative;
 
   .publication-component {
-    padding: 0;
+    padding: 0 0 0 0.125rem;
     margin: 0;
     cursor: pointer;
-    min-height: 5rem;
+    min-height: 0;
     outline-offset: -0.25rem;
     z-index: -1;
     text-shadow: 0 0 15px white;
@@ -292,8 +292,8 @@ function handleMouseLeave() {
       margin: 0;
 
       & .glyph {
-        width: 5rem;
-        height: 5rem;
+        width: 3.5rem;
+        height: 3.5rem;
         margin: 0.6rem;
         border-width: 0.125rem;
         border-color: var(--bulma-info);
@@ -305,7 +305,16 @@ function handleMouseLeave() {
           position: relative;
         }
 
+        & .score {
+          font-size: 1.4rem !important;
+          line-height: 1.85rem;
+        }
+
         & .reference-counts {
+          font-size: 0.75rem !important;
+          line-height: 1.05rem;
+          transform: translateY(0.22rem);
+
           .v-icon {
             margin: -0.4em;
           }
@@ -318,11 +327,11 @@ function handleMouseLeave() {
         & .boost-indicator {
           border-radius: 50%;
           position: absolute;
-          top: -7px;
-          right: -7px;
+          top: -5px;
+          right: -5px;
           @include light-shadow;
           background: var(--bulma-warning);
-          font-size: 1.25rem;
+          font-size: 0.875rem;
           border: 1px solid var(--bulma-info);
 
           & .v-icon {
@@ -330,37 +339,37 @@ function handleMouseLeave() {
           }
 
           &.chevron-up {
-            top: -7px;
-            right: -7px;
-            width: 1.2rem;
-            height: 1.2rem;
+            top: -5px;
+            right: -5px;
+            width: 0.85rem;
+            height: 0.85rem;
 
             & .v-icon {
-              top: -0.6rem;
-              left: -0.17rem;
+              top: -0.42rem;
+              left: -0.12rem;
             }
           }
 
           &.chevron-double-up {
-            top: -8px;
-            right: -8px;
-            width: 1.5rem;
-            height: 1.5rem;
+            top: -6px;
+            right: -6px;
+            width: 1.05rem;
+            height: 1.05rem;
 
             & .v-icon {
-              top: -0.5rem;
-              left: -0.05rem;
+              top: -0.35rem;
+              left: -0.04rem;
             }
           }
 
           &.chevron-triple-up {
-            top: -9px;
-            right: -9px;
-            width: 1.8rem;
-            height: 1.8rem;
+            top: -6px;
+            right: -6px;
+            width: 1.25rem;
+            height: 1.25rem;
 
             & .v-icon {
-              top: -0.3rem;
+              top: -0.2rem;
             }
           }
         }
@@ -408,7 +417,12 @@ function handleMouseLeave() {
     }
 
     &.is-unread.is-hovered {
-      background: hsla(var(--bulma-info-h), var(--bulma-info-s), var(--bulma-info-l), 0.14) !important;
+      background: hsla(
+        var(--bulma-info-h),
+        var(--bulma-info-s),
+        var(--bulma-info-l),
+        0.14
+      ) !important;
 
       & .glyph {
         transform: scale(1.05);
@@ -426,11 +440,21 @@ function handleMouseLeave() {
     }
 
     &.is-newly-added {
-      background: hsla(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l), 0.08) !important;
+      background: hsla(
+        var(--bulma-primary-h),
+        var(--bulma-primary-s),
+        var(--bulma-primary-l),
+        0.08
+      ) !important;
     }
 
     &.is-newly-added.is-hovered {
-      background: hsla(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l), 0.12) !important;
+      background: hsla(
+        var(--bulma-primary-h),
+        var(--bulma-primary-s),
+        var(--bulma-primary-l),
+        0.12
+      ) !important;
 
       & .glyph {
         transform: scale(1.05);
@@ -442,7 +466,7 @@ function handleMouseLeave() {
     &.is-linked-to-active .glyph {
       // Adds to the border outward (box-shadow doesn't affect layout/box-sizing),
       // rather than thickening the border inward into the glyph's content.
-      box-shadow: 0 0 0 0.175rem var(--glyph-accent-color);
+      box-shadow: 0 0 0 0.125rem var(--glyph-accent-color);
     }
 
     & .glyph > div:focus > div {
@@ -451,11 +475,11 @@ function handleMouseLeave() {
     }
 
     & .media-content {
-      padding: 0.5rem;
+      padding: 0.35rem 0.5rem;
       overflow: auto;
 
       & .notification {
-        padding: 0.5rem;
+        padding: 0.35rem 0.5rem;
         margin: 0.5rem 0;
       }
 
@@ -474,10 +498,15 @@ function handleMouseLeave() {
     }
 
     & .media-right {
-      margin-right: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.125rem;
+      margin-left: 0.25rem;
+      margin-right: 0.35rem;
+      padding-top: 0.25rem;
 
       & button {
-        margin: 0.5rem 0;
+        margin: 0;
       }
     }
 

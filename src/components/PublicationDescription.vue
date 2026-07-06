@@ -44,7 +44,7 @@ const authorsWithOrcid = computed(() => {
   const orcidData = props.publication.authorOrcidData || []
 
   return authors.map((author, index) => {
-    const orcidInfo = orcidData.find(data => data.index === index)
+    const orcidInfo = orcidData.find((data) => data.index === index)
     return {
       name: author.trim(),
       orcidId: orcidInfo?.orcidId,
@@ -135,7 +135,9 @@ function buildConceptAttributesTooltip(attributes) {
   if (!attributes || attributes.length === 0) return ''
 
   const keywords = attributes.filter((attr) => attr.type === 'keyword').map((attr) => attr.value)
-  const citationDois = attributes.filter((attr) => attr.type === 'citation').map((attr) => attr.value)
+  const citationDois = attributes
+    .filter((attr) => attr.type === 'citation')
+    .map((attr) => attr.value)
   const authors = attributes.filter((attr) => attr.type === 'author').map((attr) => attr.value)
 
   if (keywords.length === 0 && citationDois.length === 0 && authors.length === 0) return ''
@@ -174,8 +176,7 @@ function getTagTooltip(tagValue, tagName) {
   if (tagValue.startsWith('concept')) {
     let tooltip = `Member of concept ${tagName}.`
 
-    const metadata =
-      props.publication.conceptMetadata?.get(tagName)
+    const metadata = props.publication.conceptMetadata?.get(tagName)
 
     if (metadata) {
       tooltip += buildConceptAttributesTooltip(metadata.attributes)
@@ -213,7 +214,6 @@ function getTagIcon(tagValue) {
   return iconMap[tagValue] || ''
 }
 
-
 function handleAuthorClick(event) {
   // Check if clicked element or its parent has the clickable-author class
   const authorElement = event.target.closest('.clickable-author')
@@ -231,60 +231,63 @@ function handleAuthorClick(event) {
   // Fallback to original behavior
   refocus()
 }
-
 </script>
 
 <template>
   <div>
     <div class="summary" v-show="publication.wasFetched">
-      <v-icon
-        v-if="sessionStore.filter.dois?.includes(publication.doi)"
-        size="16"
-        class="mr-1"
-        @click.stop
-        v-tippy="'DOI is in filter.'"
-        >mdi-filter</v-icon
-      >
-      <span v-if="publication.title">
-        <b
-          ><span
-            v-html="
-              publication.titleHighlighted
-                ? highlight(publication.titleHighlighted)
-                : highlight(publication.title)
-            "
-          ></span></b
-        >&ensp;</span
-      >
-      <span v-if="!publication.title" class="unknown">
-        <b>[unknown title] </b>
-      </span>
-      <span v-show="publication.author && !alwaysShowDetails">
-        (<span
-          v-html="highlight(publication.authorShort) + ', '"
-          v-show="publication.authorShort"
-        ></span
-        ><span
-          :class="publication.year ? '' : 'unknown'"
-          v-html="publication.year ? highlight(String(publication.year)) : '[unknown year]'"
-        ></span
-        >)</span
-      >
-      <div>
-        <PublicationTag
-          v-for="tag in visibleTags"
-          :key="tag.value"
-          :icon="getTagIcon(tag.value)"
-          clickable
-          :active="isTagFiltered(tag.value)"
-          @click="toggleTag(tag.value)"
-          v-tippy="getTagTooltip(tag.value, tag.name)"
-        >
-          {{ tag.name }}
-        </PublicationTag>
+      <div class="summary-line">
+        <span class="summary-main">
+          <v-icon
+            v-if="sessionStore.filter.dois?.includes(publication.doi)"
+            size="16"
+            class="mr-1"
+            @click.stop
+            v-tippy="'DOI is in filter.'"
+            >mdi-filter</v-icon
+          >
+          <span v-if="publication.title">
+            <b
+              ><span
+                v-html="
+                  publication.titleHighlighted
+                    ? highlight(publication.titleHighlighted)
+                    : highlight(publication.title)
+                "
+              ></span></b
+            >&ensp;</span
+          >
+          <span v-if="!publication.title" class="unknown">
+            <b>[unknown title] </b>
+          </span>
+          <span v-show="publication.author && !alwaysShowDetails">
+            (<span
+              v-html="highlight(publication.authorShort) + ', '"
+              v-show="publication.authorShort"
+            ></span
+            ><span
+              :class="publication.year ? '' : 'unknown'"
+              v-html="publication.year ? highlight(String(publication.year)) : '[unknown year]'"
+            ></span
+            >)</span
+          >
+        </span>
+        <div class="publication-tags" v-if="visibleTags.length">
+          <PublicationTag
+            v-for="tag in visibleTags"
+            :key="tag.value"
+            :icon="getTagIcon(tag.value)"
+            clickable
+            :active="isTagFiltered(tag.value)"
+            @click="toggleTag(tag.value)"
+            v-tippy="getTagTooltip(tag.value, tag.name)"
+          >
+            {{ tag.name }}
+          </PublicationTag>
+        </div>
       </div>
     </div>
-    <div v-if="showDetails">
+    <div v-if="showDetails" class="publication-details">
       <span v-if="publication.author">
         <template v-for="(author, index) in authorsWithOrcid" :key="index">
           <span
@@ -295,22 +298,14 @@ function handleAuthorClick(event) {
             @click.middle.stop="refocus"
             v-html="highlight(author.name)"
           ></span>
-          <span
-            v-else
-            v-html="highlight(author.name)"
-          ></span>
+          <span v-else v-html="highlight(author.name)"></span>
           <a
             v-if="author.hasOrcid"
             :href="`https://orcid.org/${author.orcidId}`"
             @click.stop
             class="ml-1"
           >
-            <img
-              :src="ORCID_ICON_URL"
-              alt="ORCID logo"
-              width="14"
-              height="14"
-            />
+            <img :src="ORCID_ICON_URL" alt="ORCID logo" width="14" height="14" />
           </a>
           <span v-if="index < authorsWithOrcid.length - 1">; </span>
         </template>
@@ -324,12 +319,8 @@ function handleAuthorClick(event) {
         ></span
         >.
       </span>
-      <label><span class="key">D</span>OI:</label>
-      <a :href="publication.doiUrl" @click.stop="refocus" @click.middle.stop="refocus">{{
-        publication.doi
-      }}</a>
     </div>
-    <div v-if="showDetails" class="stats-and-links level">
+    <div v-if="showDetails" class="publication-details stats-and-links level">
       <div class="level-left">
         <div :class="`level-item ${publication.referenceDois.size ? '' : 'unknown'}`">
           <label>
@@ -364,36 +355,39 @@ function handleAuthorClick(event) {
           </span>
         </div>
       </div>
-      <div class="level-right" v-if="publication.title && showDetails">
-        <div class="level-item">
+      <div class="level-right">
+        <div class="level-item publication-footer-actions">
+          <span class="publication-doi-link">
+            <label><span class="key">D</span>OI:</label>
+            <a :href="publication.doiUrl" @click.stop="refocus" @click.middle.stop="refocus">{{
+              publication.doi
+            }}</a>
+          </span>
           <CompactButton
             icon="mdi-text"
-            class="ml-5"
-            v-if="publication.abstract && !alwaysShowDetails"
+            v-if="publication.title && publication.abstract && !alwaysShowDetails"
             @click="showAbstract"
             v-tippy="`Abs<span class='key'>t</span>ract`"
           ></CompactButton>
           <CompactButton
             icon="mdi-school"
-            class="ml-5"
             :href="publication.gsUrl"
+            v-if="publication.title"
             v-tippy="`<span class='key'>G</span>oogle Scholar`"
           ></CompactButton>
           <CompactButton
             icon="mdi-format-quote-close"
-            class="ml-5"
             @click="exportBibtex"
-            v-if="!alwaysShowDetails"
+            v-if="publication.title && !alwaysShowDetails"
             v-tippy="`Export as BibTe<span class='key'>X</span> citation`"
           >
           </CompactButton>
           <CompactButton
             icon="mdi-filter-plus"
-            class="ml-5"
             v-tippy="getFilterDoiTooltip(publication.doi)"
             :active="isDoiFiltered(publication.doi)"
             @click.stop="toggleDoi(publication.doi)"
-            v-if="publication.isSelected"
+            v-if="publication.title && publication.isSelected"
           >
           </CompactButton>
         </div>
@@ -404,7 +398,56 @@ function handleAuthorClick(event) {
 
 <style scoped>
 div.summary {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.summary-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.35rem 0.75rem;
+}
+
+.summary-main {
+  flex: 1 1 20rem;
+  min-width: 0;
+}
+
+.publication-tags {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  margin-top: 0.1rem;
+  margin-left: auto;
+  min-width: 0;
+}
+
+.publication-tags :deep(.v-chip) {
+  margin-right: 0;
+}
+
+.publication-footer-actions {
+  gap: 0.35rem;
+  min-width: 0;
+  align-items: center;
+  line-height: 1;
+}
+
+.publication-footer-actions :deep(.v-btn) {
+  height: 24px !important;
+  min-height: 24px !important;
+  width: 24px !important;
+}
+.publication-doi-link {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.publication-details {
+  font-size: 0.9rem;
+  line-height: 1.25;
 }
 
 label {
@@ -435,10 +478,12 @@ label {
 
 & .stats-and-links {
   flex-wrap: wrap;
+  margin-top: 0.2rem;
+  row-gap: 0;
 
   & .level-left,
   & .level-right {
-    margin-top: 0.25rem;
+    margin-top: 0;
     flex-wrap: wrap;
     flex-grow: 1;
   }
@@ -448,7 +493,7 @@ label {
   }
 
   & .level-left .level-item {
-    margin-right: 1.5rem;
+    margin-right: 0.525rem;
   }
 
   & .level-right .level-item {

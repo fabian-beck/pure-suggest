@@ -7,7 +7,8 @@ import { useQueueStore } from '@/stores/queue.js'
 import { useSessionStore } from '@/stores/session.js'
 
 const sessionStore = useSessionStore()
-const { openSearchModal, openAuthorModal, openQueueModal, openConceptConfigModal } = useModalManager()
+const { openSearchModal, openAuthorModal, openQueueModal, openConceptConfigModal } =
+  useModalManager()
 const queueStore = useQueueStore()
 const { isEmpty, updateQueued } = useAppState()
 
@@ -39,14 +40,20 @@ onMounted(() => {
         </div>
       </div>
       <div class="level-right" v-show="!isEmpty">
-        <div class="level-item">
+        <div class="level-item selected-actions">
           <CompactButton
             icon="mdi-group has-text-white"
             class="has-text-white"
-            v-tippy="`Cluster selected publications using c<span class='key'>o</span>ncept analysis.`"
+            v-tippy="
+              `Cluster selected publications using c<span class='key'>o</span>ncept analysis.`
+            "
             @click="openConceptConfigModal()"
           >
-            <template #default>C<span class="key">o</span>ncepts</template>
+            <template #default
+              ><span class="selected-action-label"
+                >C<span class="key">o</span>ncepts</span
+              ></template
+            >
           </CompactButton>
           <CompactButton
             icon="mdi-account-group has-text-white"
@@ -54,7 +61,9 @@ onMounted(() => {
             v-tippy="`List <span class='key'>a</span>uthors of selected publications.`"
             @click="openAuthorModal()"
           >
-            <template #default><span class="key">A</span>uthors</template>
+            <template #default
+              ><span class="selected-action-label"><span class="key">A</span>uthors</span></template
+            >
           </CompactButton>
           <CompactButton
             icon="mdi-magnify"
@@ -64,7 +73,11 @@ onMounted(() => {
             "
             @click="openSearchModal()"
           >
-            <template #default><span class="key">S</span>earch/add</template>
+            <template #default
+              ><span class="selected-action-label"
+                ><span class="key">S</span>earch/add</span
+              ></template
+            >
           </CompactButton>
         </div>
       </div>
@@ -134,6 +147,7 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .box {
+  container-type: inline-size;
   display: grid;
   grid-template-rows: max-content max-content auto;
 
@@ -150,6 +164,26 @@ onMounted(() => {
 
   & .publication-list {
     @include scrollable-list;
+  }
+}
+
+@container (max-width: 34rem) {
+  .selected-actions {
+    gap: 0.25rem;
+
+    :deep(.v-btn) {
+      width: 30px !important;
+      min-width: 30px !important;
+      padding: 0 !important;
+    }
+
+    :deep(.v-btn__content > .ml-1) {
+      display: none;
+    }
+  }
+
+  .selected-action-label {
+    display: none;
   }
 }
 
