@@ -67,6 +67,7 @@ function submitSearch() {
   padding-bottom: 6rem; /* bias centered content upward, away from viewport's vertical middle */
   gap: 0.5rem;
   background: white;
+  color: #363636; /* explicit text color so content stays readable regardless of OS dark-mode preference */
   overflow-y: auto;
 }
 
