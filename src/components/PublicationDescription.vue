@@ -293,6 +293,7 @@ function handleAuthorClick(event) {
           <span
             v-if="publicationType === 'selected'"
             class="clickable-author"
+            :class="{ 'has-orcid': author.hasOrcid }"
             :data-author="author.name"
             @click.stop="handleAuthorClick"
             @click.middle.stop="refocus"
@@ -303,9 +304,9 @@ function handleAuthorClick(event) {
             v-if="author.hasOrcid"
             :href="`https://orcid.org/${author.orcidId}`"
             @click.stop
-            class="ml-1"
+            class="author-orcid-link"
           >
-            <img :src="ORCID_ICON_URL" alt="ORCID logo" width="14" height="14" />
+            <img :src="ORCID_ICON_URL" alt="ORCID logo" width="11" height="11" />
           </a>
           <span v-if="index < authorsWithOrcid.length - 1">; </span>
         </template>
@@ -475,7 +476,21 @@ label {
     background-color: rgba(0, 0, 0, 0.1);
   }
 }
+:deep(.clickable-author.has-orcid) {
+  padding-right: 0;
+}
 
+.author-orcid-link {
+  display: inline-flex;
+  margin-left: 0;
+  line-height: 1;
+  transform: translateY(-0.28em);
+  vertical-align: baseline;
+}
+
+.author-orcid-link img {
+  display: block;
+}
 & .stats-and-links {
   flex-wrap: wrap;
   margin-top: 0.2rem;

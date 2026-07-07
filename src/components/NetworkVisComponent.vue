@@ -1052,6 +1052,18 @@ export default {
           :skip-early-ticks="skipEarlyTicks"
         />
         <svg id="network-svg" :class="networkCssClasses">
+          <defs>
+            <!-- Blends each color channel 50% toward white: same visual result as
+                 50% opacity over a white background, but the node stays opaque so
+                 edges don't shine through -->
+            <filter id="filtered-out-lighten" color-interpolation-filters="sRGB">
+              <feComponentTransfer>
+                <feFuncR type="linear" slope="0.5" intercept="0.5" />
+                <feFuncG type="linear" slope="0.5" intercept="0.5" />
+                <feFuncB type="linear" slope="0.5" intercept="0.5" />
+              </feComponentTransfer>
+            </filter>
+          </defs>
           <g></g>
         </svg>
       </div>
@@ -1239,8 +1251,7 @@ export default {
     }
 
     &.filtered-out {
-      opacity: 0.5;
-      filter: blur(0.5px);
+      filter: url(#filtered-out-lighten) blur(0.5px);
     }
   }
 
