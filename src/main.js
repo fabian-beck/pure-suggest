@@ -38,9 +38,13 @@ const appMeta = {
 app.provide('appMeta', appMeta)
 const pinia = createPinia()
 app.use(pinia)
+// Pin to light: Vuetify 4 defaults defaultTheme to 'system', which would follow the OS dark mode
 const vuetify = createVuetify({
   components,
-  directives
+  directives,
+  theme: {
+    defaultTheme: 'light'
+  }
 })
 app.use(vuetify)
 app.use(VueTippy, {
