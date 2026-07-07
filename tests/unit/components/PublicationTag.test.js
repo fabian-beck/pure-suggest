@@ -22,10 +22,10 @@ describe('PublicationTag', () => {
   }
 
   describe('Styling', () => {
-    it('applies light theme (white bg, black text) when inactive', () => {
+    it('applies default theme (neutral bg, black text) when inactive', () => {
       const wrapper = createWrapper({ active: false })
       
-      expect(wrapper.find('.v-chip').classes()).toContain('has-background-white')
+      expect(wrapper.find('.v-chip').classes()).toContain('publication-tag-default')
       expect(wrapper.find('.v-chip').classes()).toContain('has-text-black')
       expect(wrapper.find('.v-chip').classes()).not.toContain('has-background-dark')
       expect(wrapper.find('.v-chip').classes()).not.toContain('has-text-white')
@@ -36,7 +36,7 @@ describe('PublicationTag', () => {
       
       expect(wrapper.find('.v-chip').classes()).toContain('has-background-dark')
       expect(wrapper.find('.v-chip').classes()).toContain('has-text-white')
-      expect(wrapper.find('.v-chip').classes()).not.toContain('has-background-white')
+      expect(wrapper.find('.v-chip').classes()).not.toContain('publication-tag-default')
       expect(wrapper.find('.v-chip').classes()).not.toContain('has-text-black')
     })
 
