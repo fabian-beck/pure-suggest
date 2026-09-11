@@ -149,7 +149,8 @@ export default [
       'sonarjs/no-identical-expressions': 'off', // Repetitive assertions are normal in tests
       'sonarjs/no-identical-functions': 'off', // Test helper duplication is sometimes needed
       'sonarjs/no-os-command-from-path': 'off', // Performance tests may need system commands
-      'sonarjs/cognitive-complexity': 'off' // Complex test scenarios are acceptable
+      'sonarjs/cognitive-complexity': 'off', // Complex test scenarios are acceptable
+      'sonarjs/parameterized-tests': 'off' // Separate named tests are often more readable than it.each
     }
   },
   {
