@@ -323,7 +323,7 @@ function handleAuthorClick(event) {
     </div>
     <div v-if="showDetails" class="publication-details stats-and-links level">
       <div class="level-left">
-        <div :class="`level-item ${publication.referenceDois.size ? '' : 'unknown'}`">
+        <div class="level-item" :class="{ unknown: !publication.referenceDois.size }">
           <label>
             <InlineIcon
               icon="mdi-arrow-bottom-left-thick"
