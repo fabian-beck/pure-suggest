@@ -417,12 +417,13 @@ div.summary {
 .publication-tags {
   display: flex;
   flex: 0 1 auto;
-  flex-direction: column;
-  align-items: flex-end;
+  flex-flow: row wrap;
+  justify-content: flex-end;
+  align-items: flex-start;
   gap: 0.25rem;
   margin-top: 0.1rem;
   margin-left: auto;
-  min-width: 0;
+  max-width: 30%;
 }
 
 .publication-tags :deep(.v-chip) {
