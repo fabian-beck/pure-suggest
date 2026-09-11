@@ -1,0 +1,214 @@
+REFERENCES
+[1] Citation Gecko. https://citationgecko.azurewebsites.net/. 1
+[2] Connected Papers. https://www.connectedpapers.com/. 1
+[3] Google Scholar. https://scholar.google.com/. 1
+[4] Inciteful. https://inciteful.xyz/. 1
+[5] Litmaps. https://www.litmaps.com. 1
+[6] ResearchRabbit. https://www.researchrabbit.ai/. 1
+[7] F. Beck. Assessing discussions of related work through citation-based
+recommendations and network visualization. Workshop on Open Citations
+and Open Scholarly Metadata, 2022. doi: 10.5281/zenodo.7123500 3
+[8] F. Beck, S. Koch, and D. Weiskopf. Visual analysis and dissemination
+of scientifc literature collections with SurVis. IEEE Transactions on
+Visualization and Computer Graphics, 22(1):180–189, 2016. doi: 10.
+1109/tvcg.2015.2467757 2
+[9] F. Beck and C. Krause. Visually explaining publication ranks in citation-
+based literature search with PURE suggest. In EuroVis 2022 – Posters,
+2022. doi: 10.2312/evp.20221110 2, 10
+[10] A. Benito-Santos and R. Theron. GlassViz: Visualizing automatically-
+extracted entry points for exploring scientifc corpora in problem-driven
+visualization research. In 2020 IEEE Visualization Conference (VIS), 2020.
+doi: 10.1109/vis47514.2020.00052 2
+[11] M. Berger, K. McDonough, and L. M. Seversky. cite2vec: Citation-
+driven document exploration via word embeddings. IEEE Transactions
+on Visualization and Computer Graphics, 23(1):691–700, 2017. doi: 10.
+1109/tvcg.2016.2598667 2
+[12] P. Bergstrom and D. C. Atkinson. Augmenting the exploration of digital
+libraries with web-based visualizations. In 2009 Fourth International
+Conference on Digital Information Management, 2009. doi: 10.1109/
+icdim.2009.5356798 2
+[13] C. Breitinger, B. Kolcu, M. Meuschke, N. Meuschke, and B. Gipp. Sup-
+porting the exploration of semantic features in academic literature using
+graph-based visualizations. In Proceedings of the ACM/IEEE Joint Con-
+ference on Digital Libraries, 2020. doi: 10.1145/3383583.3398599 2
+[14] J. C. Chang, A. X. Zhang, J. Bragg, A. Head, K. Lo, D. Downey, and
+D. S. Weld. CiteSee: Augmenting citations in scientifc papers with
+persistent and personalized historical context. In Proceedings of the
+SIGCHI Conference on Human Factors in Computing Systems, 2023. doi:
+10.1145/3544548.3580847 2
+[15] M. A. Chatti, M. Guesmi, and A. Muslim. Visualization for recommenda-
+tion explainability: A survey and new perspectives. ACM Transactions on
+Interactive Intelligent Systems, 2024. doi: 10.1145/3672276 3
+[16] C. Chen. Visualising semantic spaces and author co-citation networks in
+digital libraries. Information Processing & Management, 35(3):401–420,
+1999. doi: 10.1016/s0306-4573(98)00068-5 2
+[17] C. Chen. CiteSpace II: Detecting and visualizing emerging trends and
+transient patterns in scientifc literature. Journal of the American Society
+for Information Science and Technology, 57(3):359–377, 2005. doi: 10.
+1002/asi.20317 2
+[18] C. Chen, F. Ibekwe-Sanjuan, and J. Hou. The structure and dynamics of
+cocitation clusters: a multiple-perspective cocitation analysis. Journal of
+the American Society for Information Science and Technology, 61(7):1386–
+1409, 2010. doi: 10.1002/asi.21309 2
+[19] K. Choe, S. Jung, S. Park, H. Hong, and J. Seo. Papers101: Supporting the
+discovery process in the literature review workfow for novice researchers.
+In 2021 IEEE 14th Pacifc Visualization Symposium (PACIFICVIS), 2021.
+doi: 10.1109/pacifcvis52677.2021.00037 2
+[20] J. Choo, H. Kim, E. Clarkson, Z. Liu, C. Lee, F. Li, H. Lee, R. Kannan,
+C. D. Stolper, J. Stasko, and H. Park. VisIRR: a visual analytics system
+for information retrieval and recommendation for large-scale document
+data. ACM Transactions on Knowledge Discovery from Data, 12(1):1–20,
+2018. doi: 10.1145/3070616 2
+[21] J.-K. Chou and C.-K. Yang. PaperVis: Literature review made easy.
+Computer Graphics Forum, 30(3):721–730, 2011. doi: 10.1111/j.1467
+-8659.2011.01921.x 2
+[22] A. Dattolo and M. Corbatto. VisualBib: a novel web app for supporting
+researchers in the creation, visualization and sharing of bibliographies.
+Knowledge-Based Systems, 182:104860, 2019. doi: 10.1016/j.knosys.
+2019.07.031 2
+[23] A. Dattolo and M. Corbatto. Assisting researchers in bibliographic tasks:
+a new usable, real-time tool for analyzing bibliographies. Journal of the
+Association for Information Science and Technology, 73(6):757–776, 2021.
+doi: 10.1002/asi.24578 2
+[24] A. Dattolo, M. Corbatto, and M. Angelini. Authoring and reviewing bibli-
+ographies: Design and development of a visual analytics online platform.
+IEEE Access, 10:21631–21645, 2022. doi: 10.1109/access.2022.3153027
+2
+[25] A. Di Iorio, R. Giannella, F. Poggi, and F. Vitali. Exploring bibliogra-
+phies for research-related tasks. In Proceedings of the 24th International
+Conference on World Wide Web, 2015. doi: 10.1145/2740908.2742018 2
+[26] C. Dunne, B. Shneiderman, R. Gove, J. Klavans, and B. Dorr. Rapid
+understanding of scientifc paper collections: Integrating statistics, text
+analytics, and visualization. Journal of the American Society for Informa-
+tion Science and Technology, 63(12):2351–2369, 2012. doi: 10.1002/asi.
+22652 2
+[27] N. Elmqvist and P. Tsigas. CiteWiz: a tool for the visualization of scientifc
+citation networks. Information Visualization, 6(3):215–232, 2007. doi: 10.
+1057/palgrave.ivs.9500156 2
+[28] P. Federico, F. Heimerl, S. Koch, and S. Miksch. A survey on visual ap-
+proaches for analyzing scientifc literature and patents. IEEE Transactions
+on Visualization and Computer Graphics, 23(9):2179–2198, 2017. doi: 10
+.1109/tvcg.2016.2610422 2
+[29] O. F. Guilarte, S. D. J. Barbosa, and S. Pesco. RelPath: an interactive tool
+to visualize branches of studies and quantify the expertise of authors by
+citation paths. Scientometrics, 126(6):4871–4897, 2021. doi: 10.1007/
+s11192-021-03959-2 2
+[30] H. Guo and D. H. Laidlaw. Topic-based exploration and embedded visual-
+izations for research idea generation. IEEE Transactions on Visualization
+and Computer Graphics, 26(3):1592–1607, 2020. doi: 10.1109/tvcg.2018.
+2873011 2
+[31] J. He, Q. Ping, W. Lou, and C. Chen. PaperPoles: Facilitating adaptive
+visual exploration of scientifc publications by citation links. Journal of
+the Association for Information Science and Technology, 70(8):843–857,
+2019. doi: 10.1002/asi.24171 1, 2
+[32] F. Heimerl, Q. Han, S. Koch, and T. Ertl. CiteRivers: Visual analytics
+of citation patterns. IEEE Transactions on Visualization and Computer
+Graphics, 22(1):190–199, 2016. doi: 10.1109/tvcg.2015.2467621 2
+[33] M. Hellmann, D. Hernandez Bocanegra, and J. Ziegler. Development of
+an instrument for measuring users’ perception of transparency in recom-
+mender systems. In Proceedings of the Workshops at the International
+Conference on Intelligent User Interfaces (IUI) 2022, vol. 3124, pp. 156—
+-165, 2022. doi: 10.17185/duepublico/75905 3
+[34] O. Hoeber and S. Shukla. A study of visually linked keywords to support
+exploratory browsing in academic search. Journal of the Association for
+Information Science and Technology, 73(8):1171–1191, 2022. doi: 10.
+1002/asi.24623 2
+[35] T. Khazaei and O. Hoeber. Supporting academic search tasks through
+citation visualization and exploration. International Journal on Digital
+Libraries, 18(1):59–72, 2016. doi: 10.1007/s00799-016-0170-x 2
+[36] N. Kumar and N. Karusala. Braving citational justice in Human-Computer
+Interaction. In Extended Abstracts of the 2021 CHI Conference on Human
+Factors in Computing Systems, article no. 11, 9 pages, 2021. doi: 10.
+Authorized licensed use limited to: Universitaet Bamberg. Downloaded on September 11,2026 at 05:53:08 UTC from IEEE Xplore. Restrictions apply.
+IEEE TRANSACTIONS ON VISUALIZATION AND COMPUTER GRAPHICS, VOL. 31, NO. 1, JANUARY 2025326
+1145/3411763.3450389 3
+[37] S. Latif and F. Beck. VIS Author Profles: Interactive descriptions of
+publication records combining text and visualization. IEEE Transactions
+on Visualization and Computer Graphics, 25(1):152–161, 2019. doi: 10.
+1109/tvcg.2018.2865022 2
+[38] B. Lee, M. Czerwinski, G. Robertson, and B. B. Bederson. Understanding
+research trends in conferences using PaperLens. In Extended Abstracts of
+the SIGCHI Conference on Human Factors in Computing Systemss, 2005.
+doi: 10.1145/1056808.1057069 2
+[39] K. Li, H. Yang, E. Montoya, A. Upadhayay, Z. Zhou, J. Saad-Falcon,
+and D. H. Chau. Visual exploration of literature with Argo Scholar. In
+Proceedings of the 31st ACM International Conference on Information &
+Knowledge Management, 2022. doi: 10.1145/3511808.3557177 2
+[40] J. Liu, T. Tang, W. Wang, B. Xu, X. Kong, and F. Xia. A survey of
+scholarly data visualization. IEEE Access, 6:19205–19221, 2018. doi: 10.
+1109/access.2018.2815030 2
+[41] J. D. Mackinlay, R. Rao, and S. K. Card. An organic user interface
+for searching citation links. In Proceedings of the SIGCHI Conference
+on Human Factors in Computing Systems, 1995. doi: 10.1145/223904.
+223913 1, 2
+[42] D. Maliniak, R. Powers, and B. F. Walter. The gender citation gap in
+international relations. International Organization, 67(4):889–922, 2013.
+doi: 10.1017/S0020818313000209 3
+[43] G. Marchionini. Exploratory search: from fnding to understanding.
+Communications of the ACM, 49(4):41–46, 2006. doi: 10.1145/1121949.
+1121979 1
+[44] J. Matejka, T. Grossman, and G. Fitzmaurice. Citeology: visualizing paper
+genealogy. In Extended Abstracts of the SIGCHI Conference on Human
+Factors in Computing Systems, 2012. doi: 10.1145/2212776.2212796 2
+[45] R. Nakazawa, T. Itoh, and T. Saito. Analytics and visualization of cita-
+tion network applying topic-based clustering. Journal of Visualization,
+21(4):681–693, 2018. doi: 10.1007/s12650-018-0483-5 2
+[46] P. Pirolli and S. Card. The sensemaking process and leverage points
+for analyst technology as identifed through cognitive task analysis. In
+Proceedings of International Conference on Intelligence Analysis, vol. 5,
+2005. 1
+[47] A. Ponsard, F. Escalona, and T. Munzner. PaperQuest: a visualization
+tool to support literature review. In Extended Abstracts of the SIGCHI
+Conference on Human Factors in Computing Systems, 2016. doi: 10.
+1145/2851581.2892334 1, 2
+[48] C. Shi, H. Wang, B. Chen, Y. Liu, and Z. Zhou. Visual analysis of citation
+context-based article infuence ranking. IEEE Access, 7:113853–113866,
+2019. doi: 10.1109/access.2019.2932051 2
+[49] B. Shneiderman and A. Aris. Network visualization by semantic substrates.
+IEEE Transactions on Visualization and Computer Graphics, 12(5):733–
+740, 2006. doi: 10.1109/tvcg.2006.166 9
+[50] N. Sultanum, C. Murad, and D. Wigdor. Understanding and supporting
+academic literature review workfows with LitSense. In Proceedings of
+the International Conference on Advanced Visual Interfaces, 2020. doi:
+10.1145/3399715.3399830 2
+[51] M. Tian, G. Li, and X. Yuan. LitVis: a visual analytics approach for
+managing and exploring literature. Journal of Visualization, 26(6):1445–
+1458, 2023. doi: 10.1007/s12650-023-00941-3 2
+[52] N. J. van Eck and L. Waltman. CitNetExplorer: a new software tool
+for analyzing and visualizing citation networks. Journal of Informetrics,
+8(4):802–823, 2014. doi: 10.1016/j.joi.2014.07.006 2
+[53] N. J. van Eck and L. Waltman. Crossref as a source of open bibliographic
+metadata, Jul 2022. doi: 10.31222/osf.io/smxe5 9
+[54] Y. Wang, D. Liu, H. Qu, Q. Luo, and X. Ma. A guided tour of literature
+review: Facilitating academic paper reading with narrative visualization.
+In Proceedings of the 9th International Symposium on Visual Information
+Communication and Interaction, 2016. doi: 10.1145/2968220.2968242 2
+[55] Y. Wang, C. Shi, L. Li, H. Tong, and H. Qu. Visualizing research impact
+through citation data. ACM Transactions on Interactive Intelligent Systems,
+8(1):1–24, 2018. doi: 10.1145/3132744 2
+[56] J. Wilkins, J. Järvi, A. Jain, G. Kejriwal, A. Kerne, and V. Gumudavelly.
+EvolutionWorks: Towards improved visualization of citation networks. In
+Human-Computer Interaction – INTERACT 2015, 2015. doi: 10.1007/978
+-3-319-22723-8_17 2
+[57] S. Wu, Y. Zhao, F. Parvinzamir, N. T. Ersotelos, H. Wei, and F. Dong.
+Literature Explorer: effective retrieval of scientifc documents through
+nonparametric thematic topic detection. The Visual Computer, 36(7):1337–
+1354, 2019. doi: 10.1007/s00371-019-01721-7 2
+[58] W. Zeng, A. Dong, X. Chen, and Z.-l. Cheng. VIStory: interactive story-
+board for exploring visual information in scientifc publications. Journal
+of Visualization, 24(1):69–84, 2020. doi: 10.1007/s12650-020-00688-1 2
+[59] X. Zhang, Y. Qu, C. L. Giles, and P. Song. CiteSense: supporting sense-
+making of research literature. In Proceedings of the SIGCHI Conference
+on Human Factors in Computing Systems, 2008. doi: 10.1145/1357054.
+1357161 2
+[60] J. Zhao, C. Collins, F. Chevalier, and R. Balakrishnan. Interactive ex-
+ploration of implicit and explicit relations in faceted datasets. IEEE
+Transactions on Visualization and Computer Graphics, 19(12):2080–2089,
+2013. doi: 10.1109/tvcg.2013.167 2
+[61] Z. Zhou, C. Shi, M. Hu, and Y. Liu. Visual ranking of academic infuence
+via paper citation. Journal of Visual Languages & Computing, 48:134–143,
+2018. doi: 10.1016/j.jvlc.2018.08.007 2
+[62] B. Zimmer, M. Sahlgren, and A. Kerren. Visual analysis of relation-
+ships between heterogeneous networks and texts: an application on the
+IEEE VIS publication dataset. Informatics, 4(2):11, 2017. doi: 10.3390/
+informatics4020011 9

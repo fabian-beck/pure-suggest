@@ -1,0 +1,89 @@
+References
+Beck F, Koch S, Weiskopf D (2016) Visual analysis and dissemination of scientific literature collections with SurVis. IEEE
+Trans Vis Comput Graph 22(1):180–189. https://doi.org/10.1109/TVCG.2015.2467757
+Borkin MA, Vo AA, Bylinskii Z, Isola P, Sunkavalli S, Oliva A, Pfister H (2013) What makes a visualization memorable?
+IEEE Trans Vis Comput Graph 19(12):2306–2315. https://doi.org/10.1109/TVCG.2013.234
+Borkin MA, Bylinskii Z, Kim NW, Bainbridge CM, Yeh CS, Borkin D, Pfister H, Oliva A (2016) Beyond memorability:
+visualization recognition and recall. IEEE Trans Vis Comput Graph 22(1):519–528. https://doi.org/10.1109/TVCG.2015.
+2467732
+Chen M, Ebert D, Hagen H, Laramee RS, van Liere R, Ma KL, Ribarsky W, Scheuermann G, Silver D (2009) Data,
+information, and knowledge in visualization. IEEE Comput Graph Appl 29(1):12–19. https://doi.org/10.1109/MCG.2009.
+6
+Chen X, Zeng W, Lin Y, Al-maneea HM, Roberts J, Chang R (2020) Composition and configuration patterns in multiple-view
+visualizations. IEEE Trans Vis Comput Graph. Accepted
+Chou JK, Yang CK (2011) PaperVis: literature review made easy. Comput Graphics Forum 30(3):721–730. https://doi.org/10.
+1111/j.1467-8659.2011.01921.x
+Dou W, Yu L, Wang X, Ma Z, Ribarsky W (2013) Hierarchicaltopics: visually exploring large text collections using topic
+hierarchies. IEEE Trans Vis Comput Graph 19(12):2002–2011. https://doi.org/10.1109/TVCG.2013.162
+Eler DM, Nakazaki MY, Paulovich FV, Santos DP, Andery GF, Oliveira MCF, Batista Neto J, Minghim R (2009) Visual
+analysis of image collections. Vis Comput 25(10):923–937. https://doi.org/10.1007/s00371-009-0368-7
+Federico P, Heimerl F, Koch S, Miksch S (2017) A survey on visual approaches for analyzing scientific literature and patents.
+IEEE Trans Vis Comput Graph 23(9):2179–2198. https://doi.org/10.1109/TVCG.2016.2610422
+Go¨rg C, Liu Z, Kihm J, Choo J, Park H, Stasko J (2013) Combining computational analyses and interactive visualization for
+document exploration and sensemaking in Jigsaw. IEEE Trans Vis Comput Graph 19(10):1646–1663. https://doi.org/10.
+1109/TVCG.2012.324
+Havre S, Hetzler B, Nowell L (2000) ThemeRiver: visualizing theme changes over time. In: Proceedings of IEEE symposium
+on information visualization, pp 115–123. https://doi.org/10.1109/INFVIS.2000.885098
+Hawryszkiewycz IT (1984) Database analysis and design. Science Research Associates
+Heckbert P (1982) Color image quantization for frame buffer display. SIGGRAPH Comput Graph 16(3):297–307. https://doi.
+org/10.1145/965145.801294
+Heimerl F, Han Q, Koch S, Ertl T (2016) CiteRivers: Visual analytics of citation patterns. IEEE Trans Vis Comput Graph
+22(1):190–199. https://doi.org/10.1109/TVCG.2015.2467621
+Isenberg P, Heimerl F, Koch S, Isenberg T, Xu P, Stolper CD, Sedlmair M, Chen J, Mo¨ller T, Stasko J (2017a) Vispubdata.org:
+a metadata collection about IEEE visualization (VIS) publications. IEEE Trans Vis Comput Graph 23(9):2199–2206.
+https://doi.org/10.1109/TVCG.2016.2615308
+Isenberg P, Isenberg T, Sedlmair M, Chen J, Mo¨ller T (2017b) Visualization as seen through its research paper keywords. IEEE
+Trans Vis Comput Graph 23(1):771–780. https://doi.org/10.1109/TVCG.2016.2598827
+Ja¨nicke H, Chen M (2010) A salience-based quality metric for visualization. Comput Graph Forum 29(3):1183–1192. https://
+doi.org/10.1111/j.1467-8659.2009.01667.x
+Joia P, Coimbra D, Cuminato JA, Paulovich FV, Nonato LG (2011) Local affine multidimensional projection. IEEE Trans Vis
+Comput Graph 17(12):2563–2571. https://doi.org/10.1109/TVCG.2011.220
+Keim D, Andrienko G, Fekete JD, Go¨rg C, Kohlhammer J, Melanc¸on G (2008) Visual analytics: definition, process, and
+challenges, vol 4950. Lecture notes in computer science. Springer, Berlin, pp 154–175
+Kucher K, Kerren A (2015) Text visualization techniques: taxonomy, visual survey, and community insights. In: 2015 IEEE
+Pacific visualization symposium (pacificVis), pp 117–121. https://doi.org/10.1109/PACIFICVIS.2015.7156366
+Latif S, Beck F (2018) VIS author profiles: interactive descriptions of publication records combining text and visualization.
+IEEE Trans Vis Comput Graph, pp 1-1. https://doi.org/10.1109/TVCG.2018.2865022
+Liang Y, Wang X, Zhang S, Hu S, Liu S (2018) PhotoRecomposer: interactive photo recomposition by cropping. IEEE Trans
+Vis Comput Graph 24(10):2728–2742. https://doi.org/10.1109/TVCG.2017.2764895
+Marino J, Kaufman A (2016) Planar visualization of treelike structures. IEEE Trans Vis Comput Graph 22(1):906–915. https://
+doi.org/10.1109/TVCG.2015.2467413
+Matzen LE, Haass MJ, Divis KM, Wang Z, Wilson AT (2018) Data visualization saliency model: a tool for evaluating abstract
+data visualizations. IEEE Trans Vis Comput Graph 24(1):563–573. https://doi.org/10.1109/TVCG.2017.2743939
+Plant W, Schaefer G (2011) Visualisation and browsing of image databases. Springer, Berlin, pp 3–57
+VIStory: interactive storyboard for exploring visual information 83
+Rodrigues JF, Traina AJM, Oliveira MCFd, Traina C (2006) Reviewing data visualization: an analytical taxonomical study. In:
+Proceedings of tenth international conference on information visualisation, pp 713–720. https://doi.org/10.1109/IV.2006.
+94
+Rooij O, Jv Wijk, Worring M (2010) MediaTable: interactive categorization of multimedia collections. IEEE Comput Graph
+Appl 30(5):42–51. https://doi.org/10.1109/MCG.2010.66
+Schulz HJ (2011) Treevis.net: a tree visualization reference. IEEE Comput Graph Appl 31(6):11–15. https://doi.org/10.1109/
+MCG.2011.103
+Shen Q, Zeng W, Ye Y, Mueller Arisona S, Schubiger S, Burkhard R, Qu H (2018) Streetvizor: visual exploration of human-
+scale urban forms based on street views. IEEE Trans Vis Comput Graph 24(1):1004–1013. https://doi.org/10.1109/TVCG.
+2017.2744159
+Shneiderman B (1996) The eyes have it: a task by data type taxonomy for information visualizations. In: Proceedings of IEEE
+symposium on visual languages, IEEE, pp 336 – 343. https://doi.org/10.1109/VL.1996.545307
+Strobelt H, Oelke D, Rohrdantz C, Stoffel A, Keim DA, Deussen O (2009) Document cards: a top trumps visualization for
+documents. IEEE Trans Vis Comput Graph 15(6):1145–1152. https://doi.org/10.1109/TVCG.2009.139
+Tan L, Song Y, Liu S, Xie L (2012) ImageHive: interactive content-aware image summarization. IEEE Comput Graph Appl
+32(1):46–55. https://doi.org/10.1109/MCG.2011.89
+Tominski C, Aigner W (2015) The TimeViz browser. http://survey.timeviz.net/. Accessed 18 May 2020
+Tory M, Mo¨ller T (2004) Rethinking visualization: a high-level taxonomy. In: IEEE symposium on information visualization,
+pp 151–158. https://doi.org/10.1109/INFVIS.2004.59
+Van Der Corput P, & van Wijk JJ (2016) ICLIC: interactive categorization of large image collections. In: Proceedings of IEEE
+Pacific visualization symposium (PacificVis), pp 152–159. https://doi.org/10.1109/PACIFICVIS.2016.7465263
+van der Corput P, van Wijk JJ (2017) Comparing personal image collections with PICTuReVis. Comput Graph Forum
+36(3):295–304. https://doi.org/10.1111/cgf.13188
+Wu Y, Pitipornvivat N, Zhao J, Yang S, Huang G, Qu H (2015) egoSlider: visual analysis of egocentric network evolution.
+IEEE Trans Vis Comput Graph 22(1):260–269. https://doi.org/10.1109/TVCG.2015.2468151
+Xie X, Cai X, Zhou J, Cao N, Wu Y (2018) A semantic-based method for visualizing large image collections. IEEE Trans Vis
+Comput Graph pp 1-1. https://doi.org/10.1109/TVCG.2018.2835485
+Yang J, Fan J, Hubball D, Gao Y, Luo H, Ribarsky W, Ward M (2006) Semantic image browser: bridging information
+visualization with automated intelligent image analysis. In: Proceedings of IEEE symposium on visual analytics science
+and technology, pp 191–198. https://doi.org/10.1109/VAST.2006.261425
+Yee KP, Swearingen K, Li K, Hearst M (2003) Faceted metadata for image search and browsing. In: Proceedings of the
+SIGCHI conference on human factors in computing systems, ACM 642681, pp 401–408. https://doi.org/10.1145/642611.
+642681
+Zeng W, Shen Q, Jiang Y, Telea A (2019) Route-aware edge bundling for visualizing origin-destination trails in urban traffic.
+Comput Graph Forum 38(3):581–593. https://doi.org/10.1111/cgf.13712
