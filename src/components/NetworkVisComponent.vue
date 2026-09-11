@@ -1185,7 +1185,7 @@ export default {
       // for every moving node on every simulation frame
       paint-order: stroke;
       stroke: white;
-      stroke-width: 2px;
+      stroke-width: 1px;
       stroke-linejoin: round;
 
       &.unread {
@@ -1277,6 +1277,7 @@ export default {
       paint-order: stroke;
       stroke: var(--bulma-warning);
       stroke-width: 3px;
+      stroke-opacity: 0.5;
       stroke-linejoin: round;
     }
 
