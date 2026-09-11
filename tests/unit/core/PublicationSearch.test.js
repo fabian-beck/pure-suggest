@@ -88,7 +88,10 @@ describe('PublicationSearch', () => {
       const result = await search.execute()
       
       expect(result.type).toBe('doi')
-      expect(result.results.length).toBeGreaterThanOrEqual(1)
+      expect(result.results.map((publication) => publication.doi)).toEqual([
+        '10.1234/doi-1',
+        '10.5678/doi-2'
+      ])
     })
 
     it('should not perform search when DOIs are found', async () => {
