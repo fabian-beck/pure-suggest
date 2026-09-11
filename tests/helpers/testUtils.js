@@ -25,6 +25,7 @@ export const createD3ChainableMock = (returnData = null) => {
     'text',
     'on',
     'classed',
+    'each',
     'filter',
     'transition',
     'duration'

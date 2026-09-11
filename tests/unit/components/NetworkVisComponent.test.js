@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import { describe, it, expect, beforeEach, vi, beforeAll, afterAll } from 'vitest'
-import { ref } from 'vue'
+import { isReactive, ref } from 'vue'
 
 import {
   createD3ChainableMock,
@@ -404,8 +404,8 @@ describe('NetworkVisComponent', () => {
         isEmpty: false,
         isUpdatable: false,
         selectedPublications: [
-          { doi: '10.1234/test1', title: 'Test Publication 1', year: 2020 },
-          { doi: '10.1234/test2', title: 'Test Publication 2', year: 2021 }
+          { doi: '10.1234/test1', title: 'Test Publication 1', year: 2020, citationDois: [], referenceDois: ['10.1234/test2'] },
+          { doi: '10.1234/test2', title: 'Test Publication 2', year: 2021, citationDois: [], referenceDois: [] }
         ],
         suggestedPublications: [
           { doi: '10.1234/suggested1', title: 'Suggested Publication 1', year: 2019 }
@@ -479,19 +479,21 @@ describe('NetworkVisComponent', () => {
       expect(startSpy).toHaveBeenCalled()
     })
 
-    it('updates simulation with graph data', () => {
-      // Since the plot method can throw errors internally and catches them,
-      // we just verify the plot method runs without throwing to the test
-      wrapper.vm.graph.nodes = [{ id: 'test-node' }]
-      wrapper.vm.graph.links = [{ source: 'node1', target: 'node2' }]
+    it('hands plain (non-reactive) graph data to the simulation', () => {
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      wrapper.vm.plot()
+      expect(errorSpy).not.toHaveBeenCalled()
 
-      expect(() => {
-        wrapper.vm.plot()
-      }).not.toThrow()
-
-      // Verify graph data is set
-      expect(wrapper.vm.graph.nodes).toHaveLength(1)
+      expect(wrapper.vm.graph.nodes).toHaveLength(3)
       expect(wrapper.vm.graph.links).toHaveLength(1)
+      expect(wrapper.vm.nodeCount).toBe(3)
+      expect(wrapper.vm.linkCount).toBe(1)
+      // Vue proxies around nodes would slow down every simulation tick
+      const simulationNodes = wrapper.vm.simulation.nodes.mock.lastCall[0]
+      expect(simulationNodes).toBe(wrapper.vm.graph.nodes)
+      expect(isReactive(simulationNodes)).toBe(false)
+      expect(isReactive(simulationNodes[0])).toBe(false)
+      expect(isReactive(wrapper.vm.simulation)).toBe(false)
     })
 
     it('restarts simulation when restart parameter is true', () => {

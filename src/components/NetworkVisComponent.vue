@@ -116,20 +116,26 @@ export default {
       suggestedNumberFactor: 0.3,
       authorNumberFactor: 0.5,
       onlyShowFiltered: false,
-      // D3 simulation state (moved from useNetworkSimulation)
-      simulation: null,
       isDragging: false,
-      graph: { nodes: [], links: [] },
+      // Graph size for the performance monitor; the graph itself is kept non-reactive
+      nodeCount: 0,
+      linkCount: 0,
       // Position change detection for performance optimization
       positionThreshold: 1, // pixels - minimum movement to trigger DOM update
       lastUpdateTime: 0,
       skipEarlyTicks: 50, // Skip DOM updates for first N ticks
       shouldSkipEarlyTicks: false, // Only skip when truly restarted with high alpha
-      // X position caching for performance optimization
-      nodeXPositionsCache: new Map(), // Cache X positions to avoid redundant calculations
       // Reactive tick count for CSS animation control
       currentTickCount: 0 // Synchronized with performance monitor
     }
+  },
+  created() {
+    // The simulation and its graph are deliberately not part of data(): d3-force
+    // reads and writes node positions many times per tick, and doing that through
+    // Vue's reactive proxies makes every tick an order of magnitude slower
+    this.simulation = null
+    this.graph = { nodes: [], links: [] }
+    this.nodeXPositionsCache = new Map() // Cache X positions to avoid redundant calculations
   },
   computed: {
     showSelectedNodes () {
@@ -768,6 +774,8 @@ export default {
     updateGraphData(nodes, links) {
       this.graph.nodes = nodes
       this.graph.links = links
+      this.nodeCount = nodes.length
+      this.linkCount = links.length
 
       if (this.simulation) {
         this.simulation.nodes(nodes)
@@ -904,6 +912,8 @@ export default {
 
         // Clear graph data
         this.graph = { nodes: [], links: [] }
+        this.nodeCount = 0
+        this.linkCount = 0
 
         // Clear the SVG container
         if (this.svg && typeof this.svg.select === 'function') {
@@ -920,6 +930,8 @@ export default {
         console.warn('Error clearing visualization:', error.message)
         // Ensure clean state even if clearing fails
         this.graph = { nodes: [], links: [] }
+        this.nodeCount = 0
+        this.linkCount = 0
         // Try to reinitialize basic selections
         if (this.svg) {
           try {
@@ -1046,8 +1058,8 @@ export default {
           ref="performanceMonitor"
           :show="interfaceStore.showPerformancePanel"
           :is-empty="isEmpty.value || !sessionStore.selectedPublications?.length"
-          :node-count="graph.nodes.length"
-          :link-count="graph.links.length"
+          :node-count="nodeCount"
+          :link-count="linkCount"
           :should-skip-early-ticks="shouldSkipEarlyTicks"
           :skip-early-ticks="skipEarlyTicks"
         />
@@ -1159,19 +1171,22 @@ export default {
     & rect {
       cursor: pointer;
       stroke-width: 2;
-      @include light-shadow-svg;
     }
 
     & circle {
       fill: var(--bulma-warning);
-      stroke-width: 1f;
-      @include light-shadow-svg;
+      stroke-width: 1;
     }
 
     & text {
       text-anchor: middle;
       dominant-baseline: middle;
-      filter: drop-shadow(0px 0px 1px white);
+      // Stroke halo instead of a drop-shadow filter: filters are re-rasterized
+      // for every moving node on every simulation frame
+      paint-order: stroke;
+      stroke: white;
+      stroke-width: 1px;
+      stroke-linejoin: round;
 
       &.unread {
         fill: hsl(var(--bulma-info-h), var(--bulma-info-s), calc(var(--bulma-info-l) - 20%));
@@ -1182,8 +1197,6 @@ export default {
       &.labelQueuingForExcluded {
         visibility: hidden;
         font-weight: 1000;
-        stroke: white;
-        stroke-width: 0.5;
       }
     }
 
@@ -1261,7 +1274,11 @@ export default {
     & text {
       text-anchor: middle;
       transform: translate(0px, 4px);
-      filter: drop-shadow(0px 0px 2px var(--bulma-warning));
+      paint-order: stroke;
+      stroke: var(--bulma-warning);
+      stroke-width: 3px;
+      stroke-opacity: 0.5;
+      stroke-linejoin: round;
     }
 
     &.fixed text {
@@ -1286,7 +1303,6 @@ export default {
 
     & circle {
       fill: black;
-      @include light-shadow-svg;
     }
 
     & text {
