@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest'
 
+import ieeeReferenceList from './fixtures/ieee-reference-list.txt?raw'
+
 import { extractDois } from '@/core/PublicationSearch.js'
 
 describe('extractDois', () => {
@@ -103,10 +105,18 @@ describe('extractDois', () => {
       expect(extractDois('10.1109/TVCG.2019. 2934619')).toEqual(['10.1109/TVCG.2019.2934619'])
     })
 
-    it('joins a DOI wrapped in the middle of a number', () => {
-      expect(extractDois('https://doi.org/10.1145/3290605.33002\n86')).toEqual([
-        '10.1145/3290605.3300286'
+    it('joins a DOI wrapped before a hyphen or dot', () => {
+      expect(extractDois('10.1111/j.1467\n-8659.2011.01921.x')).toEqual(['10.1111/j.1467-8659.2011.01921.x'])
+      expect(extractDois('10.1007/978\n-3-319-22723-8_17')).toEqual(['10.1007/978-3-319-22723-8_17'])
+      expect(extractDois('10.1109/tvcg\n.2016.2610422')).toEqual(['10.1109/tvcg.2016.2610422'])
+    })
+
+    it('does not join page back-references following a DOI', () => {
+      expect(extractDois('doi: 10.5281/zenodo.7123500 3')).toEqual(['10.5281/zenodo.7123500'])
+      expect(extractDois('doi: 10.1109/access.2022.3153027\n2\n[25] A. Author')).toEqual([
+        '10.1109/access.2022.3153027'
       ])
+      expect(extractDois('doi: 10.1145/223904.\n223913 1, 2')).toEqual(['10.1145/223904.223913'])
     })
 
     it('joins a DOI wrapped more than once', () => {
@@ -115,6 +125,7 @@ describe('extractDois', () => {
 
     it('joins DOIs with spaces inside the prefix', () => {
       expect(extractDois('doi: 10.\n1109/TVCG.2018.2865146')).toEqual(['10.1109/TVCG.2018.2865146'])
+      expect(extractDois('doi: 10\n.1109/TVCG.2018.2865146')).toEqual(['10.1109/TVCG.2018.2865146'])
       expect(extractDois('10.1109 / TVCG.2018.2865146')).toEqual(['10.1109/TVCG.2018.2865146'])
       expect(extractDois('10.1109/ TVCG.2018.2865146')).toEqual(['10.1109/TVCG.2018.2865146'])
     })
@@ -140,6 +151,23 @@ describe('extractDois', () => {
         '10.1109/TVCG.2018.2865146'
       ])
     })
+  })
+
+  it('extracts all DOIs from a reference list copied from an IEEE PDF', () => {
+    const dois = extractDois(ieeeReferenceList)
+    // [36] is interrupted by a page header/footer between "10." and the rest of the DOI
+    expect(dois).toHaveLength(54)
+    expect(dois).toContain('10.1109/tvcg.2015.2467757')
+    expect(dois).toContain('10.1109/icdim.2009.5356798')
+    expect(dois).toContain('10.1111/j.1467-8659.2011.01921.x')
+    expect(dois).toContain('10.1016/j.knosys.2019.07.031')
+    expect(dois).toContain('10.1109/access.2022.3153027')
+    expect(dois).toContain('10.1109/tvcg.2016.2610422')
+    expect(dois).toContain('10.1145/223904.223913')
+    expect(dois).toContain('10.1007/978-3-319-22723-8_17')
+    expect(dois).toContain('10.3390/informatics4020011')
+    expect(dois).not.toContain('10.1145/3411763.3450389')
+    expect(dois.every((doi) => /^10\.\d{4,5}\/[a-z0-9()._-]+(\/[a-z0-9]+)?$/i.test(doi))).toBe(true)
   })
 
   it('extracts all DOIs from a dirty pasted reference list', () => {

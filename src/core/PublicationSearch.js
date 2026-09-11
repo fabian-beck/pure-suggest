@@ -9,7 +9,7 @@ const DOI_PREFIX = /10\.\d{4,9}(?:\.\d+)*\//
 // "<...>" groups, which are distinguished from closing HTML tags by not starting with "/"
 const DOI_SUFFIX = /^(?:[^\s"'{}<>?#]|<[^\s"'{}<>/]+>)+/
 // A whitespace-separated token that may continue a DOI broken by a line break or space
-const DOI_CONTINUATION = /^[A-Za-z0-9][A-Za-z0-9._\-():]*/
+const DOI_CONTINUATION = /^[A-Za-z0-9.-][A-Za-z0-9._\-():]*/
 const LIST_NUMBER = /^\d{1,3}[.)]$/
 const YEAR = /^(?:19|20)\d{2}$/
 
@@ -30,9 +30,8 @@ export function extractDois(text) {
         return encoded
       }
     })
-    // whitespace within the DOI prefix, e.g. "10. 1109/" or "10.1109 / TVCG"
-    .replace(/(?<![\d.])10\.\s+(?=\d{4,9}\/)/g, '10.')
-    .replace(/(10\.\d{4,9}(?:\.\d+)*)\s*\/\s*/g, '$1/')
+    // whitespace within the DOI prefix, e.g. "10. 1109/", "10\n.1109/", or "10.1109 / TVCG"
+    .replace(/(?<![\d.])10\s*\.\s*(\d{4,9}(?:\.\d+)*)\s*\/\s*(?!10\.\d{4,9}\/)/g, '10.$1/')
   const tokens = normalized.split(/\s+/)
   const dois = []
   const seen = new Set()
@@ -77,8 +76,14 @@ function continuesDoi(doi, next) {
   ) {
     return false
   }
-  // after characters that cannot end a DOI, any DOI-like token continues it; otherwise only digits
-  return /[-/_(:]$/.test(doi) || /^\d/.test(continuation)
+  // Joining is only safe if either side signals a break within the DOI: a token starting with
+  // "-" or ".", a DOI ending with a character that cannot end it, or a DOI ending with "." followed
+  // by digits. Anything else, e.g., page back-references like "12" after a DOI, is not joined.
+  return (
+    /^[.-][A-Za-z0-9]/.test(continuation) ||
+    /[-/_(:]$/.test(doi) ||
+    (doi.endsWith('.') && /^\d/.test(continuation))
+  )
 }
 
 // Removes trailing punctuation and unbalanced closing brackets that belong to the surrounding text
