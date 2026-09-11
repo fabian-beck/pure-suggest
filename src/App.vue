@@ -331,6 +331,7 @@ body {
     & .box {
       margin: 0;
       padding: min(0.5vw, 1rem);
+      padding-top: min(0.25vw, 0.5rem);
 
       & > .level {
         margin-bottom: calc(0.5rem - 2px);
