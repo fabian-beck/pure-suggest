@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 
 import ieeeReferenceList from './fixtures/ieee-reference-list.txt?raw'
+import springerReferenceList from './fixtures/springer-reference-list.txt?raw'
 
 import { extractDois } from '@/core/PublicationSearch.js'
 
@@ -168,6 +169,17 @@ describe('extractDois', () => {
     expect(dois).toContain('10.3390/informatics4020011')
     expect(dois).not.toContain('10.1145/3411763.3450389')
     expect(dois.every((doi) => /^10\.\d{4,5}\/[a-z0-9()._-]+(\/[a-z0-9]+)?$/i.test(doi))).toBe(true)
+  })
+
+  it('extracts all DOIs from a reference list copied from a Springer PDF', () => {
+    const dois = extractDois(springerReferenceList)
+    expect(dois).toHaveLength(36)
+    expect(dois).toContain('10.1109/MCG.2009.6')
+    expect(dois).toContain('10.1145/965145.801294')
+    expect(dois).toContain('10.1111/j.1467-8659.2009.01667.x')
+    expect(dois).toContain('10.1109/IV.2006.94')
+    expect(dois).toContain('10.1145/642611.642681')
+    expect(dois.every((doi) => /^10\.\d{4}\/[a-z0-9._-]+$/i.test(doi))).toBe(true)
   })
 
   it('extracts all DOIs from a dirty pasted reference list', () => {
