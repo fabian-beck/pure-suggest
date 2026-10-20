@@ -50,7 +50,7 @@
     "puppeteer": "^25.10.0",
     "ts-api-utils": "^2.5.0",
     "unplugin-vue-components": "^32.1.0",
-    "vite": "^8.3.0",
+    "vite": "^8.3.4",
     "vitest": "^5.0.0"
   },
   "browserslist": [
