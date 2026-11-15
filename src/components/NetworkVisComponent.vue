@@ -72,6 +72,7 @@ import {
   getYearLabelRects,
   updateYearLabelContent, 
   updateYearLabelRects, 
+  updateYearLabelTextPositions,
   updateYearLabelVisibility 
 } from '@/utils/network/yearLabels.js'
 
@@ -262,6 +263,7 @@ export default {
       .zoom()
       .on('zoom', (event) => {
         this.svg.attr('transform', event.transform)
+        this.updateYearLabelTexts()
         // Labels follow the view and are only placed anew when the zoom ends
         this.updateNodeLabels(false)
       })
@@ -301,6 +303,7 @@ export default {
       this.viewport = scale
         ? { width: clientWidth / scale, height: clientHeight / scale }
         : { width: 0, height: 0 }
+      this.updateYearLabelTexts()
       this.updateNodeLabels(true)
     })
     this.resizeObserver.observe(this.svgElement)
@@ -586,7 +589,8 @@ export default {
 
           this.label = updateYearLabelContent(this.label, yearRange)
           updateYearLabelRects(this.label, this.yearX)
-          updateYearLabelVisibility(this.label, true, this.yearX, this.svgHeight)
+          updateYearLabelVisibility(this.label, true, this.yearX)
+          this.updateYearLabelTexts()
         } else if (this.label) {
           this.label.selectAll('text, rect').attr('visibility', 'hidden')
         }
@@ -814,6 +818,16 @@ export default {
       }
     },
 
+    // Keep the year labels at the borders of the visible area, which is higher than
+    // the viewBox when the component is higher than the aspect ratio of the viewBox
+    updateYearLabelTexts() {
+      updateYearLabelTextPositions(
+        this.label,
+        this.viewport.height || this.svgHeight,
+        d3.zoomTransform(this.svgElement)
+      )
+    },
+
     /**
      * Move the node labels to the current node positions, or place them anew (solve);
      * with pin, existing labels stay exactly where they are and labels are only added
@@ -869,7 +883,8 @@ export default {
             rects: getYearLabelRects(
               generateYearRange(this.sessionStore.yearMin, this.sessionStore.yearMax),
               this.yearX,
-              this.svgHeight
+              height,
+              zoomTransform
             )
           })
         }

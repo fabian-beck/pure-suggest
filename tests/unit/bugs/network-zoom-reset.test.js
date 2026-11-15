@@ -55,6 +55,7 @@ vi.mock('@/utils/network/yearLabels.js', () => ({
   generateYearRange: vi.fn(() => []),
   updateYearLabelContent: vi.fn(() => ({})),
   updateYearLabelRects: vi.fn(),
+  updateYearLabelTextPositions: vi.fn(),
   updateYearLabelVisibility: vi.fn()
 }))
 
