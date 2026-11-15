@@ -18,11 +18,11 @@
     "test:all": "npm test && npm run test:perf"
   },
   "dependencies": {
-    "@label-anything/core": "file:vendor/label-anything-core-0.1.0.tgz",
-    "@label-anything/raster": "file:vendor/label-anything-raster-0.1.0.tgz",
-    "@label-anything/svg": "file:vendor/label-anything-svg-0.1.0.tgz",
-    "@label-anything/text": "file:vendor/label-anything-text-0.1.0.tgz",
-    "@label-anything/wasm": "file:vendor/label-anything-wasm-0.1.0.tgz",
+    "@label-anything/core": "file:vendor/label-anything-core-0.1.0-bc33045.tgz",
+    "@label-anything/raster": "file:vendor/label-anything-raster-0.1.0-bc33045.tgz",
+    "@label-anything/svg": "file:vendor/label-anything-svg-0.1.0-bc33045.tgz",
+    "@label-anything/text": "file:vendor/label-anything-text-0.1.0-bc33045.tgz",
+    "@label-anything/wasm": "file:vendor/label-anything-wasm-0.1.0-bc33045.tgz",
     "@mdi/font": "^7.4.47",
     "bulma": "^1.0.4",
     "core-js": "^3.51.0",
