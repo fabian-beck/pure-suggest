@@ -126,6 +126,7 @@ export function releaseKeywordPosition(event, keywordNode, networkSimulation, SI
   if (networkSimulation.isNetworkClusters) {
     delete keywordNode.fx
   }
+  delete keywordNode.clusterFx
   delete keywordNode.fy
   d3.select(event.target.parentNode).classed('fixed', false)
   networkSimulation.restart(SIMULATION_ALPHA)
@@ -162,8 +163,10 @@ export function createKeywordNodeDrag(networkSimulation, SIMULATION_ALPHA) {
   }
 
   function dragMove(event, d) {
+    // In timeline mode, keywords stay pinned to their year; the x set in clusters mode is
+    // kept for switching back
     if (networkSimulation.isNetworkClusters) {
-      d.fx = event.x
+      d.fx = d.clusterFx = event.x
     }
     d.fy = event.y
     networkSimulation.restart(SIMULATION_ALPHA)

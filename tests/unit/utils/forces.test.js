@@ -1,6 +1,7 @@
 import * as d3 from 'd3'
 import { describe, it, expect } from 'vitest'
 
+import { CURRENT_YEAR } from '@/constants/config.js'
 import {
   assignNodePositions,
   calculateYearX,
@@ -9,6 +10,7 @@ import {
   pinTimelineX,
   SIMULATION_ALPHA
 } from '@/utils/network/forces.js'
+import { createKeywordNodeDrag } from '@/utils/network/keywordNodes.js'
 
 const yearX = (year) => calculateYearX(year, 1200, 240, false)
 
@@ -157,15 +159,38 @@ describe('pinTimelineX', () => {
     expect(nodes[2].fx).toBeUndefined()
   })
 
-  it('releases x in clusters mode, except for keywords dragged to a fixed place', () => {
+  it('releases x in clusters mode', () => {
     const nodes = [
       { id: 'p', type: 'publication', publication: { year: 2020 }, fx: 5 },
-      { id: 'k', type: 'keyword', fx: 5 },
-      { id: 'dragged', type: 'keyword', fx: 5, fy: 7 }
+      { id: 'k', type: 'keyword', fx: 5 }
     ]
     pinTimelineX(nodes, true, yearX)
     expect(nodes[0].fx).toBeUndefined()
     expect(nodes[1].fx).toBeUndefined()
-    expect(nodes[2]).toMatchObject({ fx: 5, fy: 7 })
+  })
+})
+
+describe('dragged keywords when switching between clusters and timeline mode', () => {
+  const drag = (keyword, isNetworkClusters) => {
+    const network = { isNetworkClusters, restart: () => {}, setDragging: () => {} }
+    createKeywordNodeDrag(network, SIMULATION_ALPHA).on('drag')({ x: 5, y: 7 }, keyword)
+  }
+
+  it('returns a keyword dragged in clusters mode to its place when switching back', () => {
+    const keyword = { id: 'k', type: 'keyword', x: 0, y: 0 }
+    drag(keyword, true)
+    pinTimelineX([keyword], false, yearX)
+    expect(keyword).toMatchObject({ fx: yearX(CURRENT_YEAR + 2), fy: 7 })
+    pinTimelineX([keyword], true, yearX)
+    expect(keyword).toMatchObject({ fx: 5, fy: 7 })
+  })
+
+  it('keeps only the y of a keyword dragged in timeline mode when switching to clusters', () => {
+    const keyword = { id: 'k', type: 'keyword', x: 0, y: 0 }
+    pinTimelineX([keyword], false, yearX)
+    drag(keyword, false)
+    pinTimelineX([keyword], true, yearX)
+    expect(keyword.fx).toBeUndefined()
+    expect(keyword.fy).toBe(7)
   })
 })
