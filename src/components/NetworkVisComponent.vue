@@ -49,6 +49,14 @@ import {
   createCitationLinks
 } from '@/utils/network/links.js'
 import {
+  loadLabelEngine,
+  createNodeLabelProblem,
+  limitNodeLabels,
+  placeNodeLabels,
+  renderNodeLabels,
+  updateNodeLabelPositions
+} from '@/utils/network/nodeLabels.js'
+import {
   initializePublicationNodes,
   updatePublicationNodes,
   updateActiveState,
@@ -59,13 +67,16 @@ import {
 
 // Year labels
 import { 
-  generateYearRange, 
+  generateYearRange,
+  getYearLabelRects,
   updateYearLabelContent, 
   updateYearLabelRects, 
   updateYearLabelVisibility 
 } from '@/utils/network/yearLabels.js'
 
 // Components
+
+const LABEL_OVERSCAN = 100 // px beyond the view, about the width of a label
 
 export default {
   name: 'NetworkVisComponent',
@@ -115,6 +126,7 @@ export default {
       errorTimer: null,
       suggestedNumberFactor: 0.3,
       authorNumberFactor: 0.5,
+      labelNumberFactor: 0.3, // Share of the nodes that may get a label at zoom 1 (0: none)
       onlyShowFiltered: false,
       isDragging: false,
       // Graph size for the performance monitor; the graph itself is kept non-reactive
@@ -136,6 +148,11 @@ export default {
     this.simulation = null
     this.graph = { nodes: [], links: [] }
     this.nodeXPositionsCache = new Map() // Cache X positions to avoid redundant calculations
+    this.nodeLabel = null
+    this.labelResult = null // Previous label placements, kept as warm start for stable labels
+    this.labelTickCount = 0
+    this.labelZoomScale = 1 // Zoom factor of the previous label placement
+    this.isLabelEngineLoaded = false
   },
   computed: {
     showSelectedNodes () {
@@ -236,6 +253,9 @@ export default {
         }
       }
     },
+    labelNumberFactor () {
+      this.updateNodeLabels(true)
+    },
     'interfaceStore.hoveredPublication': {
       handler () {
         // Update publication highlighting when hover state changes from external components
@@ -255,11 +275,14 @@ export default {
     )
     this.zoom = d3.zoom().on('zoom', (event) => {
       this.svg.attr('transform', event.transform)
+      // While the view is only panned, the labels keep their places
+      this.updateNodeLabels(true, event.transform.k === this.labelZoomScale)
     })
     this.svg = d3.select('#network-svg').call(this.zoom).select('g')
     this.label = this.svg.append('g').attr('class', 'labels').selectAll('text')
     this.link = this.svg.append('g').attr('class', 'links').selectAll('path')
     this.node = this.svg.append('g').attr('class', 'nodes').selectAll('rect')
+    this.nodeLabel = d3.select('#network-svg g.node-labels').selectAll('g')
 
     // Initialize D3 simulation
     this.initializeSimulation({
@@ -270,6 +293,13 @@ export default {
       selectedPublicationsCount: this.sessionStore.selectedPublications.length,
       tickHandler: this.tick
     })
+
+    loadLabelEngine()
+      .then(() => {
+        this.isLabelEngineLoaded = true
+        this.updateNodeLabels(true)
+      })
+      .catch((error) => console.error(`Cannot load network label engine: ${error.message}`))
 
     // Set initial state of "only show filtered" based on whether filters are active
     this.onlyShowFiltered = this.sessionStore.filter.hasActiveFilters()
@@ -643,6 +673,9 @@ export default {
         const linksUpdated = this.updateSelectiveLinks(changedNodes)
         this.lastUpdateTime = performance.now()
 
+        // Labels follow their nodes and are placed anew every fourth update
+        this.updateNodeLabels(this.labelTickCount++ % 4 === 0)
+
         // Track performance metrics - only count actual DOM updates
         this.$refs.performanceMonitor?.recordDomUpdate(changedNodes.length, linksUpdated)
       } else {
@@ -816,6 +849,96 @@ export default {
       }
     },
 
+    /**
+     * Move the node labels to the current node positions, or place them anew (solve);
+     * with pin, existing labels stay exactly where they are and labels are only added
+     */
+    updateNodeLabels(solve, pin = false) {
+      const element = document.getElementById('network-svg')
+      if (!this.isLabelEngineLoaded || !element?.clientWidth || !this.graph.nodes.length) {
+        return
+      }
+      // The viewBox is fitted into the element, so more than the viewBox can be visible
+      const scale = Math.min(
+        element.clientWidth / this.svgWidth,
+        element.clientHeight / this.svgHeight
+      )
+      const width = element.clientWidth / scale
+      const height = element.clientHeight / scale
+      // Maps layout coordinates onto the visible viewport (origin top-left)
+      const zoomTransform = d3.zoomTransform(element)
+      const viewTransform = d3.zoomIdentity
+        .translate(zoomTransform.x + width / 2, zoomTransform.y + height / 2)
+        .scale(zoomTransform.k)
+
+      if (!this.labelNumberFactor) {
+        this.nodeLabel = this.nodeLabel.data([]).join('g')
+        this.labelResult = null
+        return
+      }
+
+      let result = null
+      if (solve) {
+        const { k, x, y } = viewTransform
+        const problem = createNodeLabelProblem(
+          this.graph.nodes,
+          this.graph.links,
+          this.getNodeDisplayX,
+          k
+        )
+        // The share of labeled nodes grows with the zoomed area: zooming in shows more
+        // labels, and it does not change while the view is panned
+        limitNodeLabels(
+          problem,
+          Math.ceil(Math.min(1, this.labelNumberFactor * k * k) * problem.items.length)
+        )
+        // The view is a window on the network: labels are also placed in the overscan
+        // around it, so that they keep their places at the border when the view moves;
+        // nodes farther out are passed as marks that these labels keep off
+        problem.items = problem.items.filter(({ anchor }) => {
+          const [canvasX, canvasY] = viewTransform.apply([anchor.x, anchor.y])
+          return (
+            canvasX >= -3 * LABEL_OVERSCAN &&
+            canvasX <= width + 3 * LABEL_OVERSCAN &&
+            canvasY >= -3 * LABEL_OVERSCAN &&
+            canvasY <= height + 3 * LABEL_OVERSCAN
+          )
+        })
+        problem.canvas = { width, height, overscan: LABEL_OVERSCAN }
+        problem.transform = [k, 0, 0, k, x, y]
+        if (this.labelResult) {
+          problem.warm_start = { placements: this.labelResult.placements, pin }
+        }
+        this.labelZoomScale = k
+        if (!this.isNetworkClusters) {
+          problem.obstacles.vector.push({
+            class: 'text',
+            rects: getYearLabelRects(
+              generateYearRange(this.sessionStore.yearMin, this.sessionStore.yearMax),
+              this.yearX,
+              this.svgHeight
+            )
+          })
+        }
+        result = placeNodeLabels(problem)
+      }
+      if (result) {
+        this.labelResult = result
+        this.nodeLabel = renderNodeLabels(
+          this.nodeLabel,
+          result,
+          this.graph.nodes,
+          this.sessionStore.activePublication
+        )
+        d3.select('#network-svg g.node-labels').attr(
+          'transform',
+          `translate(${-width / 2}, ${-height / 2})`
+        )
+      } else {
+        updateNodeLabelPositions(this.nodeLabel, this.getNodeDisplayX, viewTransform)
+      }
+    },
+
     setDragging(dragging) {
       this.isDragging = dragging
     },
@@ -908,6 +1031,11 @@ export default {
         }
         if (this.label) {
           this.label.remove()
+        }
+        if (this.nodeLabel) {
+          this.nodeLabel.remove()
+          this.nodeLabel = d3.select('#network-svg g.node-labels').selectAll('g')
+          this.labelResult = null
         }
 
         // Clear graph data
@@ -1034,6 +1162,7 @@ export default {
           this.authorTooltips
         ).tooltips
         this.link.attr('class', (d) => calculateLinkClasses(d, activePublication))
+        this.updateNodeLabels(true)
       } catch (error) {
         console.error(`Cannot update active highlighting in network: ${error.message}`)
       }
@@ -1077,6 +1206,7 @@ export default {
             </filter>
           </defs>
           <g></g>
+          <g class="node-labels"></g>
         </svg>
       </div>
       <ul class="publication-component-list" v-show="!isNetworkActuallyCollapsed">
@@ -1103,6 +1233,7 @@ export default {
         v-model:only-show-filtered="onlyShowFiltered"
         v-model:suggested-number-factor="suggestedNumberFactor"
         v-model:author-number-factor="authorNumberFactor"
+        v-model:label-number-factor="labelNumberFactor"
         @zoom="zoomByFactor"
         @reset="resetZoom"
         @plot="plot"
@@ -1331,6 +1462,35 @@ export default {
         transform: scale(1.1);
         animation: author-node-pulse 2s ease-in-out infinite;
       }
+    }
+  }
+
+  & g.node-label {
+    pointer-events: none;
+
+    & text {
+      paint-order: stroke;
+      stroke: white;
+      stroke-width: 3px;
+      stroke-linejoin: round;
+    }
+
+    & path {
+      fill: none;
+      stroke: grey;
+      stroke-width: 1;
+    }
+
+    &.non-active {
+      opacity: 0.3;
+    }
+
+    &.selected text {
+      fill: hsl(var(--bulma-primary-h), var(--bulma-primary-s), calc(var(--bulma-primary-l) - 25%));
+    }
+
+    &.suggested text {
+      fill: hsl(var(--bulma-info-h), var(--bulma-info-s), calc(var(--bulma-info-l) - 25%));
     }
   }
 
