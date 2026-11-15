@@ -937,7 +937,8 @@ export default {
           this.label.remove()
         }
         if (this.nodeLabel) {
-          this.nodeLabel.remove()
+          // Including labels that are still fading out
+          d3.select('#network-svg g.node-labels').selectAll('g').remove()
           this.nodeLabel = d3.select('#network-svg g.node-labels').selectAll('g')
           this.labelResult = null
         }
@@ -1356,7 +1357,8 @@ export default {
       stroke-width: 1;
     }
 
-    &.non-active {
+    // On the children, as the opacity of the label itself fades it in and out
+    &.non-active > * {
       opacity: 0.3;
     }
 

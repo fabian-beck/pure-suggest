@@ -190,4 +190,52 @@ describe('nodeLabels', () => {
     updateNodeLabelPositions(labels, d3.zoomIdentity.translate(400, 200))
     expect(labels.nodes()[0].getAttribute('transform')).toBe('translate(500, 200)')
   })
+
+  it('moves, shows, and hides labels smoothly when they are placed anew', async () => {
+    const nodes = [
+      publicationNode('a', 0, 0),
+      publicationNode('b', 50, 0),
+      publicationNode('c', 0, 50)
+    ]
+    const placement = (id, boxX, anchorX = 0) => ({
+      id,
+      placed: true,
+      anchor: [anchorX, 0],
+      box: { x: boxX, y: 0 },
+      text: { x_offset: 0, baseline_offsets: [10], font_size: 12, lines: ['label'] },
+      leader: null,
+      priority: { tier: 0 }
+    })
+    document.body.innerHTML = '<svg><g class="node-labels"></g></svg>'
+    let labels = renderNodeLabels(
+      d3.select('g.node-labels').selectAll('g'),
+      { placements: [placement('a', 10), placement('b', 60, 50)] },
+      nodes,
+      null
+    )
+    const label = (id) => d3.selectAll('g.node-labels > g').filter((d) => d.placement.id === id)
+    const textX = (id) => Number(label(id).select('text').attr('x'))
+    const opacity = (id) => Number(label(id).style('opacity'))
+    // Labels shown for the first time start at their place
+    expect(textX('a')).toBe(10)
+
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    labels = renderNodeLabels(
+      labels,
+      { placements: [placement('a', -40), placement('c', 10)] },
+      nodes,
+      null
+    )
+
+    expect(textX('a')).toBe(10)
+    expect(opacity('b')).toBe(1)
+    expect(opacity('c')).toBe(0)
+    expect(labels.size()).toBe(2)
+
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
+    expect(textX('a')).toBe(-40)
+    expect(label('b').empty()).toBe(true)
+    expect(opacity('c')).toBe(1)
+  })
 })

@@ -19,6 +19,7 @@ const KEYWORD_CHAR_WIDTH = 8
 const KEYWORD_HEIGHT = 16
 const KEYWORD_CLEARANCE = 5
 const CITATION_ARC_SAMPLES = 6
+const LABEL_TRANSITION_DURATION = 300 // ms
 
 let engine = null
 let measure
@@ -223,9 +224,27 @@ export function placeNodeLabels(problem) {
   }
 }
 
+function getLeaderPath({ placement }) {
+  return placement.leader
+    ? `M${placement.leader.points
+        .map(([x, y]) => `${x - placement.anchor[0]},${y - placement.anchor[1]}`)
+        .join('L')}`
+    : null
+}
+
+function getTextX({ placement }) {
+  return placement.box.x + placement.text.x_offset - placement.anchor[0]
+}
+
+function getTextY({ placement }) {
+  return placement.box.y + placement.text.baseline_offsets[0] - placement.anchor[1]
+}
+
 /**
  * Draw the placed labels of a result. Each label is positioned relative to its node's
  * anchor, so that it can follow the node between solves (updateNodeLabelPositions).
+ * Between solves, labels glide to their new places relative to the node, new labels fade
+ * in, and dropped labels fade out.
  */
 export function renderNodeLabels(labelSelection, result, nodes, activePublication) {
   const nodesById = new Map(nodes.map((node) => [node.id, node]))
@@ -235,32 +254,31 @@ export function renderNodeLabels(labelSelection, result, nodes, activePublicatio
 
   const updated = labelSelection
     .data(labels, (d) => d.placement.id)
-    .join((enter) => {
-      const g = enter.append('g')
-      g.append('path')
-      g.append('text')
-      return g
-    })
+    .join(
+      (enter) => {
+        const g = enter.append('g').style('opacity', 0)
+        g.append('path').attr('d', getLeaderPath)
+        g.append('text').attr('x', getTextX).attr('y', getTextY)
+        g.transition('fade').duration(LABEL_TRANSITION_DURATION).style('opacity', 1)
+        return g
+      },
+      (update) => update,
+      (exit) =>
+        exit.transition('fade').duration(LABEL_TRANSITION_DURATION).style('opacity', 0).remove()
+    )
     .attr('class', (d) => `node-label ${getNodeLabelKind(d.node)}`)
     .classed('non-active', (d) => activePublication && d.placement.priority.tier < 1)
     .attr('transform', (d) => `translate(${d.placement.anchor[0]}, ${d.placement.anchor[1]})`)
 
-  updated.select('path').attr('d', ({ placement }) =>
-    placement.leader
-      ? `M${placement.leader.points
-          .map(([x, y]) => `${x - placement.anchor[0]},${y - placement.anchor[1]}`)
-          .join('L')}`
-      : null
-  )
+  updated.select('path').transition().duration(LABEL_TRANSITION_DURATION).attr('d', getLeaderPath)
   updated
     .select('text')
-    .attr('x', ({ placement }) => placement.box.x + placement.text.x_offset - placement.anchor[0])
-    .attr(
-      'y',
-      ({ placement }) => placement.box.y + placement.text.baseline_offsets[0] - placement.anchor[1]
-    )
     .style('font-size', ({ placement }) => `${placement.text.font_size}px`)
     .text(({ placement }) => placement.text.lines[0])
+    .transition()
+    .duration(LABEL_TRANSITION_DURATION)
+    .attr('x', getTextX)
+    .attr('y', getTextY)
 
   return updated
 }
