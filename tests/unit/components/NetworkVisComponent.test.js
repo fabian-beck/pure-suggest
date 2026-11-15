@@ -1152,6 +1152,28 @@ describe('NetworkVisComponent', () => {
       expect(updateNodeLabels).toHaveBeenLastCalledWith(true, false)
     })
 
+    it('hides node labels while the zoom scale changes and shows them placed anew', async () => {
+      const updateNodeLabels = vi.spyOn(wrapper.vm, 'updateNodeLabels').mockImplementation(() => {})
+      const removeNodeLabels = vi.spyOn(wrapper.vm, 'removeNodeLabels')
+      const labelGroup = () => wrapper.find('g.node-labels')
+
+      lastHandler(wrapper.vm.zoom.on, 'zoom')({ transform: { k: 1, x: 20, y: 0 } })
+      await wrapper.vm.$nextTick()
+      expect(labelGroup().classes()).not.toContain('hidden')
+
+      lastHandler(wrapper.vm.zoom.on, 'zoom')({ transform: { k: 2, x: 20, y: 0 } })
+      await wrapper.vm.$nextTick()
+      expect(labelGroup().classes()).toContain('hidden')
+      expect(removeNodeLabels).not.toHaveBeenCalled()
+
+      lastHandler(wrapper.vm.zoom.on, 'end')({ transform: { k: 2, x: 20, y: 0 } })
+      await wrapper.vm.$nextTick()
+      // Placed anew, the labels appear at their places instead of moving there
+      expect(removeNodeLabels).toHaveBeenCalled()
+      expect(updateNodeLabels).toHaveBeenLastCalledWith(true, false)
+      expect(labelGroup().classes()).not.toContain('hidden')
+    })
+
     it('fits the layout to the panel when resized, without measuring on label updates', () => {
       let resize
       vi.useFakeTimers()

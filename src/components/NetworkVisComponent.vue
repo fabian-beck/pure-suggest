@@ -128,6 +128,7 @@ export default {
       suggestedNumberFactor: 0.3,
       authorNumberFactor: 0.5,
       labelNumberFactor: 0.3, // Share of the nodes that may get a label at zoom 1 (0: none)
+      areNodeLabelsHidden: false, // While the zoom scale changes
       onlyShowFiltered: false,
       isDragging: false,
       // Graph size for the performance monitor; the graph itself is kept non-reactive
@@ -258,11 +259,18 @@ export default {
       .on('zoom', (event) => {
         this.svg.attr('transform', event.transform)
         this.updateYearLabelTexts()
-        // Labels follow the view and are only placed anew when the zoom ends
+        // Labels follow the view and are only placed anew when the zoom ends; while the
+        // scale changes, they are hidden, as they do not fit the changing node sizes
+        if (event.transform.k !== this.labelZoomScale) this.areNodeLabelsHidden = true
         this.updateNodeLabels(false)
       })
       .on('end', (event) => {
-        // While the view was only panned, the labels keep their places
+        // Hidden labels appear at their new places; while the view was only panned, the
+        // labels keep their places
+        if (this.areNodeLabelsHidden) {
+          this.removeNodeLabels()
+          this.areNodeLabelsHidden = false
+        }
         this.updateNodeLabels(true, event.transform.k === this.labelZoomScale)
       })
     this.svg = d3.select('#network-svg').call(this.zoom).select('g')
@@ -869,6 +877,13 @@ export default {
       }
     },
 
+    // Remove the node labels at once, including labels that are still fading out
+    removeNodeLabels() {
+      const labelGroup = d3.select('#network-svg g.node-labels')
+      labelGroup.selectAll('g').remove()
+      this.nodeLabel = labelGroup.selectAll('g')
+    },
+
     setDragging(dragging) {
       this.isDragging = dragging
     },
@@ -937,9 +952,7 @@ export default {
           this.label.remove()
         }
         if (this.nodeLabel) {
-          // Including labels that are still fading out
-          d3.select('#network-svg g.node-labels').selectAll('g').remove()
-          this.nodeLabel = d3.select('#network-svg g.node-labels').selectAll('g')
+          this.removeNodeLabels()
           this.labelResult = null
         }
 
@@ -1091,7 +1104,7 @@ export default {
             </filter>
           </defs>
           <g></g>
-          <g class="node-labels"></g>
+          <g class="node-labels" :class="{ hidden: areNodeLabelsHidden }"></g>
         </svg>
       </div>
       <ul class="publication-component-list" v-show="!isNetworkActuallyCollapsed">
@@ -1338,6 +1351,14 @@ export default {
         transform: scale(1.1);
         animation: author-node-pulse 2s ease-in-out infinite;
       }
+    }
+  }
+
+  & g.node-labels {
+    transition: opacity 0.15s;
+
+    &.hidden {
+      opacity: 0;
     }
   }
 
