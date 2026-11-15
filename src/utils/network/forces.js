@@ -17,12 +17,14 @@ const YEAR_AXIS_MARGIN_LEFT = 24
 const YEAR_AXIS_MARGIN_RIGHT = 60
 // Share of the view inside the margins that the nodes are meant to fill
 const FILL = 1
-const AUTHOR_TIMELINE_STRENGTH = 0.2
+// Pull of authors to their mean year on the timeline, on top of the centering
+const AUTHOR_TIMELINE_STRENGTH = 2
 // Upper limit of centering strengths: at the start of a simulation (alpha 0.7), strengths
 // above about 5 make the positions oscillate with growing amplitude
 const MAX_STRENGTH = 1
 // Distance of node centers from the left and right border of the view, and from the top
-// and bottom border, which keeps the rows of year labels (6 + 20) and the controls free
+// and bottom border, that the nodes are meant to keep, which keeps the rows of year labels
+// (6 + 20) and the controls free
 const VIEW_MARGIN_X = 15
 const VIEW_MARGIN_Y = 40
 // Area inside the margins of the network panel on a typical desktop (1880 × 400)
@@ -156,15 +158,16 @@ export function assignNodePositions(nodes, previousNodes, links) {
 }
 
 /**
- * Strengths [x, y] of the forces pulling the nodes to the center, so that they fill a view
- * ({ width, height }): in equilibrium, n nodes repelling each other with charge q spread to
- * an ellipse with semi-axes a and b when pulled with 2|q|n / (a(a + b)) and 2|q|n / (b(a + b)).
- * On the timeline, m nodes horizontally closer than their vertical distance in a line of
- * height 2b (2b / m) repel each other almost only vertically, like nodes on a line, which
- * spread to ±b when pulled with 2|q|m / b². Strengths are limited to keep the simulation
- * stable.
+ * Strengths [x, y] of the forces pulling the nodes to the center, and the charge strength,
+ * so that the nodes fill a view ({ width, height }): in equilibrium, n nodes repelling each
+ * other with charge q spread to an ellipse with semi-axes a and b when pulled with
+ * 2|q|n / (a(a + b)) and 2|q|n / (b(a + b)). On the timeline, m nodes horizontally closer
+ * than their vertical distance in a line of height 2b (2b / m) repel each other almost only
+ * vertically, like nodes on a line, which spread to ±b when pulled with 2|q|m / b².
+ * Strengths are limited to keep the simulation stable: for large graphs, the charge is
+ * reduced along with them, which keeps the extent of the layout.
  */
-export function getCenteringStrengths(nodes, isNetworkClusters, chargeStrength, view) {
+export function getLayoutStrengths(nodes, isNetworkClusters, chargeStrength, view) {
   const a = FILL * (view.width / 2 - VIEW_MARGIN_X)
   const b = FILL * (view.height / 2 - VIEW_MARGIN_Y)
   const charge = Math.abs(chargeStrength)
@@ -178,7 +181,9 @@ export function getCenteringStrengths(nodes, isNetworkClusters, chargeStrength, 
     }
     yStrength = Math.max(yStrength, (2 * charge * lineNodeCount) / b ** 2)
   }
-  return [Math.min(factor / a, MAX_STRENGTH), Math.min(yStrength, MAX_STRENGTH)]
+  const xStrength = factor / a
+  const scale = Math.min(1, MAX_STRENGTH / Math.max(xStrength, yStrength))
+  return [scale * xStrength, scale * yStrength, scale * chargeStrength]
 }
 
 /**
@@ -199,17 +204,16 @@ function getMaxCountInRange(sortedValues, width) {
  * ({ width, height }); timeline positions are set by pinTimelineX
  */
 export function initializeForces(simulation, isNetworkClusters, selectedPublicationsCount, view) {
-  const { width, height } = view
   const chargeStrength = getChargeStrength(selectedPublicationsCount, view)
   // Force strengths are read per node, but only depend on all the nodes
   let strengthNodes = null
   let strengths = null
-  const centeringStrength = (nodes, axis) => {
+  const layoutStrength = (nodes, index) => {
     if (nodes !== strengthNodes) {
       strengthNodes = nodes
-      strengths = getCenteringStrengths(nodes, isNetworkClusters, chargeStrength, view)
+      strengths = getLayoutStrengths(nodes, isNetworkClusters, chargeStrength, view)
     }
-    return strengths[axis]
+    return strengths[index]
   }
 
   // Configure link force
@@ -225,50 +229,31 @@ export function initializeForces(simulation, isNetworkClusters, selectedPublicat
   // Configure charge (repulsion) force
   simulation.force(
     'charge',
-    d3.forceManyBody().strength(chargeStrength).theta(0.7) // Optimized Barnes-Hut parameter for better performance
+    d3
+      .forceManyBody()
+      .strength((d, i, nodes) => layoutStrength(nodes, 2))
+      .theta(0.7) // Optimized Barnes-Hut parameter for better performance
   )
 
-  // In timeline mode, only authors are not pinned to their year; they are held at least as
-  // strongly as nodes in clusters mode, so that they stay in narrow views
+  // In timeline mode, only authors are not pinned to their year: the repulsion of the other
+  // nodes pushes them outwards about as strongly as the centering pulls them in, so they
+  // need both the centering and a pull to their year, which balance at their year
   simulation.force(
     'x',
     isNetworkClusters
-      ? d3.forceX(0).strength((d, i, nodes) => centeringStrength(nodes, 0))
+      ? d3.forceX(0).strength((d, i, nodes) => layoutStrength(nodes, 0))
       : d3
-          .forceX((d) => d.timelineX)
-          .strength((d, i, nodes) =>
-            Math.max(AUTHOR_TIMELINE_STRENGTH, centeringStrength(nodes, 0))
+          .forceX(
+            (d, i, nodes) =>
+              (AUTHOR_TIMELINE_STRENGTH * d.timelineX) /
+              (layoutStrength(nodes, 0) + AUTHOR_TIMELINE_STRENGTH)
           )
+          .strength((d, i, nodes) => layoutStrength(nodes, 0) + AUTHOR_TIMELINE_STRENGTH)
   )
   simulation.force(
     'y',
-    d3.forceY(0).strength((d, i, nodes) => centeringStrength(nodes, 1))
+    d3.forceY(0).strength((d, i, nodes) => layoutStrength(nodes, 1))
   )
-  simulation.force('bounds', forceBounds(width, height))
-}
-
-/**
- * Keep the nodes inside the view, which the centering forces cannot ensure for nodes
- * pushed out by dense regions of large graphs
- */
-function forceBounds(width, height) {
-  const maxX = width / 2 - VIEW_MARGIN_X
-  const maxY = height / 2 - VIEW_MARGIN_Y
-  const clamp = (value, max) => Math.max(-max, Math.min(max, value))
-  let nodes = []
-  // Applied last, so the velocities limited here make the nodes stay inside when moved
-  const force = () => {
-    nodes.forEach((node) => {
-      node.x = clamp(node.x, maxX)
-      node.y = clamp(node.y, maxY)
-      node.vx = clamp(node.x + node.vx, maxX) - node.x
-      node.vy = clamp(node.y + node.vy, maxY) - node.y
-    })
-  }
-  force.initialize = (simulationNodes) => {
-    nodes = simulationNodes
-  }
-  return force
 }
 
 /**
