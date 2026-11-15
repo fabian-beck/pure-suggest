@@ -35,7 +35,8 @@ vi.mock('@/utils/network/forces.js', () => ({
     force: vi.fn(() => ({ links: vi.fn() })),
     alpha: vi.fn(() => 0),
     restart: vi.fn().mockReturnThis(),
-    stop: vi.fn().mockReturnThis()
+    stop: vi.fn().mockReturnThis(),
+    on: vi.fn().mockReturnThis()
   })),
   initializeForces: vi.fn(),
   calculateYearX: vi.fn(() => 100),

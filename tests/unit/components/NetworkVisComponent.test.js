@@ -1147,6 +1147,97 @@ describe('NetworkVisComponent', () => {
     })
   })
 
+  describe('Label and Tick Efficiency', () => {
+    let wrapper
+
+    beforeEach(() => {
+      wrapper = mount(NetworkVisComponent, { global: { stubs: commonComponentStubs } })
+    })
+
+    const lastHandler = (mock, type) => mock.mock.calls.filter(([t]) => t === type).at(-1)[1]
+
+    it('only moves node labels while zooming and places them anew when the zoom ends', () => {
+      const updateNodeLabels = vi.spyOn(wrapper.vm, 'updateNodeLabels').mockImplementation(() => {})
+      const event = { transform: { k: 2, x: 0, y: 0 } }
+
+      lastHandler(wrapper.vm.zoom.on, 'zoom')(event)
+      lastHandler(wrapper.vm.zoom.on, 'zoom')(event)
+      expect(updateNodeLabels.mock.calls).toEqual([[false], [false]])
+
+      lastHandler(wrapper.vm.zoom.on, 'end')(event)
+      expect(updateNodeLabels).toHaveBeenLastCalledWith(true, false)
+    })
+
+    it('measures the network on resize only, not whenever labels are updated', () => {
+      let resize
+      vi.stubGlobal(
+        'ResizeObserver',
+        class {
+          constructor(callback) {
+            resize = callback
+          }
+          observe() {}
+          disconnect() {}
+        }
+      )
+      const getElementById = document.getElementById
+      try {
+        wrapper = mount(NetworkVisComponent, { global: { stubs: commonComponentStubs } })
+        const element = wrapper.find('#network-svg').element
+        document.getElementById = (id) => (id === 'network-svg' ? element : getElementById(id))
+        const reads = vi.fn()
+        Object.defineProperty(element, 'clientWidth', { get: () => reads() ?? 800 })
+        Object.defineProperty(element, 'clientHeight', { get: () => reads() ?? 160 })
+
+        resize()
+        reads.mockClear()
+        wrapper.vm.isLabelEngineLoaded = true
+        wrapper.vm.graph.nodes = [{ id: 'a', x: 0, y: 0 }]
+        wrapper.vm.updateNodeLabels(false)
+        wrapper.vm.updateNodeLabels(false)
+        expect(reads).not.toHaveBeenCalled()
+      } finally {
+        document.getElementById = getElementById
+        vi.unstubAllGlobals()
+      }
+    })
+
+    it('sets link classes when plotting, after links are resolved, not on every tick', () => {
+      vi.mocked(useSessionStore).mockReturnValue({
+        ...mockSessionStore,
+        selectedPublications: [
+          { doi: '10.1234/a', year: 2020, citationDois: [], referenceDois: ['10.1234/b'] },
+          { doi: '10.1234/b', year: 2021, citationDois: [], referenceDois: [] }
+        ]
+      })
+      wrapper = mount(NetworkVisComponent, { global: { stubs: commonComponentStubs } })
+      wrapper.vm.plot()
+      expect(wrapper.vm.link.attr).toHaveBeenCalledWith('class', expect.any(Function))
+      expect(wrapper.vm.link.attr.mock.invocationCallOrder[0]).toBeGreaterThan(
+        wrapper.vm.simulation.nodes.mock.invocationCallOrder.at(-1)
+      )
+
+      const affectedLinks = { attr: vi.fn(() => affectedLinks), size: () => 1 }
+      wrapper.vm.link = { filter: () => affectedLinks }
+      wrapper.vm.updateSelectiveLinks([{ id: 'a' }])
+      expect(affectedLinks.attr.mock.calls.map(([name]) => name)).toEqual(['d'])
+    })
+
+    it('draws the final positions and places the labels when the simulation ends', () => {
+      const updateNodeLabels = vi.spyOn(wrapper.vm, 'updateNodeLabels').mockImplementation(() => {})
+      const updateChangedNodePositions = vi
+        .spyOn(wrapper.vm, 'updateChangedNodePositions')
+        .mockImplementation(() => {})
+      vi.spyOn(wrapper.vm, 'updateSelectiveLinks').mockImplementation(() => 0)
+      const node = { id: 'a', x: 10, y: 20, _lastDisplayX: 0, _lastDisplayY: 20 }
+      wrapper.vm.graph.nodes = [node]
+
+      lastHandler(wrapper.vm.simulation.on, 'end')()
+      expect(updateChangedNodePositions).toHaveBeenCalledWith([node])
+      expect(updateNodeLabels).toHaveBeenCalledWith(true)
+    })
+  })
+
   describe('Tooltip Functionality', () => {
     let wrapper
 

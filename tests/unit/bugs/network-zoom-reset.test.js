@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-import { createD3ModuleMock } from '../../helpers/testUtils.js'
+import { createD3ModuleMock, createD3SimulationMock } from '../../helpers/testUtils.js'
 
 import NetworkVisComponent from '@/components/NetworkVisComponent.vue'
 import { useSessionStore } from '@/stores/session.js'
@@ -16,7 +16,7 @@ vi.mock('d3', () => ({ ...createD3ModuleMock(), zoomTransform: vi.fn(() => d3Mod
 vi.mock('tippy.js', () => ({ default: vi.fn(() => ({})) }))
 
 vi.mock('@/utils/network/forces.js', () => ({
-  createForceSimulation: vi.fn(() => ({})),
+  createForceSimulation: vi.fn(() => createD3SimulationMock()),
   initializeForces: vi.fn(),
   calculateYearX: vi.fn(() => 100),
   SIMULATION_ALPHA: 0.5,
