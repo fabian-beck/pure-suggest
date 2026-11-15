@@ -24,11 +24,12 @@ import {
   createAuthorNodes
 } from '@/utils/network/authorNodes.js'
 import {
+  assignNodePositions,
   createForceSimulation,
   initializeForces,
   calculateYearX,
-  SIMULATION_ALPHA,
-  getNodeXPosition
+  pinTimelineX,
+  SIMULATION_ALPHA
 } from '@/utils/network/forces.js'
 
 // Node types
@@ -135,11 +136,7 @@ export default {
       linkCount: 0,
       // Position change detection for performance optimization
       positionThreshold: 1, // pixels - minimum movement to trigger DOM update
-      lastUpdateTime: 0,
-      skipEarlyTicks: 50, // Skip DOM updates for first N ticks
-      shouldSkipEarlyTicks: false, // Only skip when truly restarted with high alpha
-      // Reactive tick count for CSS animation control
-      currentTickCount: 0 // Synchronized with performance monitor
+      lastUpdateTime: 0
     }
   },
   created() {
@@ -148,11 +145,12 @@ export default {
     // Vue's reactive proxies makes every tick an order of magnitude slower
     this.simulation = null
     this.graph = { nodes: [], links: [] }
-    this.nodeXPositionsCache = new Map() // Cache X positions to avoid redundant calculations
     this.nodeLabel = null
     this.labelResult = null // Previous label placements, kept as warm start for stable labels
     this.labelTickCount = 0
+    this.tickCount = 0
     this.labelZoomScale = 1 // Zoom factor of the previous label placement
+    this.viewport = { width: 0, height: 0 } // Visible area in layout units, measured on resize
     this.isLabelEngineLoaded = false
   },
   computed: {
@@ -173,19 +171,6 @@ export default {
       // In wide screen mode or mobile mode, network is never collapsed regardless of store state
       return this.interfaceStore.isNetworkCollapsed && !this.interfaceStore.isWideScreen && !this.interfaceStore.isMobile
     },
-
-    networkCssClasses () {
-      // Check if we should show fading animation during early tick skipping (but not when dragging)
-      if (
-        this.shouldSkipEarlyTicks &&
-        !this.isDragging &&
-        this.currentTickCount <= this.skipEarlyTicks
-      ) {
-        return 'network-fading'
-      } else {
-        return 'network-visible'
-      }
-    }
   },
   watch: {
     isNetworkClusters: {
@@ -274,12 +259,18 @@ export default {
       'viewBox',
       `${-this.svgWidth / 2} ${-this.svgHeight / 2} ${this.svgWidth} ${this.svgHeight}`
     )
-    this.zoom = d3.zoom().on('zoom', (event) => {
-      this.svg.attr('transform', event.transform)
-      this.updateYearLabelTexts()
-      // While the view is only panned, the labels keep their places
-      this.updateNodeLabels(true, event.transform.k === this.labelZoomScale)
-    })
+    this.zoom = d3
+      .zoom()
+      .on('zoom', (event) => {
+        this.svg.attr('transform', event.transform)
+        this.updateYearLabelTexts()
+        // Labels follow the view and are only placed anew when the zoom ends
+        this.updateNodeLabels(false)
+      })
+      .on('end', (event) => {
+        // While the view was only panned, the labels keep their places
+        this.updateNodeLabels(true, event.transform.k === this.labelZoomScale)
+      })
     this.svg = d3.select('#network-svg').call(this.zoom).select('g')
     this.label = this.svg.append('g').attr('class', 'labels').selectAll('text')
     this.link = this.svg.append('g').attr('class', 'links').selectAll('path')
@@ -295,12 +286,27 @@ export default {
       selectedPublicationsCount: this.sessionStore.selectedPublications.length,
       tickHandler: this.tick
     })
+    // The last tick may not have been drawn, and labels are placed on every fourth drawn tick only
+    this.simulation.on('end', () => {
+      const changedNodes = this.detectChangedNodes()
+      this.updateChangedNodePositions(changedNodes)
+      this.updateSelectiveLinks(changedNodes)
+      this.updateNodeLabels(true)
+    })
 
+    // Measuring the element forces a synchronous layout, so it is not done on every tick
+    this.svgElement = this.$el.querySelector('#network-svg')
     this.resizeObserver = new ResizeObserver(() => {
+      const { clientWidth, clientHeight } = this.svgElement
+      // The viewBox is fitted into the element, so more than the viewBox can be visible
+      const scale = Math.min(clientWidth / this.svgWidth, clientHeight / this.svgHeight)
+      this.viewport = scale
+        ? { width: clientWidth / scale, height: clientHeight / scale }
+        : { width: 0, height: 0 }
       this.updateYearLabelTexts()
       this.updateNodeLabels(true)
     })
-    this.resizeObserver.observe(document.getElementById('network-svg'))
+    this.resizeObserver.observe(this.svgElement)
 
     loadLabelEngine()
       .then(() => {
@@ -445,7 +451,7 @@ export default {
       // Preserve existing node positions for smooth transitions
       const existingNodeData =
         this.node && typeof this.node.data === 'function' ? this.node.data() : null
-      const processedNodes = this.preserveNodePositions(this.tempNodes, existingNodeData)
+      const processedNodes = assignNodePositions(this.tempNodes, existingNodeData, this.tempLinks)
       const processedLinks = this.tempLinks
 
       // Update simulation graph data
@@ -591,6 +597,8 @@ export default {
 
         // Update graph data in simulation
         this.updateGraphData(this.graph.nodes, this.graph.links)
+        // Link classes need the link ends resolved to nodes by the simulation
+        this.link.attr('class', (d) => calculateLinkClasses(d, this.sessionStore.activePublication))
 
         // Reset position tracking and optimization metrics when plot is called
         this.resetOptimizationMetrics()
@@ -622,41 +630,16 @@ export default {
         return true
       }
 
-      // Early return if graph is empty - no nodes to update. Also clear the
-      // early-tick-skipping flag since with no nodes it will never be cleared
-      // by an actual tick, which would otherwise leave the network (and the
-      // controls bound to the same fade state) stuck faded indefinitely.
+      // Early return if graph is empty - no nodes to update
       if (!this.graph.nodes || this.graph.nodes.length === 0) {
-        this.shouldSkipEarlyTicks = false
         this.$refs.performanceMonitor?.trackFps() // Still track FPS for debugging
         return true
       }
 
-      // Increment tick counter
       this.$refs.performanceMonitor?.incrementTick()
-      // Synchronize local tick count for CSS animation reactivity
-      this.currentTickCount = this.$refs.performanceMonitor?.tickCount || 0
-
-      // Skip DOM updates for first N ticks only if this is a true restart with high alpha (but not when dragging)
-      if (
-        this.shouldSkipEarlyTicks &&
-        !this.isDragging &&
-        this.$refs.performanceMonitor?.tickCount <= this.skipEarlyTicks
-      ) {
-        this.$refs.performanceMonitor?.trackFps() // Still track FPS for debugging
-        return true
-      }
-
-      // Disable skipping after the skip period
-      if (
-        this.shouldSkipEarlyTicks &&
-        this.$refs.performanceMonitor?.tickCount > this.skipEarlyTicks
-      ) {
-        this.shouldSkipEarlyTicks = false
-      }
 
       // Skip every second DOM update tick for performance (but not when dragging)
-      if (!this.isDragging && this.currentTickCount % 2 === 0) {
+      if (!this.isDragging && ++this.tickCount % 2 === 0) {
         this.$refs.performanceMonitor?.recordTickSkipped()
         this.$refs.performanceMonitor?.trackFps() // Still track FPS for debugging
         return true
@@ -670,9 +653,6 @@ export default {
       if (this.shouldSkipCurrentTick()) {
         return
       }
-
-      // Pre-compute X positions for all nodes (major performance optimization)
-      this.cacheNodeXPositions()
 
       // Check which nodes have moved significantly and get the changed nodes
       const changedNodes = this.detectChangedNodes()
@@ -759,16 +739,6 @@ export default {
       const transform = d3.zoomIdentity
       svg.transition().duration(750).call(this.zoom.transform, transform)
     },
-    preserveNodePositions(newNodes, existingNodeData) {
-      if (!existingNodeData || typeof existingNodeData.map !== 'function') {
-        // If no existing data, return nodes with default positions
-        return newNodes.map((d) => Object.assign({ x: 0, y: 0 }, d))
-      }
-
-      const oldPositions = new Map(existingNodeData.map((d) => [d.id, d]))
-      return newNodes.map((d) => Object.assign(oldPositions.get(d.id) || { x: 0, y: 0 }, d))
-    },
-
     // D3 Simulation methods (moved from useNetworkSimulation)
     initializeSimulation(config) {
       const {
@@ -819,6 +789,7 @@ export default {
       this.graph.links = links
       this.nodeCount = nodes.length
       this.linkCount = links.length
+      pinTimelineX(nodes, this.isNetworkClusters, this.yearX)
 
       if (this.simulation) {
         this.simulation.nodes(nodes)
@@ -831,24 +802,12 @@ export default {
 
     restart(alpha = SIMULATION_ALPHA) {
       if (this.simulation) {
-        // Only skip early ticks if this is a true restart with high alpha (> 0.3) and not dragging
-        if (alpha > 0.3 && !this.isDragging) {
-          this.$refs.performanceMonitor?.resetMetrics()
-          this.currentTickCount = 0 // Reset local tick count
-          this.shouldSkipEarlyTicks = true
-        } else {
-          this.shouldSkipEarlyTicks = false
-        }
-
         this.simulation.alpha(alpha).restart()
       }
     },
 
     start() {
       if (this.simulation) {
-        // start() is just resuming, don't skip ticks
-        this.shouldSkipEarlyTicks = false
-
         this.simulation.restart()
       }
     },
@@ -862,15 +821,10 @@ export default {
     // Keep the year labels at the borders of the visible area, which is higher than
     // the viewBox when the component is higher than the aspect ratio of the viewBox
     updateYearLabelTexts() {
-      const element = document.getElementById('network-svg')
-      const scale = Math.min(
-        element.clientWidth / this.svgWidth,
-        element.clientHeight / this.svgHeight
-      )
       updateYearLabelTextPositions(
         this.label,
-        scale ? element.clientHeight / scale : this.svgHeight,
-        d3.zoomTransform(element)
+        this.viewport.height || this.svgHeight,
+        d3.zoomTransform(this.svgElement)
       )
     },
 
@@ -879,19 +833,12 @@ export default {
      * with pin, existing labels stay exactly where they are and labels are only added
      */
     updateNodeLabels(solve, pin = false) {
-      const element = document.getElementById('network-svg')
-      if (!this.isLabelEngineLoaded || !element?.clientWidth || !this.graph.nodes.length) {
+      const { width, height } = this.viewport
+      if (!this.isLabelEngineLoaded || !width || !this.graph.nodes.length) {
         return
       }
-      // The viewBox is fitted into the element, so more than the viewBox can be visible
-      const scale = Math.min(
-        element.clientWidth / this.svgWidth,
-        element.clientHeight / this.svgHeight
-      )
-      const width = element.clientWidth / scale
-      const height = element.clientHeight / scale
       // Maps layout coordinates onto the visible viewport (origin top-left)
-      const zoomTransform = d3.zoomTransform(element)
+      const zoomTransform = d3.zoomTransform(this.svgElement)
       const viewTransform = d3.zoomIdentity
         .translate(zoomTransform.x + width / 2, zoomTransform.y + height / 2)
         .scale(zoomTransform.k)
@@ -905,12 +852,7 @@ export default {
       let result = null
       if (solve) {
         const { k, x, y } = viewTransform
-        const problem = createNodeLabelProblem(
-          this.graph.nodes,
-          this.graph.links,
-          this.getNodeDisplayX,
-          k
-        )
+        const problem = createNodeLabelProblem(this.graph.nodes, this.graph.links, k)
         // The share of labeled nodes grows with the zoomed area: zooming in shows more
         // labels, and it does not change while the view is panned
         limitNodeLabels(
@@ -961,7 +903,7 @@ export default {
           `translate(${-width / 2}, ${-height / 2})`
         )
       } else {
-        updateNodeLabelPositions(this.nodeLabel, this.getNodeDisplayX, viewTransform)
+        updateNodeLabelPositions(this.nodeLabel, viewTransform)
       }
     },
 
@@ -979,8 +921,7 @@ export default {
 
       // Check each node for significant position changes
       for (const node of this.graph.nodes) {
-        // Get cached X position (major performance optimization)
-        const currentX = this.getCachedNodeX(node)
+        const currentX = node.x || 0
         const currentY = node.y || 0
 
         // Initialize last positions if not set
@@ -1018,32 +959,7 @@ export default {
 
     resetOptimizationMetrics() {
       this.$refs.performanceMonitor?.resetMetrics() // Reset performance metrics
-      this.currentTickCount = 0 // Reset local tick count
-      this.shouldSkipEarlyTicks = false // Reset skip flag
-      this.nodeXPositionsCache.clear() // Clear X position cache
       this.resetPositionTracking()
-    },
-
-    // X position caching optimization methods
-    cacheNodeXPositions() {
-      // Pre-compute X positions for all nodes to avoid redundant calculations
-      this.nodeXPositionsCache.clear()
-      for (const node of this.graph.nodes) {
-        const xPos = getNodeXPosition(node, this.isNetworkClusters, this.yearX)
-        this.nodeXPositionsCache.set(node.id, xPos)
-      }
-    },
-
-    getCachedNodeX(node) {
-      // Get cached X position, fallback to calculation if not cached
-      const cached = this.nodeXPositionsCache.get(node.id)
-      if (cached !== undefined) {
-        return cached
-      }
-      // Fallback (should rarely happen)
-      const xPos = getNodeXPosition(node, this.isNetworkClusters, this.yearX)
-      this.nodeXPositionsCache.set(node.id, xPos)
-      return xPos
     },
 
     clearExistingVisualization() {
@@ -1110,10 +1026,7 @@ export default {
         return changedNodeIds.has(d.id)
       })
 
-      // Update positions of only the changed nodes
-      // In timeline mode: use simulation x-position for author nodes (force attraction),
-      // calculated x-position for publication/keyword nodes (strict positioning)
-      changedNodeSelection.attr('transform', (d) => `translate(${this.getNodeDisplayX(d)}, ${d.y})`)
+      changedNodeSelection.attr('transform', (d) => `translate(${d.x}, ${d.y})`)
     },
 
     updateSelectiveLinks(changedNodes) {
@@ -1127,25 +1040,10 @@ export default {
         return changedNodeIds.has(d.source.id) || changedNodeIds.has(d.target.id)
       })
 
-      // Update only the affected links using appropriate X positions
-      affectedLinks
-        .attr('d', (d) => calculateLinkPath(d, (d) => this.getNodeDisplayX(d)))
-        .attr('class', (d) => calculateLinkClasses(d, this.sessionStore.activePublication))
+      affectedLinks.attr('d', calculateLinkPath)
 
       // Return how many links were updated
       return affectedLinks.size()
-    },
-
-    /**
-     * Get the appropriate X position for display, respecting force simulation for author nodes in timeline mode
-     */
-    getNodeDisplayX(node) {
-      if (!this.isNetworkClusters && node.type === 'author') {
-        // Use simulation x-position for author nodes in timeline mode (force attraction)
-        return node.x || 0
-      }
-      // Use calculated x-position for other nodes (strict positioning)
-      return this.getCachedNodeX(node)
     },
 
     /**
@@ -1215,10 +1113,8 @@ export default {
           :is-empty="isEmpty.value || !sessionStore.selectedPublications?.length"
           :node-count="nodeCount"
           :link-count="linkCount"
-          :should-skip-early-ticks="shouldSkipEarlyTicks"
-          :skip-early-ticks="skipEarlyTicks"
         />
-        <svg id="network-svg" :class="networkCssClasses">
+        <svg id="network-svg">
           <defs>
             <!-- Blends each color channel 50% toward white: same visual result as
                  50% opacity over a white background, but the node stays opaque so
@@ -1264,7 +1160,6 @@ export default {
         @reset="resetZoom"
         @plot="plot"
         v-show="!isNetworkActuallyCollapsed && !isEmpty"
-        :class="networkCssClasses"
       />
     </div>
   </div>
@@ -1301,22 +1196,10 @@ export default {
   position: relative;
 }
 
-/* Network fade during early tick skipping */
-.network-fading {
-  opacity: 0.1;
-  transition: opacity 0.3s ease-out;
-}
-
-.network-visible {
-  opacity: 1;
-  transition: opacity 0.5s ease-in;
-}
-
 #network-svg {
   background: white;
   width: 100%;
   height: 100%;
-  will-change: opacity;
 
   & g:focus {
     outline: none;

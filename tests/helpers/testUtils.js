@@ -57,6 +57,30 @@ export const createD3SimulationMock = () => ({
   on: vi.fn(function() { return this })
 })
 
+// Minimal stand-in for d3's ZoomTransform
+class ZoomTransformMock {
+  constructor(k, x, y) {
+    this.k = k
+    this.x = x
+    this.y = y
+  }
+  translate(x, y) {
+    return new ZoomTransformMock(this.k, this.x + this.k * x, this.y + this.k * y)
+  }
+  scale(k) {
+    return new ZoomTransformMock(this.k * k, this.x, this.y)
+  }
+  apply([x, y]) {
+    return [this.applyX(x), this.applyY(y)]
+  }
+  applyX(x) {
+    return x * this.k + this.x
+  }
+  applyY(y) {
+    return y * this.k + this.y
+  }
+}
+
 // Complete D3 module mock for vi.mock('d3')
 export const createD3ModuleMock = () => {
   const mockSimulation = createD3SimulationMock()
@@ -74,7 +98,7 @@ export const createD3ModuleMock = () => {
     selectAll: vi.fn(() => createD3ChainableMock()),
     zoom: vi.fn(() => mockZoom),
     zoomTransform: vi.fn(() => ({ k: 1, x: 0, y: 0 })),
-    zoomIdentity: { k: 1, x: 0, y: 0 },
+    zoomIdentity: new ZoomTransformMock(1, 0, 0),
     drag: vi.fn(() => mockDrag),
     forceSimulation: vi.fn(() => mockSimulation),
     forceLink: vi.fn(() => ({

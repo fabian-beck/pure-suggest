@@ -11,6 +11,7 @@ import * as d3 from 'd3'
 import { CURRENT_YEAR } from '@/constants/config.js'
 
 export const SIMULATION_ALPHA = 0.7
+const NEW_NODE_OFFSET = 10
 
 /**
  * Calculate link distance based on link type and network mode
@@ -82,15 +83,52 @@ export function getNodeXPosition(node, isNetworkClusters, yearXCalculator) {
 }
 
 /**
- * Calculate X force strength based on node type and network mode
+ * In timeline mode, fix publications and keywords at the x of their year, so that the
+ * simulation only moves them vertically; in clusters mode, only keywords dragged to a
+ * fixed place keep their x
  */
-// @indirection-reviewed: architectural-consistency - part of get*ForceStrength pattern
-export function getXForceStrength(node, isNetworkClusters) {
-  if (isNetworkClusters) {
-    return 0.05
-  }
+export function pinTimelineX(nodes, isNetworkClusters, yearXCalculator) {
+  nodes.forEach((node) => {
+    if (!isNetworkClusters && node.type !== 'author') {
+      node.fx = node.x = getNodeXPosition(node, false, yearXCalculator)
+    } else if (node.fy == null) {
+      delete node.fx
+    }
+  })
+}
 
-  return node.type === 'author' ? 0.2 : 10
+/**
+ * Reuse the node objects of the previous layout, keeping their positions; new nodes
+ * start next to their already positioned neighbors (spread on a small spiral, as nodes
+ * on the same spot repel each other violently), others are placed by d3
+ */
+export function assignNodePositions(nodes, previousNodes, links) {
+  const previousById = new Map((previousNodes || []).map((node) => [node.id, node]))
+  const neighborIds = new Map()
+  links.forEach(({ source, target }) => {
+    ;[
+      [source, target],
+      [target, source]
+    ].forEach(([id, neighborId]) => {
+      if (!neighborIds.has(id)) neighborIds.set(id, [])
+      neighborIds.get(id).push(neighborId)
+    })
+  })
+  let newCount = 0
+  return nodes.map((node) => {
+    if (previousById.has(node.id)) {
+      return Object.assign(previousById.get(node.id), node)
+    }
+    const neighbors = (neighborIds.get(node.id) || [])
+      .map((id) => previousById.get(id))
+      .filter(Boolean)
+    if (neighbors.length) {
+      const angle = newCount++ * Math.PI * (3 - Math.sqrt(5))
+      node.x = d3.mean(neighbors, (neighbor) => neighbor.x) + NEW_NODE_OFFSET * Math.cos(angle)
+      node.y = d3.mean(neighbors, (neighbor) => neighbor.y) + NEW_NODE_OFFSET * Math.sin(angle)
+    }
+    return node
+  })
 }
 
 /**
@@ -123,13 +161,13 @@ export function initializeForces(simulation, config) {
     d3.forceManyBody().strength(getChargeStrength(selectedPublicationsCount)).theta(0.7) // Optimized Barnes-Hut parameter for better performance
   )
 
-  // Configure X positioning force
+  // Configure X positioning force (in timeline mode, only authors are not pinned to their year)
   simulation.force(
     'x',
     d3
       .forceX()
       .x((d) => getNodeXPosition(d, isNetworkClusters, yearXCalculator))
-      .strength((d) => getXForceStrength(d, isNetworkClusters))
+      .strength(isNetworkClusters ? 0.05 : 0.2)
   )
 
   // Configure Y positioning force

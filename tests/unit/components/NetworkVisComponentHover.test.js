@@ -41,7 +41,8 @@ vi.mock('@/utils/network/forces.js', () => ({
   initializeForces: vi.fn(),
   calculateYearX: vi.fn(),
   SIMULATION_ALPHA: 0.1,
-  getNodeXPosition: vi.fn()
+  assignNodePositions: vi.fn((nodes) => nodes),
+  pinTimelineX: vi.fn()
 }))
 
 vi.mock('@/utils/network/keywordNodes.js', () => ({

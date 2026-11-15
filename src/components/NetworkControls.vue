@@ -224,15 +224,6 @@ const labelNumberFactorModel = computed({
   }
 }
 
-// The active-state background is a near-white tint; on a darker backdrop it
-// stays visibly "lit" even at low opacity, so it needs to be neutralized
-// while the whole control bar is fading out (see .network-fading in
-// NetworkVisComponent.vue), otherwise only active buttons look unnaturally light.
-.controls-footer-right.network-fading .v-btn-toggle :deep(.v-btn--active) {
-  background-color: transparent;
-  transition: background-color 0.3s ease-out;
-}
-
 // Fix for slider thumb being cut off when at minimum and maximum values
 .v-list-item .v-slider {
   padding-left: 16px;

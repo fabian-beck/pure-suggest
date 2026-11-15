@@ -32,7 +32,7 @@ function authorNode(name, x, y, score = 1) {
 }
 
 function createProblem(nodes, links = [], scale = 1) {
-  const problem = createNodeLabelProblem(nodes, links, (node) => node.x, scale)
+  const problem = createNodeLabelProblem(nodes, links, scale)
   problem.canvas = { width: 800, height: 400 }
   problem.transform = [scale, 0, 0, scale, 400, 200]
   return problem
@@ -187,7 +187,7 @@ describe('nodeLabels', () => {
     ])
 
     nodes[0].x = 100
-    updateNodeLabelPositions(labels, (node) => node.x, d3.zoomIdentity.translate(400, 200))
+    updateNodeLabelPositions(labels, d3.zoomIdentity.translate(400, 200))
     expect(labels.nodes()[0].getAttribute('transform')).toBe('translate(500, 200)')
   })
 })
