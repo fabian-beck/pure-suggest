@@ -149,6 +149,7 @@ export default {
     this.labelTickCount = 0
     this.tickCount = 0
     this.labelZoomScale = 1 // Zoom factor of the previous label placement
+    this.viewport = { width: 0, height: 0 } // Visible area in layout units, measured on resize
     this.isLabelEngineLoaded = false
   },
   computed: {
@@ -257,11 +258,17 @@ export default {
       'viewBox',
       `${-this.svgWidth / 2} ${-this.svgHeight / 2} ${this.svgWidth} ${this.svgHeight}`
     )
-    this.zoom = d3.zoom().on('zoom', (event) => {
-      this.svg.attr('transform', event.transform)
-      // While the view is only panned, the labels keep their places
-      this.updateNodeLabels(true, event.transform.k === this.labelZoomScale)
-    })
+    this.zoom = d3
+      .zoom()
+      .on('zoom', (event) => {
+        this.svg.attr('transform', event.transform)
+        // Labels follow the view and are only placed anew when the zoom ends
+        this.updateNodeLabels(false)
+      })
+      .on('end', (event) => {
+        // While the view was only panned, the labels keep their places
+        this.updateNodeLabels(true, event.transform.k === this.labelZoomScale)
+      })
     this.svg = d3.select('#network-svg').call(this.zoom).select('g')
     this.label = this.svg.append('g').attr('class', 'labels').selectAll('text')
     this.link = this.svg.append('g').attr('class', 'links').selectAll('path')
@@ -277,6 +284,26 @@ export default {
       selectedPublicationsCount: this.sessionStore.selectedPublications.length,
       tickHandler: this.tick
     })
+    // The last tick may not have been drawn, and labels are placed on every fourth drawn tick only
+    this.simulation.on('end', () => {
+      const changedNodes = this.detectChangedNodes()
+      this.updateChangedNodePositions(changedNodes)
+      this.updateSelectiveLinks(changedNodes)
+      this.updateNodeLabels(true)
+    })
+
+    // Measuring the element forces a synchronous layout, so it is not done on every tick
+    this.svgElement = this.$el.querySelector('#network-svg')
+    this.resizeObserver = new ResizeObserver(() => {
+      const { clientWidth, clientHeight } = this.svgElement
+      // The viewBox is fitted into the element, so more than the viewBox can be visible
+      const scale = Math.min(clientWidth / this.svgWidth, clientHeight / this.svgHeight)
+      this.viewport = scale
+        ? { width: clientWidth / scale, height: clientHeight / scale }
+        : { width: 0, height: 0 }
+      this.updateNodeLabels(true)
+    })
+    this.resizeObserver.observe(this.svgElement)
 
     loadLabelEngine()
       .then(() => {
@@ -289,6 +316,7 @@ export default {
     this.onlyShowFiltered = this.sessionStore.filter.hasActiveFilters()
   },
   beforeUnmount() {
+    this.resizeObserver.disconnect()
     // Cleanup D3 simulation (moved from useNetworkSimulation)
     if (this.simulation) {
       this.simulation.stop()
@@ -565,6 +593,8 @@ export default {
 
         // Update graph data in simulation
         this.updateGraphData(this.graph.nodes, this.graph.links)
+        // Link classes need the link ends resolved to nodes by the simulation
+        this.link.attr('class', (d) => calculateLinkClasses(d, this.sessionStore.activePublication))
 
         // Reset position tracking and optimization metrics when plot is called
         this.resetOptimizationMetrics()
@@ -789,19 +819,12 @@ export default {
      * with pin, existing labels stay exactly where they are and labels are only added
      */
     updateNodeLabels(solve, pin = false) {
-      const element = document.getElementById('network-svg')
-      if (!this.isLabelEngineLoaded || !element?.clientWidth || !this.graph.nodes.length) {
+      const { width, height } = this.viewport
+      if (!this.isLabelEngineLoaded || !width || !this.graph.nodes.length) {
         return
       }
-      // The viewBox is fitted into the element, so more than the viewBox can be visible
-      const scale = Math.min(
-        element.clientWidth / this.svgWidth,
-        element.clientHeight / this.svgHeight
-      )
-      const width = element.clientWidth / scale
-      const height = element.clientHeight / scale
       // Maps layout coordinates onto the visible viewport (origin top-left)
-      const zoomTransform = d3.zoomTransform(element)
+      const zoomTransform = d3.zoomTransform(this.svgElement)
       const viewTransform = d3.zoomIdentity
         .translate(zoomTransform.x + width / 2, zoomTransform.y + height / 2)
         .scale(zoomTransform.k)
@@ -1002,10 +1025,7 @@ export default {
         return changedNodeIds.has(d.source.id) || changedNodeIds.has(d.target.id)
       })
 
-      // Update only the affected links using appropriate X positions
-      affectedLinks
-        .attr('d', calculateLinkPath)
-        .attr('class', (d) => calculateLinkClasses(d, this.sessionStore.activePublication))
+      affectedLinks.attr('d', calculateLinkPath)
 
       // Return how many links were updated
       return affectedLinks.size()
