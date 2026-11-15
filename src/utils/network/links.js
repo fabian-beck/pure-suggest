@@ -57,7 +57,10 @@ export function createCitationLinks(selectedPublications, isSelectedFn, doiToInd
  */
 // @indirection-reviewed: meaningful-abstraction - D3 data binding abstraction adds clarity
 export function updateNetworkLinks(linkSelection, links) {
-  return linkSelection.data(links, (d) => [d.source, d.target]).join('path')
+  // Link ends are ids in new links, but nodes once the simulation has resolved them
+  return linkSelection
+    .data(links, (d) => [d.type, d.source.id ?? d.source, d.target.id ?? d.target].join('|'))
+    .join('path')
 }
 
 /**
