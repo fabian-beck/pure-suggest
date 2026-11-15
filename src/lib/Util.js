@@ -75,3 +75,23 @@ export function bibtexParser(file) {
     }
   })
 }
+
+/**
+ * Splits an author name into last name and given names, following BibTeX: with a comma,
+ * the last name stands before it ("Smith, John"); without one, it is the last word plus
+ * the lowercase particles in front of it ("Ludwig van Beethoven" -> "van Beethoven").
+ * @param {string} name - Author name in either form.
+ * @returns {string[]} [lastName, givenNames]
+ */
+export function splitAuthorName(name) {
+  const commaIndex = name.indexOf(',')
+  if (commaIndex >= 0) {
+    return [name.slice(0, commaIndex).trim(), name.slice(commaIndex + 1).trim()]
+  }
+  const words = name.trim().split(/\s+/)
+  let lastNameStart = words
+    .slice(0, -1)
+    .findIndex((word) => word[0] !== word[0].toUpperCase())
+  if (lastNameStart < 0) lastNameStart = words.length - 1
+  return [words.slice(lastNameStart).join(' '), words.slice(0, lastNameStart).join(' ')]
+}

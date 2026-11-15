@@ -7,6 +7,8 @@
  * solved in the fixed pixel space of the SVG viewport, so zooming in reveals more of them.
  */
 
+import { splitAuthorName } from '@/lib/Util.js'
+
 const FONT_SIZE = 12
 const AUTHOR_FONT_SIZE = 10
 const PUBLICATION_SIZE = 23 // rect including stroke
@@ -46,7 +48,8 @@ export async function loadLabelEngine() {
 
 export function getNodeLabelText(node) {
   if (node.type === 'author') {
-    return node.author.name.toUpperCase()
+    const [lastName, givenNames] = splitAuthorName(node.author.name)
+    return (givenNames ? `${lastName}, ${givenNames}` : lastName).toUpperCase()
   }
   if (node.type === 'publication') {
     const { authorShort, year } = node.publication

@@ -42,6 +42,7 @@ describe('nodeLabels', () => {
     expect(getNodeLabelText(publicationNode('a', 0, 0))).toBe('Smith et al., 2010')
     expect(getNodeLabelText(publicationNode('a', 0, 0, { authorShort: undefined }))).toBe('2010')
     expect(getNodeLabelText(authorNode('Smith, John', 0, 0))).toBe('SMITH, JOHN')
+    expect(getNodeLabelText(authorNode('Ludwig van Beethoven', 0, 0))).toBe('VAN BEETHOVEN, LUDWIG')
     expect(getNodeLabelText({ id: 'vis', type: 'keyword' })).toBeNull()
   })
 

@@ -1,5 +1,6 @@
 import { SCORING, CURRENT_YEAR, API_ENDPOINTS, API_PARAMS } from '../constants/config.js'
 import { cacheBulk, cachedFetch, readCacheMany } from '../lib/Cache.js'
+import { splitAuthorName } from '../lib/Util.js'
 import Author from './Author.js'
 
 
@@ -122,12 +123,12 @@ export default class Publication {
     if (!this.author) return undefined
 
     const authorArray = this.author.split('; ')
-    const firstAuthor = authorArray[0].split(', ')[0]
-    
+    const [firstAuthor] = splitAuthorName(authorArray[0])
+
     if (authorArray.length === 1) {
       return firstAuthor
     } else if (authorArray.length === 2) {
-      return `${firstAuthor} and ${authorArray[1].split(', ')[0]}`
+      return `${firstAuthor} and ${splitAuthorName(authorArray[1])[0]}`
     } else {
       return `${firstAuthor} et al.`
     }
