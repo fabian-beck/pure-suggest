@@ -20,14 +20,6 @@ defineProps({
   linkCount: {
     type: Number,
     default: 0
-  },
-  shouldSkipEarlyTicks: {
-    type: Boolean,
-    default: false
-  },
-  skipEarlyTicks: {
-    type: Number,
-    default: 10
   }
 })
 
@@ -124,8 +116,7 @@ defineExpose({
     <template v-else>
       FPS: {{ currentFps.toFixed(1) }}
       <br />
-      Tick: {{ tickCount
-      }}{{ shouldSkipEarlyTicks && tickCount <= skipEarlyTicks ? ' (skipping)' : '' }} <br />
+      Tick: {{ tickCount }} <br />
       Nodes: {{ nodeCount }}
       <br />
       Links: {{ linkCount }}

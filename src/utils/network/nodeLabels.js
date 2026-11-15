@@ -101,10 +101,9 @@ function sampleCitationArc(x0, y0, x1, y1) {
  *
  * @param {Array} nodes - Simulation nodes
  * @param {Array} links - Simulation links (source/target resolved to nodes)
- * @param {Function} nodeX - Displayed x position of a node
  * @param {number} scale - Zoom factor: node sizes on the canvas grow with it, labels do not
  */
-export function createNodeLabelProblem(nodes, links, nodeX, scale) {
+export function createNodeLabelProblem(nodes, links, scale) {
   const activeDoi = nodes.find((node) => node.publication?.isActive)?.id
 
   // Rank within each kind, so that the top selected, suggested, and author nodes
@@ -119,7 +118,7 @@ export function createNodeLabelProblem(nodes, links, nodeX, scale) {
   const items = []
   const keywordRects = []
   nodes.forEach((node) => {
-    const x = nodeX(node)
+    const { x } = node
     if (node.type === 'keyword') {
       // Shown text, see updateKeywordNodes
       const text = node.id.includes('|') ? `${node.id.split('|')[0]}|..` : node.id
@@ -174,12 +173,7 @@ export function createNodeLabelProblem(nodes, links, nodeX, scale) {
   const citationArcs = []
   links.forEach((link) => {
     if (link.type !== 'citation') return
-    const arc = sampleCitationArc(
-      nodeX(link.target),
-      link.target.y,
-      nodeX(link.source),
-      link.source.y
-    )
+    const arc = sampleCitationArc(link.target.x, link.target.y, link.source.x, link.source.y)
     if (arc) citationArcs.push(arc)
   })
 
@@ -275,10 +269,9 @@ export function renderNodeLabels(labelSelection, result, nodes, activePublicatio
  * Move the labels along with their nodes; viewTransform (a d3 zoom transform) maps
  * layout coordinates onto the canvas the labels were placed in
  */
-export function updateNodeLabelPositions(labelSelection, nodeX, viewTransform) {
+export function updateNodeLabelPositions(labelSelection, viewTransform) {
   labelSelection.attr(
     'transform',
-    ({ node }) =>
-      `translate(${viewTransform.applyX(nodeX(node))}, ${viewTransform.applyY(node.y)})`
+    ({ node }) => `translate(${viewTransform.applyX(node.x)}, ${viewTransform.applyY(node.y)})`
   )
 }

@@ -122,7 +122,10 @@ export function updateKeywordNodes(nodeSelection, activePublication, existingToo
  */
 // @indirection-reviewed: meaningful-abstraction - clear UI interaction semantics for node positioning
 export function releaseKeywordPosition(event, keywordNode, networkSimulation, SIMULATION_ALPHA) {
-  delete keywordNode.fx
+  // In timeline mode, keywords stay pinned to their year
+  if (networkSimulation.isNetworkClusters) {
+    delete keywordNode.fx
+  }
   delete keywordNode.fy
   d3.select(event.target.parentNode).classed('fixed', false)
   networkSimulation.restart(SIMULATION_ALPHA)
@@ -159,7 +162,9 @@ export function createKeywordNodeDrag(networkSimulation, SIMULATION_ALPHA) {
   }
 
   function dragMove(event, d) {
-    d.fx = event.x
+    if (networkSimulation.isNetworkClusters) {
+      d.fx = event.x
+    }
     d.fy = event.y
     networkSimulation.restart(SIMULATION_ALPHA)
   }
