@@ -14,8 +14,9 @@ const AUTHOR_FONT_SIZE = 10
 const PUBLICATION_SIZE = 23 // rect including stroke
 const PUBLICATION_ACTIVE_SIZE = 34
 const AUTHOR_RADIUS = 12
-const KEYWORD_CHAR_WIDTH = 6.5
+const KEYWORD_CHAR_WIDTH = 8
 const KEYWORD_HEIGHT = 16
+const KEYWORD_CLEARANCE = 5
 const CITATION_ARC_SAMPLES = 6
 
 let engine = null
@@ -36,11 +37,9 @@ export async function loadLabelEngine() {
     measure = (text, font) => {
       context.font = `${font.weight} ${font.size}px ${fontFamily}`
       const metrics = context.measureText(text)
-      return {
-        width: metrics.width,
-        ascent: metrics.fontBoundingBoxAscent,
-        descent: metrics.fontBoundingBoxDescent
-      }
+      // Extent of the letters instead of the font's line box, which would keep labels
+      // visibly away from their nodes
+      return { width: metrics.width, ascent: 0.75 * font.size, descent: 0.2 * font.size }
     }
   }
   engine = wasm
@@ -121,8 +120,11 @@ export function createNodeLabelProblem(nodes, links, nodeX, scale) {
   nodes.forEach((node) => {
     const x = nodeX(node)
     if (node.type === 'keyword') {
-      const w = node.id.length * KEYWORD_CHAR_WIDTH
-      keywordRects.push([x - w / 2, node.y - KEYWORD_HEIGHT / 2, w, KEYWORD_HEIGHT])
+      // Shown text, see updateKeywordNodes
+      const text = node.id.includes('|') ? `${node.id.split('|')[0]}|..` : node.id
+      const w = text.length * KEYWORD_CHAR_WIDTH + 2 * KEYWORD_CLEARANCE
+      const h = KEYWORD_HEIGHT + 2 * KEYWORD_CLEARANCE
+      keywordRects.push([x - w / 2, node.y - h / 2, w, h])
       return
     }
     const scores = scoresByKind[getNodeLabelKind(node)]

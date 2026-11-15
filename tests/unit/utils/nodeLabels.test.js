@@ -60,11 +60,19 @@ describe('nodeLabels', () => {
   it('treats keywords as obstacles instead of labeling them', () => {
     const problem = createProblem([
       publicationNode('a', 0, 0),
-      { id: 'visual', type: 'keyword', x: 100, y: 0 }
+      { id: 'visual', type: 'keyword', x: 100, y: 0 },
+      { id: 'publi|literat', type: 'keyword', x: 0, y: 100 }
     ])
 
     expect(problem.items.map((item) => item.id)).toEqual(['a'])
-    expect(problem.obstacles.vector[1]).toEqual({ class: 'text', rects: [[80.5, -8, 39, 16]] })
+    // Width of the shown text ("visual", "publi|..") plus clearance on each side
+    expect(problem.obstacles.vector[1]).toEqual({
+      class: 'text',
+      rects: [
+        [71, -13, 58, 26],
+        [-37, 87, 74, 26]
+      ]
+    })
   })
 
   it('ranks priorities by score within selected, suggested, and author nodes', () => {
