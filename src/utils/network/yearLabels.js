@@ -8,6 +8,8 @@
 import { CURRENT_YEAR } from '@/constants/config.js'
 
 const MARGIN = 50
+const LABEL_WIDTH = 44
+const LABEL_HEIGHT = 20
 
 /**
  * Generate array of years to display as labels (every 5 years)
@@ -76,6 +78,21 @@ export function updateYearLabelVisibility(labelSelection, isVisible, yearXCalcul
       .select('text')
       .attr('y', -svgHeight + 2 * MARGIN)
   }
+}
+
+/**
+ * Rectangles [x, y, width, height] covered by the year label texts (top and bottom row)
+ */
+export function getYearLabelRects(yearRange, yearXCalculator, svgHeight) {
+  const baseline = svgHeight / 2 - MARGIN
+  return yearRange.flatMap((year) =>
+    [-baseline, baseline].map((y) => [
+      yearXCalculator(year) - LABEL_WIDTH / 2,
+      y - LABEL_HEIGHT,
+      LABEL_WIDTH,
+      LABEL_HEIGHT
+    ])
+  )
 }
 
 /**
