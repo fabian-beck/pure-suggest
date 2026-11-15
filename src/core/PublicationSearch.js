@@ -1,6 +1,6 @@
-import Publication from './Publication.js'
 import { API_ENDPOINTS, API_PARAMS } from '../constants/config.js'
 import { cachedFetch } from '../lib/Cache.js'
+import Publication from './Publication.js'
 
 // DOI prefix ("10." + registrant code + "/"); see https://www.doi.org/doi_handbook/2_Numbering.html
 const DOI_PREFIX = /10\.\d{4,9}(?:\.\d+)*\//

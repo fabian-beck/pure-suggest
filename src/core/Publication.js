@@ -1,6 +1,6 @@
-import Author from './Author.js'
 import { SCORING, CURRENT_YEAR, API_ENDPOINTS, API_PARAMS } from '../constants/config.js'
 import { cacheBulk, cachedFetch, readCacheMany } from '../lib/Cache.js'
+import Author from './Author.js'
 
 
 const SURVEY_THRESHOLDS = {
