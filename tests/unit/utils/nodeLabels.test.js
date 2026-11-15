@@ -41,7 +41,7 @@ describe('nodeLabels', () => {
   it('formats publication and author labels', () => {
     expect(getNodeLabelText(publicationNode('a', 0, 0))).toBe('Smith et al., 2010')
     expect(getNodeLabelText(publicationNode('a', 0, 0, { authorShort: undefined }))).toBe('2010')
-    expect(getNodeLabelText(authorNode('Smith, John', 0, 0))).toBe('Smith, John')
+    expect(getNodeLabelText(authorNode('Smith, John', 0, 0))).toBe('SMITH, JOHN')
     expect(getNodeLabelText({ id: 'vis', type: 'keyword' })).toBeNull()
   })
 
@@ -132,7 +132,12 @@ describe('nodeLabels', () => {
     expect(labels.select('text').nodes().map((node) => node.textContent)).toEqual([
       'Smith et al., 2010',
       'Smith et al., 2010',
-      'Smith, John'
+      'SMITH, JOHN'
+    ])
+    expect(labels.select('text').nodes().map((node) => node.style.fontSize)).toEqual([
+      '12px',
+      '12px',
+      '10px'
     ])
 
     nodes[0].x = 100

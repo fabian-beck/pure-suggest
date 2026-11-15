@@ -1,12 +1,14 @@
 /**
  * Node Labels for Network Visualization
  *
- * Publication nodes are labeled "Smith et al., 2010" and author nodes "Smith, John".
+ * Publication nodes are labeled "Smith et al., 2010" and author nodes "SMITH, JOHN"
+ * (in smaller type).
  * Label Anything (WebAssembly) decides which labels fit and where they go: labels are
  * solved in the fixed pixel space of the SVG viewport, so zooming in reveals more of them.
  */
 
 const FONT_SIZE = 12
+const AUTHOR_FONT_SIZE = 10
 const PUBLICATION_SIZE = 23 // rect including stroke
 const PUBLICATION_ACTIVE_SIZE = 34
 const AUTHOR_RADIUS = 12
@@ -44,7 +46,7 @@ export async function loadLabelEngine() {
 
 export function getNodeLabelText(node) {
   if (node.type === 'author') {
-    return node.author.name
+    return node.author.name.toUpperCase()
   }
   if (node.type === 'publication') {
     const { authorShort, year } = node.publication
@@ -133,7 +135,11 @@ export function createNodeLabelProblem(nodes, links, nodeX, scale) {
     items.push({
       id: node.id,
       anchor: { type: 'point', x, y: node.y, mark },
-      label: { type: 'text', text: getNodeLabelText(node) },
+      label: {
+        type: 'text',
+        text: getNodeLabelText(node),
+        font: { size: node.type === 'author' ? AUTHOR_FONT_SIZE : FONT_SIZE }
+      },
       priority: 1 - scores.indexOf(score) / scores.length,
       tier: getNodeLabelTier(node, activeDoi)
     })
@@ -153,7 +159,6 @@ export function createNodeLabelProblem(nodes, links, nodeX, scale) {
 
   return {
     preset: 'graph',
-    defaults: { font: { size: FONT_SIZE } },
     placement: { aggressiveness: 'low', internal: 'never' },
     degrade: ['evict_lower', 'omit'],
     items,
@@ -216,6 +221,7 @@ export function renderNodeLabels(labelSelection, result, nodes, activePublicatio
       'y',
       ({ placement }) => placement.box.y + placement.text.baseline_offsets[0] - placement.anchor[1]
     )
+    .style('font-size', ({ placement }) => `${placement.text.font_size}px`)
     .text(({ placement }) => placement.text.lines[0])
 
   return updated

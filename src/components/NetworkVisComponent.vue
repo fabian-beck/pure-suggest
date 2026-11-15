@@ -1431,7 +1431,6 @@ export default {
     pointer-events: none;
 
     & text {
-      font-size: 12px;
       paint-order: stroke;
       stroke: white;
       stroke-width: 3px;
