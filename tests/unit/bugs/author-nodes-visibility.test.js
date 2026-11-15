@@ -204,15 +204,8 @@ vi.mock('@/utils/network/forces.js', () => ({
   initializeForces: vi.fn(),
   calculateYearX: vi.fn((year, _width, _height, _isMobile) => year * 10),
   SIMULATION_ALPHA: 0.5,
-  getNodeXPosition: vi.fn((node, isNetworkClusters, yearXFunc) => {
-    if (isNetworkClusters && node.x !== undefined) {
-      return node.x
-    }
-    if (node.publication?.year && yearXFunc) {
-      return yearXFunc(node.publication.year)
-    }
-    return 100
-  })
+  assignNodePositions: vi.fn((nodes) => nodes),
+  pinTimelineX: vi.fn()
 }))
 
 vi.mock('@/utils/network/publicationNodes.js', () => ({

@@ -12,9 +12,7 @@ describe('NetworkPerformanceMonitor', () => {
         show: true,
         isEmpty: false,
         nodeCount: 10,
-        linkCount: 15,
-        shouldSkipEarlyTicks: false,
-        skipEarlyTicks: 10
+        linkCount: 15
       }
     })
   })
@@ -40,19 +38,6 @@ describe('NetworkPerformanceMonitor', () => {
     await wrapper.setProps({ show: false })
 
     expect(wrapper.find('.fps-display').exists()).toBe(false)
-  })
-
-  it('shows skipping indicator during early tick skip period', async () => {
-    // Increment tick counter and set props
-    wrapper.vm.incrementTick()
-    wrapper.vm.incrementTick()
-    wrapper.vm.incrementTick()
-    wrapper.vm.incrementTick()
-    wrapper.vm.incrementTick() // tickCount = 5
-    await wrapper.setProps({ shouldSkipEarlyTicks: true, skipEarlyTicks: 10 })
-    await wrapper.vm.$nextTick()
-
-    expect(wrapper.text()).toContain('Tick: 5 (skipping)')
   })
 
   it('tracks FPS correctly', () => {

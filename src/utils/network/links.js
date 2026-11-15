@@ -63,14 +63,14 @@ export function updateNetworkLinks(linkSelection, links) {
 /**
  * Calculate link path geometry for different link types
  */
-export function calculateLinkPath(d, nodeX) {
-  const dx = nodeX(d.target) - nodeX(d.source)
+export function calculateLinkPath(d) {
+  const dx = d.target.x - d.source.x
   const dy = d.target.y - d.source.y
 
   // Curved link for citations
   if (d.type === 'citation') {
     const dr = (dx * dx + dy * dy)**0.6
-    return `M${nodeX(d.target)},${d.target.y}A${dr},${dr} 0 0,1 ${nodeX(d.source)},${d.source.y}`
+    return `M${d.target.x},${d.target.y}A${dr},${dr} 0 0,1 ${d.source.x},${d.source.y}`
   }
 
   // Tapered links for keywords and authors:
@@ -88,9 +88,9 @@ export function calculateLinkPath(d, nodeX) {
     y2 = -y2
   }
 
-  return `M${nodeX(d.target) - x1},${d.target.y - y1}
-        L${nodeX(d.target)},${d.target.y}
-        L${nodeX(d.target) - x2},${d.target.y - y2}`
+  return `M${d.target.x - x1},${d.target.y - y1}
+        L${d.target.x},${d.target.y}
+        L${d.target.x - x2},${d.target.y - y2}`
 }
 
 /**
