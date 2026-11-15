@@ -85,13 +85,15 @@ export function getNodeXPosition(node, isNetworkClusters, yearXCalculator) {
 /**
  * In timeline mode, fix publications and keywords at the x of their year, so that the
  * simulation only moves them vertically; in clusters mode, only keywords dragged to a
- * fixed place keep their x
+ * fixed place in clusters mode (clusterFx) keep their x
  */
 export function pinTimelineX(nodes, isNetworkClusters, yearXCalculator) {
   nodes.forEach((node) => {
     if (!isNetworkClusters && node.type !== 'author') {
       node.fx = node.x = getNodeXPosition(node, false, yearXCalculator)
-    } else if (node.fy == null) {
+    } else if (node.clusterFx != null) {
+      node.fx = node.x = node.clusterFx
+    } else {
       delete node.fx
     }
   })
