@@ -1,0 +1,1 @@
+var e=new URL(`label_anything_bg-gfuCZhgN.wasm`,import.meta.url).href;export{e as default};
