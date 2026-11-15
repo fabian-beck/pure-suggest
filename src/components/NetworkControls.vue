@@ -20,6 +20,10 @@ const props = defineProps({
   authorNumberFactor: {
     type: Number,
     default: 0.5
+  },
+  labelNumberFactor: {
+    type: Number,
+    default: 0.3
   }
 })
 
@@ -30,7 +34,8 @@ const emit = defineEmits([
   'update:showNodes',
   'update:onlyShowFiltered',
   'update:suggestedNumberFactor',
-  'update:authorNumberFactor'
+  'update:authorNumberFactor',
+  'update:labelNumberFactor'
 ])
 
 const sessionStore = useSessionStore()
@@ -68,6 +73,15 @@ const authorNumberFactorModel = computed({
   },
   set(value) {
     emit('update:authorNumberFactor', value)
+  }
+})
+
+const labelNumberFactorModel = computed({
+  get() {
+    return props.labelNumberFactor
+  },
+  set(value) {
+    emit('update:labelNumberFactor', value)
   }
 })
 </script>
@@ -179,6 +193,10 @@ const authorNumberFactorModel = computed({
               step="0.1"
               @update:model-value="$emit('plot', true)"
             />
+          </v-list-item>
+          <v-list-item prepend-icon="mdi-label-outline">
+            <v-list-item-title>Number of <b>labels</b> shown</v-list-item-title>
+            <v-slider v-model="labelNumberFactorModel" :max="1" :min="0" step="0.05" />
           </v-list-item>
         </v-list>
       </v-menu>

@@ -123,6 +123,7 @@ export default {
       errorTimer: null,
       suggestedNumberFactor: 0.3,
       authorNumberFactor: 0.5,
+      labelNumberFactor: 0.3, // Share of the visible nodes that may get a label (0: none)
       onlyShowFiltered: false,
       isDragging: false,
       // Graph size for the performance monitor; the graph itself is kept non-reactive
@@ -247,6 +248,9 @@ export default {
           })
         }
       }
+    },
+    labelNumberFactor () {
+      this.updateNodeLabels(true)
     },
     'interfaceStore.hoveredPublication': {
       handler () {
@@ -861,6 +865,12 @@ export default {
         .translate(zoomTransform.x + width / 2, zoomTransform.y + height / 2)
         .scale(zoomTransform.k)
 
+      if (!this.labelNumberFactor) {
+        this.nodeLabel = this.nodeLabel.data([]).join('g')
+        this.labelResult = null
+        return
+      }
+
       let result = null
       if (solve) {
         const { k, x, y } = viewTransform
@@ -870,6 +880,14 @@ export default {
           this.getNodeDisplayX,
           k
         )
+        // Only nodes in view compete for labels, limited to a share of them
+        problem.items = problem.items.filter(({ anchor }) => {
+          const [canvasX, canvasY] = viewTransform.apply([anchor.x, anchor.y])
+          return canvasX >= 0 && canvasX <= width && canvasY >= 0 && canvasY <= height
+        })
+        problem.priority = {
+          budget: { max_labels: Math.ceil(this.labelNumberFactor * problem.items.length) }
+        }
         problem.canvas = { width, height }
         problem.transform = [k, 0, 0, k, x, y]
         problem.warm_start = this.labelResult ?? undefined
@@ -1196,6 +1214,7 @@ export default {
         v-model:only-show-filtered="onlyShowFiltered"
         v-model:suggested-number-factor="suggestedNumberFactor"
         v-model:author-number-factor="authorNumberFactor"
+        v-model:label-number-factor="labelNumberFactor"
         @zoom="zoomByFactor"
         @reset="resetZoom"
         @plot="plot"

@@ -139,5 +139,23 @@ describe('NetworkControls', () => {
       expect(wrapper.emitted().plot).toBeTruthy()
       expect(wrapper.emitted().plot[0]).toEqual([true])
     })
+
+    it('offers a slider for the number of labels, from none to all', () => {
+      const wrapper = mount(NetworkControls, {
+        global: {
+          plugins: [pinia],
+          stubs: {
+            ...getComponentStubs(),
+            'v-slider': {
+              props: ['modelValue', 'min', 'max'],
+              template: '<input class="v-slider" :data-range="`${min}-${max}: ${modelValue}`">'
+            }
+          }
+        }
+      })
+
+      expect(wrapper.text()).toContain('Number of labels shown')
+      expect(wrapper.findAll('.v-slider').at(-1).attributes('data-range')).toBe('0-1: 0.3')
+    })
   })
 })
