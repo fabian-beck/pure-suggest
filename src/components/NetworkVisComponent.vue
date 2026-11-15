@@ -71,6 +71,7 @@ import {
   getYearLabelRects,
   updateYearLabelContent, 
   updateYearLabelRects, 
+  updateYearLabelTextPositions,
   updateYearLabelVisibility 
 } from '@/utils/network/yearLabels.js'
 
@@ -275,6 +276,7 @@ export default {
     )
     this.zoom = d3.zoom().on('zoom', (event) => {
       this.svg.attr('transform', event.transform)
+      updateYearLabelTextPositions(this.label, this.svgHeight, event.transform)
       // While the view is only panned, the labels keep their places
       this.updateNodeLabels(true, event.transform.k === this.labelZoomScale)
     })
@@ -574,7 +576,12 @@ export default {
 
           this.label = updateYearLabelContent(this.label, yearRange)
           updateYearLabelRects(this.label, this.yearX)
-          updateYearLabelVisibility(this.label, true, this.yearX, this.svgHeight)
+          updateYearLabelVisibility(this.label, true, this.yearX)
+          updateYearLabelTextPositions(
+            this.label,
+            this.svgHeight,
+            d3.zoomTransform(document.getElementById('network-svg'))
+          )
         } else if (this.label) {
           this.label.selectAll('text, rect').attr('visibility', 'hidden')
         }
@@ -916,7 +923,8 @@ export default {
             rects: getYearLabelRects(
               generateYearRange(this.sessionStore.yearMin, this.sessionStore.yearMax),
               this.yearX,
-              this.svgHeight
+              this.svgHeight,
+              zoomTransform
             )
           })
         }
