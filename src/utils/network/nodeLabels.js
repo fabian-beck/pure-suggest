@@ -154,8 +154,8 @@ export function createNodeLabelProblem(nodes, links, nodeX, scale) {
   return {
     preset: 'graph',
     defaults: { font: { size: FONT_SIZE } },
-    placement: { internal: 'never' },
-    degrade: ['distant', 'evict_lower', 'omit'],
+    placement: { aggressiveness: 'low', internal: 'never' },
+    degrade: ['evict_lower', 'omit'],
     items,
     obstacles: {
       vector: [
