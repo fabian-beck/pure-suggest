@@ -210,7 +210,16 @@ const labelNumberFactorModel = computed({
   bottom: max(1vw, 1rem);
   right: max(1vw, 1rem);
   z-index: 1;
-  will-change: opacity;
+
+  // Compact buttons are transparent by default, which would let the year labels of the
+  // network shine through
+  & > span > .v-btn {
+    background-color: white;
+
+    &:hover {
+      background-color: color-mix(in srgb, black 15%, white);
+    }
+  }
 }
 
 .v-btn-toggle {
