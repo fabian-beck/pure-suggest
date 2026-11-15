@@ -75,6 +75,21 @@ describe('nodeLabels', () => {
     })
   })
 
+  it('extends the mark of a boosted publication by its boost indicator', () => {
+    const problem = createProblem(
+      [publicationNode('boosted', 10, 0, { boostFactor: 8 }), publicationNode('plain', 50, 0)],
+      [],
+      2
+    )
+
+    const { mark } = problem.items[0].anchor
+    expect(mark).toMatchObject({ shape: 'polygon', relative: true })
+    // Indicator: radius 20 * 1.8 * 0.8 / 6 plus stroke around the corner at (9, -9), zoomed
+    expect(mark.points[2][1]).toBeCloseTo(-29.6)
+    expect(mark.points[4][0]).toBeCloseTo(29.6)
+    expect(problem.items[1].anchor.mark).toEqual({ shape: 'rect', w: 46, h: 46 })
+  })
+
   it('ranks priorities by score within selected, suggested, and author nodes', () => {
     const problem = createProblem([
       publicationNode('selected-low', 0, 0, { isSelected: true, score: 2 }),

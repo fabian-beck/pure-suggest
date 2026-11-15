@@ -181,7 +181,7 @@ export function updateActiveState(nodeSelection, activePublication) {
     .select('circle')
     .attr('cx', (d) => getRectSize(d) / 2 - 1)
     .attr('cy', (d) => -getRectSize(d) / 2 + 1)
-    .attr('r', (d) => (d.publication.boostFactor > 1 ? getBoostIndicatorSize(d) / 6 : 0))
+    .attr('r', getBoostIndicatorRadius)
 
   // Activating a suggested publication marks it as read
   publicationNodes
@@ -194,15 +194,15 @@ export function updateActiveState(nodeSelection, activePublication) {
 /**
  * Calculate rectangle size based on publication state
  */
-function getRectSize(d) {
+export function getRectSize(d) {
   return RECT_SIZE * (d.publication.isActive ? ENLARGE_FACTOR : 1)
 }
 
 /**
- * Calculate boost indicator size
+ * Calculate the radius of the boost indicator (0 without boost)
  */
-function getBoostIndicatorSize(d) {
-  let internalFactor = 1
+export function getBoostIndicatorRadius(d) {
+  let internalFactor = 0
   if (d.publication.boostFactor >= 8) {
     internalFactor = 1.8
   } else if (d.publication.boostFactor >= 4) {
@@ -210,7 +210,7 @@ function getBoostIndicatorSize(d) {
   } else if (d.publication.boostFactor > 1) {
     internalFactor = 1.2
   }
-  return getRectSize(d) * internalFactor * 0.8
+  return (getRectSize(d) * internalFactor * 0.8) / 6
 }
 
 // Color is handled by d.publication.scoreColor from the original logic

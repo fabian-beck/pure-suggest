@@ -238,6 +238,7 @@ describe('Publication Bug Regression Tests', () => {
       ['Smith, John; Doe, Jane', 'Smith and Doe'],
       ['Smith, John; Doe, Jane; Roe, Richard', 'Smith et al.'],
       ['Fabian Beck; Cedric Krause', 'Beck and Krause'],
+      ['Fabian Beck, ; Cedric Krause,', 'Beck and Krause'],
       ['Jean-Daniel Fekete', 'Fekete'],
       ['Ludwig van Beethoven; Daniel A. Keim; Ben Shneiderman', 'van Beethoven et al.'],
       ['Charles de la Vallée Poussin', 'de la Vallée Poussin'],

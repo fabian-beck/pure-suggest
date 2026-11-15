@@ -8,11 +8,12 @@
  */
 
 import { splitAuthorName } from '@/lib/Util.js'
+import { getRectSize, getBoostIndicatorRadius } from '@/utils/network/publicationNodes.js'
 
 const FONT_SIZE = 12
 const AUTHOR_FONT_SIZE = 10
-const PUBLICATION_SIZE = 23 // rect including stroke
-const PUBLICATION_ACTIVE_SIZE = 34
+const PUBLICATION_STROKE_WIDTH = 3
+const BOOST_INDICATOR_STROKE_WIDTH = 1
 const AUTHOR_RADIUS = 12
 const KEYWORD_CHAR_WIDTH = 8
 const KEYWORD_HEIGHT = 16
@@ -133,9 +134,29 @@ export function createNodeLabelProblem(nodes, links, nodeX, scale) {
     if (node.type === 'author') {
       mark = { shape: 'circle', r: AUTHOR_RADIUS * scale }
     } else {
-      const size =
-        (node.publication.isActive ? PUBLICATION_ACTIVE_SIZE : PUBLICATION_SIZE) * scale
-      mark = { shape: 'rect', w: size, h: size }
+      const half = ((getRectSize(node) + PUBLICATION_STROKE_WIDTH) / 2) * scale
+      const boostRadius = getBoostIndicatorRadius(node)
+      if (boostRadius) {
+        // The boost indicator sticks out of the top right corner (see updateActiveState):
+        // the mark is the outline around both, so that labels touch neither
+        const cx = (getRectSize(node) / 2 - 1) * scale
+        const r = (boostRadius + BOOST_INDICATOR_STROKE_WIDTH) * scale
+        const diagonal = r * Math.SQRT1_2
+        mark = {
+          shape: 'polygon',
+          relative: true,
+          points: [
+            [-half, half],
+            [-half, -half],
+            [cx, -cx - r],
+            [cx + diagonal, -cx - diagonal],
+            [cx + r, -cx],
+            [half, half]
+          ]
+        }
+      } else {
+        mark = { shape: 'rect', w: 2 * half, h: 2 * half }
+      }
     }
     items.push({
       id: node.id,
