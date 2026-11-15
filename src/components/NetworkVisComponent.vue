@@ -276,7 +276,7 @@ export default {
     )
     this.zoom = d3.zoom().on('zoom', (event) => {
       this.svg.attr('transform', event.transform)
-      updateYearLabelTextPositions(this.label, this.svgHeight, event.transform)
+      this.updateYearLabelTexts()
       // While the view is only panned, the labels keep their places
       this.updateNodeLabels(true, event.transform.k === this.labelZoomScale)
     })
@@ -296,6 +296,12 @@ export default {
       tickHandler: this.tick
     })
 
+    this.resizeObserver = new ResizeObserver(() => {
+      this.updateYearLabelTexts()
+      this.updateNodeLabels(true)
+    })
+    this.resizeObserver.observe(document.getElementById('network-svg'))
+
     loadLabelEngine()
       .then(() => {
         this.isLabelEngineLoaded = true
@@ -307,6 +313,7 @@ export default {
     this.onlyShowFiltered = this.sessionStore.filter.hasActiveFilters()
   },
   beforeUnmount() {
+    this.resizeObserver.disconnect()
     // Cleanup D3 simulation (moved from useNetworkSimulation)
     if (this.simulation) {
       this.simulation.stop()
@@ -577,11 +584,7 @@ export default {
           this.label = updateYearLabelContent(this.label, yearRange)
           updateYearLabelRects(this.label, this.yearX)
           updateYearLabelVisibility(this.label, true, this.yearX)
-          updateYearLabelTextPositions(
-            this.label,
-            this.svgHeight,
-            d3.zoomTransform(document.getElementById('network-svg'))
-          )
+          this.updateYearLabelTexts()
         } else if (this.label) {
           this.label.selectAll('text, rect').attr('visibility', 'hidden')
         }
@@ -856,6 +859,21 @@ export default {
       }
     },
 
+    // Keep the year labels at the borders of the visible area, which is higher than
+    // the viewBox when the component is higher than the aspect ratio of the viewBox
+    updateYearLabelTexts() {
+      const element = document.getElementById('network-svg')
+      const scale = Math.min(
+        element.clientWidth / this.svgWidth,
+        element.clientHeight / this.svgHeight
+      )
+      updateYearLabelTextPositions(
+        this.label,
+        scale ? element.clientHeight / scale : this.svgHeight,
+        d3.zoomTransform(element)
+      )
+    },
+
     /**
      * Move the node labels to the current node positions, or place them anew (solve);
      * with pin, existing labels stay exactly where they are and labels are only added
@@ -923,7 +941,7 @@ export default {
             rects: getYearLabelRects(
               generateYearRange(this.sessionStore.yearMin, this.sessionStore.yearMax),
               this.yearX,
-              this.svgHeight,
+              height,
               zoomTransform
             )
           })
