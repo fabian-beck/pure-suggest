@@ -51,6 +51,7 @@ import {
 import {
   loadLabelEngine,
   createNodeLabelProblem,
+  limitNodeLabels,
   placeNodeLabels,
   renderNodeLabels,
   updateNodeLabelPositions
@@ -74,6 +75,8 @@ import {
 } from '@/utils/network/yearLabels.js'
 
 // Components
+
+const LABEL_OVERSCAN = 100 // px beyond the view, about the width of a label
 
 export default {
   name: 'NetworkVisComponent',
@@ -123,7 +126,7 @@ export default {
       errorTimer: null,
       suggestedNumberFactor: 0.3,
       authorNumberFactor: 0.5,
-      labelNumberFactor: 0.3, // Share of the visible nodes that may get a label (0: none)
+      labelNumberFactor: 0.3, // Share of the nodes that may get a label at zoom 1 (0: none)
       onlyShowFiltered: false,
       isDragging: false,
       // Graph size for the performance monitor; the graph itself is kept non-reactive
@@ -148,6 +151,7 @@ export default {
     this.nodeLabel = null
     this.labelResult = null // Previous label placements, kept as warm start for stable labels
     this.labelTickCount = 0
+    this.labelZoomScale = 1 // Zoom factor of the previous label placement
     this.isLabelEngineLoaded = false
   },
   computed: {
@@ -271,7 +275,8 @@ export default {
     )
     this.zoom = d3.zoom().on('zoom', (event) => {
       this.svg.attr('transform', event.transform)
-      this.updateNodeLabels(true)
+      // While the view is only panned, the labels keep their places
+      this.updateNodeLabels(true, event.transform.k === this.labelZoomScale)
     })
     this.svg = d3.select('#network-svg').call(this.zoom).select('g')
     this.label = this.svg.append('g').attr('class', 'labels').selectAll('text')
@@ -845,9 +850,10 @@ export default {
     },
 
     /**
-     * Move the node labels to the current node positions, or place them anew (solve)
+     * Move the node labels to the current node positions, or place them anew (solve);
+     * with pin, existing labels stay exactly where they are and labels are only added
      */
-    updateNodeLabels(solve) {
+    updateNodeLabels(solve, pin = false) {
       const element = document.getElementById('network-svg')
       if (!this.isLabelEngineLoaded || !element?.clientWidth || !this.graph.nodes.length) {
         return
@@ -880,17 +886,30 @@ export default {
           this.getNodeDisplayX,
           k
         )
-        // Only nodes in view compete for labels, limited to a share of them
+        // The share of labeled nodes grows with the zoomed area: zooming in shows more
+        // labels, and it does not change while the view is panned
+        limitNodeLabels(
+          problem,
+          Math.ceil(Math.min(1, this.labelNumberFactor * k * k) * problem.items.length)
+        )
+        // The view is a window on the network: labels are also placed in the overscan
+        // around it, so that they keep their places at the border when the view moves;
+        // nodes farther out are passed as marks that these labels keep off
         problem.items = problem.items.filter(({ anchor }) => {
           const [canvasX, canvasY] = viewTransform.apply([anchor.x, anchor.y])
-          return canvasX >= 0 && canvasX <= width && canvasY >= 0 && canvasY <= height
+          return (
+            canvasX >= -3 * LABEL_OVERSCAN &&
+            canvasX <= width + 3 * LABEL_OVERSCAN &&
+            canvasY >= -3 * LABEL_OVERSCAN &&
+            canvasY <= height + 3 * LABEL_OVERSCAN
+          )
         })
-        problem.priority = {
-          budget: { max_labels: Math.ceil(this.labelNumberFactor * problem.items.length) }
-        }
-        problem.canvas = { width, height }
+        problem.canvas = { width, height, overscan: LABEL_OVERSCAN }
         problem.transform = [k, 0, 0, k, x, y]
-        problem.warm_start = this.labelResult ?? undefined
+        if (this.labelResult) {
+          problem.warm_start = { placements: this.labelResult.placements, pin }
+        }
+        this.labelZoomScale = k
         if (!this.isNetworkClusters) {
           problem.obstacles.vector.push({
             class: 'text',

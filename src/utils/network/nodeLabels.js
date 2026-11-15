@@ -186,6 +186,7 @@ export function createNodeLabelProblem(nodes, links, nodeX, scale) {
   return {
     preset: 'graph',
     placement: { aggressiveness: 'low', internal: 'never' },
+    avoid: { label: { nodes: 'hard' } },
     degrade: ['evict_lower', 'omit'],
     items,
     obstacles: {
@@ -196,6 +197,23 @@ export function createNodeLabelProblem(nodes, links, nodeX, scale) {
     },
     solver: { time_budget_ms: 10 }
   }
+}
+
+/**
+ * Keep only the labels of the `count` most important nodes; the other nodes remain as
+ * marks that labels must not cover. Which nodes these are does not depend on the view,
+ * so panning does not switch labels on and off.
+ */
+export function limitNodeLabels(problem, count) {
+  const ranked = [...problem.items].sort((a, b) => b.tier - a.tier || b.priority - a.priority)
+  const labeled = new Set(ranked.slice(0, count))
+  problem.obstacles.vector.push({
+    class: 'nodes',
+    shapes: problem.items
+      .filter((item) => !labeled.has(item))
+      .map(({ anchor }) => ({ ...anchor.mark, x: anchor.x, y: anchor.y }))
+  })
+  problem.items = problem.items.filter((item) => labeled.has(item))
 }
 
 /**

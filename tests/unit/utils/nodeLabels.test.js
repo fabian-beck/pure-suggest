@@ -5,6 +5,7 @@ import {
   loadLabelEngine,
   getNodeLabelText,
   createNodeLabelProblem,
+  limitNodeLabels,
   placeNodeLabels,
   renderNodeLabels,
   updateNodeLabelPositions
@@ -112,6 +113,27 @@ describe('nodeLabels', () => {
 
     expect(problem.items.map((item) => item.tier)).toEqual([2, 1, 0, -1, 1])
     expect(problem.items[0].anchor.mark.w).toBeGreaterThan(problem.items[1].anchor.mark.w)
+  })
+
+  it('limits labels to the most important nodes and keeps the others as marks', () => {
+    const problem = createProblem([
+      publicationNode('low', 0, 0, { isSelected: true, score: 1 }),
+      publicationNode('high', 50, 0, { isSelected: true, score: 9 }),
+      publicationNode('active', 100, 0, { isSelected: true, score: 0, isActive: true }),
+      publicationNode('medium', 150, 0, { isSelected: true, score: 5 })
+    ])
+
+    limitNodeLabels(problem, 2)
+
+    expect(problem.items.map((item) => item.id)).toEqual(['high', 'active'])
+    expect(problem.obstacles.vector.at(-1)).toEqual({
+      class: 'nodes',
+      shapes: [
+        { shape: 'rect', w: 23, h: 23, x: 0, y: 0 },
+        { shape: 'rect', w: 23, h: 23, x: 150, y: 0 }
+      ]
+    })
+    expect(placeNodeLabels(problem)?.stats.hard_violations ?? 0).toBe(0)
   })
 
   it('adds citation links as soft obstacles', () => {
