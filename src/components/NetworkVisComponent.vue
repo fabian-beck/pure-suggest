@@ -79,6 +79,7 @@ import {
 // Components
 
 const LABEL_OVERSCAN = 100 // px beyond the view, about the width of a label
+const RESIZE_REPLOT_DELAY = 200 // ms after the last change of the panel size
 
 export default {
   name: 'NetworkVisComponent',
@@ -117,8 +118,6 @@ export default {
   data () {
     return {
       svg: null,
-      svgWidth: Number,
-      svgHeight: Number,
       node: null,
       link: null,
       label: null,
@@ -150,7 +149,8 @@ export default {
     this.labelTickCount = 0
     this.tickCount = 0
     this.labelZoomScale = 1 // Zoom factor of the previous label placement
-    this.viewport = { width: 0, height: 0 } // Visible area in layout units, measured on resize
+    this.viewport = { width: 0, height: 0 } // Size of the panel, measured when plotting and on resize
+    this.shownYears = { min: undefined, max: undefined } // Range of the year axis
     this.isLabelEngineLoaded = false
   },
   computed: {
@@ -250,15 +250,9 @@ export default {
     }
   },
   mounted() {
-    const container = document.getElementById('network-svg-container')
-    this.svgWidth = container.clientWidth
-    // if not mobile set height to 1/5 of width to make assumption that aspect ratio is 5:1
-    this.svgHeight = this.interfaceStore.isMobile ? container.clientHeight : this.svgWidth / 5
-    // set viewbox to center
-    d3.select('#network-svg').attr(
-      'viewBox',
-      `${-this.svgWidth / 2} ${-this.svgHeight / 2} ${this.svgWidth} ${this.svgHeight}`
-    )
+    this.container = document.getElementById('network-svg-container')
+    this.svgElement = this.$el.querySelector('#network-svg')
+    this.updateViewport()
     this.zoom = d3
       .zoom()
       .on('zoom', (event) => {
@@ -277,34 +271,29 @@ export default {
     this.node = this.svg.append('g').attr('class', 'nodes').selectAll('rect')
     this.nodeLabel = d3.select('#network-svg g.node-labels').selectAll('g')
 
-    // Initialize D3 simulation
-    this.initializeSimulation({
-      svgWidth: this.svgWidth,
-      svgHeight: this.svgHeight,
-      isMobile: this.interfaceStore.isMobile,
-      isNetworkClusters: this.isNetworkClusters,
-      selectedPublicationsCount: this.sessionStore.selectedPublications.length,
-      tickHandler: this.tick
-    })
-    // The last tick may not have been drawn, and labels are placed on every fourth drawn tick only
-    this.simulation.on('end', () => {
-      const changedNodes = this.detectChangedNodes()
-      this.updateChangedNodePositions(changedNodes)
-      this.updateSelectiveLinks(changedNodes)
-      this.updateNodeLabels(true)
-    })
+    // Forces are set when plotting
+    this.simulation = createForceSimulation()
+      .on('tick', this.tick)
+      // The last tick may not have been drawn, and labels are placed on every fourth drawn tick only
+      .on('end', () => {
+        const changedNodes = this.detectChangedNodes()
+        this.updateChangedNodePositions(changedNodes)
+        this.updateSelectiveLinks(changedNodes)
+        this.updateNodeLabels(true)
+      })
 
-    // Measuring the element forces a synchronous layout, so it is not done on every tick
-    this.svgElement = this.$el.querySelector('#network-svg')
     this.resizeObserver = new ResizeObserver(() => {
-      const { clientWidth, clientHeight } = this.svgElement
-      // The viewBox is fitted into the element, so more than the viewBox can be visible
-      const scale = Math.min(clientWidth / this.svgWidth, clientHeight / this.svgHeight)
-      this.viewport = scale
-        ? { width: clientWidth / scale, height: clientHeight / scale }
-        : { width: 0, height: 0 }
+      if (!this.updateViewport()) {
+        return
+      }
       this.updateYearLabelTexts()
-      this.updateNodeLabels(true)
+      // The layout adapts to the new size of the panel once the resizing pauses
+      clearTimeout(this.resizeTimer)
+      this.resizeTimer = setTimeout(() => {
+        if (this.graph.nodes.length && !this.interfaceStore.isLoading) {
+          this.plot(true)
+        }
+      }, RESIZE_REPLOT_DELAY)
     })
     this.resizeObserver.observe(this.svgElement)
 
@@ -320,6 +309,7 @@ export default {
   },
   beforeUnmount() {
     this.resizeObserver.disconnect()
+    clearTimeout(this.resizeTimer)
     // Cleanup D3 simulation (moved from useNetworkSimulation)
     if (this.simulation) {
       this.simulation.stop()
@@ -380,6 +370,10 @@ export default {
 
       // Get filtered publications
       const publications = this.collectFilteredPublications()
+      const years = publications.map((publication) => publication.year).filter(Boolean)
+      this.shownYears = years.length
+        ? { min: Math.min(...years), max: Math.max(...years) }
+        : { min: undefined, max: undefined }
 
       // Create nodes
       let nodes = []
@@ -560,16 +554,19 @@ export default {
         return
       }
 
+      // The panel may have changed its size since the resize observer last reported
+      this.updateViewport()
+      if (!this.viewport.width || !this.viewport.height) {
+        return
+      }
+
       try {
-        // Update simulation configuration
-        this.updateSimulation({
-          svgWidth: this.svgWidth,
-          svgHeight: this.svgHeight,
-          isMobile: this.interfaceStore.isMobile,
-          isNetworkClusters: this.isNetworkClusters,
-          selectedPublicationsCount: this.sessionStore.selectedPublications.length,
-          tickHandler: this.tick
-        })
+        initializeForces(
+          this.simulation,
+          this.isNetworkClusters,
+          this.sessionStore.selectedPublications.length,
+          this.viewport
+        )
 
         this.initNetworkGraph()
 
@@ -582,10 +579,7 @@ export default {
         const shouldShow = hasPublications && !this.isEmpty && !this.isNetworkClusters
 
         if (shouldShow) {
-          const yearRange = generateYearRange(
-            this.sessionStore.yearMin,
-            this.sessionStore.yearMax
-          )
+          const yearRange = generateYearRange(this.shownYears.min, this.shownYears.max)
 
           this.label = updateYearLabelContent(this.label, yearRange)
           updateYearLabelRects(this.label, this.yearX)
@@ -708,7 +702,7 @@ export default {
       this.openAuthorModal(d.author.id)
     },
     yearX (year) {
-      return calculateYearX(year, this.svgWidth, this.svgHeight, this.interfaceStore.isMobile)
+      return calculateYearX(year, this.shownYears.min, this.viewport.width)
     },
     activatePublication (event, d) {
       this.activatePublicationComponentByDoi(d.publication.doi)
@@ -739,49 +733,18 @@ export default {
       const transform = d3.zoomIdentity
       svg.transition().duration(750).call(this.zoom.transform, transform)
     },
-    // D3 Simulation methods (moved from useNetworkSimulation)
-    initializeSimulation(config) {
-      const {
-        svgWidth,
-        svgHeight,
-        isMobile,
-        isNetworkClusters,
-        selectedPublicationsCount,
-        tickHandler
-      } = config
-
-      const yearXCalculator = (year) => calculateYearX(year, svgWidth, svgHeight, isMobile)
-
-      this.simulation = createForceSimulation({
-        isNetworkClusters,
-        selectedPublicationsCount,
-        yearXCalculator,
-        tickHandler
-      })
-
-      return this.simulation
-    },
-
-    updateSimulation(config) {
-      if (!this.simulation) return
-
-      const {
-        svgWidth,
-        svgHeight,
-        isMobile,
-        isNetworkClusters,
-        selectedPublicationsCount,
-        tickHandler
-      } = config
-
-      const yearXCalculator = (year) => calculateYearX(year, svgWidth, svgHeight, isMobile)
-
-      initializeForces(this.simulation, {
-        isNetworkClusters,
-        selectedPublicationsCount,
-        yearXCalculator,
-        tickHandler
-      })
+    /**
+     * Measure the panel and fit the view box to it (one unit per pixel, origin centered),
+     * so that the layout can fill the panel at any aspect ratio; true if the size changed
+     */
+    updateViewport() {
+      const { clientWidth: width, clientHeight: height } = this.container
+      if (width === this.viewport.width && height === this.viewport.height) {
+        return false
+      }
+      this.viewport = { width, height }
+      d3.select(this.svgElement).attr('viewBox', `${-width / 2} ${-height / 2} ${width} ${height}`)
+      return true
     },
 
     updateGraphData(nodes, links) {
@@ -818,12 +781,11 @@ export default {
       }
     },
 
-    // Keep the year labels at the borders of the visible area, which is higher than
-    // the viewBox when the component is higher than the aspect ratio of the viewBox
+    // Keep the year labels at the top and bottom border of the view
     updateYearLabelTexts() {
       updateYearLabelTextPositions(
         this.label,
-        this.viewport.height || this.svgHeight,
+        this.viewport.height,
         d3.zoomTransform(this.svgElement)
       )
     },
@@ -881,7 +843,7 @@ export default {
           problem.obstacles.vector.push({
             class: 'text',
             rects: getYearLabelRects(
-              generateYearRange(this.sessionStore.yearMin, this.sessionStore.yearMax),
+              generateYearRange(this.shownYears.min, this.shownYears.max),
               this.yearX,
               height,
               zoomTransform
@@ -1198,6 +1160,10 @@ export default {
 
 #network-svg {
   background: white;
+  // Out of the flow: as its view box follows the measured size of the panel, its intrinsic
+  // height would otherwise let the panel grow with every measurement
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
 

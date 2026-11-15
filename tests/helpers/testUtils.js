@@ -81,6 +81,15 @@ class ZoomTransformMock {
   }
 }
 
+// Chainable stand-in for d3 forces
+const createForceMock = () => {
+  const force = {}
+  ;['id', 'distance', 'strength', 'theta', 'x', 'y', 'links'].forEach((method) => {
+    force[method] = vi.fn(() => force)
+  })
+  return force
+}
+
 // Complete D3 module mock for vi.mock('d3')
 export const createD3ModuleMock = () => {
   const mockSimulation = createD3SimulationMock()
@@ -101,12 +110,10 @@ export const createD3ModuleMock = () => {
     zoomIdentity: new ZoomTransformMock(1, 0, 0),
     drag: vi.fn(() => mockDrag),
     forceSimulation: vi.fn(() => mockSimulation),
-    forceLink: vi.fn(() => ({
-      id: vi.fn(() => ({ distance: vi.fn(() => ({ strength: vi.fn() })) }))
-    })),
-    forceManyBody: vi.fn(() => ({ strength: vi.fn(() => ({ theta: vi.fn() })) })),
-    forceX: vi.fn(() => ({ x: vi.fn(() => ({ strength: vi.fn() })) })),
-    forceY: vi.fn(() => ({ y: vi.fn(() => ({ strength: vi.fn() })) }))
+    forceLink: vi.fn(createForceMock),
+    forceManyBody: vi.fn(createForceMock),
+    forceX: vi.fn(createForceMock),
+    forceY: vi.fn(createForceMock)
   }
 }
 

@@ -161,7 +161,7 @@ export default {
     >
       <SelectedPublicationsComponent id="selected" v-show="!interfaceStore.isNetworkExpanded" />
       <SuggestedPublicationsComponent id="suggested" v-show="!interfaceStore.isNetworkExpanded" />
-      <NetworkVisComponent id="network" :svg-width="1500" :svg-height="600" />
+      <NetworkVisComponent id="network" />
       <LandingComponent v-if="isEmpty" />
     </div>
     <QuickAccessBar

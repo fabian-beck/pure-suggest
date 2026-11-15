@@ -12,11 +12,16 @@ import {
 } from '@/utils/network/forces.js'
 import { createKeywordNodeDrag } from '@/utils/network/keywordNodes.js'
 
-const yearX = (year) => calculateYearX(year, 1200, 240, false)
+const YEAR_MIN = 2006
+const NODE_MARGIN = 10
+// Rows of the year labels at the top and bottom border (6 + 20), and half a node
+const BORDER_MARGIN = 38
+const DEFAULT_VIEW = { width: 1200, height: 240 }
+const yearX = (year) => calculateYearX(year, YEAR_MIN, 1200)
 
-function createGraph() {
+function createGraph(publicationCount = 40) {
   const random = d3.randomLcg(42)
-  const nodes = d3.range(40).map((i) => ({
+  const nodes = d3.range(publicationCount).map((i) => ({
     id: `p${i}`,
     type: 'publication',
     publication: { year: 2026 - Math.floor(random() ** 2 * 20) }
@@ -30,7 +35,7 @@ function createGraph() {
     })
   )
   d3.range(8).forEach((i) => {
-    const publications = d3.range(3).map(() => nodes[Math.floor(random() * 40)])
+    const publications = d3.range(3).map(() => nodes[Math.floor(random() * publicationCount)])
     const years = publications.map((publication) => publication.publication.year)
     nodes.push({
       id: `a${i}`,
@@ -45,36 +50,80 @@ function createGraph() {
 }
 
 /**
- * Same steps as a replot of the network component, with the simulation run to its end
+ * Shaped like a typical session: few selected publications, suggestions each linked to
+ * some of them and mostly from recent years, keywords linked to many publications
  */
-function plot(simulation, graph, previousNodes, onTick = () => {}) {
-  initializeForces(simulation, {
-    isNetworkClusters: false,
-    selectedPublicationsCount: 40,
-    yearXCalculator: yearX
+function createSessionGraph(seed) {
+  const random = d3.randomLcg(seed)
+  const nodes = [2016, 2016, 2017, 2019].map((year, i) => ({
+    id: `s${i}`,
+    type: 'publication',
+    publication: { year }
+  }))
+  const links = [
+    { source: 's0', target: 's2', type: 'citation', internal: true },
+    { source: 's2', target: 's3', type: 'citation', internal: true }
+  ]
+  d3.range(20).forEach((i) => {
+    const year = i === 0 ? YEAR_MIN : 2026 - Math.floor(random() * 10)
+    nodes.push({ id: `p${i}`, type: 'publication', publication: { year } })
+    d3.range(1 + Math.floor(random() * 3)).forEach(() => {
+      const selected = `s${Math.floor(random() * 4)}`
+      links.push(
+        year < 2018
+          ? { source: `p${i}`, target: selected, type: 'citation' }
+          : { source: selected, target: `p${i}`, type: 'citation' }
+      )
+    })
   })
+  const publications = [...nodes]
+  d3.range(3).forEach((i) => {
+    nodes.push({ id: `k${i}`, type: 'keyword' })
+    publications
+      .filter(() => random() < 0.5)
+      .forEach((publication) =>
+        links.push({ source: `k${i}`, target: publication.id, type: 'keyword' })
+      )
+  })
+  return { nodes, links }
+}
+
+/**
+ * Same steps as a replot of the network component in a view of the given size
+ * ({ width, height }), up to the start of the simulation
+ */
+function startLayout(graph, previousNodes, isNetworkClusters, view) {
+  const simulation = createForceSimulation().stop()
+  const viewYearX = (year) => calculateYearX(year, YEAR_MIN, view.width)
+  initializeForces(simulation, isNetworkClusters, 40, view)
   const links = graph.links.map((link) => ({ ...link }))
   const nodes = assignNodePositions(
     graph.nodes.map((node) => ({ ...node })),
     previousNodes,
     links
   )
-  pinTimelineX(nodes, false, yearX)
+  pinTimelineX(nodes, isNetworkClusters, viewYearX)
   simulation.nodes(nodes)
   simulation.force('link').links(links)
   simulation.alpha(SIMULATION_ALPHA)
+  return simulation
+}
+
+function settle(simulation, onTick = () => {}) {
   while (simulation.alpha() >= simulation.alphaMin()) {
     simulation.tick()
-    onTick(nodes)
+    onTick(simulation.nodes())
   }
-  return nodes
+  return simulation.nodes()
 }
+
+const plot = (graph, previousNodes, isNetworkClusters = false, view = DEFAULT_VIEW) =>
+  settle(startLayout(graph, previousNodes, isNetworkClusters, view))
 
 describe('timeline layout', () => {
   it('keeps publications at the x of their year throughout the simulation', () => {
-    const simulation = createForceSimulation({}).stop()
     let maxDeviation = 0
-    plot(simulation, createGraph(), null, (nodes) => {
+    settle(startLayout(createGraph(), null, false, DEFAULT_VIEW), (nodes) => {
       nodes
         .filter((node) => node.type === 'publication')
         .forEach((node) => {
@@ -85,11 +134,10 @@ describe('timeline layout', () => {
   })
 
   it('keeps the layout stable when an unchanged graph is replotted', () => {
-    const simulation = createForceSimulation({}).stop()
     const graph = createGraph()
-    const nodes = plot(simulation, graph, null)
+    const nodes = plot(graph, null)
     const yBefore = new Map(nodes.map((node) => [node.id, node.y]))
-    const replotted = plot(simulation, graph, nodes)
+    const replotted = plot(graph, nodes)
 
     const meanShift = d3.mean(replotted, (node) => Math.abs(node.y - yBefore.get(node.id)))
     expect(meanShift).toBeLessThan(30)
@@ -105,6 +153,74 @@ describe('timeline layout', () => {
     )
     expect(swapped).toHaveLength(0)
   })
+})
+
+describe('calculateYearX', () => {
+  it.each([400, 1900])(
+    'fits the years from the first year stripe to the keywords into a view %i wide',
+    (width) => {
+      const left = calculateYearX(2005, 2007, width)
+      const right = calculateYearX(CURRENT_YEAR + 2, 2007, width)
+      expect(left).toBeGreaterThanOrEqual(-width / 2)
+      expect(right).toBeLessThanOrEqual(width / 2)
+      // all but the margins for the first year label and the keywords
+      expect(right - left).toBeGreaterThan(width - 100)
+    }
+  )
+})
+
+describe('layout in views of different aspect ratios', () => {
+  const views = [
+    { name: 'flat', width: 1050, height: 250 },
+    { name: 'desktop', width: 1900, height: 450 },
+    { name: 'expanded', width: 1900, height: 950 },
+    { name: 'wide screen', width: 1100, height: 1300 },
+    { name: 'mobile', width: 400, height: 700 }
+  ]
+  const cases = views.flatMap((view) => [
+    { ...view, mode: 'timeline', isNetworkClusters: false },
+    { ...view, mode: 'clusters', isNetworkClusters: true }
+  ])
+  const spread = (values) => d3.max(values) - d3.min(values)
+  const expectInside = (nodes, { width, height }) => {
+    expect(d3.max(nodes, (node) => Math.abs(node.x))).toBeLessThanOrEqual(width / 2 - NODE_MARGIN)
+    expect(d3.max(nodes, (node) => Math.abs(node.y))).toBeLessThanOrEqual(
+      height / 2 - BORDER_MARGIN
+    )
+  }
+
+  it.each(cases)(
+    'uses much of a $name view ($width×$height) in $mode mode, keeping the borders free',
+    ({ width, height, isNetworkClusters }) => {
+      const nodes = plot(createGraph(), null, isNetworkClusters, { width, height })
+      expectInside(nodes, { width, height })
+      expect(spread(nodes.map((node) => node.y))).toBeGreaterThan(
+        0.5 * (height - 2 * BORDER_MARGIN)
+      )
+      if (isNetworkClusters) {
+        expect(spread(nodes.map((node) => node.x))).toBeGreaterThan(0.5 * (width - 2 * NODE_MARGIN))
+      }
+    }
+  )
+
+  it.each(cases)(
+    'keeps the nodes of a large graph inside a $name view ($width×$height) in $mode mode',
+    ({ width, height, isNetworkClusters }) => {
+      const nodes = plot(createGraph(120), null, isNetworkClusters, { width, height })
+      expectInside(nodes, { width, height })
+    }
+  )
+
+  it.each(cases.flatMap((view) => [1, 2, 3].map((seed) => ({ ...view, seed }))))(
+    'uses much of a $name view ($width×$height) for a session graph ($seed) in $mode mode, keeping the borders free',
+    ({ width, height, isNetworkClusters, seed }) => {
+      const nodes = plot(createSessionGraph(seed), null, isNetworkClusters, { width, height })
+      expectInside(nodes, { width, height })
+      expect(spread(nodes.map((node) => node.y))).toBeGreaterThan(
+        0.5 * (height - 2 * BORDER_MARGIN)
+      )
+    }
+  )
 })
 
 describe('assignNodePositions', () => {

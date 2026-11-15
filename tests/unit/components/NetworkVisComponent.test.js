@@ -11,6 +11,7 @@ import {
 } from '../../helpers/testUtils.js'
 
 import NetworkVisComponent from '@/components/NetworkVisComponent.vue'
+import { CURRENT_YEAR } from '@/constants/config.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
 
@@ -278,10 +279,9 @@ describe('NetworkVisComponent', () => {
       expect(wrapper.find('#network-svg').exists()).toBe(true)
     })
 
-    it('sets different SVG dimensions for mobile', () => {
-      // Mock mobile interface
+    it.each([true, false])('lays out the network in the whole panel (mobile: %s)', (isMobile) => {
       vi.mocked(useInterfaceStore).mockReturnValue({
-        isMobile: true,
+        isMobile,
         isNetworkExpanded: false,
         isNetworkClusters: false,
         isLoading: false
@@ -293,8 +293,7 @@ describe('NetworkVisComponent', () => {
         }
       })
 
-      // Should use container height directly for mobile
-      expect(wrapper.vm.svgHeight).toBe(400)
+      expect(wrapper.vm.viewport).toEqual({ width: 800, height: 400 })
     })
 
     it('initializes onlyShowFiltered based on filter state', () => {
@@ -459,6 +458,16 @@ describe('NetworkVisComponent', () => {
       // Test with restart=false (should call start during dragging)
       wrapper.vm.plot(false)
       expect(startSpy).toHaveBeenCalled()
+    })
+
+    it('fits the year axis to the shown publications, not to all of the session', () => {
+      mockSessionStore.yearMin = 1960
+      mockSessionStore.yearMax = 2021
+      wrapper.vm.plot()
+
+      // The earliest shown publication is from 2019, so the axis starts at 2015
+      expect(wrapper.vm.yearX(2015)).toBeLessThan(-wrapper.vm.viewport.width / 2 + 50)
+      expect(wrapper.vm.yearX(1960)).toBeLessThan(-wrapper.vm.viewport.width / 2)
     })
 
     it('hands plain (non-reactive) graph data to the simulation', () => {
@@ -1074,36 +1083,11 @@ describe('NetworkVisComponent', () => {
         type: 'keyword'
       }
 
-      const nodeX1 = getNodeXPosition(publicationNode, false, wrapper.vm.yearX)
-      const nodeX2 = getNodeXPosition(keywordNode, false, wrapper.vm.yearX)
+      const nodeX1 = getNodeXPosition(publicationNode, wrapper.vm.yearX)
+      const nodeX2 = getNodeXPosition(keywordNode, wrapper.vm.yearX)
 
       expect(typeof nodeX1).toBe('number')
       expect(typeof nodeX2).toBe('number')
-    })
-
-    it('calculates node X position correctly in clusters mode', async () => {
-      // Import the composable function directly
-      const { getNodeXPosition } = await import('@/utils/network/forces.js')
-
-      // Mock clusters mode
-      vi.mocked(useInterfaceStore).mockReturnValue({
-        isMobile: false,
-        isNetworkExpanded: false,
-        isNetworkClusters: true,
-        isLoading: false
-      })
-
-      const clustersWrapper = mount(NetworkVisComponent, {
-        global: {
-          stubs: commonComponentStubs
-        }
-      })
-
-      const nodeWithPosition = { type: 'publication', x: 100, y: 50 }
-      const nodeX = getNodeXPosition(nodeWithPosition, true, clustersWrapper.vm.yearX)
-
-      // In clusters mode, should return the node's x position
-      expect(nodeX).toBe(100)
     })
 
     it('handles publication activation correctly', () => {
@@ -1168,8 +1152,9 @@ describe('NetworkVisComponent', () => {
       expect(updateNodeLabels).toHaveBeenLastCalledWith(true, false)
     })
 
-    it('measures the network on resize only, not whenever labels are updated', () => {
+    it('fits the layout to the panel when resized, without measuring on label updates', () => {
       let resize
+      vi.useFakeTimers()
       vi.stubGlobal(
         'ResizeObserver',
         class {
@@ -1181,24 +1166,42 @@ describe('NetworkVisComponent', () => {
         }
       )
       const getElementById = document.getElementById
+      const reads = vi.fn()
+      let size = [800, 400]
+      const container = {
+        get clientWidth() {
+          reads()
+          return size[0]
+        },
+        get clientHeight() {
+          reads()
+          return size[1]
+        }
+      }
+      document.getElementById = (id) =>
+        id === 'network-svg-container' ? container : getElementById(id)
       try {
         wrapper = mount(NetworkVisComponent, { global: { stubs: commonComponentStubs } })
-        const element = wrapper.find('#network-svg').element
-        document.getElementById = (id) => (id === 'network-svg' ? element : getElementById(id))
-        const reads = vi.fn()
-        Object.defineProperty(element, 'clientWidth', { get: () => reads() ?? 800 })
-        Object.defineProperty(element, 'clientHeight', { get: () => reads() ?? 160 })
+        wrapper.vm.graph.nodes = [{ id: 'a', x: 0, y: 0 }]
+        const plot = vi.spyOn(wrapper.vm, 'plot').mockImplementation(() => {})
 
+        size = [400, 700]
         resize()
+        expect(wrapper.vm.viewport).toEqual({ width: 400, height: 700 })
+        expect(wrapper.vm.yearX(CURRENT_YEAR + 2)).toBeLessThanOrEqual(200)
+        expect(plot).not.toHaveBeenCalled()
+        vi.runAllTimers()
+        expect(plot).toHaveBeenCalledWith(true)
+
         reads.mockClear()
         wrapper.vm.isLabelEngineLoaded = true
-        wrapper.vm.graph.nodes = [{ id: 'a', x: 0, y: 0 }]
         wrapper.vm.updateNodeLabels(false)
         wrapper.vm.updateNodeLabels(false)
         expect(reads).not.toHaveBeenCalled()
       } finally {
         document.getElementById = getElementById
         vi.unstubAllGlobals()
+        vi.useRealTimers()
       }
     })
 
