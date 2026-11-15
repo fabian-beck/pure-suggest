@@ -127,7 +127,7 @@ describe('nodeLabels', () => {
 
     expect(problem.items.map((item) => item.id)).toEqual(['high', 'active'])
     expect(problem.obstacles.vector.at(-1)).toEqual({
-      class: 'nodes',
+      class: 'points',
       shapes: [
         { shape: 'rect', w: 23, h: 23, x: 0, y: 0 },
         { shape: 'rect', w: 23, h: 23, x: 150, y: 0 }
@@ -189,6 +189,45 @@ describe('nodeLabels', () => {
     nodes[0].x = 100
     updateNodeLabelPositions(labels, d3.zoomIdentity.translate(400, 200))
     expect(labels.nodes()[0].getAttribute('transform')).toBe('translate(500, 200)')
+  })
+
+  it('places labels clearly nearer to their nodes than to other nodes', async () => {
+    await loadLabelEngine()
+    let seed = 1
+    const random = () => {
+      seed = (seed * 16807) % 2147483647
+      return seed / 2147483647
+    }
+    const ambiguous = []
+    for (let graph = 0; graph < 10; graph++) {
+      const nodes = Array.from({ length: 15 }, (_, i) =>
+        publicationNode(`${graph}-${i}`, (random() - 0.5) * 700, (random() - 0.5) * 300, {
+          score: random() * 10
+        })
+      )
+      const problem = createProblem(nodes)
+      const halfSizes = problem.items.map((item) => item.anchor.mark.w / 2)
+      limitNodeLabels(problem, 5)
+      placeNodeLabels(problem).placements.forEach((placement) => {
+        // A label away from its node is connected to it with a leader
+        if (!placement.placed || placement.leader) return
+        // Distances of the label box to the marks of the nodes (on the canvas, see createProblem)
+        const { x, y, w, h } = placement.box
+        const distances = nodes.map((node, i) => {
+          const nodeX = node.x + 400
+          const nodeY = node.y + 200
+          return Math.hypot(
+            Math.max(x - nodeX - halfSizes[i], 0, nodeX - halfSizes[i] - x - w),
+            Math.max(y - nodeY - halfSizes[i], 0, nodeY - halfSizes[i] - y - h)
+          )
+        })
+        const own = nodes.findIndex((node) => node.id === placement.id)
+        if (distances.some((distance, i) => i !== own && distance < distances[own] + 3)) {
+          ambiguous.push(placement.id)
+        }
+      })
+    }
+    expect(ambiguous).toEqual([])
   })
 
   it('moves, shows, and hides labels smoothly when they are placed anew', async () => {

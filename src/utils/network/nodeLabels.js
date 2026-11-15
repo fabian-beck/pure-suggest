@@ -20,6 +20,8 @@ const KEYWORD_HEIGHT = 16
 const KEYWORD_CLEARANCE = 5
 const CITATION_ARC_SAMPLES = 6
 const LABEL_TRANSITION_DURATION = 300 // ms
+const LABEL_MARGIN = 7 // Space of labels from the marks of other nodes
+const LABEL_SPACING = '0.4em' // Space between labels (the default, not twice the margin)
 
 let engine = null
 let measure
@@ -180,8 +182,12 @@ export function createNodeLabelProblem(nodes, links, scale) {
 
   return {
     preset: 'graph',
-    placement: { aggressiveness: 'low', internal: 'never' },
-    avoid: { label: { nodes: 'hard' } },
+    // A label is nearer to its own node than to any other node, labeled or not (points, see
+    // limitNodeLabels), by a margin that makes clear which node it belongs to; otherwise,
+    // it is drawn away from the nodes with a leader
+    placement: { aggressiveness: 'low', internal: 'never', own_nearest: true },
+    defaults: { margin: LABEL_MARGIN, spacing: LABEL_SPACING },
+    avoid: { label: { points: 'hard' } },
     degrade: ['evict_lower', 'omit'],
     items,
     obstacles: {
@@ -203,7 +209,7 @@ export function limitNodeLabels(problem, count) {
   const ranked = [...problem.items].sort((a, b) => b.tier - a.tier || b.priority - a.priority)
   const labeled = new Set(ranked.slice(0, count))
   problem.obstacles.vector.push({
-    class: 'nodes',
+    class: 'points',
     shapes: problem.items
       .filter((item) => !labeled.has(item))
       .map(({ anchor }) => ({ ...anchor.mark, x: anchor.x, y: anchor.y }))
