@@ -23,12 +23,20 @@ function publicationNode(doi, x, y, publication = {}) {
     x,
     y,
     isFilteredOut: false,
+    sizeFactor: 1,
     publication: { doi, authorShort: 'Smith et al.', year: 2010, score: 1, ...publication }
   }
 }
 
 function authorNode(name, x, y, score = 1) {
-  return { id: name, type: 'author', x, y, author: { name, score, publicationDois: [] } }
+  return {
+    id: name,
+    type: 'author',
+    x,
+    y,
+    sizeFactor: 1,
+    author: { name, score, publicationDois: [] }
+  }
 }
 
 function createProblem(nodes, links = [], scale = 1) {

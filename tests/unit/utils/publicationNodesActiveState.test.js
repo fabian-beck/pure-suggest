@@ -1,7 +1,10 @@
 import * as d3 from 'd3'
 import { describe, expect, it, vi } from 'vitest'
 
+import { createAuthorNodes } from '@/utils/network/authorNodes.js'
 import {
+  createPublicationNodes,
+  getScoreSizeFactor,
   initializePublicationNodes,
   updatePublicationNodes,
   updateActiveState
@@ -33,7 +36,8 @@ function buildNodeSelection(publications) {
     type: 'publication',
     isQueuingForSelected: false,
     isQueuingForExcluded: false,
-    isFilteredOut: false
+    isFilteredOut: false,
+    sizeFactor: 1
   }))
   const selection = d3
     .select('svg g.nodes')
@@ -91,5 +95,24 @@ describe('updateActiveState', () => {
     updateActiveState(selection, suggested)
 
     expect(document.querySelector('text.score').classList.contains('unread')).toBe(false)
+  })
+})
+
+describe('score-based node sizes', () => {
+  it('scales nodes slightly by score within the range of shown scores', () => {
+    expect(getScoreSizeFactor(20, 20, 60)).toBeCloseTo(0.8)
+    expect(getScoreSizeFactor(40, 20, 60)).toBeCloseTo(1.025)
+    expect(getScoreSizeFactor(60, 20, 60)).toBeCloseTo(1.25)
+    expect(getScoreSizeFactor(5, 5, 5)).toBeCloseTo(1.025)
+  })
+
+  it('sizes publication and author nodes by their scores', () => {
+    const publications = [createPublication('low', { score: 1 }), createPublication('high', { score: 50 })]
+    const [low, high] = createPublicationNodes(publications, {})
+    expect(low.sizeFactor).toBeLessThan(high.sizeFactor)
+
+    const author = (id, score) => ({ id, score, publicationDois: ['low'] })
+    const [weak, strong] = createAuthorNodes([author('weak', 2), author('strong', 20)], publications)
+    expect(weak.sizeFactor).toBeLessThan(strong.sizeFactor)
   })
 })

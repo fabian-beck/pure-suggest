@@ -8,13 +8,13 @@
  */
 
 import { splitAuthorName } from '@/lib/Util.js'
+import { getAuthorRadius } from '@/utils/network/authorNodes.js'
 import { getRectSize, getBoostIndicatorRadius } from '@/utils/network/publicationNodes.js'
 
 const FONT_SIZE = 12
 const AUTHOR_FONT_SIZE = 10
 const PUBLICATION_STROKE_WIDTH = 3
 const BOOST_INDICATOR_STROKE_WIDTH = 1
-const AUTHOR_RADIUS = 12
 const KEYWORD_CHAR_WIDTH = 8
 const KEYWORD_HEIGHT = 16
 const KEYWORD_CLEARANCE = 5
@@ -134,7 +134,7 @@ export function createNodeLabelProblem(nodes, links, scale) {
     const score = (node.author ?? node.publication).score
     let mark
     if (node.type === 'author') {
-      mark = { shape: 'circle', r: AUTHOR_RADIUS * scale }
+      mark = { shape: 'circle', r: getAuthorRadius(node) * scale }
     } else {
       const half = ((getRectSize(node) + PUBLICATION_STROKE_WIDTH) / 2) * scale
       const boostRadius = getBoostIndicatorRadius(node)
