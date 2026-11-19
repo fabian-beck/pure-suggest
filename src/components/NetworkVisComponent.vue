@@ -12,6 +12,7 @@ import { useModalManager } from '@/composables/useModalManager.js'
 import { useAuthorStore } from '@/stores/author.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useQueueStore } from '@/stores/queue.js'
+import { NETWORK_SELECTED_BASE_NUMBER } from '@/constants/config.js'
 import { useSessionStore } from '@/stores/session.js'
 
 // Force simulation utilities
@@ -126,6 +127,7 @@ export default {
       showNodes: ['selected', 'suggested', 'keyword', 'author'],
       errorMessage: '',
       errorTimer: null,
+      selectedNumberFactor: 0.3, // Share of the selected beyond the base number that are shown
       suggestedNumberFactor: 0.3,
       authorNumberFactor: 0.5,
       labelNumberFactor: 0.3, // Share of the nodes that may get a label at zoom 1 (0: none)
@@ -154,6 +156,10 @@ export default {
     this.viewport = { width: 0, height: 0 } // Size of the panel, measured when plotting and on resize
     this.shownYears = { min: undefined, max: undefined } // Range of the year axis
     this.isLabelEngineLoaded = false
+    // Selected publications beyond the shown number, and the ones of them revealed as linked
+    // to the active publication
+    this.hiddenSelectedPublications = []
+    this.revealedSelectedPublications = []
   },
   computed: {
     showSelectedNodes () {
@@ -203,9 +209,17 @@ export default {
         if (this.interfaceStore.isLoading) {
           return
         }
-        // Activation only changes highlighting, not the graph structure, so a
-        // full replot with simulation resume is not needed
-        this.updateActiveHighlighting()
+        // Hidden selected publications linked to the active one are revealed (or hidden
+        // again), which changes the graph structure; otherwise, activation only changes
+        // highlighting, and a full replot with simulation resume is not needed
+        if (
+          this.revealedSelectedPublications.length ||
+          this.hiddenSelectedPublications.some((pub) => pub.isActive || pub.isLinkedToActive)
+        ) {
+          this.plot()
+        } else {
+          this.updateActiveHighlighting()
+        }
       }
     },
     selectedQueue: {
@@ -327,6 +341,21 @@ export default {
   },
   methods: {
     /**
+     * Number of selected publications shown, not counting the ones revealed as linked to
+     * the active publication
+     */
+    shownSelectedNumber () {
+      const count = this.sessionStore.selectedPublications?.length || 0
+      if (count <= NETWORK_SELECTED_BASE_NUMBER) {
+        return count
+      }
+      return (
+        NETWORK_SELECTED_BASE_NUMBER +
+        Math.round(this.selectedNumberFactor * (count - NETWORK_SELECTED_BASE_NUMBER))
+      )
+    },
+
+    /**
      * Collect and filter publications based on current settings
      * @returns {Array} Array of filtered publications
      */
@@ -342,7 +371,19 @@ export default {
         ) {
           selectedPubs = selectedPubs.filter((pub) => this.sessionStore.filter.matches(pub))
         }
-        publications = publications.concat(selectedPubs)
+        // Selected publications are sorted by score, the top-ranked ones are shown
+        const shownNumber = this.shownSelectedNumber()
+        this.hiddenSelectedPublications = selectedPubs.slice(shownNumber)
+        this.revealedSelectedPublications = this.hiddenSelectedPublications.filter(
+          (pub) => pub.isActive || pub.isLinkedToActive
+        )
+        publications = publications.concat(
+          selectedPubs.slice(0, shownNumber),
+          this.revealedSelectedPublications
+        )
+      } else {
+        this.hiddenSelectedPublications = []
+        this.revealedSelectedPublications = []
       }
 
       if (this.showSuggestedNodes) {
@@ -372,10 +413,7 @@ export default {
 
       // Filter authors based on factor
       const allAuthors = this.authorStore.selectedPublicationsAuthors || []
-      const filteredAuthors = allAuthors.slice(
-        0,
-        this.authorNumberFactor * this.sessionStore.selectedPublications.length
-      )
+      const filteredAuthors = allAuthors.slice(0, this.authorNumberFactor * this.shownSelectedNumber())
 
       // Get filtered publications
       const publications = this.collectFilteredPublications()
@@ -573,7 +611,7 @@ export default {
         initializeForces(
           this.simulation,
           this.isNetworkClusters,
-          this.sessionStore.selectedPublications.length,
+          this.shownSelectedNumber(),
           this.viewport
         )
 
@@ -1132,6 +1170,7 @@ export default {
       <NetworkControls
         v-model:show-nodes="showNodes"
         v-model:only-show-filtered="onlyShowFiltered"
+        v-model:selected-number-factor="selectedNumberFactor"
         v-model:suggested-number-factor="suggestedNumberFactor"
         v-model:author-number-factor="authorNumberFactor"
         v-model:label-number-factor="labelNumberFactor"

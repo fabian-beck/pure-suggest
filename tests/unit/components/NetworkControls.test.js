@@ -6,14 +6,13 @@ import NetworkControls from '@/components/NetworkControls.vue'
 
 // NetworkControls no longer uses useAppState - visibility is handled by parent container
 
-// Mock session store
-vi.mock('@/stores/session.js', () => ({
-  useSessionStore: () => ({
-    filter: {
-      hasActiveFilters: vi.fn(() => false)
-    }
-  })
+const mockSessionStore = vi.hoisted(() => ({
+  selectedPublications: [],
+  filter: {
+    hasActiveFilters: () => false
+  }
 }))
+vi.mock('@/stores/session.js', () => ({ useSessionStore: () => mockSessionStore }))
 
 // Mock tippy for tooltips
 vi.mock('tippy.js', () => ({ default: vi.fn(() => ({})) }))
@@ -156,6 +155,18 @@ describe('NetworkControls', () => {
 
       expect(wrapper.text()).toContain('Number of labels shown')
       expect(wrapper.findAll('.v-slider').at(-1).attributes('data-range')).toBe('0-1: 0.3')
+    })
+
+    it('offers a slider for the number of selected only above the base number', () => {
+      const mountControls = () =>
+        mount(NetworkControls, { global: { plugins: [pinia], stubs: getComponentStubs() } })
+
+      mockSessionStore.selectedPublications = new Array(10).fill({})
+      expect(mountControls().text()).not.toContain('Number of selected shown')
+
+      mockSessionStore.selectedPublications = new Array(11).fill({})
+      expect(mountControls().text()).toContain('Number of selected shown')
+      mockSessionStore.selectedPublications = []
     })
   })
 })
