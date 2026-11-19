@@ -18,7 +18,9 @@ const AUTHOR_RADIUS = 12
 export function createAuthorNodes(filteredAuthors, publications) {
   const nodes = []
   const displayedDois = new Set(publications.map((pub) => pub.doi))
-  const maxScore = Math.max(0, ...filteredAuthors.map((author) => author.score))
+  const scores = filteredAuthors.map((author) => author.score)
+  const minScore = Math.min(...scores)
+  const maxScore = Math.max(...scores)
 
   filteredAuthors.forEach((author) => {
     // Check if this author has any publications in the displayed set
@@ -27,7 +29,7 @@ export function createAuthorNodes(filteredAuthors, publications) {
       nodes.push({
         id: author.id,
         author,
-        sizeFactor: getScoreSizeFactor(author.score, maxScore),
+        sizeFactor: getScoreSizeFactor(author.score, minScore, maxScore),
         type: 'author'
       })
     }
@@ -85,6 +87,20 @@ export function getAuthorRadius(d) {
 }
 
 /**
+ * Font size of the initials, fitting them into the author node
+ */
+function getInitialsFontSize(d) {
+  const { length } = d.author.initials
+  let size = 0.85
+  if (length > 3) {
+    size = 0.6
+  } else if (length > 2) {
+    size = 0.7
+  }
+  return `${size * d.sizeFactor}rem`
+}
+
+/**
  * Update author node visual properties
  */
 export function updateAuthorNodes(nodeSelection, activePublication, existingTooltips) {
@@ -129,8 +145,7 @@ export function updateAuthorNodes(nodeSelection, activePublication, existingTool
   authorNodes
     .select('text')
     .text((d) => d.author.initials)
-    .classed('long', (d) => d.author.initials.length > 2)
-    .classed('very-long', (d) => d.author.initials.length > 3)
+    .style('font-size', getInitialsFontSize)
 
   return { nodes: authorNodes, tooltips: newTooltips }
 }

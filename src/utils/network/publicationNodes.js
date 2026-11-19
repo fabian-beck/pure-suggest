@@ -15,11 +15,11 @@ const MIN_SIZE_FACTOR = 0.85
 const MAX_SIZE_FACTOR = 1.15
 
 /**
- * Size factor of a node by its score relative to the highest score of the shown nodes of
- * its type, on a logarithmic scale as scores are heavy-tailed
+ * Size factor of a node by its score within the range of scores of the shown nodes of its
+ * type (as shown nodes are the top-ranked ones, their scores are often close to the highest)
  */
-export function getScoreSizeFactor(score, maxScore) {
-  const share = maxScore > 0 ? Math.log1p(score) / Math.log1p(maxScore) : 1
+export function getScoreSizeFactor(score, minScore, maxScore) {
+  const share = maxScore > minScore ? (score - minScore) / (maxScore - minScore) : 0.5
   return MIN_SIZE_FACTOR + (MAX_SIZE_FACTOR - MIN_SIZE_FACTOR) * share
 }
 
@@ -30,7 +30,9 @@ export function createPublicationNodes(publications, doiToIndex, options = {}) {
   const { selectedQueue = [], excludedQueue = [], filter = null, onlyShowFiltered = false } = options
   const nodes = []
   let i = 0
-  const maxScore = Math.max(0, ...publications.map((publication) => publication.score))
+  const scores = publications.map((publication) => publication.score)
+  const minScore = Math.min(...scores)
+  const maxScore = Math.max(...scores)
 
   publications.forEach((publication) => {
     if (publication.year) {
@@ -47,7 +49,7 @@ export function createPublicationNodes(publications, doiToIndex, options = {}) {
         isQueuingForSelected: selectedQueue.includes(publication.doi),
         isQueuingForExcluded: excludedQueue.includes(publication.doi),
         isFilteredOut: !matchesFilter,
-        sizeFactor: getScoreSizeFactor(publication.score, maxScore),
+        sizeFactor: getScoreSizeFactor(publication.score, minScore, maxScore),
         type: 'publication'
       })
       i++
