@@ -82,6 +82,7 @@ import {
 
 const LABEL_OVERSCAN = 100 // px beyond the view, about the width of a label
 const RESIZE_REPLOT_DELAY = 200 // ms after the last change of the panel size
+const REVEAL_ALPHA = 0.3 // Revealed or hidden nodes find their places, the others mostly stay
 
 export default {
   name: 'NetworkVisComponent',
@@ -217,6 +218,7 @@ export default {
           this.hiddenSelectedPublications.some((pub) => pub.isActive || pub.isLinkedToActive)
         ) {
           this.plot()
+          this.restart(REVEAL_ALPHA)
         } else {
           this.updateActiveHighlighting()
         }
