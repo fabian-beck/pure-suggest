@@ -31,13 +31,14 @@ describe('getCitationTimeWeight', () => {
     target: { publication: { year: targetYear } }
   })
 
-  it('weakens citations the more years lie between the publications', () => {
+  it('weakens citations the more years lie between the publications, few years only slightly', () => {
     const sameYear = getCitationTimeWeight(createLink(2020, 2020))
     const fewYears = getCitationTimeWeight(createLink(2017, 2020))
     const manyYears = getCitationTimeWeight(createLink(1990, 2020))
 
     expect(sameYear).toBe(1)
     expect(fewYears).toBeLessThan(sameYear)
+    expect(fewYears).toBeGreaterThan(0.75)
     expect(manyYears).toBeLessThan(fewYears / 2)
     expect(manyYears).toBeGreaterThan(0)
   })

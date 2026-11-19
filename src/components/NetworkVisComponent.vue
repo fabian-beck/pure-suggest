@@ -1431,7 +1431,7 @@ export default {
   }
 
   & path.author {
-    opacity: 0.2;
+    opacity: 0.12;
 
     &.active {
       opacity: 0.5;
