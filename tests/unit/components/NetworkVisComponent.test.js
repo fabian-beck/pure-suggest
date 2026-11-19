@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
-import { describe, it, expect, beforeEach, vi, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi, beforeAll, afterAll } from 'vitest'
 import { isReactive, ref } from 'vue'
 
 import {
@@ -756,6 +756,115 @@ describe('NetworkVisComponent', () => {
 
       expect(highlightSpy).not.toHaveBeenCalled()
       highlightSpy.mockRestore()
+    })
+  })
+
+  describe('Limiting Shown Publications', () => {
+    let wrapper
+    let sessionStore
+    const createPublications = (count, isSelected) =>
+      Array.from({ length: count }, (_, i) => ({
+        doi: `10.1000/${isSelected ? 'selected' : 'suggested'}${i}`,
+        isSelected,
+        isActive: false,
+        isLinkedToActive: false
+      }))
+    const createSelected = (count) => createPublications(count, true)
+
+    beforeEach(() => {
+      wrapper = mount(NetworkVisComponent, {
+        global: {
+          stubs: commonComponentStubs
+        }
+      })
+      wrapper.vm.showNodes = ['selected']
+      sessionStore = wrapper.vm.sessionStore
+    })
+
+    afterEach(() => {
+      sessionStore.selectedPublications = []
+      sessionStore.suggestedPublications = []
+      sessionStore.activePublication = null
+    })
+
+    it('shows all selected publications up to the base number', () => {
+      sessionStore.selectedPublications = createSelected(10)
+      wrapper.vm.selectedNumberFactor = 0
+
+      expect(wrapper.vm.collectFilteredPublications()).toHaveLength(10)
+    })
+
+    it('shows the top-ranked selected publications above the base number', () => {
+      sessionStore.selectedPublications = createSelected(50)
+      wrapper.vm.selectedNumberFactor = 0.25
+
+      const shown = wrapper.vm.collectFilteredPublications()
+
+      expect(shown).toEqual(sessionStore.selectedPublications.slice(0, 20))
+    })
+
+    it('reveals hidden selected publications linked to the active publication', () => {
+      sessionStore.selectedPublications = createSelected(50)
+      sessionStore.selectedPublications[30].isActive = true
+      sessionStore.selectedPublications[40].isLinkedToActive = true
+      wrapper.vm.selectedNumberFactor = 0
+
+      const shownDois = wrapper.vm.collectFilteredPublications().map((pub) => pub.doi)
+
+      expect(shownDois).toHaveLength(12)
+      expect(shownDois).toContain('10.1000/selected30')
+      expect(shownDois).toContain('10.1000/selected40')
+    })
+
+    it('reveals a hidden suggested publication only when it is active', () => {
+      wrapper.vm.showNodes = ['selected', 'suggested']
+      sessionStore.selectedPublications = createSelected(5)
+      sessionStore.suggestedPublications = createPublications(50, false)
+      wrapper.vm.suggestedNumberFactor = 0.1 // 5 of the suggested shown
+      sessionStore.suggestedPublications[30].isLinkedToActive = true
+
+      const activate = (publication) => {
+        if (sessionStore.activePublication) sessionStore.activePublication.isActive = false
+        sessionStore.activePublication = publication
+        publication.isActive = true
+      }
+
+      activate(sessionStore.selectedPublications[0])
+      expect(wrapper.vm.collectFilteredPublications()).toHaveLength(10)
+
+      activate(sessionStore.suggestedPublications[40])
+      const shownDois = wrapper.vm.collectFilteredPublications().map((pub) => pub.doi)
+      expect(shownDois).toHaveLength(11)
+      expect(shownDois).toContain('10.1000/suggested40')
+    })
+
+    it('replots when the active publication reveals or hides selected publications', () => {
+      sessionStore.selectedPublications = createSelected(50)
+      wrapper.vm.selectedNumberFactor = 0
+      wrapper.vm.collectFilteredPublications()
+      const plotSpy = vi.spyOn(wrapper.vm, 'plot').mockImplementation(() => {})
+      const highlightSpy = vi
+        .spyOn(wrapper.vm, 'updateActiveHighlighting')
+        .mockImplementation(() => {})
+      const activate = () => wrapper.vm.$options.watch.activePublication.handler.call(wrapper.vm)
+
+      // Activating a shown publication without hidden links only updates highlighting
+      sessionStore.selectedPublications[0].isActive = true
+      activate()
+      expect(plotSpy).not.toHaveBeenCalled()
+
+      // Activating a publication linked to a hidden one reveals it
+      sessionStore.selectedPublications[40].isLinkedToActive = true
+      activate()
+      expect(plotSpy).toHaveBeenCalledTimes(1)
+      wrapper.vm.collectFilteredPublications()
+
+      // Deactivating hides it again
+      sessionStore.selectedPublications[0].isActive = false
+      sessionStore.selectedPublications[40].isLinkedToActive = false
+      activate()
+      expect(plotSpy).toHaveBeenCalledTimes(2)
+      expect(highlightSpy).toHaveBeenCalledTimes(1)
     })
   })
 

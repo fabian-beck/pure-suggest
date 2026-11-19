@@ -34,5 +34,9 @@ export const SCORING = {
   NEW_PUBLICATION_BOOST: 2
 }
 
+// Up to this number, all selected publications are shown in the network; of the ones
+// beyond, only the top-ranked share set in the network settings
+export const NETWORK_SELECTED_BASE_NUMBER = 10
+
 // Time Configuration
 export const CURRENT_YEAR = new Date().getFullYear()
