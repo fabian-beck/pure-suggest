@@ -3,12 +3,15 @@ import { inject, ref } from 'vue'
 
 import { useAppState } from '@/composables/useAppState.js'
 import { useModalManager } from '@/composables/useModalManager.js'
+import { loadRecentSessions, removeRecentSession } from '@/lib/RecentSessions.js'
 
 const appMeta = inject('appMeta')
 const { openSearchModal } = useModalManager()
-const { importSessionWithConfirmation, importBibtexWithConfirmation, loadExample } = useAppState()
+const { importSessionWithConfirmation, importBibtexWithConfirmation, loadExample, loadSession } =
+  useAppState()
 
 const searchQuery = ref('')
+const recentSessions = ref(loadRecentSessions())
 
 function submitSearch() {
   openSearchModal(searchQuery.value.trim())
@@ -48,6 +51,30 @@ function submitSearch() {
       <v-btn variant="tonal" prepend-icon="mdi-file-document" @click="loadExample()">
         Load example
       </v-btn>
+    </div>
+    <div v-if="recentSessions.length" class="landing-recent">
+      <p class="landing-recent-label">Or continue a recent session:</p>
+      <v-list density="compact" bg-color="transparent">
+        <v-list-item
+          v-for="session in recentSessions"
+          :key="session.id"
+          prepend-icon="mdi-history"
+          :title="session.name || session.title || session.selected[0]"
+          :subtitle="`${session.selected.length} selected · ${new Date(session.timestamp).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}`"
+          @click="loadSession(session)"
+        >
+          <template #append>
+            <v-btn
+              icon="mdi-close"
+              color="grey"
+              variant="text"
+              size="small"
+              v-tippy="'Remove from list'"
+              @click.stop="recentSessions = removeRecentSession(session.id)"
+            />
+          </template>
+        </v-list-item>
+      </v-list>
     </div>
   </div>
 </template>
@@ -104,6 +131,17 @@ function submitSearch() {
   justify-content: center;
   gap: 0.75rem;
   margin-top: 1rem;
+}
+
+.landing-recent {
+  width: min(100%, 34rem);
+  margin-top: 1.5rem;
+  text-align: left;
+}
+
+.landing-recent-label {
+  color: var(--bulma-grey);
+  text-align: center;
 }
 
 @media screen and (max-width: 1023px) {

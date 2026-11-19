@@ -26,7 +26,8 @@ export const useSessionStore = defineStore('session', {
       readPublicationsDois: new Set(),
       filter: new Filter(),
       addQuery: '',
-      sessionName: ''
+      sessionName: '',
+      sessionId: ''
     }
   },
   getters: {
@@ -107,6 +108,14 @@ export const useSessionStore = defineStore('session', {
     isKeywordLinkedToActive: (state) => (keyword) =>
       state.activePublication && state.activePublication.boostKeywords.includes(keyword),
     uniqueBoostKeywords: (state) => parseUniqueBoostKeywords(state.boostKeywordString),
+    sessionData() {
+      return {
+        name: this.sessionName,
+        selected: this.selectedPublicationsDois,
+        excluded: this.excludedPublicationsDois,
+        boost: this.uniqueBoostKeywords.join(', ')
+      }
+    },
     isSelected() {
       return (doi) => this.selectedPublicationsDoiSet.has(doi)
     },
@@ -128,6 +137,7 @@ export const useSessionStore = defineStore('session', {
       this.filter = new Filter()
       this.addQuery = ''
       this.sessionName = ''
+      this.sessionId = ''
       // Note: newly added flags are automatically cleared when selectedPublications is reset
     },
 
@@ -309,14 +319,8 @@ export const useSessionStore = defineStore('session', {
     },
 
     exportSession () {
-      const data = {
-        name: this.sessionName,
-        selected: this.selectedPublicationsDois,
-        excluded: this.excludedPublicationsDois,
-        boost: this.uniqueBoostKeywords.join(', ')
-      }
       const filename = this.generateFilename('json')
-      saveAsFile(filename, 'application/json', JSON.stringify(data))
+      saveAsFile(filename, 'application/json', JSON.stringify(this.sessionData))
     },
 
     exportAllBibtex () {
@@ -335,16 +339,8 @@ export const useSessionStore = defineStore('session', {
     },
 
     generateSessionUrl () {
-      // Create session data (same as exportSession)
-      const data = {
-        name: this.sessionName,
-        selected: this.selectedPublicationsDois,
-        excluded: this.excludedPublicationsDois,
-        boost: this.uniqueBoostKeywords.join(', ')
-      }
-
       // Compress and encode the data
-      const jsonString = JSON.stringify(data)
+      const jsonString = JSON.stringify(this.sessionData)
       const compressed = LZString.compressToEncodedURIComponent(jsonString)
 
       // Generate URL with session parameter

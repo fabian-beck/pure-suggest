@@ -127,6 +127,14 @@ describe('useAppState - Session Loading', () => {
       expect(sessionStore.sessionName).toBe('')
     })
 
+    it('should continue a recent session under its id but start a new id otherwise', () => {
+      appState.loadSession({ id: 'recent-1', selected: ['10.1234/pub1'] })
+      expect(sessionStore.sessionId).toBe('recent-1')
+
+      appState.loadSession({ selected: ['10.1234/pub1'] })
+      expect(sessionStore.sessionId).toBe('')
+    })
+
     it('should clear previous session before importing new session', () => {
       // Arrange: Set up an existing session with selected publications
       sessionStore.selectedPublicationsDois = ['10.1234/existing1', '10.1234/existing2']
