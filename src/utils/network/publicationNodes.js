@@ -10,6 +10,18 @@ import tippy from 'tippy.js'
 
 const RECT_SIZE = 20
 const ENLARGE_FACTOR = 1.5
+// Range of node size factors from the lowest to the highest score
+const MIN_SIZE_FACTOR = 0.85
+const MAX_SIZE_FACTOR = 1.15
+
+/**
+ * Size factor of a node by its score relative to the highest score of the shown nodes of
+ * its type, on a logarithmic scale as scores are heavy-tailed
+ */
+export function getScoreSizeFactor(score, maxScore) {
+  const share = maxScore > 0 ? Math.log1p(score) / Math.log1p(maxScore) : 1
+  return MIN_SIZE_FACTOR + (MAX_SIZE_FACTOR - MIN_SIZE_FACTOR) * share
+}
 
 /**
  * Create publication node data from publications
@@ -18,6 +30,7 @@ export function createPublicationNodes(publications, doiToIndex, options = {}) {
   const { selectedQueue = [], excludedQueue = [], filter = null, onlyShowFiltered = false } = options
   const nodes = []
   let i = 0
+  const maxScore = Math.max(0, ...publications.map((publication) => publication.score))
 
   publications.forEach((publication) => {
     if (publication.year) {
@@ -34,6 +47,7 @@ export function createPublicationNodes(publications, doiToIndex, options = {}) {
         isQueuingForSelected: selectedQueue.includes(publication.doi),
         isQueuingForExcluded: excludedQueue.includes(publication.doi),
         isFilteredOut: !matchesFilter,
+        sizeFactor: getScoreSizeFactor(publication.score, maxScore),
         type: 'publication'
       })
       i++
@@ -192,10 +206,10 @@ export function updateActiveState(nodeSelection, activePublication) {
 }
 
 /**
- * Calculate rectangle size based on publication state
+ * Calculate rectangle size based on publication score and state
  */
 export function getRectSize(d) {
-  return RECT_SIZE * (d.publication.isActive ? ENLARGE_FACTOR : 1)
+  return RECT_SIZE * d.sizeFactor * (d.publication.isActive ? ENLARGE_FACTOR : 1)
 }
 
 /**
@@ -212,6 +226,3 @@ export function getBoostIndicatorRadius(d) {
   }
   return (getRectSize(d) * internalFactor * 0.8) / 6
 }
-
-// Color is handled by d.publication.scoreColor from the original logic
-

@@ -8,12 +8,17 @@
 
 import tippy from 'tippy.js'
 
+import { getScoreSizeFactor } from '@/utils/network/publicationNodes.js'
+
+const AUTHOR_RADIUS = 12
+
 /**
  * Create author node data from filtered authors
  */
 export function createAuthorNodes(filteredAuthors, publications) {
   const nodes = []
   const displayedDois = new Set(publications.map((pub) => pub.doi))
+  const maxScore = Math.max(0, ...filteredAuthors.map((author) => author.score))
 
   filteredAuthors.forEach((author) => {
     // Check if this author has any publications in the displayed set
@@ -22,6 +27,7 @@ export function createAuthorNodes(filteredAuthors, publications) {
       nodes.push({
         id: author.id,
         author,
+        sizeFactor: getScoreSizeFactor(author.score, maxScore),
         type: 'author'
       })
     }
@@ -63,12 +69,19 @@ export function initializeAuthorNodes(nodeSelection) {
   const authorNodes = nodeSelection.filter((d) => d.type === 'author')
 
   // Add circle element
-  authorNodes.append('circle').attr('pointer-events', 'all').attr('r', 12).attr('fill', 'black')
+  authorNodes.append('circle').attr('pointer-events', 'all').attr('fill', 'black')
 
   // Add text element for initials
   authorNodes.append('text').attr('pointer-events', 'none')
 
   return authorNodes
+}
+
+/**
+ * Radius of an author node based on the author score
+ */
+export function getAuthorRadius(d) {
+  return AUTHOR_RADIUS * d.sizeFactor
 }
 
 /**
@@ -109,6 +122,8 @@ export function updateAuthorNodes(nodeSelection, activePublication, existingTool
     maxWidth: 'min(400px,70vw)',
     allowHTML: true
   })
+
+  authorNodes.select('circle').attr('r', getAuthorRadius)
 
   // Update text content and styling
   authorNodes
