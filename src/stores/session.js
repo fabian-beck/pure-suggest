@@ -284,12 +284,11 @@ export const useSessionStore = defineStore('session', {
         this.readPublicationsDois.add(doi)
         this.activePublication = suggestedPublication
 
-        const linkedDois = new Set([
-          ...suggestedPublication.citationDois,
-          ...suggestedPublication.referenceDois
-        ])
+        // Linked by the selected publications' own citation data, as are network links and
+        // scores: the suggestion's fetched data may list further, unreciprocated citations
         selectedPublications.forEach((publication) => {
-          publication.isLinkedToActive = linkedDois.has(publication.doi)
+          publication.isLinkedToActive =
+            publication.citationDois.has(doi) || publication.referenceDois.has(doi)
         })
       }
       console.log(`Highlighted as active publication with DOI ${doi}.`)

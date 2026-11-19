@@ -297,4 +297,20 @@ describe('Session Store - Suggested Publications Filtering', () => {
       )
     })
   })
+
+  describe('setActivePublication', () => {
+    it('should link only selected publications that are connected to the active suggestion by their own citation data', () => {
+      // The suggestion's own data lists both as citing it, but only one of them lists it as reference
+      const suggested = { doi: '10.1234/suggested', citationDois: new Set(['10.1234/a', '10.1234/b']), referenceDois: new Set() }
+      const selectedA = { doi: '10.1234/a', citationDois: new Set(), referenceDois: new Set([suggested.doi]) }
+      const selectedB = { doi: '10.1234/b', citationDois: new Set(), referenceDois: new Set() }
+      sessionStore.selectedPublications = [selectedA, selectedB]
+      sessionStore.suggestion = { publications: [suggested], totalSuggestions: 1 }
+
+      sessionStore.setActivePublication(suggested.doi)
+
+      expect(selectedA.isLinkedToActive).toBe(true)
+      expect(selectedB.isLinkedToActive).toBe(false)
+    })
+  })
 })
