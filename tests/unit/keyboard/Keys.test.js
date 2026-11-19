@@ -37,6 +37,13 @@ const createMockElement = (id, nodeName = 'DIV') => ({
   parentNode: null
 })
 
+const mockActiveElement = (properties = {}) => {
+  Object.defineProperty(document, 'activeElement', {
+    value: { nodeName: 'BODY', className: '', blur: vi.fn(), closest: () => null, ...properties },
+    configurable: true
+  })
+}
+
 describe('Keys Module - Keyboard Event Handling', () => {
   let pinia
   let sessionStore
@@ -90,11 +97,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
     interfaceStore.isFilterMenuOpen = false
 
     // Mock DOM
-    Object.defineProperty(document, 'activeElement', {
-      value: { nodeName: 'BODY', className: '' },
-      configurable: true,
-      writable: true
-    })
+    mockActiveElement()
     document.getElementById = vi.fn((id) => createMockElement(id))
 
     // Clear all mocks
@@ -141,10 +144,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
     })
 
     it('should not process keys when input is focused', () => {
-      Object.defineProperty(document, 'activeElement', {
-        value: { nodeName: 'INPUT', type: 'text', className: '' },
-        configurable: true
-      })
+      mockActiveElement({ nodeName: 'INPUT', type: 'text' })
       const event = createKeyEvent('f')
 
       onKey(event)
@@ -191,7 +191,6 @@ describe('Keys Module - Keyboard Event Handling', () => {
       const event = { key: 'f', preventDefault: vi.fn() }
       onKey(event)
 
-      expect(event.preventDefault).toHaveBeenCalled()
       expect(interfaceStore.openFilterMenu).not.toHaveBeenCalled()
     })
   })
@@ -247,13 +246,40 @@ describe('Keys Module - Keyboard Event Handling', () => {
     })
   })
 
+  describe('Dialogs and Menus', () => {
+    it.each(['Tab', 'Enter', ' ', 'ArrowDown', 'PageDown'])(
+      'should leave native %s handling to an open dialog',
+      (key) => {
+        sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
+        sessionStore.activePublication = { doi: '10.1234/active' }
+        modalStore.confirmDialog.isShown = true
+
+        const event = { key, preventDefault: vi.fn() }
+        onKey(event)
+
+        expect(event.preventDefault).not.toHaveBeenCalled()
+        expect(interfaceStore.activatePublicationComponent).not.toHaveBeenCalled()
+      }
+    )
+
+    it.each(['ArrowDown', 'c'])('should ignore %s while focus is inside an open menu', (key) => {
+      sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
+      sessionStore.activePublication = { doi: '10.1234/active' }
+      mockActiveElement({ closest: (selector) => (selector === '.v-overlay' ? {} : null) })
+
+      const event = { key, preventDefault: vi.fn() }
+      onKey(event)
+
+      expect(event.preventDefault).not.toHaveBeenCalled()
+      expect(mockClearSession).not.toHaveBeenCalled()
+      expect(interfaceStore.activatePublicationComponent).not.toHaveBeenCalled()
+    })
+  })
+
   describe('Input Field Handling', () => {
     it('should blur input when Escape is pressed', () => {
-      const mockInput = { nodeName: 'INPUT', type: 'text', className: '', blur: vi.fn() }
-      Object.defineProperty(document, 'activeElement', {
-        value: mockInput,
-        configurable: true
-      })
+      mockActiveElement({ nodeName: 'INPUT', type: 'text' })
+      const mockInput = document.activeElement
 
       const event = { key: 'Escape', preventDefault: vi.fn() }
       onKey(event)
@@ -279,10 +305,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
       interfaceStore.isLoading = true
       interfaceStore.isLoadingCancelable = false
       interfaceStore.cancelLoading = vi.fn()
-      Object.defineProperty(document, 'activeElement', {
-        value: { nodeName: 'BODY', className: '', blur: vi.fn() },
-        configurable: true
-      })
+      mockActiveElement()
 
       const event = { key: 'Escape', preventDefault: vi.fn() }
       onKey(event)
@@ -293,10 +316,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
     it('should not cancel loading when Escape is pressed while not loading', () => {
       interfaceStore.isLoading = false
       interfaceStore.cancelLoading = vi.fn()
-      Object.defineProperty(document, 'activeElement', {
-        value: { nodeName: 'BODY', className: '', blur: vi.fn() },
-        configurable: true
-      })
+      mockActiveElement()
 
       const event = { key: 'Escape', preventDefault: vi.fn() }
       onKey(event)

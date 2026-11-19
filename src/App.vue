@@ -14,7 +14,8 @@ export default {
     return {
       hasLoadedFromUrl: false, // Track if we loaded session from URL
       originalUrlWithSession: null, // Store the original URL with session parameter
-      isInitialLoadComplete: false // Track if initial load is complete
+      isInitialLoadComplete: false, // Track if initial load is complete
+      focusBeforeOverlay: null
     }
   },
   setup() {
@@ -81,6 +82,18 @@ export default {
     window.addEventListener('keydown', onKey)
   },
   watch: {
+    // Return keyboard focus to where it was before a dialog opened
+    'modalStore.isAnyOverlayShown'(isShown) {
+      if (isShown) {
+        this.focusBeforeOverlay = document.activeElement
+        return
+      }
+      const element = this.focusBeforeOverlay
+      this.focusBeforeOverlay = null
+      if (element?.isConnected) {
+        setTimeout(() => element.focus({ preventScroll: true }))
+      }
+    },
     // Watch for any changes to session state and clean URL if we loaded from URL
     // Use shallow watchers since we only care about array length changes, not deep object mutations
     'sessionStore.selectedPublicationsCount': {
@@ -141,7 +154,7 @@ export default {
     }, 1000)
   },
   beforeUnmount() {
-    document.removeEventListener('keydown', onKey)
+    window.removeEventListener('keydown', onKey)
   }
 }
 </script>

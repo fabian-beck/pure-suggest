@@ -70,7 +70,7 @@ export default {
       <div class="sticky">
         <slot name="sticky"></slot>
       </div>
-      <v-card-text>
+      <v-card-text tabindex="0">
         <slot></slot>
       </v-card-text>
       <slot name="footer"></slot>

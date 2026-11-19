@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 
 import App from '@/App.vue'
+import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
 
 // Mock all the child components to isolate the App component
@@ -169,5 +170,29 @@ describe('App - Page Title Management', () => {
     await nextTick()
     
     expect(document.title).toBe(`${sessionName}: ${defaultTitle}`)
+  })
+})
+describe('App - Dialog focus', () => {
+  it('should return focus to the previously focused element when a dialog closes', async () => {
+    const pinia = createPinia()
+    setActivePinia(pinia)
+    const wrapper = mount(App, {
+      global: { plugins: [pinia], provide: { appMeta: { name: 'PUREsuggest', nameHtml: '', subtitle: '', version: '' } } }
+    })
+    const modalStore = useModalStore()
+    const button = document.createElement('button')
+    document.body.appendChild(button)
+    button.focus()
+
+    modalStore.infoDialog.isShown = true
+    await nextTick()
+    button.blur()
+    modalStore.infoDialog.isShown = false
+    await nextTick()
+    await new Promise((resolve) => setTimeout(resolve))
+
+    expect(document.activeElement).toBe(button)
+    button.remove()
+    wrapper.unmount()
   })
 })

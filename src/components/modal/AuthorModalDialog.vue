@@ -360,7 +360,10 @@ export default {
             :key="author.id"
             class="media p-3 m-0 author-item"
             :class="{ 'clickable-author-item': !authorStore.activeAuthorId }"
+            :tabindex="authorStore.activeAuthorId ? undefined : 0"
             @click="handleAuthorItemClick(author.id)"
+            @keydown.enter.self.prevent="handleAuthorItemClick(author.id)"
+            @keydown.space.self.prevent="handleAuthorItemClick(author.id)"
             :id="toTagId(author.id)"
           >
             <AuthorGlyph :author="author" class="media-left"></AuthorGlyph>
@@ -548,7 +551,8 @@ export default {
       cursor: pointer;
       transition: background-color 0.2s ease;
 
-      &:hover {
+      &:hover,
+      &:focus-visible {
         background-color: rgba(0, 0, 0, 0.05);
       }
     }

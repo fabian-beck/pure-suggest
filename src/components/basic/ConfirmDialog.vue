@@ -18,7 +18,6 @@ export default {
 <template>
   <v-dialog
     width="500"
-    persistent
     v-model="modalStore.confirmDialog.isShown"
     :z-index="9000"
     class="confirm-dialog-overlay"
