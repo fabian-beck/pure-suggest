@@ -47,7 +47,8 @@ import {
   updateNetworkLinks,
   calculateLinkPath,
   calculateLinkClasses,
-  createCitationLinks
+  createCitationLinks,
+  getCitationTimeWeight
 } from '@/utils/network/links.js'
 import {
   loadLabelEngine,
@@ -599,8 +600,10 @@ export default {
 
         // Update graph data in simulation
         this.updateGraphData(this.graph.nodes, this.graph.links)
-        // Link classes need the link ends resolved to nodes by the simulation
-        this.link.attr('class', (d) => calculateLinkClasses(d, this.sessionStore.activePublication))
+        // Link classes and weights need the link ends resolved to nodes by the simulation
+        this.link
+          .attr('class', (d) => calculateLinkClasses(d, this.sessionStore.activePublication))
+          .style('--time-weight', (d) => (d.type === 'citation' ? getCitationTimeWeight(d) : null))
 
         // Reset position tracking and optimization metrics when plot is called
         this.resetOptimizationMetrics()
@@ -1392,16 +1395,17 @@ export default {
     }
   }
 
+  // Citations spanning many years fade out, but stay recognizable, unless highlighted
   & path.citation {
     fill: none;
     stroke-width: 3;
     stroke: var(--bulma-primary);
-    opacity: 0.15;
+    opacity: calc(0.15 * (0.25 + 0.75 * var(--time-weight, 1)));
 
     &.external {
       stroke-width: 2;
       stroke: var(--bulma-info);
-      opacity: 0.1;
+      opacity: calc(0.1 * (0.25 + 0.75 * var(--time-weight, 1)));
     }
 
     &.active {
