@@ -9,6 +9,7 @@
 import * as d3 from 'd3'
 
 import { CURRENT_YEAR } from '@/constants/config.js'
+import { getCitationTimeWeight } from '@/utils/network/links.js'
 
 export const SIMULATION_ALPHA = 0.7
 const NEW_NODE_OFFSET = 10
@@ -47,12 +48,13 @@ export function getLinkDistance(link, isNetworkClusters, selectedPublicationsCou
 }
 
 /**
- * Calculate link strength based on link type and network mode
+ * Calculate link strength based on link type and network mode; citations spanning many
+ * years pull less (link ends are resolved to nodes when d3 reads the strengths)
  */
 export function getLinkStrength(link, isNetworkClusters) {
   let internalFactor
   if (link.type === 'citation') {
-    internalFactor = link.internal ? 1 : 1.5
+    internalFactor = (link.internal ? 1 : 1.5) * getCitationTimeWeight(link)
   } else if (link.type === 'keyword') {
     internalFactor = 0.5
   } else {

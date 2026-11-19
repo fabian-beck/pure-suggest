@@ -6,6 +6,7 @@ import {
   assignNodePositions,
   calculateYearX,
   createForceSimulation,
+  getLinkStrength,
   initializeForces,
   pinTimelineX,
   SIMULATION_ALPHA
@@ -312,5 +313,22 @@ describe('dragged keywords when switching between clusters and timeline mode', (
     pinTimelineX([keyword], true, yearX)
     expect(keyword.fx).toBeUndefined()
     expect(keyword.fy).toBe(7)
+  })
+})
+
+describe('getLinkStrength', () => {
+  const createCitation = (sourceYear, targetYear) => ({
+    type: 'citation',
+    internal: true,
+    source: { publication: { year: sourceYear } },
+    target: { publication: { year: targetYear } }
+  })
+
+  it('pulls publications of citations spanning many years together less strongly', () => {
+    ;[true, false].forEach((isNetworkClusters) => {
+      expect(getLinkStrength(createCitation(1995, 2020), isNetworkClusters)).toBeLessThan(
+        getLinkStrength(createCitation(2019, 2020), isNetworkClusters) / 2
+      )
+    })
   })
 })

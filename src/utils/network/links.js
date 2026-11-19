@@ -6,6 +6,9 @@
  * including citations, keywords, and authors.
  */
 
+// Years between citing and cited publication at which a citation has half the weight
+const CITATION_HALF_WEIGHT_YEARS = 6
+
 /**
  * Create citation links between publications
  */
@@ -50,6 +53,16 @@ export function createCitationLinks(selectedPublications, isSelectedFn, doiToInd
   })
 
   return links
+}
+
+/**
+ * Weight of a citation link (with ends resolved to nodes) between 0 and 1: a citation
+ * spanning many years is assumed weaker, as much else has been published in the meantime,
+ * while one spanning few years keeps almost its full weight
+ */
+export function getCitationTimeWeight(link) {
+  const years = Math.abs(link.target.publication.year - link.source.publication.year)
+  return Number.isFinite(years) ? 1 / (1 + (years / CITATION_HALF_WEIGHT_YEARS) ** 2) : 1
 }
 
 /**
