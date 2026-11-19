@@ -759,15 +759,17 @@ describe('NetworkVisComponent', () => {
     })
   })
 
-  describe('Limiting Shown Selected Publications', () => {
+  describe('Limiting Shown Publications', () => {
     let wrapper
     let sessionStore
-    const createSelected = (count) =>
+    const createPublications = (count, isSelected) =>
       Array.from({ length: count }, (_, i) => ({
-        doi: `10.1000/selected${i}`,
+        doi: `10.1000/${isSelected ? 'selected' : 'suggested'}${i}`,
+        isSelected,
         isActive: false,
         isLinkedToActive: false
       }))
+    const createSelected = (count) => createPublications(count, true)
 
     beforeEach(() => {
       wrapper = mount(NetworkVisComponent, {
@@ -781,6 +783,8 @@ describe('NetworkVisComponent', () => {
 
     afterEach(() => {
       sessionStore.selectedPublications = []
+      sessionStore.suggestedPublications = []
+      sessionStore.activePublication = null
     })
 
     it('shows all selected publications up to the base number', () => {
@@ -810,6 +814,30 @@ describe('NetworkVisComponent', () => {
       expect(shownDois).toHaveLength(12)
       expect(shownDois).toContain('10.1000/selected30')
       expect(shownDois).toContain('10.1000/selected40')
+    })
+
+    it('reveals hidden suggested publications linked to the active publication by a shown link', () => {
+      wrapper.vm.showNodes = ['selected', 'suggested']
+      sessionStore.selectedPublications = createSelected(5)
+      sessionStore.suggestedPublications = createPublications(50, false)
+      wrapper.vm.suggestedNumberFactor = 0.1 // 5 of the suggested shown
+      const linkedSuggested = sessionStore.suggestedPublications[30]
+      linkedSuggested.isLinkedToActive = true
+
+      // Citation links are only shown when they involve a selected publication
+      sessionStore.activePublication = sessionStore.suggestedPublications[40]
+      sessionStore.activePublication.isActive = true
+      let shownDois = wrapper.vm.collectFilteredPublications().map((pub) => pub.doi)
+      expect(shownDois).toHaveLength(11)
+      expect(shownDois).toContain('10.1000/suggested40')
+      expect(shownDois).not.toContain(linkedSuggested.doi)
+
+      sessionStore.activePublication.isActive = false
+      sessionStore.activePublication = sessionStore.selectedPublications[0]
+      sessionStore.activePublication.isActive = true
+      shownDois = wrapper.vm.collectFilteredPublications().map((pub) => pub.doi)
+      expect(shownDois).toHaveLength(11)
+      expect(shownDois).toContain(linkedSuggested.doi)
     })
 
     it('replots when the active publication reveals or hides selected publications', () => {

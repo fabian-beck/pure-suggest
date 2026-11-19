@@ -66,7 +66,10 @@ async function setSelectedNumberFactor(page, key) {
 async function screenshot(page, name) {
   const file = path.join(OUTPUT_DIR, `${name}.png`)
   await page.locator('.network-of-references').screenshot({ path: file })
-  console.log(`${file}: ${await countNodes(page)} selected nodes`)
+  const suggestedCount = await page
+    .locator('#network-svg g.node-container.publication.suggested')
+    .count()
+  console.log(`${file}: ${await countNodes(page)} selected, ${suggestedCount} suggested nodes`)
 }
 
 async function main() {

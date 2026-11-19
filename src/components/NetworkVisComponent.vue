@@ -84,6 +84,17 @@ const LABEL_OVERSCAN = 100 // px beyond the view, about the width of a label
 const RESIZE_REPLOT_DELAY = 200 // ms after the last change of the panel size
 const REVEAL_ALPHA = 0.3 // Revealed or hidden nodes find their places, the others mostly stay
 
+/**
+ * Whether a publication that is not shown by default is revealed: when active or linked to
+ * the active publication by a shown citation link, which always involves a selected one
+ */
+function isRevealed(publication, activePublication) {
+  return (
+    publication.isActive ||
+    (publication.isLinkedToActive && (publication.isSelected || activePublication?.isSelected))
+  )
+}
+
 export default {
   name: 'NetworkVisComponent',
   components: {
@@ -157,10 +168,10 @@ export default {
     this.viewport = { width: 0, height: 0 } // Size of the panel, measured when plotting and on resize
     this.shownYears = { min: undefined, max: undefined } // Range of the year axis
     this.isLabelEngineLoaded = false
-    // Selected publications beyond the shown number, and the ones of them revealed as linked
-    // to the active publication
-    this.hiddenSelectedPublications = []
-    this.revealedSelectedPublications = []
+    // Publications beyond the shown numbers, and the ones of them revealed for the active
+    // publication
+    this.hiddenPublications = []
+    this.revealedPublications = []
   },
   computed: {
     showSelectedNodes () {
@@ -210,12 +221,14 @@ export default {
         if (this.interfaceStore.isLoading) {
           return
         }
-        // Hidden selected publications linked to the active one are revealed (or hidden
-        // again), which changes the graph structure; otherwise, activation only changes
+        // Hidden publications linked to the active one are revealed (or hidden again),
+        // which changes the graph structure; otherwise, activation only changes
         // highlighting, and a full replot with simulation resume is not needed
         if (
-          this.revealedSelectedPublications.length ||
-          this.hiddenSelectedPublications.some((pub) => pub.isActive || pub.isLinkedToActive)
+          this.revealedPublications.length ||
+          this.hiddenPublications.some((pub) =>
+            isRevealed(pub, this.sessionStore.activePublication)
+          )
         ) {
           this.plot()
           this.restart(REVEAL_ALPHA)
@@ -358,54 +371,42 @@ export default {
     },
 
     /**
-     * Collect and filter publications based on current settings
-     * @returns {Array} Array of filtered publications
+     * Collect the publications shown as nodes: of the selected and suggested ones (filtered if
+     * only filtered ones should be shown), the top-ranked ones and the revealed ones
+     * @returns {Array} Array of shown publications
      */
     collectFilteredPublications () {
-      let publications = []
-
-      if (this.showSelectedNodes) {
-        let selectedPubs = this.sessionStore.selectedPublications || []
-        if (
-          this.onlyShowFiltered &&
-          this.sessionStore.filter.hasActiveFilters() &&
-          this.sessionStore.filter.applyToSelected
-        ) {
-          selectedPubs = selectedPubs.filter((pub) => this.sessionStore.filter.matches(pub))
-        }
-        // Selected publications are sorted by score, the top-ranked ones are shown
-        const shownNumber = this.shownSelectedNumber()
-        this.hiddenSelectedPublications = selectedPubs.slice(shownNumber)
-        this.revealedSelectedPublications = this.hiddenSelectedPublications.filter(
-          (pub) => pub.isActive || pub.isLinkedToActive
-        )
-        publications = publications.concat(
-          selectedPubs.slice(0, shownNumber),
-          this.revealedSelectedPublications
-        )
-      } else {
-        this.hiddenSelectedPublications = []
-        this.revealedSelectedPublications = []
-      }
-
-      if (this.showSuggestedNodes) {
-        let suggestedPubs = this.sessionStore.suggestedPublications || []
-        // Filter first if needed
-        if (
-          this.onlyShowFiltered &&
-          this.sessionStore.filter.hasActiveFilters() &&
-          this.sessionStore.filter.applyToSuggested
-        ) {
-          suggestedPubs = suggestedPubs.filter((pub) => this.sessionStore.filter.matches(pub))
-        }
-        // Then slice to limit to top N from filtered results
-        suggestedPubs = suggestedPubs.slice(0, Math.round(this.suggestedNumberFactor * 50))
-        publications = publications.concat(suggestedPubs)
-      }
-
-      return publications
+      const { filter } = this.sessionStore
+      const isFiltering = this.onlyShowFiltered && filter.hasActiveFilters()
+      const shownPublications = []
+      this.hiddenPublications = []
+      ;[
+        [
+          this.showSelectedNodes,
+          this.sessionStore.selectedPublications,
+          filter.applyToSelected,
+          this.shownSelectedNumber()
+        ],
+        [
+          this.showSuggestedNodes,
+          this.sessionStore.suggestedPublications,
+          filter.applyToSuggested,
+          Math.round(this.suggestedNumberFactor * 50)
+        ]
+      ].forEach(([isShown, publications, isFiltered, shownNumber]) => {
+        if (!isShown || !publications) return
+        // Filter first, then take the top-ranked ones (publications are sorted by score)
+        const filteredPublications =
+          isFiltering && isFiltered ? publications.filter((pub) => filter.matches(pub)) : publications
+        shownPublications.push(...filteredPublications.slice(0, shownNumber))
+        this.hiddenPublications.push(...filteredPublications.slice(shownNumber))
+      })
+      this.revealedPublications = this.hiddenPublications.filter((pub) =>
+        isRevealed(pub, this.sessionStore.activePublication)
+      )
+      return shownPublications.concat(this.revealedPublications)
     },
-    
+
     /**
      * Initialize graph nodes and links
      */
