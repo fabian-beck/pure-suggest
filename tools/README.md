@@ -278,3 +278,19 @@ node tools/find-unused-functions.js
 3. Check if function is part of public API or external interface
 4. Verify function isn't used in Vue templates or computed properties
 5. Consider if function serves as documentation or future use case
+
+## generate-synthetic-network.js / screenshot-synthetic-network.js
+
+**Purpose:** Try out the app, especially large citation networks, without access to the publications data service.
+
+**Usage:**
+
+```bash
+# Regenerate the synthetic data (reproducible, seeded) in test/synthetic-network/
+node tools/generate-synthetic-network.js
+
+# Screenshot the network of the synthetic session (output: tools/output/synthetic-network/)
+npm run build && node tools/screenshot-synthetic-network.js
+```
+
+The synthetic data consists of `publications.json` (500 publications in the format of the data service, with citations among them) and a session selecting 120 of them. The screenshot script serves the production build in a headless browser, answers data service requests from `publications.json`, and loads the session via the `?session=` URL parameter.
