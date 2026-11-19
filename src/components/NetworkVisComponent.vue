@@ -85,14 +85,11 @@ const RESIZE_REPLOT_DELAY = 200 // ms after the last change of the panel size
 const REVEAL_ALPHA = 0.3 // Revealed or hidden nodes find their places, the others mostly stay
 
 /**
- * Whether a publication that is not shown by default is revealed: when active or linked to
- * the active publication by a shown citation link, which always involves a selected one
+ * Whether a publication that is not shown by default is revealed: when active, or when
+ * selected and linked to the active publication
  */
-function isRevealed(publication, activePublication) {
-  return (
-    publication.isActive ||
-    (publication.isLinkedToActive && (publication.isSelected || activePublication?.isSelected))
-  )
+function isRevealed(publication) {
+  return publication.isActive || (publication.isSelected && publication.isLinkedToActive)
 }
 
 export default {
@@ -221,14 +218,12 @@ export default {
         if (this.interfaceStore.isLoading) {
           return
         }
-        // Hidden publications linked to the active one are revealed (or hidden again),
-        // which changes the graph structure; otherwise, activation only changes
-        // highlighting, and a full replot with simulation resume is not needed
+        // Hidden publications are revealed for the active one (or hidden again), which
+        // changes the graph structure; otherwise, activation only changes highlighting,
+        // and a full replot with simulation resume is not needed
         if (
           this.revealedPublications.length ||
-          this.hiddenPublications.some((pub) =>
-            isRevealed(pub, this.sessionStore.activePublication)
-          )
+          this.hiddenPublications.some(isRevealed)
         ) {
           this.plot()
           this.restart(REVEAL_ALPHA)
@@ -401,9 +396,7 @@ export default {
         shownPublications.push(...filteredPublications.slice(0, shownNumber))
         this.hiddenPublications.push(...filteredPublications.slice(shownNumber))
       })
-      this.revealedPublications = this.hiddenPublications.filter((pub) =>
-        isRevealed(pub, this.sessionStore.activePublication)
-      )
+      this.revealedPublications = this.hiddenPublications.filter(isRevealed)
       return shownPublications.concat(this.revealedPublications)
     },
 

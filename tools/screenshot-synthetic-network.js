@@ -111,6 +111,12 @@ async function main() {
   await page.waitForTimeout(SETTLE_TIME)
   await screenshot(page, '5-base-selected-deactivated')
 
+  // Activating a hidden suggested publication in the list reveals it and its hidden selected
+  // neighbors
+  await page.locator('.suggested-publications .publication-component').nth(30).click()
+  await page.waitForTimeout(SETTLE_TIME)
+  await screenshot(page, '6-base-selected-active-hidden-suggested')
+
   await browser.close()
 }
 
