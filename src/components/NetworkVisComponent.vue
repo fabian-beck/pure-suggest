@@ -1239,12 +1239,6 @@ export default {
     & text {
       text-anchor: middle;
       dominant-baseline: middle;
-      // Stroke halo instead of a drop-shadow filter: filters are re-rasterized
-      // for every moving node on every simulation frame
-      paint-order: stroke;
-      stroke: white;
-      stroke-width: 1px;
-      stroke-linejoin: round;
 
       &.unread {
         fill: hsl(var(--bulma-info-h), var(--bulma-info-s), calc(var(--bulma-info-l) - 20%));
