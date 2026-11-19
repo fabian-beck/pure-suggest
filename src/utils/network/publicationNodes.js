@@ -11,8 +11,8 @@ import tippy from 'tippy.js'
 const RECT_SIZE = 20
 const ENLARGE_FACTOR = 1.5
 // Range of node size factors from the lowest to the highest score
-const MIN_SIZE_FACTOR = 0.85
-const MAX_SIZE_FACTOR = 1.15
+const MIN_SIZE_FACTOR = 0.8
+const MAX_SIZE_FACTOR = 1.25
 
 /**
  * Size factor of a node by its score within the range of scores of the shown nodes of its

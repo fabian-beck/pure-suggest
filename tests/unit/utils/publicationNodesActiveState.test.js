@@ -100,10 +100,10 @@ describe('updateActiveState', () => {
 
 describe('score-based node sizes', () => {
   it('scales nodes slightly by score within the range of shown scores', () => {
-    expect(getScoreSizeFactor(20, 20, 60)).toBeCloseTo(0.85)
-    expect(getScoreSizeFactor(40, 20, 60)).toBeCloseTo(1)
-    expect(getScoreSizeFactor(60, 20, 60)).toBeCloseTo(1.15)
-    expect(getScoreSizeFactor(5, 5, 5)).toBeCloseTo(1)
+    expect(getScoreSizeFactor(20, 20, 60)).toBeCloseTo(0.8)
+    expect(getScoreSizeFactor(40, 20, 60)).toBeCloseTo(1.025)
+    expect(getScoreSizeFactor(60, 20, 60)).toBeCloseTo(1.25)
+    expect(getScoreSizeFactor(5, 5, 5)).toBeCloseTo(1.025)
   })
 
   it('sizes publication and author nodes by their scores', () => {
