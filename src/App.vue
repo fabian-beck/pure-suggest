@@ -90,7 +90,8 @@ export default {
       }
       const element = this.focusBeforeOverlay
       this.focusBeforeOverlay = null
-      if (element?.isConnected) {
+      // Focusing a publication activates it, so skip publications deactivated meanwhile
+      if (element?.isConnected && !element.matches('.publication-component:not(.is-active)')) {
         setTimeout(() => element.focus({ preventScroll: true }))
       }
     },

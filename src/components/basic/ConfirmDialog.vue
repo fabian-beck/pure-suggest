@@ -18,11 +18,13 @@ export default {
 <template>
   <v-dialog
     width="500"
+    persistent
     v-model="modalStore.confirmDialog.isShown"
     :z-index="9000"
     class="confirm-dialog-overlay"
     role="alertdialog"
     :aria-label="modalStore.confirmDialog.title"
+    @keydown.esc="hideDialog"
   >
     <v-card>
       <v-card-title v-if="modalStore.confirmDialog.title">

@@ -223,8 +223,8 @@ export function onKey(e) {
 
   if (handleLoadingEscape(e)) return
 
-  // Dialogs and menus handle their own keys (Tab, Enter, Space, Escape, arrows)
-  if (isAnyOverlayShown || document.activeElement.closest('.v-overlay')) return
+  // Dialogs and list menus handle their own keys (Tab, Enter, Space, Escape, arrows, sliders)
+  if (isAnyOverlayShown || document.activeElement.closest('.v-overlay .v-list')) return
 
   // Handle input field focus
   if (

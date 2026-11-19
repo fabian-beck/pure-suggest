@@ -25,6 +25,17 @@ describe('labelIconControlByTooltip', () => {
     expect(instance.setProps).toHaveBeenCalledWith({ aria: { content: null, expanded: 'auto' } })
   })
 
+  it('updates the label when the tooltip content changes', () => {
+    const button = createButton()
+    const instance = createInstance(button, 'Add author to filter.')
+    labelIconControlByTooltip(instance)
+
+    instance.props.content = 'Author is in filter. Click to remove.'
+    labelIconControlByTooltip(instance)
+
+    expect(button.getAttribute('aria-label')).toBe('Author is in filter. Click to remove.')
+  })
+
   it('does not run markup from the tooltip content', () => {
     const button = createButton()
     window.injected = false

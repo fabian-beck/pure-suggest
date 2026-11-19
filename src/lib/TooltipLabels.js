@@ -1,4 +1,6 @@
 const ICON_CONTROL_SELECTOR = 'button, a[href], [role="button"]'
+// Tooltip content last applied per tippy instance; vue-tippy updates props on every re-render
+const labelledContents = new WeakMap()
 
 /**
  * Gives icon-only buttons and links their tooltip text as accessible name, so that
@@ -10,11 +12,13 @@ export function labelIconControlByTooltip(instance) {
   const { content } = instance.props
   if (
     typeof content !== 'string' ||
+    labelledContents.get(instance) === content ||
     !element.matches(ICON_CONTROL_SELECTOR) ||
     element.textContent.trim()
   ) {
     return
   }
+  labelledContents.set(instance, content)
   // DOMParser keeps the (possibly data-derived) HTML inert while extracting the text
   const label = new DOMParser().parseFromString(content, 'text/html').body.textContent.trim()
   element.setAttribute('aria-label', label)

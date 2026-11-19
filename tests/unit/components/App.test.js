@@ -172,27 +172,42 @@ describe('App - Page Title Management', () => {
     expect(document.title).toBe(`${sessionName}: ${defaultTitle}`)
   })
 })
+
 describe('App - Dialog focus', () => {
-  it('should return focus to the previously focused element when a dialog closes', async () => {
+  const closeDialogAfterFocusing = async (element) => {
     const pinia = createPinia()
     setActivePinia(pinia)
     const wrapper = mount(App, {
       global: { plugins: [pinia], provide: { appMeta: { name: 'PUREsuggest', nameHtml: '', subtitle: '', version: '' } } }
     })
     const modalStore = useModalStore()
-    const button = document.createElement('button')
-    document.body.appendChild(button)
-    button.focus()
+    document.body.appendChild(element)
+    element.focus()
 
     modalStore.infoDialog.isShown = true
     await nextTick()
-    button.blur()
+    element.blur()
     modalStore.infoDialog.isShown = false
     await nextTick()
     await new Promise((resolve) => setTimeout(resolve))
 
-    expect(document.activeElement).toBe(button)
-    button.remove()
+    const focusedElement = document.activeElement
+    element.remove()
     wrapper.unmount()
+    return focusedElement
+  }
+
+  it('should return focus to the previously focused element when a dialog closes', async () => {
+    const button = document.createElement('button')
+
+    expect(await closeDialogAfterFocusing(button)).toBe(button)
+  })
+
+  it('should not refocus (and thereby reactivate) a publication that was deactivated meanwhile', async () => {
+    const publication = document.createElement('div')
+    publication.className = 'publication-component'
+    publication.tabIndex = 0
+
+    expect(await closeDialogAfterFocusing(publication)).not.toBe(publication)
   })
 })

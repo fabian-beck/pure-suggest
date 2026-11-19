@@ -262,10 +262,17 @@ describe('Keys Module - Keyboard Event Handling', () => {
       }
     )
 
-    it.each(['ArrowDown', 'c'])('should ignore %s while focus is inside an open menu', (key) => {
+    const focusInsideMenu = (menuHtml) => {
+      const overlay = document.createElement('div')
+      overlay.className = 'v-overlay'
+      overlay.innerHTML = menuHtml
+      mockActiveElement({ closest: (selector) => overlay.firstElementChild.closest(selector) })
+    }
+
+    it.each(['ArrowDown', 'c'])('should ignore %s while focus is inside a list menu', (key) => {
       sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
       sessionStore.activePublication = { doi: '10.1234/active' }
-      mockActiveElement({ closest: (selector) => (selector === '.v-overlay' ? {} : null) })
+      focusInsideMenu('<div class="v-list"></div>')
 
       const event = { key, preventDefault: vi.fn() }
       onKey(event)
@@ -273,6 +280,16 @@ describe('Keys Module - Keyboard Event Handling', () => {
       expect(event.preventDefault).not.toHaveBeenCalled()
       expect(mockClearSession).not.toHaveBeenCalled()
       expect(interfaceStore.activatePublicationComponent).not.toHaveBeenCalled()
+    })
+
+    it('should keep shortcuts while focus is inside the filter menu', () => {
+      sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
+      focusInsideMenu('<div class="v-sheet"></div>')
+
+      const event = { key: 'f', preventDefault: vi.fn() }
+      onKey(event)
+
+      expect(interfaceStore.openFilterMenu).toHaveBeenCalled()
     })
   })
 
