@@ -149,6 +149,7 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 - **Density**: Use `density="compact"` for space-efficient layouts
 - **Neutral Styling**: Use neutral colors (`is-light`, `default`) instead of accent colors for secondary actions
 - **Tooltips**: Use `v-tippy` directive (Tippy.js) instead of Vuetify's `v-tooltip` component
+- **Accessibility**: Icon-only buttons/links get their `aria-label` from the `v-tippy` text automatically (`src/lib/TooltipLabels.js`); give icon-only controls without tooltip an explicit `aria-label`, and make clickable non-button elements focusable (`tabindex`, `role`, Enter/Space handling)
 
 ## Others
 

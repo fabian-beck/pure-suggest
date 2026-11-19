@@ -163,5 +163,9 @@ export default {
   & .subtitle {
     margin-top: 0.5rem;
   }
+
+  & a {
+    text-decoration: underline;
+  }
 }
 </style>

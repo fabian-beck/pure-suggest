@@ -21,6 +21,8 @@ export default {
     v-model="modalStore.confirmDialog.isShown"
     :z-index="9000"
     class="confirm-dialog-overlay"
+    role="alertdialog"
+    :aria-label="modalStore.confirmDialog.title"
   >
     <v-card>
       <v-card-title v-if="modalStore.confirmDialog.title">

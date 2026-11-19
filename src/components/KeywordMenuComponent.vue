@@ -72,6 +72,7 @@ function clearKeywords() {
         :class="interfaceStore.isMobile ? '' : 'p-1 pl-4'"
         v-bind="props"
         :icon="interfaceStore.isMobile"
+        :aria-label="interfaceStore.isMobile ? 'Boost keywords' : undefined"
         @click="handleMenuInput(true)"
         :density="interfaceStore.isMobile ? 'compact' : 'default'"
         :color="buttonColor"
@@ -102,7 +103,12 @@ function clearKeywords() {
           persistent-hint
         >
           <template #append>
-            <v-btn class="has-background-warning" @click="applyKeywords" height="47">
+            <v-btn
+              class="has-background-warning"
+              @click="applyKeywords"
+              height="47"
+              aria-label="Apply keywords"
+            >
               <v-icon>mdi-chevron-double-up</v-icon>
             </v-btn>
           </template>

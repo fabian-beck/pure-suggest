@@ -69,7 +69,10 @@ const isNetworkClustersModel = computed({
         <label class="mr-4" :class="{ 'has-text-grey-light': isNetworkClustersModel }">
           Timeline</label
         >
-        <CompactSwitch v-model="isNetworkClustersModel"></CompactSwitch>
+        <CompactSwitch
+          v-model="isNetworkClustersModel"
+          aria-label="Clusters mode"
+        ></CompactSwitch>
         <label :class="{ 'has-text-grey-light': !isNetworkClustersModel }" class="ml-4"
           >Clusters</label
         >

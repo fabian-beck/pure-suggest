@@ -316,7 +316,7 @@ export default {
       />
       <v-menu :close-on-content-click="false" v-if="!authorStore.activeAuthorId">
         <template #activator="{ props }">
-          <CompactButton icon="mdi-cog" v-bind="props" />
+          <CompactButton icon="mdi-cog" v-bind="props" v-tippy="'Author settings'" />
         </template>
         <v-list>
           <v-list-item>
@@ -485,17 +485,16 @@ export default {
         <!-- Show related publications when author is active -->
         <div v-if="authorStore.activeAuthorId" class="mt-4">
           <div class="mb-3">Publications co-authored by {{ authorStore.activeAuthor?.name }}:</div>
-          <div
-            v-for="publication in selectedPublicationsForAuthor"
-            :key="publication.doi"
-            class="author-publication mb-3"
-          >
+          <ul>
             <PublicationComponent
+              v-for="publication in selectedPublicationsForAuthor"
+              :key="publication.doi"
+              class="author-publication mb-3"
               :publication="publication"
               :is-active="false"
               publication-type="selected"
             />
-          </div>
+          </ul>
         </div>
       </section>
     </div>

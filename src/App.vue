@@ -164,7 +164,7 @@ export default {
 <template>
   <v-app id="app" data-app>
     <HeaderPanel id="header" />
-    <div
+    <main
       id="main"
       @click="sessionStore.clearActivePublication('clicked anywhere')"
       :class="{
@@ -176,7 +176,7 @@ export default {
       <SuggestedPublicationsComponent id="suggested" v-show="!interfaceStore.isNetworkExpanded" />
       <NetworkVisComponent id="network" />
       <LandingComponent v-if="isEmpty" />
-    </div>
+    </main>
     <QuickAccessBar
       id="quick-access"
       class="is-hidden-desktop"
@@ -214,6 +214,7 @@ export default {
         <div
           class="global-loading-message has-text-white mt-4"
           v-if="interfaceStore.loadingMessage"
+          role="status"
         >
           {{ interfaceStore.loadingMessage }}
         </div>

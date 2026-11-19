@@ -53,6 +53,7 @@ export default {
     :fullscreen="interfaceStore.isMobile"
     :z-index="9000"
     class="modal-dialog-overlay"
+    :aria-label="title"
   >
     <v-card>
       <v-card-title
@@ -63,7 +64,7 @@ export default {
           <span class="modal-title-text">{{ title }}</span>
           <div class="modal-title-actions">
             <slot name="header-menu"></slot>
-            <CompactButton icon="mdi-close" @click="hideDialog" />
+            <CompactButton icon="mdi-close" aria-label="Close dialog" @click="hideDialog" />
           </div>
         </div>
       </v-card-title>

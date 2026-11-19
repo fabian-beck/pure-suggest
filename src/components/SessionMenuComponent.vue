@@ -54,6 +54,7 @@ watch(
       <v-btn
         v-bind="props"
         :icon="interfaceStore.isMobile"
+        :aria-label="interfaceStore.isMobile ? 'Session' : undefined"
         :density="interfaceStore.isMobile ? 'compact' : 'default'"
         class="session-state-button"
       >
@@ -78,7 +79,7 @@ watch(
           <b>{{ sessionStore.sessionName }}</b> ({{ publicationCountString }})
         </template>
       </v-list-item>
-      <div class="px-4 py-4" @click.stop>
+      <div class="px-4 py-4" role="listitem" @click.stop>
         <v-text-field
           v-model="sessionName"
           label="Session Name"

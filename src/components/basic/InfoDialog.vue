@@ -21,6 +21,7 @@ export default {
     v-model="modalStore.infoDialog.isShown"
     :z-index="9000"
     class="info-dialog-overlay"
+    :aria-label="modalStore.infoDialog.title"
   >
     <v-card>
       <v-card-title v-if="modalStore.infoDialog.title">

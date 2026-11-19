@@ -178,6 +178,7 @@ export default {
             v-model="modalStore.searchQuery"
             type="input"
             ref="searchInput"
+            aria-label="Search publications"
             variant="solo"
             append-icon="mdi-magnify"
             @click:append="search"
