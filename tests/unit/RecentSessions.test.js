@@ -5,6 +5,7 @@ import { nextTick } from 'vue'
 import Publication from '@/core/Publication.js'
 import {
   loadRecentSessions,
+  removeRecentSession,
   saveRecentSession,
   trackRecentSession
 } from '@/lib/RecentSessions.js'
@@ -50,6 +51,13 @@ describe('RecentSessions', () => {
   it('keeps only the most recent sessions', () => {
     ;['a', 'b', 'c', 'd'].forEach((id) => saveRecentSession(session(id)))
     expect(loadRecentSessions().map((s) => s.id)).toEqual(['d', 'c', 'b'])
+  })
+
+  it('removes a session and returns the remaining ones', () => {
+    saveRecentSession(session('a'))
+    saveRecentSession(session('b'))
+    expect(removeRecentSession('b').map((s) => s.id)).toEqual(['a'])
+    expect(loadRecentSessions().map((s) => s.id)).toEqual(['a'])
   })
 })
 

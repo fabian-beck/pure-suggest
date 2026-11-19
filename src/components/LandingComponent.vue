@@ -3,7 +3,7 @@ import { inject, ref } from 'vue'
 
 import { useAppState } from '@/composables/useAppState.js'
 import { useModalManager } from '@/composables/useModalManager.js'
-import { loadRecentSessions } from '@/lib/RecentSessions.js'
+import { loadRecentSessions, removeRecentSession } from '@/lib/RecentSessions.js'
 
 const appMeta = inject('appMeta')
 const { openSearchModal } = useModalManager()
@@ -11,7 +11,7 @@ const { importSessionWithConfirmation, importBibtexWithConfirmation, loadExample
   useAppState()
 
 const searchQuery = ref('')
-const recentSessions = loadRecentSessions()
+const recentSessions = ref(loadRecentSessions())
 
 function submitSearch() {
   openSearchModal(searchQuery.value.trim())
@@ -62,7 +62,18 @@ function submitSearch() {
           :title="session.name || session.title || session.selected[0]"
           :subtitle="`${session.selected.length} selected · ${new Date(session.timestamp).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}`"
           @click="loadSession(session)"
-        />
+        >
+          <template #append>
+            <v-btn
+              icon="mdi-close"
+              color="grey"
+              variant="text"
+              size="small"
+              v-tippy="'Remove from list'"
+              @click.stop="recentSessions = removeRecentSession(session.id)"
+            />
+          </template>
+        </v-list-item>
       </v-list>
     </div>
   </div>

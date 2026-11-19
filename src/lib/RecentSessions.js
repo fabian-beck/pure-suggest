@@ -13,16 +13,26 @@ export function loadRecentSessions() {
   }
 }
 
-export function saveRecentSession(session) {
-  const sessions = [
-    { ...session, timestamp: Date.now() },
-    ...loadRecentSessions().filter((stored) => stored.id !== session.id)
-  ].slice(0, MAX_RECENT_SESSIONS)
+function storeRecentSessions(sessions) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions))
   } catch (error) {
-    console.warn('Could not store recent session:', error)
+    console.warn('Could not store recent sessions:', error)
   }
+  return sessions
+}
+
+export function saveRecentSession(session) {
+  storeRecentSessions(
+    [
+      { ...session, timestamp: Date.now() },
+      ...loadRecentSessions().filter((stored) => stored.id !== session.id)
+    ].slice(0, MAX_RECENT_SESSIONS)
+  )
+}
+
+export function removeRecentSession(id) {
+  return storeRecentSessions(loadRecentSessions().filter((stored) => stored.id !== id))
 }
 
 export function trackRecentSession(sessionStore) {
