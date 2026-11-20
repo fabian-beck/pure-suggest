@@ -9,6 +9,7 @@
 import * as d3 from 'd3'
 
 import { CURRENT_YEAR } from '@/constants/config.js'
+import { detectCommunities } from '@/utils/network/communities.js'
 import { getCitationTimeWeight } from '@/utils/network/links.js'
 
 export const SIMULATION_ALPHA = 0.7
@@ -39,6 +40,12 @@ const VIEW_MARGIN_X = 15
 const VIEW_MARGIN_Y = 40
 // Area inside the margins of the network panel on a typical desktop (1880 × 400)
 const REFERENCE_AREA = 1850 * 320
+// Factors of the pull of citation and author links within and across communities in
+// clusters mode: as the charge spreads the nodes evenly, the links alone pull nodes towards
+// a mix of communities; links within communities pulling more form visible clusters
+// (author links pulling more would place authors on top of their publications)
+const CITATION_COMMUNITY_FACTORS = { within: 3, across: 0.5 }
+const AUTHOR_COMMUNITY_FACTORS = { within: 1.5, across: 0.5 }
 
 /**
  * Calculate link distance based on link type and network mode
@@ -58,9 +65,11 @@ export function getLinkDistance(link, isNetworkClusters, selectedPublicationsCou
 
 /**
  * Calculate link strength based on link type and network mode; citations spanning many
- * years pull less (link ends are resolved to nodes when d3 reads the strengths)
+ * years pull less (link ends are resolved to nodes when d3 reads the strengths); in
+ * clusters mode, citation and author links pull more within than across the communities
+ * (map from node to community, see detectCommunities)
  */
-export function getLinkStrength(link, isNetworkClusters) {
+export function getLinkStrength(link, isNetworkClusters, community) {
   let internalFactor
   if (link.type === 'citation') {
     internalFactor = (link.internal ? 1 : 1.5) * getCitationTimeWeight(link)
@@ -70,7 +79,16 @@ export function getLinkStrength(link, isNetworkClusters) {
     internalFactor = 2.5 // author
   }
 
-  const clustersFactor = isNetworkClusters ? 1 : 0.5
+  let clustersFactor = 0.5
+  if (isNetworkClusters) {
+    clustersFactor = 1
+    if (community && link.type !== 'keyword') {
+      const factors =
+        link.type === 'citation' ? CITATION_COMMUNITY_FACTORS : AUTHOR_COMMUNITY_FACTORS
+      clustersFactor =
+        community.get(link.source) === community.get(link.target) ? factors.within : factors.across
+    }
+  }
   return 0.05 * clustersFactor * internalFactor
 }
 
@@ -219,6 +237,10 @@ export function initializeForces(simulation, isNetworkClusters, selectedPublicat
   // Force strengths are read per node, but only depend on all the nodes
   let strengthNodes = null
   let strengths = null
+  // Communities are detected when d3 reads the link strengths, as only then link ends are
+  // resolved to nodes
+  let communityLinks = null
+  let community = null
   const layoutStrength = (nodes, index) => {
     if (nodes !== strengthNodes) {
       strengthNodes = nodes
@@ -234,7 +256,13 @@ export function initializeForces(simulation, isNetworkClusters, selectedPublicat
       .forceLink()
       .id((d) => d.id)
       .distance((d) => getLinkDistance(d, isNetworkClusters, selectedPublicationsCount))
-      .strength((d) => getLinkStrength(d, isNetworkClusters))
+      .strength((d, i, links) => {
+        if (isNetworkClusters && links !== communityLinks) {
+          communityLinks = links
+          community = detectCommunities(links)
+        }
+        return getLinkStrength(d, isNetworkClusters, community)
+      })
   )
 
   // Configure charge (repulsion) force
