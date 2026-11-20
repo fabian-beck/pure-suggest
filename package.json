@@ -34,12 +34,12 @@
     "tippy.js": "^6.3.7",
     "vue": "^3.5.45",
     "vue-tippy": "^6.8.0",
-    "vuetify": "^4.3.3"
+    "vuetify": "^4.3.4"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@testing-library/vue": "^8.1.0",
-    "@typescript-eslint/utils": "^8.72.2",
+    "@typescript-eslint/utils": "^8.73.0",
     "@vitejs/plugin-vue": "^6.0.11",
     "@vue/compiler-sfc": "^3.5.45",
     "@vue/test-utils": "^2.6.0",
@@ -52,11 +52,11 @@
     "globals": "^17.14.0",
     "happy-dom": "^21.0.4",
     "prettier": "^3.10.1",
-    "puppeteer": "^25.17.0",
+    "puppeteer": "^25.18.1",
     "ts-api-utils": "^2.5.0",
     "unplugin-vue-components": "^32.1.0",
     "vite": "^8.3.8",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.1"
   },
   "browserslist": [
     "> 1%",
