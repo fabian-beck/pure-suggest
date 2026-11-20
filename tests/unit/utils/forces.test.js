@@ -332,6 +332,21 @@ describe('getLinkStrength', () => {
       )
     })
   })
+
+  it('pulls more within than across communities in clusters mode only', () => {
+    const link = createCitation(2019, 2020)
+    const community = (sameCommunity) =>
+      new Map([
+        [link.source, 0],
+        [link.target, sameCommunity ? 0 : 1]
+      ])
+    expect(getLinkStrength(link, true, community(true))).toBeGreaterThan(
+      2 * getLinkStrength(link, true, community(false))
+    )
+    expect(getLinkStrength(link, false, community(true))).toBe(
+      getLinkStrength(link, false, community(false))
+    )
+  })
 })
 
 describe('runFrameTicks', () => {

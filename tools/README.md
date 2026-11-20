@@ -294,3 +294,24 @@ npm run build && node tools/screenshot-synthetic-network.js
 ```
 
 The synthetic data consists of `publications.json` (500 publications in the format of the data service, with citations among them) and a session selecting 120 of them. The screenshot script serves the production build in a headless browser, answers data service requests from `publications.json`, and loads the session via the `?session=` URL parameter.
+
+With `--subtopics`, each topic splits into three subtopics that mostly cite each other and have their own authors, as in real literature; a seed and an output directory can be given, e.g., `node tools/generate-synthetic-network.js --subtopics 1 tools/output/subtopics1`. Without arguments, the generator reproduces the data in `test/synthetic-network/`.
+
+## extract-network-graphs.js / benchmark-network-layout.mjs
+
+**Purpose:** Measure the quality of the force layout of the citation network (`src/utils/network/forces.js`), e.g., before and after changing forces.
+
+**Usage:**
+
+```bash
+# Save the network graphs of synthetic sessions (12, 25, 60, 120 selected) to tools/output/network-graphs/
+npm run build && node tools/extract-network-graphs.js
+# Optionally add data with subtopics, which show clusters
+node tools/generate-synthetic-network.js --subtopics 1 tools/output/subtopics1
+node tools/extract-network-graphs.js tools/output/subtopics1 subtopics1
+
+# Compare the current layout with that of a git revision
+node tools/benchmark-network-layout.mjs --baseline main
+```
+
+The benchmark runs the simulation as on the first plot of a session, in both modes, in a wide and a tall view, and for three start orders of the nodes, and prints the mean metrics per mode and graph group (`--group prefix|size|view`): separation of communities and synthetic topics (silhouette), neighborhood preservation, evenness of the node spacing (Clark-Evans index), gaps, overlaps, nodes outside the view, fill of the view, link length, link crossings, final movement, and simulation time (see the header of the script for definitions). `--svg` saves the layouts, nodes colored by community, to `tools/output/network-layouts/`.
