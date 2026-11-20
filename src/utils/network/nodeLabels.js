@@ -20,6 +20,7 @@ const KEYWORD_HEIGHT = 16
 const KEYWORD_CLEARANCE = 5
 const CITATION_ARC_SAMPLES = 6
 const LABEL_TRANSITION_DURATION = 300 // ms
+const LABEL_FADE_IN_DURATION = 150 // ms
 const LABEL_MARGIN = 7 // Space of labels from the marks of other nodes
 const LABEL_SPACING = '0.4em' // Space between labels (the default, not twice the margin)
 
@@ -265,7 +266,7 @@ export function renderNodeLabels(labelSelection, result, nodes, activePublicatio
         const g = enter.append('g').style('opacity', 0)
         g.append('path').attr('d', getLeaderPath)
         g.append('text').attr('x', getTextX).attr('y', getTextY)
-        g.transition('fade').duration(LABEL_TRANSITION_DURATION).style('opacity', 1)
+        g.transition('fade').duration(LABEL_FADE_IN_DURATION).style('opacity', 1)
         return g
       },
       (update) => update,

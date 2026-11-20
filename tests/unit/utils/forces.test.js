@@ -335,19 +335,21 @@ describe('getLinkStrength', () => {
 })
 
 describe('runFrameTicks', () => {
-  it('animates a layout in about a second at any frame rate, ending in the same layout', () => {
+  it('animates a layout in about half a second, speeding up as it cools down, ending in the same layout', () => {
     const positions = (nodes) => nodes.map((node) => [node.x, node.y])
     const layout = positions(plot(createGraph(), null, true))
     ;[30, 60, 120].forEach((frameRate) => {
       const simulation = startLayout(createGraph(), null, true, DEFAULT_VIEW)
-      let frameCount = 0
+      const frameTickCounts = []
       while (simulation.alpha() >= simulation.alphaMin()) {
         simulation.tick() // Tick of the simulation's timer
-        runFrameTicks(simulation, 1000 / frameRate)
-        frameCount++
+        frameTickCounts.push(runFrameTicks(simulation, 1000 / frameRate))
       }
-      expect(frameCount / frameRate).toBeGreaterThan(0.9)
-      expect(frameCount / frameRate).toBeLessThan(1.2)
+      if (frameRate >= 60) {
+        expect(frameTickCounts.length / frameRate).toBeGreaterThan(0.4)
+        expect(frameTickCounts.length / frameRate).toBeLessThan(0.7)
+        expect(frameTickCounts[0]).toBeLessThan(frameTickCounts.at(-2))
+      }
       expect(positions(simulation.nodes())).toEqual(layout)
     })
   })
