@@ -36,6 +36,23 @@ describe('labelIconControlByTooltip', () => {
     expect(button.getAttribute('aria-label')).toBe('Author is in filter. Click to remove.')
   })
 
+  it('keeps an explicit aria-label', () => {
+    const button = createButton()
+    button.setAttribute('aria-label', 'Network right')
+
+    labelIconControlByTooltip(createInstance(button, '<b>Network right</b><br>Drag the borders'))
+
+    expect(button.getAttribute('aria-label')).toBe('Network right')
+  })
+
+  it('separates lines of the tooltip', () => {
+    const button = createButton()
+
+    labelIconControlByTooltip(createInstance(button, 'Zoom in<br>or scroll'))
+
+    expect(button.getAttribute('aria-label')).toBe('Zoom in or scroll')
+  })
+
   it('does not run markup from the tooltip content', () => {
     const button = createButton()
     window.injected = false
