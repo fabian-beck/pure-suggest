@@ -30,6 +30,7 @@ import {
   initializeForces,
   calculateYearX,
   pinTimelineX,
+  runFrameTicks,
   SIMULATION_ALPHA
 } from '@/utils/network/forces.js'
 
@@ -160,7 +161,7 @@ export default {
     this.nodeLabel = null
     this.labelResult = null // Previous label placements, kept as warm start for stable labels
     this.labelTickCount = 0
-    this.tickCount = 0
+    this.lastFrameTime = 0
     this.labelZoomScale = 1 // Zoom factor of the previous label placement
     this.viewport = { width: 0, height: 0 } // Size of the panel, measured when plotting and on resize
     this.shownYears = { min: undefined, max: undefined } // Range of the year axis
@@ -660,7 +661,7 @@ export default {
 
     },
     /**
-     * Check if current tick should be skipped for performance optimization
+     * Check if the tick should not be drawn, as the network is collapsed or empty
      * @returns {boolean} true if tick should be skipped, false otherwise
      */
     shouldSkipCurrentTick() {
@@ -675,23 +676,19 @@ export default {
         return true
       }
 
-      this.$refs.performanceMonitor?.incrementTick()
-
-      // Skip every second DOM update tick for performance (but not when dragging)
-      if (!this.isDragging && ++this.tickCount % 2 === 0) {
-        this.$refs.performanceMonitor?.recordTickSkipped()
-        this.$refs.performanceMonitor?.trackFps() // Still track FPS for debugging
-        return true
-      }
-
-      return false // Don't skip this tick
+      return false
     },
 
     tick () {
-      // Check if this tick should be skipped for performance
       if (this.shouldSkipCurrentTick()) {
         return
       }
+
+      // The layout converges in about a second; a dragged keyword is followed tick by tick
+      const now = performance.now()
+      const tickCount = this.isDragging ? 1 : runFrameTicks(this.simulation, now - this.lastFrameTime)
+      this.lastFrameTime = now
+      this.$refs.performanceMonitor?.incrementTick(tickCount)
 
       // Check which nodes have moved significantly and get the changed nodes
       const changedNodes = this.detectChangedNodes()
@@ -810,12 +807,14 @@ export default {
 
     restart(alpha = SIMULATION_ALPHA) {
       if (this.simulation) {
+        this.lastFrameTime = performance.now()
         this.simulation.alpha(alpha).restart()
       }
     },
 
     start() {
       if (this.simulation) {
+        this.lastFrameTime = performance.now()
         this.simulation.restart()
       }
     },

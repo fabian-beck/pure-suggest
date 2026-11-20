@@ -12,6 +12,11 @@ import { CURRENT_YEAR } from '@/constants/config.js'
 import { getCitationTimeWeight } from '@/utils/network/links.js'
 
 export const SIMULATION_ALPHA = 0.7
+// Simulation ticks per second of an animated layout: the about 250 ticks from SIMULATION_ALPHA
+// until the simulation has cooled down take about a second, at any frame rate
+const TICKS_PER_SECOND = 240
+// Upper limit of ticks per frame, which keeps the movement smooth when frames are slow
+const MAX_TICKS_PER_FRAME = 8
 const NEW_NODE_OFFSET = 10
 // Space at the left of the year axis for the first year label, at the right for keywords
 const YEAR_AXIS_MARGIN_LEFT = 24
@@ -256,6 +261,24 @@ export function initializeForces(simulation, isNetworkClusters, selectedPublicat
     'y',
     d3.forceY(0).strength((d, i, nodes) => layoutStrength(nodes, 1))
   )
+}
+
+/**
+ * Complement the tick of the simulation's timer with further ticks for a frame shown the given
+ * time (ms) after the previous one, until the simulation has cooled down, so that the layout
+ * runs at TICKS_PER_SECOND without changing; returns the number of ticks of the frame
+ */
+export function runFrameTicks(simulation, frameTime) {
+  const frameTickCount = Math.min(
+    MAX_TICKS_PER_FRAME,
+    Math.round((frameTime * TICKS_PER_SECOND) / 1000)
+  )
+  let tickCount = 1
+  while (tickCount < frameTickCount && simulation.alpha() >= simulation.alphaMin()) {
+    simulation.tick()
+    tickCount++
+  }
+  return tickCount
 }
 
 /**

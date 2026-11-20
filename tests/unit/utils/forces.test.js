@@ -9,6 +9,7 @@ import {
   getLinkStrength,
   initializeForces,
   pinTimelineX,
+  runFrameTicks,
   SIMULATION_ALPHA
 } from '@/utils/network/forces.js'
 import { createKeywordNodeDrag } from '@/utils/network/keywordNodes.js'
@@ -330,5 +331,29 @@ describe('getLinkStrength', () => {
         getLinkStrength(createCitation(2019, 2020), isNetworkClusters) / 2
       )
     })
+  })
+})
+
+describe('runFrameTicks', () => {
+  it('animates a layout in about a second at any frame rate, ending in the same layout', () => {
+    const positions = (nodes) => nodes.map((node) => [node.x, node.y])
+    const layout = positions(plot(createGraph(), null, true))
+    ;[30, 60, 120].forEach((frameRate) => {
+      const simulation = startLayout(createGraph(), null, true, DEFAULT_VIEW)
+      let frameCount = 0
+      while (simulation.alpha() >= simulation.alphaMin()) {
+        simulation.tick() // Tick of the simulation's timer
+        runFrameTicks(simulation, 1000 / frameRate)
+        frameCount++
+      }
+      expect(frameCount / frameRate).toBeGreaterThan(0.9)
+      expect(frameCount / frameRate).toBeLessThan(1.2)
+      expect(positions(simulation.nodes())).toEqual(layout)
+    })
+  })
+
+  it('limits the ticks of slow frames', () => {
+    const simulation = startLayout(createGraph(), null, true, DEFAULT_VIEW)
+    expect(runFrameTicks(simulation, 1000)).toBe(8)
   })
 })

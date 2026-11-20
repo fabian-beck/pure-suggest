@@ -158,8 +158,7 @@ const getComponentStubs = () => ({
       trackFps: vi.fn(),
       incrementTick: vi.fn(),
       recordDomUpdate: vi.fn(),
-      recordSkippedUpdate: vi.fn(),
-      recordTickSkipped: vi.fn()
+      recordSkippedUpdate: vi.fn()
     },
     computed: {
       tickCount: () => 0
