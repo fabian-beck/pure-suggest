@@ -1357,6 +1357,37 @@ describe('NetworkVisComponent', () => {
       expect(affectedLinks.attr.mock.calls.map(([name]) => name)).toEqual(['d'])
     })
 
+    it('hides node labels while the layout moves and places them once it has ended', async () => {
+      const removeNodeLabels = vi.spyOn(wrapper.vm, 'removeNodeLabels')
+      const updateNodeLabels = vi.spyOn(wrapper.vm, 'updateNodeLabels')
+      vi.spyOn(wrapper.vm, 'updateChangedNodePositions').mockImplementation(() => {})
+      vi.spyOn(wrapper.vm, 'updateSelectiveLinks').mockImplementation(() => 0)
+      const labelGroup = () => wrapper.find('g.node-labels')
+      const end = lastHandler(wrapper.vm.simulation.on, 'end')
+      const d3 = await import('d3')
+
+      // Without a restart, the labels stay
+      end()
+      expect(removeNodeLabels).not.toHaveBeenCalled()
+
+      wrapper.vm.restart()
+      await wrapper.vm.$nextTick()
+      expect(labelGroup().classes()).toContain('hidden')
+      // Not even the end of a zoom places labels while the layout moves
+      wrapper.vm.isLabelEngineLoaded = true
+      wrapper.vm.graph.nodes = [{ id: 'a', x: 0, y: 0 }]
+      vi.mocked(d3.zoomTransform).mockClear()
+      lastHandler(wrapper.vm.zoom.on, 'end')({ transform: { k: 1, x: 0, y: 0 } })
+      expect(d3.zoomTransform).not.toHaveBeenCalled()
+
+      updateNodeLabels.mockImplementation(() => {})
+      end()
+      await wrapper.vm.$nextTick()
+      expect(removeNodeLabels).toHaveBeenCalled()
+      expect(updateNodeLabels).toHaveBeenLastCalledWith(true)
+      expect(labelGroup().classes()).not.toContain('hidden')
+    })
+
     it('draws the final positions and places the labels when the simulation ends', () => {
       const updateNodeLabels = vi.spyOn(wrapper.vm, 'updateNodeLabels').mockImplementation(() => {})
       const updateChangedNodePositions = vi
