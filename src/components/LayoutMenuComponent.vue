@@ -47,7 +47,7 @@ const autoTooltip = computed(
     variant="text"
     class="layout-menu"
   >
-    <v-btn value="auto" class="layout-button" v-tippy="autoTooltip">Auto</v-btn>
+    <v-btn value="auto" class="layout-button layout-auto" v-tippy="autoTooltip">Auto</v-btn>
     <v-btn
       v-for="(layout, key) in LAYOUTS"
       :key="key"
@@ -83,12 +83,15 @@ const autoTooltip = computed(
     padding: 0 8px !important;
     height: 32px !important;
     min-height: 32px !important;
-    font-size: 0.75rem;
 
     & svg {
       display: block;
       opacity: 0.35;
       transition: opacity 0.15s;
+    }
+
+    &.layout-auto {
+      font-size: 0.625rem !important;
     }
 
     &.is-effective svg,
