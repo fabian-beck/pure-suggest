@@ -184,7 +184,7 @@ describe('Bug: Network controls should not show when app state is empty', () => 
     queueStore.selectedQueue = []
     queueStore.excludedQueue = []
 
-    // Collapse the network (and ensure not in mobile or wide screen mode)
+    // Collapse the network (in a desktop layout with the network at the bottom)
     interfaceStore.isNetworkCollapsed = true
     interfaceStore.isMobile = false
     interfaceStore.isWideScreen = false
@@ -220,7 +220,7 @@ describe('Bug: Network controls should not show when app state is empty', () => 
     queueStore.selectedQueue = []
     queueStore.excludedQueue = []
 
-    // Collapse the network (and ensure not in mobile or wide screen mode)
+    // Collapse the network (in a desktop layout with the network at the bottom)
     interfaceStore.isNetworkCollapsed = true
     interfaceStore.isMobile = false
     interfaceStore.isWideScreen = false
