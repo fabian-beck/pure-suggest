@@ -8,18 +8,19 @@
  */
 
 import { splitAuthorName } from '@/lib/Util.js'
+import { getAuthorRadius } from '@/utils/network/authorNodes.js'
 import { getRectSize, getBoostIndicatorRadius } from '@/utils/network/publicationNodes.js'
 
 const FONT_SIZE = 12
 const AUTHOR_FONT_SIZE = 10
 const PUBLICATION_STROKE_WIDTH = 3
 const BOOST_INDICATOR_STROKE_WIDTH = 1
-const AUTHOR_RADIUS = 12
 const KEYWORD_CHAR_WIDTH = 8
 const KEYWORD_HEIGHT = 16
 const KEYWORD_CLEARANCE = 5
 const CITATION_ARC_SAMPLES = 6
 const LABEL_TRANSITION_DURATION = 300 // ms
+const LABEL_FADE_IN_DURATION = 150 // ms
 const LABEL_MARGIN = 7 // Space of labels from the marks of other nodes
 const LABEL_SPACING = '0.4em' // Space between labels (the default, not twice the margin)
 
@@ -134,7 +135,7 @@ export function createNodeLabelProblem(nodes, links, scale) {
     const score = (node.author ?? node.publication).score
     let mark
     if (node.type === 'author') {
-      mark = { shape: 'circle', r: AUTHOR_RADIUS * scale }
+      mark = { shape: 'circle', r: getAuthorRadius(node) * scale }
     } else {
       const half = ((getRectSize(node) + PUBLICATION_STROKE_WIDTH) / 2) * scale
       const boostRadius = getBoostIndicatorRadius(node)
@@ -265,7 +266,7 @@ export function renderNodeLabels(labelSelection, result, nodes, activePublicatio
         const g = enter.append('g').style('opacity', 0)
         g.append('path').attr('d', getLeaderPath)
         g.append('text').attr('x', getTextX).attr('y', getTextY)
-        g.transition('fade').duration(LABEL_TRANSITION_DURATION).style('opacity', 1)
+        g.transition('fade').duration(LABEL_FADE_IN_DURATION).style('opacity', 1)
         return g
       },
       (update) => update,

@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 
 import CompactButton from '@/components/basic/CompactButton.vue'
+import { NETWORK_SELECTED_BASE_NUMBER } from '@/constants/config.js'
 import { useSessionStore } from '@/stores/session.js'
 
 const props = defineProps({
@@ -12,6 +13,10 @@ const props = defineProps({
   onlyShowFiltered: {
     type: Boolean,
     default: false
+  },
+  selectedNumberFactor: {
+    type: Number,
+    default: 0.3
   },
   suggestedNumberFactor: {
     type: Number,
@@ -33,6 +38,7 @@ const emit = defineEmits([
   'plot',
   'update:showNodes',
   'update:onlyShowFiltered',
+  'update:selectedNumberFactor',
   'update:suggestedNumberFactor',
   'update:authorNumberFactor',
   'update:labelNumberFactor'
@@ -55,6 +61,15 @@ const onlyShowFilteredModel = computed({
   },
   set(value) {
     emit('update:onlyShowFiltered', value)
+  }
+})
+
+const selectedNumberFactorModel = computed({
+  get() {
+    return props.selectedNumberFactor
+  },
+  set(value) {
+    emit('update:selectedNumberFactor', value)
   }
 })
 
@@ -173,6 +188,19 @@ const labelNumberFactorModel = computed({
               hide-details
               class="mt-0"
             ></v-checkbox>
+          </v-list-item>
+          <v-list-item
+            v-if="sessionStore.selectedPublications.length > NETWORK_SELECTED_BASE_NUMBER"
+            prepend-icon="mdi-water-outline"
+          >
+            <v-list-item-title>Number of <b>selected</b> shown</v-list-item-title>
+            <v-slider
+              v-model="selectedNumberFactorModel"
+              :max="1"
+              :min="0"
+              step="0.05"
+              @update:model-value="$emit('plot', true)"
+            />
           </v-list-item>
           <v-list-item prepend-icon="mdi-water-plus-outline">
             <v-list-item-title>Number of <b>suggested</b> shown</v-list-item-title>

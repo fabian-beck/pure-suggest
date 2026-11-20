@@ -197,6 +197,9 @@ export function useAppState() {
     if (session.name !== undefined && session.name !== null) {
       sessionStore.setSessionName(session.name)
     }
+    if (session.id) {
+      sessionStore.sessionId = session.id
+    }
     sessionStore.addPublicationsToSelection(session.selected)
     // When loading a session, don't mark publications as newly added
     sessionStore.clearNewlyAddedFlags()

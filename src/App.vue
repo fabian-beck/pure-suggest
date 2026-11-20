@@ -3,6 +3,7 @@ import LZString from 'lz-string'
 
 import { useAppState } from './composables/useAppState.js'
 import { onKey } from './lib/Keys.js'
+import { trackRecentSession } from './lib/RecentSessions.js'
 import { useInterfaceStore } from './stores/interface.js'
 import { useModalStore } from './stores/modal.js'
 import { useSessionStore } from './stores/session.js'
@@ -23,6 +24,7 @@ export default {
     const interfaceStore = useInterfaceStore()
     const modalStore = useModalStore()
     const { isEmpty, loadSession } = useAppState()
+    trackRecentSession(sessionStore)
     // check if mobile
     interfaceStore.checkMobile()
     window.addEventListener('resize', interfaceStore.checkMobile)

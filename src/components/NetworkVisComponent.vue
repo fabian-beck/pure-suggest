@@ -12,6 +12,7 @@ import { useModalManager } from '@/composables/useModalManager.js'
 import { useAuthorStore } from '@/stores/author.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useQueueStore } from '@/stores/queue.js'
+import { NETWORK_SELECTED_BASE_NUMBER } from '@/constants/config.js'
 import { useSessionStore } from '@/stores/session.js'
 
 // Force simulation utilities
@@ -29,6 +30,7 @@ import {
   initializeForces,
   calculateYearX,
   pinTimelineX,
+  runFrameTicks,
   SIMULATION_ALPHA
 } from '@/utils/network/forces.js'
 
@@ -81,6 +83,15 @@ import {
 
 const LABEL_OVERSCAN = 100 // px beyond the view, about the width of a label
 const RESIZE_REPLOT_DELAY = 200 // ms after the last change of the panel size
+const REVEAL_ALPHA = 0.3 // Revealed or hidden nodes find their places, the others mostly stay
+
+/**
+ * Whether a publication that is not shown by default is revealed: when active, or when
+ * selected and linked to the active publication
+ */
+function isRevealed(publication) {
+  return publication.isActive || (publication.isSelected && publication.isLinkedToActive)
+}
 
 export default {
   name: 'NetworkVisComponent',
@@ -126,10 +137,14 @@ export default {
       showNodes: ['selected', 'suggested', 'keyword', 'author'],
       errorMessage: '',
       errorTimer: null,
+      selectedNumberFactor: 0.3, // Share of the selected beyond the base number that are shown
       suggestedNumberFactor: 0.3,
       authorNumberFactor: 0.5,
       labelNumberFactor: 0.3, // Share of the nodes that may get a label at zoom 1 (0: none)
       areNodeLabelsHidden: false, // While the zoom scale changes
+      // While the layout moves after a restart, labels are hidden, as placing them on the way
+      // makes them lag behind their nodes
+      isLayoutMoving: false,
       onlyShowFiltered: false,
       isDragging: false,
       // Graph size for the performance monitor; the graph itself is kept non-reactive
@@ -148,12 +163,15 @@ export default {
     this.graph = { nodes: [], links: [] }
     this.nodeLabel = null
     this.labelResult = null // Previous label placements, kept as warm start for stable labels
-    this.labelTickCount = 0
-    this.tickCount = 0
+    this.lastFrameTime = 0
     this.labelZoomScale = 1 // Zoom factor of the previous label placement
     this.viewport = { width: 0, height: 0 } // Size of the panel, measured when plotting and on resize
     this.shownYears = { min: undefined, max: undefined } // Range of the year axis
     this.isLabelEngineLoaded = false
+    // Publications beyond the shown numbers, and the ones of them revealed for the active
+    // publication
+    this.hiddenPublications = []
+    this.revealedPublications = []
   },
   computed: {
     showSelectedNodes () {
@@ -203,9 +221,18 @@ export default {
         if (this.interfaceStore.isLoading) {
           return
         }
-        // Activation only changes highlighting, not the graph structure, so a
-        // full replot with simulation resume is not needed
-        this.updateActiveHighlighting()
+        // Hidden publications are revealed for the active one (or hidden again), which
+        // changes the graph structure; otherwise, activation only changes highlighting,
+        // and a full replot with simulation resume is not needed
+        if (
+          this.revealedPublications.length ||
+          this.hiddenPublications.some(isRevealed)
+        ) {
+          this.plot()
+          this.restart(REVEAL_ALPHA)
+        } else {
+          this.updateActiveHighlighting()
+        }
       }
     },
     selectedQueue: {
@@ -283,11 +310,15 @@ export default {
     // Forces are set when plotting
     this.simulation = createForceSimulation()
       .on('tick', this.tick)
-      // The last tick may not have been drawn, and labels are placed on every fourth drawn tick only
+      // The last tick may not have been drawn, and labels are only placed in the final layout
       .on('end', () => {
         const changedNodes = this.detectChangedNodes()
         this.updateChangedNodePositions(changedNodes)
         this.updateSelectiveLinks(changedNodes)
+        if (this.isLayoutMoving) {
+          this.removeNodeLabels()
+          this.isLayoutMoving = false
+        }
         this.updateNodeLabels(true)
       })
 
@@ -327,42 +358,55 @@ export default {
   },
   methods: {
     /**
-     * Collect and filter publications based on current settings
-     * @returns {Array} Array of filtered publications
+     * Number of selected publications shown, not counting the ones revealed as linked to
+     * the active publication
+     */
+    shownSelectedNumber () {
+      const count = this.sessionStore.selectedPublications?.length || 0
+      if (count <= NETWORK_SELECTED_BASE_NUMBER) {
+        return count
+      }
+      return (
+        NETWORK_SELECTED_BASE_NUMBER +
+        Math.round(this.selectedNumberFactor * (count - NETWORK_SELECTED_BASE_NUMBER))
+      )
+    },
+
+    /**
+     * Collect the publications shown as nodes: of the selected and suggested ones (filtered if
+     * only filtered ones should be shown), the top-ranked ones and the revealed ones
+     * @returns {Array} Array of shown publications
      */
     collectFilteredPublications () {
-      let publications = []
-
-      if (this.showSelectedNodes) {
-        let selectedPubs = this.sessionStore.selectedPublications || []
-        if (
-          this.onlyShowFiltered &&
-          this.sessionStore.filter.hasActiveFilters() &&
-          this.sessionStore.filter.applyToSelected
-        ) {
-          selectedPubs = selectedPubs.filter((pub) => this.sessionStore.filter.matches(pub))
-        }
-        publications = publications.concat(selectedPubs)
-      }
-
-      if (this.showSuggestedNodes) {
-        let suggestedPubs = this.sessionStore.suggestedPublications || []
-        // Filter first if needed
-        if (
-          this.onlyShowFiltered &&
-          this.sessionStore.filter.hasActiveFilters() &&
-          this.sessionStore.filter.applyToSuggested
-        ) {
-          suggestedPubs = suggestedPubs.filter((pub) => this.sessionStore.filter.matches(pub))
-        }
-        // Then slice to limit to top N from filtered results
-        suggestedPubs = suggestedPubs.slice(0, Math.round(this.suggestedNumberFactor * 50))
-        publications = publications.concat(suggestedPubs)
-      }
-
-      return publications
+      const { filter } = this.sessionStore
+      const isFiltering = this.onlyShowFiltered && filter.hasActiveFilters()
+      const shownPublications = []
+      this.hiddenPublications = []
+      ;[
+        [
+          this.showSelectedNodes,
+          this.sessionStore.selectedPublications,
+          filter.applyToSelected,
+          this.shownSelectedNumber()
+        ],
+        [
+          this.showSuggestedNodes,
+          this.sessionStore.suggestedPublications,
+          filter.applyToSuggested,
+          Math.round(this.suggestedNumberFactor * 50)
+        ]
+      ].forEach(([isShown, publications, isFiltered, shownNumber]) => {
+        if (!isShown || !publications) return
+        // Filter first, then take the top-ranked ones (publications are sorted by score)
+        const filteredPublications =
+          isFiltering && isFiltered ? publications.filter((pub) => filter.matches(pub)) : publications
+        shownPublications.push(...filteredPublications.slice(0, shownNumber))
+        this.hiddenPublications.push(...filteredPublications.slice(shownNumber))
+      })
+      this.revealedPublications = this.hiddenPublications.filter(isRevealed)
+      return shownPublications.concat(this.revealedPublications)
     },
-    
+
     /**
      * Initialize graph nodes and links
      */
@@ -372,10 +416,7 @@ export default {
 
       // Filter authors based on factor
       const allAuthors = this.authorStore.selectedPublicationsAuthors || []
-      const filteredAuthors = allAuthors.slice(
-        0,
-        this.authorNumberFactor * this.sessionStore.selectedPublications.length
-      )
+      const filteredAuthors = allAuthors.slice(0, this.authorNumberFactor * this.shownSelectedNumber())
 
       // Get filtered publications
       const publications = this.collectFilteredPublications()
@@ -573,7 +614,7 @@ export default {
         initializeForces(
           this.simulation,
           this.isNetworkClusters,
-          this.sessionStore.selectedPublications.length,
+          this.shownSelectedNumber(),
           this.viewport
         )
 
@@ -626,7 +667,7 @@ export default {
 
     },
     /**
-     * Check if current tick should be skipped for performance optimization
+     * Check if the tick should not be drawn, as the network is collapsed or empty
      * @returns {boolean} true if tick should be skipped, false otherwise
      */
     shouldSkipCurrentTick() {
@@ -641,23 +682,19 @@ export default {
         return true
       }
 
-      this.$refs.performanceMonitor?.incrementTick()
-
-      // Skip every second DOM update tick for performance (but not when dragging)
-      if (!this.isDragging && ++this.tickCount % 2 === 0) {
-        this.$refs.performanceMonitor?.recordTickSkipped()
-        this.$refs.performanceMonitor?.trackFps() // Still track FPS for debugging
-        return true
-      }
-
-      return false // Don't skip this tick
+      return false
     },
 
     tick () {
-      // Check if this tick should be skipped for performance
       if (this.shouldSkipCurrentTick()) {
         return
       }
+
+      // The layout converges in about a second; a dragged keyword is followed tick by tick
+      const now = performance.now()
+      const tickCount = this.isDragging ? 1 : runFrameTicks(this.simulation, now - this.lastFrameTime)
+      this.lastFrameTime = now
+      this.$refs.performanceMonitor?.incrementTick(tickCount)
 
       // Check which nodes have moved significantly and get the changed nodes
       const changedNodes = this.detectChangedNodes()
@@ -667,9 +704,6 @@ export default {
         this.updateChangedNodePositions(changedNodes)
         const linksUpdated = this.updateSelectiveLinks(changedNodes)
         this.lastUpdateTime = performance.now()
-
-        // Labels follow their nodes and are placed anew every fourth update
-        this.updateNodeLabels(this.labelTickCount++ % 4 === 0)
 
         // Track performance metrics - only count actual DOM updates
         this.$refs.performanceMonitor?.recordDomUpdate(changedNodes.length, linksUpdated)
@@ -776,12 +810,15 @@ export default {
 
     restart(alpha = SIMULATION_ALPHA) {
       if (this.simulation) {
+        this.lastFrameTime = performance.now()
+        this.isLayoutMoving = true
         this.simulation.alpha(alpha).restart()
       }
     },
 
     start() {
       if (this.simulation) {
+        this.lastFrameTime = performance.now()
         this.simulation.restart()
       }
     },
@@ -807,7 +844,12 @@ export default {
      */
     updateNodeLabels(solve, pin = false) {
       const { width, height } = this.viewport
-      if (!this.isLabelEngineLoaded || !width || !this.graph.nodes.length) {
+      if (
+        this.isLayoutMoving ||
+        !this.isLabelEngineLoaded ||
+        !width ||
+        !this.graph.nodes.length
+      ) {
         return
       }
       // Maps layout coordinates onto the visible viewport (origin top-left)
@@ -1107,7 +1149,7 @@ export default {
             </filter>
           </defs>
           <g></g>
-          <g class="node-labels" :class="{ hidden: areNodeLabelsHidden }"></g>
+          <g class="node-labels" :class="{ hidden: areNodeLabelsHidden || isLayoutMoving }"></g>
         </svg>
       </div>
       <ul class="publication-component-list" v-show="!isNetworkActuallyCollapsed">
@@ -1132,6 +1174,7 @@ export default {
       <NetworkControls
         v-model:show-nodes="showNodes"
         v-model:only-show-filtered="onlyShowFiltered"
+        v-model:selected-number-factor="selectedNumberFactor"
         v-model:suggested-number-factor="suggestedNumberFactor"
         v-model:author-number-factor="authorNumberFactor"
         v-model:label-number-factor="labelNumberFactor"
@@ -1204,12 +1247,6 @@ export default {
     & text {
       text-anchor: middle;
       dominant-baseline: middle;
-      // Stroke halo instead of a drop-shadow filter: filters are re-rasterized
-      // for every moving node on every simulation frame
-      paint-order: stroke;
-      stroke: white;
-      stroke-width: 1px;
-      stroke-linejoin: round;
 
       &.unread {
         fill: hsl(var(--bulma-info-h), var(--bulma-info-s), calc(var(--bulma-info-l) - 20%));
@@ -1332,17 +1369,8 @@ export default {
       text-anchor: middle;
       dominant-baseline: middle;
       fill: white;
-      font-size: 0.85rem;
       font-weight: 600;
       transform: translate(0px, 1px);
-
-      &.long {
-        font-size: 0.7rem;
-      }
-
-      &.very-long {
-        font-size: 0.6rem;
-      }
     }
 
     &.non-active {

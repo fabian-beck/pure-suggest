@@ -8,12 +8,19 @@
 
 import tippy from 'tippy.js'
 
+import { getScoreSizeFactor } from '@/utils/network/publicationNodes.js'
+
+const AUTHOR_RADIUS = 12
+
 /**
  * Create author node data from filtered authors
  */
 export function createAuthorNodes(filteredAuthors, publications) {
   const nodes = []
   const displayedDois = new Set(publications.map((pub) => pub.doi))
+  const scores = filteredAuthors.map((author) => author.score)
+  const minScore = Math.min(...scores)
+  const maxScore = Math.max(...scores)
 
   filteredAuthors.forEach((author) => {
     // Check if this author has any publications in the displayed set
@@ -22,6 +29,7 @@ export function createAuthorNodes(filteredAuthors, publications) {
       nodes.push({
         id: author.id,
         author,
+        sizeFactor: getScoreSizeFactor(author.score, minScore, maxScore),
         type: 'author'
       })
     }
@@ -63,12 +71,33 @@ export function initializeAuthorNodes(nodeSelection) {
   const authorNodes = nodeSelection.filter((d) => d.type === 'author')
 
   // Add circle element
-  authorNodes.append('circle').attr('pointer-events', 'all').attr('r', 12).attr('fill', 'black')
+  authorNodes.append('circle').attr('pointer-events', 'all').attr('fill', 'black')
 
   // Add text element for initials
   authorNodes.append('text').attr('pointer-events', 'none')
 
   return authorNodes
+}
+
+/**
+ * Radius of an author node based on the author score
+ */
+export function getAuthorRadius(d) {
+  return AUTHOR_RADIUS * d.sizeFactor
+}
+
+/**
+ * Font size of the initials, fitting them into the author node
+ */
+function getInitialsFontSize(d) {
+  const { length } = d.author.initials
+  let size = 0.85
+  if (length > 3) {
+    size = 0.6
+  } else if (length > 2) {
+    size = 0.7
+  }
+  return `${size * d.sizeFactor}rem`
 }
 
 /**
@@ -110,12 +139,13 @@ export function updateAuthorNodes(nodeSelection, activePublication, existingTool
     allowHTML: true
   })
 
+  authorNodes.select('circle').attr('r', getAuthorRadius)
+
   // Update text content and styling
   authorNodes
     .select('text')
     .text((d) => d.author.initials)
-    .classed('long', (d) => d.author.initials.length > 2)
-    .classed('very-long', (d) => d.author.initials.length > 3)
+    .style('font-size', getInitialsFontSize)
 
   return { nodes: authorNodes, tooltips: newTooltips }
 }

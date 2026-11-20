@@ -12,6 +12,15 @@ import { CURRENT_YEAR } from '@/constants/config.js'
 import { getCitationTimeWeight } from '@/utils/network/links.js'
 
 export const SIMULATION_ALPHA = 0.7
+// Simulation ticks per second of an animated layout at SIMULATION_ALPHA; as nodes move less
+// per tick the more the simulation has cooled down, ticks run faster in inverse proportion
+// to the alpha, so that nodes move at about constant speed and a layout takes about half a
+// second
+const TICKS_PER_SECOND = 240
+// Upper limits of ticks per second and per frame, the latter keeping the movement smooth
+// when frames are slow
+const MAX_TICKS_PER_SECOND = 480
+const MAX_TICKS_PER_FRAME = 8
 const NEW_NODE_OFFSET = 10
 // Space at the left of the year axis for the first year label, at the right for keywords
 const YEAR_AXIS_MARGIN_LEFT = 24
@@ -259,8 +268,31 @@ export function initializeForces(simulation, isNetworkClusters, selectedPublicat
 }
 
 /**
+ * Complement the tick of the simulation's timer with further ticks for a frame shown the given
+ * time (ms) after the previous one, until the simulation has cooled down, so that the layout
+ * runs at the pace of TICKS_PER_SECOND without changing; returns the number of ticks of the
+ * frame
+ */
+export function runFrameTicks(simulation, frameTime) {
+  const ticksPerSecond = Math.min(
+    MAX_TICKS_PER_SECOND,
+    (TICKS_PER_SECOND * SIMULATION_ALPHA) / simulation.alpha()
+  )
+  const frameTickCount = Math.min(
+    MAX_TICKS_PER_FRAME,
+    Math.round((frameTime * ticksPerSecond) / 1000)
+  )
+  let tickCount = 1
+  while (tickCount < frameTickCount && simulation.alpha() >= simulation.alphaMin()) {
+    simulation.tick()
+    tickCount++
+  }
+  return tickCount
+}
+
+/**
  * Create a D3 force simulation; its forces are set by initializeForces
  */
 export function createForceSimulation() {
-  return d3.forceSimulation().alphaDecay(0.015).alphaMin(0.015)
+  return d3.forceSimulation().alphaDecay(0.015).alphaMin(0.02)
 }
