@@ -98,7 +98,7 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 - **Session Store**: Selected publications, excluded publications, suggestions, filters, boost keywords, active publication
 - **Queue Store**: Temporary queues for batch operations (add/exclude publications)
 - **Author Store**: Independent author aggregation and scoring (extracted from session store)
-- **Interface Store**: UI state, loading states, mobile responsiveness
+- **Interface Store**: UI state, loading states, mobile responsiveness, desktop layout (auto or manual) and panel sizes (persisted in localStorage)
 - **Modal Store**: Modal dialog states and search provider configuration
 - **useAppState Composable**: Business logic layer coordinating between stores (session management, suggestion computation, queuing operations)
 - **useModalManager Composable**: Modal dialog management and state coordination

@@ -62,7 +62,7 @@ vi.mock('@/stores/session.js', () => ({
 // Create a dynamic interface store that tests can modify
 const mockInterfaceStore = {
   isMobile: false,
-  isWideScreen: false,
+  isNetworkCollapsible: true,
   isNetworkExpanded: false,
   isNetworkCollapsed: false,
   isNetworkClusters: false,
@@ -191,7 +191,7 @@ describe('NetworkVisComponent - Collapse Functionality', () => {
     // Reset mock interface store to default state
     mockInterfaceStore.isNetworkExpanded = false
     mockInterfaceStore.isNetworkCollapsed = false
-    mockInterfaceStore.isWideScreen = false
+    mockInterfaceStore.isNetworkCollapsible = true
     mockInterfaceStore.isNetworkClusters = false
     mockInterfaceStore.isLoading = false
   })
@@ -270,9 +270,9 @@ describe('NetworkVisComponent - Collapse Functionality', () => {
 
   describe('Performance Optimization When Collapsed', () => {
     it('should skip plot when network is collapsed (in regular desktop mode)', () => {
-      // Set collapsed state BEFORE mounting (ensure not wide screen)
+      // Set collapsed state BEFORE mounting (network collapsible)
       mockInterfaceStore.isNetworkCollapsed = true
-      mockInterfaceStore.isWideScreen = false
+      mockInterfaceStore.isNetworkCollapsible = true
 
       const wrapper = mount(NetworkVisComponent, {
         global: {
@@ -293,9 +293,9 @@ describe('NetworkVisComponent - Collapse Functionality', () => {
     })
 
     it('should skip plot with restart when network is collapsed (in regular desktop mode)', () => {
-      // Set collapsed state BEFORE mounting (ensure not wide screen)
+      // Set collapsed state BEFORE mounting (network collapsible)
       mockInterfaceStore.isNetworkCollapsed = true
-      mockInterfaceStore.isWideScreen = false
+      mockInterfaceStore.isNetworkCollapsible = true
 
       const wrapper = mount(NetworkVisComponent, {
         global: {
@@ -313,10 +313,10 @@ describe('NetworkVisComponent - Collapse Functionality', () => {
       expect(restartSpy).not.toHaveBeenCalled()
     })
 
-    it('should not skip plot when network is collapsed but in wide screen mode', () => {
-      // Set collapsed state AND wide screen mode BEFORE mounting
+    it('should not skip plot when network is collapsed but the layout does not allow collapsing', () => {
+      // Set collapsed state in a layout without collapsing BEFORE mounting
       mockInterfaceStore.isNetworkCollapsed = true
-      mockInterfaceStore.isWideScreen = true
+      mockInterfaceStore.isNetworkCollapsible = false
 
       const wrapper = mount(NetworkVisComponent, {
         global: {
@@ -327,17 +327,17 @@ describe('NetworkVisComponent - Collapse Functionality', () => {
       // Spy on simulation methods
       const startSpy = vi.spyOn(wrapper.vm, 'start')
 
-      // Call plot - should NOT return early in wide screen mode
+      // Call plot - should NOT return early when the layout does not allow collapsing
       wrapper.vm.plot()
 
-      // Should call simulation methods even when collapsed in wide screen mode
+      // Should call simulation methods even when collapsed when the layout does not allow collapsing
       expect(startSpy).toHaveBeenCalled()
     })
 
     it('should skip tick when network is collapsed (in regular desktop mode)', () => {
-      // Set collapsed state BEFORE mounting (ensure not wide screen)
+      // Set collapsed state BEFORE mounting (network collapsible)
       mockInterfaceStore.isNetworkCollapsed = true
-      mockInterfaceStore.isWideScreen = false
+      mockInterfaceStore.isNetworkCollapsible = true
 
       const wrapper = mount(NetworkVisComponent, {
         global: {

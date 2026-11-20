@@ -3,8 +3,42 @@ import { markRaw } from 'vue'
 
 import { createCancellationToken } from '@/lib/Cancellation.js'
 
+// Desktop arrangements of the selected, suggested, and network panels (mobile always stacks them);
+// sizes are relative track weights of the panels along each grid dimension
+export const LAYOUTS = {
+  networkBottom: { name: 'Network at the bottom', columns: [50, 50], rows: [55, 45] },
+  networkRight: { name: 'Network on the right', columns: [45, 55], rows: [50, 50] },
+  threeColumns: { name: 'Three columns', columns: [50, 50, 75], rows: [100] }
+}
+
+const LAYOUT_STORAGE_KEY = 'layoutSettings'
+
+function loadLayoutSettings() {
+  let stored = {}
+  try {
+    stored = JSON.parse(localStorage.getItem(LAYOUT_STORAGE_KEY)) || {}
+  } catch {
+    // fall back to defaults
+  }
+  const panelSizes = {}
+  for (const [layout, defaults] of Object.entries(LAYOUTS)) {
+    panelSizes[layout] = {}
+    for (const axis of ['columns', 'rows']) {
+      const sizes = stored.panelSizes?.[layout]?.[axis]
+      const isValid =
+        Array.isArray(sizes) &&
+        sizes.length === defaults[axis].length &&
+        sizes.every((size) => Number.isFinite(size) && size > 0)
+      panelSizes[layout][axis] = isValid ? sizes : [...defaults[axis]]
+    }
+  }
+  const mode = Object.hasOwn(LAYOUTS, stored.mode) ? stored.mode : 'auto'
+  return { mode, panelSizes }
+}
+
 export const useInterfaceStore = defineStore('interface', {
   state: () => {
+    const layoutSettings = loadLayoutSettings()
     return {
       isLoading: false,
       loadingMessage: '',
@@ -28,13 +62,24 @@ export const useInterfaceStore = defineStore('interface', {
       isMobile: true,
       isWideScreen: false,
       isFilterMenuOpen: false,
+      layoutMode: layoutSettings.mode, // 'auto' or a key of LAYOUTS
+      panelSizes: layoutSettings.panelSizes,
       // Hover state management
       hoveredPublication: null, // DOI of currently hovered publication
       // Keyboard navigation direction tracking
       lastNavigationDirection: null // 'up' or 'down' - for scroll behavior
     }
   },
-  getters: {},
+  getters: {
+    effectiveLayout(state) {
+      if (state.layoutMode !== 'auto') return state.layoutMode
+      return state.isWideScreen ? 'threeColumns' : 'networkBottom'
+    },
+
+    isNetworkCollapsible() {
+      return !this.isMobile && this.effectiveLayout === 'networkBottom'
+    }
+  },
   actions: {
     clear() {
       this.isNetworkExpanded = false
@@ -46,6 +91,28 @@ export const useInterfaceStore = defineStore('interface', {
     checkMobile() {
       this.isMobile = window.innerWidth < 1023
       this.isWideScreen = window.innerWidth >= 2400
+    },
+
+    setLayoutMode(mode) {
+      this.layoutMode = mode
+      this.restoreNetwork()
+      this.saveLayoutSettings()
+    },
+
+    resetPanelSizes(layout, axis) {
+      this.panelSizes[layout][axis] = [...LAYOUTS[layout][axis]]
+      this.saveLayoutSettings()
+    },
+
+    saveLayoutSettings() {
+      try {
+        localStorage.setItem(
+          LAYOUT_STORAGE_KEY,
+          JSON.stringify({ mode: this.layoutMode, panelSizes: this.panelSizes })
+        )
+      } catch (error) {
+        console.warn('Could not store layout settings:', error)
+      }
     },
 
     startLoading() {

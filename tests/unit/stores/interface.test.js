@@ -52,3 +52,81 @@ describe('Interface Store - Loading Cancellation', () => {
     expect(token.isCancelled).toBe(false)
   })
 })
+
+describe('Interface Store - Layout', () => {
+  let interfaceStore
+
+  beforeEach(() => {
+    localStorage.clear()
+    setActivePinia(createPinia())
+    interfaceStore = useInterfaceStore()
+    interfaceStore.isMobile = false
+    interfaceStore.isWideScreen = false
+  })
+
+  it('chooses the layout from the window size in auto mode', () => {
+    expect(interfaceStore.layoutMode).toBe('auto')
+    expect(interfaceStore.effectiveLayout).toBe('networkBottom')
+
+    interfaceStore.isWideScreen = true
+    expect(interfaceStore.effectiveLayout).toBe('threeColumns')
+  })
+
+  it('uses a manually chosen layout independent of the window size', () => {
+    interfaceStore.isWideScreen = true
+    interfaceStore.setLayoutMode('networkRight')
+
+    expect(interfaceStore.effectiveLayout).toBe('networkRight')
+  })
+
+  it('allows collapsing the network only when it is placed at the bottom on desktop', () => {
+    expect(interfaceStore.isNetworkCollapsible).toBe(true)
+
+    interfaceStore.setLayoutMode('threeColumns')
+    expect(interfaceStore.isNetworkCollapsible).toBe(false)
+
+    interfaceStore.setLayoutMode('networkBottom')
+    interfaceStore.isMobile = true
+    expect(interfaceStore.isNetworkCollapsible).toBe(false)
+  })
+
+  it('shows the network in normal size when switching the layout', () => {
+    interfaceStore.collapseNetwork()
+    interfaceStore.setLayoutMode('networkRight')
+
+    expect(interfaceStore.isNetworkCollapsed).toBe(false)
+    expect(interfaceStore.isNetworkExpanded).toBe(false)
+  })
+
+  it('restores layout mode and panel sizes from a previous visit', () => {
+    interfaceStore.setLayoutMode('threeColumns')
+    interfaceStore.panelSizes.threeColumns.columns = [20, 30, 50]
+    interfaceStore.saveLayoutSettings()
+
+    setActivePinia(createPinia())
+    const restoredStore = useInterfaceStore()
+
+    expect(restoredStore.layoutMode).toBe('threeColumns')
+    expect(restoredStore.panelSizes.threeColumns.columns).toEqual([20, 30, 50])
+    expect(restoredStore.panelSizes.networkBottom.rows).toEqual([55, 45])
+  })
+
+  it('ignores invalid stored layout settings', () => {
+    localStorage.setItem('layoutSettings', '{"mode":"unknown","panelSizes":{"threeColumns":{"columns":[1]}}}')
+    setActivePinia(createPinia())
+    const restoredStore = useInterfaceStore()
+
+    expect(restoredStore.layoutMode).toBe('auto')
+    expect(restoredStore.panelSizes.threeColumns.columns).toEqual([50, 50, 75])
+  })
+
+  it('resets the panel sizes of one layout dimension to the defaults', () => {
+    interfaceStore.panelSizes.networkRight.columns = [10, 90]
+    interfaceStore.panelSizes.networkRight.rows = [30, 70]
+
+    interfaceStore.resetPanelSizes('networkRight', 'columns')
+
+    expect(interfaceStore.panelSizes.networkRight.columns).toEqual([45, 55])
+    expect(interfaceStore.panelSizes.networkRight.rows).toEqual([30, 70])
+  })
+})

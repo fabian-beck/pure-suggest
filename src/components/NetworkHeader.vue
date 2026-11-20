@@ -77,14 +77,14 @@ const isNetworkClustersModel = computed({
       <CompactButton
         icon="mdi-arrow-down"
         v-tippy="'Hide diagram'"
-        v-show="!interfaceStore.isNetworkCollapsed && !interfaceStore.isMobile && !interfaceStore.isWideScreen"
+        v-show="!interfaceStore.isNetworkCollapsed && interfaceStore.isNetworkCollapsible"
         @click="$emit('collapseNetwork')"
         class="ml-4 has-text-white"
       ></CompactButton>
       <CompactButton
         icon="mdi-arrow-up"
         v-tippy="'Show diagram'"
-        v-show="interfaceStore.isNetworkCollapsed && !interfaceStore.isMobile && !interfaceStore.isWideScreen"
+        v-show="interfaceStore.isNetworkCollapsed && interfaceStore.isNetworkCollapsible"
         @click="$emit('restoreNetwork')"
         class="ml-4 has-text-white"
       ></CompactButton>

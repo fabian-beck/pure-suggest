@@ -185,8 +185,7 @@ export default {
     },
 
     isNetworkActuallyCollapsed () {
-      // In wide screen mode or mobile mode, network is never collapsed regardless of store state
-      return this.interfaceStore.isNetworkCollapsed && !this.interfaceStore.isWideScreen && !this.interfaceStore.isMobile
+      return this.interfaceStore.isNetworkCollapsed && this.interfaceStore.isNetworkCollapsible
     },
   },
   watch: {

@@ -9,6 +9,23 @@ import { useModalStore } from './stores/modal.js'
 import { useSessionStore } from './stores/session.js'
 import { perfMonitor } from './utils/performance.js'
 
+const GUTTER_SIZE = '0.5vw'
+
+// Gutter areas are named after the grid dimension they resize and the panel track they follow
+const GRID_AREAS = {
+  networkBottom: `'selected gutter-columns-0 suggested'
+    'gutter-rows-0 gutter-rows-0 gutter-rows-0'
+    'vis vis vis'`,
+  networkRight: `'selected gutter-columns-0 vis'
+    'gutter-rows-0 gutter-columns-0 vis'
+    'suggested gutter-columns-0 vis'`,
+  threeColumns: `'selected gutter-columns-0 suggested gutter-columns-1 vis'`
+}
+
+function toGridTracks(panelSizes) {
+  return panelSizes.map((size) => `minmax(0, ${size}fr)`).join(` ${GUTTER_SIZE} `)
+}
+
 export default {
   name: 'App',
   data() {
@@ -28,6 +45,36 @@ export default {
     interfaceStore.checkMobile()
     window.addEventListener('resize', interfaceStore.checkMobile)
     return { sessionStore, interfaceStore, modalStore, isEmpty, loadSession }
+  },
+  computed: {
+    isNetworkShownCollapsed() {
+      return this.interfaceStore.isNetworkCollapsed && this.interfaceStore.isNetworkCollapsible
+    },
+
+    mainGridStyle() {
+      if (this.interfaceStore.isNetworkExpanded) {
+        return { gridTemplateAreas: "'vis'", gridTemplateColumns: '100%', gridTemplateRows: '100%' }
+      }
+      const layout = this.interfaceStore.effectiveLayout
+      const { columns, rows } = this.interfaceStore.panelSizes[layout]
+      return {
+        gridTemplateAreas: GRID_AREAS[layout],
+        gridTemplateColumns: toGridTracks(columns),
+        gridTemplateRows: this.isNetworkShownCollapsed
+          ? `minmax(0, 1fr) ${GUTTER_SIZE} max-content`
+          : toGridTracks(rows)
+      }
+    },
+
+    panelGutters() {
+      if (this.interfaceStore.isMobile || this.interfaceStore.isNetworkExpanded) return []
+      const { columns, rows } = this.interfaceStore.panelSizes[this.interfaceStore.effectiveLayout]
+      const gutters = columns.slice(1).map((_, index) => ({ axis: 'columns', index }))
+      if (!this.isNetworkShownCollapsed) {
+        gutters.push(...rows.slice(1).map((_, index) => ({ axis: 'rows', index })))
+      }
+      return gutters
+    }
   },
   methods: {
     updatePageTitle() {
@@ -156,14 +203,17 @@ export default {
     <div
       id="main"
       @click="sessionStore.clearActivePublication('clicked anywhere')"
-      :class="{
-        'network-expanded': interfaceStore.isNetworkExpanded,
-        'network-collapsed': interfaceStore.isNetworkCollapsed
-      }"
+      :style="mainGridStyle"
     >
       <SelectedPublicationsComponent id="selected" v-show="!interfaceStore.isNetworkExpanded" />
       <SuggestedPublicationsComponent id="suggested" v-show="!interfaceStore.isNetworkExpanded" />
       <NetworkVisComponent id="network" />
+      <PanelGutter
+        v-for="gutter in panelGutters"
+        :key="`${gutter.axis}-${gutter.index}`"
+        :axis="gutter.axis"
+        :index="gutter.index"
+      />
       <LandingComponent v-if="isEmpty" />
     </div>
     <QuickAccessBar
@@ -297,24 +347,8 @@ body {
     margin: 0.5vw;
     margin-top: 0;
     display: grid;
-    grid-template-areas:
-      'selected suggested'
-      'vis vis';
     height: calc(100% - 0.5vw);
     overflow: hidden;
-    grid-template-columns: 50fr 50fr;
-    grid-template-rows: auto 42vh;
-    gap: 0.5vw;
-
-    &.network-expanded {
-      grid-template-areas: 'vis';
-      grid-template-columns: auto;
-      grid-template-rows: auto;
-    }
-
-    &.network-collapsed {
-      grid-template-rows: auto max-content;
-    }
 
     & #selected {
       grid-area: selected;
@@ -514,14 +548,6 @@ body {
   .modal-close {
     right: 5px;
     top: 5px;
-  }
-}
-
-@media screen and (min-width: 2400px) {
-  #app .v-application__wrap #main {
-    grid-template-areas: 'selected suggested vis';
-    grid-template-columns: 50fr 50fr 75fr;
-    grid-template-rows: auto;
   }
 }
 </style>
