@@ -50,6 +50,9 @@ const AUTHOR_COMMUNITY_FACTORS = { within: 2, across: 0.25 }
 // Space kept around publication and author nodes in clusters mode, where links pulling
 // strongly within communities would otherwise make nodes overlap
 const COLLISION_PADDING = 2
+// Pull of the nodes back to their place in the previous layout of a mode when switching
+// back to the mode (see returnToLayout)
+const RETURN_STRENGTH = 1
 
 /**
  * Calculate link distance based on link type and network mode
@@ -188,6 +191,56 @@ export function assignNodePositions(nodes, previousNodes, links) {
     }
     return node
   })
+}
+
+/**
+ * Remember the layout of the graph ({ nodes, links }) in the current mode (positions of the
+ * nodes by id) in a view ({ width, height }), to return to it when switching back to the mode
+ * (see returnToLayout)
+ */
+export function rememberLayout(layouts, graph, view, isNetworkClusters) {
+  layouts[isNetworkClusters ? 'clusters' : 'timeline'] = {
+    positions: new Map(graph.nodes.map((node) => [node.id, { x: node.x, y: node.y }])),
+    linkCount: graph.links.length,
+    view: { ...view }
+  }
+}
+
+/**
+ * When switching back to a mode with an unchanged graph ({ nodes, links }) and view
+ * ({ width, height }), return to the previous layout of the mode (see rememberLayout), as a
+ * new simulation would rearrange the layout, often mirrored: the returned force (otherwise
+ * null) pulls the nodes to their previous place; on the timeline, they are placed at their
+ * previous y at once, like at the x of their year, as nodes of the same year cannot pass
+ * each other
+ */
+export function returnToLayout(layouts, graph, view, isNetworkClusters) {
+  const layout = layouts[isNetworkClusters ? 'clusters' : 'timeline']
+  const isUnchanged =
+    layout?.view.width === view.width &&
+    layout.view.height === view.height &&
+    layout.linkCount === graph.links.length &&
+    layout.positions.size === graph.nodes.length &&
+    graph.nodes.every((node) => layout.positions.has(node.id))
+  if (!isUnchanged) return null
+  if (!isNetworkClusters) {
+    graph.nodes.forEach((node) => {
+      node.y = layout.positions.get(node.id).y
+    })
+  }
+  let nodes = []
+  const force = (alpha) => {
+    nodes.forEach((node) => {
+      const position = layout.positions.get(node.id)
+      if (!position) return
+      node.vx += (position.x - node.x) * RETURN_STRENGTH * alpha
+      node.vy += (position.y - node.y) * RETURN_STRENGTH * alpha
+    })
+  }
+  force.initialize = (simulationNodes) => {
+    nodes = simulationNodes
+  }
+  return force
 }
 
 /**
