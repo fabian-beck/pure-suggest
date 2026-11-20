@@ -2,7 +2,8 @@
  * Node Labels for Network Visualization
  *
  * Publication nodes are labeled "Smith et al., 2010" and author nodes "SMITH, JOHN"
- * (in smaller type); long labels break into two lines after the comma.
+ * (in smaller type); long labels break into two lines of balanced length, aligned toward
+ * their node.
  * Label Anything (WebAssembly) decides which labels fit and where they go: labels are
  * solved in the fixed pixel space of the SVG viewport, so zooming in reveals more of them.
  */
@@ -62,8 +63,19 @@ export function getNodeLabelText(node) {
   } else {
     return null
   }
-  // A line feed is a hard line break for the label engine
-  return text.length > MAX_SINGLE_LINE_LABEL_LENGTH ? text.replace(', ', ',\n') : text
+  if (text.length <= MAX_SINGLE_LINE_LABEL_LENGTH) return text
+  // Break between the words where the longer line is shortest, but not within "et al.";
+  // a line feed is a hard line break for the label engine
+  const words = text.split(' ')
+  let best = { length: text.length, text }
+  for (let i = 1; i < words.length; i++) {
+    if (words[i - 1] === 'et' && words[i].startsWith('al.')) continue
+    const first = words.slice(0, i).join(' ')
+    const second = words.slice(i).join(' ')
+    const length = Math.max(first.length, second.length)
+    if (length < best.length) best = { length, text: `${first}\n${second}` }
+  }
+  return best.text
 }
 
 function getNodeLabelKind(node) {
@@ -243,11 +255,21 @@ function getLeaderPath({ placement }) {
     : null
 }
 
+/**
+ * The lines of a label, aligned toward its node: flush left right of the node, flush right
+ * left of it, and centered (as placed by the engine) above or below it
+ */
 function getTextLines({ placement }) {
   const { box, anchor, text } = placement
+  const offsets = text.x_offsets ?? [text.x_offset]
+  const minOffset = Math.min(...offsets)
+  let alignFactor = 0.5
+  if (box.x > anchor[0]) alignFactor = 0
+  else if (box.x + box.w < anchor[0]) alignFactor = 1
   return text.lines.map((line, i) => ({
     line,
-    x: box.x + (text.x_offsets?.[i] ?? text.x_offset) - anchor[0],
+    // The free space of a centered line is twice its offset from the widest line
+    x: box.x + minOffset + (offsets[i] - minOffset) * 2 * alignFactor - anchor[0],
     y: box.y + text.baseline_offsets[i] - anchor[1]
   }))
 }

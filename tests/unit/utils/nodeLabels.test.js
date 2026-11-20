@@ -47,8 +47,11 @@ function createProblem(nodes, links = [], scale = 1) {
 }
 
 describe('nodeLabels', () => {
-  it('formats publication and author labels, long ones in two lines', () => {
-    expect(getNodeLabelText(publicationNode('a', 0, 0))).toBe('Smith et al.,\n2010')
+  it('formats publication and author labels, long ones in two balanced lines', () => {
+    expect(getNodeLabelText(publicationNode('a', 0, 0))).toBe('Smith\net al., 2010')
+    expect(
+      getNodeLabelText(publicationNode('a', 0, 0, { authorShort: 'Underwood and Achterberg' }))
+    ).toBe('Underwood and\nAchterberg, 2010')
     expect(getNodeLabelText(publicationNode('a', 0, 0, { authorShort: 'Smith' }))).toBe(
       'Smith, 2010'
     )
@@ -186,6 +189,8 @@ describe('nodeLabels', () => {
     const result = placeNodeLabels(createProblem(nodes))
 
     expect(result.stats).toMatchObject({ placed: 3, hard_violations: 0 })
+    // Needed to align the lines toward the node
+    expect(result.placements[0].text.x_offsets).toHaveLength(2)
 
     document.body.innerHTML = '<svg><g class="node-labels"></g></svg>'
     const labels = renderNodeLabels(d3.select('g.node-labels').selectAll('g'), result, nodes, null)
@@ -197,10 +202,10 @@ describe('nodeLabels', () => {
     ])
     const lines = labels.select('text').selectAll('tspan')
     expect(lines.nodes().map((node) => node.textContent)).toEqual([
-      'Smith et al.,',
-      '2010',
-      'Smith et al.,',
-      '2010',
+      'Smith',
+      'et al., 2010',
+      'Smith',
+      'et al., 2010',
       'SMITH, JOHN'
     ])
     const [first, second] = lines.nodes().map((node) => Number(node.getAttribute('y')))
@@ -254,6 +259,35 @@ describe('nodeLabels', () => {
       })
     }
     expect(ambiguous).toEqual([])
+  })
+
+  it('aligns the lines of a label toward its node', () => {
+    // Centered lines as placed by the engine: the second line is 20 px narrower
+    const placement = (id, boxX, boxY) => ({
+      id,
+      placed: true,
+      anchor: [0, 0],
+      box: { x: boxX, y: boxY, w: 60, h: 30 },
+      text: { x_offsets: [0, 10], baseline_offsets: [10, 24], font_size: 12, lines: ['1', '2'] },
+      leader: null,
+      priority: { tier: 0 }
+    })
+    document.body.innerHTML = '<svg><g class="node-labels"></g></svg>'
+    const labels = renderNodeLabels(
+      d3.select('g.node-labels').selectAll('g'),
+      { placements: [placement('a', 10, -15), placement('b', -70, -15), placement('c', -30, 10)] },
+      [publicationNode('a', 0, 0), publicationNode('b', 0, 0), publicationNode('c', 0, 0)],
+      null
+    )
+    const lineX = (i) =>
+      d3
+        .select(labels.nodes()[i])
+        .selectAll('tspan')
+        .nodes()
+        .map((node) => Number(node.getAttribute('x')))
+    expect(lineX(0)).toEqual([10, 10])
+    expect(lineX(1)).toEqual([-70, -50])
+    expect(lineX(2)).toEqual([-30, -20])
   })
 
   it('moves, shows, and hides labels smoothly when they are placed anew', async () => {
