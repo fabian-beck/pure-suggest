@@ -121,18 +121,48 @@ describe('Keys Module - Keyboard Event Handling', () => {
     })
 
     it('should ignore events with modifier keys', () => {
+      sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
       const ctrlEvent = createKeyEvent('f', { ctrlKey: true })
-      const shiftEvent = createKeyEvent('f', { shiftKey: true })
+      const shiftEvent = createKeyEvent('F', { shiftKey: true })
+      const shiftArrowEvent = createKeyEvent('ArrowLeft', { shiftKey: true })
       const metaEvent = createKeyEvent('f', { metaKey: true })
 
-      onKey(ctrlEvent)
-      onKey(shiftEvent)
-      onKey(metaEvent)
+      ;[ctrlEvent, shiftEvent, shiftArrowEvent, metaEvent].forEach((event) => onKey(event))
 
       expect(interfaceStore.openFilterMenu).not.toHaveBeenCalled()
-      expect(ctrlEvent.preventDefault).not.toHaveBeenCalled()
-      expect(shiftEvent.preventDefault).not.toHaveBeenCalled()
-      expect(metaEvent.preventDefault).not.toHaveBeenCalled()
+      expect(interfaceStore.activatePublicationComponent).not.toHaveBeenCalled()
+      ;[ctrlEvent, shiftEvent, shiftArrowEvent, metaEvent].forEach((event) =>
+        expect(event.preventDefault).not.toHaveBeenCalled()
+      )
+    })
+
+    it('should ignore keys already handled elsewhere, e.g., by a dialog that just closed', () => {
+      sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
+
+      onKey(createKeyEvent('a', { defaultPrevented: true }))
+
+      expect(modalStore.isAuthorModalDialogShown).toBe(false)
+    })
+
+    it('should accept characters typed with Shift (e.g., + on US keyboards)', () => {
+      sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
+      sessionStore.activePublication = { doi: '10.1234/active' }
+
+      onKey(createKeyEvent('+', { shiftKey: true }))
+
+      expect(mockQueueForSelected).toHaveBeenCalledWith('10.1234/active')
+    })
+
+    it.each([
+      ['q', 'isQueueModalDialogShown'],
+      ['e', 'isExcludedModalDialogShown'],
+      ['?', 'isKeyboardControlsModalDialogShown']
+    ])('should open a dialog with %s', (key, dialogFlag) => {
+      sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
+
+      onKey(createKeyEvent(key, { shiftKey: key === '?' }))
+
+      expect(modalStore[dialogFlag]).toBe(true)
     })
 
     it('should ignore repeated events (except arrow keys)', () => {

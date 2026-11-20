@@ -189,6 +189,23 @@ export default {
       return `author-${id.replace(/[^a-zA-Z0-9]/g, '-')}`
     },
 
+    onDialogKey(event, index) {
+      const isAuthorView = Boolean(this.authorStore.activeAuthorId)
+      if (isAuthorView && ['ArrowLeft', 'Backspace'].includes(event.key)) {
+        event.preventDefault()
+        this.authorStore.clearActiveAuthor()
+        return
+      }
+      const author = isAuthorView ? this.displayedAuthors[0] : this.displayedAuthors[index]
+      if (!author) return
+      if (event.key === 'g') {
+        event.preventDefault()
+        window.open(`https://scholar.google.com/scholar?q=${author.id}`, '_blank')
+      } else if (event.key === 'i') {
+        event.preventDefault()
+        this.toggleAuthorFilter(author.id)
+      }
+    },
     toggleAuthorFilter(authorId) {
       this.sessionStore.filter.toggleAuthor(authorId)
 
@@ -287,6 +304,16 @@ export default {
         if (oldValue && !newValue) {
           this.resetPagination()
         }
+        // Keep keyboard focus in the dialog: on the author view, or back on the left author
+        if (!this.modalStore.isAuthorModalDialogShown) return
+        this.$nextTick(() => {
+          const previousAuthorItem = oldValue && document.getElementById(this.toTagId(oldValue))
+          if (!newValue && previousAuthorItem) {
+            previousAuthorItem.focus()
+          } else {
+            this.$refs.dialog.focusInitialElement()
+          }
+        })
       }
     },
     // Reset pagination when author data changes
@@ -305,6 +332,8 @@ export default {
     :title="modalTitle"
     icon="mdi-account-group"
     v-model="modalStore.isAuthorModalDialogShown"
+    ref="dialog"
+    @dialog-key="onDialogKey"
   >
     <template #header-menu>
       <CompactButton
@@ -312,7 +341,7 @@ export default {
         icon="mdi-arrow-left"
         @click="authorStore.clearActiveAuthor()"
         class="back-button mr-2"
-        v-tippy="'Back to author list'"
+        v-tippy="'Back to author list (← or Backspace)'"
       />
       <v-menu :close-on-content-click="false" v-if="!authorStore.activeAuthorId">
         <template #activator="{ props }">
@@ -359,7 +388,9 @@ export default {
             v-for="author in displayedAuthors"
             :key="author.id"
             class="media p-3 m-0 author-item"
-            :class="{ 'clickable-author-item': !authorStore.activeAuthorId }"
+            :class="{
+              'clickable-author-item dialog-item': !authorStore.activeAuthorId
+            }"
             :tabindex="authorStore.activeAuthorId ? undefined : 0"
             @click="handleAuthorItemClick(author.id)"
             @keydown.enter.self.prevent="handleAuthorItemClick(author.id)"
@@ -427,7 +458,7 @@ export default {
                   <v-chip
                     label
                     size="small"
-                    class="coauthor coauthor-chip m-1"
+                    class="coauthor coauthor-chip dialog-item m-1"
                     v-for="coauthorId in Object.keys(author.coauthors).sort(
                       (a, b) => author.coauthors[b] - author.coauthors[a]
                     )"

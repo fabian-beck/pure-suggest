@@ -70,6 +70,7 @@ watch(
       >
         <template #append-inner>
           <v-btn
+            class="dialog-initial-focus"
             @click="copyToClipboard"
             :color="copySuccess ? 'success' : 'default'"
             variant="text"

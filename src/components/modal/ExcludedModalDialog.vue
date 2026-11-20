@@ -3,6 +3,7 @@ import { watch, reactive } from 'vue'
 
 import { useAppState } from '@/composables/useAppState.js'
 import Publication from '@/core/Publication.js'
+import { handlePublicationKey } from '@/lib/Keys.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
@@ -46,6 +47,19 @@ export default {
     }
   },
   methods: {
+    onDialogKey(event, index) {
+      const publication = this.excludedPublications[index]
+      if (!publication) return
+      if (event.key === '+') {
+        event.preventDefault()
+        this.removeFromExcludedAndAddToSelected(publication)
+      } else if (['Delete', 'Backspace'].includes(event.key)) {
+        event.preventDefault()
+        this.removeFromExcluded(publication)
+      } else {
+        handlePublicationKey(event, publication)
+      }
+    },
     removeFromExcluded(publication) {
       this.sessionStore.removeFromExcludedPublication(publication.doi)
       this.updateSuggestions()
@@ -65,6 +79,7 @@ export default {
     title="Excluded publications"
     icon="mdi-minus-thick"
     v-model="modalStore.isExcludedModalDialogShown"
+    @dialog-key="onDialogKey"
   >
     <template #sticky>
       <v-sheet class="has-background-primary-95 pa-2">
@@ -79,7 +94,8 @@ export default {
       <section>
         <ul class="publication-list">
           <li
-            class="publication-component media"
+            class="publication-component media dialog-item"
+            tabindex="0"
             v-for="publication in excludedPublications"
             :key="publication.doi"
           >
