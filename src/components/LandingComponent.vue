@@ -59,7 +59,7 @@ function submitSearch() {
           v-for="session in recentSessions"
           :key="session.id"
           prepend-icon="mdi-history"
-          :title="session.name || session.title || session.selected[0]"
+          :title="session.name || session.boost || session.title || session.selected[0]"
           :subtitle="`${session.selected.length} selected · ${new Date(session.timestamp).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}`"
           @click="loadSession(session)"
         >

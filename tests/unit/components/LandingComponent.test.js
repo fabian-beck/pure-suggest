@@ -108,12 +108,17 @@ describe('LandingComponent', () => {
   it('lists recent sessions and loads one on click', async () => {
     const recent = [
       { id: '1', name: 'My review', title: 'Paper A', selected: ['10.1/a'], timestamp: 0 },
-      { id: '2', name: '', title: 'Paper B', selected: ['10.1/b', '10.1/c'], timestamp: 0 }
+      { id: '2', name: '', title: 'Paper B', selected: ['10.1/b', '10.1/c'], timestamp: 0 },
+      { id: '3', name: '', boost: 'VIS, GRAPH', title: 'Paper C', selected: ['10.1/c'], timestamp: 0 }
     ]
     mockLoadRecentSessions.mockReturnValueOnce(recent)
     const wrapper = createWrapper()
     const items = wrapper.findAll('.v-list-item')
-    expect(items.map((item) => item.find('.title').text())).toEqual(['My review', 'Paper B'])
+    expect(items.map((item) => item.find('.title').text())).toEqual([
+      'My review',
+      'Paper B',
+      'VIS, GRAPH'
+    ])
     await items[1].trigger('click')
     expect(mockLoadSession).toHaveBeenCalledWith(recent[1])
   })
