@@ -22,7 +22,7 @@ const YEAR = /^(?:19|20)\d{2}$/
  */
 export function extractDois(text) {
   const normalized = text
-    .replace(/\\_/g, '_')
+    .replace(/\\_|\{\\textunderscore\}|\\textunderscore(?:\{\})?/g, '_')
     .replace(/%[0-9A-Fa-f]{2}/g, (encoded) => {
       try {
         return decodeURIComponent(encoded)
@@ -32,7 +32,16 @@ export function extractDois(text) {
     })
     // whitespace within the DOI prefix, e.g. "10. 1109/", "10\n.1109/", or "10.1109 / TVCG"
     .replace(/(?<![\d.])10\s*\.\s*(\d{4,9}(?:\.\d+)*)\s*\/\s*(?!10\.\d{4,9}\/)/g, '10.$1/')
-  const tokens = normalized.split(/\s+/)
+  // tokens with a flag whether they start a new line, as page back-references are only
+  // distinguishable from DOI parts by their position
+  const tokens = []
+  const lineStarts = []
+  let previousEnd = 0
+  for (const match of normalized.matchAll(/\S+/g)) {
+    tokens.push(match[0])
+    lineStarts.push(normalized.lastIndexOf('\n', match.index) >= previousEnd)
+    previousEnd = match.index + match[0].length
+  }
   const dois = []
   const seen = new Set()
   for (let i = 0; i < tokens.length; i++) {
@@ -49,7 +58,11 @@ export function extractDois(text) {
       let doi = prefix[0] + suffix
       token = rest.slice(suffix.length)
       // DOI broken by whitespace: continue with the following tokens while they look like DOI parts
-      while (!token && i + 1 < tokens.length && continuesDoi(doi, tokens[i + 1])) {
+      while (
+        !token &&
+        i + 1 < tokens.length &&
+        continuesDoi(doi, tokens[i + 1], lineStarts[i + 1], tokens[i + 2])
+      ) {
         const continuation = DOI_CONTINUATION.exec(tokens[++i])[0]
         doi += continuation
         token = tokens[i].slice(continuation.length)
@@ -65,7 +78,7 @@ export function extractDois(text) {
   return dois
 }
 
-function continuesDoi(doi, next) {
+function continuesDoi(doi, next, nextStartsLine, following) {
   const continuation = DOI_CONTINUATION.exec(next)?.[0]
   if (
     !continuation ||
@@ -79,10 +92,21 @@ function continuesDoi(doi, next) {
   // Joining is only safe if either side signals a break within the DOI: a token starting with
   // "-" or ".", a DOI ending with a character that cannot end it, or a DOI ending with "." followed
   // by digits. Anything else, e.g., page back-references like "12" after a DOI, is not joined.
+  if (/^[.-][A-Za-z0-9]/.test(continuation) || /[-/_(:]$/.test(doi)) {
+    return true
+  }
+  if (!doi.endsWith('.') || !/^\d/.test(continuation)) {
+    return false
+  }
+  // A short number after a DOI ending with "." may also be a page back-reference following the
+  // sentence-ending dot ("doi:10.1006/jvlc.1995.1010. 3" or "...109.\n2, 3"); it is only joined
+  // as a wrapped line that is not followed by further back-references or the next reference label.
   return (
-    /^[.-][A-Za-z0-9]/.test(continuation) ||
-    /[-/_(:]$/.test(doi) ||
-    (doi.endsWith('.') && /^\d/.test(continuation))
+    !/^\d{1,3}\.?$/.test(continuation) ||
+    (nextStartsLine &&
+      next === continuation &&
+      following !== undefined &&
+      !following.startsWith('['))
   )
 }
 
