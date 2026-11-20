@@ -1,0 +1,101 @@
+References
+[AP12] ARCHAMBAULT D., PURCHASE H. C.: The mental map and
+memorability in dynamic graphs. In IEEE Pacific Visualization Symposium
+(PacificVis), 2012 (2012), IEEE, pp. 89–96. doi:10.1109/
+PacificVis.2012.6183578. 3
+[AP13] ARCHAMBAULT D., PURCHASE H. C.: Mental map preservation
+helps user orientation in dynamic graphs. In Graph Drawing. GD
+2012, vol. 7704 of Lecture Notes in Computer Science. Springer, 2013,
+pp. 475–486. doi:10.1007/978-3-642-36763-2_42. 3
+[BHW∗21] BURCH M., HUANG W., WAKEFIELD M., PURCHASE
+H. C., WEISKOPF D., HUA J.: The state of the art in empirical user
+evaluation of graph visualizations. IEEE Access 9 (2021), 4173–4198.
+doi:10.1109/ACCESS.2020.3047616. 2
+[BSVW09] BORGNAKKE C., SONNTAG R. E., VAN WYLEN G. J.: Fundamentals
+of thermodynamics, 7th ed ed. Wiley, Hoboken, NJ, 2009.
+OCLC: 166625826. 4
+[Cum14] CUMMING G.: The new statistics: why and how. Psychological
+science 25, 1 (2014), 7–29. doi:10.1177/0956797613504966. 5
+[DLF∗09] DWYER T., LEE B., FISHER D., QUINN K. I., ISENBERG P.,
+ROBERTSON G., NORTH C.: A comparison of user-generated and automatic
+graph layouts. IEEE Transactions on Visualization and Computer
+Graphics 15, 6 (2009), 961–968. doi:10.1109/TVCG.2009.109.
+2, 3
+[DLMH02] D. CARRINGTON, LINDA COLPOYS, MATTHEW
+J. MCGILL, H. PURCHASE: Experimenting with layout
+and notation in uml diagrams. In International Symposium
+on Empirical Software Engineering (2002). URL:
+https://www.semanticscholar.org/paper/
+Experimenting-with-Layout-and-Notation-in-UML-Carrington-Colpoys/
+9090c9284b14bb92a5b2d8887258b36e2a6a8c62. 2
+[Dra16] DRAGICEVIC P.: Fair statistical communication in
+hci. In Modern statistical methods for HCI, Robertson J.,
+Kaptein M., (Eds.), SpringerLink Bücher. Springer, Cham, 2016,
+pp. 291–330. URL: https://link.springer.com/
+chapter/10.1007/978-3-319-26633-6_13, doi:
+10.1007/978-3-319-26633-6{\textunderscore}13.
+5
+[ED12] EDWARD GLAESSGEN, DAVID STARGEL: The digital
+twin paradigm for future nasa and u.s. air force vehicles.
+In 53rd AIAA/ASME/ASCE/AHS/ASC Structures (2012), Structural
+Dynamics and Materials Conference. URL: https:
+//[www.researchgate.net/publication/268478543_](https://www.researchgate.net/publication/268478543_)
+The_digital_twin_paradigm_for_future_NASA_and_
+US_air_force_vehicles, doi:10.2514/6.2012-1818. 1
+[ELMS91] EADES P., LAI W., MISUE K., SUGIYAMA K.: Preserving
+the mental map of a diagram. In Proceedings of Compugraphics ’91
+(1991), pp. 24–33. 3
+[Gel92] GELERNTER D. H.: Mirror worlds, or, The day software
+puts the universe in a shoebox...How it will happen and
+what it will mean. Oxford University Press, 1992. URL:
+http://search.ebscohost.com/login.aspx?direct=
+true&scope=site&db=nlebk&db=nlabk&AN=169834. 1
+[GJRR22] GUPTA R., JANSEN N., REGNAT N., RUMPE B.: Design
+guidelines for improving user experience in industrial domain-specific
+modelling languages. In Proceedings of the 25th International Conference
+on Model Driven Engineering Languages and Systems: Companion
+Proceedings (2022), ACM Digital Library, Association for Computing
+Machinery, pp. 737–748. doi:10.1145/3550356.3561595. 2
+[Goe07] GOETZE B.: Orthoroute - ein gitterloses verfahren zur generierung
+orthogonaler verbindungen in schaltplänen. In Tagungsband
+Workshop Elektrotechnik CAD 2007. Shaker, 2007, pp. 13–32. 3
+[HBRC10] H. PURCHASE, B. PLIMMER, ROSEMARY BAKER,
+CHRISTOPHER PILCHER: Graph drawing aesthetics in user-sketched
+graph layouts. In Proceedings of the Eleventh Australasian Conference
+on User Interface - Volume 106 (AUIC 10) (2010), AUIC.
+URL: https://www.semanticscholar.org/paper/
+Graph-Drawing-Aesthetics-in-User-Sketched-Graph-Purchase-8f876ea8b2fdd52cc202879873e6cb25c5a2ff8a,
+doi:10.5555/1862280.1862292. 3, 10
+[HDSW24] HELMKE S., DO˘G AN K., SCHEFFLER R., WROBEL
+G.: Domain-specific rules override aesthetic graph drawing
+criteria: An exploration of user-generated diagrams. In Diagrammatic
+Representation and Inference. Diagrams 2024 (2024),
+vol. 14981 of Lecture Notes in Computer Science, Springer,
+Cham, pp. 44–60. URL: https://link.springer.
+com/chapter/10.1007/978-3-031-71291-3_4,
+doi:10.1007/978-3-031-71291-3_4. 10
+[HH10] HUANG W., HUANG M.: Exploring the relative importance
+of crossing number and crossing angle. In Proceedings of the 3rd International
+Symposium on Visual Information Communication (2010),
+ACM Other conferences, ACM, pp. 1–8. doi:10.1145/1865841.
+1865854. 2
+[KA02] KÖRNER C., ALBERT D.: Speed of comprehension
+of visualized ordered sets. Journal of Experimental Psychology
+Applied 8, 1 (2002), 57–71. URL: https://www.
+researchgate.net/publication/374757352_Speed_
+of_Comprehension_of_Visualized_Ordered_Sets,
+doi:10.1037/1076-898X.8.1.57. 2
+[KDMW16] KIEFFER S., DWYER T., MARRIOTT K., WYBROW M.:
+Hola: Human-like orthogonal network layout. IEEE transactions on
+visualization and computer graphics 22, 1 (2016), 349–358. doi:
+10.1109/TVCG.2015.2467451. 2
+[LS97] LUIS A HERNANDEZ IBAÑEZ, SANTIAGO HERNANDEZ:
+Application of digital 3d models on urban planing and highway design.
+In Conference on Urban Transport and the Environment for the 21
+Century (1997). URL: https://www.researchgate.net/
+publication/275713871_Application_of_Digital_
+3D_Models_on_Urban_Planing_and_Highway_Desing,
+doi:10.2495/UT970361. 1
+[MELS95] MISUE K., EADES P., LAI W., SUGIYAMA K.: Layout adjustment
+and the mental map. Journal of Visual Languages & Computing
+6, 2 (1995), 183–210. doi:10.1006/jvlc.1995.1010. 3

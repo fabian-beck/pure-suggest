@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
+import eurographicsReferenceList from './fixtures/eurographics-reference-list.txt?raw'
 import ieeeReferenceList from './fixtures/ieee-reference-list.txt?raw'
 import springerReferenceList from './fixtures/springer-reference-list.txt?raw'
 
@@ -51,6 +52,9 @@ describe('extractDois', () => {
     }
     @inproceedings{other, doi = "10.5678/quoted"}`
     expect(extractDois(bibtex)).toEqual(['10.1234/bib_tex', '10.5678/quoted'])
+    expect(extractDois('doi: 10.1007/978-3-319-26633-6{\\textunderscore}13')).toEqual([
+      '10.1007/978-3-319-26633-6_13'
+    ])
   })
 
   it('reads DOIs from HTML links', () => {
@@ -118,6 +122,10 @@ describe('extractDois', () => {
         '10.1109/access.2022.3153027'
       ])
       expect(extractDois('doi: 10.1145/223904.\n223913 1, 2')).toEqual(['10.1145/223904.223913'])
+      expect(extractDois('doi:10.1006/jvlc.1995.1010. 3')).toEqual(['10.1006/jvlc.1995.1010'])
+      expect(extractDois('doi:10.1109/TVCG.2009.109.\n2, 3')).toEqual(['10.1109/TVCG.2009.109'])
+      expect(extractDois('doi:10.1109/TVCG.2009.109.\n3\n[KDMW16] A. Author')).toEqual(['10.1109/TVCG.2009.109'])
+      expect(extractDois('doi:10.1109/TVCG.2009.109.\n3')).toEqual(['10.1109/TVCG.2009.109'])
     })
 
     it('joins a DOI wrapped more than once', () => {
@@ -180,6 +188,26 @@ describe('extractDois', () => {
     expect(dois).toContain('10.1109/IV.2006.94')
     expect(dois).toContain('10.1145/642611.642681')
     expect(dois.every((doi) => /^10\.\d{4}\/[a-z0-9._-]+$/i.test(doi))).toBe(true)
+  })
+
+  it('extracts all DOIs from a reference list with page back-references', () => {
+    expect(extractDois(eurographicsReferenceList)).toEqual([
+      '10.1109/PacificVis.2012.6183578',
+      '10.1007/978-3-642-36763-2_42',
+      '10.1109/ACCESS.2020.3047616',
+      '10.1177/0956797613504966',
+      '10.1109/TVCG.2009.109',
+      '10.1007/978-3-319-26633-6_13',
+      '10.2514/6.2012-1818',
+      '10.1145/3550356.3561595',
+      '10.5555/1862280.1862292',
+      '10.1007/978-3-031-71291-3_4',
+      '10.1145/1865841.1865854',
+      '10.1037/1076-898X.8.1.57',
+      '10.1109/TVCG.2015.2467451',
+      '10.2495/UT970361',
+      '10.1006/jvlc.1995.1010'
+    ])
   })
 
   it('extracts all DOIs from a dirty pasted reference list', () => {

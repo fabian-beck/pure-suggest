@@ -61,6 +61,13 @@ function activate() {
   }, 100)
 }
 
+// Focused publications may get deactivated meanwhile, and clicking them fires no further focus event
+function reactivateIfFocused(event) {
+  if (!props.publication.isActive && event.currentTarget === document.activeElement) {
+    activate()
+  }
+}
+
 function handleMouseEnter() {
   interfaceStore.setHoveredPublication(props.publication)
 }
@@ -122,7 +129,7 @@ function handleMouseLeave() {
       :id="publication.doi"
       tabindex="0"
       @focus="activate"
-      @click.stop
+      @click.stop="reactivateIfFocused"
       @mouseenter="handleMouseEnter"
       @mouseleave="handleMouseLeave"
     >
