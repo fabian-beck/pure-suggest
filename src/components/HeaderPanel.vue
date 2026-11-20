@@ -3,6 +3,7 @@ import { inject, ref } from 'vue'
 
 import FilterMenuComponent from '@/components/FilterMenuComponent.vue'
 import KeywordMenuComponent from '@/components/KeywordMenuComponent.vue'
+import LayoutMenuComponent from '@/components/LayoutMenuComponent.vue'
 import SessionMenuComponent from '@/components/SessionMenuComponent.vue'
 import { useAppState } from '@/composables/useAppState.js'
 import { useModalManager } from '@/composables/useModalManager.js'
@@ -28,6 +29,7 @@ const filterMenuComponent = ref(null)
           <FilterMenuComponent ref="filterMenuComponent" />
         </div>
       </v-app-bar-title>
+      <LayoutMenuComponent v-if="!isEmpty && !interfaceStore.isMobile" />
       <v-menu bottom left offset-y transition="slide-y-transition">
         <template #activator="{ props }">
           <v-btn icon v-bind="props" class="mr-1" density="compact" aria-label="More options">
