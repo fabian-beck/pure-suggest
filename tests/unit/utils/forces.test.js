@@ -171,6 +171,19 @@ describe('calculateYearX', () => {
   )
 })
 
+describe('clusters layout', () => {
+  it('keeps publication and author nodes from overlapping', () => {
+    const graph = createGraph(80)
+    graph.nodes.forEach((node) => (node.sizeFactor = 1))
+    const nodes = plot(graph, null, true)
+    const minDistance = d3.min(nodes, (node, i) =>
+      d3.min(nodes.slice(i + 1), (other) => Math.hypot(node.x - other.x, node.y - other.y))
+    )
+    // Publication squares (20 px) and author circles (24 px) with some space in between
+    expect(minDistance).toBeGreaterThan(26)
+  })
+})
+
 describe('layout in views of different aspect ratios', () => {
   const views = [
     { name: 'flat', width: 1050, height: 250 },

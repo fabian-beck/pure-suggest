@@ -9,8 +9,10 @@
 import * as d3 from 'd3'
 
 import { CURRENT_YEAR } from '@/constants/config.js'
+import { getAuthorRadius } from '@/utils/network/authorNodes.js'
 import { detectCommunities } from '@/utils/network/communities.js'
 import { getCitationTimeWeight } from '@/utils/network/links.js'
+import { getRectSize } from '@/utils/network/publicationNodes.js'
 
 export const SIMULATION_ALPHA = 0.7
 // Simulation ticks per second of an animated layout at SIMULATION_ALPHA; as nodes move less
@@ -43,9 +45,11 @@ const REFERENCE_AREA = 1850 * 320
 // Factors of the pull of citation and author links within and across communities in
 // clusters mode: as the charge spreads the nodes evenly, the links alone pull nodes towards
 // a mix of communities; links within communities pulling more form visible clusters
-// (author links pulling more would place authors on top of their publications)
-const CITATION_COMMUNITY_FACTORS = { within: 3, across: 0.5 }
-const AUTHOR_COMMUNITY_FACTORS = { within: 1.5, across: 0.5 }
+const CITATION_COMMUNITY_FACTORS = { within: 6, across: 0.2 }
+const AUTHOR_COMMUNITY_FACTORS = { within: 2, across: 0.25 }
+// Space kept around publication and author nodes in clusters mode, where links pulling
+// strongly within communities would otherwise make nodes overlap
+const COLLISION_PADDING = 2
 
 /**
  * Calculate link distance based on link type and network mode
@@ -293,6 +297,22 @@ export function initializeForces(simulation, isNetworkClusters, selectedPublicat
     'y',
     d3.forceY(0).strength((d, i, nodes) => layoutStrength(nodes, 1))
   )
+  simulation.force('collide', isNetworkClusters ? d3.forceCollide(getCollisionRadius) : null)
+}
+
+/**
+ * Radius of the circle around a node that other nodes keep out of: around the square of a
+ * publication, the circle of an author; keywords may overlap
+ */
+function getCollisionRadius(node) {
+  switch (node.type) {
+    case 'publication':
+      return getRectSize(node) * Math.SQRT1_2 + COLLISION_PADDING
+    case 'author':
+      return getAuthorRadius(node) + COLLISION_PADDING
+    default:
+      return 0
+  }
 }
 
 /**
