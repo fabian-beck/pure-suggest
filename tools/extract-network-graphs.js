@@ -41,8 +41,6 @@ const readGraph = (page) =>
         type: node.type,
         sizeFactor: node.sizeFactor,
         year: node.publication?.year,
-        author: node.publication?.author,
-        title: node.publication?.title,
         yearMin: node.author?.yearMin,
         yearMax: node.author?.yearMax
       })),

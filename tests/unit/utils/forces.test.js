@@ -9,6 +9,8 @@ import {
   getLinkStrength,
   initializeForces,
   pinTimelineX,
+  rememberLayout,
+  returnToLayout,
   runFrameTicks,
   SIMULATION_ALPHA
 } from '@/utils/network/forces.js'
@@ -154,6 +156,64 @@ describe('timeline layout', () => {
       )
     )
     expect(swapped).toHaveLength(0)
+  })
+})
+
+describe('switching between timeline and clusters mode', () => {
+  const positions = (nodes) => new Map(nodes.map((node) => [node.id, [node.x, node.y]]))
+  const meanShift = (nodes, previousPositions) =>
+    d3.mean(nodes, (node) => {
+      const [x, y] = previousPositions.get(node.id)
+      return Math.hypot(node.x - x, node.y - y)
+    })
+  // Same steps as a replot in the network component, which returns to the layout of the
+  // mode when switching to it, and remembers the layout at the end of the simulation
+  const plotRemembering = (layouts, graph, previousNodes, isNetworkClusters) => {
+    const simulation = startLayout(graph, previousNodes, isNetworkClusters, DEFAULT_VIEW)
+    const layoutGraph = { nodes: simulation.nodes(), links: simulation.force('link').links() }
+    simulation.force(
+      'return',
+      returnToLayout(layouts, layoutGraph, DEFAULT_VIEW, isNetworkClusters)
+    )
+    settle(simulation)
+    rememberLayout(layouts, layoutGraph, DEFAULT_VIEW, isNetworkClusters)
+    return layoutGraph.nodes
+  }
+  const switchTwice = (graph, isNetworkClusters) => {
+    const layouts = {}
+    const nodes = plotRemembering(layouts, graph, null, isNetworkClusters)
+    const previousPositions = positions(nodes)
+    const otherMode = plotRemembering(layouts, graph, nodes, !isNetworkClusters)
+    const switchedBack = plotRemembering(layouts, graph, otherMode, isNetworkClusters)
+    return meanShift(switchedBack, previousPositions)
+  }
+
+  it.each([1, 2, 3, 4])(
+    'returns to the clusters layout (%i) when switching to the timeline and back',
+    (seed) => {
+      expect(switchTwice(createSessionGraph(seed), true)).toBeLessThan(3)
+    }
+  )
+
+  it.each([1, 2, 3, 4])(
+    'returns to the timeline layout (%i) when switching to clusters and back',
+    (seed) => {
+      expect(switchTwice(createSessionGraph(seed), false)).toBeLessThan(3)
+    }
+  )
+
+  it('lays out the graph anew when it changed while in the other mode', () => {
+    const graph = createSessionGraph(1)
+    const smallerGraph = {
+      nodes: graph.nodes.filter((node) => node.id !== 'p0'),
+      links: graph.links.filter((link) => link.source !== 'p0' && link.target !== 'p0')
+    }
+    const layouts = {}
+    const clusters = plotRemembering(layouts, graph, null, true)
+    const timeline = plotRemembering(layouts, smallerGraph, clusters, false)
+    const simulation = startLayout(smallerGraph, timeline, true, DEFAULT_VIEW)
+    const layoutGraph = { nodes: simulation.nodes(), links: simulation.force('link').links() }
+    expect(returnToLayout(layouts, layoutGraph, DEFAULT_VIEW, true)).toBeNull()
   })
 })
 

@@ -120,14 +120,10 @@ function runLayout(forces, graph, isNetworkClusters, view) {
     id: node.id,
     type: node.type,
     sizeFactor: node.sizeFactor,
-    publication:
-      node.type === 'publication'
-        ? { year: node.year, author: node.author, title: node.title }
-        : undefined,
+    publication: node.type === 'publication' ? { year: node.year } : undefined,
     author: node.type === 'author' ? { yearMin: node.yearMin, yearMax: node.yearMax } : undefined
   }))
   const links = graph.links.map((link) => ({ ...link }))
-  forces.assignNodePositions(nodes, null, links, view)
   const simulation = forces.createForceSimulation().stop()
   forces.initializeForces(simulation, isNetworkClusters, graph.selectedCount, view)
   const yearMin = d3.min(nodes, (node) => node.publication?.year)
