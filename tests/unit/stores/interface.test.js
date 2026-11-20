@@ -68,6 +68,9 @@ describe('Interface Store - Layout', () => {
     expect(interfaceStore.layoutMode).toBe('auto')
     expect(interfaceStore.effectiveLayout).toBe('networkBottom')
 
+    interfaceStore.isShortScreen = true
+    expect(interfaceStore.effectiveLayout).toBe('networkRight')
+
     interfaceStore.isWideScreen = true
     expect(interfaceStore.effectiveLayout).toBe('threeColumns')
   })

@@ -61,6 +61,7 @@ export const useInterfaceStore = defineStore('interface', {
       networkReplotTrigger: 0,
       isMobile: true,
       isWideScreen: false,
+      isShortScreen: false,
       isFilterMenuOpen: false,
       layoutMode: layoutSettings.mode, // 'auto' or a key of LAYOUTS
       panelSizes: layoutSettings.panelSizes,
@@ -73,7 +74,8 @@ export const useInterfaceStore = defineStore('interface', {
   getters: {
     effectiveLayout(state) {
       if (state.layoutMode !== 'auto') return state.layoutMode
-      return state.isWideScreen ? 'threeColumns' : 'networkBottom'
+      if (state.isWideScreen) return 'threeColumns'
+      return state.isShortScreen ? 'networkRight' : 'networkBottom'
     },
 
     isNetworkCollapsible() {
@@ -91,6 +93,7 @@ export const useInterfaceStore = defineStore('interface', {
     checkMobile() {
       this.isMobile = window.innerWidth < 1023
       this.isWideScreen = window.innerWidth >= 2400
+      this.isShortScreen = window.innerHeight < 800
     },
 
     setLayoutMode(mode) {
