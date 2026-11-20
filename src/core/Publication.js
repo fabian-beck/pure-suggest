@@ -344,6 +344,7 @@ export default class Publication {
    * Analyzes publication data to assign classification tags.
    */
   processTags() {
+    if (!this.title) return
     if (this.referenceDois.size > SURVEY_THRESHOLDS.REFERENCE_COUNT_HIGH) {
       this.isSurvey = `more than ${SURVEY_THRESHOLDS.REFERENCE_COUNT_HIGH} references (${this.referenceDois.size})`
     } else if (

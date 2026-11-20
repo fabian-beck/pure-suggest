@@ -73,6 +73,22 @@ describe('Publication Bug Regression Tests', () => {
     })
   })
 
+  describe('processTags', () => {
+    it('should not assign tags when no metadata is available', () => {
+      publication = new Publication('10.1234/unknown')
+      publication.processData({})
+
+      expect(publication.getTags()).toEqual([])
+    })
+
+    it('should assign unnoted tag to a known publication without citations', () => {
+      publication = new Publication('10.1234/known')
+      publication.processData({ title: 'Known Publication', year: 2010 })
+
+      expect(publication.isUnnoted).toBeTruthy()
+    })
+  })
+
   describe('getTags - Concept Tags', () => {
     beforeEach(() => {
       publication = new Publication('10.1234/test')
