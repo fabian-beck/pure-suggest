@@ -142,6 +142,9 @@ export default {
       authorNumberFactor: 0.5,
       labelNumberFactor: 0.3, // Share of the nodes that may get a label at zoom 1 (0: none)
       areNodeLabelsHidden: false, // While the zoom scale changes
+      // While the layout moves after a restart, labels are hidden, as placing them on the way
+      // makes them lag behind their nodes
+      isLayoutMoving: false,
       onlyShowFiltered: false,
       isDragging: false,
       // Graph size for the performance monitor; the graph itself is kept non-reactive
@@ -160,7 +163,6 @@ export default {
     this.graph = { nodes: [], links: [] }
     this.nodeLabel = null
     this.labelResult = null // Previous label placements, kept as warm start for stable labels
-    this.labelTickCount = 0
     this.lastFrameTime = 0
     this.labelZoomScale = 1 // Zoom factor of the previous label placement
     this.viewport = { width: 0, height: 0 } // Size of the panel, measured when plotting and on resize
@@ -308,11 +310,15 @@ export default {
     // Forces are set when plotting
     this.simulation = createForceSimulation()
       .on('tick', this.tick)
-      // The last tick may not have been drawn, and labels are placed on every fourth drawn tick only
+      // The last tick may not have been drawn, and labels are only placed in the final layout
       .on('end', () => {
         const changedNodes = this.detectChangedNodes()
         this.updateChangedNodePositions(changedNodes)
         this.updateSelectiveLinks(changedNodes)
+        if (this.isLayoutMoving) {
+          this.removeNodeLabels()
+          this.isLayoutMoving = false
+        }
         this.updateNodeLabels(true)
       })
 
@@ -699,9 +705,6 @@ export default {
         const linksUpdated = this.updateSelectiveLinks(changedNodes)
         this.lastUpdateTime = performance.now()
 
-        // Labels follow their nodes and are placed anew every fourth update
-        this.updateNodeLabels(this.labelTickCount++ % 4 === 0)
-
         // Track performance metrics - only count actual DOM updates
         this.$refs.performanceMonitor?.recordDomUpdate(changedNodes.length, linksUpdated)
       } else {
@@ -808,6 +811,7 @@ export default {
     restart(alpha = SIMULATION_ALPHA) {
       if (this.simulation) {
         this.lastFrameTime = performance.now()
+        this.isLayoutMoving = true
         this.simulation.alpha(alpha).restart()
       }
     },
@@ -840,7 +844,12 @@ export default {
      */
     updateNodeLabels(solve, pin = false) {
       const { width, height } = this.viewport
-      if (!this.isLabelEngineLoaded || !width || !this.graph.nodes.length) {
+      if (
+        this.isLayoutMoving ||
+        !this.isLabelEngineLoaded ||
+        !width ||
+        !this.graph.nodes.length
+      ) {
         return
       }
       // Maps layout coordinates onto the visible viewport (origin top-left)
@@ -1140,7 +1149,7 @@ export default {
             </filter>
           </defs>
           <g></g>
-          <g class="node-labels" :class="{ hidden: areNodeLabelsHidden }"></g>
+          <g class="node-labels" :class="{ hidden: areNodeLabelsHidden || isLayoutMoving }"></g>
         </svg>
       </div>
       <ul class="publication-component-list" v-show="!isNetworkActuallyCollapsed">
