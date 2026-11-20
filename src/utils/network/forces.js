@@ -39,6 +39,13 @@ const VIEW_MARGIN_X = 15
 const VIEW_MARGIN_Y = 40
 // Area inside the margins of the network panel on a typical desktop (1880 × 400)
 const REFERENCE_AREA = 1850 * 320
+// Shares of the half width and height of the layout by which the centering shifts the nodes
+// towards their place in the order of the graph (see setOrderPositions); horizontally only
+// in clusters mode, as the timeline keeps the order by year itself
+const ORDER_SHIFT_X = 0.05
+const ORDER_SHIFT_Y = 0.1
+// Distance from the center of the first node placed in the initial layout, as in d3
+const INITIAL_RADIUS = 10
 
 /**
  * Calculate link distance based on link type and network mode
@@ -135,11 +142,77 @@ export function pinTimelineX(nodes, isNetworkClusters, yearXCalculator) {
 }
 
 /**
- * Reuse the node objects of the previous layout, keeping their positions; new nodes
- * start next to their already positioned neighbors (spread on a small spiral, as nodes
- * on the same spot repel each other violently), others are placed by d3
+ * Half width and half height of the area that the nodes are meant to fill in a view
+ * ({ width, height })
  */
-export function assignNodePositions(nodes, previousNodes, links) {
+function getLayoutExtent(view) {
+  return [FILL * (view.width / 2 - VIEW_MARGIN_X), FILL * (view.height / 2 - VIEW_MARGIN_Y)]
+}
+
+/**
+ * Place of each node in an order of the graph (orderX and orderY within [-1, 1]), towards
+ * which new nodes start and the centering slightly shifts the nodes, so that the same graph
+ * is laid out alike instead of rotated or mirrored, independent of the order in which its
+ * nodes are loaded and of switching between timeline and clusters: publications from left to
+ * right by year, and from top to bottom by the keywords they are linked to (in the order of
+ * the keywords, publications without keyword in the middle), then by first author and title;
+ * keywords at the right, from top to bottom in their order; authors at the mean place of
+ * their publications
+ */
+function setOrderPositions(nodes, neighborIds) {
+  const spread = (index, count) => (count > 1 ? (2 * index) / (count - 1) - 1 : 0)
+  const byId = new Map(nodes.map((node) => [node.id, node]))
+  const neighborsOfType = (node, type) =>
+    (neighborIds.get(node.id) || []).map((id) => byId.get(id)).filter((n) => n?.type === type)
+
+  const keywords = nodes.filter((node) => node.type === 'keyword')
+  keywords.forEach((keyword, i) => {
+    keyword.orderX = 1
+    keyword.orderY = spread(i, keywords.length)
+  })
+
+  const publications = nodes.filter((node) => node.type === 'publication')
+  const years = publications.map((node) => node.publication.year).sort(d3.ascending)
+  const keywordYs = new Map(
+    publications.map((node) => [
+      node,
+      d3.mean(neighborsOfType(node, 'keyword'), (keyword) => keyword.orderY) ?? 0
+    ])
+  )
+  const firstAuthor = (node) => node.publication.author?.split(';')[0] ?? ''
+  publications
+    .toSorted(
+      (a, b) =>
+        d3.ascending(keywordYs.get(a), keywordYs.get(b)) ||
+        d3.ascending(firstAuthor(a), firstAuthor(b)) ||
+        d3.ascending(a.publication.title, b.publication.title) ||
+        d3.ascending(a.id, b.id)
+    )
+    .forEach((node, i) => {
+      const year = node.publication.year
+      const yearRank = (d3.bisectLeft(years, year) + d3.bisectRight(years, year) - 1) / 2
+      node.orderX = spread(yearRank, years.length)
+      node.orderY = spread(i, publications.length)
+    })
+
+  nodes
+    .filter((node) => node.type === 'author')
+    .forEach((author) => {
+      const authorPublications = neighborsOfType(author, 'publication')
+      author.orderX = d3.mean(authorPublications, (node) => node.orderX) ?? 0
+      author.orderY = d3.mean(authorPublications, (node) => node.orderY) ?? 0
+    })
+}
+
+/**
+ * Reuse the node objects of the previous layout, keeping their positions, and set the place
+ * of each node in the order of the graph; new nodes start next to their already positioned
+ * neighbors (spread on a small spiral, as nodes on the same spot repel each other violently),
+ * others as in the initial layout of d3 at a distance from the center growing with their
+ * index (the first, most relevant nodes in the center), but in the direction of their place
+ * in the order in a view ({ width, height })
+ */
+export function assignNodePositions(nodes, previousNodes, links, view) {
   const previousById = new Map((previousNodes || []).map((node) => [node.id, node]))
   const neighborIds = new Map()
   links.forEach(({ source, target }) => {
@@ -151,11 +224,14 @@ export function assignNodePositions(nodes, previousNodes, links) {
       neighborIds.get(id).push(neighborId)
     })
   })
+  const assignedNodes = nodes.map((node) =>
+    previousById.has(node.id) ? Object.assign(previousById.get(node.id), node) : node
+  )
+  setOrderPositions(assignedNodes, neighborIds)
+  const [extentX, extentY] = getLayoutExtent(view)
   let newCount = 0
-  return nodes.map((node) => {
-    if (previousById.has(node.id)) {
-      return Object.assign(previousById.get(node.id), node)
-    }
+  assignedNodes.forEach((node, index) => {
+    if (previousById.has(node.id)) return
     const neighbors = (neighborIds.get(node.id) || [])
       .map((id) => previousById.get(id))
       .filter(Boolean)
@@ -163,9 +239,14 @@ export function assignNodePositions(nodes, previousNodes, links) {
       const angle = newCount++ * Math.PI * (3 - Math.sqrt(5))
       node.x = d3.mean(neighbors, (neighbor) => neighbor.x) + NEW_NODE_OFFSET * Math.cos(angle)
       node.y = d3.mean(neighbors, (neighbor) => neighbor.y) + NEW_NODE_OFFSET * Math.sin(angle)
+    } else {
+      const radius = INITIAL_RADIUS * Math.sqrt(0.5 + index)
+      const angle = Math.atan2(extentY * node.orderY, extentX * node.orderX)
+      node.x = radius * Math.cos(angle)
+      node.y = radius * Math.sin(angle)
     }
-    return node
   })
+  return assignedNodes
 }
 
 /**
@@ -176,11 +257,12 @@ export function assignNodePositions(nodes, previousNodes, links) {
  * than their vertical distance in a line of height 2b (2b / m) repel each other almost only
  * vertically, like nodes on a line, which spread to ±b when pulled with 2|q|m / b².
  * Strengths are limited to keep the simulation stable: for large graphs, the charge is
- * reduced along with them, which keeps the extent of the layout.
+ * reduced along with them, which keeps the extent of the layout. The centering is
+ * strengthened by the share of its shift towards the order of the graph, which would
+ * otherwise spread the nodes further.
  */
 export function getLayoutStrengths(nodes, isNetworkClusters, chargeStrength, view) {
-  const a = FILL * (view.width / 2 - VIEW_MARGIN_X)
-  const b = FILL * (view.height / 2 - VIEW_MARGIN_Y)
+  const [a, b] = getLayoutExtent(view)
   const charge = Math.abs(chargeStrength)
   const factor = (2 * charge * nodes.length) / (a + b)
   let yStrength = factor / b
@@ -192,7 +274,8 @@ export function getLayoutStrengths(nodes, isNetworkClusters, chargeStrength, vie
     }
     yStrength = Math.max(yStrength, (2 * charge * lineNodeCount) / b ** 2)
   }
-  const xStrength = factor / a
+  yStrength /= 1 - ORDER_SHIFT_Y
+  const xStrength = factor / a / (isNetworkClusters ? 1 - ORDER_SHIFT_X : 1)
   const scale = Math.min(1, MAX_STRENGTH / Math.max(xStrength, yStrength))
   return [scale * xStrength, scale * yStrength, scale * chargeStrength]
 }
@@ -216,6 +299,7 @@ function getMaxCountInRange(sortedValues, width) {
  */
 export function initializeForces(simulation, isNetworkClusters, selectedPublicationsCount, view) {
   const chargeStrength = getChargeStrength(selectedPublicationsCount, view)
+  const [extentX, extentY] = getLayoutExtent(view)
   // Force strengths are read per node, but only depend on all the nodes
   let strengthNodes = null
   let strengths = null
@@ -246,13 +330,17 @@ export function initializeForces(simulation, isNetworkClusters, selectedPublicat
       .theta(0.7) // Optimized Barnes-Hut parameter for better performance
   )
 
-  // In timeline mode, only authors are not pinned to their year: the repulsion of the other
-  // nodes pushes them outwards about as strongly as the centering pulls them in, so they
-  // need both the centering and a pull to their year, which balance at their year
+  // The centering slightly shifts the nodes towards their place in the order of the graph,
+  // which keeps the layout from flipping. In timeline mode, only authors are not pinned to
+  // their year: the repulsion of the other nodes pushes them outwards about as strongly as
+  // the centering pulls them in, so they need both the centering and a pull to their year,
+  // which balance at their year
   simulation.force(
     'x',
     isNetworkClusters
-      ? d3.forceX(0).strength((d, i, nodes) => layoutStrength(nodes, 0))
+      ? d3
+          .forceX((d) => ORDER_SHIFT_X * extentX * d.orderX)
+          .strength((d, i, nodes) => layoutStrength(nodes, 0))
       : d3
           .forceX(
             (d, i, nodes) =>
@@ -263,7 +351,9 @@ export function initializeForces(simulation, isNetworkClusters, selectedPublicat
   )
   simulation.force(
     'y',
-    d3.forceY(0).strength((d, i, nodes) => layoutStrength(nodes, 1))
+    d3
+      .forceY((d) => ORDER_SHIFT_Y * extentY * d.orderY)
+      .strength((d, i, nodes) => layoutStrength(nodes, 1))
   )
 }
 

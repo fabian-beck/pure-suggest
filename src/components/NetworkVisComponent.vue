@@ -494,7 +494,7 @@ export default {
       // Preserve existing node positions for smooth transitions
       const existingNodeData =
         this.node && typeof this.node.data === 'function' ? this.node.data() : null
-      const processedNodes = assignNodePositions(this.tempNodes, existingNodeData, this.tempLinks)
+      const processedNodes = assignNodePositions(this.tempNodes, existingNodeData, this.tempLinks, this.viewport)
       const processedLinks = this.tempLinks
 
       // Update simulation graph data

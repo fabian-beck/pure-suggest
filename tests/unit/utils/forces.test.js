@@ -102,7 +102,8 @@ function startLayout(graph, previousNodes, isNetworkClusters, view) {
   const nodes = assignNodePositions(
     graph.nodes.map((node) => ({ ...node })),
     previousNodes,
-    links
+    links,
+    view
   )
   pinTimelineX(nodes, isNetworkClusters, viewYearX)
   simulation.nodes(nodes)
@@ -154,6 +155,54 @@ describe('timeline layout', () => {
       )
     )
     expect(swapped).toHaveLength(0)
+  })
+})
+
+describe('orientation of the layout', () => {
+  const seeds = d3.range(1, 9)
+  const correlation = (nodes, otherNodes, key) => {
+    const others = new Map(otherNodes.map((node) => [node.id, node[key]]))
+    const deviations = (values) => values.map((value) => value - d3.mean(values))
+    const a = deviations(nodes.map((node) => node[key]))
+    const b = deviations(nodes.map((node) => others.get(node.id)))
+    return (
+      d3.sum(a, (value, i) => value * b[i]) /
+      Math.sqrt(d3.sum(a, (v) => v * v) * d3.sum(b, (v) => v * v))
+    )
+  }
+  const copy = (nodes) => nodes.map((node) => ({ ...node }))
+
+  it('keeps clusters layouts from being mirrored when switching to the timeline and back', () => {
+    const correlations = seeds.map((seed) => {
+      const graph = createSessionGraph(seed)
+      const clusters = plot(graph, null, true)
+      const switchedBack = plot(graph, plot(graph, copy(clusters)), true)
+      return [correlation(clusters, switchedBack, 'x'), correlation(clusters, switchedBack, 'y')]
+    })
+    expect(d3.mean(correlations, ([x]) => x)).toBeGreaterThan(0.55)
+    expect(d3.mean(correlations, ([, y]) => y)).toBeGreaterThan(0.55)
+  })
+
+  it('keeps timeline layouts from being mirrored when their publications load in another order', () => {
+    // Suggestions load one after another, and the network shows the ones loaded so far
+    const loadInOrder = (graph, loadSeed) => {
+      const random = d3.randomLcg(loadSeed)
+      const loaded = new Set(
+        graph.nodes
+          .filter((node) => !node.id.startsWith('p') || random() < 0.4)
+          .map((node) => node.id)
+      )
+      const firstGraph = {
+        nodes: graph.nodes.filter((node) => loaded.has(node.id)),
+        links: graph.links.filter((link) => loaded.has(link.source) && loaded.has(link.target))
+      }
+      return plot(graph, plot(firstGraph, null))
+    }
+    const correlations = seeds.map((seed) => {
+      const graph = createSessionGraph(seed)
+      return correlation(loadInOrder(graph, seed + 10), loadInOrder(graph, seed + 20), 'y')
+    })
+    expect(d3.mean(correlations)).toBeGreaterThan(0.55)
   })
 })
 
@@ -232,7 +281,12 @@ describe('layout in views of different aspect ratios', () => {
 describe('assignNodePositions', () => {
   it('keeps the node objects and positions of the previous layout', () => {
     const previous = { id: 'a', x: 10, y: 20, vx: 1 }
-    const [node] = assignNodePositions([{ id: 'a', type: 'publication' }], [previous], [])
+    const [node] = assignNodePositions(
+      [{ id: 'a', type: 'publication', publication: { year: 2020 } }],
+      [previous],
+      [],
+      DEFAULT_VIEW
+    )
     expect(node).toBe(previous)
     expect(node).toMatchObject({ x: 10, y: 20, vx: 1, type: 'publication' })
   })
@@ -249,7 +303,8 @@ describe('assignNodePositions', () => {
     const nodes = assignNodePositions(
       ['a', 'b', 'c', 'd'].map((id) => ({ id })),
       previousNodes,
-      links
+      links,
+      DEFAULT_VIEW
     )
     const [c, d] = nodes.slice(2)
     expect(Math.hypot(c.x - 50, c.y - 20)).toBeLessThanOrEqual(10)
@@ -257,14 +312,58 @@ describe('assignNodePositions', () => {
     expect(Math.hypot(c.x - d.x, c.y - d.y)).toBeGreaterThan(1)
   })
 
-  it('leaves nodes without positioned neighbors to the initial placement of d3', () => {
-    const nodes = assignNodePositions([{ id: 'a' }, { id: 'b' }], null, [
-      { source: 'a', target: 'b' }
-    ])
-    nodes.forEach((node) => {
-      expect(node.x).toBeUndefined()
-      expect(node.y).toBeUndefined()
+  it('orders publications by year from left to right, and by keyword, then by first author from top to bottom', () => {
+    const publication = (id, year, author) => ({
+      id,
+      type: 'publication',
+      publication: { year, author }
     })
+    const nodes = assignNodePositions(
+      [
+        publication('old', 2010, 'Zeller, A.'),
+        publication('newA', 2020, 'Abel, B.; Zeller, A.'),
+        publication('newB', 2020, 'Brandt, C.'),
+        publication('second', 2015, 'Abel, B.'),
+        { id: 'first keyword', type: 'keyword' },
+        { id: 'second keyword', type: 'keyword' },
+        { id: 'author', type: 'author' }
+      ],
+      null,
+      [
+        { source: 'first keyword', target: 'old', type: 'keyword' },
+        { source: 'second keyword', target: 'second', type: 'keyword' },
+        { source: 'author', target: 'old', type: 'author' },
+        { source: 'author', target: 'newA', type: 'author' }
+      ],
+      DEFAULT_VIEW
+    )
+    const byId = Object.fromEntries(nodes.map((node) => [node.id, node]))
+    const expectOrder = (key, places) =>
+      Object.entries(places).forEach(([id, place]) => expect(byId[id][key]).toBeCloseTo(place))
+    expectOrder('orderX', { old: -1, second: -1 / 3, newA: 2 / 3, newB: 2 / 3 })
+    expectOrder('orderY', { old: -1, newA: -1 / 3, newB: 1 / 3, second: 1 })
+    expect(byId['first keyword']).toMatchObject({ orderX: 1, orderY: -1 })
+    expect(byId['second keyword']).toMatchObject({ orderX: 1, orderY: 1 })
+    expect(byId.author.orderX).toBeCloseTo(-1 / 6)
+    expect(byId.author.orderY).toBeCloseTo(-2 / 3)
+  })
+
+  it('starts nodes without positioned neighbors in the direction of their order, the first ones closest to the center', () => {
+    const nodes = assignNodePositions(
+      [
+        { id: 'a', type: 'publication', publication: { year: 2010, author: 'A' } },
+        { id: 'b', type: 'publication', publication: { year: 2020, author: 'B' } }
+      ],
+      null,
+      [],
+      DEFAULT_VIEW
+    )
+    const [a, b] = nodes
+    expect(a.x).toBeLessThan(0)
+    expect(a.y).toBeLessThan(0)
+    expect(b.x).toBeGreaterThan(0)
+    expect(b.y).toBeGreaterThan(0)
+    expect(Math.hypot(a.x, a.y)).toBeLessThan(Math.hypot(b.x, b.y))
   })
 })
 

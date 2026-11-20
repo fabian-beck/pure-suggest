@@ -1,3 +1,4 @@
+import { ascending, bisectLeft, bisectRight, mean } from 'd3-array'
 import { vi } from 'vitest'
 
 /**
@@ -113,7 +114,12 @@ export const createD3ModuleMock = () => {
     forceLink: vi.fn(createForceMock),
     forceManyBody: vi.fn(createForceMock),
     forceX: vi.fn(createForceMock),
-    forceY: vi.fn(createForceMock)
+    forceY: vi.fn(createForceMock),
+    // Array utilities of d3 are used as they are
+    ascending,
+    bisectLeft,
+    bisectRight,
+    mean
   }
 }
 
