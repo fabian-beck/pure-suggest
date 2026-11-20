@@ -3,13 +3,19 @@
 // Generates a synthetic, reproducible citation network: metadata of all publications in the
 // format of the publications data service, and a session selecting a large share of them.
 // Used to try out the app (e.g., large networks) without access to the data service.
+// With --subtopics, each topic splits into subtopics that mostly cite each other and have
+// their own authors, as in real literature (used for benchmarking the network layout).
 //
-// Usage: node tools/generate-synthetic-network.js
+// Usage: node tools/generate-synthetic-network.js [--subtopics] [seed] [output directory]
 
 const fs = require('fs')
 const path = require('path')
 
-const OUTPUT_DIR = path.join(__dirname, '..', 'test', 'synthetic-network')
+const args = process.argv.slice(2)
+const HAS_SUBTOPICS = args.includes('--subtopics')
+const [SEED = '20261119', OUTPUT_DIR = path.join(__dirname, '..', 'test', 'synthetic-network')] =
+  args.filter((arg) => arg !== '--subtopics')
+const SUBTOPIC_COUNT = HAS_SUBTOPICS ? 3 : 1
 const PUBLICATION_COUNT = 500
 const SELECTED_COUNT = 120
 const FIRST_YEAR = 1990
@@ -57,7 +63,7 @@ const FIRST_NAMES = ['Anna', 'Ben', 'Chiara', 'David', 'Elif', 'Felix', 'Greta',
 const LAST_NAMES = ['Achterberg', 'Brandt', 'Castell', 'Dunmore', 'Eklund', 'Falkner', 'Gerhardt', 'Holloway', 'Ibarra', 'Jansen', 'Kowalczyk', 'Lindqvist', 'Moreau', 'Nakamura', 'Okafor', 'Petrov', 'Quintero', 'Rasmussen', 'Sandoval', 'Takeda', 'Underwood', 'Valente', 'Whitfield', 'Xiang', 'Yilmaz', 'Zeller', 'Abernathy', 'Bergstrom', 'Calloway', 'Delacroix', 'Eriksen', 'Fontaine', 'Grimaldi', 'Hartmann', 'Iversen', 'Jovanovic']
 
 // Seeded pseudo-random numbers (mulberry32) to always generate the same network
-let seed = 20261119
+let seed = Number(SEED)
 function random() {
   seed = (seed + 0x6d2b79f5) | 0
   let t = Math.imul(seed ^ (seed >>> 15), 1 | seed)
@@ -73,29 +79,37 @@ function pickWeighted(candidates, weight) {
   return candidates.find((candidate) => (threshold -= weight(candidate)) <= 0) || candidates.at(-1)
 }
 
-// Each topic has its own community of authors, some of them prolific
-const authorsByTopic = TOPICS.map(() =>
-  Array.from({ length: 22 }, () => ({
+// Each (sub)topic has its own community of authors, some of them prolific
+const authorsBySubtopic = Array.from({ length: TOPICS.length * SUBTOPIC_COUNT }, () =>
+  Array.from({ length: HAS_SUBTOPICS ? 9 : 22 }, () => ({
     name: `${pick(LAST_NAMES)}, ${pick(FIRST_NAMES)}`,
     productivity: random() < 0.15 ? 8 : 1
   }))
 )
 
+function getTopicWeight(publication, other) {
+  if (other.topicIndex !== publication.topicIndex) return 1
+  if (!HAS_SUBTOPICS) return 8
+  return other.subtopicIndex === publication.subtopicIndex ? 20 : 3
+}
+
 // More publications in recent years
 const publications = Array.from({ length: PUBLICATION_COUNT }, (_, i) => {
   const topicIndex = i % TOPICS.length
   const topic = TOPICS[topicIndex]
+  const subtopicIndex = HAS_SUBTOPICS ? randomInt(0, SUBTOPIC_COUNT - 1) : 0
   const year = Math.round(FIRST_YEAR + (LAST_YEAR - FIRST_YEAR) * Math.sqrt(random()))
   const subject = pick(topic.subjects)
   const term = pick(topic.terms)
   const authors = new Set()
   const authorCount = randomInt(1, 5)
   while (authors.size < authorCount) {
-    authors.add(pickWeighted(authorsByTopic[topicIndex], (author) => author.productivity).name)
+    authors.add(pickWeighted(authorsBySubtopic[topicIndex * SUBTOPIC_COUNT + subtopicIndex], (author) => author.productivity).name)
   }
   return {
-    doi: `10.5555/synth.${topic.key}.${String(i).padStart(3, '0')}`,
+    doi: `10.5555/synth.${topic.key}${HAS_SUBTOPICS ? subtopicIndex : ''}.${String(i).padStart(3, '0')}`,
     topicIndex,
+    subtopicIndex,
     year,
     title: pick(TITLE_PATTERNS)(subject, term.replace(/\b\w/g, (c) => c.toUpperCase())),
     author: [...authors].join('; '),
@@ -107,8 +121,8 @@ const publications = Array.from({ length: PUBLICATION_COUNT }, (_, i) => {
 })
 publications.sort((a, b) => a.year - b.year)
 
-// References point to older publications, mostly of the same topic, preferring recent and
-// well-cited ones
+// References point to older publications, mostly of the same (sub)topic, preferring recent
+// and well-cited ones
 publications.forEach((publication, index) => {
   const older = publications.slice(0, index).filter((other) => other.year < publication.year)
   if (!older.length) return
@@ -117,7 +131,7 @@ publications.forEach((publication, index) => {
     const reference = pickWeighted(
       older,
       (other) =>
-        (other.topicIndex === publication.topicIndex ? 8 : 1) * Math.sqrt(1 + other.citations.size) *
+        getTopicWeight(publication, other) * Math.sqrt(1 + other.citations.size) *
         Math.exp((other.year - publication.year) / 6) *
         (publication.references.has(other.doi) ? 0 : 1)
     )

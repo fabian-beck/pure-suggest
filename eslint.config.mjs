@@ -154,7 +154,7 @@ export default [
     }
   },
   {
-    files: ['tools/**/*.js'],
+    files: ['tools/**/*.{js,mjs}'],
     languageOptions: {
       globals: {
         ...globals.node,
@@ -171,6 +171,7 @@ export default [
       'sonarjs/no-unused-collection': 'off', // May have experimental/future features
       'sonarjs/cognitive-complexity': 'off', // Tools can be complex for functionality
       'sonarjs/no-nested-functions': 'off', // Deep nesting acceptable for parsing logic
+      'sonarjs/no-os-command-from-path': 'off', // Tools may run git
       'complexity': 'off' // Tools prioritize functionality over complexity limits
     }
   }
