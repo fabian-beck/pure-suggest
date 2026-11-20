@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 
 import App from '@/App.vue'
@@ -169,5 +169,49 @@ describe('App - Page Title Management', () => {
     await nextTick()
     
     expect(document.title).toBe(`${sessionName}: ${defaultTitle}`)
+  })
+})
+
+describe('App - Clearing the active publication by clicking', () => {
+  let wrapper
+  let sessionStore
+  let publicationElement
+
+  beforeEach(() => {
+    const pinia = createPinia()
+    setActivePinia(pinia)
+    wrapper = mount(App, {
+      attachTo: document.body,
+      global: {
+        plugins: [pinia],
+        provide: { appMeta: { name: 'PUREsuggest', nameHtml: '', subtitle: '', version: '' } }
+      }
+    })
+    sessionStore = useSessionStore()
+    vi.spyOn(sessionStore, 'clearActivePublication')
+
+    const list = document.createElement('ul')
+    publicationElement = document.createElement('div')
+    publicationElement.className = 'publication-component'
+    publicationElement.tabIndex = 0
+    list.appendChild(publicationElement)
+    wrapper.find('main').element.appendChild(list)
+  })
+
+  afterEach(() => {
+    wrapper.unmount()
+  })
+
+  it('clears the active publication when clicking elsewhere', async () => {
+    await wrapper.find('main').trigger('click')
+
+    expect(sessionStore.clearActivePublication).toHaveBeenCalledWith('clicked anywhere')
+  })
+
+  it('keeps the publication active when its click lands on the list because activation shifted the layout', () => {
+    publicationElement.focus()
+    publicationElement.parentElement.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+
+    expect(sessionStore.clearActivePublication).not.toHaveBeenCalled()
   })
 })

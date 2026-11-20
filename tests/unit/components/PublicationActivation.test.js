@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 import PublicationComponent from '@/components/PublicationComponent.vue'
 import { useInterfaceStore } from '@/stores/interface.js'
@@ -65,6 +65,7 @@ describe('Publication Activation', () => {
     }
 
     wrapper = mount(PublicationComponent, {
+      attachTo: document.body,
       props: {
         publication: mockPublication
       },
@@ -82,6 +83,10 @@ describe('Publication Activation', () => {
         }
       }
     })
+  })
+
+  afterEach(() => {
+    wrapper.unmount()
   })
 
   it('should call sessionStore.activatePublicationComponentByDoi when publication is activated', async () => {
@@ -155,5 +160,18 @@ describe('Publication Activation', () => {
 
     // This prevents the issue where:
     // focus → activate → sessionStore → interfaceStore.focus() → focus → activate (loop)
+  })
+
+  it('should activate an already focused but inactive publication when clicked', async () => {
+    vi.useFakeTimers()
+    const publicationElement = wrapper.find('.publication-component')
+    publicationElement.element.focus()
+    vi.advanceTimersByTime(100)
+    mockActivatePublicationComponentByDoi.mockClear()
+
+    await publicationElement.trigger('click')
+
+    expect(mockActivatePublicationComponentByDoi).toHaveBeenCalledWith('test-publication-doi')
+    vi.useRealTimers()
   })
 })

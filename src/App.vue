@@ -77,6 +77,19 @@ export default {
     }
   },
   methods: {
+    clearActivePublicationOnClick(event) {
+      // Activating a publication on mouse press can shift the layout so that the release lands on
+      // another element; the click then targets their common ancestor and must not undo it
+      const focusedElement = document.activeElement
+      if (
+        focusedElement?.classList.contains('publication-component') &&
+        event.target.contains(focusedElement)
+      ) {
+        return
+      }
+      this.sessionStore.clearActivePublication('clicked anywhere')
+    },
+
     updatePageTitle() {
       const defaultTitle = 'PUREsuggest – Citation-based literature search'
       if (this.sessionStore.sessionName && this.sessionStore.sessionName.trim() !== '') {
@@ -202,7 +215,7 @@ export default {
     <HeaderPanel id="header" />
     <main
       id="main"
-      @click="sessionStore.clearActivePublication('clicked anywhere')"
+      @click="clearActivePublicationOnClick"
       :style="mainGridStyle"
     >
       <SelectedPublicationsComponent id="selected" v-show="!interfaceStore.isNetworkExpanded" />
