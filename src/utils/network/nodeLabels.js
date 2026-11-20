@@ -2,7 +2,7 @@
  * Node Labels for Network Visualization
  *
  * Publication nodes are labeled "Smith et al., 2010" and author nodes "SMITH, JOHN"
- * (in smaller type).
+ * (in smaller type); long labels break into two lines after the comma.
  * Label Anything (WebAssembly) decides which labels fit and where they go: labels are
  * solved in the fixed pixel space of the SVG viewport, so zooming in reveals more of them.
  */
@@ -12,6 +12,7 @@ import { getAuthorRadius } from '@/utils/network/authorNodes.js'
 import { getRectSize, getBoostIndicatorRadius } from '@/utils/network/publicationNodes.js'
 
 const FONT_SIZE = 12
+const MAX_SINGLE_LINE_LABEL_LENGTH = 15 // Characters
 const AUTHOR_FONT_SIZE = 10
 const PUBLICATION_STROKE_WIDTH = 3
 const BOOST_INDICATOR_STROKE_WIDTH = 1
@@ -51,15 +52,18 @@ export async function loadLabelEngine() {
 }
 
 export function getNodeLabelText(node) {
+  let text
   if (node.type === 'author') {
     const [lastName, givenNames] = splitAuthorName(node.author.name)
-    return (givenNames ? `${lastName}, ${givenNames}` : lastName).toUpperCase()
-  }
-  if (node.type === 'publication') {
+    text = (givenNames ? `${lastName}, ${givenNames}` : lastName).toUpperCase()
+  } else if (node.type === 'publication') {
     const { authorShort, year } = node.publication
-    return authorShort ? `${authorShort}, ${year}` : `${year}`
+    text = authorShort ? `${authorShort}, ${year}` : `${year}`
+  } else {
+    return null
   }
-  return null
+  // A line feed is a hard line break for the label engine
+  return text.length > MAX_SINGLE_LINE_LABEL_LENGTH ? text.replace(', ', ',\n') : text
 }
 
 function getNodeLabelKind(node) {
@@ -239,12 +243,13 @@ function getLeaderPath({ placement }) {
     : null
 }
 
-function getTextX({ placement }) {
-  return placement.box.x + placement.text.x_offset - placement.anchor[0]
-}
-
-function getTextY({ placement }) {
-  return placement.box.y + placement.text.baseline_offsets[0] - placement.anchor[1]
+function getTextLines({ placement }) {
+  const { box, anchor, text } = placement
+  return text.lines.map((line, i) => ({
+    line,
+    x: box.x + (text.x_offsets?.[i] ?? text.x_offset) - anchor[0],
+    y: box.y + text.baseline_offsets[i] - anchor[1]
+  }))
 }
 
 /**
@@ -265,7 +270,7 @@ export function renderNodeLabels(labelSelection, result, nodes, activePublicatio
       (enter) => {
         const g = enter.append('g').style('opacity', 0)
         g.append('path').attr('d', getLeaderPath)
-        g.append('text').attr('x', getTextX).attr('y', getTextY)
+        g.append('text')
         g.transition('fade').duration(LABEL_FADE_IN_DURATION).style('opacity', 1)
         return g
       },
@@ -281,11 +286,19 @@ export function renderNodeLabels(labelSelection, result, nodes, activePublicatio
   updated
     .select('text')
     .style('font-size', ({ placement }) => `${placement.text.font_size}px`)
-    .text(({ placement }) => placement.text.lines[0])
+    .selectAll('tspan')
+    .data(getTextLines)
+    .join((enter) =>
+      enter
+        .append('tspan')
+        .attr('x', (d) => d.x)
+        .attr('y', (d) => d.y)
+    )
+    .text((d) => d.line)
     .transition()
     .duration(LABEL_TRANSITION_DURATION)
-    .attr('x', getTextX)
-    .attr('y', getTextY)
+    .attr('x', (d) => d.x)
+    .attr('y', (d) => d.y)
 
   return updated
 }

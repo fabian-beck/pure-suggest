@@ -47,11 +47,16 @@ function createProblem(nodes, links = [], scale = 1) {
 }
 
 describe('nodeLabels', () => {
-  it('formats publication and author labels', () => {
-    expect(getNodeLabelText(publicationNode('a', 0, 0))).toBe('Smith et al., 2010')
+  it('formats publication and author labels, long ones in two lines', () => {
+    expect(getNodeLabelText(publicationNode('a', 0, 0))).toBe('Smith et al.,\n2010')
+    expect(getNodeLabelText(publicationNode('a', 0, 0, { authorShort: 'Smith' }))).toBe(
+      'Smith, 2010'
+    )
     expect(getNodeLabelText(publicationNode('a', 0, 0, { authorShort: undefined }))).toBe('2010')
     expect(getNodeLabelText(authorNode('Smith, John', 0, 0))).toBe('SMITH, JOHN')
-    expect(getNodeLabelText(authorNode('Ludwig van Beethoven', 0, 0))).toBe('VAN BEETHOVEN, LUDWIG')
+    expect(getNodeLabelText(authorNode('Ludwig van Beethoven', 0, 0))).toBe(
+      'VAN BEETHOVEN,\nLUDWIG'
+    )
     expect(getNodeLabelText({ id: 'vis', type: 'keyword' })).toBeNull()
   })
 
@@ -63,7 +68,11 @@ describe('nodeLabels', () => {
     )
 
     expect(problem.items[0].anchor).toMatchObject({ x: 10, y: -20, mark: { shape: 'rect', w: 46 } })
-    expect(problem.items[1].anchor).toMatchObject({ x: -50, y: 0, mark: { shape: 'circle', r: 24 } })
+    expect(problem.items[1].anchor).toMatchObject({
+      x: -50,
+      y: 0,
+      mark: { shape: 'circle', r: 24 }
+    })
   })
 
   it('treats keywords as obstacles instead of labeling them', () => {
@@ -116,7 +125,10 @@ describe('nodeLabels', () => {
       publicationNode('linked', 50, 0, { isLinkedToActive: true }),
       publicationNode('other', 100, 0),
       { ...publicationNode('filtered', 150, 0), isFilteredOut: true },
-      { ...authorNode('Smith, John', 200, 0), author: { name: 'Smith, John', score: 1, publicationDois: ['active'] } }
+      {
+        ...authorNode('Smith, John', 200, 0),
+        author: { name: 'Smith, John', score: 1, publicationDois: ['active'] }
+      }
     ])
 
     expect(problem.items.map((item) => item.tier)).toEqual([2, 1, 0, -1, 1])
@@ -183,16 +195,22 @@ describe('nodeLabels', () => {
       'node-label suggested',
       'node-label author'
     ])
-    expect(labels.select('text').nodes().map((node) => node.textContent)).toEqual([
-      'Smith et al., 2010',
-      'Smith et al., 2010',
+    const lines = labels.select('text').selectAll('tspan')
+    expect(lines.nodes().map((node) => node.textContent)).toEqual([
+      'Smith et al.,',
+      '2010',
+      'Smith et al.,',
+      '2010',
       'SMITH, JOHN'
     ])
-    expect(labels.select('text').nodes().map((node) => node.style.fontSize)).toEqual([
-      '12px',
-      '12px',
-      '10px'
-    ])
+    const [first, second] = lines.nodes().map((node) => Number(node.getAttribute('y')))
+    expect(second - first).toBeCloseTo(12 * 1.2, 0)
+    expect(
+      labels
+        .select('text')
+        .nodes()
+        .map((node) => node.style.fontSize)
+    ).toEqual(['12px', '12px', '10px'])
 
     nodes[0].x = 100
     updateNodeLabelPositions(labels, d3.zoomIdentity.translate(400, 200))
@@ -261,7 +279,7 @@ describe('nodeLabels', () => {
       null
     )
     const label = (id) => d3.selectAll('g.node-labels > g').filter((d) => d.placement.id === id)
-    const textX = (id) => Number(label(id).select('text').attr('x'))
+    const textX = (id) => Number(label(id).select('tspan').attr('x'))
     const opacity = (id) => Number(label(id).style('opacity'))
     // Labels shown for the first time start at their place
     expect(textX('a')).toBe(10)
