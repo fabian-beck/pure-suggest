@@ -72,6 +72,22 @@ describe('PublicationTag', () => {
     })
   })
 
+  describe('Accessibility', () => {
+    it('exposes clickable tags as toggle buttons', () => {
+      const chip = createWrapper({ clickable: true, active: true }).find('.v-chip')
+
+      expect(chip.attributes('role')).toBe('button')
+      expect(chip.attributes('aria-pressed')).toBe('true')
+    })
+
+    it('does not expose non-clickable tags as buttons', () => {
+      const chip = createWrapper({ clickable: false }).find('.v-chip')
+
+      expect(chip.attributes('role')).toBeUndefined()
+      expect(chip.attributes('aria-pressed')).toBeUndefined()
+    })
+  })
+
   describe('Icon Support', () => {
     it('renders with icon when icon prop is provided', () => {
       const wrapper = createWrapper({ icon: 'mdi-star' })

@@ -370,4 +370,32 @@ describe('AuthorModalDialog', () => {
     // Fallback gray background should have black text
     expect(fallbackStyle.color).toBe('#000000')
   })
+
+  it.each(['Enter', ' '])(
+    'should open an author by pressing %s on the focused list item',
+    async (key) => {
+      authorStore.selectedPublicationsAuthors = [
+        {
+          id: 'author1',
+          name: 'John Doe',
+          count: 1,
+          yearMin: 2023,
+          yearMax: 2023,
+          alternativeNames: ['John Doe'],
+          keywords: {},
+          coauthors: {},
+          orcid: undefined,
+          newPublication: false
+        }
+      ]
+      modalStore.isAuthorModalDialogShown = true
+      const setActiveAuthor = vi.spyOn(authorStore, 'setActiveAuthor')
+
+      const item = createWrapper().find('li.author-item')
+      expect(item.attributes('tabindex')).toBe('0')
+      await item.trigger('keydown', { key })
+
+      expect(setActiveAuthor).toHaveBeenCalledWith('author1')
+    }
+  )
 })

@@ -42,6 +42,7 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 
 - `useAppState.js`: Core application logic extracted from stores (session management, suggestions, queuing)
 - `useModalManager.js`: Modal dialog management and state coordination
+- `useDialogFocusReturn.js`: Returns keyboard focus to where it was when a dialog closes
 
 ## Testing Strategy
 
@@ -149,6 +150,8 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 - **Density**: Use `density="compact"` for space-efficient layouts
 - **Neutral Styling**: Use neutral colors (`is-light`, `default`) instead of accent colors for secondary actions
 - **Tooltips**: Use `v-tippy` directive (Tippy.js) instead of Vuetify's `v-tooltip` component
+- **Accessibility**: Icon-only buttons/links get their `aria-label` from the `v-tippy` text automatically (`src/lib/TooltipLabels.js`); give icon-only controls without tooltip an explicit `aria-label`, and make clickable non-button elements focusable (`tabindex`, `role`, Enter/Space handling)
+- **Dialog keyboard support**: `ModalDialog` navigates entries marked `dialog-item` with arrow keys, focuses `dialog-initial-focus` (the preselected next step) on opening, and emits other keys as `dialogKey` (event, entry index) for dialog shortcuts; reuse the main shortcut letters (e.g., via `handlePublicationKey` from `Keys.js`), call `preventDefault()` on handled keys, and list new shortcuts in `KeyboardControlsModalDialog.vue`
 
 ## Others
 

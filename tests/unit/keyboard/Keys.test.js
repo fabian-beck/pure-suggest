@@ -37,6 +37,13 @@ const createMockElement = (id, nodeName = 'DIV') => ({
   parentNode: null
 })
 
+const mockActiveElement = (properties = {}) => {
+  Object.defineProperty(document, 'activeElement', {
+    value: { nodeName: 'BODY', className: '', blur: vi.fn(), closest: () => null, ...properties },
+    configurable: true
+  })
+}
+
 describe('Keys Module - Keyboard Event Handling', () => {
   let pinia
   let sessionStore
@@ -90,11 +97,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
     interfaceStore.isFilterMenuOpen = false
 
     // Mock DOM
-    Object.defineProperty(document, 'activeElement', {
-      value: { nodeName: 'BODY', className: '' },
-      configurable: true,
-      writable: true
-    })
+    mockActiveElement()
     document.getElementById = vi.fn((id) => createMockElement(id))
 
     // Clear all mocks
@@ -118,18 +121,48 @@ describe('Keys Module - Keyboard Event Handling', () => {
     })
 
     it('should ignore events with modifier keys', () => {
+      sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
       const ctrlEvent = createKeyEvent('f', { ctrlKey: true })
-      const shiftEvent = createKeyEvent('f', { shiftKey: true })
+      const shiftEvent = createKeyEvent('F', { shiftKey: true })
+      const shiftArrowEvent = createKeyEvent('ArrowLeft', { shiftKey: true })
       const metaEvent = createKeyEvent('f', { metaKey: true })
 
-      onKey(ctrlEvent)
-      onKey(shiftEvent)
-      onKey(metaEvent)
+      ;[ctrlEvent, shiftEvent, shiftArrowEvent, metaEvent].forEach((event) => onKey(event))
 
       expect(interfaceStore.openFilterMenu).not.toHaveBeenCalled()
-      expect(ctrlEvent.preventDefault).not.toHaveBeenCalled()
-      expect(shiftEvent.preventDefault).not.toHaveBeenCalled()
-      expect(metaEvent.preventDefault).not.toHaveBeenCalled()
+      expect(interfaceStore.activatePublicationComponent).not.toHaveBeenCalled()
+      ;[ctrlEvent, shiftEvent, shiftArrowEvent, metaEvent].forEach((event) =>
+        expect(event.preventDefault).not.toHaveBeenCalled()
+      )
+    })
+
+    it('should ignore keys already handled elsewhere, e.g., by a dialog that just closed', () => {
+      sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
+
+      onKey(createKeyEvent('a', { defaultPrevented: true }))
+
+      expect(modalStore.isAuthorModalDialogShown).toBe(false)
+    })
+
+    it('should accept characters typed with Shift (e.g., + on US keyboards)', () => {
+      sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
+      sessionStore.activePublication = { doi: '10.1234/active' }
+
+      onKey(createKeyEvent('+', { shiftKey: true }))
+
+      expect(mockQueueForSelected).toHaveBeenCalledWith('10.1234/active')
+    })
+
+    it.each([
+      ['q', 'isQueueModalDialogShown'],
+      ['e', 'isExcludedModalDialogShown'],
+      ['?', 'isKeyboardControlsModalDialogShown']
+    ])('should open a dialog with %s', (key, dialogFlag) => {
+      sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
+
+      onKey(createKeyEvent(key, { shiftKey: key === '?' }))
+
+      expect(modalStore[dialogFlag]).toBe(true)
     })
 
     it('should ignore repeated events (except arrow keys)', () => {
@@ -141,10 +174,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
     })
 
     it('should not process keys when input is focused', () => {
-      Object.defineProperty(document, 'activeElement', {
-        value: { nodeName: 'INPUT', type: 'text', className: '' },
-        configurable: true
-      })
+      mockActiveElement({ nodeName: 'INPUT', type: 'text' })
       const event = createKeyEvent('f')
 
       onKey(event)
@@ -191,7 +221,6 @@ describe('Keys Module - Keyboard Event Handling', () => {
       const event = { key: 'f', preventDefault: vi.fn() }
       onKey(event)
 
-      expect(event.preventDefault).toHaveBeenCalled()
       expect(interfaceStore.openFilterMenu).not.toHaveBeenCalled()
     })
   })
@@ -247,13 +276,57 @@ describe('Keys Module - Keyboard Event Handling', () => {
     })
   })
 
+  describe('Dialogs and Menus', () => {
+    it.each(['Tab', 'Enter', ' ', 'ArrowDown', 'PageDown'])(
+      'should leave native %s handling to an open dialog',
+      (key) => {
+        sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
+        sessionStore.activePublication = { doi: '10.1234/active' }
+        modalStore.confirmDialog.isShown = true
+
+        const event = { key, preventDefault: vi.fn() }
+        onKey(event)
+
+        expect(event.preventDefault).not.toHaveBeenCalled()
+        expect(interfaceStore.activatePublicationComponent).not.toHaveBeenCalled()
+      }
+    )
+
+    const focusInsideMenu = (menuHtml) => {
+      const overlay = document.createElement('div')
+      overlay.className = 'v-overlay'
+      overlay.innerHTML = menuHtml
+      mockActiveElement({ closest: (selector) => overlay.firstElementChild.closest(selector) })
+    }
+
+    it.each(['ArrowDown', 'c'])('should ignore %s while focus is inside a list menu', (key) => {
+      sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
+      sessionStore.activePublication = { doi: '10.1234/active' }
+      focusInsideMenu('<div class="v-list"></div>')
+
+      const event = { key, preventDefault: vi.fn() }
+      onKey(event)
+
+      expect(event.preventDefault).not.toHaveBeenCalled()
+      expect(mockClearSession).not.toHaveBeenCalled()
+      expect(interfaceStore.activatePublicationComponent).not.toHaveBeenCalled()
+    })
+
+    it('should keep shortcuts while focus is inside the filter menu', () => {
+      sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
+      focusInsideMenu('<div class="v-sheet"></div>')
+
+      const event = { key: 'f', preventDefault: vi.fn() }
+      onKey(event)
+
+      expect(interfaceStore.openFilterMenu).toHaveBeenCalled()
+    })
+  })
+
   describe('Input Field Handling', () => {
     it('should blur input when Escape is pressed', () => {
-      const mockInput = { nodeName: 'INPUT', type: 'text', className: '', blur: vi.fn() }
-      Object.defineProperty(document, 'activeElement', {
-        value: mockInput,
-        configurable: true
-      })
+      mockActiveElement({ nodeName: 'INPUT', type: 'text' })
+      const mockInput = document.activeElement
 
       const event = { key: 'Escape', preventDefault: vi.fn() }
       onKey(event)
@@ -279,10 +352,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
       interfaceStore.isLoading = true
       interfaceStore.isLoadingCancelable = false
       interfaceStore.cancelLoading = vi.fn()
-      Object.defineProperty(document, 'activeElement', {
-        value: { nodeName: 'BODY', className: '', blur: vi.fn() },
-        configurable: true
-      })
+      mockActiveElement()
 
       const event = { key: 'Escape', preventDefault: vi.fn() }
       onKey(event)
@@ -293,10 +363,7 @@ describe('Keys Module - Keyboard Event Handling', () => {
     it('should not cancel loading when Escape is pressed while not loading', () => {
       interfaceStore.isLoading = false
       interfaceStore.cancelLoading = vi.fn()
-      Object.defineProperty(document, 'activeElement', {
-        value: { nodeName: 'BODY', className: '', blur: vi.fn() },
-        configurable: true
-      })
+      mockActiveElement()
 
       const event = { key: 'Escape', preventDefault: vi.fn() }
       onKey(event)

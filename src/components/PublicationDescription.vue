@@ -295,7 +295,11 @@ function handleAuthorClick(event) {
             class="clickable-author"
             :class="{ 'has-orcid': author.hasOrcid }"
             :data-author="author.name"
+            role="button"
+            tabindex="0"
             @click.stop="handleAuthorClick"
+            @keydown.enter.prevent="handleAuthorClick"
+            @keydown.space.prevent="handleAuthorClick"
             @click.middle.stop="refocus"
             v-html="highlight(author.name)"
           ></span>
@@ -473,7 +477,8 @@ label {
   border-radius: 2px;
   padding: 1px 2px;
 
-  &:hover {
+  &:hover,
+  &:focus-visible {
     background-color: rgba(0, 0, 0, 0.1);
   }
 }

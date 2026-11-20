@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia'
 
 import { useAppState } from '@/composables/useAppState.js'
 import PublicationSearch from '@/core/PublicationSearch.js'
+import { handlePublicationKey } from '@/lib/Keys.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useModalStore } from '@/stores/modal.js'
 import { useQueueStore } from '@/stores/queue.js'
@@ -55,11 +56,6 @@ export default {
     isSearchModalDialogShown: {
       handler() {
         if (!this.isSearchModalDialogShown) return
-        setTimeout(() => {
-          if (this.$refs.searchInput && typeof this.$refs.searchInput.focus === 'function') {
-            this.$refs.searchInput.focus()
-          }
-        }, 300)
         if (this.modalStore.searchQuery) {
           this.search()
         }
@@ -146,6 +142,22 @@ export default {
       this.modalStore.searchQuery = ''
     },
 
+    onDialogKey(event, index) {
+      if (event.key === 's') {
+        event.preventDefault()
+        this.$refs.searchInput.focus()
+        return
+      }
+      const publication = this.filteredSearchResults[index]
+      if (!publication) return
+      if (event.key === 'Enter' && event.target.classList.contains('dialog-item')) {
+        event.preventDefault()
+        this.addPublication(publication.doi)
+        return
+      }
+      handlePublicationKey(event, publication)
+    },
+
     close() {
       this.modalStore.isSearchModalDialogShown = false
       this.reset()
@@ -169,6 +181,7 @@ export default {
     title="Search/add publications"
     icon="mdi-magnify"
     header-color="primary"
+    @dialog-key="onDialogKey"
   >
     <template #sticky>
       <form @submit.prevent="search" class="has-background-primary-95">
@@ -178,13 +191,15 @@ export default {
             v-model="modalStore.searchQuery"
             type="input"
             ref="searchInput"
+            aria-label="Search publications"
             variant="solo"
             append-icon="mdi-magnify"
             @click:append="search"
-            @keydown.enter="search"
+            @keydown.enter.exact="search"
+            @keydown.shift.enter.prevent="searchResults.type === 'doi' && addAllPublications()"
             density="compact"
             hint="Search for keywords or by providing DOI(s) in any format. Results are merged from both OpenAlex and CrossRef and ranked by relevance."
-            class="search-field"
+            class="search-field dialog-initial-focus"
           >
           </v-text-field>
         </div>
@@ -210,6 +225,7 @@ export default {
           class="has-background-primary has-text-white mr-2 is-hidden-mobile"
           @click="addAllPublications"
           v-show="searchResults.type === 'doi' && filteredSearchResults.length > 0"
+          v-tippy="'Mark all publications to be added to selected (Shift+Enter in the search field).'"
           small
         >
           <v-icon left>mdi-plus-thick</v-icon> Add all

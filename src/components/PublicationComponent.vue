@@ -71,7 +71,7 @@ function handleMouseLeave() {
 </script>
 
 <template>
-  <div class="publication-component-wrapper">
+  <li class="publication-component-wrapper">
     <div
       class="level is-mobile queue-controls"
       v-if="
@@ -130,6 +130,8 @@ function handleMouseLeave() {
         <div
           class="glyph has-text-centered"
           :style="{ 'background-color': publication.scoreColor }"
+          role="img"
+          :aria-label="`Score ${publication.score}, citing ${publication.citationCount} and cited by ${publication.referenceCount} selected publications`"
           v-show="publication.wasFetched"
         >
           <div class="tooltip-target">
@@ -272,7 +274,7 @@ function handleMouseLeave() {
         </div>
       </div>
     </div>
-  </div>
+  </li>
 </template>
 
 <style lang="scss">

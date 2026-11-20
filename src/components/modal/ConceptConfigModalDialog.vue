@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 
 import { useAppState } from '@/composables/useAppState.js'
 import { useAuthorStore } from '@/stores/author.js'
@@ -18,6 +18,16 @@ function openAuthorDialog(authorId) {
   authorStore.setActiveAuthor(authorId)
   modalStore.isConceptConfigModalDialogShown = false
   modalStore.isAuthorModalDialogShown = true
+}
+
+const applyButton = ref(null)
+
+function onDialogKey(event) {
+  const actionByKey = { c: computeConcepts, a: applyConcepts, d: disableConcepts }
+  const action = actionByKey[event.key]
+  if (!action) return
+  event.preventDefault()
+  action()
 }
 
 const includeKeywords = ref(true)
@@ -208,6 +218,8 @@ function computeConcepts() {
     includeCitations.value,
     includeAuthors.value
   )
+  // Preselect applying the computed concepts
+  nextTick(() => applyButton.value?.$el.focus())
 }
 
 function applyConcepts() {
@@ -258,6 +270,7 @@ watch(
     title="Concept Analysis"
     icon="mdi-group"
     v-model="modalStore.isConceptConfigModalDialogShown"
+    @dialog-key="onDialogKey"
   >
     <template #header-menu>
       <v-icon
@@ -297,18 +310,21 @@ watch(
               :disabled="!canCompute"
               @click="computeConcepts"
               class="has-background-primary-95"
+              :class="{ 'dialog-initial-focus': !hasPreview }"
             >
               <v-icon left class="mr-2">mdi-play</v-icon>
-              Compute
+              <span class="key">C</span>ompute
             </v-btn>
 
             <v-btn
+              ref="applyButton"
               :disabled="conceptsPreview.length === 0"
               @click="applyConcepts"
               class="has-background-primary-95"
+              :class="{ 'dialog-initial-focus': hasPreview }"
             >
               <v-icon left class="mr-2">mdi-check</v-icon>
-              Apply
+              <span class="key">A</span>pply
             </v-btn>
 
             <v-btn
@@ -317,7 +333,7 @@ watch(
               class="has-background-primary-95"
             >
               <v-icon left class="mr-2">mdi-close</v-icon>
-              Disable
+              <span class="key">D</span>isable
             </v-btn>
           </div>
         </div>
@@ -358,7 +374,8 @@ watch(
             <li
               v-for="(concept, index) in conceptsToShow"
               :key="index"
-              class="media p-3 m-0 concept-item"
+              class="media p-3 m-0 concept-item dialog-item"
+              tabindex="0"
             >
               <div class="media-left concept-icon">
                 <v-icon size="large">mdi-group</v-icon>

@@ -231,6 +231,7 @@ function getActiveConceptTags() {
         :class="interfaceStore.isMobile ? '' : 'p-1 pl-4'"
         v-bind="props"
         :icon="interfaceStore.isMobile"
+        :aria-label="interfaceStore.isMobile ? 'Filter' : undefined"
         :density="interfaceStore.isMobile ? 'compact' : 'default'"
         :color="buttonColor"
       >

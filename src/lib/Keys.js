@@ -137,13 +137,16 @@ function handleArrowKeyNavigation(e) {
 }
 
 /**
- * Handle other publication shortcuts (queue, open, export, etc.)
+ * Handles shortcuts acting on a publication (queue, open, export, etc.), in the main
+ * lists as well as in dialogs listing publications.
+ * @param {KeyboardEvent} e - The keyboard event.
+ * @param {Object} publication - The publication to act on.
+ * @returns {boolean} True if the key was handled.
  */
-function handlePublicationActions(e) {
+export function handlePublicationKey(e, publication) {
   const sessionStore = useSessionStore()
   const { showAbstract } = useModalManager()
   const { queueForSelected, queueForExcluded } = useAppState()
-  const publication = sessionStore.activePublication
 
   if (e.key === '+') {
     e.preventDefault()
@@ -204,30 +207,57 @@ function handleActivePublicationShortcuts(e) {
     return handleArrowKeyNavigation(e)
   }
 
-  return handlePublicationActions(e)
+  return handlePublicationKey(e, sessionStore.activePublication)
+}
+
+/**
+ * Opens dialogs via shortcut; search and help work also in an empty session
+ * @returns {boolean} True if the key opened a dialog
+ */
+function handleDialogShortcuts(e, isEmpty) {
+  const modalManager = useModalManager()
+  const openDialogByKey = {
+    s: modalManager.openSearchModal,
+    '?': modalManager.openKeyboardControlsModal,
+    ...(!isEmpty && {
+      a: () => modalManager.openAuthorModal(),
+      o: modalManager.openConceptConfigModal,
+      q: modalManager.openQueueModal,
+      e: modalManager.openExcludedModal
+    })
+  }
+  const openDialog = openDialogByKey[e.key]
+  if (!openDialog) return false
+  e.preventDefault()
+  openDialog()
+  return true
+}
+
+/**
+ * Skips keys handled elsewhere (e.g., by a dialog), with modifiers, or repeated (except for
+ * scrolling through publications). Shift is fine for characters such as '+' or '?' (e.key
+ * already reflects it), but not for named keys such as arrows.
+ */
+function isIgnoredKeyEvent(e) {
+  return (
+    e.defaultPrevented ||
+    e.ctrlKey ||
+    e.metaKey ||
+    (e.shiftKey && e.key.length > 1) ||
+    (e.repeat && !(e.key === 'ArrowDown' || e.key === 'ArrowUp'))
+  )
 }
 
 export function onKey(e) {
   const { isEmpty } = useAppState()
-  const { isAnyOverlayShown, openSearchModal, openAuthorModal, openConceptConfigModal } = useModalManager()
+  const { isAnyOverlayShown } = useModalManager()
 
-  // Early returns for modifier keys and repeats
-  if (
-    e.ctrlKey ||
-    e.shiftKey ||
-    e.metaKey ||
-    (e.repeat && !(e.key === 'ArrowDown' || e.key === 'ArrowUp'))
-  ) {
-    return
-  }
+  if (isIgnoredKeyEvent(e)) return
 
   if (handleLoadingEscape(e)) return
 
-  // Handle overlay states
-  if (isAnyOverlayShown && document.activeElement.nodeName != 'INPUT') {
-    e.preventDefault()
-    return
-  }
+  // Dialogs and list menus handle their own keys (Tab, Enter, Space, Escape, arrows, sliders)
+  if (isAnyOverlayShown || document.activeElement.closest('.v-overlay .v-list')) return
 
   // Handle input field focus
   if (
@@ -240,28 +270,7 @@ export function onKey(e) {
     return
   }
 
-  // Search shortcut (works even when empty)
-  if (e.key === 's') {
-    e.preventDefault()
-    openSearchModal()
-    return
-  }
-
-  // Author shortcut (works when not empty)
-  if (!isEmpty.value && e.key === 'a') {
-    e.preventDefault()
-    openAuthorModal()
-    return
-  }
-
-  // Concepts shortcut (works when not empty)
-  if (!isEmpty.value && e.key === 'o') {
-    e.preventDefault()
-    openConceptConfigModal()
-    return
-  }
-
-  // Early return if app is empty
+  if (handleDialogShortcuts(e, isEmpty.value)) return
   if (isEmpty.value) return
 
   // Try handlers in order: global → navigation → active publication

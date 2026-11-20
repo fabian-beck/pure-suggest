@@ -86,7 +86,7 @@ onMounted(() => {
       <div>
         <div class="notification queue-panel" v-show="queueStore.isUpdatable">
           <div class="d-flex align-center ga-2">
-            <div class="flex-grow-1 has-text-centered queue-description">
+            <div class="flex-grow-1 has-text-centered queue-description" role="status">
               <p>
                 <InlineIcon icon="mdi-tray-full" class="mr-2"></InlineIcon>
                 <b>Queue:&nbsp;</b>
@@ -177,13 +177,15 @@ onMounted(() => {
       padding: 0 !important;
     }
 
+    // Hidden visually only, so that screen readers still announce the label
     :deep(.v-btn__content > .ml-1) {
-      display: none;
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
     }
-  }
-
-  .selected-action-label {
-    display: none;
   }
 }
 

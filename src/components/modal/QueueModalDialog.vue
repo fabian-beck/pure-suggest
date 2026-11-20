@@ -3,6 +3,7 @@ import { watch, reactive } from 'vue'
 
 import { useAppState } from '@/composables/useAppState.js'
 import Publication from '@/core/Publication.js'
+import { handlePublicationKey } from '@/lib/Keys.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useModalStore } from '@/stores/modal.js'
 import { useQueueStore } from '@/stores/queue.js'
@@ -60,6 +61,25 @@ export default {
       this.updateQueued()
       this.modalStore.isQueueModalDialogShown = false
     },
+    onDialogKey(event, index) {
+      if (event.key === 'u' && this.queueStore.isUpdatable) {
+        event.preventDefault()
+        this.updateQueuedAndClose()
+        return
+      }
+      const publication = [...this.selectedQueue, ...this.excludedQueue][index]
+      if (!publication) return
+      if (['Delete', 'Backspace'].includes(event.key)) {
+        event.preventDefault()
+        this.removeFromQueueAndUpdatePublications(publication)
+      } else if (handlePublicationKey(event, publication) && ['+', '-'].includes(event.key)) {
+        // The publication may have moved to the other queue; keep it focused there
+        this.updatePublications()
+        this.$nextTick(() =>
+          document.querySelector(`.queue-item[data-doi="${CSS.escape(publication.doi)}"]`)?.focus()
+        )
+      }
+    },
     removeFromQueueAndUpdatePublications(publication) {
       this.queueStore.removeFromQueues(publication.doi)
       this.updatePublications()
@@ -74,6 +94,7 @@ export default {
     title="Queue"
     icon="mdi-tray-full"
     v-model="modalStore.isQueueModalDialogShown"
+    @dialog-key="onDialogKey"
   >
     <template #sticky>
       <v-sheet class="has-background-primary-95 pa-2">
@@ -99,7 +120,7 @@ export default {
           v-show="queueStore.isUpdatable"
           small
           prepend-icon="mdi-update"
-          >Update</v-btn
+          ><span class="key">U</span>pdate</v-btn
         >
       </v-card-actions>
     </template>
@@ -111,7 +132,9 @@ export default {
           /></label>
           <ul class="publication-list">
             <li
-              class="publication-component media"
+              class="publication-component media dialog-item queue-item"
+              tabindex="0"
+              :data-doi="publication.doi"
               v-for="publication in selectedQueue"
               :key="publication.doi"
             >
@@ -134,7 +157,9 @@ export default {
           <label>Queued for <b>excluded</b> <InlineIcon icon="mdi-minus-thick" /></label>
           <ul class="publication-list">
             <li
-              class="publication-component media"
+              class="publication-component media dialog-item queue-item"
+              tabindex="0"
+              :data-doi="publication.doi"
               v-for="publication in excludedQueue"
               :key="publication.doi"
             >

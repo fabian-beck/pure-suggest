@@ -27,6 +27,8 @@ defineEmits(['click'])
     :color="active ? 'black' : undefined"
     :prepend-icon="icon"
     size="small"
+    :role="clickable ? 'button' : undefined"
+    :aria-pressed="clickable ? active : undefined"
     @click="clickable ? $emit('click') : null"
   >
     <slot></slot>

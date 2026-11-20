@@ -7,6 +7,7 @@ import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 
 import App from './App.vue'
+import { labelIconControlByTooltip } from './lib/TooltipLabels.js'
 import packageInfo from './../package.json'
 
 // App meta data
@@ -52,7 +53,9 @@ app.use(VueTippy, {
   directive: 'tippy', // => v-tippy
   component: 'tippy', // => <tippy/>
   defaultProps: {
-    allowHTML: true
+    allowHTML: true,
+    onCreate: labelIconControlByTooltip,
+    onAfterUpdate: labelIconControlByTooltip
   }
 })
 

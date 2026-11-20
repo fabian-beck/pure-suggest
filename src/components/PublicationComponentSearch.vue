@@ -14,7 +14,7 @@ defineEmits(['activate'])
 </script>
 
 <template>
-  <li class="publication-component media">
+  <li class="publication-component media dialog-item" tabindex="0">
     <div class="media-content">
       <PublicationDescription
         :publication="publication"

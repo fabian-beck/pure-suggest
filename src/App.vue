@@ -190,7 +190,7 @@ export default {
     }, 1000)
   },
   beforeUnmount() {
-    document.removeEventListener('keydown', onKey)
+    window.removeEventListener('keydown', onKey)
   }
 }
 </script>
@@ -200,7 +200,7 @@ export default {
 <template>
   <v-app id="app" data-app>
     <HeaderPanel id="header" />
-    <div
+    <main
       id="main"
       @click="sessionStore.clearActivePublication('clicked anywhere')"
       :style="mainGridStyle"
@@ -215,7 +215,7 @@ export default {
         :index="gutter.index"
       />
       <LandingComponent v-if="isEmpty" />
-    </div>
+    </main>
     <QuickAccessBar
       id="quick-access"
       class="is-hidden-desktop"
@@ -253,6 +253,7 @@ export default {
         <div
           class="global-loading-message has-text-white mt-4"
           v-if="interfaceStore.loadingMessage"
+          role="status"
         >
           {{ interfaceStore.loadingMessage }}
         </div>

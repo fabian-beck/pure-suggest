@@ -22,7 +22,7 @@ const filterMenuComponent = ref(null)
     <v-app-bar color="white" density="compact">
       <v-icon class="mr-1" :size="interfaceStore.isMobile ? 24 : 32">mdi-water-plus-outline</v-icon>
       <v-app-bar-title>
-        <div class="app-name" v-html="appMeta.nameHtml"></div>
+        <h1 class="app-name" v-html="appMeta.nameHtml"></h1>
         <div class="session-state" v-if="!isEmpty">
           <SessionMenuComponent />
           <KeywordMenuComponent />
@@ -32,7 +32,7 @@ const filterMenuComponent = ref(null)
       <LayoutMenuComponent v-if="!isEmpty && !interfaceStore.isMobile" />
       <v-menu bottom left offset-y transition="slide-y-transition">
         <template #activator="{ props }">
-          <v-btn icon v-bind="props" class="mr-1" density="compact">
+          <v-btn icon v-bind="props" class="mr-1" density="compact" aria-label="More options">
             <v-icon>mdi-dots-vertical</v-icon>
           </v-btn>
         </template>

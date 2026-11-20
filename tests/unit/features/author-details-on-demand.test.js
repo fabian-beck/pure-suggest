@@ -1,4 +1,4 @@
-import { createPinia, setActivePinia } from 'pinia'
+import { createPinia, getActivePinia, setActivePinia } from 'pinia'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 import { useModalManager } from '@/composables/useModalManager.js'
@@ -315,6 +315,35 @@ describe('Author Details On Demand Feature', () => {
       // Verify that the author names are still displayed (just not clickable)
       expect(suggestedWrapper.text()).toContain('John Doe')
       expect(suggestedWrapper.text()).toContain('Jane Smith')
+    })
+
+    it('should open the author details by pressing Enter on a focused author name', async () => {
+      const { mount } = await import('@vue/test-utils')
+      const PublicationDescription = await import('@/components/PublicationDescription.vue')
+      const wrapper = mount(PublicationDescription.default, {
+        props: {
+          publication: {
+            doi: '10.1000/test',
+            title: 'Test Publication',
+            author: 'John Doe; Jane Smith',
+            authorOrcidHtml: 'John Doe; Jane Smith',
+            year: 2023,
+            wasFetched: true,
+            isActive: true,
+            referenceDois: new Set(),
+            citationDois: new Set()
+          },
+          publicationType: 'selected'
+        },
+        global: { plugins: [getActivePinia()] }
+      })
+
+      const author = wrapper.find('.clickable-author')
+      expect(author.attributes()).toMatchObject({ role: 'button', tabindex: '0' })
+      await author.trigger('keydown', { key: 'Enter' })
+
+      expect(modalStore.isAuthorModalDialogShown).toBe(true)
+      expect(authorStore.activeAuthorId).toBe('john doe')
     })
 
     it('should have proper CSS classes for clickable authors in selected publications', async () => {
