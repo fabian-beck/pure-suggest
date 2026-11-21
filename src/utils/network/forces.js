@@ -50,6 +50,9 @@ const AUTHOR_COMMUNITY_FACTORS = { within: 2, across: 0.25 }
 // Space kept around publication and author nodes in clusters mode, where links pulling
 // strongly within communities would otherwise make nodes overlap
 const COLLISION_PADDING = 2
+// Share of the ellipse that the nodes are meant to fill (see getLayoutStrengths) that their
+// collision circles may cover
+const MAX_COLLISION_COVERAGE = 0.5
 // Pull of the nodes back to their place in the previous layout of a mode when switching
 // back to the mode (see returnToLayout)
 const RETURN_STRENGTH = 1
@@ -298,6 +301,8 @@ export function initializeForces(simulation, isNetworkClusters, selectedPublicat
   // resolved to nodes
   let communityLinks = null
   let community = null
+  let collisionNodes = null
+  let collisionScale = null
   const layoutStrength = (nodes, index) => {
     if (nodes !== strengthNodes) {
       strengthNodes = nodes
@@ -350,7 +355,18 @@ export function initializeForces(simulation, isNetworkClusters, selectedPublicat
     'y',
     d3.forceY(0).strength((d, i, nodes) => layoutStrength(nodes, 1))
   )
-  simulation.force('collide', isNetworkClusters ? d3.forceCollide(getCollisionRadius) : null)
+  simulation.force(
+    'collide',
+    isNetworkClusters
+      ? d3.forceCollide((d, i, nodes) => {
+          if (nodes !== collisionNodes) {
+            collisionNodes = nodes
+            collisionScale = getCollisionScale(nodes, view)
+          }
+          return collisionScale * getCollisionRadius(d)
+        })
+      : null
+  )
 }
 
 /**
@@ -366,6 +382,19 @@ function getCollisionRadius(node) {
     default:
       return 0
   }
+}
+
+/**
+ * Factor of the collision radii that lets the nodes fit into a view ({ width, height }): the
+ * collision circles of many nodes in a small view would otherwise push nodes out of the view
+ */
+function getCollisionScale(nodes, view) {
+  const fillArea =
+    Math.max(0, view.width / 2 - VIEW_MARGIN_X) * Math.max(0, view.height / 2 - VIEW_MARGIN_Y)
+  const collisionArea = d3.sum(nodes, (node) => getCollisionRadius(node) ** 2)
+  return collisionArea
+    ? Math.min(1, Math.sqrt((MAX_COLLISION_COVERAGE * fillArea) / collisionArea))
+    : 1
 }
 
 /**
