@@ -223,26 +223,22 @@ function handleKeyDown(event) {
   background: var(--bulma-white);
   border: 1px solid var(--bulma-border);
   margin-bottom: 0.5rem;
-  animation: pulse 1.5s ease-in-out infinite alternate;
   cursor: pointer;
   outline-offset: -0.25rem;
   min-height: 5rem; // Match PublicationComponent min-height
 
   &:focus {
     outline: 1px solid var(--bulma-dark);
-    animation-play-state: paused;
   }
 
   &:hover {
     background: rgba(0, 0, 0, 0.03);
-    animation-play-state: paused;
   }
 
   // Match PublicationComponent active state styling
   &.is-active {
     background: rgba(0, 0, 0, 0.1) !important;
     outline: 1px solid var(--bulma-dark);
-    animation-play-state: paused;
   }
 
   &.is-selected {
@@ -286,15 +282,6 @@ function handleKeyDown(event) {
     &.skeleton-year {
       width: 30%;
     }
-  }
-}
-
-@keyframes pulse {
-  0% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.7;
   }
 }
 </style>

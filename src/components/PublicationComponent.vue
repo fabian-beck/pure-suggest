@@ -37,6 +37,11 @@ const chevronType = computed(() => {
   return ''
 })
 
+// Computed so that hovering or queuing only re-renders the publications whose state changes
+const isHovered = computed(() => interfaceStore.hoveredPublication === props.publication.doi)
+const isQueuingForSelected = computed(() => queueStore.isQueuingForSelected(props.publication.doi))
+const isQueuingForExcluded = computed(() => queueStore.isQueuingForExcluded(props.publication.doi))
+
 const minusButtonTooltip = computed(() => {
   return props.publicationType === 'selected'
     ? 'Remove publication from selected and mark to stay excluded.'
@@ -81,19 +86,14 @@ function handleMouseLeave() {
   <li class="publication-component-wrapper">
     <div
       class="level is-mobile queue-controls"
-      v-if="
-        queueStore.isQueuingForSelected(publication.doi) ||
-        queueStore.isQueuingForExcluded(publication.doi)
-      "
-      :class="{
-        'to-be-selected': queueStore.isQueuingForSelected(publication.doi)
-      }"
+      v-if="isQueuingForSelected || isQueuingForExcluded"
+      :class="{ 'to-be-selected': isQueuingForSelected }"
     >
       <div class="level-item">
         <span>
           <InlineIcon icon="mdi-tray-full" color="dark" />
           To be
-          <span v-if="queueStore.isQueuingForSelected(publication.doi)"
+          <span v-if="isQueuingForSelected"
             ><b>selected </b>
             <InlineIcon icon="mdi-plus-thick" color="primary-dark" />
           </span>
@@ -118,10 +118,8 @@ function handleMouseLeave() {
         'is-selected': publication.isSelected,
         'is-linked-to-active': publication.isLinkedToActive,
         'is-unread': !publication.isRead && !publication.isSelected && publication.wasFetched,
-        'is-queuing':
-          queueStore.isQueuingForSelected(publication.doi) ||
-          queueStore.isQueuingForExcluded(publication.doi),
-        'is-hovered': interfaceStore.hoveredPublication === publication.doi,
+        'is-queuing': isQueuingForSelected || isQueuingForExcluded,
+        'is-hovered': isHovered,
         'is-keyword-hovered': publication.isKeywordHovered,
         'is-author-hovered': publication.isAuthorHovered,
         'is-newly-added': publication.isNewlyAdded
