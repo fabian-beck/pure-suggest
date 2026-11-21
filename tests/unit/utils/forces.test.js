@@ -231,7 +231,6 @@ describe('showing further nodes temporarily in a layout at rest', () => {
   const REVEALED_IDS = ['p3', 'p17', 'p31']
   const createGraphs = () => {
     const graph = createGraph()
-    graph.nodes.forEach((node) => (node.sizeFactor = 1))
     const isRevealed = (id) => REVEALED_IDS.includes(id)
     const restGraph = {
       nodes: graph.nodes.filter((node) => !isRevealed(node.id)),
