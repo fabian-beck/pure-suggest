@@ -66,6 +66,8 @@ describe('AiRecommendationService', () => {
       ])
       expect(request.messages[0].role).toBe('system')
       expect(request.messages[0].content).toContain('Follow this priority order')
+      // The report is read by people who never see the numbering used in the prompt
+      expect(request.messages[0].content).toContain('never mention ids, seed numbers')
 
       const context = JSON.parse(request.messages[1].content)
       expect(context.selectionTarget).toContain('Recommend 1 to 2 papers.')

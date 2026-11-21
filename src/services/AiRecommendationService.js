@@ -36,7 +36,7 @@ const INSTRUCTIONS = [
   'Refer to suggested papers only by their numeric id.',
   'Each explanation must be one brief sentence suitable for a tooltip.',
   'Set loadMoreSuggestions to true only if canLoadMoreSuggestions is true and the listed suggestions contain too few fitting papers for the expected number; otherwise set it to false.',
-  'Write the report for the user in two or three plain sentences: which papers you recommend overall (including seed papers marked addedInThisRun, which you recommended in earlier steps of the same run) and what they have in common, and whether fitting papers are likely still missing.',
+  'Write the report for the user in two or three plain sentences. The user sees the recommended papers listed next to the report and does not know the numbering used here, so never mention ids, seed numbers, or field names, and do not enumerate individual papers. Instead, describe in everyday words which themes the recommendations of this run cover (including seed papers marked addedInThisRun, which you recommended in earlier steps of the same run), how they extend the selection, and which fitting topics are likely still missing.',
   'Answer with a JSON object of the form {"recommendations":[{"id":<id of a suggested paper>,"explanation":"<one sentence>"}],"loadMoreSuggestions":<true or false>,"report":"<two or three sentences>"} and nothing else.'
 ].join(' ')
 
