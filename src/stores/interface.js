@@ -91,7 +91,9 @@ export const useInterfaceStore = defineStore('interface', {
     },
 
     checkMobile() {
-      this.isMobile = window.innerWidth < 1023
+      this.isMobile = window.innerWidth < 1024
+      // The mobile view offers no control to leave the maximized network
+      if (this.isMobile) this.isNetworkExpanded = false
       this.isWideScreen = window.innerWidth >= 2400
       this.isShortScreen = window.innerHeight < 800
     },

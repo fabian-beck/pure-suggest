@@ -75,6 +75,20 @@ describe('Interface Store - Layout', () => {
     expect(interfaceStore.effectiveLayout).toBe('threeColumns')
   })
 
+  it('switches to the mobile view below the desktop breakpoint, showing the lists again', () => {
+    interfaceStore.isNetworkExpanded = true
+
+    window.innerWidth = 1024
+    interfaceStore.checkMobile()
+    expect(interfaceStore.isMobile).toBe(false)
+    expect(interfaceStore.isNetworkExpanded).toBe(true)
+
+    window.innerWidth = 1023
+    interfaceStore.checkMobile()
+    expect(interfaceStore.isMobile).toBe(true)
+    expect(interfaceStore.isNetworkExpanded).toBe(false)
+  })
+
   it('uses a manually chosen layout independent of the window size', () => {
     interfaceStore.isWideScreen = true
     interfaceStore.setLayoutMode('networkRight')
