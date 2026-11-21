@@ -1,6 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { nextTick } from 'vue'
 
 import SearchModalDialog from '@/components/modal/SearchModalDialog.vue'
 import { useModalStore } from '@/stores/modal.js'
@@ -15,20 +16,41 @@ vi.mock('@/lib/Cache.js', () => ({
   clearCache: vi.fn()
 }))
 
-// Simplified PublicationSearch mock
+// PublicationSearch mock with results controllable per test
+const mockExecute = vi.hoisted(() => vi.fn())
 vi.mock('@/core/PublicationSearch.js', () => ({
   default: class {
-    async execute() {
-      return {
-        results: [
-          { doi: '10.1234/test-1', title: 'Test Publication 1', year: 2023, wasFetched: true },
-          { doi: '10.1234/test-2', title: 'Test Publication 2', year: 2022, wasFetched: true }
-        ],
-        type: 'search'
-      }
+    constructor(query) {
+      this.query = query
+    }
+
+    execute() {
+      return mockExecute(this.query)
     }
   }
 }))
+
+const searchResult = (...dois) => ({
+  results: dois.map((doi) => ({ doi, title: `Title of ${doi}`, wasFetched: true })),
+  type: 'search'
+})
+
+const mountDialog = (pinia) =>
+  mount(SearchModalDialog, {
+    global: {
+      plugins: [pinia],
+      stubs: {
+        ModalDialog: true,
+        PublicationComponentSearch: true,
+        'v-text-field': true,
+        'v-btn': true,
+        'v-card-actions': true,
+        'v-overlay': true,
+        'v-progress-circular': true,
+        'v-icon': true
+      }
+    }
+  })
 
 describe('SearchModalDialog', () => {
   let sessionStore
@@ -42,6 +64,8 @@ describe('SearchModalDialog', () => {
     sessionStore = useSessionStore()
     modalStore = useModalStore()
     queueStore = useQueueStore()
+    mockExecute.mockReset()
+    mockExecute.mockResolvedValue(searchResult('10.1234/test-1', '10.1234/test-2'))
   })
 
   it('should work correctly after fixing selectedQueue access', () => {
@@ -373,5 +397,48 @@ describe('SearchModalDialog', () => {
 
     // Results should not be displayed since search was cancelled
     expect(wrapper.vm.filteredSearchResults).toEqual([])
+  })
+
+  it('should keep the results of the latest search when an earlier one responds later', async () => {
+    let resolveSlowSearch
+    mockExecute.mockImplementation((query) =>
+      query === 'slow'
+        ? new Promise((resolve) => (resolveSlowSearch = resolve))
+        : Promise.resolve(searchResult('10.1234/fast'))
+    )
+    const wrapper = mountDialog(pinia)
+
+    modalStore.searchQuery = 'slow'
+    const slowSearch = wrapper.vm.search()
+    modalStore.searchQuery = 'fast'
+    await nextTick()
+    await wrapper.vm.search()
+    resolveSlowSearch(searchResult('10.1234/slow'))
+    await slowSearch
+
+    expect(wrapper.vm.filteredSearchResults.map(({ doi }) => doi)).toEqual(['10.1234/fast'])
+    expect(wrapper.vm.isLoading).toBe(false)
+  })
+
+  it('should repeat a cancelled search for the same query', async () => {
+    const wrapper = mountDialog(pinia)
+
+    modalStore.searchQuery = 'query'
+    const cancelledSearch = wrapper.vm.search()
+    wrapper.vm.cancelSearch()
+    await cancelledSearch
+    await wrapper.vm.search()
+
+    expect(mockExecute).toHaveBeenCalledTimes(2)
+    expect(wrapper.vm.filteredSearchResults).toHaveLength(2)
+  })
+
+  it('should not search for a query of whitespace only', async () => {
+    const wrapper = mountDialog(pinia)
+
+    modalStore.searchQuery = '   '
+    await wrapper.vm.search()
+
+    expect(mockExecute).not.toHaveBeenCalled()
   })
 })
