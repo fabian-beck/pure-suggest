@@ -153,7 +153,7 @@ describe('PublicationDescription', () => {
     })
 
     expect(wrapper.find('.tag').attributes('data-tooltip')).toContain(
-      'AI recommended: Uses &lt;b&gt;graphs&lt;/b&gt; &amp; trees.'
+      'AI recommended: <i>Uses &lt;b&gt;graphs&lt;/b&gt; &amp; trees.</i>'
     )
   })
 

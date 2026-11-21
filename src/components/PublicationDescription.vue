@@ -193,7 +193,7 @@ function getTagTooltip(tagValue, tagName) {
 
   const description =
     tagValue === 'isAiRecommended'
-      ? `${tagName}: ${escapeHtml(props.publication[tagValue])}`
+      ? `${tagName}: <i>${escapeHtml(props.publication[tagValue])}</i>`
       : `Identified as ${tagName.toLowerCase()}: ${props.publication[tagValue]}.`
   const action = isTagFiltered(tagValue)
     ? `Active as filter; click to remove from filter.`
