@@ -121,6 +121,22 @@ describe('PublicationDescription', () => {
     expect(wrapper.html()).toContain('has-background-grey-light')
   })
 
+  it('highlights search terms that also occur in the highlighting markup', () => {
+    const wrapper = mount(PublicationDescription, {
+      props: {
+        publication: { ...mockPublication, title: 'Graph Class Diagrams' },
+        highlighted: 'graph class'
+      },
+      global: { stubs: defaultStubs }
+    })
+
+    expect(wrapper.text()).not.toContain('has-background-grey-light')
+    expect(wrapper.findAll('.has-background-grey-light').map((span) => span.text())).toEqual([
+      'Graph',
+      'Class'
+    ])
+  })
+
   it('calls showAbstract when abstract button is clicked', async () => {
     const wrapper = mount(PublicationDescription, {
       props: { publication: { ...mockPublication, isActive: true } },

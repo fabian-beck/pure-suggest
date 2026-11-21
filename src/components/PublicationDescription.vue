@@ -61,16 +61,15 @@ function highlight(string) {
   if (!props.highlighted) {
     return string
   }
-  const substrings = props.highlighted.split(' ')
-  let highlightedString = string
-  substrings.forEach((substring) => {
-    if (substring.length < 3) return
-    const regex = new RegExp(substring, 'gi')
-    highlightedString = highlightedString.replace(regex, (match) => {
-      return `<span class="has-background-grey-light">${match}</span>`
-    })
-  })
-  return highlightedString
+  const substrings = props.highlighted.split(' ').filter((substring) => substring.length >= 3)
+  if (!substrings.length) {
+    return string
+  }
+  // All terms at once, so that a term cannot match the markup added for another one
+  return string.replace(
+    new RegExp(substrings.join('|'), 'gi'),
+    (match) => `<span class="has-background-grey-light">${match}</span>`
+  )
 }
 
 function showAbstract() {
