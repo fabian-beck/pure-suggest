@@ -19,9 +19,27 @@ const tooltip = computed(() =>
     <v-icon start :color="isRemote ? 'warning' : 'success'">
       {{ isRemote ? 'mdi-cloud-upload-outline' : 'mdi-laptop' }}
     </v-icon>
-    <b class="mr-1">{{ isRemote ? 'Cloud' : 'On this device' }}</b>
-    · {{ llmStore.backendName }}
-    <template v-if="llmStore.modelId"> · {{ llmStore.activeModel.name }}</template>
-    <template v-if="speed"> · {{ speed }} tokens/s</template>
+    <span class="engine">
+      <b>{{ isRemote ? 'Cloud' : 'On this device' }}</b>
+      · {{ llmStore.backendName }}
+      <template v-if="llmStore.modelId"> · {{ llmStore.activeModel.name }}</template>
+      <template v-if="speed"> · {{ speed }} tokens/s</template>
+    </span>
   </v-chip>
 </template>
+
+<style scoped lang="scss">
+.v-chip {
+  max-width: 100%;
+
+  & :deep(.v-chip__content) {
+    min-width: 0;
+  }
+
+  & .engine {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+</style>

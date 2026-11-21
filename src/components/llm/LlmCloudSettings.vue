@@ -24,7 +24,13 @@ function setService(serviceId) {
 
 <template>
   <div>
-    <v-alert type="warning" density="compact" class="mb-3" icon="mdi-cloud-upload-outline">
+    <v-alert
+      type="warning"
+      variant="tonal"
+      density="compact"
+      class="mb-3"
+      icon="mdi-cloud-upload-outline"
+    >
       Cloud models run on the provider’s servers: titles, abstracts, and keywords of your session
       are sent to {{ service.name }} and billed to your API key. Nothing is sent before you ask
       for an AI feature.
@@ -63,9 +69,9 @@ function setService(serviceId) {
       @change="llmStore.refreshModels()"
     />
     <p class="is-size-7 mt-1 mb-2">
-      <a v-if="service.keyUrl" :href="service.keyUrl" target="_blank" rel="noopener"
-        >Create a key</a
-      >
+      <template v-if="service.keyUrl">
+        <a :href="service.keyUrl" target="_blank" rel="noopener">Create a key</a> ·
+      </template>
       The key is only sent to {{ service.name }}.
     </p>
     <v-checkbox

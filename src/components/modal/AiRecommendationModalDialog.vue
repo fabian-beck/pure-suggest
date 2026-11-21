@@ -61,7 +61,6 @@ function start() {
       <div class="d-flex flex-wrap align-center ga-2 mb-2">
         <LlmEngineChip v-if="llmStore.settings.mode" />
         <v-btn
-          size="small"
           prepend-icon="mdi-cog"
           :class="{ 'dialog-initial-focus': llmStore.setupIssue }"
           @click="openLlmSettingsModal()"
@@ -76,7 +75,7 @@ function start() {
 
       <div class="mt-4" id="ai-expected-papers">
         Expected number of papers to {{ sessionStore.isAiAutoSelect ? 'select' : 'recommend' }}:
-        <b>{{ expectedPapers }}</b>
+        <b class="text-no-wrap">{{ expectedPapers }}</b>
       </div>
       <v-range-slider
         v-model="sessionStore.aiRecommendationRange"
@@ -105,11 +104,12 @@ function start() {
         placeholder="e.g., prefer recent survey papers"
         density="compact"
         hide-details
-        class="mt-4 mb-4"
+        class="mt-4"
         @keydown.enter="start"
       />
-
-      <div class="d-flex justify-end">
+    </div>
+    <template #footer>
+      <v-card-actions class="has-background-info-95 justify-end">
         <v-btn
           class="has-background-info has-text-white"
           :class="{ 'dialog-initial-focus': !llmStore.setupIssue }"
@@ -119,7 +119,7 @@ function start() {
         >
           {{ sessionStore.isAiAutoSelect ? 'Auto-select' : 'Recommend' }}
         </v-btn>
-      </div>
-    </div>
+      </v-card-actions>
+    </template>
   </ModalDialog>
 </template>

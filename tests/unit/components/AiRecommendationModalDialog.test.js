@@ -35,7 +35,7 @@ describe('AiRecommendationModalDialog', () => {
       global: {
         plugins: [pinia],
         stubs: {
-          ModalDialog: { template: '<div><slot></slot></div>' },
+          ModalDialog: { template: '<div><slot></slot><slot name="footer"></slot></div>' },
           LlmEngineChip: true,
           'v-range-slider': {
             props: ['modelValue', 'min', 'max'],

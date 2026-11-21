@@ -92,8 +92,7 @@ function select(model) {
     <v-btn
       v-if="otherModels.length && preferredModels.length && !isShowingOthers"
       variant="text"
-      size="small"
-      class="mt-1"
+      class="mt-2"
       @click="isShowingOthers = true"
     >
       Show {{ otherModels.length }} other model{{ otherModels.length > 1 ? 's' : '' }}
@@ -106,7 +105,7 @@ function select(model) {
   list-style-type: none;
   margin: 0;
   padding: 0;
-  max-height: 18rem;
+  max-height: 21rem;
   overflow-y: auto;
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 4px;

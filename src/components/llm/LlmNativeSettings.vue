@@ -43,7 +43,6 @@ function useServer(server) {
 
     <div class="d-flex flex-wrap align-center ga-2 mb-3">
       <v-btn
-        size="small"
         prepend-icon="mdi-radar"
         :loading="llmStore.isDetectingServers"
         v-tippy="'Looks for Ollama, LM Studio, and llama.cpp at their default addresses on this computer. The browser may ask for permission to access the local network.'"
@@ -76,11 +75,19 @@ function useServer(server) {
       @keydown.enter="llmStore.refreshModels()"
     >
       <template #append-inner>
-        <v-btn size="small" variant="text" @click="llmStore.refreshModels()">Connect</v-btn>
+        <v-btn size="small" variant="text" class="px-2" @click="llmStore.refreshModels()">
+          Connect
+        </v-btn>
       </template>
     </v-text-field>
 
-    <v-alert v-if="isBlockedAsMixedContent" type="warning" density="compact" class="mb-3">
+    <v-alert
+      v-if="isBlockedAsMixedContent"
+      type="warning"
+      variant="tonal"
+      density="compact"
+      class="mb-3"
+    >
       Browsers do not let this secure page reach an unencrypted (http) server on another machine.
       Use an https address or a server on this computer.
     </v-alert>
@@ -88,6 +95,7 @@ function useServer(server) {
     <v-alert
       v-if="llmStore.modelsError"
       type="warning"
+      variant="tonal"
       density="compact"
       class="mb-3"
       role="alert"

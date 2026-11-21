@@ -23,12 +23,14 @@ describe('LlmSettingsModalDialog', () => {
       global: {
         plugins: [pinia],
         stubs: {
-          ModalDialog: { template: '<div><slot></slot></div>' },
+          ModalDialog: { template: '<div><slot></slot><slot name="footer"></slot></div>' },
           LlmBrowserSettings: { template: '<div class="browser-settings"></div>' },
           LlmNativeSettings: { template: '<div class="native-settings"></div>' },
           LlmCloudSettings: { template: '<div class="cloud-settings"></div>' },
           LlmEngineChip: true,
-          'v-alert': { template: '<div class="v-alert"><slot></slot></div>' },
+          'v-alert': {
+            template: '<div class="v-alert"><slot></slot><slot name="append"></slot></div>'
+          },
           'v-expansion-panels': true
         }
       }

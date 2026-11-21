@@ -128,13 +128,11 @@ watch(
         class="mb-3"
         icon="mdi-lightbulb-outline"
       >
-        <div class="d-flex flex-wrap align-center ga-2">
-          <span>
-            Suggested for this device: <b>{{ recommendationText }}</b
-            >. {{ llmStore.recommendation.reason }}
-          </span>
-          <v-btn size="small" class="ml-auto" @click="applyRecommendation">Use</v-btn>
-        </div>
+        Suggested for this device: <b>{{ recommendationText }}</b
+        >. {{ llmStore.recommendation.reason }}
+        <template #append>
+          <v-btn @click="applyRecommendation">Use</v-btn>
+        </template>
       </v-alert>
 
       <div class="modes mb-4" role="radiogroup" aria-label="Where the model runs">
@@ -197,49 +195,48 @@ watch(
             </v-expansion-panel-text>
           </v-expansion-panel>
         </v-expansion-panels>
-
-        <div class="summary mt-4">
-          <div class="d-flex flex-wrap align-center ga-2">
-            <LlmEngineChip />
-            <v-btn
-              v-if="!test?.isRunning"
-              size="small"
-              prepend-icon="mdi-play"
-              :disabled="Boolean(llmStore.setupIssue)"
-              v-tippy="'Sends a short question to the model and measures its speed on this device.'"
-              @click="runTest"
-            >
-              Test
-            </v-btn>
-            <v-btn v-else size="small" @click="testController.abort()">Cancel test</v-btn>
-            <v-btn
-              class="ml-auto"
-              size="small"
-              @click="modalStore.isLlmSettingsModalDialogShown = false"
-            >
-              Done
-            </v-btn>
-          </div>
-          <p v-if="llmStore.setupIssue" class="is-size-7 mt-2">
-            <v-icon size="small" color="warning">mdi-alert-outline</v-icon>
-            {{ llmStore.setupIssue }}
-          </p>
-          <p v-else-if="limitations" class="is-size-7 mt-2">
-            Limitations of this model: {{ limitations }}.
-          </p>
-          <div v-if="test" class="is-size-7 mt-2" role="status">
-            <span v-if="test.isRunning">{{ test.status }}</span>
-            <span v-else-if="test.error" class="has-text-danger">{{ test.error }}</span>
-            <template v-else>
-              <i>{{ test.answer }}</i>
-              <span v-if="test.tokensPerSecond">
-                ({{ test.tokensPerSecond.toFixed(1) }} tokens per second)
-              </span>
-            </template>
-          </div>
-        </div>
       </template>
     </div>
+    <template #footer>
+      <div v-if="llmStore.settings.mode" class="summary has-background-info-95">
+        <div class="d-flex flex-wrap align-center ga-2">
+          <LlmEngineChip />
+          <v-btn
+            v-if="!test?.isRunning"
+            prepend-icon="mdi-play"
+            :disabled="Boolean(llmStore.setupIssue)"
+            v-tippy="'Sends a short question to the model and measures its speed on this device.'"
+            @click="runTest"
+          >
+            Test
+          </v-btn>
+          <v-btn v-else @click="testController.abort()">Cancel test</v-btn>
+          <v-btn
+            class="ml-auto"
+            @click="modalStore.isLlmSettingsModalDialogShown = false"
+          >
+            Done
+          </v-btn>
+        </div>
+        <p v-if="llmStore.setupIssue" class="is-size-7 mt-2">
+          <v-icon size="small" color="warning">mdi-alert-outline</v-icon>
+          {{ llmStore.setupIssue }}
+        </p>
+        <p v-else-if="limitations" class="is-size-7 mt-2">
+          Limitations of this model: {{ limitations }}.
+        </p>
+        <div v-if="test" class="is-size-7 mt-2" role="status">
+          <span v-if="test.isRunning">{{ test.status }}</span>
+          <span v-else-if="test.error" class="has-text-danger">{{ test.error }}</span>
+          <template v-else>
+            <i>{{ test.answer }}</i>
+            <span v-if="test.tokensPerSecond">
+              ({{ test.tokensPerSecond.toFixed(1) }} tokens per second)
+            </span>
+          </template>
+        </div>
+      </div>
+    </template>
   </ModalDialog>
 </template>
 
@@ -282,7 +279,20 @@ watch(
 }
 
 .summary {
-  padding-top: 0.75rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 0.75rem calc(0.5rem + 1%);
+}
+
+// Body text of tinted alerts stays in the regular text color for readability
+.content :deep(.v-alert--variant-tonal .v-alert__content) {
+  color: rgba(0, 0, 0, 0.87);
+}
+
+// The global reset removes the padding of buttons, which panel titles are
+.content :deep(.v-expansion-panel-title) {
+  padding: 0.75rem 1rem;
+}
+
+.content :deep(.v-expansion-panel-text__wrapper) {
+  padding: 0.5rem 1rem 1rem;
 }
 </style>

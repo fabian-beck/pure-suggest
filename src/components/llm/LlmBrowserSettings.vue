@@ -88,7 +88,7 @@ async function loadModel() {
       <div v-if="loadProgress" role="status">
         <div class="d-flex align-center ga-2">
           <span class="is-size-7">{{ loadProgressText }}</span>
-          <v-btn size="small" variant="text" @click="loadController.abort()">Cancel</v-btn>
+          <v-btn variant="text" @click="loadController.abort()">Cancel</v-btn>
         </div>
         <v-progress-linear
           :model-value="(100 * loadProgress.loadedBytes) / loadProgress.totalBytes"
@@ -96,12 +96,11 @@ async function loadModel() {
         />
       </div>
       <div v-else class="d-flex flex-wrap ga-2">
-        <v-btn size="small" prepend-icon="mdi-download" @click="loadModel">
+        <v-btn prepend-icon="mdi-download" @click="loadModel">
           {{ llmStore.activeModel.isAvailable ? 'Load model' : 'Download and load model' }}
         </v-btn>
         <v-btn
           v-if="llmStore.activeModel.isAvailable"
-          size="small"
           variant="text"
           prepend-icon="mdi-delete-outline"
           @click="llmStore.removeModel(llmStore.modelId)"
@@ -128,7 +127,7 @@ async function loadModel() {
             @keydown.enter="addCustomModel"
           >
             <template #append-inner>
-              <v-btn size="small" variant="text" @click="addCustomModel">Add</v-btn>
+              <v-btn size="small" variant="text" class="px-2" @click="addCustomModel">Add</v-btn>
             </template>
           </v-text-field>
           <v-select
