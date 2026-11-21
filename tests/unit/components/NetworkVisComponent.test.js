@@ -1388,6 +1388,36 @@ describe('NetworkVisComponent', () => {
       expect(labelGroup().classes()).not.toContain('hidden')
     })
 
+    it('keeps the layout at rest while the active publication reveals publications', () => {
+      vi.spyOn(wrapper.vm, 'updateChangedNodePositions').mockImplementation(() => {})
+      vi.spyOn(wrapper.vm, 'updateSelectiveLinks').mockImplementation(() => 0)
+      vi.spyOn(wrapper.vm, 'updateNodeLabels').mockImplementation(() => {})
+      vi.spyOn(wrapper.vm, 'plot').mockImplementation(() => {})
+      const { force } = wrapper.vm.simulation
+      const end = lastHandler(wrapper.vm.simulation.on, 'end')
+      const node = { id: 'a', x: 10, y: 20 }
+      wrapper.vm.graph.nodes = [node]
+
+      // The layout that the simulation found is the layout at rest
+      wrapper.vm.restart()
+      end()
+      expect(wrapper.vm.restPositions.get('a')).toMatchObject({ x: 10, y: 20 })
+
+      // It is kept when publications are revealed, also once nodes have made room
+      wrapper.vm.revealedPublications = [{}]
+      wrapper.vm.$options.watch.activePublication.handler.call(wrapper.vm)
+      expect(force).toHaveBeenLastCalledWith('keep', expect.any(Function))
+      node.x = 15
+      end()
+      expect(wrapper.vm.restPositions.get('a')).toMatchObject({ x: 10, y: 20 })
+
+      // Any other restart finds a new layout
+      wrapper.vm.restart()
+      expect(force).toHaveBeenLastCalledWith('keep', null)
+      end()
+      expect(wrapper.vm.restPositions.get('a')).toMatchObject({ x: 15, y: 20 })
+    })
+
     it('draws the final positions and places the labels when the simulation ends', () => {
       const updateNodeLabels = vi.spyOn(wrapper.vm, 'updateNodeLabels').mockImplementation(() => {})
       const updateChangedNodePositions = vi
