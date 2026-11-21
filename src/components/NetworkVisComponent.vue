@@ -30,6 +30,8 @@ import {
   initializeForces,
   calculateYearX,
   pinTimelineX,
+  rememberLayout,
+  returnToLayout,
   runFrameTicks,
   SIMULATION_ALPHA
 } from '@/utils/network/forces.js'
@@ -167,6 +169,7 @@ export default {
     this.labelZoomScale = 1 // Zoom factor of the previous label placement
     this.viewport = { width: 0, height: 0 } // Size of the panel, measured when plotting and on resize
     this.shownYears = { min: undefined, max: undefined } // Range of the year axis
+    this.modeLayouts = {} // Last layouts of the modes, to return to when switching back
     this.isLabelEngineLoaded = false
     // Publications beyond the shown numbers, and the ones of them revealed for the active
     // publication
@@ -199,6 +202,10 @@ export default {
           return
         }
         this.plot(true)
+        this.simulation.force(
+          'return',
+          returnToLayout(this.modeLayouts, this.graph, this.viewport, this.isNetworkClusters)
+        )
       }
     },
     filter: {
@@ -311,6 +318,8 @@ export default {
       .on('tick', this.tick)
       // The last tick may not have been drawn, and labels are only placed in the final layout
       .on('end', () => {
+        this.simulation.force('return', null)
+        rememberLayout(this.modeLayouts, this.graph, this.viewport, this.isNetworkClusters)
         const changedNodes = this.detectChangedNodes()
         this.updateChangedNodePositions(changedNodes)
         this.updateSelectiveLinks(changedNodes)
