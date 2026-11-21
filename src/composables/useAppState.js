@@ -332,6 +332,7 @@ export function useAppState() {
     sessionStore.selectedPublications = sessionStore.selectedPublications.filter(
       (publication) => !queueStore.excludedQueue.includes(publication.doi)
     )
+    queueStore.excludedQueue.forEach((doi) => sessionStore.filter.removeDoi(doi))
     if (sessionStore.suggestion) {
       sessionStore.suggestion.publications = sessionStore.suggestion.publications.filter(
         (publication) =>

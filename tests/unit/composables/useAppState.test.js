@@ -347,6 +347,15 @@ describe('useAppState - Session Loading', () => {
   })
 
   describe('updateQueued', () => {
+    it('should drop the DOI filter of a publication that is excluded', async () => {
+      sessionStore.filter.dois = ['10.1234/kept', '10.1234/excluded']
+      queueStore.excludedQueue = ['10.1234/excluded']
+
+      await appState.updateQueued()
+
+      expect(sessionStore.filter.dois).toEqual(['10.1234/kept'])
+    })
+
     it('should scroll the publication lists to the top', async () => {
       document.body.innerHTML = `<div id="selected"><ul class="publication-list"></ul></div>
         <div id="suggested"><ul class="publication-list"></ul></div>`
