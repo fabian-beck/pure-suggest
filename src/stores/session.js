@@ -37,6 +37,7 @@ export const useSessionStore = defineStore('session', {
       new Set(state.selectedPublications.map((publication) => publication.doi)),
     selectedPublicationsByDoi: (state) =>
       new Map(state.selectedPublications.map((publication) => [publication.doi, publication])),
+    excludedPublicationsDoiSet: (state) => new Set(state.excludedPublicationsDois),
     selectedPublicationsCount: (state) => state.selectedPublications.length,
     excludedPublicationsCount: (state) => state.excludedPublicationsDois.length,
     suggestedPublications: (state) => (state.suggestion ? state.suggestion.publications : []),
@@ -119,7 +120,9 @@ export const useSessionStore = defineStore('session', {
     isSelected() {
       return (doi) => this.selectedPublicationsDoiSet.has(doi)
     },
-    isExcluded: (state) => (doi) => state.excludedPublicationsDois.includes(doi),
+    isExcluded() {
+      return (doi) => this.excludedPublicationsDoiSet.has(doi)
+    },
     getSelectedPublicationByDoi() {
       return (doi) => this.selectedPublicationsByDoi.get(doi)
     }
@@ -250,56 +253,42 @@ export const useSessionStore = defineStore('session', {
     setActivePublication(doi) {
       const selectedPublications = this.selectedPublications
       const suggestedPublications = this.suggestedPublications
-
-      // Clear all active states first
-      selectedPublications.forEach((publication) => {
-        publication.isActive = false
-        publication.isLinkedToActive = false
-      })
-      suggestedPublications.forEach((publication) => {
-        publication.isActive = false
-        publication.isLinkedToActive = false
-      })
-
-      // Set active state for selected publications
       const selectedPublication = selectedPublications.find(
         (publication) => publication.doi === doi
       )
-      if (selectedPublication) {
-        selectedPublication.isActive = true
-        this.activePublication = selectedPublication
+      const suggestedPublication = selectedPublication
+        ? undefined
+        : suggestedPublications.find((publication) => publication.doi === doi)
 
+      // Each state is assigned once, so that only publications with a changed state update
+      if (selectedPublication) {
         const linkedDois = new Set([
           ...selectedPublication.citationDois,
           ...selectedPublication.referenceDois
         ])
-        selectedPublications.forEach((publication) => {
+        this.publications.forEach((publication) => {
+          publication.isActive = publication === selectedPublication
           publication.isLinkedToActive = linkedDois.has(publication.doi)
         })
-        suggestedPublications.forEach((publication) => {
-          publication.isLinkedToActive = linkedDois.has(publication.doi)
-        })
-
-        console.log(`Highlighted as active publication with DOI ${doi}.`)
-        return
-      }
-
-      // Set active state for suggested publications
-      const suggestedPublication = suggestedPublications.find(
-        (publication) => publication.doi === doi
-      )
-      if (suggestedPublication) {
-        suggestedPublication.isActive = true
-        suggestedPublication.isRead = true
-        this.readPublicationsDois.add(doi)
-        this.activePublication = suggestedPublication
-
+        this.activePublication = selectedPublication
+      } else {
         // Linked by the selected publications' own citation data, as are network links and
         // scores: the suggestion's fetched data may list further, unreciprocated citations
         selectedPublications.forEach((publication) => {
+          publication.isActive = false
           publication.isLinkedToActive =
-            publication.citationDois.has(doi) || publication.referenceDois.has(doi)
+            Boolean(suggestedPublication) &&
+            (publication.citationDois.has(doi) || publication.referenceDois.has(doi))
         })
+        suggestedPublications.forEach((publication) => {
+          publication.isActive = publication === suggestedPublication
+          publication.isLinkedToActive = false
+        })
+        if (suggestedPublication) {
+          suggestedPublication.isRead = true
+          this.readPublicationsDois.add(doi)
+          this.activePublication = suggestedPublication
+        }
       }
       console.log(`Highlighted as active publication with DOI ${doi}.`)
     },

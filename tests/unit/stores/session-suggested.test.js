@@ -1,5 +1,6 @@
 import { setActivePinia, createPinia } from 'pinia'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { watch } from 'vue'
 
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
@@ -311,6 +312,61 @@ describe('Session Store - Suggested Publications Filtering', () => {
 
       expect(selectedA.isLinkedToActive).toBe(true)
       expect(selectedB.isLinkedToActive).toBe(false)
+    })
+
+    it('should not notify publications whose state stays the same when activating another publication', () => {
+      const createPublication = (doi, citationDois = []) => ({
+        doi,
+        isActive: false,
+        isLinkedToActive: false,
+        citationDois: new Set(citationDois),
+        referenceDois: new Set()
+      })
+      sessionStore.selectedPublications = [
+        createPublication('10.1234/a', ['10.1234/shared']),
+        createPublication('10.1234/b', ['10.1234/shared']),
+        createPublication('10.1234/shared'),
+        createPublication('10.1234/unlinked')
+      ]
+      const [, , shared, unlinked] = sessionStore.selectedPublications
+      sessionStore.setActivePublication('10.1234/a')
+      const onStateChange = vi.fn()
+      watch(() => [shared.isLinkedToActive, unlinked.isLinkedToActive], onStateChange, {
+        flush: 'sync'
+      })
+
+      sessionStore.setActivePublication('10.1234/b')
+
+      expect(shared.isLinkedToActive).toBe(true)
+      expect(unlinked.isLinkedToActive).toBe(false)
+      expect(onStateChange).not.toHaveBeenCalled()
+    })
+
+    it('should clear the active state of all publications for an unknown DOI', () => {
+      const selected = { doi: '10.1234/a', citationDois: new Set(['10.1234/b']), referenceDois: new Set() }
+      const suggested = { doi: '10.1234/b', citationDois: new Set(), referenceDois: new Set() }
+      sessionStore.selectedPublications = [selected]
+      sessionStore.suggestion = { publications: [suggested], totalSuggestions: 1 }
+      sessionStore.setActivePublication(selected.doi)
+      expect(suggested.isLinkedToActive).toBe(true)
+
+      sessionStore.setActivePublication('10.1234/unknown')
+
+      expect(selected.isActive).toBe(false)
+      expect(suggested.isLinkedToActive).toBe(false)
+    })
+  })
+
+  describe('isExcluded', () => {
+    it('should follow changes of the excluded publications', () => {
+      const { isExcluded } = sessionStore
+      expect(isExcluded('10.1234/x')).toBe(false)
+
+      sessionStore.excludedPublicationsDois.push('10.1234/x')
+      expect(isExcluded('10.1234/x')).toBe(true)
+
+      sessionStore.removeFromExcludedPublication('10.1234/x')
+      expect(isExcluded('10.1234/x')).toBe(false)
     })
   })
 })
