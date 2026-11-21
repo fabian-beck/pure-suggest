@@ -23,6 +23,7 @@ const mockSessionStore = {
   selectedPublicationsCount: 2,
   clearActivePublication: vi.fn(),
   updatePublicationScores: vi.fn(),
+  clearAiRecommendations: vi.fn(),
   hasUpdated: vi.fn(),
   suggestion: null,
   maxSuggestions: 50,

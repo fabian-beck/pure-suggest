@@ -4,6 +4,7 @@ import pluginSonarJS from 'eslint-plugin-sonarjs'
 import pluginImport from 'eslint-plugin-import-x'
 import configPrettier from 'eslint-config-prettier'
 import globals from 'globals'
+import tseslint from 'typescript-eslint'
 
 export default [
   js.configs.recommended,
@@ -110,9 +111,19 @@ export default [
       }]
     }
   },
+  // TypeScript (the provider-independent LLM layer in src/llm)
+  ...tseslint.configs.recommended.map((config) => ({ ...config, files: ['**/*.ts'] })),
   {
-    files: ['src/composables/useAppState.js'],
+    files: ['**/*.ts'],
     rules: {
+      // Covered by the TypeScript compiler (npm run typecheck)
+      'no-undef': 'off'
+    }
+  },
+  {
+    files: ['src/composables/useAppState.js', 'src/stores/llm.js'],
+    rules: {
+      // Same for setup stores, which define their state, getters, and actions in one function
       // Exception for useAppState: This is a coordination composable that acts as a unified API facade
       // Breaking it up would hurt the architecture by creating unnecessary indirection
       'max-lines-per-function': 'off'

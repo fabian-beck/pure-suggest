@@ -244,6 +244,8 @@ export default {
     <KeyboardControlsModalDialog />
     <ShareSessionModalDialog />
     <ConceptConfigModalDialog />
+    <AiRecommendationModalDialog />
+    <LlmSettingsModalDialog />
     <!-- Other dialogs and overlays -->
     <v-overlay
       v-model="interfaceStore.isLoading"

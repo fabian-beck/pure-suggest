@@ -97,3 +97,8 @@ export function splitAuthorName(name) {
   if (lastNameStart < 0) lastNameStart = words.length - 1
   return [words.slice(lastNameStart).join(' '), words.slice(0, lastNameStart).join(' ')]
 }
+
+export function formatBytes(bytes) {
+  if (bytes >= 1e9) return `${(bytes / 1e9).toFixed(1)} GB`
+  return `${Math.max(1, Math.round(bytes / 1e6))} MB`
+}

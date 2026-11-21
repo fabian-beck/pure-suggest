@@ -7,7 +7,7 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 ## Architecture
 
 - **Framework**: Vue 3 with Composition API
-- **State Management**: Pinia stores (`session.js`, `interface.js`, `queue.js`, `author.js`, `modal.js`)
+- **State Management**: Pinia stores (`session.js`, `interface.js`, `queue.js`, `author.js`, `modal.js`, `llm.js`)
 - **UI Framework**: Vuetify 4 + Bulma CSS hybrid approach
 - **Visualization**: D3.js for network diagrams
 - **Build Tool**: Vite
@@ -37,6 +37,17 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 ## Services Layer
 
 - `SuggestionService.js`: Dedicated service for computing publication suggestions (extracted from session store)
+- `AiRecommendationService.js`: Builds the prompt for AI recommendations (fitted to the model's context window) and parses the answer; independent of the inference backend
+
+## LLM Layer (`src/llm/`, TypeScript)
+
+Provider-independent inference for AI features (experimental). The application only uses the `LlmProvider` contract in `types.ts`; all backends stream normalized `ChatEvent`s and raise `LlmError`s.
+
+- **Backends**: `browser.ts` + `browserWorker.ts` (in-browser, Transformers.js in a web worker, WebGPU with WebAssembly fallback), `native.ts` (Ollama via its native API, LM Studio and llama.cpp via `openaiCompatible.ts`, server discovery), `cloud.ts` (own API key: OpenAI-compatible services and Anthropic via its SDK)
+- **Shared**: `transport.ts` (fetch/streaming, error normalization), `chat.ts` (`completeChat`, JSON answer parsing), `catalog.ts` (preferred developers, browser models, cloud services), `selection.ts` (device detection, recommended setup)
+- **Store**: `stores/llm.js` holds the chosen mode/model, API keys (only persisted on request), consent for remote processing, and measured speeds; `generate()` is the entry point for features
+- **UI**: `LlmSettingsModalDialog.vue` with `components/llm/*`, `AiRecommendationModalDialog.vue`
+- **Rules**: prompts never leave the device without the user's explicit choice and consent (no automatic local-to-cloud fallback); only models of preferred developers (`catalog.ts`) are recommended or selected automatically; state where data is processed (local vs. cloud) in the UI
 
 ## Composables (Vue 3)
 
@@ -82,6 +93,7 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 - `npm run dev` - Development server (port 8080)
 - `npm run build` - Production build
 - `npm run lint` - ESLint code checking
+- `npm run typecheck` - TypeScript check of the LLM layer (`src/llm`)
 - `npm run preview` - Preview production build
 
 ## Data Flow
@@ -101,6 +113,7 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 - **Author Store**: Independent author aggregation and scoring (extracted from session store)
 - **Interface Store**: UI state, loading states, mobile responsiveness, desktop layout (auto or manual) and panel sizes (persisted in localStorage)
 - **Modal Store**: Modal dialog states and search provider configuration
+- **LLM Store**: Inference mode (browser, native, cloud), model, and generation settings (persisted in localStorage), detected device and local servers
 - **useAppState Composable**: Business logic layer coordinating between stores (session management, suggestion computation, queuing operations)
 - **useModalManager Composable**: Modal dialog management and state coordination
 
@@ -129,7 +142,7 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 - Act on failing tests immediately to prevent technical debt and maintain code quality
 - For a bug, try to first write a test to reproduce it, then fix it (TDD)
 - Generate commit messages based on actual diffs (not memory)
-- Always test and lint before committing any bigger changes
+- Always test, lint, and type-check before committing any bigger changes
 - Never ignore failing tests.
 - For implementing new features or fix bugs, work in a test-driven style whenever possible.
 

@@ -11,7 +11,7 @@ import { useInterfaceStore } from '@/stores/interface.js'
 
 const appMeta = inject('appMeta')
 const interfaceStore = useInterfaceStore()
-const { openKeyboardControlsModal, openAboutModal } = useModalManager()
+const { openKeyboardControlsModal, openAboutModal, openLlmSettingsModal } = useModalManager()
 const { isEmpty, clearCache } = useAppState()
 
 const filterMenuComponent = ref(null)
@@ -45,6 +45,11 @@ const filterMenuComponent = ref(null)
             @click="openKeyboardControlsModal()"
             class="is-hidden-touch"
             title="Keyboard controls"
+          />
+          <v-list-item
+            prepend-icon="mdi-robot-outline"
+            @click="openLlmSettingsModal()"
+            title="AI model"
           />
           <v-list-item
             prepend-icon="mdi-information-outline"

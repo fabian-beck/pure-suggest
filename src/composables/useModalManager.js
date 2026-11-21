@@ -78,6 +78,13 @@ export function useModalManager() {
   }
 
   /**
+   * Opens the dialog for choosing where and with which model AI features run
+   */
+  const openLlmSettingsModal = () => {
+    modalStore.isLlmSettingsModalDialogShown = true
+  }
+
+  /**
    * Shows a confirmation dialog
    * @param {string} message - The confirmation message (supports HTML)
    * @param {Function} confirmAction - The action to execute on confirmation
@@ -122,6 +129,8 @@ export function useModalManager() {
     modalStore.isKeyboardControlsModalDialogShown = false
     modalStore.isShareSessionModalDialogShown = false
     modalStore.isConceptConfigModalDialogShown = false
+    modalStore.isAiRecommendationModalDialogShown = false
+    modalStore.isLlmSettingsModalDialogShown = false
     modalStore.confirmDialog.isShown = false
     modalStore.infoDialog.isShown = false
   }
@@ -136,6 +145,7 @@ export function useModalManager() {
     openKeyboardControlsModal,
     openShareSessionModal,
     openConceptConfigModal,
+    openLlmSettingsModal,
 
     // Dialog functions
     showConfirmDialog,

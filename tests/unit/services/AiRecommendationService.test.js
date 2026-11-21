@@ -1,8 +1,9 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
-import { selectAiRecommendedPublications } from '@/services/AiRecommendationService.js'
-
-const STORAGE_KEY = 'pureSuggest.openaiApiKey'
+import {
+  buildRecommendationRequest,
+  parseRecommendations
+} from '@/services/AiRecommendationService.js'
 
 function createPublication(overrides) {
   return {
@@ -11,184 +12,122 @@ function createPublication(overrides) {
     year: 2024,
     author: 'Doe, Jane',
     container: 'Test Journal',
-    abstract: 'A publication abstract.',
+    abstract: 'A publication abstract. '.repeat(30),
     score: 4,
-    citationCount: 2,
-    referenceCount: 2,
     boostKeywords: [],
     referenceDois: [],
     citationDois: [],
-    isHighlyCited: false,
     isSurvey: false,
-    isNew: false,
-    isUnnoted: false,
     ...overrides
   }
 }
 
+const sessionData = (suggestedPublications) => ({
+  selectedPublications: [
+    createPublication({ doi: '10.1000/seed', title: 'Seed Paper', boostKeywords: ['VISUALIZATION'] })
+  ],
+  suggestedPublications,
+  boostKeywordString: 'visualization, survey',
+  keywords: ['VISUALIZATION', 'SURVEY'],
+  steeringComment: 'Prefer recent survey papers.'
+})
+
+const suggestions = (count) =>
+  Array.from({ length: count }, (_, index) =>
+    createPublication({ doi: `10.2000/suggested-${index + 1}`, title: `Suggested Paper ${index + 1}` })
+  )
+
 describe('AiRecommendationService', () => {
-  beforeEach(() => {
-    localStorage.clear()
-    vi.restoreAllMocks()
-    global.fetch = vi.fn()
-    window.prompt = vi.fn()
-  })
+  describe('buildRecommendationRequest', () => {
+    it('describes the session to the model and requests schema-conforming JSON', () => {
+      const suggested = [
+        createPublication({
+          doi: '10.2000/a',
+          title: 'Suggested Paper A',
+          referenceDois: ['10.1000/seed'],
+          isSurvey: 'has "survey" in title'
+        }),
+        createPublication({ doi: '10.2000/b', title: 'Suggested Paper B' })
+      ]
 
-  it('asks for a key, sends one contextual OpenAI request, and normalizes recommendations', async () => {
-    window.prompt.mockReturnValue('sk-test')
-    global.fetch.mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: () =>
-        Promise.resolve({
-          output_text: JSON.stringify({
-            recommendations: [
-              {
-                doi: '10.2000/suggested-a',
-                explanation: 'It directly matches the visualization keyword. Extra detail.'
-              }
-            ]
-          })
-        })
-    })
+      const request = buildRecommendationRequest(sessionData(suggested), 64000)
 
-    const selectedPublications = [
-      createPublication({
-        doi: '10.1000/seed',
-        title: 'Seed Paper',
-        boostKeywords: ['VISUALIZATION']
-      })
-    ]
-    const suggestedPublications = [
-      createPublication({
-        doi: '10.2000/suggested-a',
+      expect(request.candidates).toEqual(suggested)
+      expect(request.maxOutputTokens).toBe(1024)
+      expect(request.jsonSchema.schema.properties.recommendations.items.required).toEqual([
+        'id',
+        'explanation'
+      ])
+      expect(request.messages[0].role).toBe('system')
+      expect(request.messages[0].content).toContain('Follow this priority order')
+
+      const context = JSON.parse(request.messages[1].content)
+      expect(context.selectionTarget).toContain('as a reference count, not a quota')
+      expect(context.userKeywords).toEqual(['VISUALIZATION', 'SURVEY'])
+      expect(context.rawKeywordQuery).toBe('visualization, survey')
+      expect(context.userSteeringComment).toBe('Prefer recent survey papers.')
+      expect(context.selectedSeedPapers[0]).toMatchObject({ seed: 1, title: 'Seed Paper' })
+      expect(context.suggestedPapers[0]).toMatchObject({
+        id: 1,
         title: 'Suggested Paper A',
-        boostKeywords: ['VISUALIZATION'],
-        referenceDois: ['10.1000/seed']
-      }),
-      createPublication({
-        doi: '10.2000/suggested-b',
-        title: 'Suggested Paper B'
+        citesSeeds: [1],
+        tags: [{ name: 'Literature survey', reason: 'has "survey" in title' }]
       })
-    ]
-
-    const recommendations = await selectAiRecommendedPublications({
-      selectedPublications,
-      suggestedPublications,
-      boostKeywordString: 'visualization, survey',
-      keywords: ['VISUALIZATION', 'SURVEY'],
-      steeringComment: 'Prefer recent survey papers that bridge the seed papers.'
+      expect(context.suggestedPapers[0].abstract.length).toBeGreaterThan(300)
+      expect(context.suggestedPapers[1].id).toBe(2)
     })
 
-    expect(window.prompt).toHaveBeenCalledOnce()
-    expect(localStorage.getItem(STORAGE_KEY)).toBe('sk-test')
-    expect(global.fetch).toHaveBeenCalledOnce()
+    it('shortens descriptions to fit small context windows before dropping suggestions', () => {
+      const suggested = suggestions(40)
 
-    const [, request] = global.fetch.mock.calls[0]
-    expect(request.headers.Authorization).toBe('Bearer sk-test')
+      const shortened = buildRecommendationRequest(sessionData(suggested), 8192)
+      const shortenedContext = JSON.parse(shortened.messages[1].content)
+      expect(shortened.candidates).toHaveLength(40)
+      expect(shortenedContext.suggestedPapers[0].abstract.length).toBeLessThanOrEqual(300)
 
-    const requestBody = JSON.parse(request.body)
-    const context = JSON.parse(requestBody.input)
-    expect(requestBody.model).toBe('gpt-5.4')
-    expect(requestBody.reasoning).toEqual({ effort: 'low' })
-    expect(requestBody.instructions).toContain(
-      'The recommendation count is flexible: use the reference count as a starting point'
-    )
-    expect(requestBody.instructions).toContain(
-      'Follow this priority order: (1) the user steering comment when present'
-    )
-    expect(requestBody.instructions).toContain(
-      'Do not select a paper that conflicts with the steering comment unless too few supported candidates fit it.'
-    )
-    expect(context.priorityPolicy).toContain(
-      'satisfying it is the primary ranking criterion'
-    )
-    expect(context.selectionTarget).toContain('as a reference count, not a quota')
-    expect(context.recommendationCount).toEqual({
-      referenceCount: 1,
-      minCount: 0,
-      maxCount: 2
+      const medium = buildRecommendationRequest(sessionData(suggested), 5000)
+      const mediumContext = JSON.parse(medium.messages[1].content)
+      expect(medium.candidates).toHaveLength(40)
+      expect(mediumContext.suggestedPapers[0].abstract).toBeUndefined()
+      expect(mediumContext.suggestedPapers[0].authors).toBe('Doe, Jane')
+
+      const small = buildRecommendationRequest(sessionData(suggested), 3000)
+      const smallContext = JSON.parse(small.messages[1].content)
+      expect(small.candidates.length).toBeGreaterThan(0)
+      expect(small.candidates.length).toBeLessThan(40)
+      expect(small.candidates).toEqual(suggested.slice(0, small.candidates.length))
+      expect(smallContext.suggestedPapers[0].authors).toBeUndefined()
     })
-    expect(
-      requestBody.text.format.schema.properties.recommendations.minItems
-    ).toBe(0)
-    expect(
-      requestBody.text.format.schema.properties.recommendations.maxItems
-    ).toBe(2)
-    expect(context.userKeywords).toEqual(['VISUALIZATION', 'SURVEY'])
-    expect(context.rawKeywordQuery).toBe('visualization, survey')
-    expect(context.userSteeringComment).toBe(
-      'Prefer recent survey papers that bridge the seed papers.'
-    )
-    expect(context.selectedSeedPapers[0].doi).toBe('10.1000/seed')
-    expect(context.suggestedPapers.map((publication) => publication.doi)).toEqual([
-      '10.2000/suggested-a',
-      '10.2000/suggested-b'
-    ])
-    expect(context.suggestedPapers[0].linksToSelectedPapers.candidateCitesSelected[0].doi).toBe(
-      '10.1000/seed'
-    )
 
-    expect(recommendations).toEqual([
-      {
-        doi: '10.2000/suggested-a',
-        explanation: 'It directly matches the visualization keyword.'
-      }
-    ])
+    it('fails clearly when the context window cannot hold any suggestion', () => {
+      expect(() => buildRecommendationRequest(sessionData(suggestions(5)), 1200)).toThrow(
+        'context window of the model is too small'
+      )
+    })
   })
 
-  it('uses a stored key without prompting again', async () => {
-    localStorage.setItem(STORAGE_KEY, 'sk-stored')
-    window.prompt.mockReturnValue('sk-other')
-    global.fetch.mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ output_text: '{"recommendations":[]}' })
+  describe('parseRecommendations', () => {
+    it('maps answered ids to publications and tolerates unconstrained output', () => {
+      const candidates = suggestions(3)
+      const answer = `Here you go:\n\`\`\`json\n${JSON.stringify({
+        recommendations: [
+          { id: 2, explanation: 'It matches the visualization keyword. Extra detail.' },
+          { id: 2, explanation: 'Duplicate.' },
+          { id: 9, explanation: 'Not a candidate.' },
+          { id: '3', explanation: 'Bridges the seed papers' }
+        ]
+      })}\n\`\`\``
+
+      expect(parseRecommendations(answer, candidates)).toEqual([
+        { doi: '10.2000/suggested-2', explanation: 'It matches the visualization keyword.' },
+        { doi: '10.2000/suggested-3', explanation: 'Bridges the seed papers' }
+      ])
     })
 
-    await selectAiRecommendedPublications({
-      selectedPublications: [],
-      suggestedPublications: [createPublication({ doi: '10.2000/suggested-a' })],
-      boostKeywordString: '',
-      keywords: []
+    it('rejects answers without JSON', () => {
+      expect(() => parseRecommendations('Sorry, I cannot help.', suggestions(1))).toThrow(
+        'valid JSON'
+      )
     })
-
-    const [, request] = global.fetch.mock.calls[0]
-    expect(window.prompt).not.toHaveBeenCalled()
-    expect(request.headers.Authorization).toBe('Bearer sk-stored')
-  })
-
-  it('does not call OpenAI when the key prompt is cancelled', async () => {
-    window.prompt.mockReturnValue('')
-
-    const recommendations = await selectAiRecommendedPublications({
-      selectedPublications: [],
-      suggestedPublications: [createPublication({ doi: '10.2000/suggested-a' })],
-      boostKeywordString: '',
-      keywords: []
-    })
-
-    expect(recommendations).toBeNull()
-    expect(global.fetch).not.toHaveBeenCalled()
-  })
-
-  it('clears a rejected stored key', async () => {
-    localStorage.setItem(STORAGE_KEY, 'sk-invalid')
-    global.fetch.mockResolvedValue({
-      ok: false,
-      status: 401,
-      json: () => Promise.resolve({ error: { message: 'Invalid key' } })
-    })
-
-    await expect(
-      selectAiRecommendedPublications({
-        selectedPublications: [],
-        suggestedPublications: [createPublication({ doi: '10.2000/suggested-a' })],
-        boostKeywordString: '',
-        keywords: []
-      })
-    ).rejects.toThrow('The OpenAI API key was rejected')
-
-    expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
   })
 })

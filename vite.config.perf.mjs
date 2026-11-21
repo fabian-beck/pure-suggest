@@ -16,6 +16,9 @@ export default defineConfig({
   },
   base: './',
   plugins: [vue(), Components({})],
+  worker: {
+    format: 'es'
+  },
   server: {
     port: 8080
   },

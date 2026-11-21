@@ -11,6 +11,8 @@ export const useModalStore = defineStore('modal', {
       isShareSessionModalDialogShown: false,
       isKeyboardControlsModalDialogShown: false,
       isConceptConfigModalDialogShown: false,
+      isAiRecommendationModalDialogShown: false,
+      isLlmSettingsModalDialogShown: false,
       confirmDialog: {
         message: '',
         action: () => {},
@@ -37,7 +39,9 @@ export const useModalStore = defineStore('modal', {
         this.isAboutModalDialogShown ||
         this.isShareSessionModalDialogShown ||
         this.isKeyboardControlsModalDialogShown ||
-        this.isConceptConfigModalDialogShown
+        this.isConceptConfigModalDialogShown ||
+        this.isAiRecommendationModalDialogShown ||
+        this.isLlmSettingsModalDialogShown
       )
     }
   },
