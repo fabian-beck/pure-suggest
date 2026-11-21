@@ -7,7 +7,7 @@ const path = require('path')
 const LZString = require('lz-string')
 
 const ROOT = path.join(__dirname, '..')
-const APP_ORIGIN = 'http://pure.test'
+const APP_ORIGIN = 'https://pure.test'
 const API_ORIGIN = 'https://pure-publications-cw3de4q5va-ew.a.run.app'
 const CONTENT_TYPES = {
   '.html': 'text/html',

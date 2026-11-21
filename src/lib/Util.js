@@ -102,3 +102,11 @@ export function formatBytes(bytes) {
   if (bytes >= 1e9) return `${(bytes / 1e9).toFixed(1)} GB`
   return `${Math.max(1, Math.round(bytes / 1e6))} MB`
 }
+
+/**
+ * Escapes text for use in HTML (v-html and tooltips), so that markup in it shows as text.
+ */
+export function escapeHtml(text) {
+  const entities = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }
+  return String(text).replace(/[&<>"']/g, (character) => entities[character])
+}

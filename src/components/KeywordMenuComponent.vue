@@ -2,6 +2,7 @@
 import { computed, nextTick, ref } from 'vue'
 
 import { useAppState } from '@/composables/useAppState.js'
+import { escapeHtml } from '@/lib/Util.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
 import { normalizeBoostKeywordString } from '@/utils/scoringUtils.js'
@@ -15,8 +16,7 @@ const isMenuOpen = ref(false)
 const localKeywordString = ref(sessionStore.boostKeywordString)
 
 const boostKeywordStringHtml = computed(() => {
-  const normalized = normalizeBoostKeywordString(sessionStore.boostKeywordString)
-  let html = normalized
+  let html = escapeHtml(normalizeBoostKeywordString(sessionStore.boostKeywordString))
   html = html.replace(/\s*([^,|]+)/g, "<span class='word'>$1</span>")
   html = html.replace(/\|/g, "<span class='alt'>|</span>")
   html = html.replace(/,/g, "<span class='comma'>,</span>")

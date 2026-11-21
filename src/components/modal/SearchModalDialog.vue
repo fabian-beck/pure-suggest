@@ -35,7 +35,8 @@ export default {
       total: 0,
       cleanedSearchQuery: '',
       searchCancelled: false,
-      lastSearchQuery: ''
+      lastSearchQuery: '',
+      searchCount: 0
     }
   },
   computed: {
@@ -84,6 +85,8 @@ export default {
     },
 
     cancelSearch() {
+      this.searchCount++
+      this.lastSearchQuery = ''
       this.searchCancelled = true
       this.isLoading = false
       this.loaded = 0
@@ -105,7 +108,7 @@ export default {
       this.loaded = 0
       this.total = 0
       this.searchCancelled = false
-      if (!this.modalStore.searchQuery) {
+      if (!this.modalStore.searchQuery?.trim()) {
         this.searchResults = { results: [], type: 'empty' }
         this.lastSearchQuery = ''
         return
@@ -113,16 +116,19 @@ export default {
       this.isLoading = true
       this.lastSearchQuery = this.modalStore.searchQuery
       this.cleanedSearchQuery = this.modalStore.searchQuery.replace(/[^a-zA-Z0-9 ]/g, ' ')
+      const searchCount = ++this.searchCount
       const publicationSearch = new PublicationSearch(this.modalStore.searchQuery)
-      this.searchResults = await publicationSearch.execute((loaded, total) => {
+      const searchResults = await publicationSearch.execute((loaded, total) => {
+        if (searchCount !== this.searchCount) return
         this.loaded = loaded
         this.total = total
       })
 
-      // Check if search was cancelled during execution
-      if (this.searchCancelled) {
+      // Drop the results if the search was cancelled or replaced during execution
+      if (searchCount !== this.searchCount) {
         return
       }
+      this.searchResults = searchResults
 
       if (this.filteredSearchResults.length === 0) {
         this.interfaceStore.showErrorMessage('No matching publications found')
@@ -164,6 +170,7 @@ export default {
     },
 
     reset() {
+      this.searchCount++
       this.searchResults = { results: [], type: 'empty' }
       this.isLoading = false
       this.searchCancelled = false

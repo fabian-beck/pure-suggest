@@ -1,6 +1,4 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-
 import { useAppState } from '@/composables/useAppState.js'
 import { useModalManager } from '@/composables/useModalManager.js'
 import { useQueueStore } from '@/stores/queue.js'
@@ -11,18 +9,6 @@ const { openSearchModal, openAuthorModal, openQueueModal, openConceptConfigModal
   useModalManager()
 const queueStore = useQueueStore()
 const { isEmpty, updateQueued } = useAppState()
-
-const publicationList = ref(null)
-
-onMounted(() => {
-  sessionStore.$onAction(({ name, after }) => {
-    after(() => {
-      if (name === 'updateQueued') {
-        publicationList.value.$el.scrollTop = 0
-      }
-    })
-  })
-})
 </script>
 
 <template>
@@ -137,7 +123,6 @@ onMounted(() => {
       </div>
     </div>
     <PublicationListComponent
-      ref="publicationList"
       :publications="sessionStore.selectedPublicationsFiltered"
       show-section-headers
       publication-type="selected"

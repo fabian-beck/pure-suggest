@@ -87,6 +87,17 @@ describe('Publication Bug Regression Tests', () => {
 
       expect(publication.isUnnoted).toBeTruthy()
     })
+
+    it('should not assign tags based on citations per year when the year is unknown', () => {
+      const citation = Array.from({ length: 20 }, (_, i) => `10.1234/citing${i}`).join('; ')
+      publication = new Publication('10.1234/highly-cited')
+      publication.processData({ title: 'Publication Without Year', citation })
+      const unnoted = new Publication('10.1234/unnoted')
+      unnoted.processData({ title: 'Publication Without Year' })
+
+      expect(publication.isHighlyCited).toBe(false)
+      expect(unnoted.isUnnoted).toBe(false)
+    })
   })
 
   describe('getTags - Concept Tags', () => {

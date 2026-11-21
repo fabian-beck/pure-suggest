@@ -118,6 +118,22 @@ describe('FilterMenuComponent', () => {
       expect(summary).toContain('mdi-table')
     })
 
+    it('shows markup in the search text as text', () => {
+      const filter = {
+        string: '<b>bold</b>',
+        yearStart: '',
+        yearEnd: '',
+        tags: [],
+        dois: [],
+        authors: [],
+        isActive: true,
+        hasActiveFilters: vi.fn(() => true)
+      }
+      const wrapper = createWrapper({ filter, selectedPublications: [] })
+
+      expect(wrapper.vm.filterSummaryHtml).toContain('"&lt;b&gt;bold&lt;/b&gt;"')
+    })
+
     it('shows disabled state when filters are inactive', () => {
       const filterState = {
         string: 'test',

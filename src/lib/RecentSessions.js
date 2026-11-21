@@ -23,10 +23,16 @@ function storeRecentSessions(sessions) {
 }
 
 export function saveRecentSession(session) {
+  // A session loaded again from a link or file gets a new id, but should not be listed twice
+  // (the order of its publications differs until they are ranked)
+  const getContent = ({ name, selected, excluded, boost }) =>
+    JSON.stringify([name, [...selected].sort(), [...excluded].sort(), boost])
   storeRecentSessions(
     [
       { ...session, timestamp: Date.now() },
-      ...loadRecentSessions().filter((stored) => stored.id !== session.id)
+      ...loadRecentSessions().filter(
+        (stored) => stored.id !== session.id && getContent(stored) !== getContent(session)
+      )
     ].slice(0, MAX_RECENT_SESSIONS)
   )
 }

@@ -3,6 +3,7 @@ import { computed } from 'vue'
 
 import { useModalManager } from '@/composables/useModalManager.js'
 import Author from '@/core/Author.js'
+import { escapeHtml } from '@/lib/Util.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
 
@@ -60,16 +61,15 @@ function highlight(string) {
   if (!props.highlighted) {
     return string
   }
-  const substrings = props.highlighted.split(' ')
-  let highlightedString = string
-  substrings.forEach((substring) => {
-    if (substring.length < 3) return
-    const regex = new RegExp(substring, 'gi')
-    highlightedString = highlightedString.replace(regex, (match) => {
-      return `<span class="has-background-grey-light">${match}</span>`
-    })
-  })
-  return highlightedString
+  const substrings = props.highlighted.split(' ').filter((substring) => substring.length >= 3)
+  if (!substrings.length) {
+    return string
+  }
+  // All terms at once, so that a term cannot match the markup added for another one
+  return string.replace(
+    new RegExp(substrings.join('|'), 'gi'),
+    (match) => `<span class="has-background-grey-light">${match}</span>`
+  )
 }
 
 function showAbstract() {
@@ -144,7 +144,7 @@ function buildConceptAttributesTooltip(attributes) {
 
   let section = '<br/><br/>Defining properties:'
   if (keywords.length > 0) {
-    section += `<br/>Keywords: ${keywords.join(', ')}`
+    section += `<br/>Keywords: ${escapeHtml(keywords.join(', '))}`
   }
   if (citationDois.length > 0) {
     section += '<br/>Citations:'
@@ -350,7 +350,11 @@ function handleAuthorClick(event) {
           <b v-if="!publication.tooManyCitations">{{
             publication.citationDois.size.toLocaleString('en')
           }}</b>
-          <span v-if="publication.citationsPerYear > 0 && !publication.tooManyCitations">
+          <span
+            v-if="
+              publication.year && publication.citationsPerYear > 0 && !publication.tooManyCitations
+            "
+          >
             &nbsp;({{ publication.citationsPerYear.toFixed(1) }}/year)
           </span>
           <span v-if="publication.tooManyCitations">

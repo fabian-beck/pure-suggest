@@ -1,6 +1,7 @@
 import { useAppState } from '../composables/useAppState.js'
 import { useModalManager } from '../composables/useModalManager.js'
 import { useInterfaceStore } from '../stores/interface.js'
+import { useQueueStore } from '../stores/queue.js'
 import { useSessionStore } from '../stores/session.js'
 
 /**
@@ -62,7 +63,7 @@ function handleGlobalShortcuts(e) {
     }
   } else if (e.key === 'u') {
     e.preventDefault()
-    updateQueued()
+    if (useQueueStore().isUpdatable) updateQueued()
   } else if (e.key === 'f') {
     e.preventDefault()
     // Open filter menu and activate filter (same behavior as clicking button)
@@ -243,6 +244,7 @@ function isIgnoredKeyEvent(e) {
     e.defaultPrevented ||
     e.ctrlKey ||
     e.metaKey ||
+    e.altKey ||
     (e.shiftKey && e.key.length > 1) ||
     (e.repeat && !(e.key === 'ArrowDown' || e.key === 'ArrowUp'))
   )
@@ -259,10 +261,11 @@ export function onKey(e) {
   // Dialogs and list menus handle their own keys (Tab, Enter, Space, Escape, arrows, sliders)
   if (isAnyOverlayShown || document.activeElement.closest('.v-overlay .v-list')) return
 
-  // Handle input field focus
+  // Handle input field focus (the class name of SVG elements, e.g., network nodes, is no string)
+  const { nodeName, type, className } = document.activeElement
   if (
-    (document.activeElement.nodeName === 'INPUT' && document.activeElement.type === 'text') ||
-    document.activeElement.className.includes('input')
+    (nodeName === 'INPUT' && type === 'text') ||
+    (typeof className === 'string' && className.includes('input'))
   ) {
     if (e.key === 'Escape') {
       document.activeElement.blur()

@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useModalManager } from '@/composables/useModalManager.js'
 import { PAGINATION } from '@/constants/config.js'
 import Publication from '@/core/Publication.js'
+import { extractDois } from '@/core/PublicationSearch.js'
 import { clearCache as clearCacheUtil } from '@/lib/Cache.js'
 import { bibtexParser } from '@/lib/Util.js'
 import { SuggestionService } from '@/services/SuggestionService.js'
@@ -181,7 +182,7 @@ export function useAppState() {
    */
   const loadSession = (session) => {
     console.log(`Loading session ${JSON.stringify(session)}`)
-    if (!session || !session.selected) {
+    if (!Array.isArray(session?.selected)) {
       interfaceStore.showErrorMessage('Cannot read session state from JSON.')
       return
     }
@@ -193,7 +194,7 @@ export function useAppState() {
       sessionStore.setBoostKeywordString(session.boost)
     }
     if (session.excluded) {
-      sessionStore.excludedPublicationsDois = session.excluded
+      sessionStore.excludedPublicationsDois = session.excluded.map((doi) => doi.toLowerCase())
     }
     if (session.name !== undefined && session.name !== null) {
       sessionStore.setSessionName(session.name)
@@ -266,8 +267,13 @@ export function useAppState() {
     }
 
     try {
-      const parsedData = await bibtexParser(file)
-      loadSession(parsedData)
+      const { selected } = await bibtexParser(file)
+      const dois = selected.flatMap(extractDois)
+      if (!dois.length) {
+        interfaceStore.showErrorMessage('No DOIs found in the BibTeX file.')
+        return
+      }
+      loadSession({ selected: dois })
     } catch (error) {
       console.error('Error parsing BibTeX file:', error)
       interfaceStore.showErrorMessage('Error parsing BibTeX file. Please check the file format.')
@@ -327,6 +333,7 @@ export function useAppState() {
     sessionStore.selectedPublications = sessionStore.selectedPublications.filter(
       (publication) => !queueStore.excludedQueue.includes(publication.doi)
     )
+    queueStore.excludedQueue.forEach((doi) => sessionStore.filter.removeDoi(doi))
     if (sessionStore.suggestion) {
       sessionStore.suggestion.publications = sessionStore.suggestion.publications.filter(
         (publication) =>
@@ -342,6 +349,9 @@ export function useAppState() {
     }
     await updateSuggestions()
     queueStore.clear()
+    document
+      .querySelectorAll('#selected .publication-list, #suggested .publication-list')
+      .forEach((list) => (list.scrollTop = 0))
   }
 
   /**

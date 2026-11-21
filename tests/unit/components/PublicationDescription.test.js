@@ -102,12 +102,39 @@ describe('PublicationDescription', () => {
     expect(wrapper.text()).not.toContain('DOI:')
   })
 
+  it('shows citations per year only when the year is known', () => {
+    const mountWithYear = (year) =>
+      mount(PublicationDescription, {
+        props: { publication: { ...mockPublication, year }, alwaysShowDetails: true },
+        global: { stubs: defaultStubs }
+      })
+
+    expect(mountWithYear(2023).text()).toContain('(5.2/year)')
+    expect(mountWithYear(undefined).text()).not.toContain('/year)')
+  })
+
   it('highlights search terms when provided', () => {
     const wrapper = mount(PublicationDescription, {
       props: { publication: mockPublication, highlighted: 'Test Publication' },
       global: { stubs: defaultStubs }
     })
     expect(wrapper.html()).toContain('has-background-grey-light')
+  })
+
+  it('highlights search terms that also occur in the highlighting markup', () => {
+    const wrapper = mount(PublicationDescription, {
+      props: {
+        publication: { ...mockPublication, title: 'Graph Class Diagrams' },
+        highlighted: 'graph class'
+      },
+      global: { stubs: defaultStubs }
+    })
+
+    expect(wrapper.text()).not.toContain('has-background-grey-light')
+    expect(wrapper.findAll('.has-background-grey-light').map((span) => span.text())).toEqual([
+      'Graph',
+      'Class'
+    ])
   })
 
   it('calls showAbstract when abstract button is clicked', async () => {

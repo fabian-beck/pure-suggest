@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 
 import { useAppState } from "@/composables/useAppState.js"
 import { useInterfaceStore } from "@/stores/interface.js"
@@ -18,7 +18,6 @@ const interfaceStore = useInterfaceStore()
 const modalStore = useModalStore()
 const { updateSuggestions } = useAppState()
 
-const publicationList = ref(null)
 const isSettingsMenuOpen = ref(false)
 
 // Local variable to track slider value without immediately applying it
@@ -65,16 +64,6 @@ const updateMaxSuggestions = async (newValue) => {
     }
   }
 }
-
-onMounted(() => {
-  sessionStore.$onAction(({ name, after }) => {
-    after(() => {
-      if (name === 'updateQueued') {
-        publicationList.value.$el.scrollTop = 0
-      }
-    })
-  })
-})
 </script>
 
 <template>
@@ -150,7 +139,7 @@ icon="mdi-cog has-text-white" class="ml-2"
         </div>
       </div>
     </div>
-    <PublicationListComponent ref="publicationList" :publications="sessionStore.suggestedPublicationsFiltered" show-section-headers publication-type="suggested" />
+    <PublicationListComponent :publications="sessionStore.suggestedPublicationsFiltered" show-section-headers publication-type="suggested" />
   </div>
 </template>
 

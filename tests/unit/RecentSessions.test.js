@@ -11,7 +11,7 @@ import {
 } from '@/lib/RecentSessions.js'
 import { useSessionStore } from '@/stores/session.js'
 
-const session = (id, selected = ['10.1/a']) => ({
+const session = (id, selected = [`10.1/${id}`]) => ({
   id,
   name: '',
   title: `Title ${id}`,
@@ -46,6 +46,14 @@ describe('RecentSessions', () => {
     const sessions = loadRecentSessions()
     expect(sessions.map((s) => s.id)).toEqual(['a', 'b'])
     expect(sessions[0].selected).toEqual(['10.1/a', '10.1/b'])
+  })
+
+  it('replaces a session of the same content stored under another id', () => {
+    saveRecentSession(session('a', ['10.1/a', '10.1/b']))
+    saveRecentSession(session('b'))
+    // The publications of a loaded session are in another order until they are ranked
+    saveRecentSession({ ...session('c', ['10.1/b', '10.1/a']), title: 'Other title' })
+    expect(loadRecentSessions().map((s) => s.id)).toEqual(['c', 'b'])
   })
 
   it('keeps only the most recent sessions', () => {

@@ -4,6 +4,7 @@ import { computed, ref, nextTick } from 'vue'
 import PublicationTag from '@/components/PublicationTag.vue'
 import Author from '@/core/Author.js'
 import Publication from '@/core/Publication.js'
+import { escapeHtml } from '@/lib/Util.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
 
@@ -26,7 +27,7 @@ const filterSummaryHtml = computed(() => {
   const parts = []
 
   if (filter.string) {
-    parts.push(`<span class="filter-part"><i class="mdi mdi-card-search"></i> "${filter.string}"</span>`)
+    parts.push(`<span class="filter-part"><i class="mdi mdi-card-search"></i> "${escapeHtml(filter.string)}"</span>`)
   }
 
   if (filter.yearStart || filter.yearEnd) {
@@ -38,7 +39,7 @@ const filterSummaryHtml = computed(() => {
     } else {
       yearRange = `–${filter.yearEnd}`
     }
-    parts.push(`<span class="filter-part"><i class="mdi mdi-calendar"></i> ${yearRange}</span>`)
+    parts.push(`<span class="filter-part"><i class="mdi mdi-calendar"></i> ${escapeHtml(yearRange)}</span>`)
   }
 
   if (filter.tags && filter.tags.length > 0) {

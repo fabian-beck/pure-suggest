@@ -353,7 +353,7 @@ watch(
 
         <div v-else-if="!hasPreview" class="pa-3 text-center empty-state">
           <v-icon size="large" class="mb-2">mdi-information-outline</v-icon>
-          <p>No concepts to preview. Click "Compute Concepts" to generate results.</p>
+          <p>No concepts to preview. Click "Compute" to generate results.</p>
         </div>
 
         <div v-else-if="hasPreview && !hasFilteredConcepts" class="pa-3 text-center empty-state">

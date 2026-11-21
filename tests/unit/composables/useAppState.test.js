@@ -148,7 +148,7 @@ describe('useAppState - Session Loading', () => {
       const newSessionData = {
         name: 'New Imported Session',
         selected: ['10.1234/new1', '10.1234/new2'],
-        excluded: ['10.1234/newExcluded1'],
+        excluded: ['10.1234/newexcluded1'],
         boost: 'new keywords'
       }
 
@@ -161,7 +161,7 @@ describe('useAppState - Session Loading', () => {
       // Assert: Session properties should be set correctly
       expect(sessionStore.sessionName).toBe('New Imported Session')
       expect(sessionStore.boostKeywordString).toBe('NEW KEYWORDS')
-      expect(sessionStore.excludedPublicationsDois).toEqual(['10.1234/newExcluded1'])
+      expect(sessionStore.excludedPublicationsDois).toEqual(['10.1234/newexcluded1'])
 
       // Assert: addPublicationsToSelection should be called with new publications
       expect(sessionStore.addPublicationsToSelection).toHaveBeenCalledWith([
@@ -282,6 +282,48 @@ describe('useAppState - Session Loading', () => {
     })
   })
 
+  describe('loadSession with malformed data', () => {
+    it('should keep the current session when the selected publications are no list', () => {
+      sessionStore.sessionName = 'Current Session'
+
+      appState.loadSession({ selected: '10.1234/pub1' })
+
+      expect(interfaceStore.showErrorMessage).toHaveBeenCalled()
+      expect(sessionStore.sessionName).toBe('Current Session')
+      expect(sessionStore.addPublicationsToSelection).not.toHaveBeenCalled()
+    })
+
+    it('should lowercase excluded DOIs', () => {
+      appState.loadSession({ selected: ['10.1234/pub1'], excluded: ['10.1234/PUB2'] })
+
+      expect(sessionStore.excludedPublicationsDois).toEqual(['10.1234/pub2'])
+    })
+  })
+
+  describe('importBibtex', () => {
+    it('should keep the current session when the file contains no DOIs', async () => {
+      sessionStore.sessionName = 'Current Session'
+
+      await appState.importBibtex(new File(['@article{key, title = {No DOI}}'], 'no-doi.bib'))
+
+      expect(interfaceStore.showErrorMessage).toHaveBeenCalled()
+      expect(sessionStore.sessionName).toBe('Current Session')
+      expect(sessionStore.addPublicationsToSelection).not.toHaveBeenCalled()
+    })
+
+    it('should read DOIs given as URL or with escaped underscores', async () => {
+      const bibtex = `@article{a, doi = {https://doi.org/10.1234/pub1}}
+        @article{b, doi = "10.1234/pub\\_2"}`
+
+      await appState.importBibtex(new File([bibtex], 'dois.bib'))
+
+      expect(sessionStore.addPublicationsToSelection).toHaveBeenCalledWith([
+        '10.1234/pub1',
+        '10.1234/pub_2'
+      ])
+    })
+  })
+
   describe('importBibtexWithConfirmation', () => {
     it('should be exposed by useAppState', () => {
       expect(appState.importBibtex).toBeDefined()
@@ -326,6 +368,28 @@ describe('useAppState - Session Loading', () => {
       expect(message).toContain('Choose a BibTeX file')
 
       sessionStore.clear()
+    })
+  })
+
+  describe('updateQueued', () => {
+    it('should drop the DOI filter of a publication that is excluded', async () => {
+      sessionStore.filter.dois = ['10.1234/kept', '10.1234/excluded']
+      queueStore.excludedQueue = ['10.1234/excluded']
+
+      await appState.updateQueued()
+
+      expect(sessionStore.filter.dois).toEqual(['10.1234/kept'])
+    })
+
+    it('should scroll the publication lists to the top', async () => {
+      document.body.innerHTML = `<div id="selected"><ul class="publication-list"></ul></div>
+        <div id="suggested"><ul class="publication-list"></ul></div>`
+      const lists = [...document.querySelectorAll('.publication-list')]
+      lists.forEach((list) => (list.scrollTop = 100))
+
+      await appState.updateQueued()
+
+      expect(lists.map((list) => list.scrollTop)).toEqual([0, 0])
     })
   })
 })

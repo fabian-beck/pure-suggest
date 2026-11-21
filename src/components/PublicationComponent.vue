@@ -207,7 +207,7 @@ function handleMouseLeave() {
           </div>
           <div v-if="publication.isLinkedToActive">
             <br />
-            Marked as refered by or referencing currently active publication.
+            Marked as referred by or referencing currently active publication.
           </div>
           <div v-if="publication.isActive">
             <br />
