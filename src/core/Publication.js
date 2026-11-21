@@ -353,8 +353,10 @@ export default class Publication {
     ) {
       this.isSurvey = `more than ${SURVEY_THRESHOLDS.REFERENCE_COUNT_MIN} references (${this.referenceDois.size}) and "${SURVEY_KEYWORDS.exec(this.title)[0]}" in the title`
     }
+    // Without a year, there is no meaningful number of citations per year
     this.isHighlyCited =
-      this.citationsPerYear > CITATION_THRESHOLDS.HIGHLY_CITED_PER_YEAR || this.tooManyCitations
+      (this.year && this.citationsPerYear > CITATION_THRESHOLDS.HIGHLY_CITED_PER_YEAR) ||
+      this.tooManyCitations
         ? `more than ${CITATION_THRESHOLDS.HIGHLY_CITED_PER_YEAR} citations per year`
         : false
     this.isNew =
@@ -362,7 +364,9 @@ export default class Publication {
         ? 'published within this or the previous two calendar years'
         : false
     this.isUnnoted =
-      this.citationsPerYear < CITATION_THRESHOLDS.UNNOTED_PER_YEAR && !this.tooManyCitations
+      this.year &&
+      this.citationsPerYear < CITATION_THRESHOLDS.UNNOTED_PER_YEAR &&
+      !this.tooManyCitations
         ? `less than ${CITATION_THRESHOLDS.UNNOTED_PER_YEAR} citation per year`
         : false
   }

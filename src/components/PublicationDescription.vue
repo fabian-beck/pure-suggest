@@ -346,7 +346,11 @@ function handleAuthorClick(event) {
           <b v-if="!publication.tooManyCitations">{{
             publication.citationDois.size.toLocaleString('en')
           }}</b>
-          <span v-if="publication.citationsPerYear > 0 && !publication.tooManyCitations">
+          <span
+            v-if="
+              publication.year && publication.citationsPerYear > 0 && !publication.tooManyCitations
+            "
+          >
             &nbsp;({{ publication.citationsPerYear.toFixed(1) }}/year)
           </span>
           <span v-if="publication.tooManyCitations">

@@ -102,6 +102,17 @@ describe('PublicationDescription', () => {
     expect(wrapper.text()).not.toContain('DOI:')
   })
 
+  it('shows citations per year only when the year is known', () => {
+    const mountWithYear = (year) =>
+      mount(PublicationDescription, {
+        props: { publication: { ...mockPublication, year }, alwaysShowDetails: true },
+        global: { stubs: defaultStubs }
+      })
+
+    expect(mountWithYear(2023).text()).toContain('(5.2/year)')
+    expect(mountWithYear(undefined).text()).not.toContain('/year)')
+  })
+
   it('highlights search terms when provided', () => {
     const wrapper = mount(PublicationDescription, {
       props: { publication: mockPublication, highlighted: 'Test Publication' },
