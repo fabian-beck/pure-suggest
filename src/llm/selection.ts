@@ -117,6 +117,6 @@ export function recommendSetup(
     modelId: model.id,
     reason: device.hasWebGpu
       ? 'Runs in this browser with GPU acceleration; no installation needed.'
-      : 'This browser offers no GPU acceleration (WebGPU), so only a very small model is practical.'
+      : 'This browser offers no GPU acceleration (WebGPU), so the smallest model is suggested; expect slow answers.'
   }
 }

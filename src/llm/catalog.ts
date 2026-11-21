@@ -39,23 +39,10 @@ export interface BrowserModel {
   tier: DeviceTier
   /** Whether loading the model through this application has been confirmed. */
   isVerified: boolean
-  /** Weight format to use on the GPU where the default (4-bit, half precision) misbehaves. */
-  webGpuDtype?: string
   note?: string
 }
 
 export const BROWSER_MODELS: BrowserModel[] = [
-  {
-    id: 'onnx-community/gemma-3-270m-it-ONNX',
-    name: 'Gemma 3 270M',
-    developer: 'Google',
-    license: 'Gemma Terms of Use',
-    contextWindow: 32768,
-    tier: 'low',
-    isVerified: true,
-    webGpuDtype: 'fp32',
-    note: 'Smallest download; noticeably weaker recommendations.'
-  },
   {
     id: 'onnx-community/gemma-4-E2B-it-ONNX',
     name: 'Gemma 4 E2B',
