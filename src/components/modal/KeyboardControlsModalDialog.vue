@@ -34,7 +34,10 @@ export default {
             <v-icon>mdi-alpha-u-box-outline</v-icon> Update selected publications (if publications
             are waiting)
           </li>
-          <li><v-icon>mdi-alpha-f-box-outline</v-icon> Switch on/off filtering of suggestions</li>
+          <li>
+            <v-icon>mdi-alpha-f-box-outline</v-icon> Open or close the filter menu (opening switches
+            filtering on)
+          </li>
           <li>
             <v-icon>mdi-arrow-left-bold-box-outline</v-icon> Jump to first publication of "Selected"
           </li>

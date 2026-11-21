@@ -106,7 +106,7 @@ export default {
             <div class="media-right">
               <CompactButton
                 icon="mdi-undo"
-                v-tippy="'Remove proublication from list of excluded publications again.'"
+                v-tippy="'Remove publication from list of excluded publications again.'"
                 @click="removeFromExcluded(publication)"
               ></CompactButton>
               <CompactButton
