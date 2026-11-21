@@ -65,6 +65,26 @@ describe('KeywordMenuComponent', () => {
     expect(html).toContain("<span class='comma'>,</span>")
   })
 
+  it('shows markup in keywords (e.g., from a session link) as text', () => {
+    sessionStore.boostKeywordString = 'graph, <img src=x onerror=alert(1)>'
+    sessionStore.selectedPublications = [{ doi: '10.1000/test' }]
+
+    const wrapper = mount(KeywordMenuComponent, {
+      global: {
+        plugins: [pinia],
+        stubs: {
+          'v-menu': { template: '<div class="v-menu"><slot name="activator" :props="{}"></slot></div>' },
+          'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
+          'v-icon': true
+        }
+      }
+    })
+
+    const keywords = wrapper.find('.keywords-text')
+    expect(keywords.find('img').exists()).toBe(false)
+    expect(keywords.text()).toContain('<IMG SRC=X ONERROR=ALERT(1)>')
+  })
+
   it('generates empty HTML when boostKeywordString is empty', () => {
     sessionStore.boostKeywordString = ''
     sessionStore.selectedPublications = [{ doi: '10.1000/test' }] // Make not empty

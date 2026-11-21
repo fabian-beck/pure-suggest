@@ -9,6 +9,8 @@
 import * as d3 from 'd3'
 import tippy from 'tippy.js'
 
+import { escapeHtml } from '@/lib/Util.js'
+
 /**
  * Create keyword node data from unique boost keywords
  */
@@ -89,7 +91,7 @@ export function updateKeywordNodes(nodeSelection, activePublication, existingToo
   // Set up tooltip content
   keywordNodes.attr('data-tippy-content', (d) => {
     const isLinked = activePublication && activePublication.boostKeywords.includes(d.id)
-    return `Keyword <b>${d.id}</b> is matched in <b>${d.frequency}</b> publication${d.frequency > 1 ? 's' : ''}${
+    return `Keyword <b>${escapeHtml(d.id)}</b> is matched in <b>${d.frequency}</b> publication${d.frequency > 1 ? 's' : ''}${
       isLinked ? ', and also linked to the currently active publication' : ''
     }.<br><br><i>Drag to reposition (sticky), click to detach.</i>`
   })

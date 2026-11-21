@@ -3,6 +3,7 @@ import { computed } from 'vue'
 
 import { useModalManager } from '@/composables/useModalManager.js'
 import Author from '@/core/Author.js'
+import { escapeHtml } from '@/lib/Util.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
 
@@ -144,7 +145,7 @@ function buildConceptAttributesTooltip(attributes) {
 
   let section = '<br/><br/>Defining properties:'
   if (keywords.length > 0) {
-    section += `<br/>Keywords: ${keywords.join(', ')}`
+    section += `<br/>Keywords: ${escapeHtml(keywords.join(', '))}`
   }
   if (citationDois.length > 0) {
     section += '<br/>Citations:'
