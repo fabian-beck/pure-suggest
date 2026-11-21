@@ -99,7 +99,7 @@ export default {
     <template #sticky>
       <v-sheet class="has-background-primary-95 pa-2">
         <p class="comment" v-if="queueStore.isUpdatable">
-          These publications are maked to be selected or excluded with the next update.
+          These publications are marked to be selected or excluded with the next update.
         </p>
         <p class="comment" v-else>No publications currently in queue; you may close this dialog.</p>
       </v-sheet>

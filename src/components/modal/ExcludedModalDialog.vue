@@ -84,8 +84,8 @@ export default {
     <template #sticky>
       <v-sheet class="has-background-primary-95 pa-2">
         <p class="comment" v-if="excludedPublications.length > 0">
-          These publications will not be suggested again unlike you remove them from this list.
-          Alternatively, you can direclty mark them to be selected.
+          These publications will not be suggested again unless you remove them from this list.
+          Alternatively, you can directly mark them to be selected.
         </p>
         <p class="comment" v-else>No publications currently excluded; you may close this dialog.</p>
       </v-sheet>
