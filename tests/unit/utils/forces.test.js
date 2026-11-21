@@ -30,7 +30,8 @@ function createGraph(publicationCount = 40) {
   const nodes = d3.range(publicationCount).map((i) => ({
     id: `p${i}`,
     type: 'publication',
-    publication: { year: 2026 - Math.floor(random() ** 2 * 20) }
+    publication: { year: 2026 - Math.floor(random() ** 2 * 20) },
+    sizeFactor: 1
   }))
   const links = []
   nodes.forEach((citing) =>
@@ -46,7 +47,8 @@ function createGraph(publicationCount = 40) {
     nodes.push({
       id: `a${i}`,
       type: 'author',
-      author: { yearMin: Math.min(...years), yearMax: Math.max(...years) }
+      author: { yearMin: Math.min(...years), yearMax: Math.max(...years) },
+      sizeFactor: 1
     })
     publications.forEach((publication) =>
       links.push({ source: `a${i}`, target: publication.id, type: 'author' })
@@ -64,7 +66,8 @@ function createSessionGraph(seed) {
   const nodes = [2016, 2016, 2017, 2019].map((year, i) => ({
     id: `s${i}`,
     type: 'publication',
-    publication: { year }
+    publication: { year },
+    sizeFactor: 1
   }))
   const links = [
     { source: 's0', target: 's2', type: 'citation', internal: true },
@@ -72,7 +75,7 @@ function createSessionGraph(seed) {
   ]
   d3.range(20).forEach((i) => {
     const year = i === 0 ? YEAR_MIN : 2026 - Math.floor(random() * 10)
-    nodes.push({ id: `p${i}`, type: 'publication', publication: { year } })
+    nodes.push({ id: `p${i}`, type: 'publication', publication: { year }, sizeFactor: 1 })
     d3.range(1 + Math.floor(random() * 3)).forEach(() => {
       const selected = `s${Math.floor(random() * 4)}`
       links.push(
@@ -228,7 +231,6 @@ describe('showing further nodes temporarily in a layout at rest', () => {
   const REVEALED_IDS = ['p3', 'p17', 'p31']
   const createGraphs = () => {
     const graph = createGraph()
-    graph.nodes.forEach((node) => (node.sizeFactor = 1))
     const isRevealed = (id) => REVEALED_IDS.includes(id)
     const restGraph = {
       nodes: graph.nodes.filter((node) => !isRevealed(node.id)),
@@ -330,7 +332,6 @@ describe('calculateYearX', () => {
 describe('clusters layout', () => {
   it('keeps publication and author nodes from overlapping', () => {
     const graph = createGraph(80)
-    graph.nodes.forEach((node) => (node.sizeFactor = 1))
     const nodes = plot(graph, null, true)
     const minDistance = d3.min(nodes, (node, i) =>
       d3.min(nodes.slice(i + 1), (other) => Math.hypot(node.x - other.x, node.y - other.y))
