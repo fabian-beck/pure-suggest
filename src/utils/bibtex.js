@@ -22,12 +22,14 @@ function protectAcronyms(s) {
  */
 function translateSpecialCharacters(s) {
   // &...; encoded characters
-  s = s.replaceAll('&amp;', '\\&')
+  s = s.replaceAll('&amp;', '&')
   s = s.replaceAll('&lt;', '<')
   s = s.replaceAll('&gt;', '>')
   s = s.replaceAll('&quot;', '\\"')
   s = s.replaceAll('&apos;', "'")
   s = s.replaceAll('&nbsp;', ' ')
+  // characters that LaTeX would not print as such
+  s = s.replaceAll(/[&%#]/g, '\\$&')
   // less and greater than
   s = s.replaceAll('<', '{\\textless}')
   s = s.replaceAll('>', '{\\textgreater}')

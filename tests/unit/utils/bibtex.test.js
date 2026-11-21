@@ -137,6 +137,17 @@ describe('generateBibtex', () => {
       expect(result).toContain('title = {{API} Testing with {REST} Services}')
     })
 
+    it('should escape characters that are special in LaTeX', () => {
+      const result = generateBibtex({
+        doi: '10.1234/test',
+        title: 'Design & Analysis: 100% of #1 &amp; More',
+        container: 'Proceedings of the ACM & IEEE Conference'
+      })
+
+      expect(result).toContain('title = {Design \\& Analysis: 100\\% of \\#1 \\& More}')
+      expect(result).toContain('booktitle = {Proceedings of the ACM \\& IEEE Conference}')
+    })
+
     it('should generate clean citation keys from publication metadata', () => {
       const publication = {
         title: 'Test Paper',
