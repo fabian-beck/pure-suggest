@@ -81,6 +81,16 @@ describe('AiRecommendationModalDialog', () => {
     expect(requestAiRecommendations).toHaveBeenCalledOnce()
   })
 
+  it('reopens the report of the last run', async () => {
+    expect(findButton('Last report')).toBeUndefined()
+
+    modalStore.aiReport = { text: 'Report.', publications: [] }
+    await nextTick()
+    await findButton('Last report').trigger('click')
+
+    expect(modalStore.isAiReportModalDialogShown).toBe(true)
+  })
+
   it('explains auto-select and names the action accordingly', async () => {
     llmStore.settings.mode = 'browser'
     llmStore.modelId = 'onnx-community/gemma-4-E2B-it-ONNX'

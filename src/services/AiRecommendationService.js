@@ -3,8 +3,10 @@ import { LlmError } from '@/llm/types.ts'
 
 const TEXT_MAX_LENGTH = 320
 const EXPLANATION_MAX_LENGTH = 180
+const REPORT_MAX_LENGTH = 600
 const STEERING_COMMENT_MAX_LENGTH = 700
 const MIN_ANSWER_TOKENS = 1024
+const REPORT_TOKENS = 200
 const ANSWER_TOKENS_PER_RECOMMENDATION = 100
 
 // Levels of detail for describing publications, tried from rich to sparse until the prompt
@@ -33,14 +35,18 @@ const INSTRUCTIONS = [
   'When the steering comment influenced a selection, reflect that fit in the explanation.',
   'Refer to suggested papers only by their numeric id.',
   'Each explanation must be one brief sentence suitable for a tooltip.',
-  'Answer with a JSON object of the form {"recommendations":[{"id":<id of a suggested paper>,"explanation":"<one sentence>"}]} and nothing else.'
+  'Set loadMoreSuggestions to true only if canLoadMoreSuggestions is true and the listed suggestions contain too few fitting papers for the expected number; otherwise set it to false.',
+  'Write the report for the user in two or three plain sentences: which papers you recommend overall (including seed papers marked addedInThisRun, which you recommended in earlier steps of the same run) and what they have in common, and whether fitting papers are likely still missing.',
+  'Answer with a JSON object of the form {"recommendations":[{"id":<id of a suggested paper>,"explanation":"<one sentence>"}],"loadMoreSuggestions":<true or false>,"report":"<two or three sentences>"} and nothing else.'
 ].join(' ')
 
 const RESPONSE_SCHEMA = {
   type: 'object',
   additionalProperties: false,
-  required: ['recommendations'],
+  required: ['recommendations', 'loadMoreSuggestions', 'report'],
   properties: {
+    loadMoreSuggestions: { type: 'boolean' },
+    report: { type: 'string' },
     recommendations: {
       type: 'array',
       items: {
@@ -99,22 +105,37 @@ function serializeSuggestedPublication(publication, id, seedNumberByDoi, detail)
  * Builds the chat request asking a model to pick the most useful suggested publications.
  * Publications are described as detailed as the context window (in tokens) allows; if even
  * the sparsest description does not fit, only the top-ranked suggestions are considered.
- * @param {Object} sessionData - Selected and suggested publications, keywords, steering comment
+ * @param {Object} sessionData - Selected and suggested publications (with the total number of
+ *   suggestions available), DOIs added earlier in the same run, whether more suggestions may
+ *   be loaded, keywords, and steering comment
  * @param {number} minCount - Number of recommendations expected at least
  * @param {number} maxCount - Number of recommendations allowed at most
  * @param {number} contextWindow - Tokens available for prompt and answer
- * @returns {{messages: Array, jsonSchema: Object, maxOutputTokens: number, candidates: Array}}
- *   the request parts and the suggested publications the model gets to see (`candidates`,
- *   referred to in the answer by their 1-based position).
+ * @returns {{messages: Array, jsonSchema: Object, maxOutputTokens: number, candidates: Array,
+ *   canLoadMore: boolean}} the request parts, the suggested publications the model gets to see
+ *   (`candidates`, referred to in the answer by their 1-based position), and whether the model
+ *   was offered to ask for more suggestions.
  */
 export function buildRecommendationRequest(
-  { selectedPublications, suggestedPublications, boostKeywordString, keywords, steeringComment = '' },
+  {
+    selectedPublications,
+    suggestedPublications,
+    totalSuggestions,
+    addedDois,
+    isLoadMoreAllowed,
+    boostKeywordString,
+    keywords,
+    steeringComment = ''
+  },
   minCount,
   maxCount,
   contextWindow
 ) {
   const expectedCount = minCount === maxCount ? `${maxCount}` : `${minCount} to ${maxCount}`
-  const maxOutputTokens = Math.max(MIN_ANSWER_TOKENS, maxCount * ANSWER_TOKENS_PER_RECOMMENDATION)
+  const maxOutputTokens = Math.max(
+    MIN_ANSWER_TOKENS,
+    maxCount * ANSWER_TOKENS_PER_RECOMMENDATION + REPORT_TOKENS
+  )
   const seedNumberByDoi = new Map(
     selectedPublications.map((publication, index) => [publication.doi, index + 1])
   )
@@ -132,8 +153,12 @@ export function buildRecommendationRequest(
       userSteeringComment: truncateText(steeringComment, STEERING_COMMENT_MAX_LENGTH),
       selectedSeedPapers: selectedPublications.map((publication, index) => ({
         seed: index + 1,
-        ...serializePublication(publication, detail)
+        ...serializePublication(publication, detail),
+        ...(addedDois.includes(publication.doi) ? { addedInThisRun: true } : {})
       })),
+      suggestionsShown: suggestedPublications.length,
+      suggestionsTotal: totalSuggestions,
+      canLoadMoreSuggestions: false,
       suggestedPapers: []
     }
     let remainingTokens =
@@ -161,6 +186,14 @@ export function buildRecommendationRequest(
     )
   }
 
+  // Further suggestions only help if the model gets to see them
+  const canLoadMore =
+    isLoadMoreAllowed &&
+    candidates.length === suggestedPublications.length &&
+    totalSuggestions > suggestedPublications.length
+  context.suggestionsShown = candidates.length
+  context.canLoadMoreSuggestions = canLoadMore
+
   return {
     messages: [
       { role: 'system', content: INSTRUCTIONS },
@@ -168,7 +201,8 @@ export function buildRecommendationRequest(
     ],
     jsonSchema: { name: 'ai_recommendations', schema: RESPONSE_SCHEMA },
     maxOutputTokens,
-    candidates
+    candidates,
+    canLoadMore
   }
 }
 
@@ -180,16 +214,22 @@ function normalizeExplanation(explanation) {
 
 /**
  * Turns a model answer into at most `maxCount` recommendations ({doi, explanation}), dropping
- * duplicates and references to publications that were not among the candidates.
+ * duplicates and references to publications that were not among the candidates, together
+ * with the model's wish to see more suggestions (`loadMore`) and its brief `report`.
  */
-export function parseRecommendations(answerText, candidates, maxCount) {
+export function parseRecommendationAnswer(answerText, candidates, maxCount) {
+  const answer = parseJsonAnswer(answerText)
   const seenDois = new Set()
   const recommendations = []
-  for (const recommendation of parseJsonAnswer(answerText).recommendations || []) {
+  for (const recommendation of answer.recommendations || []) {
     const doi = candidates[Number(recommendation?.id) - 1]?.doi
     if (!doi || seenDois.has(doi)) continue
     seenDois.add(doi)
     recommendations.push({ doi, explanation: normalizeExplanation(recommendation.explanation) })
   }
-  return recommendations.slice(0, maxCount)
+  return {
+    recommendations: recommendations.slice(0, maxCount),
+    loadMore: answer.loadMoreSuggestions === true,
+    report: truncateText(answer.report, REPORT_MAX_LENGTH)
+  }
 }

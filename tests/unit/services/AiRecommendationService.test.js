@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   buildRecommendationRequest,
-  parseRecommendations
+  parseRecommendationAnswer
 } from '@/services/AiRecommendationService.js'
 
 function createPublication(overrides) {
@@ -22,14 +22,18 @@ function createPublication(overrides) {
   }
 }
 
-const sessionData = (suggestedPublications) => ({
+const sessionData = (suggestedPublications, overrides = {}) => ({
   selectedPublications: [
     createPublication({ doi: '10.1000/seed', title: 'Seed Paper', boostKeywords: ['VISUALIZATION'] })
   ],
   suggestedPublications,
+  totalSuggestions: suggestedPublications.length,
+  addedDois: [],
+  isLoadMoreAllowed: true,
   boostKeywordString: 'visualization, survey',
   keywords: ['VISUALIZATION', 'SURVEY'],
-  steeringComment: 'Prefer recent survey papers.'
+  steeringComment: 'Prefer recent survey papers.',
+  ...overrides
 })
 
 const suggestions = (count) =>
@@ -55,9 +59,10 @@ describe('AiRecommendationService', () => {
 
       expect(request.candidates).toEqual(suggested)
       expect(request.maxOutputTokens).toBe(1024)
-      expect(request.jsonSchema.schema.properties.recommendations.items.required).toEqual([
-        'id',
-        'explanation'
+      expect(request.jsonSchema.schema.required).toEqual([
+        'recommendations',
+        'loadMoreSuggestions',
+        'report'
       ])
       expect(request.messages[0].role).toBe('system')
       expect(request.messages[0].content).toContain('Follow this priority order')
@@ -108,7 +113,40 @@ describe('AiRecommendationService', () => {
       expect(JSON.parse(exact.messages[1].content).selectionTarget).toContain(
         'Recommend 30 papers.'
       )
-      expect(exact.maxOutputTokens).toBe(3000)
+      expect(exact.maxOutputTokens).toBe(3200)
+    })
+
+    it('offers loading more suggestions only if allowed, available, and visible to the model', () => {
+      const build = (overrides, contextWindow = 64000) =>
+        buildRecommendationRequest(sessionData(suggestions(40), overrides), 3, 8, contextWindow)
+      const context = (request) => JSON.parse(request.messages[1].content)
+
+      const offered = build({ totalSuggestions: 500 })
+      expect(offered.canLoadMore).toBe(true)
+      expect(context(offered)).toMatchObject({
+        suggestionsShown: 40,
+        suggestionsTotal: 500,
+        canLoadMoreSuggestions: true
+      })
+
+      expect(build({ totalSuggestions: 40 }).canLoadMore).toBe(false)
+      expect(build({ totalSuggestions: 500, isLoadMoreAllowed: false }).canLoadMore).toBe(false)
+      // Further suggestions would not fit the prompt anyway
+      const cutOff = build({ totalSuggestions: 500 }, 2500)
+      expect(cutOff.canLoadMore).toBe(false)
+      expect(context(cutOff).canLoadMoreSuggestions).toBe(false)
+    })
+
+    it('marks the papers added earlier in the same run', () => {
+      const data = sessionData(suggestions(3), { addedDois: ['10.1000/added'] })
+      data.selectedPublications.push(createPublication({ doi: '10.1000/added', title: 'Added' }))
+
+      const seeds = JSON.parse(
+        buildRecommendationRequest(data, 1, 2, 64000).messages[1].content
+      ).selectedSeedPapers
+
+      expect(seeds[0].addedInThisRun).toBeUndefined()
+      expect(seeds[1]).toMatchObject({ title: 'Added', addedInThisRun: true })
     })
 
     it('fails clearly when the context window cannot hold any suggestion', () => {
@@ -118,7 +156,7 @@ describe('AiRecommendationService', () => {
     })
   })
 
-  describe('parseRecommendations', () => {
+  describe('parseRecommendationAnswer', () => {
     it('maps answered ids to publications and tolerates unconstrained output', () => {
       const candidates = suggestions(3)
       const answer = `Here you go:\n\`\`\`json\n${JSON.stringify({
@@ -127,28 +165,38 @@ describe('AiRecommendationService', () => {
           { id: 2, explanation: 'Duplicate.' },
           { id: 9, explanation: 'Not a candidate.' },
           { id: '3', explanation: 'Bridges the seed papers' }
-        ]
+        ],
+        loadMoreSuggestions: true,
+        report: '  Two papers on visualization   fit the seeds.  '
       })}\n\`\`\``
 
-      expect(parseRecommendations(answer, candidates, 5)).toEqual([
-        { doi: '10.2000/suggested-2', explanation: 'It matches the visualization keyword.' },
-        { doi: '10.2000/suggested-3', explanation: 'Bridges the seed papers' }
-      ])
+      expect(parseRecommendationAnswer(answer, candidates, 5)).toEqual({
+        recommendations: [
+          { doi: '10.2000/suggested-2', explanation: 'It matches the visualization keyword.' },
+          { doi: '10.2000/suggested-3', explanation: 'Bridges the seed papers' }
+        ],
+        loadMore: true,
+        report: 'Two papers on visualization fit the seeds.'
+      })
     })
 
-    it('never returns more recommendations than asked for', () => {
+    it('never returns more recommendations than asked for and copes with missing fields', () => {
       const answer = JSON.stringify({
         recommendations: [1, 2, 3].map((id) => ({ id, explanation: 'Fits.' }))
       })
 
-      expect(parseRecommendations(answer, suggestions(3), 2).map(({ doi }) => doi)).toEqual([
+      const parsed = parseRecommendationAnswer(answer, suggestions(3), 2)
+
+      expect(parsed.recommendations.map(({ doi }) => doi)).toEqual([
         '10.2000/suggested-1',
         '10.2000/suggested-2'
       ])
+      expect(parsed.loadMore).toBe(false)
+      expect(parsed.report).toBe('')
     })
 
     it('rejects answers without JSON', () => {
-      expect(() => parseRecommendations('Sorry, I cannot help.', suggestions(1), 1)).toThrow(
+      expect(() => parseRecommendationAnswer('Sorry, I cannot help.', suggestions(1), 1)).toThrow(
         'valid JSON'
       )
     })

@@ -131,6 +131,7 @@ export function useModalManager() {
     modalStore.isConceptConfigModalDialogShown = false
     modalStore.isAiRecommendationModalDialogShown = false
     modalStore.isLlmSettingsModalDialogShown = false
+    modalStore.isAiReportModalDialogShown = false
     modalStore.confirmDialog.isShown = false
     modalStore.infoDialog.isShown = false
   }

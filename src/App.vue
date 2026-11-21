@@ -244,6 +244,7 @@ export default {
     <ConceptConfigModalDialog />
     <AiRecommendationModalDialog />
     <LlmSettingsModalDialog />
+    <AiReportModalDialog />
     <!-- Other dialogs and overlays -->
     <v-overlay
       v-model="interfaceStore.isLoading"

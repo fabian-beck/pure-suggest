@@ -41,10 +41,12 @@ describe('session store: AI recommendations', () => {
   it('resets the recommendation settings with the session', () => {
     sessionStore.aiRecommendationRange = [1, 40]
     sessionStore.isAiAutoSelect = true
+    sessionStore.isAiLoadMoreAllowed = false
 
     sessionStore.clear()
 
     expect(sessionStore.aiRecommendationRange).toEqual([5, 15])
     expect(sessionStore.isAiAutoSelect).toBe(false)
+    expect(sessionStore.isAiLoadMoreAllowed).toBe(true)
   })
 })

@@ -97,6 +97,12 @@ function start() {
         class="mt-2"
         label="Auto-select: add the recommended papers to the selection"
       />
+      <v-checkbox
+        v-model="sessionStore.isAiLoadMoreAllowed"
+        density="compact"
+        hide-details
+        label="Allow loading more suggestions if too few of them fit"
+      />
 
       <v-text-field
         v-model="steeringComment"
@@ -110,6 +116,14 @@ function start() {
     </div>
     <template #footer>
       <v-card-actions class="has-background-info-95 justify-end">
+        <v-btn
+          v-if="modalStore.aiReport"
+          class="mr-auto"
+          prepend-icon="mdi-text-box-outline"
+          @click="modalStore.isAiReportModalDialogShown = true"
+        >
+          Last report
+        </v-btn>
         <v-btn
           class="has-background-info has-text-white"
           :class="{ 'dialog-initial-focus': !llmStore.setupIssue }"

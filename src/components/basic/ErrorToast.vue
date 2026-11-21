@@ -16,7 +16,6 @@ export default {
     :timeout="5000"
     rounded="pill"
     location="top"
-    :class="{ 'is-info': interfaceStore.errorToast.type === 'info' }"
     >{{ interfaceStore.errorToast.message }}</v-snackbar
   >
 </template>
@@ -33,10 +32,6 @@ export default {
       text-align: center;
       font-size: 1rem;
     }
-  }
-
-  &.is-info :deep(.v-snackbar__wrapper) {
-    background-color: var(--bulma-dark) !important;
   }
 }
 </style>

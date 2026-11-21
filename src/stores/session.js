@@ -34,7 +34,9 @@ export const useSessionStore = defineStore('session', {
       // Expected number of papers to recommend (minimum, maximum)
       aiRecommendationRange: [5, 15],
       // Whether recommended papers are added to the selection right away
-      isAiAutoSelect: false
+      isAiAutoSelect: false,
+      // Whether the AI model may have more suggestions loaded if too few fit
+      isAiLoadMoreAllowed: true
     }
   },
   getters: {
@@ -148,6 +150,7 @@ export const useSessionStore = defineStore('session', {
       this.aiRecommendationComment = ''
       this.aiRecommendationRange = [5, 15]
       this.isAiAutoSelect = false
+      this.isAiLoadMoreAllowed = true
       // Note: newly added flags are automatically cleared when selectedPublications is reset
     },
 
