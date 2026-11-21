@@ -13,6 +13,8 @@ import {
   updatePublicationScores
 } from '@/utils/scoringUtils.js'
 
+const AI_RECOMMENDED_TAG = 'isAiRecommended'
+
 export const useSessionStore = defineStore('session', {
   state: () => {
     return {
@@ -27,7 +29,8 @@ export const useSessionStore = defineStore('session', {
       filter: new Filter(),
       addQuery: '',
       sessionName: '',
-      sessionId: ''
+      sessionId: '',
+      aiRecommendationComment: ''
     }
   },
   getters: {
@@ -138,6 +141,7 @@ export const useSessionStore = defineStore('session', {
       this.addQuery = ''
       this.sessionName = ''
       this.sessionId = ''
+      this.aiRecommendationComment = ''
       // Note: newly added flags are automatically cleared when selectedPublications is reset
     },
 
@@ -232,6 +236,34 @@ export const useSessionStore = defineStore('session', {
       this.selectedPublications.forEach((publication) => {
         publication.isNewlyAdded = false
       })
+    },
+
+    clearAiRecommendations() {
+      this.suggestedPublications.forEach((publication) => {
+        publication[AI_RECOMMENDED_TAG] = false
+      })
+      this.filter.removeTag(AI_RECOMMENDED_TAG)
+    },
+
+    applyAiRecommendations(recommendations) {
+      this.clearAiRecommendations()
+
+      const recommendationsByDoi = new Map(
+        recommendations.map((recommendation) => [
+          recommendation.doi.toLowerCase(),
+          recommendation.explanation
+        ])
+      )
+
+      this.suggestedPublications.forEach((publication) => {
+        publication[AI_RECOMMENDED_TAG] = recommendationsByDoi.get(publication.doi) || false
+      })
+
+      if (recommendationsByDoi.size > 0) {
+        this.filter.addTag(AI_RECOMMENDED_TAG)
+        this.filter.isActive = true
+        this.filter.applyToSuggested = true
+      }
     },
 
     updatePublicationScores() {

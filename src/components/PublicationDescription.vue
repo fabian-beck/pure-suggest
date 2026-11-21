@@ -191,7 +191,10 @@ function getTagTooltip(tagValue, tagName) {
     return tooltip
   }
 
-  const description = `Identified as ${tagName.toLowerCase()}: ${props.publication[tagValue]}.`
+  const description =
+    tagValue === 'isAiRecommended'
+      ? `${tagName}: ${props.publication[tagValue]}`
+      : `Identified as ${tagName.toLowerCase()}: ${props.publication[tagValue]}.`
   const action = isTagFiltered(tagValue)
     ? `Active as filter; click to remove from filter.`
     : `Click to add to filter.`
@@ -200,6 +203,7 @@ function getTagTooltip(tagValue, tagName) {
 
 function getTagIcon(tagValue) {
   const iconMap = {
+    isAiRecommended: 'mdi-robot-outline',
     isHighlyCited: 'mdi-star',
     isSurvey: 'mdi-table',
     isNew: 'mdi-alarm',

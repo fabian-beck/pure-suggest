@@ -1,7 +1,8 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 
 import { useAppState } from "@/composables/useAppState.js"
+import { selectAiRecommendedPublications } from '@/services/AiRecommendationService.js'
 import { useInterfaceStore } from "@/stores/interface.js"
 import { useSessionStore } from "@/stores/session.js"
 
@@ -18,9 +19,20 @@ const { updateSuggestions } = useAppState()
 
 const publicationList = ref(null)
 const isSettingsMenuOpen = ref(false)
+const isAiRecommendationLoading = ref(false)
 
 // Local variable to track slider value without immediately applying it
 const localMaxSuggestions = ref(sessionStore.maxSuggestions)
+
+const canRequestAiRecommendations = computed(() => {
+  return !isAiRecommendationLoading.value && sessionStore.suggestedPublicationsFiltered.length > 0
+})
+
+const aiRecommendationTooltip = computed(() => {
+  if (!sessionStore.suggestion) return 'Load suggestions before asking for AI recommendations.'
+  if (isAiRecommendationLoading.value) return 'AI recommendation is running.'
+  return 'Ask OpenAI to highlight about 10% of the current suggested publications.'
+})
 
 // Update local value when store value changes (e.g., from other sources)
 watch([() => sessionStore.maxSuggestions, isSettingsMenuOpen], ([newMax]) => {
@@ -61,6 +73,49 @@ const updateMaxSuggestions = async (newValue) => {
       interfaceStore.endLoading()
       interfaceStore.showErrorMessage('Failed to update suggestions. Please try again.')
     }
+  }
+}
+
+const requestAiRecommendationComment = () => {
+  const comment = window.prompt(
+    'Optional: add a short comment to steer the AI recommendations.',
+    sessionStore.aiRecommendationComment
+  )
+
+  if (comment === null) return null
+
+  sessionStore.aiRecommendationComment = comment.trim()
+  return sessionStore.aiRecommendationComment
+}
+
+const requestAiRecommendations = async () => {
+  if (!canRequestAiRecommendations.value) return
+
+  const steeringComment = requestAiRecommendationComment()
+  if (steeringComment === null) return
+
+  isAiRecommendationLoading.value = true
+  interfaceStore.startLoading()
+  interfaceStore.loadingMessage = 'Asking OpenAI for recommended suggestions...'
+
+  try {
+    const recommendations = await selectAiRecommendedPublications({
+      selectedPublications: sessionStore.selectedPublications,
+      suggestedPublications: sessionStore.suggestedPublicationsFiltered,
+      boostKeywordString: sessionStore.boostKeywordString,
+      keywords: sessionStore.uniqueBoostKeywords,
+      steeringComment
+    })
+
+    if (recommendations) {
+      sessionStore.applyAiRecommendations(recommendations)
+    }
+  } catch (error) {
+    console.error('Error requesting AI recommendations:', error)
+    interfaceStore.showErrorMessage(error.message || 'Failed to get AI recommendations.')
+  } finally {
+    isAiRecommendationLoading.value = false
+    interfaceStore.endLoading()
   }
 }
 
@@ -121,6 +176,17 @@ class="level-item"
               }}.
             </template>
           </tippy>
+          <CompactButton
+            :icon="
+              isAiRecommendationLoading
+                ? 'mdi-loading mdi-spin has-text-white'
+                : 'mdi-robot-outline has-text-white'
+            "
+            class="ml-2"
+            :disabled="!canRequestAiRecommendations"
+            @click="requestAiRecommendations"
+            v-tippy="aiRecommendationTooltip"
+          ></CompactButton>
           <v-menu :close-on-content-click="false" v-model="isSettingsMenuOpen" @update:model-value="onMenuToggle">
             <template #activator="{ props }">
               <CompactButton

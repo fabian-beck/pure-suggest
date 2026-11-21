@@ -144,6 +144,7 @@ export function useAppState() {
       cancelToken: interfaceStore.loadingCancelToken
     })
     interfaceStore.setLoadingCancelable(false)
+    sessionStore.clearAiRecommendations()
 
     updateScores()
 

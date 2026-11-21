@@ -11,6 +11,7 @@ vi.mock('@/stores/interface.js')
 vi.mock('@/core/Publication.js', () => ({
   default: {
     TAGS: [
+      { name: 'AI recommended', value: 'isAiRecommended' },
       { name: 'Research', value: 'research' },
       { name: 'Review', value: 'review' }
     ]
@@ -23,6 +24,7 @@ describe('FilterMenuComponent', () => {
   const createWrapper = (overrides = {}) => {
     const sessionStoreDefaults = {
       isEmpty: false,
+      suggestedPublications: [],
       filter: {
         string: '',
         yearStart: '',
@@ -238,11 +240,33 @@ describe('FilterMenuComponent', () => {
     it('provides correct icon for each tag type', () => {
       const wrapper = createWrapper()
 
+      expect(wrapper.vm.getTagIcon('isAiRecommended')).toBe('mdi-robot-outline')
       expect(wrapper.vm.getTagIcon('isHighlyCited')).toBe('mdi-star')
       expect(wrapper.vm.getTagIcon('isSurvey')).toBe('mdi-table')
       expect(wrapper.vm.getTagIcon('isNew')).toBe('mdi-alarm')
       expect(wrapper.vm.getTagIcon('isUnnoted')).toBe('mdi-alert-box-outline')
       expect(wrapper.vm.getTagIcon('unknown')).toBe('')
+    })
+
+    it('hides AI recommended tag until current recommendations exist', () => {
+      let wrapper = createWrapper()
+
+      expect(wrapper.vm.visibleTags.map((tag) => tag.value)).toEqual(['research', 'review'])
+
+      wrapper = createWrapper({
+        suggestedPublications: [
+          {
+            doi: '10.1234/ai',
+            isAiRecommended: 'Recommended because it matches the user steering comment.'
+          }
+        ]
+      })
+
+      expect(wrapper.vm.visibleTags.map((tag) => tag.value)).toEqual([
+        'isAiRecommended',
+        'research',
+        'review'
+      ])
     })
   })
 })
