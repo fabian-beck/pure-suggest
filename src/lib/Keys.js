@@ -259,10 +259,11 @@ export function onKey(e) {
   // Dialogs and list menus handle their own keys (Tab, Enter, Space, Escape, arrows, sliders)
   if (isAnyOverlayShown || document.activeElement.closest('.v-overlay .v-list')) return
 
-  // Handle input field focus
+  // Handle input field focus (the class name of SVG elements, e.g., network nodes, is no string)
+  const { nodeName, type, className } = document.activeElement
   if (
-    (document.activeElement.nodeName === 'INPUT' && document.activeElement.type === 'text') ||
-    document.activeElement.className.includes('input')
+    (nodeName === 'INPUT' && type === 'text') ||
+    (typeof className === 'string' && className.includes('input'))
   ) {
     if (e.key === 'Escape') {
       document.activeElement.blur()

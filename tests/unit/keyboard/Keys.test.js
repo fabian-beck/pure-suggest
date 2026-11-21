@@ -184,6 +184,16 @@ describe('Keys Module - Keyboard Event Handling', () => {
     })
   })
 
+  it('should process keys when a network node (SVG element) is focused', () => {
+    sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
+    mockActiveElement({ nodeName: 'g', className: { baseVal: 'node-container keyword' } })
+    interfaceStore.isNetworkClusters = true
+
+    onKey(new KeyboardEvent('keydown', { key: 'm' }))
+
+    expect(interfaceStore.isNetworkClusters).toBe(false)
+  })
+
   describe('Filter Menu (f key)', () => {
     it('should open filter menu when pressing f with publications', () => {
       // Add a publication so session is not empty
