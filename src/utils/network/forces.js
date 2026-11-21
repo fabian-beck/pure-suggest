@@ -15,6 +15,8 @@ import { getCitationTimeWeight } from '@/utils/network/links.js'
 import { getRectSize } from '@/utils/network/publicationNodes.js'
 
 export const SIMULATION_ALPHA = 0.7
+// Alpha for showing further nodes temporarily, which find their place among the others
+export const REVEAL_ALPHA = 0.3
 // Simulation ticks per second of an animated layout at SIMULATION_ALPHA; as nodes move less
 // per tick the more the simulation has cooled down, ticks run faster in inverse proportion
 // to the alpha, so that nodes move at about constant speed and a layout takes about half a
@@ -53,6 +55,9 @@ const COLLISION_PADDING = 2
 // Pull of the nodes back to their place in the previous layout of a mode when switching
 // back to the mode (see returnToLayout)
 const RETURN_STRENGTH = 1
+// Pull of the nodes of a layout at rest to their place while further nodes are shown
+// temporarily (see keepLayout)
+const KEEP_STRENGTH = 1
 
 /**
  * Calculate link distance based on link type and network mode
@@ -195,15 +200,19 @@ export function assignNodePositions(nodes, previousNodes, links) {
 
 /**
  * Remember the layout of the graph ({ nodes, links }) in the current mode (positions of the
- * nodes by id) in a view ({ width, height }), to return to it when switching back to the mode
- * (see returnToLayout)
+ * nodes by id, which are returned) in a view ({ width, height }), to return to it when
+ * switching back to the mode (see returnToLayout)
  */
 export function rememberLayout(layouts, graph, view, isNetworkClusters) {
+  const positions = new Map(
+    graph.nodes.map((node) => [node.id, { x: node.x, y: node.y, timelineX: node.timelineX }])
+  )
   layouts[isNetworkClusters ? 'clusters' : 'timeline'] = {
-    positions: new Map(graph.nodes.map((node) => [node.id, { x: node.x, y: node.y }])),
+    positions,
     linkCount: graph.links.length,
     view: { ...view }
   }
+  return positions
 }
 
 /**
@@ -239,6 +248,86 @@ export function returnToLayout(layouts, graph, view, isNetworkClusters) {
   }
   force.initialize = (simulationNodes) => {
     nodes = simulationNodes
+  }
+  return force
+}
+
+/**
+ * Force keeping a layout at rest (positions of its nodes by id, see rememberLayout) while
+ * further nodes are shown temporarily, to be set after the other forces: the nodes of the
+ * layout are not moved by the other forces, but pulled to their place, which they only
+ * leave to keep off nodes they would overlap (see getCollisionRadius). So only the nodes
+ * around the further nodes, which find their place by the other forces, make room, and
+ * return to their place once the further nodes are hidden again. As a layout may be dense,
+ * nodes may stay as close to each other as they are in it, and further nodes may come as
+ * close to a node as its closest node in it. Nodes of the layout keep off each other in
+ * their direction in the layout, so that they do not block each other on their way back.
+ * Authors follow the x of their years on a rescaled timeline.
+ */
+export function keepLayout(positions) {
+  let nodes = []
+  let places = []
+  let radii = []
+  let closest = [] // Distance of the nodes of the layout to their closest node in it
+  const force = (alpha) => {
+    nodes.forEach((node, i) => {
+      if (places[i]) {
+        node.vx = (places[i].x - node.x) * KEEP_STRENGTH * alpha
+        node.vy = (places[i].y - node.y) * KEEP_STRENGTH * alpha
+      }
+      // Pinned nodes do not move, whatever the other forces added to their velocity
+      if (node.fx != null) node.vx = 0
+      if (node.fy != null) node.vy = 0
+    })
+    // Nodes of the layout that are at their place keep off each other already
+    const isMoving = nodes.map((node, i) => !places[i] || node.vx !== 0 || node.vy !== 0)
+    nodes.forEach((node, i) => {
+      if (!isMoving[i]) return
+      nodes.forEach((other, j) => {
+        if (j === i || (isMoving[j] && j < i)) return
+        let dx = other.x + other.vx - node.x - node.vx
+        let dy = other.y + other.vy - node.y - node.vy
+        let minDistance = radii[i] + radii[j]
+        if (Math.abs(dx) >= minDistance || Math.abs(dy) >= minDistance) return
+        const distance = Math.hypot(dx, dy)
+        if (places[i] && places[j]) {
+          const placeDx = places[j].x - places[i].x
+          const placeDy = places[j].y - places[i].y
+          const placeDistance = Math.hypot(placeDx, placeDy)
+          minDistance = Math.min(minDistance, placeDistance)
+          dx = (placeDx * distance) / placeDistance
+          dy = (placeDy * distance) / placeDistance
+        } else {
+          minDistance = Math.min(minDistance, closest[i], closest[j])
+        }
+        if (distance >= minDistance || !distance) return
+        const push = (minDistance - distance) / distance / 2
+        node.vx -= dx * push
+        node.vy -= dy * push
+        other.vx += dx * push
+        other.vy += dy * push
+      })
+    })
+  }
+  force.initialize = (simulationNodes) => {
+    nodes = simulationNodes
+    places = nodes.map((node) => {
+      const position = positions.get(node.id)
+      return (
+        position && {
+          x: node.fx ?? position.x + (node.timelineX - position.timelineX || 0),
+          y: node.fy ?? position.y
+        }
+      )
+    })
+    radii = nodes.map(getCollisionRadius)
+    closest = places.map((place, i) =>
+      place
+        ? d3.min(places, (other, j) =>
+            other && j !== i ? Math.hypot(other.x - place.x, other.y - place.y) : Infinity
+          )
+        : Infinity
+    )
   }
   return force
 }
