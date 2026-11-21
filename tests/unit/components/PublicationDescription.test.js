@@ -137,6 +137,26 @@ describe('PublicationDescription', () => {
     ])
   })
 
+  it('shows markup in AI-written explanations as text', () => {
+    const wrapper = mount(PublicationDescription, {
+      props: {
+        publication: {
+          ...mockPublication,
+          isAiRecommended: 'Uses <b>graphs</b> & trees.',
+          getTags: () => [{ value: 'isAiRecommended', name: 'AI recommended' }]
+        }
+      },
+      global: {
+        stubs: defaultStubs,
+        directives: { tippy: (element, binding) => (element.dataset.tooltip = binding.value) }
+      }
+    })
+
+    expect(wrapper.find('.tag').attributes('data-tooltip')).toContain(
+      'AI recommended: Uses &lt;b&gt;graphs&lt;/b&gt; &amp; trees.'
+    )
+  })
+
   it('calls showAbstract when abstract button is clicked', async () => {
     const wrapper = mount(PublicationDescription, {
       props: { publication: { ...mockPublication, isActive: true } },
