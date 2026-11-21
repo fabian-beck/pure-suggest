@@ -88,6 +88,8 @@ export const useLlmStore = defineStore('llm', () => {
   const modelsError = ref('')
   const isLoadingModels = ref(false)
   const isDetectingServers = ref(false)
+  // Browser model currently held in memory (lost on every page reload)
+  const loadedModelId = ref('')
 
   watch(
     settings,
@@ -221,6 +223,7 @@ export const useLlmStore = defineStore('llm', () => {
     if (cachedProvider.key !== key) {
       cachedProvider.provider?.dispose?.()
       cachedProvider = { key, provider: create() }
+      loadedModelId.value = ''
     }
     return cachedProvider.provider
   }
@@ -299,11 +302,33 @@ export const useLlmStore = defineStore('llm', () => {
   /** Downloads and loads the chosen model of a backend that keeps models itself. */
   async function prepareModel(onProgress, signal) {
     await ensureDevice()
-    await getProvider().prepareModel?.(modelId.value, onProgress, signal)
+    const provider = getProvider()
+    if (!provider.prepareModel) return
+    const id = modelId.value
+    await provider.prepareModel(id, onProgress, signal)
+    loadedModelId.value = id
+  }
+
+  /**
+   * Loads the chosen browser model into memory ahead of its use if it is already downloaded
+   * (after a page reload, it is not in memory anymore); never starts a download.
+   */
+  async function warmUp() {
+    if (settings.mode !== 'browser' || setupIssue.value) return
+    try {
+      if (!models.value.length) await refreshModels()
+      const isDownloaded = models.value.some(
+        (model) => model.id === modelId.value && model.isAvailable
+      )
+      if (isDownloaded) await prepareModel(() => {})
+    } catch (error) {
+      console.warn('Could not load the model ahead of its use:', error)
+    }
   }
 
   async function removeModel(id) {
     await getProvider().removeModel?.(id)
+    if (loadedModelId.value === id) loadedModelId.value = ''
     await refreshModels()
   }
 
@@ -360,6 +385,7 @@ export const useLlmStore = defineStore('llm', () => {
     modelsError,
     isLoadingModels,
     isDetectingServers,
+    loadedModelId,
     cloudService,
     modelId,
     activeModel,
@@ -375,6 +401,7 @@ export const useLlmStore = defineStore('llm', () => {
     detectServers,
     applyRecommendation,
     prepareModel,
+    warmUp,
     removeModel,
     generate
   }

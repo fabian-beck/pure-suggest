@@ -169,13 +169,16 @@ export class BrowserProvider implements LlmProvider {
     try {
       await this.call('load', modelId, {}, (response) => {
         if (response.type !== 'progress') return
-        const isDownloaded = response.loadedBytes >= response.totalBytes
+        // Weights stored in the browser are read back with the same progress as a download
+        const isRead = response.isCached || response.loadedBytes >= response.totalBytes
         onProgress({
-          phase: isDownloaded ? 'load' : 'download',
+          phase: isRead ? 'load' : 'download',
           loadedBytes: response.loadedBytes,
           totalBytes: response.totalBytes
         })
       })
+      // Asks the browser not to evict the downloaded weights when storage runs short
+      navigator.storage?.persist?.().catch(() => {})
     } catch (error) {
       if (signal?.aborted) throw new LlmError('aborted', 'Loading the model was cancelled.')
       // The GPU path can fail on drivers and devices WebGPU nominally supports

@@ -107,7 +107,7 @@ export interface ChatResult {
 }
 
 export interface ModelLoadProgress {
-  /** `download`: fetching weights; `load`: initialising the model in memory. */
+  /** `download`: fetching weights; `load`: reading stored weights and initialising the model. */
   phase: 'download' | 'load'
   loadedBytes?: number
   totalBytes?: number

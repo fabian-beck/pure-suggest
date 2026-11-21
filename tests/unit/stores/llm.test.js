@@ -4,6 +4,7 @@ import { nextTick } from 'vue'
 
 import { jsonResponse, mockFetchRoutes } from '../../helpers/llmTestUtils.js'
 
+import { BrowserProvider } from '@/llm/browser.ts'
 import { completeChat } from '@/llm/chat.ts'
 import { useLlmStore } from '@/stores/llm.js'
 
@@ -33,6 +34,7 @@ describe('LLM store', () => {
 
   beforeEach(() => {
     localStorage.clear()
+    vi.restoreAllMocks()
     completeChat.mockReset()
     completeChat.mockResolvedValue({ text: 'ok', tokensPerSecond: 23.44 })
     mockFetchRoutes({})
@@ -151,6 +153,44 @@ describe('LLM store', () => {
       expect(store.servers).toHaveLength(1)
       expect(store.settings.nativeBaseUrl).toBe('http://localhost:11434/v1')
       expect(store.recommendation).not.toBeNull()
+    })
+  })
+
+  describe('warmUp', () => {
+    const DEVICE = { hasWebGpu: true, supportsShaderF16: true, tier: 'standard' }
+    let prepareModel
+
+    const setUpBrowserModel = (isAvailable) => {
+      prepareModel = vi
+        .spyOn(BrowserProvider.prototype, 'prepareModel')
+        .mockResolvedValue()
+      vi.spyOn(BrowserProvider.prototype, 'listModels').mockResolvedValue([
+        { id: 'model-a', name: 'Model A', isPreferred: true, isAvailable, capabilities: {} }
+      ])
+      store.device = DEVICE
+      store.settings.mode = 'browser'
+      store.modelId = 'model-a'
+    }
+
+    it('loads a downloaded browser model into memory ahead of its use', async () => {
+      setUpBrowserModel(true)
+
+      await store.warmUp()
+
+      expect(prepareModel).toHaveBeenCalledWith('model-a', expect.any(Function), undefined)
+      expect(store.loadedModelId).toBe('model-a')
+    })
+
+    it('never starts a download or touches other backends', async () => {
+      setUpBrowserModel(false)
+      await store.warmUp()
+      expect(prepareModel).not.toHaveBeenCalled()
+
+      store.settings.mode = 'native'
+      store.modelId = 'gemma4:e4b'
+      await store.warmUp()
+      expect(global.fetch).not.toHaveBeenCalled()
+      expect(store.loadedModelId).toBe('')
     })
   })
 

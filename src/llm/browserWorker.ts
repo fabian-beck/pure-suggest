@@ -31,7 +31,7 @@ export type WorkerRequest =
     }
 
 export type WorkerResponse = { requestId: number } & (
-  | { type: 'progress'; loadedBytes: number; totalBytes: number }
+  | { type: 'progress'; loadedBytes: number; totalBytes: number; isCached: boolean }
   | { type: 'token'; text: string }
   | { type: 'result'; value: Json }
   | { type: 'error'; message: string; isOutOfMemory: boolean }
@@ -46,7 +46,8 @@ const scope = self as unknown as {
 }
 
 const stoppingCriteria = new InterruptableStoppingCriteria()
-let loaded: { key: string; generator: any } | null = null // eslint-disable-line @typescript-eslint/no-explicit-any
+// The model in memory or on its way there; concurrent requests share the same loading
+let loaded: { key: string; generator: Promise<any> } | null = null // eslint-disable-line @typescript-eslint/no-explicit-any
 
 /** Picks the weight format: an already downloaded one, else the most preferred one offered. */
 async function resolveDtype(modelId: string, backend: BrowserBackend, dtypes: string[]) {
@@ -76,25 +77,31 @@ async function inspect(modelId: string, backend: BrowserBackend, dtypes: string[
 }
 
 async function load(request: Extract<WorkerRequest, { requestId: number }>) {
-  const { dtype } = await resolveDtype(request.modelId, request.backend, request.dtypes)
+  const { dtype, isCached } = await resolveDtype(request.modelId, request.backend, request.dtypes)
   const key = `${request.modelId}|${request.backend}|${dtype}`
   if (loaded?.key === key) return loaded.generator
-  await loaded?.generator.dispose()
-  loaded = null
-  const generator = await pipeline(TASK, request.modelId, {
-    device: request.backend,
-    dtype,
-    progress_callback: (info: Json) => {
-      if (info.status !== 'progress_total') return
-      scope.postMessage({
-        type: 'progress',
-        requestId: request.requestId,
-        loadedBytes: info.loaded,
-        totalBytes: info.total
-      })
-    }
-  } as Json)
+  const previous = loaded?.generator
+  const generator = (async () => {
+    await previous?.then((unused) => unused.dispose()).catch(() => {})
+    return pipeline(TASK, request.modelId, {
+      device: request.backend,
+      dtype,
+      progress_callback: (info: Json) => {
+        if (info.status !== 'progress_total') return
+        scope.postMessage({
+          type: 'progress',
+          requestId: request.requestId,
+          loadedBytes: info.loaded,
+          totalBytes: info.total,
+          isCached
+        })
+      }
+    } as Json)
+  })()
   loaded = { key, generator }
+  generator.catch(() => {
+    if (loaded?.generator === generator) loaded = null
+  })
   return generator
 }
 
@@ -148,8 +155,9 @@ scope.onmessage = async ({ data: request }) => {
     else {
       const { dtype } = await resolveDtype(modelId, backend, dtypes)
       if (loaded?.key.startsWith(`${modelId}|`)) {
-        await loaded.generator.dispose()
+        const { generator } = loaded
         loaded = null
+        await generator.then((unused) => unused.dispose()).catch(() => {})
       }
       await ModelRegistry.clear_pipeline_cache(TASK, modelId, { dtype, device: backend } as Json)
     }

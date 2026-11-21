@@ -25,7 +25,9 @@ const expectedPapers = computed(() => {
 watch(
   () => modalStore.isAiRecommendationModalDialogShown,
   (isShown) => {
-    if (isShown) steeringComment.value = sessionStore.aiRecommendationComment
+    if (!isShown) return
+    steeringComment.value = sessionStore.aiRecommendationComment
+    llmStore.warmUp()
   }
 )
 

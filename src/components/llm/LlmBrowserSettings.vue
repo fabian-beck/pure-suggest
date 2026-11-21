@@ -23,13 +23,22 @@ const catalogEntry = computed(() =>
   BROWSER_MODELS.find((model) => model.id === llmStore.modelId)
 )
 
-const loadProgressText = computed(() => {
-  const { phase, loadedBytes, totalBytes } = loadProgress.value
-  if (phase === 'download' && totalBytes) {
-    return `Downloading ${formatBytes(loadedBytes)} of ${formatBytes(totalBytes)}`
-  }
-  return 'Loading model into memory'
+// Whether bytes are still being transferred (from the network or the browser storage)
+const isTransferring = computed(() => {
+  const { loadedBytes, totalBytes } = loadProgress.value
+  return totalBytes > 0 && loadedBytes < totalBytes
 })
+
+const loadProgressText = computed(() => {
+  if (!isTransferring.value) return 'Loading model into memory'
+  const { phase, loadedBytes, totalBytes } = loadProgress.value
+  const amount = `${formatBytes(loadedBytes)} of ${formatBytes(totalBytes)}`
+  return phase === 'download'
+    ? `Downloading ${amount}`
+    : `Reading ${amount} from the browser storage (no download)`
+})
+
+const isLoaded = computed(() => llmStore.loadedModelId === llmStore.modelId)
 
 function setBackend(backend) {
   llmStore.settings.browserBackend = backend
@@ -53,7 +62,14 @@ async function loadModel() {
   try {
     await llmStore.prepareModel((progress) => (loadProgress.value = progress), loadController.signal)
     await llmStore.refreshModels()
+    if (isLoaded.value && !llmStore.activeModel.isAvailable) {
+      interfaceStore.showErrorMessage(
+        'The model is ready, but the browser did not keep the download (its storage is full or restricted, for example in a private window). It will be downloaded again after reloading the page.'
+      )
+    }
   } catch (error) {
+    // Parts downloaded before a failure stay in the browser storage
+    await llmStore.refreshModels()
     if (error.code !== 'aborted') interfaceStore.showErrorMessage(error.message)
   } finally {
     loadProgress.value = null
@@ -92,13 +108,15 @@ async function loadModel() {
         </div>
         <v-progress-linear
           :model-value="(100 * loadProgress.loadedBytes) / loadProgress.totalBytes"
-          :indeterminate="loadProgress.phase === 'load' || !loadProgress.totalBytes"
+          :indeterminate="!isTransferring"
         />
       </div>
       <div v-else class="d-flex flex-wrap ga-2">
-        <v-btn prepend-icon="mdi-download" @click="loadModel">
-          {{ llmStore.activeModel.isAvailable ? 'Load model' : 'Download and load model' }}
+        <v-chip v-if="isLoaded" label prepend-icon="mdi-check">In memory, ready to use</v-chip>
+        <v-btn v-else-if="llmStore.activeModel.isAvailable" prepend-icon="mdi-memory" @click="loadModel">
+          Load now
         </v-btn>
+        <v-btn v-else prepend-icon="mdi-download" @click="loadModel">Download model</v-btn>
         <v-btn
           v-if="llmStore.activeModel.isAvailable"
           variant="text"
@@ -110,7 +128,9 @@ async function loadModel() {
       </div>
       <p class="is-size-7 mt-2">
         Models are downloaded from Hugging Face once and then kept in this browser, also for
-        offline use. Your session data is processed on this device only.
+        offline use. After reloading the page, a downloaded model is read from the browser
+        storage into memory again; this happens automatically when it is needed and takes a
+        moment. Your session data is processed on this device only.
       </p>
     </div>
 

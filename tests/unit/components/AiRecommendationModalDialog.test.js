@@ -31,6 +31,7 @@ describe('AiRecommendationModalDialog', () => {
     sessionStore = useSessionStore()
     llmStore = useLlmStore()
     modalStore = useModalStore()
+    vi.spyOn(llmStore, 'warmUp').mockResolvedValue()
     wrapper = mount(AiRecommendationModalDialog, {
       global: {
         plugins: [pinia],
@@ -68,6 +69,8 @@ describe('AiRecommendationModalDialog', () => {
     modalStore.isAiRecommendationModalDialogShown = true
     await nextTick()
 
+    // A downloaded browser model is put back into memory while the user fills in the dialog
+    expect(llmStore.warmUp).toHaveBeenCalledOnce()
     expect(wrapper.text()).toContain('Expected number of papers to recommend: 5–15')
     expect(wrapper.find('.range').attributes('data-range')).toBe('1-50')
     sessionStore.aiRecommendationRange = [8, 8]

@@ -58,7 +58,7 @@ describe('BrowserProvider', () => {
   it('loads the model, reports download progress, and streams the answer', async () => {
     respond = (request, reply) => {
       if (request.type === 'load') {
-        reply({ type: 'progress', loadedBytes: 1e9, totalBytes: 2e9 })
+        reply({ type: 'progress', loadedBytes: 1e9, totalBytes: 2e9, isCached: false })
         reply({ type: 'result', value: {} })
       } else {
         reply({ type: 'token', text: 'Hello' })
@@ -89,6 +89,23 @@ describe('BrowserProvider', () => {
       { type: 'text', text: ' there' },
       { type: 'finish', finishReason: 'stop', usage: { inputTokens: 9, outputTokens: 2 } }
     ])
+  })
+
+  it('tells reading a downloaded model apart from downloading it and asks to keep the storage', async () => {
+    const persist = vi.fn(() => Promise.resolve(true))
+    vi.stubGlobal('navigator', { storage: { persist } })
+    respond = (request, reply) => {
+      reply({ type: 'progress', loadedBytes: 1e9, totalBytes: 2e9, isCached: true })
+      reply({ type: 'result', value: {} })
+    }
+    const onProgress = vi.fn()
+
+    await new BrowserProvider('auto', DEVICE, []).prepareModel(MODEL_ID, onProgress)
+
+    expect(onProgress).toHaveBeenCalledWith({ phase: 'load', loadedBytes: 1e9, totalBytes: 2e9 })
+    expect(persist).toHaveBeenCalled()
+    vi.unstubAllGlobals()
+    vi.stubGlobal('Worker', FakeWorker)
   })
 
   it('falls back to the processor when the graphics card fails', async () => {
