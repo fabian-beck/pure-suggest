@@ -1,6 +1,7 @@
 import { useAppState } from '../composables/useAppState.js'
 import { useModalManager } from '../composables/useModalManager.js'
 import { useInterfaceStore } from '../stores/interface.js'
+import { useQueueStore } from '../stores/queue.js'
 import { useSessionStore } from '../stores/session.js'
 
 /**
@@ -62,7 +63,7 @@ function handleGlobalShortcuts(e) {
     }
   } else if (e.key === 'u') {
     e.preventDefault()
-    updateQueued()
+    if (useQueueStore().isUpdatable) updateQueued()
   } else if (e.key === 'f') {
     e.preventDefault()
     // Open filter menu and activate filter (same behavior as clicking button)
@@ -243,6 +244,7 @@ function isIgnoredKeyEvent(e) {
     e.defaultPrevented ||
     e.ctrlKey ||
     e.metaKey ||
+    e.altKey ||
     (e.shiftKey && e.key.length > 1) ||
     (e.repeat && !(e.key === 'ArrowDown' || e.key === 'ArrowUp'))
   )

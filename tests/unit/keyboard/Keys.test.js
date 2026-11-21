@@ -126,14 +126,25 @@ describe('Keys Module - Keyboard Event Handling', () => {
       const shiftEvent = createKeyEvent('F', { shiftKey: true })
       const shiftArrowEvent = createKeyEvent('ArrowLeft', { shiftKey: true })
       const metaEvent = createKeyEvent('f', { metaKey: true })
+      const altArrowEvent = createKeyEvent('ArrowLeft', { altKey: true })
+      const events = [ctrlEvent, shiftEvent, shiftArrowEvent, metaEvent, altArrowEvent]
 
-      ;[ctrlEvent, shiftEvent, shiftArrowEvent, metaEvent].forEach((event) => onKey(event))
+      events.forEach((event) => onKey(event))
 
       expect(interfaceStore.openFilterMenu).not.toHaveBeenCalled()
       expect(interfaceStore.activatePublicationComponent).not.toHaveBeenCalled()
-      ;[ctrlEvent, shiftEvent, shiftArrowEvent, metaEvent].forEach((event) =>
-        expect(event.preventDefault).not.toHaveBeenCalled()
-      )
+      events.forEach((event) => expect(event.preventDefault).not.toHaveBeenCalled())
+    })
+
+    it('should update with u only if publications are queued', () => {
+      sessionStore.selectedPublications = [{ doi: '10.1234/test' }]
+
+      onKey(createKeyEvent('u'))
+      expect(mockUpdateQueued).not.toHaveBeenCalled()
+
+      queueStore.selectedQueue = ['10.1234/queued']
+      onKey(createKeyEvent('u'))
+      expect(mockUpdateQueued).toHaveBeenCalled()
     })
 
     it('should ignore keys already handled elsewhere, e.g., by a dialog that just closed', () => {
