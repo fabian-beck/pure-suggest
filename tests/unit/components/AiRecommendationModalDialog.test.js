@@ -30,8 +30,8 @@ describe('AiRecommendationModalDialog', () => {
     sessionStore.suggestion = {
       totalSuggestions: 2,
       publications: [
-        { doi: '10.1/a', title: 'Paper A', referenceDois: [], citationDois: [] },
-        { doi: '10.1/b', title: 'Paper B', referenceDois: [], citationDois: [] }
+        { doi: '10.1/a', title: 'Paper A', referenceDois: new Set(), citationDois: new Set() },
+        { doi: '10.1/b', title: 'Paper B', referenceDois: new Set(), citationDois: new Set() }
       ]
     }
     wrapper = mount(AiRecommendationModalDialog, {

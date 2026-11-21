@@ -15,8 +15,8 @@ function createPublication(overrides) {
     abstract: 'A publication abstract. '.repeat(30),
     score: 4,
     boostKeywords: [],
-    referenceDois: [],
-    citationDois: [],
+    referenceDois: new Set(),
+    citationDois: new Set(),
     isSurvey: false,
     ...overrides
   }
@@ -44,7 +44,7 @@ describe('AiRecommendationService', () => {
         createPublication({
           doi: '10.2000/a',
           title: 'Suggested Paper A',
-          referenceDois: ['10.1000/seed'],
+          referenceDois: new Set(['10.1000/seed']),
           isSurvey: 'has "survey" in title'
         }),
         createPublication({ doi: '10.2000/b', title: 'Suggested Paper B' })

@@ -86,7 +86,7 @@ function serializePublication(publication, detail) {
 
 function serializeSuggestedPublication(publication, id, seedNumberByDoi, detail) {
   const linkedSeeds = (dois) =>
-    (dois || []).filter((doi) => seedNumberByDoi.has(doi)).map((doi) => seedNumberByDoi.get(doi))
+    [...dois].filter((doi) => seedNumberByDoi.has(doi)).map((doi) => seedNumberByDoi.get(doi))
   return {
     id,
     ...serializePublication(publication, detail),
