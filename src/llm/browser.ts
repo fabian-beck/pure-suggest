@@ -51,11 +51,9 @@ export class BrowserProvider implements LlmProvider {
     this.backend = backendSetting === 'auto' ? detectedBackend : backendSetting
   }
 
-  private dtypes(modelId: string): string[] {
+  private dtypes(): string[] {
     if (this.backend === 'wasm') return ['q4', 'q8', 'int8', 'fp32']
-    const override = BROWSER_MODELS.find((model) => model.id === modelId)?.webGpuDtype
-    const defaults = this.supportsShaderF16 ? ['q4f16', 'q4', 'fp16', 'fp32'] : ['q4', 'fp32']
-    return override ? [override, ...defaults] : defaults
+    return this.supportsShaderF16 ? ['q4f16', 'q4', 'fp16', 'fp32'] : ['q4', 'fp32']
   }
 
   private getWorker(): Worker {
@@ -104,7 +102,7 @@ export class BrowserProvider implements LlmProvider {
         requestId,
         modelId,
         backend: this.backend,
-        dtypes: this.dtypes(modelId),
+        dtypes: this.dtypes(),
         ...payload
       }
       worker.postMessage(request)
@@ -185,7 +183,14 @@ export class BrowserProvider implements LlmProvider {
       if (this.backend === 'webgpu' && this.backendSetting === 'auto' && !isOutOfMemory) {
         this.dispose()
         this.backend = 'wasm'
-        return this.prepareModel(modelId, onProgress, signal)
+        try {
+          return await this.prepareModel(modelId, onProgress, signal)
+        } catch (fallbackError) {
+          if (signal?.aborted) throw fallbackError
+          // The graphics card's error names the actual cause, which might be temporary
+          this.dispose()
+          this.backend = 'webgpu'
+        }
       }
       throw error
     } finally {

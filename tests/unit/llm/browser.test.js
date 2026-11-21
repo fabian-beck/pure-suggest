@@ -52,8 +52,7 @@ describe('BrowserProvider', () => {
       unavailableReason: 'Repository not found'
     })
     expect(requests[0]).toMatchObject({ type: 'inspect', backend: 'webgpu' })
-    expect(requests[0].dtypes[0]).toBe('fp32') // override for the smallest model
-    expect(requests[1].dtypes[0]).toBe('q4f16')
+    expect(requests[0].dtypes[0]).toBe('q4f16')
   })
 
   it('loads the model, reports download progress, and streams the answer', async () => {
@@ -104,6 +103,19 @@ describe('BrowserProvider', () => {
 
     expect(provider.backend).toBe('wasm')
     expect(requests.at(-1)).toMatchObject({ type: 'load', backend: 'wasm', dtypes: ['q4', 'q8', 'int8', 'fp32'] })
+  })
+
+  it('reports the graphics card error and retries it next time when the processor fails too', async () => {
+    respond = (request, reply) =>
+      reply({
+        type: 'error',
+        message: request.backend === 'webgpu' ? 'network error' : 'Could not find an implementation',
+        isOutOfMemory: false
+      })
+    const provider = new BrowserProvider('auto', DEVICE, [])
+
+    await expect(provider.prepareModel(MODEL_ID, () => {})).rejects.toThrow('network error')
+    expect(provider.backend).toBe('webgpu')
   })
 
   it('reports missing memory instead of retrying, and rejects unsupported tool use', async () => {

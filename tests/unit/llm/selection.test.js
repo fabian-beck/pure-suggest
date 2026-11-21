@@ -52,7 +52,7 @@ describe('recommendSetup', () => {
   it('suggests the smallest browser model without GPU acceleration, unless a server runs', () => {
     const withoutGpu = device({ hasWebGpu: false })
 
-    expect(recommendSetup(withoutGpu, [], {}).modelId).toBe('onnx-community/gemma-3-270m-it-ONNX')
+    expect(recommendSetup(withoutGpu, [], {}).modelId).toBe('onnx-community/gemma-4-E2B-it-ONNX')
     expect(recommendSetup(withoutGpu, [ollama([model('gemma4:e4b', 6e9)])], {}).mode).toBe('native')
   })
 
