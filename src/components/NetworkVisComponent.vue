@@ -29,9 +29,11 @@ import {
   createForceSimulation,
   initializeForces,
   calculateYearX,
+  keepLayout,
   pinTimelineX,
   rememberLayout,
   returnToLayout,
+  REVEAL_ALPHA,
   runFrameTicks,
   SIMULATION_ALPHA
 } from '@/utils/network/forces.js'
@@ -85,7 +87,6 @@ import {
 
 const LABEL_OVERSCAN = 100 // px beyond the view, about the width of a label
 const RESIZE_REPLOT_DELAY = 200 // ms after the last change of the panel size
-const REVEAL_ALPHA = 0.3 // Revealed or hidden nodes find their places, the others mostly stay
 
 /**
  * Whether a publication that is not shown by default is revealed: when active, or when
@@ -170,6 +171,9 @@ export default {
     this.viewport = { width: 0, height: 0 } // Size of the panel, measured when plotting and on resize
     this.shownYears = { min: undefined, max: undefined } // Range of the year axis
     this.modeLayouts = {} // Last layouts of the modes, to return to when switching back
+    // Node positions of the layout at rest, kept while publications are revealed; not set
+    // while the simulation finds a new layout
+    this.restPositions = null
     this.isLabelEngineLoaded = false
     // Publications beyond the shown numbers, and the ones of them revealed for the active
     // publication
@@ -228,14 +232,15 @@ export default {
           return
         }
         // Hidden publications are revealed for the active one (or hidden again), which
-        // changes the graph structure; otherwise, activation only changes highlighting,
-        // and a full replot with simulation resume is not needed
+        // changes the graph structure, but only temporarily: the layout at rest is kept,
+        // only nodes around the revealed ones make room; otherwise, activation only changes
+        // highlighting, and a full replot with simulation resume is not needed
         if (
           this.revealedPublications.length ||
           this.hiddenPublications.some(isRevealed)
         ) {
           this.plot()
-          this.restart(REVEAL_ALPHA)
+          this.restart(REVEAL_ALPHA, this.restPositions)
         } else {
           this.updateActiveHighlighting()
         }
@@ -319,7 +324,13 @@ export default {
       // The last tick may not have been drawn, and labels are only placed in the final layout
       .on('end', () => {
         this.simulation.force('return', null)
-        rememberLayout(this.modeLayouts, this.graph, this.viewport, this.isNetworkClusters)
+        const positions = rememberLayout(
+          this.modeLayouts,
+          this.graph,
+          this.viewport,
+          this.isNetworkClusters
+        )
+        this.restPositions ??= positions
         const changedNodes = this.detectChangedNodes()
         this.updateChangedNodePositions(changedNodes)
         this.updateSelectiveLinks(changedNodes)
@@ -816,10 +827,20 @@ export default {
       }
     },
 
-    restart(alpha = SIMULATION_ALPHA) {
+    /**
+     * Restart the simulation, which finds a new layout unless the node positions of the
+     * layout at rest are given to keep it (see keepLayout)
+     */
+    restart(alpha = SIMULATION_ALPHA, restPositions = null) {
       if (this.simulation) {
         this.lastFrameTime = performance.now()
         this.isLayoutMoving = true
+        this.restPositions = restPositions
+        // Removed first, as the force has to follow all other forces
+        this.simulation.force('keep', null)
+        if (restPositions) {
+          this.simulation.force('keep', keepLayout(restPositions))
+        }
         this.simulation.alpha(alpha).restart()
       }
     },
