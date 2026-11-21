@@ -108,10 +108,7 @@ export default {
         try {
           // Decompress and parse the session data
           const decompressed = LZString.decompressFromEncodedURIComponent(sessionParam)
-          if (!decompressed) {
-            console.error('Failed to decompress session data')
-            return
-          }
+          if (!decompressed) throw new Error('Failed to decompress session data')
 
           const sessionData = JSON.parse(decompressed)
 
@@ -125,6 +122,7 @@ export default {
           console.log('Session loaded successfully from URL (URL will be cleaned on first update)')
         } catch (error) {
           console.error('Error loading session from URL:', error)
+          this.interfaceStore.showErrorMessage('Cannot read the session from the link.')
         }
       }
     },

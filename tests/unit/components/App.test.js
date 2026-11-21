@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 
 import App from '@/App.vue'
+import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
 
 // Mock all the child components to isolate the App component
@@ -169,6 +170,25 @@ describe('App - Page Title Management', () => {
     await nextTick()
     
     expect(document.title).toBe(`${sessionName}: ${defaultTitle}`)
+  })
+})
+
+describe('App - Loading a session from the URL', () => {
+  afterEach(() => {
+    window.history.replaceState(null, '', '/')
+  })
+
+  it('shows an error message when the session of the link cannot be read', () => {
+    window.history.replaceState(null, '', '/?session=truncated-or-garbage')
+    const pinia = createPinia()
+    setActivePinia(pinia)
+    const interfaceStore = useInterfaceStore()
+    interfaceStore.showErrorMessage = vi.fn()
+
+    const wrapper = mount(App, { global: { plugins: [pinia], provide: { appMeta: {} } } })
+
+    expect(interfaceStore.showErrorMessage).toHaveBeenCalled()
+    wrapper.unmount()
   })
 })
 
