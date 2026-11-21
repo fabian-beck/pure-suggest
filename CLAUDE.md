@@ -53,6 +53,7 @@ Provider-independent inference for AI features (experimental). The application o
 
 - `useAppState.js`: Core application logic extracted from stores (session management, suggestions, queuing)
 - `useModalManager.js`: Modal dialog management and state coordination
+- `useAiRecommendations.js`: Runs AI recommendations on the suggestions: tagging them, or auto-selecting in steps with suggestions recomputed after each step
 - `useDialogFocusReturn.js`: Returns keyboard focus to where it was when a dialog closes
 
 ## Testing Strategy

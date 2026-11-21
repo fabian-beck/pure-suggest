@@ -103,8 +103,8 @@ const buttonColor = computed(() => {
 })
 
 const hasAiRecommendations = computed(() => {
-  return sessionStore.suggestedPublications.some((publication) =>
-    Boolean(publication[AI_RECOMMENDED_TAG])
+  return [...sessionStore.selectedPublications, ...sessionStore.suggestedPublications].some(
+    (publication) => Boolean(publication[AI_RECOMMENDED_TAG])
   )
 })
 

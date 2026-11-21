@@ -151,6 +151,10 @@ export const useInterfaceStore = defineStore('interface', {
       }
     },
 
+    showInfoMessage(message) {
+      this.errorToast = { isShown: true, message, type: 'info' }
+    },
+
     activatePublicationComponent(publicationComponent, navigationDirection = null) {
       // Store navigation direction for scrolling behavior
       this.lastNavigationDirection = navigationDirection;

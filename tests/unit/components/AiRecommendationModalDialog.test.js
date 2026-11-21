@@ -1,18 +1,23 @@
-import { flushPromises, mount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { nextTick } from 'vue'
 
 import AiRecommendationModalDialog from '@/components/modal/AiRecommendationModalDialog.vue'
-import { useInterfaceStore } from '@/stores/interface.js'
 import { useLlmStore } from '@/stores/llm.js'
 import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
+
+const requestAiRecommendations = vi.hoisted(() => vi.fn())
+
+vi.mock('@/composables/useAiRecommendations.js', () => ({
+  useAiRecommendations: () => ({ requestAiRecommendations })
+}))
 
 describe('AiRecommendationModalDialog', () => {
   let sessionStore
   let llmStore
   let modalStore
-  let interfaceStore
   let wrapper
 
   const findButton = (text) =>
@@ -20,26 +25,28 @@ describe('AiRecommendationModalDialog', () => {
 
   beforeEach(() => {
     localStorage.clear()
+    requestAiRecommendations.mockReset()
     const pinia = createPinia()
     setActivePinia(pinia)
     sessionStore = useSessionStore()
     llmStore = useLlmStore()
     modalStore = useModalStore()
-    interfaceStore = useInterfaceStore()
-    vi.spyOn(llmStore, 'refreshModels').mockResolvedValue()
-    sessionStore.suggestion = {
-      totalSuggestions: 2,
-      publications: [
-        { doi: '10.1/a', title: 'Paper A', referenceDois: [], citationDois: [] },
-        { doi: '10.1/b', title: 'Paper B', referenceDois: [], citationDois: [] }
-      ]
-    }
     wrapper = mount(AiRecommendationModalDialog, {
       global: {
         plugins: [pinia],
         stubs: {
           ModalDialog: { template: '<div><slot></slot></div>' },
-          LlmEngineChip: true
+          LlmEngineChip: true,
+          'v-range-slider': {
+            props: ['modelValue', 'min', 'max'],
+            template: '<div class="range" :data-range="`${min}-${max}`">{{ modelValue }}</div>'
+          },
+          'v-text-field': {
+            props: ['modelValue'],
+            emits: ['update:modelValue'],
+            template:
+              '<input class="comment" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />'
+          }
         }
       }
     })
@@ -52,66 +59,36 @@ describe('AiRecommendationModalDialog', () => {
     await findButton('Choose model').trigger('click')
 
     expect(modalStore.isLlmSettingsModalDialogShown).toBe(true)
+    expect(requestAiRecommendations).not.toHaveBeenCalled()
   })
 
-  it('asks the chosen model and tags the recommended suggestions', async () => {
+  it('offers an expected range of papers and starts the recommendations', async () => {
     llmStore.settings.mode = 'browser'
     llmStore.modelId = 'onnx-community/gemma-4-E2B-it-ONNX'
-    sessionStore.aiRecommendationComment = 'Prefer surveys'
     modalStore.isAiRecommendationModalDialogShown = true
-    vi.spyOn(llmStore, 'generate').mockResolvedValue({
-      text: '{"recommendations":[{"id":2,"explanation":"It is a survey."}]}'
-    })
-    await flushPromises()
+    await nextTick()
+
+    expect(wrapper.text()).toContain('Expected number of papers to recommend: 5–15')
+    expect(wrapper.find('.range').attributes('data-range')).toBe('1-50')
+    sessionStore.aiRecommendationRange = [8, 8]
+    await wrapper.find('.comment').setValue(' Prefer surveys ')
+    expect(wrapper.text()).toContain('Expected number of papers to recommend: 8')
 
     await findButton('Recommend').trigger('click')
-    await flushPromises()
 
-    const [request] = llmStore.generate.mock.calls[0]
-    expect(JSON.parse(request.messages[1].content).userSteeringComment).toBe('Prefer surveys')
-    expect(request.signal).toBeInstanceOf(AbortSignal)
+    expect(sessionStore.aiRecommendationComment).toBe('Prefer surveys')
     expect(modalStore.isAiRecommendationModalDialogShown).toBe(false)
-    expect(sessionStore.suggestion.publications.map((publication) => publication.isAiRecommended)).toEqual([
-      false,
-      'It is a survey.'
-    ])
-    expect(sessionStore.filter.tags).toContain('isAiRecommended')
-    expect(interfaceStore.isLoading).toBe(false)
+    expect(requestAiRecommendations).toHaveBeenCalledOnce()
   })
 
-  it('lets the user cancel a running request without an error message', async () => {
+  it('explains auto-select and names the action accordingly', async () => {
     llmStore.settings.mode = 'browser'
     llmStore.modelId = 'onnx-community/gemma-4-E2B-it-ONNX'
-    vi.spyOn(llmStore, 'generate').mockImplementation(
-      ({ signal }) =>
-        new Promise((resolve, reject) => {
-          signal.addEventListener('abort', () =>
-            reject(Object.assign(new Error('cancelled'), { code: 'aborted' }))
-          )
-        })
-    )
-    await flushPromises()
+    sessionStore.isAiAutoSelect = true
+    await nextTick()
 
-    await findButton('Recommend').trigger('click')
-    expect(interfaceStore.isLoadingCancelable).toBe(true)
-    interfaceStore.cancelLoading()
-    await flushPromises()
-
-    expect(interfaceStore.isLoading).toBe(false)
-    expect(interfaceStore.errorToast.isShown).toBeFalsy()
-    expect(sessionStore.filter.tags).not.toContain('isAiRecommended')
-  })
-
-  it('shows failures of the model as error message', async () => {
-    llmStore.settings.mode = 'browser'
-    llmStore.modelId = 'onnx-community/gemma-4-E2B-it-ONNX'
-    vi.spyOn(llmStore, 'generate').mockResolvedValue({ text: 'I cannot answer that.' })
-    vi.spyOn(console, 'error').mockImplementation(() => {})
-    await flushPromises()
-
-    await findButton('Recommend').trigger('click')
-    await flushPromises()
-
-    expect(interfaceStore.errorToast.message).toContain('valid JSON')
+    expect(wrapper.text()).toContain('Expected number of papers to select: 5–15')
+    expect(wrapper.text()).toContain('after each step, the suggestions are recomputed')
+    expect(findButton('Auto-select')).toBeDefined()
   })
 })

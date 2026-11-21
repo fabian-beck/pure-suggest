@@ -4,7 +4,6 @@ import { LlmError } from '@/llm/types.ts'
 const TEXT_MAX_LENGTH = 320
 const EXPLANATION_MAX_LENGTH = 180
 const STEERING_COMMENT_MAX_LENGTH = 700
-const MAX_RECOMMENDATION_MULTIPLIER = 2
 const MIN_ANSWER_TOKENS = 1024
 const ANSWER_TOKENS_PER_RECOMMENDATION = 100
 
@@ -26,7 +25,7 @@ const TAG_FIELDS = [
 
 const INSTRUCTIONS = [
   'You are an expert research assistant for citation-based literature discovery.',
-  'The recommendation count is flexible: use the reference count as a starting point, return fewer if the candidates are weak or off-topic, and return more if many candidates strongly fit the seed papers, keywords, or steering comment.',
+  'The requested number of recommendations is an expectation, not a quota: return fewer, including none, if the candidates are weak or off-topic, but never more than the stated maximum.',
   'Follow this priority order: (1) the user steering comment when present, (2) fit to the selected seed papers and user keywords, (3) citation/link evidence, tags, scores, venues, years, and abstracts.',
   'When userSteeringComment is non-empty, treat it as the primary user intent: first identify candidates that satisfy it, then rank those candidates by the other evidence. Do not select a paper that conflicts with the steering comment unless too few supported candidates fit it.',
   'Without a steering comment, prefer papers that are central to the topic, connect multiple seed papers, match the user keywords, or provide strong survey/bridge value.',
@@ -86,7 +85,7 @@ function serializePublication(publication, detail) {
 
 function serializeSuggestedPublication(publication, id, seedNumberByDoi, detail) {
   const linkedSeeds = (dois) =>
-    (dois || []).filter((doi) => seedNumberByDoi.has(doi)).map((doi) => seedNumberByDoi.get(doi))
+    [...dois].filter((doi) => seedNumberByDoi.has(doi)).map((doi) => seedNumberByDoi.get(doi))
   return {
     id,
     ...serializePublication(publication, detail),
@@ -100,19 +99,21 @@ function serializeSuggestedPublication(publication, id, seedNumberByDoi, detail)
  * Builds the chat request asking a model to pick the most useful suggested publications.
  * Publications are described as detailed as the context window (in tokens) allows; if even
  * the sparsest description does not fit, only the top-ranked suggestions are considered.
+ * @param {Object} sessionData - Selected and suggested publications, keywords, steering comment
+ * @param {number} minCount - Number of recommendations expected at least
+ * @param {number} maxCount - Number of recommendations allowed at most
+ * @param {number} contextWindow - Tokens available for prompt and answer
  * @returns {{messages: Array, jsonSchema: Object, maxOutputTokens: number, candidates: Array}}
  *   the request parts and the suggested publications the model gets to see (`candidates`,
  *   referred to in the answer by their 1-based position).
  */
 export function buildRecommendationRequest(
   { selectedPublications, suggestedPublications, boostKeywordString, keywords, steeringComment = '' },
+  minCount,
+  maxCount,
   contextWindow
 ) {
-  const referenceCount = Math.max(1, Math.round(suggestedPublications.length * 0.1))
-  const maxCount = Math.min(
-    suggestedPublications.length,
-    Math.max(referenceCount + 2, Math.ceil(referenceCount * MAX_RECOMMENDATION_MULTIPLIER))
-  )
+  const expectedCount = minCount === maxCount ? `${maxCount}` : `${minCount} to ${maxCount}`
   const maxOutputTokens = Math.max(MIN_ANSWER_TOKENS, maxCount * ANSWER_TOKENS_PER_RECOMMENDATION)
   const seedNumberByDoi = new Map(
     selectedPublications.map((publication, index) => [publication.doi, index + 1])
@@ -123,7 +124,7 @@ export function buildRecommendationRequest(
   for (const detail of DETAIL_LEVELS) {
     context = {
       task: 'Select the suggested papers that are most useful for continuing this literature search.',
-      selectionTarget: `Use ${referenceCount} paper${referenceCount === 1 ? '' : 's'} as a reference count, not a quota. Return fewer, including zero, when few candidates fit well; return more, up to ${maxCount}, when many candidates are clearly useful.`,
+      selectionTarget: `Recommend ${expectedCount} paper${maxCount === 1 ? '' : 's'}. Return fewer, including none, when fewer candidates fit well; never return more than ${maxCount}.`,
       priorityPolicy:
         'If userSteeringComment is present, satisfying it is the primary ranking criterion. Use the general relevance signals only to evaluate evidence and break ties between papers that fit the steering comment.',
       userKeywords: keywords.filter(Boolean),
@@ -178,10 +179,10 @@ function normalizeExplanation(explanation) {
 }
 
 /**
- * Turns a model answer into recommendations ({doi, explanation}), dropping duplicates and
- * references to publications that were not among the candidates.
+ * Turns a model answer into at most `maxCount` recommendations ({doi, explanation}), dropping
+ * duplicates and references to publications that were not among the candidates.
  */
-export function parseRecommendations(answerText, candidates) {
+export function parseRecommendations(answerText, candidates, maxCount) {
   const seenDois = new Set()
   const recommendations = []
   for (const recommendation of parseJsonAnswer(answerText).recommendations || []) {
@@ -190,5 +191,5 @@ export function parseRecommendations(answerText, candidates) {
     seenDois.add(doi)
     recommendations.push({ doi, explanation: normalizeExplanation(recommendation.explanation) })
   }
-  return recommendations
+  return recommendations.slice(0, maxCount)
 }

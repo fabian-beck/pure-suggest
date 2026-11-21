@@ -226,6 +226,19 @@ describe('useAppState - Session Loading', () => {
     })
   })
 
+  describe('addPublicationsAndUpdate', () => {
+    it('ends loading unless a caller continues it', async () => {
+      sessionStore.updatePublicationScores = vi.fn()
+
+      await appState.addPublicationsAndUpdate(['10.1234/a'], true)
+      expect(interfaceStore.startLoading).toHaveBeenCalledOnce()
+      expect(interfaceStore.endLoading).not.toHaveBeenCalled()
+
+      await appState.addPublicationsAndUpdate(['10.1234/b'])
+      expect(interfaceStore.endLoading).toHaveBeenCalledOnce()
+    })
+  })
+
   describe('importSessionWithConfirmation', () => {
     it('should be exposed by useAppState', () => {
       expect(appState.importSessionWithConfirmation).toBeDefined()

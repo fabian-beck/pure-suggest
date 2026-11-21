@@ -73,8 +73,14 @@ export function useAppState() {
 
   /**
    * Updates suggestions based on selected publications
+   * @param {number} [maxSuggestions] - Number of suggestions to load
+   * @param {boolean} [keepsLoading] - Leaves the loading state on for a caller that continues
+   *   loading (and ends it itself)
    */
-  const updateSuggestions = async (maxSuggestions = sessionStore.maxSuggestions) => {
+  const updateSuggestions = async (
+    maxSuggestions = sessionStore.maxSuggestions,
+    keepsLoading = false
+  ) => {
     sessionStore.maxSuggestions = maxSuggestions
     interfaceStore.startLoading()
     let publicationsLoaded = 0
@@ -89,7 +95,7 @@ export function useAppState() {
 
     await computeSuggestions()
 
-    interfaceStore.endLoading()
+    if (!keepsLoading) interfaceStore.endLoading()
 
     // Log end-to-end workflow timing if we're tracking one
     if (sessionStore._isTrackingWorkflow && sessionStore._workflowStartTime) {
@@ -357,7 +363,7 @@ export function useAppState() {
   /**
    * Adds publications and updates suggestions
    */
-  const addPublicationsAndUpdate = async (dois) => {
+  const addPublicationsAndUpdate = async (dois, keepsLoading = false) => {
     const startTime = performance.now()
     console.log(`[PERF] Starting manual publication add workflow for ${dois.length} publications`)
 
@@ -373,7 +379,7 @@ export function useAppState() {
     // Mark the newly added publications (only if session wasn't empty before)
     sessionStore.markPublicationsAsNewlyAdded(dois, wasSessionEmpty)
 
-    await updateSuggestions()
+    await updateSuggestions(sessionStore.maxSuggestions, keepsLoading)
   }
 
   /**

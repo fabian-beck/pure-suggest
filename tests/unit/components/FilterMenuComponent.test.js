@@ -283,6 +283,13 @@ describe('FilterMenuComponent', () => {
         'research',
         'review'
       ])
+
+      // Publications selected on a recommendation count as well
+      wrapper = createWrapper({
+        selectedPublications: [{ doi: '10.1234/auto', isAiRecommended: 'Selected by AI.' }]
+      })
+
+      expect(wrapper.vm.visibleTags.map((tag) => tag.value)).toContain('isAiRecommended')
     })
   })
 })

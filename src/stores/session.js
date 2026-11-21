@@ -30,7 +30,11 @@ export const useSessionStore = defineStore('session', {
       addQuery: '',
       sessionName: '',
       sessionId: '',
-      aiRecommendationComment: ''
+      aiRecommendationComment: '',
+      // Expected number of papers to recommend (minimum, maximum)
+      aiRecommendationRange: [5, 15],
+      // Whether recommended papers are added to the selection right away
+      isAiAutoSelect: false
     }
   },
   getters: {
@@ -142,6 +146,8 @@ export const useSessionStore = defineStore('session', {
       this.sessionName = ''
       this.sessionId = ''
       this.aiRecommendationComment = ''
+      this.aiRecommendationRange = [5, 15]
+      this.isAiAutoSelect = false
       // Note: newly added flags are automatically cleared when selectedPublications is reset
     },
 
@@ -242,7 +248,21 @@ export const useSessionStore = defineStore('session', {
       this.suggestedPublications.forEach((publication) => {
         publication[AI_RECOMMENDED_TAG] = false
       })
-      this.filter.removeTag(AI_RECOMMENDED_TAG)
+      // Publications selected on a recommendation keep their tag, and so the filter its target
+      if (!this.selectedPublications.some((publication) => publication[AI_RECOMMENDED_TAG])) {
+        this.filter.removeTag(AI_RECOMMENDED_TAG)
+      }
+    },
+
+    /** Tags selected publications as added on an AI recommendation and brings them to the top. */
+    tagAiSelectedPublications(recommendations) {
+      recommendations.forEach(({ doi, explanation }) => {
+        const publication = this.getSelectedPublicationByDoi(doi)
+        if (publication) publication[AI_RECOMMENDED_TAG] = explanation || 'Selected automatically.'
+      })
+      this.filter.addTag(AI_RECOMMENDED_TAG)
+      this.filter.isActive = true
+      this.filter.applyToSelected = true
     },
 
     applyAiRecommendations(recommendations) {

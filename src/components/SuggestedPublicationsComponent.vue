@@ -117,7 +117,7 @@ class="level-item"
             class="ml-2"
             :disabled="sessionStore.suggestedPublicationsFiltered.length === 0"
             @click="modalStore.isAiRecommendationModalDialogShown = true"
-            v-tippy="'AI recommendations - Let an AI model highlight the most useful suggested publications.'"
+            v-tippy="'AI recommendations - Let an AI model highlight or auto-select the most useful suggested publications.'"
           ></CompactButton>
           <v-menu :close-on-content-click="false" v-model="isSettingsMenuOpen" @update:model-value="onMenuToggle">
             <template #activator="{ props }">

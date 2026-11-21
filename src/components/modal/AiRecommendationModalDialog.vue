@@ -1,24 +1,26 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
+import { useAiRecommendations } from '@/composables/useAiRecommendations.js'
 import { useModalManager } from '@/composables/useModalManager.js'
-import { formatBytes } from '@/lib/Util.js'
-import {
-  buildRecommendationRequest,
-  parseRecommendations
-} from '@/services/AiRecommendationService.js'
-import { useInterfaceStore } from '@/stores/interface.js'
 import { useLlmStore } from '@/stores/llm.js'
 import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
 
+const MAX_EXPECTED_PAPERS = 50
+
 const sessionStore = useSessionStore()
-const interfaceStore = useInterfaceStore()
 const modalStore = useModalStore()
 const llmStore = useLlmStore()
 const { openLlmSettingsModal } = useModalManager()
+const { requestAiRecommendations } = useAiRecommendations()
 
 const steeringComment = ref('')
+
+const expectedPapers = computed(() => {
+  const [minCount, maxCount] = sessionStore.aiRecommendationRange
+  return minCount === maxCount ? `${maxCount}` : `${minCount}–${maxCount}`
+})
 
 watch(
   () => modalStore.isAiRecommendationModalDialogShown,
@@ -27,57 +29,11 @@ watch(
   }
 )
 
-function describeStatus(status) {
-  const engine = `${llmStore.activeModel.name} (${llmStore.location === 'remote' ? 'cloud' : 'on this device'})`
-  if (status.phase === 'download' && status.totalBytes) {
-    return `Downloading ${llmStore.activeModel.name}: ${formatBytes(status.loadedBytes)} of ${formatBytes(status.totalBytes)}...`
-  }
-  if (status.phase === 'generate') return `${engine} is writing recommendations...`
-  return `Loading ${llmStore.activeModel.name}...`
-}
-
-async function requestRecommendations() {
+function start() {
   if (llmStore.setupIssue) return
   sessionStore.aiRecommendationComment = steeringComment.value.trim()
   modalStore.isAiRecommendationModalDialogShown = false
-
-  interfaceStore.startLoading()
-  interfaceStore.setLoadingCancelable(true)
-  interfaceStore.loadingMessage = `Asking ${llmStore.activeModel.name} for recommendations...`
-  const controller = new AbortController()
-  interfaceStore.loadingCancelToken.promise.then(() => controller.abort())
-
-  try {
-    // The context window of the model determines how much of the session fits the request
-    if (!llmStore.models.length) await llmStore.refreshModels()
-    const suggestedPublications = sessionStore.suggestedPublicationsFiltered
-    const { candidates, ...request } = buildRecommendationRequest(
-      {
-        selectedPublications: sessionStore.selectedPublications,
-        suggestedPublications,
-        boostKeywordString: sessionStore.boostKeywordString,
-        keywords: sessionStore.uniqueBoostKeywords,
-        steeringComment: sessionStore.aiRecommendationComment
-      },
-      llmStore.usableContextWindow
-    )
-    const result = await llmStore.generate({ ...request, signal: controller.signal }, (status) => {
-      interfaceStore.loadingMessage = describeStatus(status)
-    })
-    sessionStore.applyAiRecommendations(parseRecommendations(result.text, candidates))
-    if (candidates.length < suggestedPublications.length) {
-      interfaceStore.showErrorMessage(
-        `Only the top ${candidates.length} of ${suggestedPublications.length} suggestions fit the context window of the model and were considered.`
-      )
-    }
-  } catch (error) {
-    if (error.code !== 'aborted') {
-      console.error('Error requesting AI recommendations:', error)
-      interfaceStore.showErrorMessage(error.message || 'Failed to get AI recommendations.')
-    }
-  } finally {
-    interfaceStore.endLoading()
-  }
+  requestAiRecommendations()
 }
 </script>
 
@@ -89,11 +45,17 @@ async function requestRecommendations() {
     header-color="info"
   >
     <div class="content">
-      <p>
+      <p v-if="sessionStore.isAiAutoSelect">
+        An AI model reads the currently suggested publications together with your selected
+        publications and keywords, and adds the most useful ones to your selection. It proceeds
+        in steps: after each step, the suggestions are recomputed from the extended selection,
+        so that later picks build on earlier ones.
+      </p>
+      <p v-else>
         An AI model reads the
         <b>{{ sessionStore.suggestedPublicationsFiltered.length }}</b> currently suggested
-        publications together with your selected publications and keywords, and tags about 10%
-        of the suggestions as particularly useful.
+        publications together with your selected publications and keywords, and tags the most
+        useful suggestions.
       </p>
 
       <div class="d-flex flex-wrap align-center ga-2 mb-2">
@@ -112,6 +74,31 @@ async function requestRecommendations() {
         {{ llmStore.setupIssue }}
       </p>
 
+      <div class="mt-4" id="ai-expected-papers">
+        Expected number of papers to {{ sessionStore.isAiAutoSelect ? 'select' : 'recommend' }}:
+        <b>{{ expectedPapers }}</b>
+      </div>
+      <v-range-slider
+        v-model="sessionStore.aiRecommendationRange"
+        :min="1"
+        :max="MAX_EXPECTED_PAPERS"
+        :step="1"
+        density="compact"
+        hide-details
+        aria-labelledby="ai-expected-papers"
+      />
+      <p class="is-size-7">
+        The model may return fewer papers if few suggestions fit, but never more.
+      </p>
+
+      <v-checkbox
+        v-model="sessionStore.isAiAutoSelect"
+        density="compact"
+        hide-details
+        class="mt-2"
+        label="Auto-select: add the recommended papers to the selection"
+      />
+
       <v-text-field
         v-model="steeringComment"
         label="Optional: what the recommendations should focus on"
@@ -119,7 +106,7 @@ async function requestRecommendations() {
         density="compact"
         hide-details
         class="mt-4 mb-4"
-        @keydown.enter="requestRecommendations"
+        @keydown.enter="start"
       />
 
       <div class="d-flex justify-end">
@@ -128,9 +115,9 @@ async function requestRecommendations() {
           :class="{ 'dialog-initial-focus': !llmStore.setupIssue }"
           prepend-icon="mdi-robot-outline"
           :disabled="Boolean(llmStore.setupIssue)"
-          @click="requestRecommendations"
+          @click="start"
         >
-          Recommend
+          {{ sessionStore.isAiAutoSelect ? 'Auto-select' : 'Recommend' }}
         </v-btn>
       </div>
     </div>
