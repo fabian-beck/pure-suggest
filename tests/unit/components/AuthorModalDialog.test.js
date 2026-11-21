@@ -39,7 +39,8 @@ describe('AuthorModalDialog', () => {
                 <slot name="header-menu"></slot>
                 <slot></slot>
               </div>
-            `
+            `,
+            methods: { focusInitialElement() {} }
           },
           CompactButton: {
             template: '<button><slot></slot></button>'
