@@ -341,6 +341,9 @@ export function useAppState() {
     }
     await updateSuggestions()
     queueStore.clear()
+    document
+      .querySelectorAll('#selected .publication-list, #suggested .publication-list')
+      .forEach((list) => (list.scrollTop = 0))
   }
 
   /**

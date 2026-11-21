@@ -303,4 +303,17 @@ describe('useAppState - Session Loading', () => {
       sessionStore.clear()
     })
   })
+
+  describe('updateQueued', () => {
+    it('should scroll the publication lists to the top', async () => {
+      document.body.innerHTML = `<div id="selected"><ul class="publication-list"></ul></div>
+        <div id="suggested"><ul class="publication-list"></ul></div>`
+      const lists = [...document.querySelectorAll('.publication-list')]
+      lists.forEach((list) => (list.scrollTop = 100))
+
+      await appState.updateQueued()
+
+      expect(lists.map((list) => list.scrollTop)).toEqual([0, 0])
+    })
+  })
 })
