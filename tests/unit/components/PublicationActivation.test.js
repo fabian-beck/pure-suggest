@@ -40,7 +40,6 @@ describe('Publication Activation', () => {
     sessionStore.queueForSelected = vi.fn()
     sessionStore.queueForExcluded = vi.fn()
     sessionStore.retryLoadingPublication = vi.fn()
-    sessionStore.hoverPublication = vi.fn()
 
     const mockPublication = {
       doi: 'test-publication-doi',
