@@ -31,7 +31,6 @@ export default {
   data() {
     return {
       hasLoadedFromUrl: false, // Track if we loaded session from URL
-      originalUrlWithSession: null, // Store the original URL with session parameter
       isInitialLoadComplete: false // Track if initial load is complete
     }
   },
@@ -112,8 +111,6 @@ export default {
 
           const sessionData = JSON.parse(decompressed)
 
-          // Store the original URL and set tracking flag
-          this.originalUrlWithSession = window.location.href
           this.hasLoadedFromUrl = true
 
           // Use the loadSession method from useAppState which properly fetches metadata
@@ -133,7 +130,6 @@ export default {
         window.history.replaceState({}, document.title, newUrl)
         console.log('URL cleaned after first session update')
         this.hasLoadedFromUrl = false
-        this.originalUrlWithSession = null
       }
     }
   },
@@ -279,9 +275,6 @@ export default {
 <!---------------------------------------------------------------------------------->
 
 <style lang="scss">
-$block-spacing: 0.5rem;
-$box-padding: 1rem;
-
 /* Chrome scrollbar fix #566 - hide scrollbars at document level */
 html,
 body {
@@ -403,21 +396,6 @@ body {
 
 .unknown {
   color: var(--bulma-danger);
-}
-
-.dialog .modal-card {
-  max-width: 720px;
-}
-
-.modal {
-  & .card {
-    position: relative;
-  }
-
-  & .card-content {
-    max-height: calc(100vh - 100px);
-    overflow-y: auto;
-  }
 }
 
 .main-overlay {
@@ -545,21 +523,6 @@ body {
   // placed outside the #app scope to apply to tooltips also
   .key {
     text-decoration: none;
-  }
-
-  .modal {
-    & .modal-content {
-      max-height: 100%;
-    }
-
-    & .card-content {
-      max-height: calc(100vh - 140px);
-    }
-  }
-
-  .modal-close {
-    right: 5px;
-    top: 5px;
   }
 }
 </style>

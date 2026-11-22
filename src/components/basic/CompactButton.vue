@@ -10,10 +10,6 @@ export default {
       type: String,
       default: ''
     },
-    click: {
-      type: Function,
-      default: null
-    },
     disabled: Boolean,
     href: {
       type: String,
@@ -23,7 +19,6 @@ export default {
   },
   methods: {
     openLink() {
-      this.click?.()
       if (this.href) window.open(this.href, '_blank')
     }
   }

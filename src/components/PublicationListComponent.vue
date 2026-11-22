@@ -22,7 +22,7 @@ const props = defineProps({
     validator: (value) => ['selected', 'suggested', 'general'].includes(value)
   }
 })
-const emit = defineEmits(['activate'])
+defineEmits(['activate'])
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
 
@@ -92,8 +92,6 @@ const publicationsWithHeaders = computed(() => {
   return result
 })
 
-// Reactive data
-const onNextActivatedScroll = ref(true)
 const lastScrollTime = ref(0)
 const userIsScrolling = ref(false)
 
@@ -104,8 +102,7 @@ watch(
     if (!oldPublications || newPublications.length !== oldPublications.length) {
       nextTick(scrollToActivated)
     }
-  },
-  { deep: false }
+  }
 )
 
 // Detect user scroll
@@ -126,75 +123,26 @@ onBeforeUnmount(() => {
   window.removeEventListener('scroll', onUserScroll)
 })
 
-function activatePublication(publication, publicationElement, e) {
-  emit('activate', publication, publicationElement, e)
-  onNextActivatedScroll.value = true
-}
-
-// DOM event handling - find closest publication element
-function findPublicationElement(target) {
-  let element = target
-  while (element && !element.classList.contains('publication-component')) {
-    element = element.parentElement
-  }
-  return element
-}
-
-function handleDelegatedClick(event) {
-  const publicationElement = findPublicationElement(event.target)
-  if (publicationElement) {
-    const publicationComponent = publicationElement
-    publicationComponent.click()
-  }
-}
-
-function handleDelegatedMouseEnter(event) {
-  const publicationElement = findPublicationElement(event.target)
-  if (publicationElement) {
-    const doi = publicationElement.id
-    const publication = props.publications.find((p) => p.doi === doi)
-    if (publication) {
-      sessionStore.hoverPublication(publication, true)
-    }
-  }
-}
-
-function handleDelegatedMouseLeave(event) {
-  const publicationElement = findPublicationElement(event.target)
-  if (publicationElement) {
-    const doi = publicationElement.id
-    const publication = props.publications.find((p) => p.doi === doi)
-    if (publication) {
-      sessionStore.hoverPublication(publication, false)
-    }
-  }
-}
-
 function scrollToActivated() {
   const timeSinceLastScroll = Date.now() - lastScrollTime.value
   if (userIsScrolling.value || timeSinceLastScroll < 1000) {
-    onNextActivatedScroll.value = true
     return
   }
 
-  if (onNextActivatedScroll.value) {
-    setTimeout(() => {
-      const publicationComponent = document.getElementsByClassName('is-active')[0]
-      if (publicationComponent) {
-        if (window.innerWidth <= 1023) {
-          scrollToTargetAdjusted(publicationComponent, 65)
-        } else {
-          publicationComponent.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-            inline: 'nearest'
-          })
-        }
+  setTimeout(() => {
+    const publicationComponent = document.getElementsByClassName('is-active')[0]
+    if (publicationComponent) {
+      if (window.innerWidth <= 1023) {
+        scrollToTargetAdjusted(publicationComponent, 65)
+      } else {
+        publicationComponent.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+          inline: 'nearest'
+        })
       }
-    }, 150) // Increased delay to account for expansion
-  } else {
-    onNextActivatedScroll.value = true
-  }
+    }
+  }, 150) // Delay to account for expansion
 }
 </script>
 
@@ -202,9 +150,6 @@ function scrollToActivated() {
   <ul
     class="publication-list has-background-white"
     :class="{ 'empty-list': publications.length === 0 }"
-    @click="handleDelegatedClick"
-    @mouseenter="handleDelegatedMouseEnter"
-    @mouseleave="handleDelegatedMouseLeave"
   >
     <template v-for="item in publicationsWithHeaders" :key="item.key">
       <li v-if="item.type === 'header'" class="section-header">
@@ -219,7 +164,7 @@ function scrollToActivated() {
         :publication="item.publication"
         :publication-type="publicationType"
         :is-mobile="interfaceStore.isMobile"
-        @activate="activatePublication"
+        @activate="$emit('activate', $event)"
       />
     </template>
   </ul>

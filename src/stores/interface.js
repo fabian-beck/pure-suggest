@@ -49,9 +49,7 @@ export const useInterfaceStore = defineStore('interface', {
       isLoadingCancelable: false,
       errorToast: {
         message: '',
-        isShown: false,
-        type: '',
-        duration: 0
+        isShown: false
       },
       isNetworkExpanded: false,
       isNetworkCollapsed: false,
@@ -157,7 +155,7 @@ export const useInterfaceStore = defineStore('interface', {
       if (publicationComponent && typeof publicationComponent.focus === 'function') {
         publicationComponent.focus();
 
-        // Radical solution: ALWAYS center during keyboard navigation
+        // Always center during keyboard navigation
         if (navigationDirection) {
           this.centerPublication(publicationComponent);
         }
@@ -165,7 +163,6 @@ export const useInterfaceStore = defineStore('interface', {
     },
 
     centerPublication(publicationComponent) {
-      // Radical approach: Always center the publication, no conditions
       // Wait briefly for focus/activation to complete, then center
       setTimeout(() => {
         publicationComponent.scrollIntoView({

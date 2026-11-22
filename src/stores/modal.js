@@ -40,6 +40,5 @@ export const useModalStore = defineStore('modal', {
         this.isConceptConfigModalDialogShown
       )
     }
-  },
-  actions: {}
+  }
 })

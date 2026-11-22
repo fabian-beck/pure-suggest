@@ -5,13 +5,6 @@ import { useAppState } from "@/composables/useAppState.js"
 import { useInterfaceStore } from "@/stores/interface.js"
 import { useSessionStore } from "@/stores/session.js"
 
-defineProps({
-  title: {
-    type: String,
-    default: ''
-  }
-})
-
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
 const { updateSuggestions } = useAppState()

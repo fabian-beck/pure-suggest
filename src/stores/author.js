@@ -19,10 +19,6 @@ export const useAuthorStore = defineStore('author', {
         state.selectedPublicationsAuthors.find((author) => author.id === state.activeAuthorId) ||
         null
       )
-    },
-
-    isAuthorActive: (state) => (authorId) => {
-      return state.activeAuthorId === authorId
     }
   },
 

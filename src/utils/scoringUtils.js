@@ -53,13 +53,6 @@ export function parseUniqueBoostKeywords(boostKeywordString) {
 }
 
 /**
- * Finds all keyword matches in a title string with word boundary matching for short keywords
- * Each keyword (including alternatives) is matched only once - the first occurrence found
- * @param {string} title - The title text to search in
- * @param {string[]} boostKeywords - Keywords to search for
- * @returns {Array} Array of match objects with keyword, position, and length
- */
-/**
  * Check if a new match would overlap with existing matches and add it if no overlap
  */
 function tryAddMatch(matches, boostKeyword, alternativeKeyword, position) {
@@ -84,6 +77,13 @@ function tryAddMatch(matches, boostKeyword, alternativeKeyword, position) {
   return false
 }
 
+/**
+ * Finds all keyword matches in a title string with word boundary matching for short keywords
+ * Each keyword (including alternatives) is matched only once - the first occurrence found
+ * @param {string} title - The title text to search in
+ * @param {string[]} boostKeywords - Keywords to search for
+ * @returns {Array} Array of match objects with keyword, position, and length
+ */
 export function findKeywordMatches(title, boostKeywords) {
   const matches = []
   const upperTitle = title.toUpperCase()
@@ -156,12 +156,6 @@ export function findAllKeywordMatches(text, boostKeywords) {
 
   return matches.sort((a, b) => a.position - b.position)
 }
-
-/**
- * Escapes special regex characters in a string
- * @param {string} string - String to escape
- * @returns {string} Escaped string safe for use in regex
- */
 
 /**
  * Generates highlighted title with matched keywords underlined

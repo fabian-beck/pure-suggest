@@ -159,7 +159,7 @@ export default class Publication {
     // Boolean flags (tags and interface state)
     this.isSurvey = this.isHighlyCited = this.isNew = this.isUnnoted = false
     this.isActive = this.isLinkedToActive = this.isSelected = this.isRead = false
-    this.isHovered = this.isKeywordHovered = this.isAuthorHovered = this.wasFetched = false
+    this.isKeywordHovered = this.isAuthorHovered = this.wasFetched = false
     this.isNewlyAdded = false
     this.concepts = null
   }
@@ -509,11 +509,6 @@ export default class Publication {
 }
 
 /**
- * Cleans and formats publication titles with proper capitalization and punctuation.
- * @param {string} title - Raw title string.
- * @returns {string} Cleaned and formatted title.
- */
-/**
  * Removes HTML tags from a string.
  * @param {string} string - Input string with HTML tags.
  * @returns {string} String with HTML tags removed.
@@ -533,14 +528,7 @@ function removeHtmlTags(string) {
     .replace(/&apos;/g, "'")
   
   // Then remove HTML tags
-  // Use replaceAll if available (modern browsers), otherwise fallback to replace with global flag
-  // This handles the case where replaceAll might not be supported in older environments
-  if (typeof decodedString.replaceAll === 'function') {
-    return decodedString.replaceAll(/<[^<>]*>/g, '')
-  } else {
-    // Fallback for older browsers - use replace with global flag
-    return decodedString.replace(/<[^<>]*>/g, '')
-  }
+  return decodedString.replace(/<[^<>]*>/g, '')
 }
 
 /**

@@ -30,7 +30,6 @@ describe('Filter', () => {
       expect(filter.yearStart).toBeUndefined()
       expect(filter.yearEnd).toBeUndefined()
       expect(filter.tags).toEqual([])
-      expect(filter.doi).toBe('')
       expect(filter.dois).toEqual([])
       expect(filter.authors).toEqual([])
       expect(filter.isActive).toBe(true)
@@ -305,19 +304,6 @@ describe('Filter', () => {
   })
 
   describe('DOI management', () => {
-    describe('addDoi', () => {
-      it('should add and handle duplicate DOIs', () => {
-        filter.addDoi('10.1234/test')
-        expect(filter.dois).toEqual(['10.1234/test'])
-
-        filter.addDoi('10.1234/test') // duplicate
-        expect(filter.dois).toEqual(['10.1234/test'])
-
-        filter.addDoi('10.1234/new')
-        expect(filter.dois).toEqual(['10.1234/test', '10.1234/new'])
-      })
-    })
-
     describe('removeDoi', () => {
       it('should remove DOI and handle non-existent gracefully', () => {
         filter.dois = ['10.1234/test1', '10.1234/test2']
@@ -551,30 +537,6 @@ describe('Filter', () => {
   })
 
   describe('Tag management', () => {
-    describe('addTag', () => {
-      it('should add and handle duplicate tags', () => {
-        filter.addTag('isHighlyCited')
-        expect(filter.tags).toEqual(['isHighlyCited'])
-
-        filter.addTag('isHighlyCited') // duplicate
-        expect(filter.tags).toEqual(['isHighlyCited'])
-
-        filter.addTag('isSurvey')
-        expect(filter.tags).toEqual(['isHighlyCited', 'isSurvey'])
-      })
-    })
-
-    describe('removeTag', () => {
-      it('should remove tag and handle non-existent gracefully', () => {
-        filter.tags = ['isHighlyCited', 'isSurvey']
-        filter.removeTag('isHighlyCited')
-        expect(filter.tags).toEqual(['isSurvey'])
-
-        filter.removeTag('nonexistent')
-        expect(filter.tags).toEqual(['isSurvey'])
-      })
-    })
-
     describe('toggleTag', () => {
       it('should toggle tag presence', () => {
         filter.toggleTag('isHighlyCited')
@@ -598,19 +560,6 @@ describe('Filter', () => {
   })
 
   describe('Author management', () => {
-    describe('addAuthor', () => {
-      it('should add and handle duplicate authors', () => {
-        filter.addAuthor('smith, john')
-        expect(filter.authors).toEqual(['smith, john'])
-
-        filter.addAuthor('smith, john') // duplicate
-        expect(filter.authors).toEqual(['smith, john'])
-
-        filter.addAuthor('doe, jane')
-        expect(filter.authors).toEqual(['smith, john', 'doe, jane'])
-      })
-    })
-
     describe('removeAuthor', () => {
       it('should remove author and handle non-existent gracefully', () => {
         filter.authors = ['smith, john', 'doe, jane']

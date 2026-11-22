@@ -123,7 +123,7 @@ export default {
       return 'Authors of selected'
     }
   },
-  expose: ['scrollToAuthor', 'loadMoreAuthors', 'resetPagination', 'handleScroll'],
+  expose: ['loadMoreAuthors', 'resetPagination', 'handleScroll'],
   methods: {
     getFilteredAlternativeNames(author) {
       return author.alternativeNames.filter((name) => name !== author.id && name !== author.name)
@@ -162,9 +162,6 @@ export default {
         backgroundColor: `hsla(0, 0%, ${lightness}%, 0.8)`,
         color: '#ffffff'
       }
-    },
-    cancel() {
-      this.modalStore.isAuthorModalDialogShown = false
     },
     handleAuthorItemClick(authorId) {
       // Only activate if not already in single-author view
@@ -522,7 +519,6 @@ export default {
               :key="publication.doi"
               class="author-publication mb-3"
               :publication="publication"
-              :is-active="false"
               publication-type="selected"
             />
           </ul>
@@ -540,17 +536,6 @@ export default {
 
   & li {
     padding: 0 0.5rem;
-
-    &.highlight {
-      background-color: hsla(0, 0%, 70%, 0.5);
-      animation: fadeOut 2s forwards;
-    }
-
-    @keyframes fadeOut {
-      to {
-        background-color: transparent;
-      }
-    }
 
     & .media-left {
       min-width: 4.5rem;

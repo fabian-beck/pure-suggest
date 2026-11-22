@@ -137,11 +137,6 @@ function activateSkeleton() {
   }, 100)
 }
 
-// Handle focus on skeleton (should behave like PublicationComponent)
-function handleFocus() {
-  activateSkeleton()
-}
-
 // Handle click on skeleton
 function handleClick(event) {
   event.stopPropagation()
@@ -157,22 +152,8 @@ function handleKeyDown(event) {
     return
   }
 
-  // For arrow keys, we need to ensure all publications are loaded so navigation works
-  if (['ArrowUp', 'ArrowDown'].includes(event.key)) {
-    // Load this component if not loaded
-    if (!hasLoaded.value) {
-      forceLoad()
-    }
-
-    // Don't prevent default - let Keys.js handle the navigation
-    // The Keys.js system should work now that we have the right DOM structure
-    return
-  }
-
-  // For any other keys, just load if needed
-  if (!hasLoaded.value) {
-    forceLoad()
-  }
+  // Any other key loads the publication; arrow keys are left to Keys.js for navigation
+  forceLoad()
 }
 </script>
 
@@ -189,7 +170,7 @@ function handleKeyDown(event) {
       :style="{ height: `${estimatedHeight}px` }"
       tabindex="0"
       :id="publication.doi"
-      @focus="handleFocus"
+      @focus="activateSkeleton"
       @click="handleClick"
       @keydown="handleKeyDown"
     >
@@ -239,14 +220,6 @@ function handleKeyDown(event) {
   &.is-active {
     background: rgba(0, 0, 0, 0.1) !important;
     outline: 1px solid var(--bulma-dark);
-  }
-
-  &.is-selected {
-    // Add selected styling if needed
-  }
-
-  &.is-linked-to-active {
-    // Add linked styling if needed
   }
 
   .skeleton-glyph {

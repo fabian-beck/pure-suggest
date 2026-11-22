@@ -25,7 +25,6 @@ export const useSessionStore = defineStore('session', {
       activePublication: '',
       readPublicationsDois: new Set(),
       filter: new Filter(),
-      addQuery: '',
       sessionName: '',
       sessionId: ''
     }
@@ -70,44 +69,8 @@ export const useSessionStore = defineStore('session', {
     publications: (state) => state.selectedPublications.concat(state.suggestedPublications),
     publicationsFiltered: (state) =>
       state.selectedPublications.concat(state.suggestedPublicationsFiltered),
-    // Optimized year range calculations - compute both min/max in single pass
-    yearRange: (state) => {
-      let min = Infinity
-      let max = -Infinity
-      let hasValidYears = false
-
-      const processPublication = (publication) => {
-        if (!publication.year) return
-        const year = Number(publication.year)
-        if (isNaN(year)) return
-        min = Math.min(min, year)
-        max = Math.max(max, year)
-        hasValidYears = true
-      }
-
-      // Process selected publications
-      state.selectedPublications.forEach(processPublication)
-
-      // Process filtered suggested publications
-      if (state.suggestion?.publications) {
-        const publications = state.filter.applyToSuggested
-          ? state.suggestion.publications.filter(pub => state.filter.matches(pub))
-          : state.suggestion.publications
-        publications.forEach(processPublication)
-      }
-
-      return hasValidYears ? { min, max } : { min: undefined, max: undefined }
-    },
-    yearMax() {
-      return this.yearRange.max
-    },
-    yearMin() {
-      return this.yearRange.min
-    },
     unreadSuggestionsCount: (state) =>
       state.suggestedPublicationsFiltered.filter((publication) => !publication.isRead).length,
-    isKeywordLinkedToActive: (state) => (keyword) =>
-      state.activePublication && state.activePublication.boostKeywords.includes(keyword),
     uniqueBoostKeywords: (state) => parseUniqueBoostKeywords(state.boostKeywordString),
     sessionData() {
       return {
@@ -138,10 +101,8 @@ export const useSessionStore = defineStore('session', {
       this.activePublication = ''
       this.readPublicationsDois = new Set()
       this.filter = new Filter()
-      this.addQuery = ''
       this.sessionName = ''
       this.sessionId = ''
-      // Note: newly added flags are automatically cleared when selectedPublications is reset
     },
 
     removeFromExcludedPublication(doi) {
@@ -215,11 +176,8 @@ export const useSessionStore = defineStore('session', {
         return
       }
       
-      // Clear all previously newly added flags
-      this.selectedPublications.forEach((publication) => {
-        publication.isNewlyAdded = false
-      })
-      
+      this.clearNewlyAddedFlags()
+
       // Mark the specified publications as newly added
       dois.forEach((doi) => {
         const normalizedDoi = doi.toLowerCase()

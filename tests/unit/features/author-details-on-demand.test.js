@@ -73,16 +73,6 @@ describe('Author Details On Demand Feature', () => {
       expect(authorStore.activeAuthorId).toBeNull()
     })
 
-    it('should have isAuthorActive getter to check if author is active', () => {
-      expect(authorStore.isAuthorActive).toBeTypeOf('function')
-
-      expect(authorStore.isAuthorActive('john-doe')).toBe(false)
-
-      authorStore.setActiveAuthor('john-doe')
-      expect(authorStore.isAuthorActive('john-doe')).toBe(true)
-      expect(authorStore.isAuthorActive('jane-smith')).toBe(false)
-    })
-
     it('should have activeAuthor getter to get currently active author object', () => {
       expect(authorStore.activeAuthor).toBeNull()
 

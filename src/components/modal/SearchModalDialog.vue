@@ -162,21 +162,6 @@ export default {
         return
       }
       handlePublicationKey(event, publication)
-    },
-
-    close() {
-      this.modalStore.isSearchModalDialogShown = false
-      this.reset()
-    },
-
-    reset() {
-      this.searchCount++
-      this.searchResults = { results: [], type: 'empty' }
-      this.isLoading = false
-      this.searchCancelled = false
-      this.loaded = 0
-      this.total = 0
-      this.lastSearchQuery = ''
     }
   }
 }

@@ -9,7 +9,6 @@ export default class Filter {
     this.yearStart = undefined
     this.yearEnd = undefined
     this.tags = []
-    this.doi = ''
     this.dois = []
     this.authors = []
     this.isActive = true
@@ -96,20 +95,8 @@ export default class Filter {
     this.toggleFilterValue('tags', tagValue)
   }
 
-  addTag(tagValue) {
-    this.addFilterValue('tags', tagValue)
-  }
-
-  removeTag(tagValue) {
-    this.removeFilterValue('tags', tagValue)
-  }
-
   toggleDoi(doi) {
     this.toggleFilterValue('dois', doi)
-  }
-
-  addDoi(doi) {
-    this.addFilterValue('dois', doi)
   }
 
   removeDoi(doi) {
@@ -118,10 +105,6 @@ export default class Filter {
 
   toggleAuthor(authorId) {
     this.toggleFilterValue('authors', authorId)
-  }
-
-  addAuthor(authorId) {
-    this.addFilterValue('authors', authorId)
   }
 
   removeAuthor(authorId) {

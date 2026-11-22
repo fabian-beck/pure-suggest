@@ -1,12 +1,10 @@
 <script>
-import { useInterfaceStore } from '@/stores/interface.js'
 import { useModalStore } from '@/stores/modal.js'
 
 export default {
   setup() {
-    const interfaceStore = useInterfaceStore()
     const modalStore = useModalStore()
-    return { interfaceStore, modalStore }
+    return { modalStore }
   }
 }
 </script>
@@ -129,17 +127,3 @@ export default {
     </div>
   </ModalDialog>
 </template>
-
-<style lang="scss" scoped>
-.card {
-  .card-content {
-    & .subtitle {
-      margin-top: 0.5rem;
-    }
-
-    & ul.keys {
-      list-style-type: none;
-    }
-  }
-}
-</style>

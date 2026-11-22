@@ -18,7 +18,7 @@ export function createCitationLinks(selectedPublications, isSelectedFn, doiToInd
 
   selectedPublications.forEach((publication) => {
     if (publication.doi in doiToIndex) {
-      // Create links for citations (papers this publication cites)
+      // Create links for citations (papers that cite this publication)
       publication.citationDois.forEach((citationDoi) => {
         if (citationDoi in doiToIndex) {
           const linkKey = `${citationDoi}→${publication.doi}`
@@ -34,7 +34,7 @@ export function createCitationLinks(selectedPublications, isSelectedFn, doiToInd
         }
       })
 
-      // Create links for references (papers that cite this publication)
+      // Create links for references (papers this publication cites)
       publication.referenceDois.forEach((referenceDoi) => {
         if (referenceDoi in doiToIndex) {
           const linkKey = `${publication.doi}→${referenceDoi}`

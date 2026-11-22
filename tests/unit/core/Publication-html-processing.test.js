@@ -220,26 +220,6 @@ describe('Publication HTML Tag Removal', () => {
       expect(cleanedTitle).not.toContain('<Sc>')
       expect(cleanedTitle).not.toContain('</sC>')
     })
-
-    it('should handle browser compatibility fallback', () => {
-      const publication = new Publication('10.1234/test')
-      
-      // Mock a scenario where replaceAll is not available
-      const originalReplaceAll = String.prototype.replaceAll
-      delete String.prototype.replaceAll
-      
-      try {
-        const data = { title: 'VT<sc>iles</sc>: Test fallback' }
-        publication.processTitle(data)
-        
-        expect(publication.title).toBe('VTiles: Test fallback')
-        expect(publication.title).not.toContain('<sc>')
-        expect(publication.title).not.toContain('</sc>')
-      } finally {
-        // Restore replaceAll
-        String.prototype.replaceAll = originalReplaceAll
-      }
-    })
   })
 
   describe('integration with cleanTitle function', () => {

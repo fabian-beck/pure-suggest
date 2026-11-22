@@ -46,7 +46,7 @@ export class SuggestionService {
     const suggestedPublications = {}
 
     selectedPublications.forEach((publication) => {
-      // Process citations (publication cites these DOIs)
+      // Process citations (these DOIs cite the publication)
       publication.citationDois.forEach((doi) => {
         if (isExcluded(doi)) return
 
@@ -57,7 +57,7 @@ export class SuggestionService {
         }
       })
 
-      // Process references (these DOIs cite this publication)
+      // Process references (the publication cites these DOIs)
       publication.referenceDois.forEach((doi) => {
         if (isExcluded(doi)) return
 
@@ -117,7 +117,7 @@ export class SuggestionService {
   }
 
   /**
-   * Adds citation suggestion (suggested DOI is referenced by source)
+   * Adds citation suggestion (suggested DOI cites source)
    * @private
    */
   static _addCitationSuggestion(suggestedPublications, doi, sourceDoi) {
@@ -129,7 +129,7 @@ export class SuggestionService {
   }
 
   /**
-   * Adds reference suggestion (suggested DOI cites source)
+   * Adds reference suggestion (suggested DOI is cited by source)
    * @private
    */
   static _addReferenceSuggestion(suggestedPublications, doi, sourceDoi) {

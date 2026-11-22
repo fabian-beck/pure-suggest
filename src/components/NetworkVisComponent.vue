@@ -1,9 +1,7 @@
 <script>
 import * as d3 from 'd3'
-import 'tippy.js/dist/tippy.css'
 import { storeToRefs } from 'pinia'
 
-// Stores
 import NetworkControls from '@/components/NetworkControls.vue'
 import NetworkHeader from '@/components/NetworkHeader.vue'
 import NetworkPerformanceMonitor from '@/components/NetworkPerformanceMonitor.vue'
@@ -15,7 +13,6 @@ import { useQueueStore } from '@/stores/queue.js'
 import { NETWORK_SELECTED_BASE_NUMBER } from '@/constants/config.js'
 import { useSessionStore } from '@/stores/session.js'
 
-// Force simulation utilities
 import {
   initializeAuthorNodes,
   updateAuthorNodes,
@@ -38,7 +35,6 @@ import {
   SIMULATION_ALPHA
 } from '@/utils/network/forces.js'
 
-// Node types
 import {
   initializeKeywordNodes,
   updateKeywordNodes,
@@ -71,9 +67,6 @@ import {
   createPublicationNodes
 } from '@/utils/network/publicationNodes.js'
 
-// Links
-
-// Year labels
 import { 
   generateYearRange,
   getYearLabelRects,
@@ -82,8 +75,6 @@ import {
   updateYearLabelTextPositions,
   updateYearLabelVisibility 
 } from '@/utils/network/yearLabels.js'
-
-// Components
 
 const LABEL_OVERSCAN = 100 // px beyond the view, about the width of a label
 const RESIZE_REPLOT_DELAY = 200 // ms after the last change of the panel size
@@ -154,8 +145,7 @@ export default {
       nodeCount: 0,
       linkCount: 0,
       // Position change detection for performance optimization
-      positionThreshold: 1, // pixels - minimum movement to trigger DOM update
-      lastUpdateTime: 0
+      positionThreshold: 1 // pixels - minimum movement to trigger DOM update
     }
   },
   created() {
@@ -369,7 +359,7 @@ export default {
   beforeUnmount() {
     this.resizeObserver.disconnect()
     clearTimeout(this.resizeTimer)
-    // Cleanup D3 simulation (moved from useNetworkSimulation)
+    // Cleanup D3 simulation
     if (this.simulation) {
       this.simulation.stop()
       this.simulation = null
@@ -501,10 +491,6 @@ export default {
       // Store nodes and links for later processing (after updateNodes initializes this.node)
       this.tempNodes = nodes
       this.tempLinks = links.map((d) => Object.assign({}, d))
-
-      // Update component state
-      this.doiToIndex = doiToIndex
-      this.filteredAuthors = filteredAuthors
     },
 
     /**
@@ -722,7 +708,6 @@ export default {
       if (changedNodes.length > 0) {
         this.updateChangedNodePositions(changedNodes)
         const linksUpdated = this.updateSelectiveLinks(changedNodes)
-        this.lastUpdateTime = performance.now()
 
         // Track performance metrics - only count actual DOM updates
         this.$refs.performanceMonitor?.recordDomUpdate(changedNodes.length, linksUpdated)
@@ -771,9 +756,6 @@ export default {
     activatePublication (event, d) {
       this.activatePublicationComponentByDoi(d.publication.doi)
       event.stopPropagation()
-    },
-    toggleMode() {
-      this.isNetworkClusters = !this.isNetworkClusters
     },
     expandNetwork(isNetworkExpanded) {
       this.interfaceStore.isNetworkExpanded = isNetworkExpanded
@@ -1150,7 +1132,6 @@ export default {
     <div class="box has-background-grey">
       <NetworkHeader
         :error-message="errorMessage"
-        :has-no-content="isEmpty.value"
         v-model:is-network-clusters="isNetworkClusters"
         @expand-network="expandNetwork"
         @collapse-network="collapseNetwork"
@@ -1160,7 +1141,7 @@ export default {
         <NetworkPerformanceMonitor
           ref="performanceMonitor"
           :show="interfaceStore.showPerformancePanel"
-          :is-empty="isEmpty.value || !sessionStore.selectedPublications?.length"
+          :is-empty="!sessionStore.selectedPublications?.length"
           :node-count="nodeCount"
           :link-count="linkCount"
         />
@@ -1185,7 +1166,6 @@ export default {
         <PublicationComponent
           v-if="activePublication && interfaceStore.isNetworkExpanded"
           :publication="activePublication"
-          is-active
           :publication-type="activePublication.isSelected ? 'selected' : 'suggested'"
         ></PublicationComponent>
       </ul>

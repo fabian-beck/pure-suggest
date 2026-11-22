@@ -10,12 +10,6 @@ import App from './App.vue'
 import { labelIconControlByTooltip } from './lib/TooltipLabels.js'
 import packageInfo from './../package.json'
 
-// App meta data
-
-// Pinia
-
-// Vuetify
-
 // Icons
 import '@mdi/font/css/materialdesignicons.css'
 

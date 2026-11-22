@@ -25,9 +25,6 @@ vi.mock('d3', () => ({
   zoomIdentity: { k: 1, x: 0, y: 0 }
 }))
 
-// Mock tippy.js
-vi.mock('tippy.js/dist/tippy.css', () => ({}))
-
 // Mock network utility modules
 vi.mock('@/utils/network/forces.js', () => ({
   createForceSimulation: vi.fn(() => ({

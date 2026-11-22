@@ -520,8 +520,7 @@ describe('NetworkVisComponent', () => {
             isKeywordHovered: false,
             isAuthorHovered: false
           }
-        ],
-        isKeywordLinkedToActive: vi.fn(() => true)
+        ]
       }
 
       const mockInterfaceStore = {
@@ -903,7 +902,6 @@ describe('NetworkVisComponent', () => {
 
     it('initializes empty graph data correctly', () => {
       expect(wrapper.vm.graph).toEqual({ nodes: [], links: [] })
-      expect(wrapper.vm.doiToIndex).toBeUndefined() // Only set during plot
     })
 
     it('handles node visibility settings correctly', () => {
@@ -1171,14 +1169,6 @@ describe('NetworkVisComponent', () => {
         wrapper.vm.simulation.alpha(0.5)
         wrapper.vm.simulation.restart()
       }).not.toThrow()
-    })
-
-    it('toggles network mode correctly', () => {
-      const initialClusters = wrapper.vm.isNetworkClusters
-
-      wrapper.vm.toggleMode()
-
-      expect(wrapper.vm.isNetworkClusters).toBe(!initialClusters)
     })
   })
 

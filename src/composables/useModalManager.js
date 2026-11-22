@@ -110,22 +110,6 @@ export function useModalManager() {
     }
   }
 
-  /**
-   * Closes all modal dialogs
-   */
-  const closeAllModals = () => {
-    modalStore.isSearchModalDialogShown = false
-    modalStore.isAuthorModalDialogShown = false
-    modalStore.isExcludedModalDialogShown = false
-    modalStore.isQueueModalDialogShown = false
-    modalStore.isAboutModalDialogShown = false
-    modalStore.isKeyboardControlsModalDialogShown = false
-    modalStore.isShareSessionModalDialogShown = false
-    modalStore.isConceptConfigModalDialogShown = false
-    modalStore.confirmDialog.isShown = false
-    modalStore.infoDialog.isShown = false
-  }
-
   return {
     // Modal opening functions
     openSearchModal,
@@ -140,9 +124,6 @@ export function useModalManager() {
     // Dialog functions
     showConfirmDialog,
     showAbstract,
-
-    // Utility functions
-    closeAllModals,
 
     // Expose computed properties from modal store for convenience
     isAnyOverlayShown: modalStore.isAnyOverlayShown

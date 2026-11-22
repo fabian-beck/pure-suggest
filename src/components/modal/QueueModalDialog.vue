@@ -4,14 +4,12 @@ import { watch, reactive } from 'vue'
 import { useAppState } from '@/composables/useAppState.js'
 import Publication from '@/core/Publication.js'
 import { handlePublicationKey } from '@/lib/Keys.js'
-import { useInterfaceStore } from '@/stores/interface.js'
 import { useModalStore } from '@/stores/modal.js'
 import { useQueueStore } from '@/stores/queue.js'
 
 
 export default {
   setup() {
-    const interfaceStore = useInterfaceStore()
     const modalStore = useModalStore()
     const queueStore = useQueueStore()
     const { updateQueued } = useAppState()
@@ -43,7 +41,6 @@ export default {
     )
 
     return {
-      interfaceStore,
       modalStore,
       queueStore,
       selectedQueue,

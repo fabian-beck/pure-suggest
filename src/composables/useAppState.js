@@ -14,8 +14,6 @@ import { useQueueStore } from '@/stores/queue.js'
 import { useSessionStore } from '@/stores/session.js'
 
 export function useAppState() {
-  // This composable will gradually receive functionality from the session store
-
   const sessionStore = useSessionStore()
   const interfaceStore = useInterfaceStore()
   const authorStore = useAuthorStore()

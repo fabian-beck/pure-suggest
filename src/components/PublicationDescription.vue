@@ -464,17 +464,6 @@ label {
   padding-right: 0.25rem;
 }
 
-.abstract {
-  font-style: italic;
-  font-size: 0.95rem;
-  padding: 0.5rem 0;
-
-  &::before {
-    content: 'Abstract: ';
-    font-weight: bold;
-  }
-}
-
 :deep(.clickable-author) {
   cursor: pointer;
   transition: background-color 0.2s ease;
