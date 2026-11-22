@@ -155,72 +155,6 @@ describe('Session Store - Suggested Publications Filtering', () => {
     })
   })
 
-  describe('suggestedPublicationsFilteredCount', () => {
-    it('should return 0 when no filters are active', () => {
-      expect(sessionStore.suggestedPublicationsFilteredCount).toBe(0)
-    })
-
-    it('should return correct count when filter is active', () => {
-      sessionStore.filter.string = 'Machine Learning'
-
-      expect(sessionStore.suggestedPublicationsFilteredCount).toBe(1)
-    })
-
-    it('should return correct count with tag filter', () => {
-      sessionStore.filter.tags = ['someTag']
-
-      expect(sessionStore.suggestedPublicationsFilteredCount).toBe(2)
-    })
-
-    it('should return 0 when no suggestions exist', () => {
-      sessionStore.suggestion = null
-      sessionStore.filter.string = 'anything'
-
-      expect(sessionStore.suggestedPublicationsFilteredCount).toBe(0)
-    })
-
-    it('should handle complex filter combinations', () => {
-      sessionStore.filter.string = 'Learning'
-      sessionStore.filter.yearStart = '2020'
-
-      // mockPublication1 (Machine Learning, 2023) and mockPublication2 (Deep Learning, 2020) should match
-      expect(sessionStore.suggestedPublicationsFilteredCount).toBe(2)
-    })
-  })
-
-  describe('suggestedPublicationsNonFilteredCount', () => {
-    it('should return 0 when no filters are active', () => {
-      expect(sessionStore.suggestedPublicationsNonFilteredCount).toBe(0)
-    })
-
-    it('should return correct count when filter is active', () => {
-      sessionStore.filter.string = 'Machine Learning'
-
-      expect(sessionStore.suggestedPublicationsNonFilteredCount).toBe(2)
-    })
-
-    it('should return correct count with tag filter', () => {
-      sessionStore.filter.tags = ['someTag']
-
-      expect(sessionStore.suggestedPublicationsNonFilteredCount).toBe(1)
-    })
-
-    it('should return 0 when no suggestions exist', () => {
-      sessionStore.suggestion = null
-      sessionStore.filter.string = 'anything'
-
-      expect(sessionStore.suggestedPublicationsNonFilteredCount).toBe(0)
-    })
-
-    it('should handle all publications matching filter', () => {
-      sessionStore.filter.yearStart = '2020'
-      sessionStore.filter.yearEnd = '2023'
-
-      // All publications should match (2020, 2021, 2023 are all in range)
-      expect(sessionStore.suggestedPublicationsNonFilteredCount).toBe(0)
-    })
-  })
-
   describe('integration with Filter class', () => {
     it('should work with complex filter combinations', () => {
       sessionStore.filter.string = 'Learning'
@@ -233,8 +167,6 @@ describe('Session Store - Suggested Publications Filtering', () => {
       // - contains 'Learning' in meta string
       // - year 2023 >= 2020
       // - has someTag = true
-      expect(sessionStore.suggestedPublicationsFilteredCount).toBe(1)
-      expect(sessionStore.suggestedPublicationsNonFilteredCount).toBe(2)
       expect(filtered[0].doi).toBe(mockPublication1.doi)
     })
 
@@ -244,8 +176,6 @@ describe('Session Store - Suggested Publications Filtering', () => {
       const filtered = sessionStore.suggestedPublicationsFiltered
 
       expect(filtered).toEqual([mockPublication1, mockPublication2, mockPublication3])
-      expect(sessionStore.suggestedPublicationsFilteredCount).toBe(0)
-      expect(sessionStore.suggestedPublicationsNonFilteredCount).toBe(0)
     })
 
     it('should handle mixed filter types correctly', () => {
@@ -257,8 +187,6 @@ describe('Session Store - Suggested Publications Filtering', () => {
       // Only mockPublication3 should match both criteria:
       // - year 2021 <= 2021
       // - has citation DOI 10.1234/citation3
-      expect(sessionStore.suggestedPublicationsFilteredCount).toBe(1)
-      expect(sessionStore.suggestedPublicationsNonFilteredCount).toBe(2)
       expect(filtered[0].doi).toBe(mockPublication3.doi)
     })
 
@@ -267,11 +195,7 @@ describe('Session Store - Suggested Publications Filtering', () => {
 
       const filtered = sessionStore.suggestedPublicationsFiltered
 
-      // No publications should match
-      expect(sessionStore.suggestedPublicationsFilteredCount).toBe(0)
-      expect(sessionStore.suggestedPublicationsNonFilteredCount).toBe(3)
-
-      // All publications should be present, sorted by score descending
+      // No publications should match; all publications should be present, sorted by score descending
       expect(filtered[0].doi).toBe(mockPublication2.doi) // score 15
       expect(filtered[1].doi).toBe(mockPublication1.doi) // score 10
       expect(filtered[2].doi).toBe(mockPublication3.doi) // score 5
@@ -290,12 +214,6 @@ describe('Session Store - Suggested Publications Filtering', () => {
 
       // Both should have same filtering behavior
       expect(selectedFiltered.map((p) => p.doi)).toEqual(suggestedFiltered.map((p) => p.doi))
-      expect(sessionStore.selectedPublicationsFilteredCount).toBe(
-        sessionStore.suggestedPublicationsFilteredCount
-      )
-      expect(sessionStore.selectedPublicationsNonFilteredCount).toBe(
-        sessionStore.suggestedPublicationsNonFilteredCount
-      )
     })
   })
 

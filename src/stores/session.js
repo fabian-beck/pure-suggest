@@ -6,7 +6,7 @@ import Filter from '@/core/Filter.js'
 import Publication from '@/core/Publication.js'
 import { saveAsFile } from '@/lib/Util.js'
 import { generateBibtex } from '@/utils/bibtex.js'
-import { getFilteredPublications, countFilteredPublications } from '@/utils/filterUtils.js'
+import { getFilteredPublications } from '@/utils/filterUtils.js'
 import {
   normalizeBoostKeywordString,
   parseUniqueBoostKeywords,
@@ -53,18 +53,6 @@ export const useSessionStore = defineStore('session', {
         state.filter,
         state.filter.applyToSelected
       )
-    },
-    selectedPublicationsFilteredCount: (state) => {
-      return countFilteredPublications(state.selectedPublications, state.filter, true)
-    },
-    selectedPublicationsNonFilteredCount: (state) => {
-      return countFilteredPublications(state.selectedPublications, state.filter, false)
-    },
-    suggestedPublicationsFilteredCount: (state) => {
-      return countFilteredPublications(state.suggestedPublications, state.filter, true)
-    },
-    suggestedPublicationsNonFilteredCount: (state) => {
-      return countFilteredPublications(state.suggestedPublications, state.filter, false)
     },
     publications: (state) => state.selectedPublications.concat(state.suggestedPublications),
     publicationsFiltered: (state) =>
