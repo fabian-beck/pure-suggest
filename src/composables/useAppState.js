@@ -1,7 +1,6 @@
 import { computed } from 'vue'
 
 import { useModalManager } from '@/composables/useModalManager.js'
-import { PAGINATION } from '@/constants/config.js'
 import Publication from '@/core/Publication.js'
 import { extractDois } from '@/core/PublicationSearch.js'
 import { clearCache as clearCacheUtil } from '@/lib/Cache.js'
@@ -12,6 +11,9 @@ import { useConceptStore } from '@/stores/concept.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useQueueStore } from '@/stores/queue.js'
 import { useSessionStore } from '@/stores/session.js'
+
+// Start of the workflow whose duration is logged once the suggestions are updated
+let workflowStartTime = null
 
 export function useAppState() {
   const sessionStore = useSessionStore()
@@ -88,16 +90,12 @@ export function useAppState() {
 
     interfaceStore.endLoading()
 
-    // Log end-to-end workflow timing if we're tracking one
-    if (sessionStore._isTrackingWorkflow && sessionStore._workflowStartTime) {
-      const totalDuration = performance.now() - sessionStore._workflowStartTime
+    if (workflowStartTime !== null) {
+      const totalDuration = performance.now() - workflowStartTime
       console.log(
         `[PERF] 🎯 END-TO-END WORKFLOW COMPLETED: ${totalDuration.toFixed(0)}ms (${(totalDuration / 1000).toFixed(2)}s)`
       )
-
-      // Reset tracking flags
-      sessionStore._isTrackingWorkflow = false
-      sessionStore._workflowStartTime = null
+      workflowStartTime = null
     }
   }
 
@@ -180,6 +178,7 @@ export function useAppState() {
     console.log(`Loading session ${JSON.stringify(session)}`)
     if (!Array.isArray(session?.selected)) {
       interfaceStore.showErrorMessage('Cannot read session state from JSON.')
+      workflowStartTime = null
       return
     }
 
@@ -202,8 +201,6 @@ export function useAppState() {
     // When loading a session, don't mark publications as newly added
     sessionStore.clearNewlyAddedFlags()
 
-    // Mark that we're tracking a workflow
-    sessionStore._isTrackingWorkflow = true
     updateSuggestions()
   }
 
@@ -220,8 +217,7 @@ export function useAppState() {
       try {
         content = fileReader.result
         const session = JSON.parse(content)
-        // Store the start time for end-to-end measurement
-        sessionStore._workflowStartTime = startTime
+        workflowStartTime = startTime
         loadSession(session)
       } catch (error) {
         console.error('Session import error:', error)
@@ -298,25 +294,13 @@ export function useAppState() {
   }
 
   /**
-   * Loads more suggestions incrementally
-   */
-  const loadMoreSuggestions = () => {
-    console.log('Loading more suggestions.')
-    updateSuggestions(sessionStore.maxSuggestions + PAGINATION.LOAD_MORE_INCREMENT)
-  }
-
-  /**
    * Updates queued publications (add/exclude) and recomputes suggestions
    */
   const updateQueued = async () => {
-    const startTime = performance.now()
+    workflowStartTime = performance.now()
     console.log(
       `[PERF] Starting queue update workflow (${queueStore.selectedQueue.length} to add, ${queueStore.excludedQueue.length} to exclude)`
     )
-
-    // Store the start time for end-to-end measurement
-    sessionStore._workflowStartTime = startTime
-    sessionStore._isTrackingWorkflow = true
 
     // Check if session was empty before this update
     const wasSessionEmpty = sessionStore.selectedPublicationsCount === 0
@@ -352,32 +336,10 @@ export function useAppState() {
   }
 
   /**
-   * Adds publications and updates suggestions
-   */
-  const addPublicationsAndUpdate = async (dois) => {
-    const startTime = performance.now()
-    console.log(`[PERF] Starting manual publication add workflow for ${dois.length} publications`)
-
-    // Store the start time for end-to-end measurement
-    sessionStore._workflowStartTime = startTime
-    sessionStore._isTrackingWorkflow = true
-
-    // Check if session was empty before this update
-    const wasSessionEmpty = sessionStore.selectedPublicationsCount === 0
-
-    dois.forEach((doi) => queueStore.removeFromQueues(doi))
-    await sessionStore.addPublicationsToSelection(dois)
-    // Mark the newly added publications (only if session wasn't empty before)
-    sessionStore.markPublicationsAsNewlyAdded(dois, wasSessionEmpty)
-
-    await updateSuggestions()
-  }
-
-  /**
    * Loads example session
    */
   const loadExample = () => {
-    const startTime = performance.now()
+    workflowStartTime = performance.now()
     console.log('[PERF] Starting example load workflow')
 
     const session = {
@@ -390,8 +352,6 @@ export function useAppState() {
       boost: 'cit, visual, publi|literat'
     }
 
-    // Store the start time for end-to-end measurement
-    sessionStore._workflowStartTime = startTime
     loadSession(session)
   }
 
@@ -434,9 +394,7 @@ export function useAppState() {
     importSessionWithConfirmation,
     importBibtex,
     importBibtexWithConfirmation,
-    loadMoreSuggestions,
     updateQueued,
-    addPublicationsAndUpdate,
     loadExample,
     queueForSelected,
     queueForExcluded
