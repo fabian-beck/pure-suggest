@@ -47,6 +47,11 @@ describe('ModalDialog keyboard support', () => {
   beforeEach(() => setActivePinia(createPinia()))
   afterEach(() => wrapper.unmount())
 
+  it('is shown when opened from the start', () => {
+    mountDialog()
+    expect(wrapper.findComponent(ModalDialog).vm.isDialogShown).toBe(true)
+  })
+
   it('focuses the first entry when opening, or the marked element', () => {
     mountDialog()
     wrapper.findComponent(ModalDialog).vm.focusInitialElement()

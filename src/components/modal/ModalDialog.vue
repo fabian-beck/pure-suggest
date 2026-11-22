@@ -38,7 +38,7 @@ export default {
   emits: ['update:modelValue', 'dialogKey'],
   data() {
     return {
-      isDialogShown: this.value
+      isDialogShown: this.modelValue
     }
   },
   setup: (props) => {
