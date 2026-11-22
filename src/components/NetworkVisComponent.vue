@@ -1174,7 +1174,6 @@ export default {
           class="has-background-primary has-text-white"
           @click="updateQueued"
           v-show="queueStore.isUpdatable && interfaceStore.isNetworkExpanded"
-          id="quick-access-update"
         >
           <v-icon left>mdi-update</v-icon>
           <span class="key">U</span>pdate
