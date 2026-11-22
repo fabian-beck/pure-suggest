@@ -88,7 +88,7 @@ describe('App - Page Title Management', () => {
   beforeEach(() => {
     // Save original document.title
     global.originalDocumentTitle = document.title
-    
+
     // Create fresh Pinia instance
     pinia = createPinia()
     setActivePinia(pinia)
@@ -99,7 +99,8 @@ describe('App - Page Title Management', () => {
         provide: {
           appMeta: {
             name: 'PUREsuggest',
-            nameHtml: '<span class="has-text-primary">PURE&ThinSpace;</span><span class="has-text-info">suggest</span>',
+            nameHtml:
+              '<span class="has-text-primary">PURE&ThinSpace;</span><span class="has-text-info">suggest</span>',
             subtitle: 'Citation-based literature search',
             version: '0.11.0'
           }
@@ -121,31 +122,31 @@ describe('App - Page Title Management', () => {
   it('should set default title when no session name is provided', async () => {
     // Ensure session name is empty
     sessionStore.sessionName = ''
-    
+
     // Call updatePageTitle method directly
     await wrapper.vm.updatePageTitle()
-    
+
     expect(document.title).toBe(defaultTitle)
   })
 
   it('should update title when session name is set', async () => {
     const sessionName = 'My Research Session'
     sessionStore.sessionName = sessionName
-    
+
     // Call updatePageTitle method directly
     await wrapper.vm.updatePageTitle()
-    
+
     expect(document.title).toBe(`${sessionName}: ${defaultTitle}`)
   })
 
   it('should revert to default title when session name is cleared', async () => {
     const sessionName = 'My Research Session'
-    
+
     // First set a session name
     sessionStore.sessionName = sessionName
     await wrapper.vm.updatePageTitle()
     expect(document.title).toBe(`${sessionName}: ${defaultTitle}`)
-    
+
     // Then clear it
     sessionStore.sessionName = ''
     await wrapper.vm.updatePageTitle()
@@ -154,21 +155,21 @@ describe('App - Page Title Management', () => {
 
   it('should handle whitespace-only session names as empty', async () => {
     sessionStore.sessionName = '   '
-    
+
     await wrapper.vm.updatePageTitle()
-    
+
     expect(document.title).toBe(defaultTitle)
   })
 
   it('should update title reactively when sessionName changes', async () => {
     const sessionName = 'Dynamic Session'
-    
+
     // Change session name in store (this should trigger the watcher)
     sessionStore.sessionName = sessionName
-    
+
     // Wait for reactivity and DOM updates
     await nextTick()
-    
+
     expect(document.title).toBe(`${sessionName}: ${defaultTitle}`)
   })
 })

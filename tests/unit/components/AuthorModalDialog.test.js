@@ -56,6 +56,28 @@ describe('AuthorModalDialog', () => {
     })
   }
 
+  it('should list more authors when the dialog is scrolled towards its end', async () => {
+    vi.useFakeTimers()
+    authorStore.selectedPublicationsAuthors = Array.from({ length: 30 }, (_, i) => ({
+      id: `author${i}`,
+      name: `Author ${i}`,
+      count: 1,
+      alternativeNames: [`Author ${i}`],
+      keywords: {},
+      coauthors: {}
+    }))
+    const wrapper = createWrapper()
+    expect(wrapper.findAll('li.clickable-author-item')).toHaveLength(20)
+
+    wrapper
+      .findComponent('.modal-dialog')
+      .vm.$emit('scroll', { target: { scrollTop: 90, scrollHeight: 200, clientHeight: 100 } })
+    await vi.runAllTimersAsync()
+
+    expect(wrapper.findAll('li.clickable-author-item')).toHaveLength(30)
+    vi.useRealTimers()
+  })
+
   it('should show "Co-author of" label when author is activated and has co-authors', async () => {
     // Setup: author with co-authors and the co-author also in the list
     const authors = [

@@ -47,6 +47,17 @@ describe('ModalDialog keyboard support', () => {
   beforeEach(() => setActivePinia(createPinia()))
   afterEach(() => wrapper.unmount())
 
+  it('is shown when opened from the start', () => {
+    mountDialog()
+    expect(wrapper.findComponent(ModalDialog).vm.isDialogShown).toBe(true)
+  })
+
+  it('passes on scrolling of its content', async () => {
+    mountDialog()
+    await wrapper.find('v-card-text').trigger('scroll')
+    expect(wrapper.findComponent(ModalDialog).emitted('scroll')).toHaveLength(1)
+  })
+
   it('focuses the first entry when opening, or the marked element', () => {
     mountDialog()
     wrapper.findComponent(ModalDialog).vm.focusInitialElement()

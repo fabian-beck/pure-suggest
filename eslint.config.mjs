@@ -24,7 +24,7 @@ export default [
     },
     rules: {
       'vue/no-multiple-template-root': 'off',
-      
+
       // Enhanced Vue 3 Composition API Rules
       'vue/prefer-import-from-vue': 'error',
       'vue/prefer-separate-static-class': 'error',
@@ -40,25 +40,22 @@ export default [
       'vue/define-macros-order': 'error',
       'vue/define-emits-declaration': 'error',
       'vue/define-props-declaration': 'error',
-      
+
       // Vue Performance
       'vue/no-setup-props-reactivity-loss': 'error',
-      
+
       // Advanced Code Quality Rules
       // Import/Export Management
       'no-duplicate-imports': 'error',
-      'import/order': ['error', {
-        'groups': [
-          'builtin',
-          'external',
-          'internal',
-          ['parent', 'sibling'],
-          'index'
-        ],
-        'newlines-between': 'always',
-        'alphabetize': { 'order': 'asc', 'caseInsensitive': true },
-        'warnOnUnassignedImports': true
-      }],
+      'import/order': [
+        'error',
+        {
+          groups: ['builtin', 'external', 'internal', ['parent', 'sibling'], 'index'],
+          'newlines-between': 'always',
+          alphabetize: { order: 'asc', caseInsensitive: true },
+          warnOnUnassignedImports: true
+        }
+      ],
       'import/newline-after-import': 'error',
       'import/no-duplicates': 'error',
       'import/no-unused-modules': [
@@ -68,7 +65,7 @@ export default [
       'import/no-cycle': 'error',
       'import/no-self-import': 'error',
       'import/first': 'error',
-      
+
       // Modern JavaScript Best Practices
       'prefer-const': 'error',
       'no-var': 'error',
@@ -82,32 +79,37 @@ export default [
       'prefer-spread': 'error',
       'object-shorthand': 'error',
       'prefer-exponentiation-operator': 'error',
-      
+
       // Code Quality & Complexity
-      'complexity': ['warn', 20],
+      complexity: ['warn', 20],
       'max-depth': ['warn', 4],
       'max-nested-callbacks': ['warn', 3],
       'max-params': ['warn', 4],
       'max-lines-per-function': ['warn', 200],
-      
+
       // SonarJS Rules for detecting wrapper functions
       'sonarjs/prefer-immediate-return': 'error',
       'sonarjs/no-identical-functions': 'error',
       'sonarjs/cognitive-complexity': ['warn', 20],
       'sonarjs/slow-regex': 'warn',
-      
+
       // Error Prevention
-      'yoda': 'error',
+      yoda: 'error',
       'no-implicit-coercion': 'error',
-      'radix': 'error',
-      
+      radix: 'error',
+
       // Performance & Bundle Size
-      'no-restricted-imports': ['error', {
-        patterns: [{
-          group: ['lodash', '!lodash/*'],
-          message: 'Use specific lodash imports to enable tree-shaking'
-        }]
-      }]
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['lodash', '!lodash/*'],
+              message: 'Use specific lodash imports to enable tree-shaking'
+            }
+          ]
+        }
+      ]
     }
   },
   {
@@ -119,7 +121,11 @@ export default [
     }
   },
   {
-    files: ['src/components/NetworkVisComponent.vue', 'tests/unit/bugs/author-nodes-visibility.test.js', 'src/main.js'],
+    files: [
+      'src/components/NetworkVisComponent.vue',
+      'tests/unit/bugs/author-nodes-visibility.test.js',
+      'src/main.js'
+    ],
     rules: {
       // Exception for complex import organization with comments or application entry points
       'import/order': 'off'
@@ -140,9 +146,9 @@ export default [
       'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       // Disable length and complexity warnings for tests - they often need longer functions for comprehensive testing
       'max-lines-per-function': 'off',
-      'complexity': 'off',
+      complexity: 'off',
       'max-nested-callbacks': 'off',
-      
+
       // SonarJS exceptions for test files - these patterns are acceptable/necessary in tests
       'sonarjs/no-nested-functions': 'off', // Deep callback nesting is common in test setups
       'sonarjs/pseudo-random': 'off', // Math.random() is fine for test data generation
@@ -163,7 +169,7 @@ export default [
     },
     rules: {
       'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
-      
+
       // Tools exceptions - developer utilities may have different quality requirements
       'sonarjs/regex-complexity': 'off', // Complex regex needed for parsing code
       'sonarjs/slow-regex': 'off', // Code parsing requires complex regex patterns
@@ -172,7 +178,7 @@ export default [
       'sonarjs/cognitive-complexity': 'off', // Tools can be complex for functionality
       'sonarjs/no-nested-functions': 'off', // Deep nesting acceptable for parsing logic
       'sonarjs/no-os-command-from-path': 'off', // Tools may run git
-      'complexity': 'off' // Tools prioritize functionality over complexity limits
+      complexity: 'off' // Tools prioritize functionality over complexity limits
     }
   }
 ]

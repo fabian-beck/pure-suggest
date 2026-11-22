@@ -50,6 +50,7 @@ export function getChargeStrength(selectedPublicationsCount) {
 ```
 
 **Standard Review Reasons:**
+
 - `architectural-consistency` - Part of established patterns
 - `meaningful-abstraction` - Function name adds significant clarity
 - `business-logic` - Contains domain logic that may evolve
@@ -113,32 +114,29 @@ node tools/constant-usage-analyzer.js
 ```
 🔍 Analyzing constant usage patterns...
 
-Found 3 constant files: index.js, themes.js, validation.js
-Searching through 127 files for usage patterns
+Found 1 constant files: config.js
+Searching through 171 files for usage patterns
 
-📊 CONSTANT USAGE ANALYSIS:
+Found 6 constants to analyze
 
-📁 DEFAULT_THEME (from src/constants/themes.js):
-  ✅ Used in 5 files (2 source, 3 test)
-  📄 src/components/ThemeSelector.vue (1 usage)
-  📄 src/stores/interface.js (2 usages)
-  🧪 tests/unit/themes.test.js (3 usages)
-
-⚠️  VALIDATION_RULES (from src/constants/validation.js):
-  ⚠️  Used in 1 file (1 source, 0 test) - potentially underutilized
-  📄 src/utils/validators.js (1 usage)
-
-❌ UNUSED_CONSTANT (from src/constants/index.js):
-  ❌ No usage found - consider removing
+📊 CONSTANT USAGE ANALYSIS REPORT
+=====================================
 
 📈 SUMMARY:
-- Total constants: 15
-- Used constants: 12 (80%)
-- Unused constants: 3 (20%)
-- Underutilized: 2 (13%)
+  • Total constants: 6
+  • Used in single file (excluding tests): 0
+  • Used in multiple files (excluding tests): 6
+  • Unused constants (excluding tests): 0
+
+🌐 MULTI-USE CONSTANTS (keep centralized):
+  • PAGINATION: 2 files, 5 total uses
+    - src/services/SuggestionService.js (2x)
+    - src/stores/session.js (3x)
+    + 2 test file(s) (5 test uses)
 ```
 
 **Use Cases:**
+
 - Identify unused constants for cleanup
 - Understand constant distribution across the codebase
 - Find constants that may need better adoption
@@ -156,7 +154,7 @@ node tools/dependency-analyzer.js
 
 **What it does:**
 
-1. Scans all `.vue`, `.js`, `.ts`, and `.mjs` files in the project
+1. Scans all `.vue`, `.js`, `.ts`, and `.mjs` files in `src/`
 2. Extracts import statements and categorizes them (local vs external)
 3. Identifies exports from each file
 4. Analyzes Vue-specific patterns (template components, store usage)
@@ -204,9 +202,11 @@ Dependencies:
 ```
 
 **Generated Files:**
+
 - `tools/output/project-dependencies.graphml` - Import graph for visualization tools
 
 **Use Cases:**
+
 - Understand project architecture and dependency flow
 - Identify tightly coupled modules
 - Find candidates for refactoring or extraction
@@ -282,6 +282,8 @@ node tools/find-unused-functions.js
 ## generate-synthetic-network.js / screenshot-synthetic-network.js
 
 **Purpose:** Try out the app, especially large citation networks, without access to the publications data service.
+
+**Prerequisite:** The scripts opening a browser (`screenshot-synthetic-network.js`, `extract-network-graphs.js`) need [Playwright](https://playwright.dev/), which is not a dependency of the project (`npm install --no-save playwright`).
 
 **Usage:**
 

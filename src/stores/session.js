@@ -6,7 +6,7 @@ import Filter from '@/core/Filter.js'
 import Publication from '@/core/Publication.js'
 import { saveAsFile } from '@/lib/Util.js'
 import { generateBibtex } from '@/utils/bibtex.js'
-import { getFilteredPublications, countFilteredPublications } from '@/utils/filterUtils.js'
+import { getFilteredPublications } from '@/utils/filterUtils.js'
 import {
   normalizeBoostKeywordString,
   parseUniqueBoostKeywords,
@@ -25,7 +25,6 @@ export const useSessionStore = defineStore('session', {
       activePublication: '',
       readPublicationsDois: new Set(),
       filter: new Filter(),
-      addQuery: '',
       sessionName: '',
       sessionId: ''
     }
@@ -37,6 +36,7 @@ export const useSessionStore = defineStore('session', {
       new Set(state.selectedPublications.map((publication) => publication.doi)),
     selectedPublicationsByDoi: (state) =>
       new Map(state.selectedPublications.map((publication) => [publication.doi, publication])),
+    excludedPublicationsDoiSet: (state) => new Set(state.excludedPublicationsDois),
     selectedPublicationsCount: (state) => state.selectedPublications.length,
     excludedPublicationsCount: (state) => state.excludedPublicationsDois.length,
     suggestedPublications: (state) => (state.suggestion ? state.suggestion.publications : []),
@@ -54,59 +54,11 @@ export const useSessionStore = defineStore('session', {
         state.filter.applyToSelected
       )
     },
-    selectedPublicationsFilteredCount: (state) => {
-      return countFilteredPublications(state.selectedPublications, state.filter, true)
-    },
-    selectedPublicationsNonFilteredCount: (state) => {
-      return countFilteredPublications(state.selectedPublications, state.filter, false)
-    },
-    suggestedPublicationsFilteredCount: (state) => {
-      return countFilteredPublications(state.suggestedPublications, state.filter, true)
-    },
-    suggestedPublicationsNonFilteredCount: (state) => {
-      return countFilteredPublications(state.suggestedPublications, state.filter, false)
-    },
     publications: (state) => state.selectedPublications.concat(state.suggestedPublications),
     publicationsFiltered: (state) =>
       state.selectedPublications.concat(state.suggestedPublicationsFiltered),
-    // Optimized year range calculations - compute both min/max in single pass
-    yearRange: (state) => {
-      let min = Infinity
-      let max = -Infinity
-      let hasValidYears = false
-
-      const processPublication = (publication) => {
-        if (!publication.year) return
-        const year = Number(publication.year)
-        if (isNaN(year)) return
-        min = Math.min(min, year)
-        max = Math.max(max, year)
-        hasValidYears = true
-      }
-
-      // Process selected publications
-      state.selectedPublications.forEach(processPublication)
-
-      // Process filtered suggested publications
-      if (state.suggestion?.publications) {
-        const publications = state.filter.applyToSuggested
-          ? state.suggestion.publications.filter(pub => state.filter.matches(pub))
-          : state.suggestion.publications
-        publications.forEach(processPublication)
-      }
-
-      return hasValidYears ? { min, max } : { min: undefined, max: undefined }
-    },
-    yearMax() {
-      return this.yearRange.max
-    },
-    yearMin() {
-      return this.yearRange.min
-    },
     unreadSuggestionsCount: (state) =>
       state.suggestedPublicationsFiltered.filter((publication) => !publication.isRead).length,
-    isKeywordLinkedToActive: (state) => (keyword) =>
-      state.activePublication && state.activePublication.boostKeywords.includes(keyword),
     uniqueBoostKeywords: (state) => parseUniqueBoostKeywords(state.boostKeywordString),
     sessionData() {
       return {
@@ -119,7 +71,9 @@ export const useSessionStore = defineStore('session', {
     isSelected() {
       return (doi) => this.selectedPublicationsDoiSet.has(doi)
     },
-    isExcluded: (state) => (doi) => state.excludedPublicationsDois.includes(doi),
+    isExcluded() {
+      return (doi) => this.excludedPublicationsDoiSet.has(doi)
+    },
     getSelectedPublicationByDoi() {
       return (doi) => this.selectedPublicationsByDoi.get(doi)
     }
@@ -133,12 +87,10 @@ export const useSessionStore = defineStore('session', {
       this.boostKeywordString = ''
       this.isBoost = true
       this.activePublication = ''
-      this.readPublicationsDois = new Set()
+      // Read publications are kept, as the user might want to carry them over to the next session
       this.filter = new Filter()
-      this.addQuery = ''
       this.sessionName = ''
       this.sessionId = ''
-      // Note: newly added flags are automatically cleared when selectedPublications is reset
     },
 
     removeFromExcludedPublication(doi) {
@@ -176,7 +128,8 @@ export const useSessionStore = defineStore('session', {
         // Replace multiple underscores with single underscore
         .replace(/_+/g, '_')
         // Remove leading/trailing underscore (runs already collapsed to one above)
-        .replace(/^_/, '').replace(/_$/, '')
+        .replace(/^_/, '')
+        .replace(/_$/, '')
 
       // Handle edge case of empty filename after sanitization
       if (!filename || filename === '_') {
@@ -211,12 +164,9 @@ export const useSessionStore = defineStore('session', {
       if (wasSessionEmpty) {
         return
       }
-      
-      // Clear all previously newly added flags
-      this.selectedPublications.forEach((publication) => {
-        publication.isNewlyAdded = false
-      })
-      
+
+      this.clearNewlyAddedFlags()
+
       // Mark the specified publications as newly added
       dois.forEach((doi) => {
         const normalizedDoi = doi.toLowerCase()
@@ -250,56 +200,42 @@ export const useSessionStore = defineStore('session', {
     setActivePublication(doi) {
       const selectedPublications = this.selectedPublications
       const suggestedPublications = this.suggestedPublications
-
-      // Clear all active states first
-      selectedPublications.forEach((publication) => {
-        publication.isActive = false
-        publication.isLinkedToActive = false
-      })
-      suggestedPublications.forEach((publication) => {
-        publication.isActive = false
-        publication.isLinkedToActive = false
-      })
-
-      // Set active state for selected publications
       const selectedPublication = selectedPublications.find(
         (publication) => publication.doi === doi
       )
-      if (selectedPublication) {
-        selectedPublication.isActive = true
-        this.activePublication = selectedPublication
+      const suggestedPublication = selectedPublication
+        ? undefined
+        : suggestedPublications.find((publication) => publication.doi === doi)
 
+      // Each state is assigned once, so that only publications with a changed state update
+      if (selectedPublication) {
         const linkedDois = new Set([
           ...selectedPublication.citationDois,
           ...selectedPublication.referenceDois
         ])
-        selectedPublications.forEach((publication) => {
+        this.publications.forEach((publication) => {
+          publication.isActive = publication === selectedPublication
           publication.isLinkedToActive = linkedDois.has(publication.doi)
         })
-        suggestedPublications.forEach((publication) => {
-          publication.isLinkedToActive = linkedDois.has(publication.doi)
-        })
-
-        console.log(`Highlighted as active publication with DOI ${doi}.`)
-        return
-      }
-
-      // Set active state for suggested publications
-      const suggestedPublication = suggestedPublications.find(
-        (publication) => publication.doi === doi
-      )
-      if (suggestedPublication) {
-        suggestedPublication.isActive = true
-        suggestedPublication.isRead = true
-        this.readPublicationsDois.add(doi)
-        this.activePublication = suggestedPublication
-
+        this.activePublication = selectedPublication
+      } else {
         // Linked by the selected publications' own citation data, as are network links and
         // scores: the suggestion's fetched data may list further, unreciprocated citations
         selectedPublications.forEach((publication) => {
+          publication.isActive = false
           publication.isLinkedToActive =
-            publication.citationDois.has(doi) || publication.referenceDois.has(doi)
+            Boolean(suggestedPublication) &&
+            (publication.citationDois.has(doi) || publication.referenceDois.has(doi))
         })
+        suggestedPublications.forEach((publication) => {
+          publication.isActive = publication === suggestedPublication
+          publication.isLinkedToActive = false
+        })
+        if (suggestedPublication) {
+          suggestedPublication.isRead = true
+          this.readPublicationsDois.add(doi)
+          this.activePublication = suggestedPublication
+        }
       }
       console.log(`Highlighted as active publication with DOI ${doi}.`)
     },
@@ -318,27 +254,27 @@ export const useSessionStore = defineStore('session', {
       console.log(`Cleared active publication ${previousDoi}, triggered by "${source}".`)
     },
 
-    exportSession () {
+    exportSession() {
       const filename = this.generateFilename('json')
       saveAsFile(filename, 'application/json', JSON.stringify(this.sessionData))
     },
 
-    exportAllBibtex () {
+    exportAllBibtex() {
       this.exportBibtex(this.selectedPublications)
     },
 
-    exportSingleBibtex (publication) {
+    exportSingleBibtex(publication) {
       this.exportBibtex([publication])
     },
 
-    exportBibtex (publicationList) {
+    exportBibtex(publicationList) {
       let bib = ''
-      publicationList.forEach((publication) => (bib += `${generateBibtex(publication)  }\n\n`))
+      publicationList.forEach((publication) => (bib += `${generateBibtex(publication)}\n\n`))
       const filename = this.generateFilename('bib')
       saveAsFile(filename, 'application/x-bibtex', bib)
     },
 
-    generateSessionUrl () {
+    generateSessionUrl() {
       // Compress and encode the data
       const jsonString = JSON.stringify(this.sessionData)
       const compressed = LZString.compressToEncodedURIComponent(jsonString)
@@ -346,7 +282,6 @@ export const useSessionStore = defineStore('session', {
       // Generate URL with session parameter
       const baseUrl = window.location.origin + window.location.pathname
       return `${baseUrl}?session=${compressed}`
-    },
-
+    }
   }
 })

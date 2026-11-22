@@ -7,7 +7,7 @@
  * However, when updating the suggestion, this visual state is not correctly
  * updated—in the vis, they show like queueing publications, although they
  * are already part of the selected publications.
- * 
+ *
  * Root cause: The network replot watcher only triggered when author nodes were visible,
  * so when updateQueued() was called with author nodes hidden, the network never replotted
  * and the queued publications continued to show the blurred/plus icon visual state.

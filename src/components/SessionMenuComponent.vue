@@ -9,8 +9,7 @@ import { useSessionStore } from '@/stores/session.js'
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
 const { openShareSessionModal, openExcludedModal } = useModalManager()
-const { clearSession, importSessionWithConfirmation, importBibtexWithConfirmation } =
-  useAppState()
+const { clearSession, importSessionWithConfirmation, importBibtexWithConfirmation } = useAppState()
 
 const sessionName = ref(sessionStore.sessionName)
 
@@ -36,7 +35,7 @@ const clearSessionName = () => {
 }
 
 const importBibtex = () => {
-  importBibtexWithConfirmation({ alwaysWarn: true })
+  importBibtexWithConfirmation(true)
 }
 
 // Watch for changes in the store to keep the local ref in sync

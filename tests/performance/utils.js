@@ -1,12 +1,3 @@
-export const PERFORMANCE_THRESHOLDS = {
-  renderTime: 100, // ms for initial render
-  memoryUsage: 50, // MB maximum
-  scrollFPS: 30, // minimum FPS during scroll
-  hoverDelay: 16, // ms maximum hover response
-  rerenderTime: 50, // ms for reactive updates
-  batchRenderTime: 500 // ms for rendering multiple components
-}
-
 export function measureRenderTime(mountFn) {
   const start = performance.now()
   const result = mountFn()
@@ -26,28 +17,7 @@ export function measureMemoryUsage() {
   return null
 }
 
-export function measureFPS(duration = 1000) {
-  return new Promise((resolve) => {
-    let frameCount = 0
-    const startTime = performance.now()
-
-    function countFrame() {
-      frameCount++
-      const elapsed = performance.now() - startTime
-
-      if (elapsed < duration) {
-        requestAnimationFrame(countFrame)
-      } else {
-        const fps = Math.round((frameCount * 1000) / elapsed)
-        resolve(fps)
-      }
-    }
-
-    requestAnimationFrame(countFrame)
-  })
-}
-
-export function createMockPublication(id = 'test-doi', overrides = {}) {
+function createMockPublication(id = 'test-doi', overrides = {}) {
   return {
     doi: id,
     title: 'Test Publication',

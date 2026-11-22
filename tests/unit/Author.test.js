@@ -1,14 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 
 import Author from '@/core/Author.js'
-
-// Mock constants
-vi.mock('@/constants/publication.js', () => ({
-  SCORING: {
-    FIRST_AUTHOR_BOOST: 2,
-    NEW_PUBLICATION_BOOST: 1.5
-  }
-}))
 
 describe('Author Bug Regression Tests', () => {
   let mockPublication

@@ -42,7 +42,6 @@ describe('NetworkControls', () => {
 
   describe('Component structure', () => {
     it('contains expected zoom controls', () => {
-
       const wrapper = mount(NetworkControls, {
         global: {
           plugins: [pinia],
@@ -56,7 +55,6 @@ describe('NetworkControls', () => {
     })
 
     it('contains node type toggle buttons', () => {
-
       const wrapper = mount(NetworkControls, {
         global: {
           plugins: [pinia],
@@ -72,7 +70,6 @@ describe('NetworkControls', () => {
     })
 
     it('contains settings menu', () => {
-
       const wrapper = mount(NetworkControls, {
         global: {
           plugins: [pinia],
@@ -86,8 +83,7 @@ describe('NetworkControls', () => {
   })
 
   describe('Event emissions', () => {
-    beforeEach(() => {
-    })
+    beforeEach(() => {})
 
     it('emits zoom event when zoom buttons are clicked', async () => {
       const wrapper = mount(NetworkControls, {

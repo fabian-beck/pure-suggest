@@ -29,11 +29,11 @@ npm run build
 ```bash
 # Run unit tests (NEVER CANCEL)
 npm test
-# Takes ~14 seconds. Runs 436 tests across 36 test files. Set timeout to 300+ seconds.
+# Takes ~20 seconds. Set timeout to 300+ seconds.
 
 # Run performance tests (NEVER CANCEL)
 npm run test:perf
-# Takes ~8 seconds. Browser tests may skip due to missing Chrome - this is expected in sandboxed environments. Set timeout to 300+ seconds.
+# The browser test starts its own dev server on port 8080 and needs the Chrome of Puppeteer; it fails where that is missing (expected in sandboxed environments). Set timeout to 300+ seconds.
 
 # Run all tests (NEVER CANCEL)
 npm run test:all
@@ -101,17 +101,20 @@ After making changes, ALWAYS test these core user workflows:
 ### State Management (`src/stores/`)
 
 - `session.js` - Selected publications, suggestions, filters, boost keywords
-- `interface.js` - UI state, modals, loading states, mobile responsiveness
+- `interface.js` - UI state, loading states, mobile responsiveness, layout
 - `queue.js` - Temporary queues for batch operations
 - `author.js` - Author aggregation and scoring
+- `modal.js` - Modal dialog states
+- `concept.js` - Concepts clustering the selected publications
 
 ### Services (`src/services/`)
 
 - `SuggestionService.js` - Dedicated service for computing publication suggestions
+- `ConceptService.js` - Concept analysis clustering the selected publications
 
 ### Testing (`tests/`)
 
-- `tests/unit/` - Component and utility unit tests (36 files, 436 tests)
+- `tests/unit/` - Component and utility unit tests
 - `tests/performance/` - Load and rendering benchmarks
 
 ## Common Build Issues and Solutions
@@ -132,7 +135,7 @@ PUPPETEER_SKIP_DOWNLOAD=true npm install
 
 ### Performance Test Browser Failures
 
-- Browser tests skip when Chrome unavailable (expected in sandboxed environments)
+- Browser tests fail when Chrome is unavailable (expected in sandboxed environments)
 - Performance scale tests still run and provide valuable metrics
 - This is normal and not a blocker
 
@@ -164,11 +167,11 @@ PUPPETEER_SKIP_DOWNLOAD=true npm install
 
 ```bash
 # Analyze project dependencies
-cd tools && mkdir -p output && node dependency-analyzer.js
+node tools/dependency-analyzer.js
 # Generates GraphML output for network visualization
 
 # Analyze constant usage patterns
-cd tools && mkdir -p output && node constant-usage-analyzer.js
+node tools/constant-usage-analyzer.js
 # Identifies candidates for decentralization/centralization
 ```
 
@@ -182,8 +185,8 @@ cd tools && mkdir -p output && node constant-usage-analyzer.js
 
 The project uses GitHub Actions (`.github/workflows/node.js.yml`):
 
-- Runs on Node.js 12.x, 14.x, 16.x
-- Executes: `npm ci`, `npm run build`, `npm test`
+- Runs on Node.js 22.x, 24.x
+- Executes: `npm ci`, `npm run lint`, `npm run build`, `npm test`
 - Always ensure your changes pass these steps locally
 
 ## Architecture Notes

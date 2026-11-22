@@ -107,12 +107,18 @@ describe('score-based node sizes', () => {
   })
 
   it('sizes publication and author nodes by their scores', () => {
-    const publications = [createPublication('low', { score: 1 }), createPublication('high', { score: 50 })]
+    const publications = [
+      createPublication('low', { score: 1 }),
+      createPublication('high', { score: 50 })
+    ]
     const [low, high] = createPublicationNodes(publications, {})
     expect(low.sizeFactor).toBeLessThan(high.sizeFactor)
 
     const author = (id, score) => ({ id, score, publicationDois: ['low'] })
-    const [weak, strong] = createAuthorNodes([author('weak', 2), author('strong', 20)], publications)
+    const [weak, strong] = createAuthorNodes(
+      [author('weak', 2), author('strong', 20)],
+      publications
+    )
     expect(weak.sizeFactor).toBeLessThan(strong.sizeFactor)
   })
 })

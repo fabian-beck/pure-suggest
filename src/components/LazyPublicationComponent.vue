@@ -137,11 +137,6 @@ function activateSkeleton() {
   }, 100)
 }
 
-// Handle focus on skeleton (should behave like PublicationComponent)
-function handleFocus() {
-  activateSkeleton()
-}
-
 // Handle click on skeleton
 function handleClick(event) {
   event.stopPropagation()
@@ -157,22 +152,8 @@ function handleKeyDown(event) {
     return
   }
 
-  // For arrow keys, we need to ensure all publications are loaded so navigation works
-  if (['ArrowUp', 'ArrowDown'].includes(event.key)) {
-    // Load this component if not loaded
-    if (!hasLoaded.value) {
-      forceLoad()
-    }
-
-    // Don't prevent default - let Keys.js handle the navigation
-    // The Keys.js system should work now that we have the right DOM structure
-    return
-  }
-
-  // For any other keys, just load if needed
-  if (!hasLoaded.value) {
-    forceLoad()
-  }
+  // Any other key loads the publication; arrow keys are left to Keys.js for navigation
+  forceLoad()
 }
 </script>
 
@@ -189,7 +170,7 @@ function handleKeyDown(event) {
       :style="{ height: `${estimatedHeight}px` }"
       tabindex="0"
       :id="publication.doi"
-      @focus="handleFocus"
+      @focus="activateSkeleton"
       @click="handleClick"
       @keydown="handleKeyDown"
     >
@@ -223,34 +204,22 @@ function handleKeyDown(event) {
   background: var(--bulma-white);
   border: 1px solid var(--bulma-border);
   margin-bottom: 0.5rem;
-  animation: pulse 1.5s ease-in-out infinite alternate;
   cursor: pointer;
   outline-offset: -0.25rem;
   min-height: 5rem; // Match PublicationComponent min-height
 
   &:focus {
     outline: 1px solid var(--bulma-dark);
-    animation-play-state: paused;
   }
 
   &:hover {
     background: rgba(0, 0, 0, 0.03);
-    animation-play-state: paused;
   }
 
   // Match PublicationComponent active state styling
   &.is-active {
     background: rgba(0, 0, 0, 0.1) !important;
     outline: 1px solid var(--bulma-dark);
-    animation-play-state: paused;
-  }
-
-  &.is-selected {
-    // Add selected styling if needed
-  }
-
-  &.is-linked-to-active {
-    // Add linked styling if needed
   }
 
   .skeleton-glyph {
@@ -286,15 +255,6 @@ function handleKeyDown(event) {
     &.skeleton-year {
       width: 30%;
     }
-  }
-}
-
-@keyframes pulse {
-  0% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.7;
   }
 }
 </style>

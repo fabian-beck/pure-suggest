@@ -73,7 +73,9 @@ describe('KeywordMenuComponent', () => {
       global: {
         plugins: [pinia],
         stubs: {
-          'v-menu': { template: '<div class="v-menu"><slot name="activator" :props="{}"></slot></div>' },
+          'v-menu': {
+            template: '<div class="v-menu"><slot name="activator" :props="{}"></slot></div>'
+          },
           'v-btn': { template: '<button class="v-btn"><slot></slot></button>' },
           'v-icon': true
         }

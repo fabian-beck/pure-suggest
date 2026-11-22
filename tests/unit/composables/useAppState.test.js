@@ -40,7 +40,6 @@ describe('useAppState - Session Loading', () => {
     authorStore = useAuthorStore()
     queueStore = useQueueStore()
 
-
     appState = useAppState()
 
     // Mock interface store methods
@@ -325,7 +324,7 @@ describe('useAppState - Session Loading', () => {
       queueStore.clear()
       mockShowConfirmDialog.mockClear()
 
-      appState.importBibtexWithConfirmation({ alwaysWarn: true })
+      appState.importBibtexWithConfirmation(true)
 
       const [message] = mockShowConfirmDialog.mock.calls[0]
       expect(message).toContain('This will clear and replace the current session')

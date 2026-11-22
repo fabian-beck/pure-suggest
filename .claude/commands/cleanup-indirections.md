@@ -26,6 +26,7 @@ node tools/indirection-detector.js src
 ```
 
 Then investigate the top candidates manually, focusing on:
+
 - Single-line return statements
 - Simple variable assignments
 - Functions that just call other functions
@@ -34,9 +35,12 @@ Then investigate the top candidates manually, focusing on:
 ## Safe Cleanup Patterns
 
 ### Inline Simple Returns
+
 ```javascript
 // Before
-function isValid() { return this.value !== null; }
+function isValid() {
+  return this.value !== null
+}
 // Usage: if (isValid()) { ... }
 
 // After
@@ -44,19 +48,29 @@ function isValid() { return this.value !== null; }
 ```
 
 ### Merge Adjacent Methods
+
 ```javascript
 // Before
-function getValue() { return this.data.value; }
-function processValue() { return getValue().trim(); }
+function getValue() {
+  return this.data.value
+}
+function processValue() {
+  return getValue().trim()
+}
 
 // After
-function processValue() { return this.data.value.trim(); }
+function processValue() {
+  return this.data.value.trim()
+}
 ```
 
 ### Remove Unnecessary Wrappers
+
 ```javascript
 // Before
-function handleClick() { this.onClick(); }
+function handleClick() {
+  this.onClick()
+}
 // Usage: @click="handleClick"
 
 // After
@@ -70,12 +84,14 @@ Always manually review candidates before cleanup. The goal is **removing unneces
 ### **Good Candidates for Inlining:**
 
 **Trivial Wrappers**
+
 - Simple property access: `return items.map(item => item.property)`
 - Basic calculations: `return Math.min(-200, -100 * Math.sqrt(x))`
 - Simple ternary conditions: `return condition ? valueA : valueB`
 - One-line utility functions: `return string.replace(/pattern/g, 'replacement')`
 
 **Unnecessary Abstractions**
+
 - Functions that don't add semantic clarity when inlined
 - Single-use utilities that are self-explanatory at call site
 - Getters that just return simple expressions
@@ -83,26 +99,31 @@ Always manually review candidates before cleanup. The goal is **removing unneces
 ### **Consider Keeping When:**
 
 **Meaningful Semantics**
+
 - Function name significantly improves code readability
 - Complex operations that benefit from descriptive naming
 - Business logic that may evolve (calculations, validations)
 
 **Template Readability**
+
 - Functions called from Vue templates that would become complex inline expressions
 - Template logic that would harm readability if inlined (multi-line expressions, complex conditions)
 - Functions that keep template code clean and declarative
 
 **Architectural Consistency**
+
 - Part of established patterns (if you keep one `clearXHighlight`, keep all)
 - API consistency across similar utility modules
 - Functions likely to be extended or called from multiple places in future
 
 **Complexity Threshold**
+
 - Multi-step operations even if currently short
 - Functions with conditional logic or error handling
 - Operations involving external libraries (D3, DOM manipulation)
 
 ### **Evaluation Process:**
+
 1. **Ask: Does the function name add clarity?** If inlining makes code less readable, keep it
 2. **Consider consistency:** Don't create inconsistent patterns
 3. **Assess complexity:** Simple expressions are good inline candidates

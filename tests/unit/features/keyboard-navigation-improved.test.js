@@ -36,16 +36,15 @@ describe('Radical Keyboard Navigation Scrolling: Always Center', () => {
 
     // Verify focus was called
     expect(mockComponent.focus).toHaveBeenCalled()
-    expect(interfaceStore.lastNavigationDirection).toBe('down')
 
     // Advance timers to trigger setTimeout
     await vi.runAllTimersAsync()
 
     // Should always center regardless of direction
     expect(mockScrollIntoView).toHaveBeenCalledWith({
-      behavior: "smooth",
-      block: "center",
-      inline: "nearest"
+      behavior: 'smooth',
+      block: 'center',
+      inline: 'nearest'
     })
   })
 
@@ -63,9 +62,9 @@ describe('Radical Keyboard Navigation Scrolling: Always Center', () => {
 
     // Should always center regardless of direction
     expect(mockScrollIntoView).toHaveBeenCalledWith({
-      behavior: "smooth",
-      block: "center",
-      inline: "nearest"
+      behavior: 'smooth',
+      block: 'center',
+      inline: 'nearest'
     })
   })
 

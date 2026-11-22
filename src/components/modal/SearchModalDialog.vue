@@ -162,21 +162,6 @@ export default {
         return
       }
       handlePublicationKey(event, publication)
-    },
-
-    close() {
-      this.modalStore.isSearchModalDialogShown = false
-      this.reset()
-    },
-
-    reset() {
-      this.searchCount++
-      this.searchResults = { results: [], type: 'empty' }
-      this.isLoading = false
-      this.searchCancelled = false
-      this.loaded = 0
-      this.total = 0
-      this.lastSearchQuery = ''
     }
   }
 }
@@ -232,10 +217,11 @@ export default {
           class="has-background-primary has-text-white mr-2 is-hidden-mobile"
           @click="addAllPublications"
           v-show="searchResults.type === 'doi' && filteredSearchResults.length > 0"
-          v-tippy="'Mark all publications to be added to selected (Shift+Enter in the search field).'"
-          small
+          v-tippy="
+            'Mark all publications to be added to selected (Shift+Enter in the search field).'
+          "
         >
-          <v-icon left>mdi-plus-thick</v-icon> Add all
+          <v-icon>mdi-plus-thick</v-icon> Add all
         </v-btn>
       </v-card-actions>
     </template>

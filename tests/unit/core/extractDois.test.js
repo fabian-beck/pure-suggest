@@ -89,7 +89,11 @@ describe('extractDois', () => {
   })
 
   it('separates DOIs listed one per line', () => {
-    expect(extractDois('10.1145/3290605.3300286\n10.1109/TVCG.2018.2865146\r\n10.1007/978-3-030-29387-1_12')).toEqual([
+    expect(
+      extractDois(
+        '10.1145/3290605.3300286\n10.1109/TVCG.2018.2865146\r\n10.1007/978-3-030-29387-1_12'
+      )
+    ).toEqual([
       '10.1145/3290605.3300286',
       '10.1109/TVCG.2018.2865146',
       '10.1007/978-3-030-29387-1_12'
@@ -106,13 +110,19 @@ describe('extractDois', () => {
     })
 
     it('joins a DOI wrapped after a dot when the rest starts with digits', () => {
-      expect(extractDois('doi: 10.1109/TVCG.\n2018.2865146.')).toEqual(['10.1109/TVCG.2018.2865146'])
+      expect(extractDois('doi: 10.1109/TVCG.\n2018.2865146.')).toEqual([
+        '10.1109/TVCG.2018.2865146'
+      ])
       expect(extractDois('10.1109/TVCG.2019. 2934619')).toEqual(['10.1109/TVCG.2019.2934619'])
     })
 
     it('joins a DOI wrapped before a hyphen or dot', () => {
-      expect(extractDois('10.1111/j.1467\n-8659.2011.01921.x')).toEqual(['10.1111/j.1467-8659.2011.01921.x'])
-      expect(extractDois('10.1007/978\n-3-319-22723-8_17')).toEqual(['10.1007/978-3-319-22723-8_17'])
+      expect(extractDois('10.1111/j.1467\n-8659.2011.01921.x')).toEqual([
+        '10.1111/j.1467-8659.2011.01921.x'
+      ])
+      expect(extractDois('10.1007/978\n-3-319-22723-8_17')).toEqual([
+        '10.1007/978-3-319-22723-8_17'
+      ])
       expect(extractDois('10.1109/tvcg\n.2016.2610422')).toEqual(['10.1109/tvcg.2016.2610422'])
     })
 
@@ -124,12 +134,16 @@ describe('extractDois', () => {
       expect(extractDois('doi: 10.1145/223904.\n223913 1, 2')).toEqual(['10.1145/223904.223913'])
       expect(extractDois('doi:10.1006/jvlc.1995.1010. 3')).toEqual(['10.1006/jvlc.1995.1010'])
       expect(extractDois('doi:10.1109/TVCG.2009.109.\n2, 3')).toEqual(['10.1109/TVCG.2009.109'])
-      expect(extractDois('doi:10.1109/TVCG.2009.109.\n3\n[KDMW16] A. Author')).toEqual(['10.1109/TVCG.2009.109'])
+      expect(extractDois('doi:10.1109/TVCG.2009.109.\n3\n[KDMW16] A. Author')).toEqual([
+        '10.1109/TVCG.2009.109'
+      ])
       expect(extractDois('doi:10.1109/TVCG.2009.109.\n3')).toEqual(['10.1109/TVCG.2009.109'])
     })
 
     it('joins a DOI wrapped more than once', () => {
-      expect(extractDois('10.1007/978-3-\n030-29387-\n1_12')).toEqual(['10.1007/978-3-030-29387-1_12'])
+      expect(extractDois('10.1007/978-3-\n030-29387-\n1_12')).toEqual([
+        '10.1007/978-3-030-29387-1_12'
+      ])
     })
 
     it('joins DOIs with spaces inside the prefix', () => {
@@ -140,12 +154,24 @@ describe('extractDois', () => {
     })
 
     it('does not join the DOI with the start of the next reference', () => {
-      expect(extractDois('10.1109/TVCG.2018.2865146.\n[2] B. Author')).toEqual(['10.1109/TVCG.2018.2865146'])
-      expect(extractDois('10.1109/TVCG.2018.2865146.\n2. B. Author')).toEqual(['10.1109/TVCG.2018.2865146'])
-      expect(extractDois('10.1109/TVCG.2018.2865146\n12. B. Author')).toEqual(['10.1109/TVCG.2018.2865146'])
-      expect(extractDois('10.1109/TVCG.2018.2865146.\nSmith, J. (2020)')).toEqual(['10.1109/TVCG.2018.2865146'])
-      expect(extractDois('10.1109/TVCG.2018.2865146\nAccessed: 2020')).toEqual(['10.1109/TVCG.2018.2865146'])
-      expect(extractDois('10.1109/TVCG.2018.2865146\n2019, pp. 1-12')).toEqual(['10.1109/TVCG.2018.2865146'])
+      expect(extractDois('10.1109/TVCG.2018.2865146.\n[2] B. Author')).toEqual([
+        '10.1109/TVCG.2018.2865146'
+      ])
+      expect(extractDois('10.1109/TVCG.2018.2865146.\n2. B. Author')).toEqual([
+        '10.1109/TVCG.2018.2865146'
+      ])
+      expect(extractDois('10.1109/TVCG.2018.2865146\n12. B. Author')).toEqual([
+        '10.1109/TVCG.2018.2865146'
+      ])
+      expect(extractDois('10.1109/TVCG.2018.2865146.\nSmith, J. (2020)')).toEqual([
+        '10.1109/TVCG.2018.2865146'
+      ])
+      expect(extractDois('10.1109/TVCG.2018.2865146\nAccessed: 2020')).toEqual([
+        '10.1109/TVCG.2018.2865146'
+      ])
+      expect(extractDois('10.1109/TVCG.2018.2865146\n2019, pp. 1-12')).toEqual([
+        '10.1109/TVCG.2018.2865146'
+      ])
     })
 
     it('does not join two consecutive DOIs', () => {

@@ -123,7 +123,7 @@ export default {
       return 'Authors of selected'
     }
   },
-  expose: ['scrollToAuthor', 'loadMoreAuthors', 'resetPagination', 'handleScroll'],
+  expose: ['loadMoreAuthors', 'resetPagination', 'handleScroll'],
   methods: {
     getFilteredAlternativeNames(author) {
       return author.alternativeNames.filter((name) => name !== author.id && name !== author.name)
@@ -162,9 +162,6 @@ export default {
         backgroundColor: `hsla(0, 0%, ${lightness}%, 0.8)`,
         color: '#ffffff'
       }
-    },
-    cancel() {
-      this.modalStore.isAuthorModalDialogShown = false
     },
     handleAuthorItemClick(authorId) {
       // Only activate if not already in single-author view
@@ -334,6 +331,7 @@ export default {
     v-model="modalStore.isAuthorModalDialogShown"
     ref="dialog"
     @dialog-key="onDialogKey"
+    @scroll="handleScroll"
   >
     <template #header-menu>
       <CompactButton
@@ -381,7 +379,7 @@ export default {
         </v-list>
       </v-menu>
     </template>
-    <div class="content" @scroll="handleScroll">
+    <div class="content">
       <section>
         <ul>
           <li
@@ -401,8 +399,7 @@ export default {
             <div class="media-content">
               <div class="content">
                 <div class="mb-2">
-                  <b class="author-name">{{ author.name }}</b
-                  >&nbsp;<span v-if="author.orcid">
+                  <b class="author-name">{{ author.name }}</b>&nbsp;<span v-if="author.orcid">
                     <a :href="`https://orcid.org/${author.orcid}`" @click.stop
                       ><img
                         alt="ORCID logo"
@@ -499,13 +496,13 @@ export default {
           <span>Loading more authors...</span>
         </div>
 
-        <!-- Load more button (fallback if scroll detection doesn't work) -->
+        <!-- Load more button (alternative to scrolling) -->
         <div
           v-else-if="hasMoreAuthorsToShow && !authorStore.activeAuthorId"
           class="load-more-authors p-3 text-center"
         >
           <v-btn variant="outlined" @click="loadMoreAuthors" size="small">
-            <v-icon left>mdi-arrow-down</v-icon>
+            <v-icon>mdi-arrow-down</v-icon>
             Load more authors ({{
               authorStore.selectedPublicationsAuthors.length - displayedAuthorCount
             }}
@@ -522,7 +519,6 @@ export default {
               :key="publication.doi"
               class="author-publication mb-3"
               :publication="publication"
-              :is-active="false"
               publication-type="selected"
             />
           </ul>
@@ -540,17 +536,6 @@ export default {
 
   & li {
     padding: 0 0.5rem;
-
-    &.highlight {
-      background-color: hsla(0, 0%, 70%, 0.5);
-      animation: fadeOut 2s forwards;
-    }
-
-    @keyframes fadeOut {
-      to {
-        background-color: transparent;
-      }
-    }
 
     & .media-left {
       min-width: 4.5rem;

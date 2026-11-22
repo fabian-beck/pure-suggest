@@ -4,7 +4,7 @@ _PUREsuggest_ is a scientific literature search tool that, starting from some se
 
 The tool is available at: https://fabian-beck.github.io/pure-suggest/
 
-![Interface of PUREsuggest](pure_suggest.png)
+![Interface of PUREsuggest](public/pure_suggest.png)
 
 ## Key features
 

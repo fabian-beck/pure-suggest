@@ -9,7 +9,6 @@ export default class Filter {
     this.yearStart = undefined
     this.yearEnd = undefined
     this.tags = []
-    this.doi = ''
     this.dois = []
     this.authors = []
     this.isActive = true
@@ -51,6 +50,7 @@ export default class Filter {
   }
 
   matchesYear(publication) {
+    if (!this.isYearActive()) return true
     if (!publication.year) return false
     return this.matchesYearStart(publication) && this.matchesYearEnd(publication)
   }
@@ -96,20 +96,8 @@ export default class Filter {
     this.toggleFilterValue('tags', tagValue)
   }
 
-  addTag(tagValue) {
-    this.addFilterValue('tags', tagValue)
-  }
-
-  removeTag(tagValue) {
-    this.removeFilterValue('tags', tagValue)
-  }
-
   toggleDoi(doi) {
     this.toggleFilterValue('dois', doi)
-  }
-
-  addDoi(doi) {
-    this.addFilterValue('dois', doi)
   }
 
   removeDoi(doi) {
@@ -118,10 +106,6 @@ export default class Filter {
 
   toggleAuthor(authorId) {
     this.toggleFilterValue('authors', authorId)
-  }
-
-  addAuthor(authorId) {
-    this.addFilterValue('authors', authorId)
   }
 
   removeAuthor(authorId) {
@@ -161,10 +145,10 @@ export default class Filter {
       this.isActive &&
       Boolean(
         this.string ||
-          this.tags.length > 0 ||
-          this.isYearActive() ||
-          this.dois.length > 0 ||
-          this.authors.length > 0
+        this.tags.length > 0 ||
+        this.isYearActive() ||
+        this.dois.length > 0 ||
+        this.authors.length > 0
       ) &&
       (this.applyToSelected || this.applyToSuggested)
     )

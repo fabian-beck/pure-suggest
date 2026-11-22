@@ -58,17 +58,17 @@ describe('Newly Added Selected Papers', () => {
     it('marks publications as newly added when session was not empty', () => {
       // Add initial publication to make session non-empty
       sessionStore.selectedPublications.push(new Publication('10.1000/initial'))
-      
+
       // Add new publications
       sessionStore.addPublicationsToSelection(['10.1000/new1', '10.1000/new2'])
-      
+
       // Mark them as newly added (session was not empty)
       sessionStore.markPublicationsAsNewlyAdded(['10.1000/new1', '10.1000/new2'], false)
-      
+
       const new1 = sessionStore.getSelectedPublicationByDoi('10.1000/new1')
       const new2 = sessionStore.getSelectedPublicationByDoi('10.1000/new2')
       const initial = sessionStore.getSelectedPublicationByDoi('10.1000/initial')
-      
+
       expect(new1.isNewlyAdded).toBe(true)
       expect(new2.isNewlyAdded).toBe(true)
       expect(initial.isNewlyAdded).toBe(false)
@@ -77,13 +77,13 @@ describe('Newly Added Selected Papers', () => {
     it('does not mark publications as newly added when session was empty', () => {
       // Empty session - add first publications
       sessionStore.addPublicationsToSelection(['10.1000/first1', '10.1000/first2'])
-      
+
       // Mark them as newly added (but session was empty)
       sessionStore.markPublicationsAsNewlyAdded(['10.1000/first1', '10.1000/first2'], true)
-      
+
       const first1 = sessionStore.getSelectedPublicationByDoi('10.1000/first1')
       const first2 = sessionStore.getSelectedPublicationByDoi('10.1000/first2')
-      
+
       expect(first1.isNewlyAdded).toBe(false)
       expect(first2.isNewlyAdded).toBe(false)
     })
@@ -93,14 +93,14 @@ describe('Newly Added Selected Papers', () => {
       sessionStore.selectedPublications.push(new Publication('10.1000/initial'))
       sessionStore.addPublicationsToSelection(['10.1000/old'])
       sessionStore.markPublicationsAsNewlyAdded(['10.1000/old'], false)
-      
+
       const oldPub = sessionStore.getSelectedPublicationByDoi('10.1000/old')
       expect(oldPub.isNewlyAdded).toBe(true)
-      
+
       // Add newer publications
       sessionStore.addPublicationsToSelection(['10.1000/new'])
       sessionStore.markPublicationsAsNewlyAdded(['10.1000/new'], false)
-      
+
       const newPub = sessionStore.getSelectedPublicationByDoi('10.1000/new')
       expect(newPub.isNewlyAdded).toBe(true)
       expect(oldPub.isNewlyAdded).toBe(false) // Should be cleared
@@ -110,15 +110,15 @@ describe('Newly Added Selected Papers', () => {
       sessionStore.selectedPublications.push(new Publication('10.1000/initial'))
       sessionStore.addPublicationsToSelection(['10.1000/new1', '10.1000/new2'])
       sessionStore.markPublicationsAsNewlyAdded(['10.1000/new1', '10.1000/new2'], false)
-      
+
       const new1 = sessionStore.getSelectedPublicationByDoi('10.1000/new1')
       const new2 = sessionStore.getSelectedPublicationByDoi('10.1000/new2')
-      
+
       expect(new1.isNewlyAdded).toBe(true)
       expect(new2.isNewlyAdded).toBe(true)
-      
+
       sessionStore.clearNewlyAddedFlags()
-      
+
       expect(new1.isNewlyAdded).toBe(false)
       expect(new2.isNewlyAdded).toBe(false)
     })

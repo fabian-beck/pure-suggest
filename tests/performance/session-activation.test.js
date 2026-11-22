@@ -65,3 +65,25 @@ describe('Session Store Activation Performance', () => {
     expect(activationTime).toBeLessThan(150)
   })
 })
+
+describe('Session Store Excluded Lookup Performance', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  it('looks up many DOIs in a long list of excluded publications quickly', () => {
+    const sessionStore = useSessionStore()
+    sessionStore.excludedPublicationsDois = Array.from({ length: 2_000 }, (_, i) => `excluded-${i}`)
+    const { isExcluded } = sessionStore
+
+    const start = performance.now()
+    let excludedCount = 0
+    for (let i = 0; i < 100_000; i++) {
+      if (isExcluded(`excluded-${i}`)) excludedCount++
+    }
+    const lookupTime = performance.now() - start
+
+    expect(excludedCount).toBe(2_000)
+    expect(lookupTime).toBeLessThan(150)
+  })
+})

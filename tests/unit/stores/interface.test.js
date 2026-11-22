@@ -107,6 +107,14 @@ describe('Interface Store - Layout', () => {
     expect(interfaceStore.isNetworkCollapsible).toBe(false)
   })
 
+  it('shows the network collapsed only where it can be collapsed', () => {
+    interfaceStore.isNetworkCollapsed = true
+    expect(interfaceStore.isNetworkShownCollapsed).toBe(true)
+
+    interfaceStore.isMobile = true
+    expect(interfaceStore.isNetworkShownCollapsed).toBe(false)
+  })
+
   it('shows the network in normal size when switching the layout', () => {
     interfaceStore.collapseNetwork()
     interfaceStore.setLayoutMode('networkRight')
@@ -129,7 +137,10 @@ describe('Interface Store - Layout', () => {
   })
 
   it('ignores invalid stored layout settings', () => {
-    localStorage.setItem('layoutSettings', '{"mode":"unknown","panelSizes":{"threeColumns":{"columns":[1]}}}')
+    localStorage.setItem(
+      'layoutSettings',
+      '{"mode":"unknown","panelSizes":{"threeColumns":{"columns":[1]}}}'
+    )
     setActivePinia(createPinia())
     const restoredStore = useInterfaceStore()
 

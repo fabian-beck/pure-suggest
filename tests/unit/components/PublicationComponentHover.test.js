@@ -5,7 +5,6 @@ import { createMockSessionStore, createMockInterfaceStore } from '../../helpers/
 
 import PublicationComponent from '@/components/PublicationComponent.vue'
 
-
 // Simplified store mocks using testUtils
 const mockQueueStore = {
   isQueuingForSelected: vi.fn(() => false),
@@ -148,7 +147,7 @@ describe('PublicationComponent Hover Bug', () => {
   it('should show hover state when interfaceStore.hoveredPublication matches DOI', async () => {
     // Set the hovered publication in the mock store
     mockInterfaceStore.hoveredPublication = 'test-doi'
-    
+
     wrapper = mount(PublicationComponent, {
       props: { publication: mockPublication },
       global: {
@@ -169,7 +168,7 @@ describe('PublicationComponent Hover Bug', () => {
   it('should not show hover state when interfaceStore.hoveredPublication does not match DOI', async () => {
     // Set a different DOI in the mock store
     mockInterfaceStore.hoveredPublication = 'other-doi'
-    
+
     wrapper = mount(PublicationComponent, {
       props: { publication: mockPublication },
       global: {
@@ -209,7 +208,7 @@ describe('PublicationComponent Hover Bug', () => {
     // BUG: Currently, there's no mechanism to notify the NetworkVisComponent
     // that hoveredPublication has changed from the PublicationComponent side.
     // The NetworkVisComponent only updates when its own nodes are hovered.
-    
+
     // Expected behavior: Network visualization should update when publication is hovered
     // This test documents the bug - the network doesn't update from external hover events
     expect(mockInterfaceStore.setHoveredPublication).toHaveBeenCalledWith(mockPublication)

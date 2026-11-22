@@ -46,7 +46,7 @@ export class SuggestionService {
     const suggestedPublications = {}
 
     selectedPublications.forEach((publication) => {
-      // Process citations (publication cites these DOIs)
+      // Process citations (these DOIs cite the publication)
       publication.citationDois.forEach((doi) => {
         if (isExcluded(doi)) return
 
@@ -57,7 +57,7 @@ export class SuggestionService {
         }
       })
 
-      // Process references (these DOIs cite this publication)
+      // Process references (the publication cites these DOIs)
       publication.referenceDois.forEach((doi) => {
         if (isExcluded(doi)) return
 
@@ -117,7 +117,7 @@ export class SuggestionService {
   }
 
   /**
-   * Adds citation suggestion (suggested DOI is referenced by source)
+   * Adds citation suggestion (suggested DOI cites source)
    * @private
    */
   static _addCitationSuggestion(suggestedPublications, doi, sourceDoi) {
@@ -129,7 +129,7 @@ export class SuggestionService {
   }
 
   /**
-   * Adds reference suggestion (suggested DOI cites source)
+   * Adds reference suggestion (suggested DOI is cited by source)
    * @private
    */
   static _addReferenceSuggestion(suggestedPublications, doi, sourceDoi) {
@@ -164,48 +164,37 @@ export class SuggestionService {
    * @private
    */
   static _validateCitationConsistency(selectedPublications, getSelectedPublicationByDoi) {
-    let inconsistenciesFound = 0
     let inconsistenciesFixed = 0
 
     selectedPublications.forEach((publication) => {
       // Check forward citations: if A cites B, B should list A as citing it
       publication.referenceDois.forEach((citedDoi) => {
-        try {
-          const citedPub = getSelectedPublicationByDoi(citedDoi)
-          if (citedPub && !citedPub.citationDois.has(publication.doi)) {
-            inconsistenciesFound++
-            console.warn(
-              `[SuggestionService] Citation inconsistency: ${publication.doi} claims to cite ${citedDoi}, ` +
+        const citedPub = getSelectedPublicationByDoi(citedDoi)
+        if (citedPub && !citedPub.citationDois.has(publication.doi)) {
+          console.warn(
+            `[SuggestionService] Citation inconsistency: ${publication.doi} claims to cite ${citedDoi}, ` +
               `but ${citedDoi} doesn't list ${publication.doi} in citationDois. Adding reverse relationship.`
-            )
-            citedPub.citationDois.add(publication.doi)
-            inconsistenciesFixed++
-          }
-        } catch {
-          // Publication not in selected set, skip validation
+          )
+          citedPub.citationDois.add(publication.doi)
+          inconsistenciesFixed++
         }
       })
 
       // Check reverse citations: if A lists B as citing it, B should cite A
       publication.citationDois.forEach((citingDoi) => {
-        try {
-          const citingPub = getSelectedPublicationByDoi(citingDoi)
-          if (citingPub && !citingPub.referenceDois.has(publication.doi)) {
-            inconsistenciesFound++
-            console.warn(
-              `[SuggestionService] Citation inconsistency: ${publication.doi} claims ${citingDoi} cites it, ` +
+        const citingPub = getSelectedPublicationByDoi(citingDoi)
+        if (citingPub && !citingPub.referenceDois.has(publication.doi)) {
+          console.warn(
+            `[SuggestionService] Citation inconsistency: ${publication.doi} claims ${citingDoi} cites it, ` +
               `but ${citingDoi} doesn't list ${publication.doi} in referenceDois. Adding forward relationship.`
-            )
-            citingPub.referenceDois.add(publication.doi)
-            inconsistenciesFixed++
-          }
-        } catch {
-          // Publication not in selected set, skip validation
+          )
+          citingPub.referenceDois.add(publication.doi)
+          inconsistenciesFixed++
         }
       })
     })
 
-    if (inconsistenciesFound > 0) {
+    if (inconsistenciesFixed > 0) {
       console.log(
         `[SuggestionService] Citation consistency check: Found and fixed ${inconsistenciesFixed} inconsistencies`
       )

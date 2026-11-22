@@ -49,9 +49,7 @@ export const useInterfaceStore = defineStore('interface', {
       isLoadingCancelable: false,
       errorToast: {
         message: '',
-        isShown: false,
-        type: '',
-        duration: 0
+        isShown: false
       },
       isNetworkExpanded: false,
       isNetworkCollapsed: false,
@@ -66,9 +64,7 @@ export const useInterfaceStore = defineStore('interface', {
       layoutMode: layoutSettings.mode, // 'auto' or a key of LAYOUTS
       panelSizes: layoutSettings.panelSizes,
       // Hover state management
-      hoveredPublication: null, // DOI of currently hovered publication
-      // Keyboard navigation direction tracking
-      lastNavigationDirection: null // 'up' or 'down' - for scroll behavior
+      hoveredPublication: null // DOI of currently hovered publication
     }
   },
   getters: {
@@ -80,6 +76,10 @@ export const useInterfaceStore = defineStore('interface', {
 
     isNetworkCollapsible() {
       return !this.isMobile && this.effectiveLayout === 'networkBottom'
+    },
+
+    isNetworkShownCollapsed() {
+      return this.isNetworkCollapsed && this.isNetworkCollapsible
     }
   },
   actions: {
@@ -152,28 +152,25 @@ export const useInterfaceStore = defineStore('interface', {
     },
 
     activatePublicationComponent(publicationComponent, navigationDirection = null) {
-      // Store navigation direction for scrolling behavior
-      this.lastNavigationDirection = navigationDirection;
       if (publicationComponent && typeof publicationComponent.focus === 'function') {
-        publicationComponent.focus();
+        publicationComponent.focus()
 
-        // Radical solution: ALWAYS center during keyboard navigation
+        // Always center during keyboard navigation
         if (navigationDirection) {
-          this.centerPublication(publicationComponent);
+          this.centerPublication(publicationComponent)
         }
       }
     },
 
     centerPublication(publicationComponent) {
-      // Radical approach: Always center the publication, no conditions
       // Wait briefly for focus/activation to complete, then center
       setTimeout(() => {
         publicationComponent.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-          inline: "nearest"
-        });
-      }, 50); // Minimal delay just for focus completion
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'nearest'
+        })
+      }, 50) // Minimal delay just for focus completion
     },
 
     triggerNetworkReplot() {

@@ -137,42 +137,6 @@ describe('Session Store - Selected Publications Filtering', () => {
     })
   })
 
-  describe('selectedPublicationsFilteredCount', () => {
-    it('should return 0 when no filters are active', () => {
-      expect(sessionStore.selectedPublicationsFilteredCount).toBe(0)
-    })
-
-    it('should return correct count when filter is active', () => {
-      sessionStore.filter.string = 'Machine Learning'
-
-      expect(sessionStore.selectedPublicationsFilteredCount).toBe(1)
-    })
-
-    it('should return correct count with tag filter', () => {
-      sessionStore.filter.tags = ['someTag']
-
-      expect(sessionStore.selectedPublicationsFilteredCount).toBe(2)
-    })
-  })
-
-  describe('selectedPublicationsNonFilteredCount', () => {
-    it('should return 0 when no filters are active', () => {
-      expect(sessionStore.selectedPublicationsNonFilteredCount).toBe(0)
-    })
-
-    it('should return correct count when filter is active', () => {
-      sessionStore.filter.string = 'Machine Learning'
-
-      expect(sessionStore.selectedPublicationsNonFilteredCount).toBe(2)
-    })
-
-    it('should return correct count with tag filter', () => {
-      sessionStore.filter.tags = ['someTag']
-
-      expect(sessionStore.selectedPublicationsNonFilteredCount).toBe(1)
-    })
-  })
-
   describe('integration with Filter class', () => {
     it('should work with complex filter combinations', () => {
       sessionStore.filter.string = 'Learning'
@@ -185,8 +149,6 @@ describe('Session Store - Selected Publications Filtering', () => {
       // - contains 'Learning' in meta string
       // - year 2023 >= 2020
       // - has someTag = true
-      expect(sessionStore.selectedPublicationsFilteredCount).toBe(1)
-      expect(sessionStore.selectedPublicationsNonFilteredCount).toBe(2)
       expect(filtered[0].doi).toBe(mockPublication1.doi)
     })
 
@@ -195,8 +157,6 @@ describe('Session Store - Selected Publications Filtering', () => {
       sessionStore.filter.string = 'anything'
 
       expect(sessionStore.selectedPublicationsFiltered).toEqual([])
-      expect(sessionStore.selectedPublicationsFilteredCount).toBe(0)
-      expect(sessionStore.selectedPublicationsNonFilteredCount).toBe(0)
     })
   })
 

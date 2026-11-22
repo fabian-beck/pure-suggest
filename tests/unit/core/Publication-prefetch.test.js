@@ -40,9 +40,9 @@ describe('Publication.prefetch', () => {
   })
 
   it('warms the per-DOI cache with one bulk request, making fetchData a cache hit', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      jsonResponse([{ title: 'First' }, { title: 'Second' }])
-    )
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(jsonResponse([{ title: 'First' }, { title: 'Second' }]))
     vi.stubGlobal('fetch', fetchMock)
 
     const publications = [new Publication('10.1000/one'), new Publication('10.1000/two')]
@@ -92,7 +92,10 @@ describe('Publication.prefetch', () => {
     const fetchMock = bulkFetchMock().mockResolvedValueOnce({ ok: false, status: 500 })
     vi.stubGlobal('fetch', fetchMock)
 
-    const publications = Array.from({ length: 20 }, (_, i) => new Publication(`10.1000/fail-chunk-${i}`))
+    const publications = Array.from(
+      { length: 20 },
+      (_, i) => new Publication(`10.1000/fail-chunk-${i}`)
+    )
     await Publication.prefetch(publications)
     expect(fetchMock).toHaveBeenCalledTimes(2)
     expect(warnSpy).toHaveBeenCalledTimes(1)
@@ -166,7 +169,9 @@ describe('Publication.fetchAll', () => {
     vi.stubGlobal('fetch', deferredFetch)
 
     const loadedDois = []
-    const done = Publication.fetchAll(publications, (publication) => loadedDois.push(publication.doi))
+    const done = Publication.fetchAll(publications, (publication) =>
+      loadedDois.push(publication.doi)
+    )
 
     // All cached publications report progress while the bulk request is still pending
     await vi.waitFor(() => expect(loadedDois).toHaveLength(12))

@@ -1,13 +1,11 @@
 <script>
-import { useInterfaceStore } from '@/stores/interface.js'
 import { useModalStore } from '@/stores/modal.js'
 
 export default {
   inject: ['appMeta'],
   setup() {
-    const interfaceStore = useInterfaceStore()
     const modalStore = useModalStore()
-    return { interfaceStore, modalStore }
+    return { modalStore }
   }
 }
 </script>
