@@ -41,7 +41,6 @@ export function useAppState() {
     queueStore.clear()
     authorStore.selectedPublicationsAuthors = []
     conceptStore.clear()
-    // do not reset read publications as the user might to carry this information to the next session
     interfaceStore.clear()
     // Network will naturally clear when it detects empty state, no need for expensive replot
   }

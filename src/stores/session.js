@@ -99,7 +99,7 @@ export const useSessionStore = defineStore('session', {
       this.boostKeywordString = ''
       this.isBoost = true
       this.activePublication = ''
-      this.readPublicationsDois = new Set()
+      // Read publications are kept, as the user might want to carry them over to the next session
       this.filter = new Filter()
       this.sessionName = ''
       this.sessionId = ''

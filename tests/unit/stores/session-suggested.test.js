@@ -357,6 +357,19 @@ describe('Session Store - Suggested Publications Filtering', () => {
     })
   })
 
+  describe('clear', () => {
+    it('should keep which publications were read for the next session', () => {
+      const suggested = { doi: '10.1234/read', citationDois: new Set(), referenceDois: new Set() }
+      sessionStore.suggestion = { publications: [suggested], totalSuggestions: 1 }
+      sessionStore.setActivePublication(suggested.doi)
+
+      sessionStore.clear()
+
+      expect(sessionStore.suggestedPublications).toEqual([])
+      expect(sessionStore.readPublicationsDois.has(suggested.doi)).toBe(true)
+    })
+  })
+
   describe('isExcluded', () => {
     it('should follow changes of the excluded publications', () => {
       const { isExcluded } = sessionStore
