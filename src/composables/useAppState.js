@@ -216,8 +216,17 @@ export function useAppState() {
       try {
         content = fileReader.result
         const session = JSON.parse(content)
+        // An unnamed session is named after its file, unless that still has the default name;
+        // browsers add a counter to repeated downloads
+        const fileSessionName = file.name
+          .replace(/\.json$/i, '')
+          .replace(/ ?\(\d+\)$/, '')
+          .replace(/\.puresuggest$/i, '')
         workflowStartTime = startTime
-        loadSession(session)
+        loadSession({
+          ...session,
+          name: session?.name || (fileSessionName === 'session' ? '' : fileSessionName)
+        })
       } catch (error) {
         console.error('Session import error:', error)
         console.error('File content preview:', content?.substring(0, 200))
