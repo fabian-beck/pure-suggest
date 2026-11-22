@@ -74,7 +74,7 @@ class="level-item"
             <div class="mr-2">
               <v-badge
 :content="sessionStore.unreadSuggestionsCount" color="black" class="mr-5" offset-y="-4"
-                offset-x="-9" :value="sessionStore.unreadSuggestionsCount > 0" transition="scale-rotate-transition">
+                offset-x="-9" :model-value="sessionStore.unreadSuggestionsCount > 0" transition="scale-rotate-transition">
                 <b>{{ sessionStore.suggestedPublicationsFiltered.length }}</b>
               </v-badge>
               <span> of

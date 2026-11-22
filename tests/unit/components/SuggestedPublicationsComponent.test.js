@@ -43,7 +43,7 @@ describe('SuggestedPublicationsComponent', () => {
           ...commonComponentStubs,
           'v-badge': {
             template: '<div class="v-badge" :content="content"><slot></slot></div>',
-            props: ['content', 'color', 'offset-y', 'offset-x', 'value', 'transition']
+            props: ['content', 'color', 'offset-y', 'offset-x', 'modelValue', 'transition']
           },
           PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
@@ -53,6 +53,26 @@ describe('SuggestedPublicationsComponent', () => {
     expect(wrapper.text()).toContain('2')
     expect(wrapper.text()).toContain('of')
     expect(wrapper.text()).toContain('1,000')
+  })
+
+  it('hides the badge of unread suggestions when all are read', () => {
+    sessionStore.suggestion = {
+      totalSuggestions: 1,
+      publications: [{ doi: 'test-doi-1', title: 'Test Publication 1', isRead: true }]
+    }
+
+    const wrapper = mount(SuggestedPublicationsComponent, {
+      global: {
+        plugins: [pinia],
+        stubs: {
+          ...commonComponentStubs,
+          'v-badge': { template: '<div class="v-badge"><slot></slot></div>', props: ['modelValue'] },
+          PublicationListComponent: true
+        }
+      }
+    })
+
+    expect(wrapper.findComponent('.v-badge').props('modelValue')).toBe(false)
   })
 
   it('shows settings menu when suggestions are available', () => {
