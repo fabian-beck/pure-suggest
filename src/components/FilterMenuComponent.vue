@@ -129,11 +129,11 @@ function handleSwitchKeydown(event) {
 }
 
 // @indirection-reviewed: template-readability - keeps template clean and provides clear accessibility semantics
-function handleChipKeydown(event, doi) {
+function handleChipKeydown(event, removeChip) {
   if (event.key === 'Enter' || event.key === ' ') {
     event.preventDefault()
     event.stopPropagation()
-    removeDoi(doi)
+    removeChip()
   }
 }
 
@@ -145,14 +145,6 @@ function getDoiTooltip(doi) {
 
 function removeDoi(doi) {
   sessionStore.filter.removeDoi(doi)
-}
-
-function handleAuthorChipKeydown(event, authorId) {
-  if (event.key === 'Enter' || event.key === ' ') {
-    event.preventDefault()
-    event.stopPropagation()
-    removeAuthor(authorId)
-  }
 }
 
 function getAuthorTooltip(authorId) {
@@ -382,7 +374,7 @@ function getActiveConceptTags() {
                   size="small"
                   closable
                   @click:close="removeDoi(doi)"
-                  @keydown="handleChipKeydown($event, doi)"
+                  @keydown="handleChipKeydown($event, () => removeDoi(doi))"
                   v-tippy="{ content: getDoiTooltip(doi), allowHTML: true }"
                 >
                   {{ doi }}
@@ -404,7 +396,7 @@ function getActiveConceptTags() {
                   size="small"
                   closable
                   @click:close="toggleTag(tagValue)"
-                  @keydown="handleChipKeydown($event, tagValue)"
+                  @keydown="handleChipKeydown($event, () => toggleTag(tagValue))"
                   v-tippy="`Active concept filter; click to remove`"
                 >
                   {{ getTagLabel(tagValue) }}
@@ -426,7 +418,7 @@ function getActiveConceptTags() {
                   size="small"
                   closable
                   @click:close="removeAuthor(authorId)"
-                  @keydown="handleAuthorChipKeydown($event, authorId)"
+                  @keydown="handleChipKeydown($event, () => removeAuthor(authorId))"
                   v-tippy="{ content: getAuthorTooltip(authorId), allowHTML: true }"
                 >
                   {{ getAuthorName(authorId) }}
