@@ -35,7 +35,7 @@ export default {
       default: ''
     }
   },
-  emits: ['update:modelValue', 'dialogKey'],
+  emits: ['update:modelValue', 'dialogKey', 'scroll'],
   data() {
     return {
       isDialogShown: this.modelValue
@@ -146,7 +146,7 @@ export default {
       <div class="sticky">
         <slot name="sticky"></slot>
       </div>
-      <v-card-text tabindex="0">
+      <v-card-text tabindex="0" @scroll="$emit('scroll', $event)">
         <slot></slot>
       </v-card-text>
       <slot name="footer"></slot>

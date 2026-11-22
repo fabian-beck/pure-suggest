@@ -331,6 +331,7 @@ export default {
     v-model="modalStore.isAuthorModalDialogShown"
     ref="dialog"
     @dialog-key="onDialogKey"
+    @scroll="handleScroll"
   >
     <template #header-menu>
       <CompactButton
@@ -378,7 +379,7 @@ export default {
         </v-list>
       </v-menu>
     </template>
-    <div class="content" @scroll="handleScroll">
+    <div class="content">
       <section>
         <ul>
           <li
@@ -496,7 +497,7 @@ export default {
           <span>Loading more authors...</span>
         </div>
 
-        <!-- Load more button (fallback if scroll detection doesn't work) -->
+        <!-- Load more button (alternative to scrolling) -->
         <div
           v-else-if="hasMoreAuthorsToShow && !authorStore.activeAuthorId"
           class="load-more-authors p-3 text-center"
