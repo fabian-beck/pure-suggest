@@ -218,9 +218,8 @@ export default {
           @click="addAllPublications"
           v-show="searchResults.type === 'doi' && filteredSearchResults.length > 0"
           v-tippy="'Mark all publications to be added to selected (Shift+Enter in the search field).'"
-          small
         >
-          <v-icon left>mdi-plus-thick</v-icon> Add all
+          <v-icon>mdi-plus-thick</v-icon> Add all
         </v-btn>
       </v-card-actions>
     </template>

@@ -1175,7 +1175,7 @@ export default {
           @click="updateQueued"
           v-show="queueStore.isUpdatable && interfaceStore.isNetworkExpanded"
         >
-          <v-icon left>mdi-update</v-icon>
+          <v-icon>mdi-update</v-icon>
           <span class="key">U</span>pdate
         </v-btn>
       </div>

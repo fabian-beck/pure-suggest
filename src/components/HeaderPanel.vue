@@ -28,7 +28,7 @@ const { isEmpty, clearCache } = useAppState()
         </div>
       </v-app-bar-title>
       <LayoutMenuComponent v-if="!isEmpty && !interfaceStore.isMobile" />
-      <v-menu bottom left offset-y transition="slide-y-transition">
+      <v-menu transition="slide-y-transition">
         <template #activator="{ props }">
           <v-btn icon v-bind="props" class="mr-1" density="compact" aria-label="More options">
             <v-icon>mdi-dots-vertical</v-icon>

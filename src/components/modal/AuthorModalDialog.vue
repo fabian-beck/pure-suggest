@@ -503,7 +503,7 @@ export default {
           class="load-more-authors p-3 text-center"
         >
           <v-btn variant="outlined" @click="loadMoreAuthors" size="small">
-            <v-icon left>mdi-arrow-down</v-icon>
+            <v-icon>mdi-arrow-down</v-icon>
             Load more authors ({{
               authorStore.selectedPublicationsAuthors.length - displayedAuthorCount
             }}

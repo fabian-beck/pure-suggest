@@ -205,7 +205,7 @@ export default {
 <!---------------------------------------------------------------------------------->
 
 <template>
-  <v-app id="app" data-app>
+  <v-app id="app">
     <HeaderPanel id="header" />
     <main
       id="main"

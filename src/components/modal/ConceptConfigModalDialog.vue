@@ -312,7 +312,7 @@ watch(
               class="has-background-primary-95"
               :class="{ 'dialog-initial-focus': !hasPreview }"
             >
-              <v-icon left class="mr-2">mdi-play</v-icon>
+              <v-icon class="mr-2">mdi-play</v-icon>
               <span class="key">C</span>ompute
             </v-btn>
 
@@ -323,7 +323,7 @@ watch(
               class="has-background-primary-95"
               :class="{ 'dialog-initial-focus': hasPreview }"
             >
-              <v-icon left class="mr-2">mdi-check</v-icon>
+              <v-icon class="mr-2">mdi-check</v-icon>
               <span class="key">A</span>pply
             </v-btn>
 
@@ -332,7 +332,7 @@ watch(
               @click="disableConcepts"
               class="has-background-primary-95"
             >
-              <v-icon left class="mr-2">mdi-close</v-icon>
+              <v-icon class="mr-2">mdi-close</v-icon>
               <span class="key">D</span>isable
             </v-btn>
           </div>

@@ -238,9 +238,8 @@ function handleMouseLeave() {
               <v-btn
                 v-tippy="'Retry loading metadata.'"
                 @click.stop="retryLoadingPublication(publication)"
-                small
               >
-                <v-icon left>mdi-refresh</v-icon>
+                <v-icon>mdi-refresh</v-icon>
                 Retry
               </v-btn>
             </div>
