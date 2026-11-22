@@ -36,7 +36,7 @@ const clearSessionName = () => {
 }
 
 const importBibtex = () => {
-  importBibtexWithConfirmation({ alwaysWarn: true })
+  importBibtexWithConfirmation(true)
 }
 
 // Watch for changes in the store to keep the local ref in sync

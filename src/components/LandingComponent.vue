@@ -45,7 +45,7 @@ function submitSearch() {
       <v-btn variant="tonal" prepend-icon="mdi-import" @click="importSessionWithConfirmation">
         Import session
       </v-btn>
-      <v-btn variant="tonal" prepend-icon="mdi-import" @click="importBibtexWithConfirmation">
+      <v-btn variant="tonal" prepend-icon="mdi-import" @click="importBibtexWithConfirmation()">
         Import BibTeX
       </v-btn>
       <v-btn variant="tonal" prepend-icon="mdi-file-document" @click="loadExample()">

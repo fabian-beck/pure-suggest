@@ -96,7 +96,7 @@ describe('LandingComponent', () => {
     await buttons[1].trigger('click')
     await buttons[2].trigger('click')
     expect(mockImportSessionWithConfirmation).toHaveBeenCalled()
-    expect(mockImportBibtexWithConfirmation).toHaveBeenCalled()
+    expect(mockImportBibtexWithConfirmation).toHaveBeenCalledWith()
     expect(mockLoadExample).toHaveBeenCalled()
   })
 

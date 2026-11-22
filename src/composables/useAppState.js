@@ -277,9 +277,10 @@ export function useAppState() {
   }
 
   /**
-   * Shows import BibTeX confirmation dialog with file input.
+   * Shows import BibTeX confirmation dialog with file input; warns that the session gets
+   * replaced if it is not empty, or always if requested.
    */
-  const importBibtexWithConfirmation = ({ alwaysWarn = false } = {}) => {
+  const importBibtexWithConfirmation = (alwaysWarn = false) => {
     const warningMessage =
       alwaysWarn || !isEmpty.value
         ? '<p style="color: #d32f2f; margin-bottom: 16px;"><strong>This will clear and replace the current session.</strong></p>'
@@ -320,7 +321,7 @@ export function useAppState() {
     // Check if session was empty before this update
     const wasSessionEmpty = sessionStore.selectedPublicationsCount === 0
 
-    sessionStore.clearActivePublication()
+    sessionStore.clearActivePublication('updating queued')
     if (queueStore.excludedQueue.length) {
       sessionStore.excludedPublicationsDois = sessionStore.excludedPublicationsDois.concat(
         queueStore.excludedQueue

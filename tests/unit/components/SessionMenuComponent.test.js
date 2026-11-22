@@ -255,7 +255,7 @@ describe('SessionMenuComponent', () => {
 
       expect(importBibtexItem).toBeTruthy()
       await importBibtexItem.trigger('click')
-      expect(mockAppState.importBibtexWithConfirmation).toHaveBeenCalledWith({ alwaysWarn: true })
+      expect(mockAppState.importBibtexWithConfirmation).toHaveBeenCalledWith(true)
     })
   })
 
