@@ -58,7 +58,6 @@ vi.mock('@/utils/network/keywordNodes.js', () => ({
 
 vi.mock('@/utils/network/links.js', () => ({
   updateNetworkLinks: vi.fn(),
-  updateLinkProperties: vi.fn(),
   createCitationLinks: vi.fn()
 }))
 

@@ -9,7 +9,6 @@
  * Usage: node tools/find-unused-functions.js
  */
 
-const { execSync: _execSync } = require('child_process')
 const fs = require('fs')
 const path = require('path')
 

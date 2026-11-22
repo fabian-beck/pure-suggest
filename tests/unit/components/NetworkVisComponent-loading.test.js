@@ -75,12 +75,10 @@ vi.mock('@/utils/network/authorNodes.js', () => ({
 
 vi.mock('@/utils/network/links.js', () => ({
   updateNetworkLinks: vi.fn(() => ({ data: vi.fn(() => []), join: vi.fn() })),
-  updateLinkProperties: vi.fn(),
   createCitationLinks: vi.fn(() => [])
 }))
 
 vi.mock('@/utils/network/yearLabels.js', () => ({
-  updateYearLabels: vi.fn(() => ({ data: vi.fn(() => []), join: vi.fn() }))
 }))
 
 // Mock useAppState

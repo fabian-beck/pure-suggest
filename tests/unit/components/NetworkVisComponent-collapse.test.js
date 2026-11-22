@@ -124,16 +124,12 @@ vi.mock('@/utils/network/authorNodes.js', () => ({
 
 vi.mock('@/utils/network/links.js', () => ({
   updateNetworkLinks: vi.fn(() => createD3ChainableMock()),
-  updateLinkProperties: vi.fn(),
   createCitationLinks: vi.fn(() => [])
 }))
 
 vi.mock('@/utils/network/yearLabels.js', () => ({
-  shouldUpdateYearLabels: vi.fn(() => true),
   generateYearRange: vi.fn(() => [2020, 2025]),
-  updateYearLabelContent: vi.fn(() => createD3ChainableMock()),
-  updateYearLabelLayout: vi.fn(),
-  hideYearLabels: vi.fn()
+  updateYearLabelContent: vi.fn(() => createD3ChainableMock())
 }))
 vi.mock('@/components/PublicationComponent.vue', () => ({ default: { name: 'PublicationComponent' } }))
 vi.mock('@/composables/useAppState.js', () => ({

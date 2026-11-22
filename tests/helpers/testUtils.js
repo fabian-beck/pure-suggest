@@ -160,31 +160,6 @@ export const createMockInterfaceStore = (overrides = {}) => ({
   ...overrides
 })
 
-// Common external dependency mocks
-export const mockExternalDependencies = {
-  Cache: {
-    clearCache: vi.fn(),
-    get: vi.fn(),
-    set: vi.fn(),
-    keys: vi.fn(() => Promise.resolve([]))
-  },
-
-  Util: {
-    scrollToTargetAdjusted: vi.fn(),
-    shuffle: vi.fn((arr) => arr),
-    saveAsFile: vi.fn()
-  },
-
-  Publication: {
-    default: {
-      TAGS: [
-        { name: 'Research', value: 'research' },
-        { name: 'Review', value: 'review' }
-      ]
-    }
-  }
-}
-
 // Common component stubs for consistent testing
 export const commonComponentStubs = {
   // Vuetify components
@@ -225,42 +200,3 @@ export const commonComponentStubs = {
     template: '<div class="tippy-tooltip"><slot /></div>'
   }
 }
-
-// Legacy alias for backward compatibility
-export const vuetifyStubs = commonComponentStubs
-
-// Mock a publication object with common properties
-export const createMockPublication = (overrides = {}) => ({
-  doi: '10.1234/test',
-  title: 'Test Publication',
-  author: 'Test Author',
-  year: 2023,
-  score: 5,
-  boostFactor: 1,
-  scoreColor: '#blue',
-  citationCount: 2,
-  referenceCount: 3,
-  referenceDois: new Set(['10.1234/ref1']),
-  isActive: false,
-  isSelected: false,
-  isRead: true,
-  wasFetched: true,
-  isLinkedToActive: false,
-  isHovered: false,
-  isKeywordHovered: false,
-  isAuthorHovered: false,
-  ...overrides
-})
-
-// Standard DOM element mock
-export const createMockElement = (id, nodeName = 'DIV') => ({
-  id,
-  nodeName,
-  focus: vi.fn(),
-  blur: vi.fn(),
-  getBoundingClientRect: () => ({ x: 0, y: 0, width: 100, height: 100 }),
-  getElementsByClassName: vi.fn(() => []),
-  nextElementSibling: null,
-  previousElementSibling: null,
-  parentNode: null
-})

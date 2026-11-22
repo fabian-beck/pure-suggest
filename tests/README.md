@@ -84,9 +84,7 @@ Import and use standardized patterns:
 import {
   createMockSessionStore,
   createMockInterfaceStore,
-  commonComponentStubs,
-  createMockPublication,
-  mockExternalDependencies
+  commonComponentStubs
 } from '../../helpers/testUtils.js'
 ```
 
@@ -113,14 +111,6 @@ const wrapper = mount(Component, {
     stubs: commonComponentStubs
   }
 })
-```
-
-### External Dependencies
-
-```javascript
-// ✅ Use predefined mocks
-vi.mock('@/lib/Cache.js', () => mockExternalDependencies.Cache)
-vi.mock('@/lib/Util.js', () => mockExternalDependencies.Util)
 ```
 
 ## 📋 Test Structure Guidelines
@@ -243,17 +233,14 @@ Our refactoring achieved:
 
 - `createMockSessionStore(overrides)` - Standard session store
 - `createMockInterfaceStore(overrides)` - Standard interface store
-- `createMockPublication(overrides)` - Standard publication object
 - `createD3ChainableMock()` - D3.js chainable methods
 
 ### Component Stubs
 
 - `commonComponentStubs` - Standard Vuetify and custom component stubs
-- `mockExternalDependencies` - Cache, Util, and other external mocks
 
 ### Testing Patterns
 
-- `createMockElement(id, nodeName)` - DOM element mocks
 - Focus on `data-testid` attributes for reliable element selection
 - Use behavior-driven test descriptions
 

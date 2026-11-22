@@ -3,12 +3,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import { describe, it, expect, beforeEach, afterEach, vi, beforeAll, afterAll } from 'vitest'
 import { isReactive, ref } from 'vue'
 
-import {
-  createD3ChainableMock,
-  createD3SimulationMock,
-  createD3ModuleMock,
-  commonComponentStubs
-} from '../../helpers/testUtils.js'
+import { createD3ModuleMock, commonComponentStubs } from '../../helpers/testUtils.js'
 
 import NetworkVisComponent from '@/components/NetworkVisComponent.vue'
 import { CURRENT_YEAR } from '@/constants/config.js'
@@ -49,63 +44,11 @@ const mockInterfaceStore = {
   isNetworkExpanded: false,
   isNetworkClusters: false,
   isLoading: false,
-  openAuthorModalDialog: vi.fn(),
   activatePublicationComponent: vi.fn()
 }
 
 vi.mock('@/stores/session.js', () => ({ useSessionStore: vi.fn(() => mockSessionStore) }))
 vi.mock('@/stores/interface.js', () => ({ useInterfaceStore: vi.fn(() => mockInterfaceStore) }))
-
-// Simplified composable mocks - essential functionality only
-const mockGraphData = { nodes: [], links: [] }
-const mockSimulationComposable = {
-  simulation: { value: createD3SimulationMock() },
-  graph: { value: mockGraphData },
-  isDragging: { value: false },
-  initializeSimulation: vi.fn(),
-  updateGraphData: vi.fn(),
-  restart: vi.fn(),
-  stop: vi.fn(),
-  setDragging: vi.fn((value) => {
-    mockSimulationComposable.isDragging.value = value
-  })
-}
-
-// Mock all network-related composables with minimal setup
-vi.mock('@/composables/useNetworkSimulation.js', () => ({
-  useNetworkSimulation: vi.fn(() => mockSimulationComposable)
-}))
-vi.mock('@/composables/networkForces.js', () => ({
-  calculateYearX: vi.fn((year) => year * 10),
-  getNodeXPosition: vi.fn(() => 100),
-  SIMULATION_ALPHA: 0.5
-}))
-vi.mock('@/composables/publicationNodes.js', () => ({
-  initializePublicationNodes: vi.fn(() => createD3ChainableMock()),
-  updatePublicationNodes: vi.fn(() => ({ nodes: createD3ChainableMock(), tooltips: [] }))
-}))
-vi.mock('@/composables/keywordNodes.js', () => ({
-  initializeKeywordNodes: vi.fn(() => createD3ChainableMock()),
-  updateKeywordNodes: vi.fn(() => ({ nodes: createD3ChainableMock(), tooltips: [] })),
-  releaseKeywordPosition: vi.fn(),
-  highlightKeywordPublications: vi.fn(),
-  clearKeywordHighlight: vi.fn(),
-  createKeywordNodeDrag: vi.fn(() => ({ on: vi.fn(() => ({ on: vi.fn() })) }))
-}))
-vi.mock('@/composables/authorNodes.js', () => ({
-  initializeAuthorNodes: vi.fn(() => createD3ChainableMock()),
-  updateAuthorNodes: vi.fn(() => ({ nodes: createD3ChainableMock(), tooltips: [] })),
-  highlightAuthorPublications: vi.fn(),
-  clearAuthorHighlight: vi.fn()
-}))
-vi.mock('@/composables/networkLinks.js', () => ({
-  updateNetworkLinks: vi.fn(() => createD3ChainableMock()),
-  updateLinkProperties: vi.fn()
-}))
-vi.mock('@/composables/useGraphData.js', () => ({
-  initializeGraphData: vi.fn(() => ({ nodes: [], links: [], doiToIndex: {}, filteredAuthors: [] })),
-  createGraphContext: vi.fn(() => ({ existingNodeData: [] }))
-}))
 
 // Mock other components and composables
 vi.mock('@/components/PublicationComponent.vue', () => ({
@@ -585,8 +528,7 @@ describe('NetworkVisComponent', () => {
         isMobile: false,
         isNetworkExpanded: false,
         isNetworkClusters: false,
-        isLoading: false,
-        openAuthorModalDialog: vi.fn()
+        isLoading: false
       }
 
       vi.mocked(useSessionStore).mockReturnValue(mockSessionStore)

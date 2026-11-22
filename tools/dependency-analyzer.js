@@ -610,6 +610,7 @@ function generateGraphML() {
 // Export GraphML file
 const graphmlContent = generateGraphML()
 const outputPath = path.join(__dirname, 'output', 'project-dependencies.graphml')
+fs.mkdirSync(path.dirname(outputPath), { recursive: true })
 fs.writeFileSync(outputPath, graphmlContent, 'utf-8')
 
 console.log('\n📊 GraphML Export Complete!')
