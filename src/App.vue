@@ -46,10 +46,6 @@ export default {
     return { sessionStore, interfaceStore, modalStore, isEmpty, loadSession }
   },
   computed: {
-    isNetworkShownCollapsed() {
-      return this.interfaceStore.isNetworkCollapsed && this.interfaceStore.isNetworkCollapsible
-    },
-
     mainGridStyle() {
       if (this.interfaceStore.isNetworkExpanded) {
         return { gridTemplateAreas: "'vis'", gridTemplateColumns: '100%', gridTemplateRows: '100%' }
@@ -59,7 +55,7 @@ export default {
       return {
         gridTemplateAreas: GRID_AREAS[layout],
         gridTemplateColumns: toGridTracks(columns),
-        gridTemplateRows: this.isNetworkShownCollapsed
+        gridTemplateRows: this.interfaceStore.isNetworkShownCollapsed
           ? `minmax(0, 1fr) ${GUTTER_SIZE} max-content`
           : toGridTracks(rows)
       }
@@ -69,7 +65,7 @@ export default {
       if (this.interfaceStore.isMobile || this.interfaceStore.isNetworkExpanded) return []
       const { columns, rows } = this.interfaceStore.panelSizes[this.interfaceStore.effectiveLayout]
       const gutters = columns.slice(1).map((_, index) => ({ axis: 'columns', index }))
-      if (!this.isNetworkShownCollapsed) {
+      if (!this.interfaceStore.isNetworkShownCollapsed) {
         gutters.push(...rows.slice(1).map((_, index) => ({ axis: 'rows', index })))
       }
       return gutters

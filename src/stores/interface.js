@@ -76,6 +76,10 @@ export const useInterfaceStore = defineStore('interface', {
 
     isNetworkCollapsible() {
       return !this.isMobile && this.effectiveLayout === 'networkBottom'
+    },
+
+    isNetworkShownCollapsed() {
+      return this.isNetworkCollapsed && this.isNetworkCollapsible
     }
   },
   actions: {

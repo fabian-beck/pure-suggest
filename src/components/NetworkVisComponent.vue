@@ -182,11 +182,7 @@ export default {
     },
     showAuthorNodes () {
       return this.showNodes.includes('author')
-    },
-
-    isNetworkActuallyCollapsed () {
-      return this.interfaceStore.isNetworkCollapsed && this.interfaceStore.isNetworkCollapsible
-    },
+    }
   },
   watch: {
     isNetworkClusters: {
@@ -597,7 +593,7 @@ export default {
       }
 
       // Skip plotting when network is collapsed for performance
-      if (this.isNetworkActuallyCollapsed) {
+      if (this.interfaceStore.isNetworkShownCollapsed) {
         return
       }
 
@@ -677,7 +673,7 @@ export default {
      */
     shouldSkipCurrentTick() {
       // Skip when network is collapsed for performance
-      if (this.isNetworkActuallyCollapsed) {
+      if (this.interfaceStore.isNetworkShownCollapsed) {
         return true
       }
 
@@ -1137,7 +1133,7 @@ export default {
         @collapse-network="collapseNetwork"
         @restore-network="restoreNetwork"
       />
-      <div id="network-svg-container" v-show="!isNetworkActuallyCollapsed">
+      <div id="network-svg-container" v-show="!interfaceStore.isNetworkShownCollapsed">
         <NetworkPerformanceMonitor
           ref="performanceMonitor"
           :show="interfaceStore.showPerformancePanel"
@@ -1162,14 +1158,14 @@ export default {
           <g class="node-labels" :class="{ hidden: areNodeLabelsHidden || isLayoutMoving }"></g>
         </svg>
       </div>
-      <ul class="publication-component-list" v-show="!isNetworkActuallyCollapsed">
+      <ul class="publication-component-list" v-show="!interfaceStore.isNetworkShownCollapsed">
         <PublicationComponent
           v-if="activePublication && interfaceStore.isNetworkExpanded"
           :publication="activePublication"
           :publication-type="activePublication.isSelected ? 'selected' : 'suggested'"
         ></PublicationComponent>
       </ul>
-      <div class="controls-header-left" v-show="!isNetworkActuallyCollapsed">
+      <div class="controls-header-left" v-show="!interfaceStore.isNetworkShownCollapsed">
         <v-btn
           class="has-background-primary has-text-white"
           @click="updateQueued"
@@ -1189,7 +1185,7 @@ export default {
         @zoom="zoomByFactor"
         @reset="resetZoom"
         @plot="plot"
-        v-show="!isNetworkActuallyCollapsed && !isEmpty"
+        v-show="!interfaceStore.isNetworkShownCollapsed && !isEmpty"
       />
     </div>
   </div>

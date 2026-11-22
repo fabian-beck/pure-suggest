@@ -65,6 +65,9 @@ const mockInterfaceStore = {
   isNetworkCollapsible: true,
   isNetworkExpanded: false,
   isNetworkCollapsed: false,
+  get isNetworkShownCollapsed() {
+    return this.isNetworkCollapsed && this.isNetworkCollapsible
+  },
   isNetworkClusters: false,
   isLoading: false,
   activatePublicationComponent: vi.fn(),

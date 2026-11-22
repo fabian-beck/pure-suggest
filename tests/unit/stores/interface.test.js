@@ -107,6 +107,14 @@ describe('Interface Store - Layout', () => {
     expect(interfaceStore.isNetworkCollapsible).toBe(false)
   })
 
+  it('shows the network collapsed only where it can be collapsed', () => {
+    interfaceStore.isNetworkCollapsed = true
+    expect(interfaceStore.isNetworkShownCollapsed).toBe(true)
+
+    interfaceStore.isMobile = true
+    expect(interfaceStore.isNetworkShownCollapsed).toBe(false)
+  })
+
   it('shows the network in normal size when switching the layout', () => {
     interfaceStore.collapseNetwork()
     interfaceStore.setLayoutMode('networkRight')
