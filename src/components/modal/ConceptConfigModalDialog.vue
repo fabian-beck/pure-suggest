@@ -2,6 +2,7 @@
 import { ref, computed, watch, nextTick } from 'vue'
 
 import { useAppState } from '@/composables/useAppState.js'
+import Author from '@/core/Author.js'
 import { useAuthorStore } from '@/stores/author.js'
 import { useConceptStore } from '@/stores/concept.js'
 import { useModalStore } from '@/stores/modal.js'
@@ -94,20 +95,7 @@ function getAuthorDisplayName(authorId) {
         return { id: authorId, name: cleaned }
       })
     })
-    .find((author) => {
-      // Normalize the author name to match the ID
-      const normalizedName = author.name
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[øØ]/g, 'o')
-        .replace(/[åÅ]/g, 'a')
-        .replace(/[æÆ]/g, 'ae')
-        .replace(/[ðÐ]/g, 'd')
-        .replace(/[þÞ]/g, 'th')
-        .replace(/[ßẞ]/g, 'ss')
-        .toLowerCase()
-      return normalizedName === authorId
-    })
+    .find((author) => Author.nameToId(author.name) === authorId)
 
   return authors?.name || authorId
 }

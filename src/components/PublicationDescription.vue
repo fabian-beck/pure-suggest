@@ -6,6 +6,7 @@ import Author from '@/core/Author.js'
 import { escapeHtml } from '@/lib/Util.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
+import { getTagIcon } from '@/utils/tagIcons.js'
 
 const props = defineProps({
   publication: {
@@ -196,22 +197,6 @@ function getTagTooltip(tagValue, tagName) {
     ? `Active as filter; click to remove from filter.`
     : `Click to add to filter.`
   return `${description}<br/>${action}`
-}
-
-function getTagIcon(tagValue) {
-  const iconMap = {
-    isHighlyCited: 'mdi-star',
-    isSurvey: 'mdi-table',
-    isNew: 'mdi-alarm',
-    isUnnoted: 'mdi-alert-box-outline'
-  }
-
-  // Concept tags use group icon
-  if (tagValue.startsWith('concept')) {
-    return 'mdi-group'
-  }
-
-  return iconMap[tagValue] || ''
 }
 
 function handleAuthorClick(event) {

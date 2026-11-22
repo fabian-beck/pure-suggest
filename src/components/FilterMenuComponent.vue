@@ -7,6 +7,7 @@ import Publication from '@/core/Publication.js'
 import { escapeHtml } from '@/lib/Util.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
+import { getTagIcon } from '@/utils/tagIcons.js'
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
@@ -164,22 +165,6 @@ function getAuthorName(authorId) {
 
 function removeAuthor(authorId) {
   sessionStore.filter.removeAuthor(authorId)
-}
-
-function getTagIcon(tagValue) {
-  const iconMap = {
-    isHighlyCited: 'mdi-star',
-    isSurvey: 'mdi-table',
-    isNew: 'mdi-alarm',
-    isUnnoted: 'mdi-alert-box-outline'
-  }
-
-  // Concept tags use group icon
-  if (tagValue.startsWith('concept')) {
-    return 'mdi-group'
-  }
-
-  return iconMap[tagValue] || ''
 }
 
 function getTagLabel(tagValue) {
