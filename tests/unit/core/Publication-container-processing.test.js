@@ -111,6 +111,12 @@ describe('Publication Container Processing', () => {
       expect(publication.container).toContain('III') // roman should be uppercase
     })
 
+    it('should write roman numerals in upper case', () => {
+      publication.processContainer({ container: 'Symposium on Visualization xiv Part vii.' })
+
+      expect(publication.container).toBe('Symposium on Visualization XIV Part VII')
+    })
+
     it('should work with title word mapping', () => {
       const data = { container: 'Journal (IEEE) of Computer Science' }
       publication.processContainer(data)

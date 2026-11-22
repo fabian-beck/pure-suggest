@@ -30,7 +30,7 @@ const SURVEY_KEYWORDS = /(survey|state|review|advances|future)/i
 
 const ORDINAL_REGEX = /\d(?:st|nd|rd|th)/i
 
-const ROMAN_NUMERAL_REGEX = /^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})(\?.?)$/i
+const ROMAN_NUMERAL_REGEX = /^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})(\.?)$/i
 
 const ORCID_REGEX = /(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx])/g
 
