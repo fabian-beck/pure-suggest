@@ -22,7 +22,7 @@ export default {
         <div class="level">
           <div class="level-left">
             <div class="level-item">
-              <span v-html="appMeta.nameHtml" class="title"></span>
+              <AppLogo class="is-size-3" />
             </div>
             <div class="level-item ml-8">
               <span class="subtitle">{{ appMeta.subtitle }}</span>
