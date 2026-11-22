@@ -47,6 +47,8 @@ export const useInterfaceStore = defineStore('interface', {
       // Whether the current loading phase may be cancelled (e.g. loading selected
       // publications must always complete, but computing suggestions may be skipped)
       isLoadingCancelable: false,
+      // AI recommendation run in progress (shown instead of the plain loading indicator)
+      aiRun: null,
       errorToast: {
         message: '',
         isShown: false,

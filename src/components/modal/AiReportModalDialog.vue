@@ -73,6 +73,14 @@ const notes = computed(() => {
           </div>
         </li>
       </ul>
+
+      <v-expansion-panels class="mt-3" variant="accordion">
+        <v-expansion-panel title="Steps of the run">
+          <v-expansion-panel-text>
+            <AiRunLog :log="report.log" />
+          </v-expansion-panel-text>
+        </v-expansion-panel>
+      </v-expansion-panels>
     </div>
     <template #footer>
       <v-card-actions class="has-background-info-95 justify-end">
@@ -90,6 +98,10 @@ const notes = computed(() => {
 <style scoped lang="scss">
 .report-text {
   font-size: 1.05rem;
+}
+
+.content :deep(.v-expansion-panel-title) {
+  padding: 0.75rem 1rem;
 }
 
 .publications {

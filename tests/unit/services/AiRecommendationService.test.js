@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   buildRecommendationRequest,
+  parsePartialRecommendationAnswer,
   parseRecommendationAnswer
 } from '@/services/AiRecommendationService.js'
 
@@ -59,11 +60,14 @@ describe('AiRecommendationService', () => {
 
       expect(request.candidates).toEqual(suggested)
       expect(request.maxOutputTokens).toBe(1024)
-      expect(request.jsonSchema.schema.required).toEqual([
+      // The reasoning comes first, so that it is written (and shown) before the choices
+      expect(Object.keys(request.jsonSchema.schema.properties)).toEqual([
+        'reasoning',
         'recommendations',
         'loadMoreSuggestions',
         'report'
       ])
+      expect(request.jsonSchema.schema.required).toHaveLength(4)
       expect(request.messages[0].role).toBe('system')
       expect(request.messages[0].content).toContain('Follow this priority order')
       // The report is read by people who never see the numbering used in the prompt
@@ -115,7 +119,7 @@ describe('AiRecommendationService', () => {
       expect(JSON.parse(exact.messages[1].content).selectionTarget).toContain(
         'Recommend 30 papers.'
       )
-      expect(exact.maxOutputTokens).toBe(3200)
+      expect(exact.maxOutputTokens).toBe(3300)
     })
 
     it('offers loading more suggestions only if allowed, available, and visible to the model', () => {
@@ -168,6 +172,7 @@ describe('AiRecommendationService', () => {
           { id: 9, explanation: 'Not a candidate.' },
           { id: '3', explanation: 'Bridges the seed papers' }
         ],
+        reasoning: 'I look for visualization papers.',
         loadMoreSuggestions: true,
         report: '  Two papers on visualization   fit the seeds.  '
       })}\n\`\`\``
@@ -177,6 +182,7 @@ describe('AiRecommendationService', () => {
           { doi: '10.2000/suggested-2', explanation: 'It matches the visualization keyword.' },
           { doi: '10.2000/suggested-3', explanation: 'Bridges the seed papers' }
         ],
+        reasoning: 'I look for visualization papers.',
         loadMore: true,
         report: 'Two papers on visualization fit the seeds.'
       })
@@ -195,6 +201,26 @@ describe('AiRecommendationService', () => {
       ])
       expect(parsed.loadMore).toBe(false)
       expect(parsed.report).toBe('')
+      expect(parsed.reasoning).toBe('')
+    })
+
+    it('reads reasoning and finished choices from an answer that is still being written', () => {
+      const candidates = suggestions(3)
+      const written =
+        '{"reasoning":"I look for \\"survey\\" papers","recommendations":[{"id":2,"explanation":"A survey."},{"id":3,"explanation":"Brid'
+
+      expect(parsePartialRecommendationAnswer(written.slice(0, 30), candidates)).toEqual({
+        reasoning: 'I look for "sur',
+        recommendations: []
+      })
+      expect(parsePartialRecommendationAnswer(written, candidates)).toEqual({
+        reasoning: 'I look for "survey" papers',
+        recommendations: [{ doi: '10.2000/suggested-2', explanation: 'A survey.' }]
+      })
+      expect(parsePartialRecommendationAnswer('', candidates)).toEqual({
+        reasoning: '',
+        recommendations: []
+      })
     })
 
     it('rejects answers without JSON', () => {

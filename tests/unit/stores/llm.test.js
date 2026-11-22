@@ -225,14 +225,20 @@ describe('LLM store', () => {
       store.settings.mode = 'native'
       store.modelId = 'gpt-oss:20b'
       completeChat.mockImplementation(async (provider, request, onEvent) => {
-        onEvent({ type: 'text', text: 'Hello' })
+        onEvent({ type: 'reasoning', text: 'Hm. ' })
+        onEvent({ type: 'text', text: 'Hel' })
+        onEvent({ type: 'text', text: 'lo' })
         return { text: 'Hello' }
       })
       const onStatus = vi.fn()
 
       await store.generate({ messages: [], maxOutputTokens: 10 }, onStatus)
 
-      expect(onStatus).toHaveBeenCalledWith({ phase: 'generate', characters: 5 })
+      expect(onStatus).toHaveBeenLastCalledWith({
+        phase: 'generate',
+        text: 'Hello',
+        reasoning: 'Hm. '
+      })
     })
 
     it('leaves the answer length of cloud models unrestricted', async () => {

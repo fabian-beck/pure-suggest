@@ -340,7 +340,8 @@ export const useLlmStore = defineStore('llm', () => {
   /**
    * Runs a chat request ({messages, jsonSchema, maxOutputTokens, signal}) on the chosen
    * backend and model with the user's sampling settings. `onStatus` reports the phase
-   * (`download`, `load`, `generate`) with byte counts or the number of answer characters.
+   * (`download`, `load`, `generate`) with byte counts or, while generating, the answer
+   * (`text`) and the model's own reasoning (`reasoning`) as far as they are written.
    */
   async function generate(request, onStatus) {
     if (setupIssue.value) throw new LlmError('unavailable', setupIssue.value)
@@ -351,7 +352,7 @@ export const useLlmStore = defineStore('llm', () => {
     // Cloud models have ample context, and their hidden reasoning counts against the limit
     const localOutputTokens = request.maxOutputTokens + (isReasoning ? REASONING_HEADROOM : 0)
     const maxOutputTokens = settings.mode === 'cloud' ? undefined : localOutputTokens
-    let characters = 0
+    const written = { phase: 'generate', text: '', reasoning: '' }
     const result = await completeChat(
       getProvider(),
       {
@@ -364,8 +365,8 @@ export const useLlmStore = defineStore('llm', () => {
       },
       (event) => {
         if (event.type !== 'text' && event.type !== 'reasoning') return
-        characters += event.text.length
-        onStatus?.({ phase: 'generate', characters })
+        written[event.type] += event.text
+        onStatus?.({ ...written })
       }
     )
     if (result.tokensPerSecond) {

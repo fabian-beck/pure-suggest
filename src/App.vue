@@ -251,27 +251,30 @@ export default {
       class="align-center justify-center main-overlay"
       persistent
     >
-      <v-btn
-        v-if="interfaceStore.isLoadingCancelable"
-        class="loading-cancel-button"
-        icon="mdi-close"
-        variant="text"
-        size="small"
-        v-tippy="'Stop loading (Esc)'"
-        @click="interfaceStore.cancelLoading()"
-      ></v-btn>
-      <div class="d-flex flex-column align-center justify-center">
-        <div>
-          <v-progress-circular color="white" indeterminate size="64"></v-progress-circular>
+      <AiActivityPanel v-if="interfaceStore.aiRun" />
+      <template v-else>
+        <v-btn
+          v-if="interfaceStore.isLoadingCancelable"
+          class="loading-cancel-button"
+          icon="mdi-close"
+          variant="text"
+          size="small"
+          v-tippy="'Stop loading (Esc)'"
+          @click="interfaceStore.cancelLoading()"
+        ></v-btn>
+        <div class="d-flex flex-column align-center justify-center">
+          <div>
+            <v-progress-circular color="white" indeterminate size="64"></v-progress-circular>
+          </div>
+          <div
+            class="global-loading-message has-text-white mt-4"
+            v-if="interfaceStore.loadingMessage"
+            role="status"
+          >
+            {{ interfaceStore.loadingMessage }}
+          </div>
         </div>
-        <div
-          class="global-loading-message has-text-white mt-4"
-          v-if="interfaceStore.loadingMessage"
-          role="status"
-        >
-          {{ interfaceStore.loadingMessage }}
-        </div>
-      </div>
+      </template>
     </v-overlay>
     <ConfirmDialog />
     <InfoDialog />

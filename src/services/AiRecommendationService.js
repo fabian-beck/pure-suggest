@@ -4,9 +4,11 @@ import { LlmError } from '@/llm/types.ts'
 const TEXT_MAX_LENGTH = 320
 const EXPLANATION_MAX_LENGTH = 180
 const REPORT_MAX_LENGTH = 600
+const REASONING_MAX_LENGTH = 400
 const STEERING_COMMENT_MAX_LENGTH = 700
 const MIN_ANSWER_TOKENS = 1024
-const REPORT_TOKENS = 200
+// Room for the reasoning and the report that frame the recommendations
+const REPORT_TOKENS = 300
 const ANSWER_TOKENS_PER_RECOMMENDATION = 100
 
 // Levels of detail for describing publications, tried from rich to sparse until the prompt
@@ -35,18 +37,19 @@ const INSTRUCTIONS = [
   'When the steering comment influenced a selection, reflect that fit in the explanation.',
   'Refer to suggested papers only by their numeric id.',
   'Each explanation must be one brief sentence suitable for a tooltip.',
+  'Before choosing, state your reasoning in one or two plain sentences: what you look for among the suggestions in this step and why. As in the report, never mention ids, seed numbers, or field names in it.',
   'Set loadMoreSuggestions to true only if canLoadMoreSuggestions is true and the listed suggestions contain too few fitting papers for the expected number; otherwise set it to false.',
   'Write the report for the user in two or three plain sentences. The user sees the recommended papers listed next to the report and does not know the numbering used here, so never mention ids, seed numbers, or field names, and do not enumerate individual papers. Instead, describe in everyday words which themes the recommendations of this run cover (including seed papers marked addedInThisRun, which you recommended in earlier steps of the same run), how they extend the selection, and which fitting topics are likely still missing.',
-  'Answer with a JSON object of the form {"recommendations":[{"id":<id of a suggested paper>,"explanation":"<one sentence>"}],"loadMoreSuggestions":<true or false>,"report":"<two or three sentences>"} and nothing else.'
+  'Answer with a JSON object of the form {"reasoning":"<one or two sentences>","recommendations":[{"id":<id of a suggested paper>,"explanation":"<one sentence>"}],"loadMoreSuggestions":<true or false>,"report":"<two or three sentences>"} and nothing else.'
 ].join(' ')
 
 const RESPONSE_SCHEMA = {
   type: 'object',
   additionalProperties: false,
-  required: ['recommendations', 'loadMoreSuggestions', 'report'],
+  required: ['reasoning', 'recommendations', 'loadMoreSuggestions', 'report'],
+  // Models write the fields in this order: reasoning first, the report on the whole last
   properties: {
-    loadMoreSuggestions: { type: 'boolean' },
-    report: { type: 'string' },
+    reasoning: { type: 'string' },
     recommendations: {
       type: 'array',
       items: {
@@ -58,7 +61,9 @@ const RESPONSE_SCHEMA = {
           explanation: { type: 'string' }
         }
       }
-    }
+    },
+    loadMoreSuggestions: { type: 'boolean' },
+    report: { type: 'string' }
   }
 }
 
@@ -215,7 +220,8 @@ function normalizeExplanation(explanation) {
 /**
  * Turns a model answer into at most `maxCount` recommendations ({doi, explanation}), dropping
  * duplicates and references to publications that were not among the candidates, together
- * with the model's wish to see more suggestions (`loadMore`) and its brief `report`.
+ * with the model's `reasoning`, its wish to see more suggestions (`loadMore`), and its brief
+ * `report`.
  */
 export function parseRecommendationAnswer(answerText, candidates, maxCount) {
   const answer = parseJsonAnswer(answerText)
@@ -228,8 +234,43 @@ export function parseRecommendationAnswer(answerText, candidates, maxCount) {
     recommendations.push({ doi, explanation: normalizeExplanation(recommendation.explanation) })
   }
   return {
+    reasoning: truncateText(answer.reasoning, REASONING_MAX_LENGTH),
     recommendations: recommendations.slice(0, maxCount),
     loadMore: answer.loadMoreSuggestions === true,
     report: truncateText(answer.report, REPORT_MAX_LENGTH)
+  }
+}
+
+// A JSON string body, possibly cut off before its closing quote
+const STRING_BODY = String.raw`((?:[^"\\]|\\.)*)`
+const PARTIAL_REASONING = new RegExp(`"reasoning"\\s*:\\s*"${STRING_BODY}`)
+const FINISHED_RECOMMENDATION = new RegExp(
+  `\\{\\s*"id"\\s*:\\s*"?(\\d+)"?\\s*,\\s*"explanation"\\s*:\\s*"${STRING_BODY}"\\s*\\}`,
+  'g'
+)
+
+function unescapeJsonString(body) {
+  try {
+    return JSON.parse(`"${body}"`)
+  } catch {
+    return body
+  }
+}
+
+/**
+ * Reads what is already usable from an answer that is still being written: the reasoning as
+ * far as it got and the recommendations ({doi, explanation}) that are complete.
+ */
+export function parsePartialRecommendationAnswer(answerText, candidates) {
+  const recommendations = []
+  for (const [, id, explanation] of answerText.matchAll(FINISHED_RECOMMENDATION)) {
+    const doi = candidates[Number(id) - 1]?.doi
+    if (doi) {
+      recommendations.push({ doi, explanation: normalizeExplanation(unescapeJsonString(explanation)) })
+    }
+  }
+  return {
+    reasoning: unescapeJsonString(answerText.match(PARTIAL_REASONING)?.[1] ?? ''),
+    recommendations
   }
 }

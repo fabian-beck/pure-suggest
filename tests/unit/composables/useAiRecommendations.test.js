@@ -26,6 +26,7 @@ const publication = (doi) => ({
 // Answer of the model recommending the suggestions with the given ids
 const answer = (ids, loadMoreSuggestions = false) => ({
   text: JSON.stringify({
+    reasoning: `Looking for ${ids.length} fitting papers.`,
     recommendations: ids.map((id) => ({ id, explanation: `Reason ${id}.` })),
     loadMoreSuggestions,
     report: `Report after ${ids.length} picks.`
@@ -125,6 +126,43 @@ describe('useAiRecommendations', () => {
       })
     })
 
+    it('lets the user follow the reasoning and choices of the model while it answers', async () => {
+      const written = answer([2, 3]).text
+      const snapshots = []
+      llmStore.generate.mockImplementation(async (request, onStatus) => {
+        onStatus({ phase: 'load' })
+        for (const length of [40, written.indexOf('},{') + 1, written.length]) {
+          onStatus({ phase: 'generate', text: written.slice(0, length), reasoning: 'Thinking…' })
+          snapshots.push(JSON.parse(JSON.stringify(interfaceStore.aiRun.log)))
+        }
+        return { text: written }
+      })
+
+      await requestAiRecommendations()
+
+      expect(snapshots[0]).toEqual([
+        {
+          considered: 'Reading 8 suggestions and 1 selected publication',
+          thinking: 'Thinking…',
+          reasoning: 'Looking for 2 fitting pape',
+          picks: [],
+          action: ''
+        }
+      ])
+      expect(snapshots[1][0].picks).toEqual([
+        { doi: 'b', title: 'Paper b', authorShort: 'Doe et al.', year: 2024, explanation: 'Reason 2.' }
+      ])
+      expect(snapshots[2][0].picks).toHaveLength(2)
+      // The run is only shown as in progress while it lasts; its log goes into the report
+      expect(interfaceStore.aiRun).toBeNull()
+      expect(modalStore.aiReport.log).toEqual([
+        expect.objectContaining({
+          reasoning: 'Looking for 2 fitting papers.',
+          action: 'Tagging 2 suggestions as recommended'
+        })
+      ])
+    })
+
     it('limits the range to the available suggestions and the answer to its maximum', async () => {
       sessionStore.aiRecommendationRange = [10, 30]
       llmStore.generate.mockResolvedValue(answer([1, 2, 3, 4, 5, 6, 7, 8, 8, 1]))
@@ -157,6 +195,10 @@ describe('useAiRecommendations', () => {
           .map((suggested) => suggested.doi)
       ).toEqual(['a', 'more-108-2'])
       expect(modalStore.aiReport).toMatchObject({ steps: 2, loadCount: 1, suggestionCount: 10 })
+      expect(modalStore.aiReport.log.map((entry) => entry.action)).toEqual([
+        'Too few suggestions fit: loading more (up to 108) and asking again',
+        'Tagging 2 suggestions as recommended'
+      ])
     })
 
     it('does not load more suggestions if the user disallows it or none are left', async () => {
@@ -296,6 +338,11 @@ describe('useAiRecommendations', () => {
       expect(sessionStore.maxSuggestions).toBe(208)
       expect(contexts().map((context) => context.canLoadMoreSuggestions)).toEqual([true, true, false])
       expect(modalStore.aiReport).toMatchObject({ steps: 3, loadCount: 2 })
+      expect(modalStore.aiReport.log.map((entry) => entry.action)).toEqual([
+        'Adding 1 publication to the selection and loading more suggestions (up to 108), then recomputing the suggestions',
+        'Loading more suggestions (up to 208), then recomputing the suggestions',
+        'Nothing else fits clearly: finishing'
+      ])
     })
 
     it('reports when nothing was recommended', async () => {

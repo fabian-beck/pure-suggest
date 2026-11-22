@@ -12,6 +12,15 @@ const REPORT = {
     { doi: '10.1/a', title: 'Paper A', authorShort: 'Doe et al.', year: 2021, explanation: 'Cites both seeds.' },
     { doi: '10.1/b', title: '', explanation: 'Surveys the topic.' }
   ],
+  log: [
+    {
+      considered: 'Reading 100 suggestions and 2 selected publications',
+      thinking: '',
+      reasoning: 'I look for papers linking both seeds.',
+      picks: [{ doi: '10.1/a', title: 'Paper A', explanation: 'Cites both seeds.' }],
+      action: 'Adding 1 publication to the selection, then recomputing the suggestions'
+    }
+  ],
   steps: 2,
   loadCount: 1,
   contextNote: '',
@@ -30,7 +39,12 @@ describe('AiReportModalDialog', () => {
     return mount(AiReportModalDialog, {
       global: {
         plugins: [pinia],
-        stubs: { ModalDialog: { template: '<div><slot></slot><slot name="footer"></slot></div>' } }
+        stubs: {
+          'v-expansion-panels': { template: '<div class="steps"><slot></slot></div>' },
+          'v-expansion-panel': { template: '<div><slot></slot></div>' },
+          'v-expansion-panel-text': { template: '<div><slot></slot></div>' },
+          ModalDialog: { template: '<div><slot></slot><slot name="footer"></slot></div>' }
+        }
       }
     })
   }
@@ -53,6 +67,11 @@ describe('AiReportModalDialog', () => {
     expect(items[0].text()).toContain('Paper A (Doe et al., 2021)')
     expect(items[0].text()).toContain('Cites both seeds.')
     expect(items[1].text()).toContain('10.1/b')
+    // The steps of the run can be looked up with the reasoning and action of each
+    const steps = wrapper.find('.steps').text()
+    expect(steps).toContain('Step 1')
+    expect(steps).toContain('I look for papers linking both seeds.')
+    expect(steps).toContain('Adding 1 publication to the selection')
   })
 
   it('reports tagged suggestions, problems, and empty results', () => {
@@ -78,7 +97,7 @@ describe('AiReportModalDialog', () => {
   it('closes on request', async () => {
     const wrapper = mountDialog(REPORT)
 
-    await wrapper.find('button').trigger('click')
+    await wrapper.findAll('button').at(-1).trigger('click')
 
     expect(modalStore.isAiReportModalDialogShown).toBe(false)
   })
