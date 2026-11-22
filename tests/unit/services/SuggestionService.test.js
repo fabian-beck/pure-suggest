@@ -112,10 +112,16 @@ describe('SuggestionService', () => {
 
     it('should not suggest DOIs that are already selected', async () => {
       mockOptions.isSelected = vi.fn((_doi) => _doi === '10.1234/citation2')
-      mockOptions.getSelectedPublicationByDoi = vi.fn((_doi) => ({
-        citationCount: 0,
-        referenceCount: 0
-      }))
+      mockOptions.getSelectedPublicationByDoi = vi.fn((doi) =>
+        doi === '10.1234/citation2'
+          ? {
+              citationCount: 0,
+              referenceCount: 0,
+              citationDois: new Set(),
+              referenceDois: new Set()
+            }
+          : undefined
+      )
 
       const result = await SuggestionService.computeSuggestions(mockOptions)
 

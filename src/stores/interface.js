@@ -64,9 +64,7 @@ export const useInterfaceStore = defineStore('interface', {
       layoutMode: layoutSettings.mode, // 'auto' or a key of LAYOUTS
       panelSizes: layoutSettings.panelSizes,
       // Hover state management
-      hoveredPublication: null, // DOI of currently hovered publication
-      // Keyboard navigation direction tracking
-      lastNavigationDirection: null // 'up' or 'down' - for scroll behavior
+      hoveredPublication: null // DOI of currently hovered publication
     }
   },
   getters: {
@@ -150,8 +148,6 @@ export const useInterfaceStore = defineStore('interface', {
     },
 
     activatePublicationComponent(publicationComponent, navigationDirection = null) {
-      // Store navigation direction for scrolling behavior
-      this.lastNavigationDirection = navigationDirection;
       if (publicationComponent && typeof publicationComponent.focus === 'function') {
         publicationComponent.focus();
 

@@ -215,21 +215,12 @@ function getTagIcon(tagValue) {
 }
 
 function handleAuthorClick(event) {
-  // Check if clicked element or its parent has the clickable-author class
-  const authorElement = event.target.closest('.clickable-author')
-  if (authorElement) {
-    event.stopPropagation()
-    const authorName = authorElement.getAttribute('data-author')
-    if (authorName) {
-      const authorId = Author.nameToId(authorName.trim())
-      if (authorId) {
-        openAuthorModal(authorId)
-      }
-    }
-    return
+  event.stopPropagation()
+  const authorName = event.currentTarget.getAttribute('data-author')
+  const authorId = authorName && Author.nameToId(authorName.trim())
+  if (authorId) {
+    openAuthorModal(authorId)
   }
-  // Fallback to original behavior
-  refocus()
 }
 </script>
 

@@ -36,7 +36,6 @@ describe('Radical Keyboard Navigation Scrolling: Always Center', () => {
 
     // Verify focus was called
     expect(mockComponent.focus).toHaveBeenCalled()
-    expect(interfaceStore.lastNavigationDirection).toBe('down')
 
     // Advance timers to trigger setTimeout
     await vi.runAllTimersAsync()
