@@ -88,13 +88,23 @@ export class ConceptService {
    * @param {boolean} includeAuthors - Whether to include author attributes
    * @returns {Array} Array of concepts
    */
-  static computeConcepts(publications, boostKeywords, includeCitations = true, includeAuthors = false) {
+  static computeConcepts(
+    publications,
+    boostKeywords,
+    includeCitations = true,
+    includeAuthors = false
+  ) {
     if (!publications || publications.length === 0) {
       return []
     }
 
     // Allow empty keywords array - citations/authors can still form concepts
-    const context = this.buildContext(publications, boostKeywords || [], includeCitations, includeAuthors)
+    const context = this.buildContext(
+      publications,
+      boostKeywords || [],
+      includeCitations,
+      includeAuthors
+    )
 
     // Return empty if no attributes at all (no keywords, citations, or authors)
     if (context.attributes.length === 0) {
@@ -113,7 +123,12 @@ export class ConceptService {
    * @param {boolean} includeAuthors - Whether to include author attributes
    * @returns {Object} Context object with publications, attributes, and matrix
    */
-  static buildContext(publications, boostKeywords, includeCitations = true, includeAuthors = false) {
+  static buildContext(
+    publications,
+    boostKeywords,
+    includeCitations = true,
+    includeAuthors = false
+  ) {
     // Create set of selected publication DOIs for filtering
     const selectedDois = new Set(publications.map((pub) => pub.doi))
 
@@ -185,7 +200,9 @@ export class ConceptService {
         } else if (attribute.type === 'citation') {
           // Citation attribute - check if publication cites or is cited by this DOI, or is itself
           const isSelf = publication.doi === attribute.value
-          row.push(isSelf || citationDois.has(attribute.value) || referenceDois.has(attribute.value))
+          row.push(
+            isSelf || citationDois.has(attribute.value) || referenceDois.has(attribute.value)
+          )
         } else if (attribute.type === 'author') {
           // Author attribute - check if publication has this author
           row.push(authorDoisById.get(attribute.value).has(publication.doi))
@@ -345,7 +362,6 @@ export class ConceptService {
     return intent
   }
 
-
   /**
    * Sorts concepts using greedy algorithm based on remaining importance
    * Iteratively picks concepts that cover the most uncovered publications
@@ -407,7 +423,10 @@ export class ConceptService {
       const topConcept = remaining.shift()
 
       // Skip concepts with remaining importance < 6 or less than half of original importance
-      if (topConcept.remainingImportance < 6 || topConcept.remainingImportance < topConcept.importance / 2) {
+      if (
+        topConcept.remainingImportance < 6 ||
+        topConcept.remainingImportance < topConcept.importance / 2
+      ) {
         break
       }
 
@@ -644,5 +663,4 @@ export class ConceptService {
 
     return mergeMap
   }
-
 }

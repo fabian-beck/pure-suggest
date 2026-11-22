@@ -27,7 +27,12 @@ export function getScoreSizeFactor(score, minScore, maxScore) {
  * Create publication node data from publications
  */
 export function createPublicationNodes(publications, doiToIndex, options = {}) {
-  const { selectedQueue = [], excludedQueue = [], filter = null, onlyShowFiltered = false } = options
+  const {
+    selectedQueue = [],
+    excludedQueue = [],
+    filter = null,
+    onlyShowFiltered = false
+  } = options
   const nodes = []
   let i = 0
   const scores = publications.map((publication) => publication.score)
@@ -37,12 +42,13 @@ export function createPublicationNodes(publications, doiToIndex, options = {}) {
   publications.forEach((publication) => {
     if (publication.year) {
       doiToIndex[publication.doi] = i
-      
+
       // Determine if this publication matches the filter
       // When onlyShowFiltered is true, all shown publications match by definition
       // When onlyShowFiltered is false, we need to check each publication
-      const matchesFilter = onlyShowFiltered || !filter || !filter.hasActiveFilters() || filter.matches(publication)
-      
+      const matchesFilter =
+        onlyShowFiltered || !filter || !filter.hasActiveFilters() || filter.matches(publication)
+
       nodes.push({
         id: publication.doi,
         publication,
@@ -66,9 +72,7 @@ export function initializePublicationNodes(nodeSelection) {
   const publicationNodes = nodeSelection.filter((d) => d.type === 'publication')
 
   // Add rect element (main visual element for publication nodes)
-  publicationNodes
-    .append('rect')
-    .attr('pointer-events', 'all')
+  publicationNodes.append('rect').attr('pointer-events', 'all')
 
   // Add score text (displays the publication score)
   publicationNodes.append('text').classed('score', true).attr('pointer-events', 'none')
@@ -123,7 +127,7 @@ export function updatePublicationNodes(nodeSelection, activePublication, existin
     }
 
     contents.push(`<b>${d.publication.title ? d.publication.title : '[unknown title]'}</b> (${
-      d.publication.authorShort ? `${d.publication.authorShort  }, ` : ''
+      d.publication.authorShort ? `${d.publication.authorShort}, ` : ''
     }${d.publication.year ? d.publication.year : '[unknown year]'})
         <br><br>
         The publication is <b>${d.publication.isSelected ? 'selected' : 'suggested'}</b>${queueStatus}.`)

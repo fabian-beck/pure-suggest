@@ -626,7 +626,7 @@ describe('Filter', () => {
       // The filter normalizes to lowercase, so it won't match uppercase in filter
       // But the publication author "Smith, John" normalizes to "smith, john"
       expect(filter.matchesAuthors(mockPublication)).toBe(false)
-      
+
       // The correct way - filter should store normalized IDs
       filter.authors = ['smith, john']
       expect(filter.matchesAuthors(mockPublication)).toBe(true)

@@ -3,7 +3,6 @@
 import { ConceptService } from '@/services/ConceptService.js'
 
 describe('ConceptService', () => {
-
   describe('computeConcepts', () => {
     it('should return empty array when no publications', () => {
       const result = ConceptService.computeConcepts([], [])
@@ -47,7 +46,12 @@ describe('ConceptService', () => {
         { doi: '10.1/b', title: 'Visual Network Analysis', citationDois: [], referenceDois: [] },
         { doi: '10.1/c', title: 'Visual Graph Drawing', citationDois: [], referenceDois: [] },
         { doi: '10.1/d', title: 'Visual Graph Layout', citationDois: [], referenceDois: [] },
-        { doi: '10.1/e', title: 'Visual Network and Graph Methods', citationDois: [], referenceDois: [] },
+        {
+          doi: '10.1/e',
+          title: 'Visual Network and Graph Methods',
+          citationDois: [],
+          referenceDois: []
+        },
         { doi: '10.1/f', title: 'Visual Encoding', citationDois: [], referenceDois: [] }
       ]
       const keywords = ['VISUAL', 'NETWORK', 'GRAPH']
@@ -107,24 +111,36 @@ describe('ConceptService', () => {
       expect(result.length).toBeGreaterThan(0)
 
       // Paper A has attribute 10.1/b (it cites B)
-      const conceptWithA = result.find(c =>
-        c.publications.includes('10.1/a') &&
-        c.attributes.some(attr => attr.type === 'citation' && attr.value === '10.1/b')
+      const conceptWithA = result.find(
+        (c) =>
+          c.publications.includes('10.1/a') &&
+          c.attributes.some((attr) => attr.type === 'citation' && attr.value === '10.1/b')
       )
       expect(conceptWithA).toBeDefined()
     })
 
     it('should handle citation DOIs stored as Sets like on real Publication objects', () => {
       const pubs = [
-        { doi: '10.1/a', title: 'Paper A', citationDois: new Set(['10.1/b']), referenceDois: new Set() },
-        { doi: '10.1/b', title: 'Paper B', citationDois: new Set(['10.1/a']), referenceDois: new Set() }
+        {
+          doi: '10.1/a',
+          title: 'Paper A',
+          citationDois: new Set(['10.1/b']),
+          referenceDois: new Set()
+        },
+        {
+          doi: '10.1/b',
+          title: 'Paper B',
+          citationDois: new Set(['10.1/a']),
+          referenceDois: new Set()
+        }
       ]
 
       const result = ConceptService.computeConcepts(pubs, [])
 
-      const conceptWithA = result.find(c =>
-        c.publications.includes('10.1/a') &&
-        c.attributes.some(attr => attr.type === 'citation' && attr.value === '10.1/b')
+      const conceptWithA = result.find(
+        (c) =>
+          c.publications.includes('10.1/a') &&
+          c.attributes.some((attr) => attr.type === 'citation' && attr.value === '10.1/b')
       )
       expect(conceptWithA).toBeDefined()
     })
@@ -150,10 +166,11 @@ describe('ConceptService', () => {
       )
 
       // Should also include concept with paper A having both VISUAL and citing B
-      const conceptWithBoth = result.find(c =>
-        c.publications.includes('10.1/a') &&
-        c.attributes.some(attr => attr.type === 'keyword' && attr.value === 'VISUAL') &&
-        c.attributes.some(attr => attr.type === 'citation' && attr.value === '10.1/b')
+      const conceptWithBoth = result.find(
+        (c) =>
+          c.publications.includes('10.1/a') &&
+          c.attributes.some((attr) => attr.type === 'keyword' && attr.value === 'VISUAL') &&
+          c.attributes.some((attr) => attr.type === 'citation' && attr.value === '10.1/b')
       )
       expect(conceptWithBoth).toBeDefined()
     })
@@ -193,9 +210,10 @@ describe('ConceptService', () => {
       expect(result.length).toBeGreaterThanOrEqual(1)
 
       // Verify the valid concept exists
-      const visualConcept = result.find(c =>
-        c.publications.includes('10.1/a') &&
-        c.attributes.some(attr => attr.type === 'keyword' && attr.value === 'VISUAL')
+      const visualConcept = result.find(
+        (c) =>
+          c.publications.includes('10.1/a') &&
+          c.attributes.some((attr) => attr.type === 'keyword' && attr.value === 'VISUAL')
       )
       expect(visualConcept).toBeDefined()
     })
@@ -210,7 +228,7 @@ describe('ConceptService', () => {
       const result = ConceptService.computeConcepts(pubs, keywords)
 
       // Check for unique concepts by serializing and comparing
-      const serialized = result.map(concept =>
+      const serialized = result.map((concept) =>
         JSON.stringify({
           pubs: concept.publications.sort(),
           attrs: concept.attributes.sort()
@@ -266,8 +284,12 @@ describe('ConceptService', () => {
       const context = ConceptService.buildContext(pubs, keywords)
 
       // Find indices of keyword attributes
-      const visualIdx = context.attributes.findIndex(attr => attr.type === 'keyword' && attr.value === 'VISUAL')
-      const analytIdx = context.attributes.findIndex(attr => attr.type === 'keyword' && attr.value === 'ANALYT')
+      const visualIdx = context.attributes.findIndex(
+        (attr) => attr.type === 'keyword' && attr.value === 'VISUAL'
+      )
+      const analytIdx = context.attributes.findIndex(
+        (attr) => attr.type === 'keyword' && attr.value === 'ANALYT'
+      )
 
       expect(context.matrix[0][visualIdx]).toBe(true)
       expect(context.matrix[0][analytIdx]).toBe(true)
@@ -305,12 +327,16 @@ describe('ConceptService', () => {
       expect(context.attributes).not.toContainEqual({ type: 'citation', value: '10.1/external' })
 
       // Paper A cites B and is itself A
-      const bIdx = context.attributes.findIndex(attr => attr.type === 'citation' && attr.value === '10.1/b')
+      const bIdx = context.attributes.findIndex(
+        (attr) => attr.type === 'citation' && attr.value === '10.1/b'
+      )
       expect(context.matrix[0][bIdx]).toBe(true)
       expect(context.matrix[1][bIdx]).toBe(true) // B has self-reference
 
       // Paper B cites A and A is referenced by C
-      const aIdx = context.attributes.findIndex(attr => attr.type === 'citation' && attr.value === '10.1/a')
+      const aIdx = context.attributes.findIndex(
+        (attr) => attr.type === 'citation' && attr.value === '10.1/a'
+      )
       expect(context.matrix[0][aIdx]).toBe(true) // A has self-reference
       expect(context.matrix[1][aIdx]).toBe(true)
     })
@@ -328,8 +354,12 @@ describe('ConceptService', () => {
 
       const context = ConceptService.buildContext(pubs, keywords)
 
-      const visualIdx = context.attributes.findIndex(attr => attr.type === 'keyword' && attr.value === 'VISUAL')
-      const analytIdx = context.attributes.findIndex(attr => attr.type === 'keyword' && attr.value === 'ANALYT')
+      const visualIdx = context.attributes.findIndex(
+        (attr) => attr.type === 'keyword' && attr.value === 'VISUAL'
+      )
+      const analytIdx = context.attributes.findIndex(
+        (attr) => attr.type === 'keyword' && attr.value === 'ANALYT'
+      )
 
       expect(context.matrix[0][visualIdx]).toBe(false)
       expect(context.matrix[0][analytIdx]).toBe(false)
@@ -355,8 +385,12 @@ describe('ConceptService', () => {
       const context = ConceptService.buildContext(pubs, keywords)
 
       // Each DOI should appear only once as an attribute
-      const aOccurrences = context.attributes.filter(attr => attr.type === 'citation' && attr.value === '10.1/a').length
-      const bOccurrences = context.attributes.filter(attr => attr.type === 'citation' && attr.value === '10.1/b').length
+      const aOccurrences = context.attributes.filter(
+        (attr) => attr.type === 'citation' && attr.value === '10.1/a'
+      ).length
+      const bOccurrences = context.attributes.filter(
+        (attr) => attr.type === 'citation' && attr.value === '10.1/b'
+      ).length
       expect(aOccurrences).toBe(1)
       expect(bOccurrences).toBe(1)
     })
@@ -388,7 +422,7 @@ describe('ConceptService', () => {
       const context = ConceptService.buildContext(pubs, keywords)
 
       // Should only have top 10 citation attributes
-      const citationAttrs = context.attributes.filter(attr => attr.type === 'citation')
+      const citationAttrs = context.attributes.filter((attr) => attr.type === 'citation')
       expect(citationAttrs.length).toBeLessThanOrEqual(10)
 
       // The most cited publications (0-9) should be included
@@ -403,9 +437,27 @@ describe('ConceptService', () => {
   describe('sortConceptsByImportance', () => {
     it('should sort concepts by importance score (publications * attributes)', () => {
       const concepts = [
-        { publications: ['10.1/a', '10.1/b', '10.1/c'], attributes: [{ type: 'keyword', value: 'VISUAL' }], importance: 0 },
-        { publications: ['10.1/d', '10.1/e', '10.1/f'], attributes: [{ type: 'keyword', value: 'DATA' }, { type: 'keyword', value: 'ANALYT' }], importance: 0 },
-        { publications: ['10.1/g', '10.1/h', '10.1/i', '10.1/j'], attributes: [{ type: 'keyword', value: 'VISUAL' }, { type: 'keyword', value: 'DATA' }], importance: 0 }
+        {
+          publications: ['10.1/a', '10.1/b', '10.1/c'],
+          attributes: [{ type: 'keyword', value: 'VISUAL' }],
+          importance: 0
+        },
+        {
+          publications: ['10.1/d', '10.1/e', '10.1/f'],
+          attributes: [
+            { type: 'keyword', value: 'DATA' },
+            { type: 'keyword', value: 'ANALYT' }
+          ],
+          importance: 0
+        },
+        {
+          publications: ['10.1/g', '10.1/h', '10.1/i', '10.1/j'],
+          attributes: [
+            { type: 'keyword', value: 'VISUAL' },
+            { type: 'keyword', value: 'DATA' }
+          ],
+          importance: 0
+        }
       ]
 
       const sorted = ConceptService.sortConceptsByImportance(concepts)
@@ -431,9 +483,24 @@ describe('ConceptService', () => {
 
     it('should filter out concepts with fewer than 3 publications', () => {
       const concepts = [
-        { publications: ['10.1/a'], attributes: [{ type: 'keyword', value: 'VISUAL' }, { type: 'keyword', value: 'DATA' }], importance: 0 },
-        { publications: ['10.1/a', '10.1/b'], attributes: [{ type: 'keyword', value: 'VISUAL' }], importance: 0 },
-        { publications: ['10.1/a', '10.1/b', '10.1/c'], attributes: [{ type: 'keyword', value: 'DATA' }], importance: 0 }
+        {
+          publications: ['10.1/a'],
+          attributes: [
+            { type: 'keyword', value: 'VISUAL' },
+            { type: 'keyword', value: 'DATA' }
+          ],
+          importance: 0
+        },
+        {
+          publications: ['10.1/a', '10.1/b'],
+          attributes: [{ type: 'keyword', value: 'VISUAL' }],
+          importance: 0
+        },
+        {
+          publications: ['10.1/a', '10.1/b', '10.1/c'],
+          attributes: [{ type: 'keyword', value: 'DATA' }],
+          importance: 0
+        }
       ]
 
       const sorted = ConceptService.sortConceptsByImportance(concepts)
@@ -445,8 +512,16 @@ describe('ConceptService', () => {
 
     it('should filter out concepts with more than half of total publications', () => {
       const concepts = [
-        { publications: ['10.1/a', '10.1/b', '10.1/c'], attributes: [{ type: 'keyword', value: 'DATA' }], importance: 0 },
-        { publications: ['10.1/a', '10.1/b', '10.1/c', '10.1/d', '10.1/e', '10.1/f'], attributes: [{ type: 'keyword', value: 'VISUAL' }], importance: 0 }
+        {
+          publications: ['10.1/a', '10.1/b', '10.1/c'],
+          attributes: [{ type: 'keyword', value: 'DATA' }],
+          importance: 0
+        },
+        {
+          publications: ['10.1/a', '10.1/b', '10.1/c', '10.1/d', '10.1/e', '10.1/f'],
+          attributes: [{ type: 'keyword', value: 'VISUAL' }],
+          importance: 0
+        }
       ]
 
       const totalPublications = 10
@@ -459,7 +534,11 @@ describe('ConceptService', () => {
 
     it('should not mutate original array', () => {
       const concepts = [
-        { publications: ['10.1/a'], attributes: [{ type: 'keyword', value: 'VISUAL' }], importance: 0 },
+        {
+          publications: ['10.1/a'],
+          attributes: [{ type: 'keyword', value: 'VISUAL' }],
+          importance: 0
+        },
         { publications: ['10.1/a', '10.1/b'], attributes: ['DATA'], importance: 0 }
       ]
       const original = JSON.stringify(concepts)
@@ -715,18 +794,18 @@ describe('ConceptService', () => {
       ]
 
       const allPublications = [...conceptPublications, ...outsidePublications]
-      const conceptDois = conceptPublications.map(p => p.doi)
+      const conceptDois = conceptPublications.map((p) => p.doi)
 
       const result = ConceptService.computeConceptTerms(conceptDois, allPublications)
 
       // "visual", "visualiz", "visualization" should all merge to "visual"
       // Check that the merged term appears in results
-      const visualTerm = result.exclusivityTerms.find(t => t.term === 'visual')
+      const visualTerm = result.exclusivityTerms.find((t) => t.term === 'visual')
       expect(visualTerm).toBeDefined()
 
       // Should not have separate entries for variants
-      const visualizTerm = result.exclusivityTerms.find(t => t.term === 'visualiz')
-      const visualizationTerm = result.exclusivityTerms.find(t => t.term === 'visualization')
+      const visualizTerm = result.exclusivityTerms.find((t) => t.term === 'visualiz')
+      const visualizationTerm = result.exclusivityTerms.find((t) => t.term === 'visualization')
       expect(visualizTerm).toBeUndefined()
       expect(visualizationTerm).toBeUndefined()
 
@@ -750,12 +829,12 @@ describe('ConceptService', () => {
       ]
 
       const allPublications = [...conceptPublications, ...outsidePublications]
-      const conceptDois = conceptPublications.map(p => p.doi)
+      const conceptDois = conceptPublications.map((p) => p.doi)
 
       const result = ConceptService.computeConceptTerms(conceptDois, allPublications)
 
       // All "comput*" variants should merge to "comput"
-      const computTerm = result.exclusivityTerms.find(t => t.term === 'comput')
+      const computTerm = result.exclusivityTerms.find((t) => t.term === 'comput')
       expect(computTerm).toBeDefined()
 
       // All 3 concept publications contain "comput" (after merging)
@@ -767,9 +846,33 @@ describe('ConceptService', () => {
   describe('Author attributes', () => {
     it('should extract author IDs using Author disambiguation logic', () => {
       const pubs = [
-        { doi: '10.1/a', title: 'Paper A', year: 2020, authorOrcid: 'Smith, John; Jones, Mary', citationDois: [], referenceDois: [], boostKeywords: [] },
-        { doi: '10.1/b', title: 'Paper B', year: 2021, authorOrcid: 'Smith, John; Brown, Bob', citationDois: [], referenceDois: [], boostKeywords: [] },
-        { doi: '10.1/c', title: 'Paper C', year: 2022, authorOrcid: 'Jones, Mary; White, Alice', citationDois: [], referenceDois: [], boostKeywords: [] }
+        {
+          doi: '10.1/a',
+          title: 'Paper A',
+          year: 2020,
+          authorOrcid: 'Smith, John; Jones, Mary',
+          citationDois: [],
+          referenceDois: [],
+          boostKeywords: []
+        },
+        {
+          doi: '10.1/b',
+          title: 'Paper B',
+          year: 2021,
+          authorOrcid: 'Smith, John; Brown, Bob',
+          citationDois: [],
+          referenceDois: [],
+          boostKeywords: []
+        },
+        {
+          doi: '10.1/c',
+          title: 'Paper C',
+          year: 2022,
+          authorOrcid: 'Jones, Mary; White, Alice',
+          citationDois: [],
+          referenceDois: [],
+          boostKeywords: []
+        }
       ]
 
       const context = ConceptService.buildContext(pubs, [], false, true)
@@ -783,9 +886,33 @@ describe('ConceptService', () => {
 
     it('should create concepts based on shared authors', () => {
       const pubs = [
-        { doi: '10.1/a', title: 'Paper A', year: 2020, authorOrcid: 'Smith, John; Jones, Mary', citationDois: [], referenceDois: [], boostKeywords: [] },
-        { doi: '10.1/b', title: 'Paper B', year: 2021, authorOrcid: 'Smith, John; Brown, Bob', citationDois: [], referenceDois: [], boostKeywords: [] },
-        { doi: '10.1/c', title: 'Paper C', year: 2022, authorOrcid: 'Jones, Mary; White, Alice', citationDois: [], referenceDois: [], boostKeywords: [] }
+        {
+          doi: '10.1/a',
+          title: 'Paper A',
+          year: 2020,
+          authorOrcid: 'Smith, John; Jones, Mary',
+          citationDois: [],
+          referenceDois: [],
+          boostKeywords: []
+        },
+        {
+          doi: '10.1/b',
+          title: 'Paper B',
+          year: 2021,
+          authorOrcid: 'Smith, John; Brown, Bob',
+          citationDois: [],
+          referenceDois: [],
+          boostKeywords: []
+        },
+        {
+          doi: '10.1/c',
+          title: 'Paper C',
+          year: 2022,
+          authorOrcid: 'Jones, Mary; White, Alice',
+          citationDois: [],
+          referenceDois: [],
+          boostKeywords: []
+        }
       ]
 
       const concepts = ConceptService.computeConcepts(pubs, [], false, true)
@@ -809,8 +936,24 @@ describe('ConceptService', () => {
 
     it('should include all authors as attributes even if appearing once', () => {
       const pubs = [
-        { doi: '10.1/a', title: 'Paper A', year: 2020, authorOrcid: 'Smith, John', citationDois: [], referenceDois: [], boostKeywords: [] },
-        { doi: '10.1/b', title: 'Paper B', year: 2021, authorOrcid: 'Jones, Mary', citationDois: [], referenceDois: [], boostKeywords: [] }
+        {
+          doi: '10.1/a',
+          title: 'Paper A',
+          year: 2020,
+          authorOrcid: 'Smith, John',
+          citationDois: [],
+          referenceDois: [],
+          boostKeywords: []
+        },
+        {
+          doi: '10.1/b',
+          title: 'Paper B',
+          year: 2021,
+          authorOrcid: 'Jones, Mary',
+          citationDois: [],
+          referenceDois: [],
+          boostKeywords: []
+        }
       ]
 
       const context = ConceptService.buildContext(pubs, [], false, true)
@@ -822,9 +965,33 @@ describe('ConceptService', () => {
 
     it('should match author attributes for ORCID-annotated authors', () => {
       const pubs = [
-        { doi: '10.1/a', title: 'Paper A', year: 2020, authorOrcid: 'Smith, John, 0000-0001-2345-6789', citationDois: [], referenceDois: [], boostKeywords: [] },
-        { doi: '10.1/b', title: 'Paper B', year: 2021, authorOrcid: 'Smith, John, 0000-0001-2345-6789', citationDois: [], referenceDois: [], boostKeywords: [] },
-        { doi: '10.1/c', title: 'Paper C', year: 2022, authorOrcid: 'Jones, Mary', citationDois: [], referenceDois: [], boostKeywords: [] }
+        {
+          doi: '10.1/a',
+          title: 'Paper A',
+          year: 2020,
+          authorOrcid: 'Smith, John, 0000-0001-2345-6789',
+          citationDois: [],
+          referenceDois: [],
+          boostKeywords: []
+        },
+        {
+          doi: '10.1/b',
+          title: 'Paper B',
+          year: 2021,
+          authorOrcid: 'Smith, John, 0000-0001-2345-6789',
+          citationDois: [],
+          referenceDois: [],
+          boostKeywords: []
+        },
+        {
+          doi: '10.1/c',
+          title: 'Paper C',
+          year: 2022,
+          authorOrcid: 'Jones, Mary',
+          citationDois: [],
+          referenceDois: [],
+          boostKeywords: []
+        }
       ]
 
       const concepts = ConceptService.computeConcepts(pubs, [], false, true)
@@ -840,7 +1007,15 @@ describe('ConceptService', () => {
     it('should handle publications without author data', () => {
       const pubs = [
         { doi: '10.1/a', title: 'Paper A', citationDois: [], referenceDois: [] },
-        { doi: '10.1/b', title: 'Paper B', year: 2020, authorOrcid: 'Smith, John', citationDois: [], referenceDois: [], boostKeywords: [] }
+        {
+          doi: '10.1/b',
+          title: 'Paper B',
+          year: 2020,
+          authorOrcid: 'Smith, John',
+          citationDois: [],
+          referenceDois: [],
+          boostKeywords: []
+        }
       ]
 
       const context = ConceptService.buildContext(pubs, [], false, true)

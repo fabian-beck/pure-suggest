@@ -16,19 +16,20 @@ function testHtmlRemoval(inputTitle) {
 }
 
 describe('Publication HTML Tag Removal', () => {
-
   describe('basic HTML tag removal', () => {
     it('should remove simple HTML tags', () => {
       const cleanedTitle = testHtmlRemoval('A Study of <b>Machine Learning</b> Methods')
-      
+
       expect(cleanedTitle).toBe('A Study of Machine Learning Methods')
       expect(cleanedTitle).not.toContain('<b>')
       expect(cleanedTitle).not.toContain('</b>')
     })
 
     it('should remove multiple different tags', () => {
-      const cleanedTitle = testHtmlRemoval('Research on <i>Neural</i> <b>Networks</b> and <u>Deep Learning</u>')
-      
+      const cleanedTitle = testHtmlRemoval(
+        'Research on <i>Neural</i> <b>Networks</b> and <u>Deep Learning</u>'
+      )
+
       expect(cleanedTitle).toBe('Research on Neural Networks and Deep Learning')
       expect(cleanedTitle).not.toContain('<i>')
       expect(cleanedTitle).not.toContain('</i>')
@@ -40,7 +41,7 @@ describe('Publication HTML Tag Removal', () => {
 
     it('should remove self-closing tags', () => {
       const cleanedTitle = testHtmlRemoval('Data Analysis<br/>and Visualization<hr/>')
-      
+
       expect(cleanedTitle).toBe('Data Analysisand Visualization')
       expect(cleanedTitle).not.toContain('<br/>')
       expect(cleanedTitle).not.toContain('<hr/>')
@@ -48,7 +49,7 @@ describe('Publication HTML Tag Removal', () => {
 
     it('should remove tags with attributes', () => {
       const cleanedTitle = testHtmlRemoval('A <span class="highlight">comprehensive</span> review')
-      
+
       expect(cleanedTitle).toBe('A comprehensive review')
       expect(cleanedTitle).not.toContain('<span class="highlight">')
       expect(cleanedTitle).not.toContain('</span>')
@@ -56,15 +57,17 @@ describe('Publication HTML Tag Removal', () => {
 
     it('should handle empty tags', () => {
       const cleanedTitle = testHtmlRemoval('Study<></> of algorithms')
-      
+
       expect(cleanedTitle).toBe('Study of algorithms')
       expect(cleanedTitle).not.toContain('<>')
       expect(cleanedTitle).not.toContain('</>')
     })
 
     it('should remove tags with complex attributes', () => {
-      const cleanedTitle = testHtmlRemoval('Analysis <a href="http://example.com" target="_blank">link</a> here')
-      
+      const cleanedTitle = testHtmlRemoval(
+        'Analysis <a href="http://example.com" target="_blank">link</a> here'
+      )
+
       expect(cleanedTitle).toBe('Analysis link here')
       expect(cleanedTitle).not.toContain('<a href')
       expect(cleanedTitle).not.toContain('</a>')
@@ -74,7 +77,7 @@ describe('Publication HTML Tag Removal', () => {
   describe('edge cases for HTML tag removal', () => {
     it('should handle malformed tags gracefully', () => {
       const cleanedTitle = testHtmlRemoval('Text with <malformed tag content')
-      
+
       // Current regex /<[^>]*>/g should remove <malformed tag content even without closing >
       // This documents current behavior
       expect(cleanedTitle).toBeDefined()
@@ -83,7 +86,7 @@ describe('Publication HTML Tag Removal', () => {
 
     it('should handle nested tags', () => {
       const cleanedTitle = testHtmlRemoval('Text with <div><span>nested</span> content</div>')
-      
+
       expect(cleanedTitle).toBe('Text with nested content')
       expect(cleanedTitle).not.toContain('<div>')
       expect(cleanedTitle).not.toContain('<span>')
@@ -92,8 +95,10 @@ describe('Publication HTML Tag Removal', () => {
     })
 
     it('should handle tags with special characters in attributes', () => {
-      const cleanedTitle = testHtmlRemoval('Research <span data-value="test&amp;data">important</span> findings')
-      
+      const cleanedTitle = testHtmlRemoval(
+        'Research <span data-value="test&amp;data">important</span> findings'
+      )
+
       expect(cleanedTitle).toBe('Research important findings')
       expect(cleanedTitle).not.toContain('<span')
       expect(cleanedTitle).not.toContain('</span>')
@@ -101,7 +106,7 @@ describe('Publication HTML Tag Removal', () => {
 
     it('should handle multiple consecutive tags', () => {
       const cleanedTitle = testHtmlRemoval('Text</b></i></u> with multiple closing tags')
-      
+
       expect(cleanedTitle).toBe('Text with multiple closing tags')
       expect(cleanedTitle).not.toContain('</b>')
       expect(cleanedTitle).not.toContain('</i>')
@@ -111,7 +116,7 @@ describe('Publication HTML Tag Removal', () => {
     it('should handle performance stress test - many tags', () => {
       const manyTags = Array(50).fill('<span>word</span>').join(' ')
       const cleanedTitle = testHtmlRemoval(`Research ${manyTags} conclusion`)
-      
+
       expect(cleanedTitle).toContain('Research')
       expect(cleanedTitle).toContain('conclusion')
       expect(cleanedTitle).toContain('word')
@@ -121,15 +126,17 @@ describe('Publication HTML Tag Removal', () => {
 
     it('should handle potential backtracking scenario - repeated angle brackets', () => {
       const cleanedTitle = testHtmlRemoval('Text with <<<>>> multiple brackets')
-      
+
       expect(cleanedTitle).toBeDefined()
       expect(cleanedTitle).toContain('Text with')
       expect(cleanedTitle).toContain('multiple brackets')
     })
 
     it('should handle tags with newlines and whitespace', () => {
-      const cleanedTitle = testHtmlRemoval('Text with <div\\n  class="test"\\n  id="example">content</div> here')
-      
+      const cleanedTitle = testHtmlRemoval(
+        'Text with <div\\n  class="test"\\n  id="example">content</div> here'
+      )
+
       expect(cleanedTitle).toBe('Text with content here')
       expect(cleanedTitle).not.toContain('<div')
       expect(cleanedTitle).not.toContain('</div>')
@@ -138,17 +145,25 @@ describe('Publication HTML Tag Removal', () => {
 
   describe('specific HTML tag types', () => {
     it('should remove small caps (sc) tags - Bug reproduction case', () => {
-      const cleanedTitle = testHtmlRemoval('VT<sc>iles</sc>: Coordinating and Combining Co-located Mobile Devices for Visual Data Exploration')
-      
-      expect(cleanedTitle).toBe('VTiles: Coordinating and Combining Co-located Mobile Devices for Visual Data Exploration')
+      const cleanedTitle = testHtmlRemoval(
+        'VT<sc>iles</sc>: Coordinating and Combining Co-located Mobile Devices for Visual Data Exploration'
+      )
+
+      expect(cleanedTitle).toBe(
+        'VTiles: Coordinating and Combining Co-located Mobile Devices for Visual Data Exploration'
+      )
       expect(cleanedTitle).not.toContain('<sc>')
       expect(cleanedTitle).not.toContain('</sc>')
     })
 
     it('should remove HTML entities encoded tags - Bug reproduction case', () => {
-      const cleanedTitle = testHtmlRemoval('V&lt;sc&gt;is&lt;/sc&gt;T&lt;sc&gt;iles&lt;/sc&gt;: Coordinating and Combining Co-located Mobile Devices for Visual Data Exploration')
-      
-      expect(cleanedTitle).toBe('VisTiles: Coordinating and Combining Co-located Mobile Devices for Visual Data Exploration')
+      const cleanedTitle = testHtmlRemoval(
+        'V&lt;sc&gt;is&lt;/sc&gt;T&lt;sc&gt;iles&lt;/sc&gt;: Coordinating and Combining Co-located Mobile Devices for Visual Data Exploration'
+      )
+
+      expect(cleanedTitle).toBe(
+        'VisTiles: Coordinating and Combining Co-located Mobile Devices for Visual Data Exploration'
+      )
       expect(cleanedTitle).not.toContain('&lt;sc&gt;')
       expect(cleanedTitle).not.toContain('&lt;/sc&gt;')
       expect(cleanedTitle).not.toContain('<sc>')
@@ -156,8 +171,10 @@ describe('Publication HTML Tag Removal', () => {
     })
 
     it('should remove various HTML entities encoded tags', () => {
-      const cleanedTitle = testHtmlRemoval('Study of &lt;sub&gt;2&lt;/sub&gt;O and H&lt;sup&gt;+&lt;/sup&gt; reactions')
-      
+      const cleanedTitle = testHtmlRemoval(
+        'Study of &lt;sub&gt;2&lt;/sub&gt;O and H&lt;sup&gt;+&lt;/sup&gt; reactions'
+      )
+
       expect(cleanedTitle).toBe('Study of 2O and H+ reactions')
       expect(cleanedTitle).not.toContain('&lt;sub&gt;')
       expect(cleanedTitle).not.toContain('&lt;/sub&gt;')
@@ -166,8 +183,10 @@ describe('Publication HTML Tag Removal', () => {
     })
 
     it('should remove mixed HTML tags and HTML entities', () => {
-      const cleanedTitle = testHtmlRemoval('Research on <b>neural</b> &lt;i&gt;networks&lt;/i&gt; and &lt;sc&gt;machine&lt;/sc&gt; learning')
-      
+      const cleanedTitle = testHtmlRemoval(
+        'Research on <b>neural</b> &lt;i&gt;networks&lt;/i&gt; and &lt;sc&gt;machine&lt;/sc&gt; learning'
+      )
+
       expect(cleanedTitle).toBe('Research on neural networks and machine learning')
       expect(cleanedTitle).not.toContain('<b>')
       expect(cleanedTitle).not.toContain('</b>')
@@ -178,8 +197,10 @@ describe('Publication HTML Tag Removal', () => {
     })
 
     it('should remove various formatting tags used in academic publications', () => {
-      const cleanedTitle = testHtmlRemoval('Study of <sub>2</sub>O and H<sup>+</sup> in <sc>chemical</sc> reactions')
-      
+      const cleanedTitle = testHtmlRemoval(
+        'Study of <sub>2</sub>O and H<sup>+</sup> in <sc>chemical</sc> reactions'
+      )
+
       expect(cleanedTitle).toBe('Study of 2O and H+ in chemical reactions')
       expect(cleanedTitle).not.toContain('<sub>')
       expect(cleanedTitle).not.toContain('</sub>')
@@ -191,15 +212,17 @@ describe('Publication HTML Tag Removal', () => {
 
     it('should handle uppercase SC tags', () => {
       const cleanedTitle = testHtmlRemoval('VT<SC>iles</SC>: Test with uppercase tags')
-      
+
       expect(cleanedTitle).toBe('VTiles: Test with uppercase tags')
       expect(cleanedTitle).not.toContain('<SC>')
       expect(cleanedTitle).not.toContain('</SC>')
     })
 
     it('should handle sc tags with attributes', () => {
-      const cleanedTitle = testHtmlRemoval('VT<sc class="small-caps">iles</sc>: Test with attributes')
-      
+      const cleanedTitle = testHtmlRemoval(
+        'VT<sc class="small-caps">iles</sc>: Test with attributes'
+      )
+
       expect(cleanedTitle).toBe('VTiles: Test with attributes')
       expect(cleanedTitle).not.toContain('<sc')
       expect(cleanedTitle).not.toContain('</sc>')
@@ -207,7 +230,7 @@ describe('Publication HTML Tag Removal', () => {
 
     it('should handle multiple sc tags in same title', () => {
       const cleanedTitle = testHtmlRemoval('<sc>Small</sc> caps and <sc>more</sc> small caps')
-      
+
       expect(cleanedTitle).toBe('Small caps and more small caps')
       expect(cleanedTitle).not.toContain('<sc>')
       expect(cleanedTitle).not.toContain('</sc>')
@@ -215,7 +238,7 @@ describe('Publication HTML Tag Removal', () => {
 
     it('should handle mixed case sc tags', () => {
       const cleanedTitle = testHtmlRemoval('Test <Sc>mixed</sC> case tags')
-      
+
       expect(cleanedTitle).toBe('Test mixed case tags')
       expect(cleanedTitle).not.toContain('<Sc>')
       expect(cleanedTitle).not.toContain('</sC>')
@@ -224,8 +247,10 @@ describe('Publication HTML Tag Removal', () => {
 
   describe('integration with cleanTitle function', () => {
     it('should work as part of the full cleaning process', () => {
-      const cleanedTitle = testHtmlRemoval('A <b>Comprehensive</b> Study  of   <i>Machine Learning</i>')
-      
+      const cleanedTitle = testHtmlRemoval(
+        'A <b>Comprehensive</b> Study  of   <i>Machine Learning</i>'
+      )
+
       // Should remove HTML tags but preserve original whitespace structure
       expect(cleanedTitle).toBe('A Comprehensive Study  of   Machine Learning')
       expect(cleanedTitle).not.toContain('<b>')
@@ -235,16 +260,18 @@ describe('Publication HTML Tag Removal', () => {
 
     it('should handle empty result after tag removal', () => {
       const cleanedTitle = testHtmlRemoval('<div></div><span></span>')
-      
+
       expect(cleanedTitle).toBe('')
     })
 
     it('should preserve text content while removing tags', () => {
-      const cleanedTitle = testHtmlRemoval('<script>alert("test")</script>Important Research<style>body{}</style>')
-      
+      const cleanedTitle = testHtmlRemoval(
+        '<script>alert("test")</script>Important Research<style>body{}</style>'
+      )
+
       expect(cleanedTitle).toContain('Important Research')
-      expect(cleanedTitle).toContain('Alert("test")')  // Script content preserved and capitalized
-      expect(cleanedTitle).toContain('body{}')         // Style content preserved
+      expect(cleanedTitle).toContain('Alert("test")') // Script content preserved and capitalized
+      expect(cleanedTitle).toContain('body{}') // Style content preserved
       expect(cleanedTitle).not.toContain('<script>')
       expect(cleanedTitle).not.toContain('</script>')
       expect(cleanedTitle).not.toContain('<style>')

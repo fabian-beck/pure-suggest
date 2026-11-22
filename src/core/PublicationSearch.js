@@ -135,13 +135,12 @@ export default class PublicationSearch {
       return { results, type: 'doi' }
     }
 
-    console.log(`Searching for publications matching '${this.query}' using both OpenAlex and CrossRef.`)
+    console.log(
+      `Searching for publications matching '${this.query}' using both OpenAlex and CrossRef.`
+    )
 
     // Search both APIs in parallel and merge results
-    await Promise.all([
-      this.searchOpenAlex(results),
-      this.searchCrossRef(results)
-    ])
+    await Promise.all([this.searchOpenAlex(results), this.searchCrossRef(results)])
 
     // Remove duplicates, then load metadata before ranking so scores are based on fetched data
     const uniqueResults = this.removeDuplicates(results)
@@ -204,16 +203,16 @@ export default class PublicationSearch {
 
   rankResults(results) {
     const queryWords = this.extractWords(this.query)
-    
+
     // Calculate match scores for each publication
     const scoredResults = results.map((publication) => {
       const score = this.calculateMatchScore(publication, queryWords)
       return { publication, score }
     })
-    
+
     // Sort by score descending
     scoredResults.sort((a, b) => b.score - a.score)
-    
+
     return scoredResults.map((item) => item.publication)
   }
 
@@ -228,30 +227,30 @@ export default class PublicationSearch {
 
   calculateMatchScore(publication, queryWords) {
     let score = 0
-    
+
     // Weight factors for different fields
     const TITLE_WEIGHT = 3
     const AUTHOR_WEIGHT = 2
     const VENUE_WEIGHT = 1
-    
+
     const titleWords = this.extractWords(publication.title || '')
     const authorWords = this.extractWords(publication.author || '')
     const venueWords = this.extractWords(publication.container || '')
-    
+
     queryWords.forEach((queryWord) => {
       // Count matches in title
       const titleMatches = titleWords.filter((word) => word === queryWord).length
       score += titleMatches * TITLE_WEIGHT
-      
+
       // Count matches in authors
       const authorMatches = authorWords.filter((word) => word === queryWord).length
       score += authorMatches * AUTHOR_WEIGHT
-      
+
       // Count matches in venue
       const venueMatches = venueWords.filter((word) => word === queryWord).length
       score += venueMatches * VENUE_WEIGHT
     })
-    
+
     return score
   }
 }

@@ -11,7 +11,6 @@ import {
 
 import PublicationComponent from '@/components/PublicationComponent.vue'
 
-
 // Mock IndexedDB and dependencies
 global.indexedDB = {
   open: vi.fn(() => ({ result: {}, onsuccess: vi.fn(), onerror: vi.fn() })),

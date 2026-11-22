@@ -82,8 +82,8 @@ export default {
           <li>
             <v-icon>mdi-plus-box-outline</v-icon> <v-icon>mdi-minus-box-outline</v-icon>
             <v-icon>mdi-alpha-d-box-outline</v-icon> <v-icon>mdi-alpha-t-box-outline</v-icon>
-            <v-icon>mdi-alpha-g-box-outline</v-icon> <v-icon>mdi-alpha-x-box-outline</v-icon> Act
-            on a publication entry like on an active publication
+            <v-icon>mdi-alpha-g-box-outline</v-icon> <v-icon>mdi-alpha-x-box-outline</v-icon> Act on
+            a publication entry like on an active publication
           </li>
           <li>
             <v-icon>mdi-backspace-outline</v-icon> Remove the entry from the queue or the excluded

@@ -28,12 +28,14 @@ const SCORE_LIGHTNESS = {
  */
 // @indirection-reviewed: meaningful-abstraction - clear business logic for user input normalization
 export function normalizeBoostKeywordString(boostKeywordString) {
-  return boostKeywordString
-    // eslint-disable-next-line sonarjs/super-linear-regex -- safe on short keyword input
-    .replace(/\s*,\s*/g, ', ') // treat spaces before/after commas
-    // eslint-disable-next-line sonarjs/super-linear-regex -- safe on short keyword input
-    .replace(/\s*\|\s*/g, '|') // remove spaces before/after vertical line
-    .toUpperCase() // upper case
+  return (
+    boostKeywordString
+      // eslint-disable-next-line sonarjs/super-linear-regex -- safe on short keyword input
+      .replace(/\s*,\s*/g, ', ') // treat spaces before/after commas
+      // eslint-disable-next-line sonarjs/super-linear-regex -- safe on short keyword input
+      .replace(/\s*\|\s*/g, '|') // remove spaces before/after vertical line
+      .toUpperCase()
+  ) // upper case
 }
 
 /**
@@ -57,13 +59,14 @@ export function parseUniqueBoostKeywords(boostKeywordString) {
  */
 function tryAddMatch(matches, boostKeyword, alternativeKeyword, position) {
   if (position < 0) return false
-  
+
   // Check for overlaps with existing matches
-  const overlaps = matches.some(match => 
-    position < match.position + match.length &&
-    position + alternativeKeyword.length > match.position
+  const overlaps = matches.some(
+    (match) =>
+      position < match.position + match.length &&
+      position + alternativeKeyword.length > match.position
   )
-  
+
   if (!overlaps) {
     matches.push({
       keyword: boostKeyword,
@@ -73,7 +76,7 @@ function tryAddMatch(matches, boostKeyword, alternativeKeyword, position) {
     })
     return true
   }
-  
+
   return false
 }
 
@@ -97,14 +100,18 @@ export function findKeywordMatches(title, boostKeywords) {
 
     // Find first matching alternative for this keyword group
     for (const alternativeKeyword of alternatives) {
-      const position = alternativeKeyword.length <= 3
-        ? (() => {
-            const wordBoundaryRegex = new RegExp(`\\b${alternativeKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'gi')
-            const regexMatch = wordBoundaryRegex.exec(title)
-            return regexMatch?.index ?? -1
-          })()
-        : upperTitle.indexOf(alternativeKeyword.toUpperCase())
-      
+      const position =
+        alternativeKeyword.length <= 3
+          ? (() => {
+              const wordBoundaryRegex = new RegExp(
+                `\\b${alternativeKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`,
+                'gi'
+              )
+              const regexMatch = wordBoundaryRegex.exec(title)
+              return regexMatch?.index ?? -1
+            })()
+          : upperTitle.indexOf(alternativeKeyword.toUpperCase())
+
       // Try to add match and break if successful (only match first alternative per keyword group)
       if (tryAddMatch(matches, boostKeyword, alternativeKeyword, position)) {
         break
@@ -136,7 +143,10 @@ export function findAllKeywordMatches(text, boostKeywords) {
     alternatives.forEach((alternativeKeyword) => {
       // Use word boundary matching for short keywords (3 chars or less)
       if (alternativeKeyword.length <= 3) {
-        const wordBoundaryRegex = new RegExp(`\\b${alternativeKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'gi')
+        const wordBoundaryRegex = new RegExp(
+          `\\b${alternativeKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`,
+          'gi'
+        )
         let match
         while ((match = wordBoundaryRegex.exec(text)) !== null) {
           tryAddMatch(matches, boostKeyword, alternativeKeyword, match.index)
@@ -182,8 +192,6 @@ export function highlightTitle(title, matches) {
   return result
 }
 
-
-
 /**
  * Gets color based on publication score
  * @param {number} score - Publication score
@@ -220,15 +228,18 @@ export function updatePublicationScores(publications, uniqueBoostKeywords, isBoo
     // Update boost metrics
     publication.boostMatches = matches.length
     publication.boostKeywords = matches.map((match) => match.keyword)
-    publication.boostFactor = !isBoost || matches.length === 0
-      ? SCORING.DEFAULT_BOOST_FACTOR
-      : SCORING.DEFAULT_BOOST_FACTOR * SCORING.BOOST_MULTIPLIER**matches.length
+    publication.boostFactor =
+      !isBoost || matches.length === 0
+        ? SCORING.DEFAULT_BOOST_FACTOR
+        : SCORING.DEFAULT_BOOST_FACTOR * SCORING.BOOST_MULTIPLIER ** matches.length
 
     // Generate highlighted title
     publication.titleHighlighted = highlightTitle(publication.title, matches)
 
     // Calculate score: (citations + references + selected bonus) * boost factor
-    publication.score = (publication.citationCount + publication.referenceCount + (publication.isSelected ? 1 : 0)) * publication.boostFactor
+    publication.score =
+      (publication.citationCount + publication.referenceCount + (publication.isSelected ? 1 : 0)) *
+      publication.boostFactor
 
     // Set score color
     publication.scoreColor = getScoreColor(publication.score)

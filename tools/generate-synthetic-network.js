@@ -24,27 +24,74 @@ const LAST_YEAR = 2025
 const TOPICS = [
   {
     key: 'graph',
-    subjects: ['Graph Drawing', 'Network Visualization', 'Edge Bundling', 'Node-Link Diagrams', 'Adjacency Matrices', 'Dynamic Graphs'],
-    venues: ['IEEE Transactions on Visualization and Computer Graphics', 'Computer Graphics Forum', 'Journal of Graph Algorithms and Applications'],
+    subjects: [
+      'Graph Drawing',
+      'Network Visualization',
+      'Edge Bundling',
+      'Node-Link Diagrams',
+      'Adjacency Matrices',
+      'Dynamic Graphs'
+    ],
+    venues: [
+      'IEEE Transactions on Visualization and Computer Graphics',
+      'Computer Graphics Forum',
+      'Journal of Graph Algorithms and Applications'
+    ],
     terms: ['layout', 'readability', 'clutter', 'force-directed placement', 'crossings']
   },
   {
     key: 'text',
-    subjects: ['Text Visualization', 'Visual Storytelling', 'Word Clouds', 'Topic Model Visualization', 'Document Collections'],
-    venues: ['IEEE Transactions on Visualization and Computer Graphics', 'Information Visualization', 'Proceedings of the CHI Conference on Human Factors in Computing Systems'],
+    subjects: [
+      'Text Visualization',
+      'Visual Storytelling',
+      'Word Clouds',
+      'Topic Model Visualization',
+      'Document Collections'
+    ],
+    venues: [
+      'IEEE Transactions on Visualization and Computer Graphics',
+      'Information Visualization',
+      'Proceedings of the CHI Conference on Human Factors in Computing Systems'
+    ],
     terms: ['narrative', 'reading', 'annotation', 'summarization', 'linking text and charts']
   },
   {
     key: 'uncertainty',
-    subjects: ['Uncertainty Visualization', 'Ensemble Visualization', 'Probabilistic Charts', 'Risk Communication', 'Error Bars'],
-    venues: ['Computer Graphics Forum', 'IEEE Transactions on Visualization and Computer Graphics', 'Journal of Experimental Psychology: Applied'],
+    subjects: [
+      'Uncertainty Visualization',
+      'Ensemble Visualization',
+      'Probabilistic Charts',
+      'Risk Communication',
+      'Error Bars'
+    ],
+    venues: [
+      'Computer Graphics Forum',
+      'IEEE Transactions on Visualization and Computer Graphics',
+      'Journal of Experimental Psychology: Applied'
+    ],
     terms: ['perception', 'decision making', 'variability', 'trust', 'quantile dotplots']
   },
   {
     key: 'perception',
-    subjects: ['Visual Perception', 'Graphical Perception', 'Color Scales', 'Visual Attention', 'Chart Comprehension'],
-    venues: ['IEEE Transactions on Visualization and Computer Graphics', 'Journal of Vision', 'ACM Transactions on Applied Perception'],
-    terms: ['accuracy', 'crowdsourced experiments', 'preattentive processing', 'color', 'working memory']
+    subjects: [
+      'Visual Perception',
+      'Graphical Perception',
+      'Color Scales',
+      'Visual Attention',
+      'Chart Comprehension'
+    ],
+    venues: [
+      'IEEE Transactions on Visualization and Computer Graphics',
+      'Journal of Vision',
+      'ACM Transactions on Applied Perception'
+    ],
+    terms: [
+      'accuracy',
+      'crowdsourced experiments',
+      'preattentive processing',
+      'color',
+      'working memory'
+    ]
   }
 ]
 
@@ -59,8 +106,70 @@ const TITLE_PATTERNS = [
   (s, t) => `On the Design Space of ${s} and ${t}`
 ]
 
-const FIRST_NAMES = ['Anna', 'Ben', 'Chiara', 'David', 'Elif', 'Felix', 'Greta', 'Hiro', 'Ines', 'Jonas', 'Kira', 'Lars', 'Mei', 'Nils', 'Olga', 'Pavel', 'Rosa', 'Sven', 'Tara', 'Umar', 'Vera', 'Wen', 'Yara', 'Zeno']
-const LAST_NAMES = ['Achterberg', 'Brandt', 'Castell', 'Dunmore', 'Eklund', 'Falkner', 'Gerhardt', 'Holloway', 'Ibarra', 'Jansen', 'Kowalczyk', 'Lindqvist', 'Moreau', 'Nakamura', 'Okafor', 'Petrov', 'Quintero', 'Rasmussen', 'Sandoval', 'Takeda', 'Underwood', 'Valente', 'Whitfield', 'Xiang', 'Yilmaz', 'Zeller', 'Abernathy', 'Bergstrom', 'Calloway', 'Delacroix', 'Eriksen', 'Fontaine', 'Grimaldi', 'Hartmann', 'Iversen', 'Jovanovic']
+const FIRST_NAMES = [
+  'Anna',
+  'Ben',
+  'Chiara',
+  'David',
+  'Elif',
+  'Felix',
+  'Greta',
+  'Hiro',
+  'Ines',
+  'Jonas',
+  'Kira',
+  'Lars',
+  'Mei',
+  'Nils',
+  'Olga',
+  'Pavel',
+  'Rosa',
+  'Sven',
+  'Tara',
+  'Umar',
+  'Vera',
+  'Wen',
+  'Yara',
+  'Zeno'
+]
+const LAST_NAMES = [
+  'Achterberg',
+  'Brandt',
+  'Castell',
+  'Dunmore',
+  'Eklund',
+  'Falkner',
+  'Gerhardt',
+  'Holloway',
+  'Ibarra',
+  'Jansen',
+  'Kowalczyk',
+  'Lindqvist',
+  'Moreau',
+  'Nakamura',
+  'Okafor',
+  'Petrov',
+  'Quintero',
+  'Rasmussen',
+  'Sandoval',
+  'Takeda',
+  'Underwood',
+  'Valente',
+  'Whitfield',
+  'Xiang',
+  'Yilmaz',
+  'Zeller',
+  'Abernathy',
+  'Bergstrom',
+  'Calloway',
+  'Delacroix',
+  'Eriksen',
+  'Fontaine',
+  'Grimaldi',
+  'Hartmann',
+  'Iversen',
+  'Jovanovic'
+]
 
 // Seeded pseudo-random numbers (mulberry32) to always generate the same network
 let seed = Number(SEED)
@@ -104,14 +213,22 @@ const publications = Array.from({ length: PUBLICATION_COUNT }, (_, i) => {
   const authors = new Set()
   const authorCount = randomInt(1, 5)
   while (authors.size < authorCount) {
-    authors.add(pickWeighted(authorsBySubtopic[topicIndex * SUBTOPIC_COUNT + subtopicIndex], (author) => author.productivity).name)
+    authors.add(
+      pickWeighted(
+        authorsBySubtopic[topicIndex * SUBTOPIC_COUNT + subtopicIndex],
+        (author) => author.productivity
+      ).name
+    )
   }
   return {
     doi: `10.5555/synth.${topic.key}${HAS_SUBTOPICS ? subtopicIndex : ''}.${String(i).padStart(3, '0')}`,
     topicIndex,
     subtopicIndex,
     year,
-    title: pick(TITLE_PATTERNS)(subject, term.replace(/\b\w/g, (c) => c.toUpperCase())),
+    title: pick(TITLE_PATTERNS)(
+      subject,
+      term.replace(/\b\w/g, (c) => c.toUpperCase())
+    ),
     author: [...authors].join('; '),
     container: pick(topic.venues),
     abstract: `We investigate ${term} in the context of ${subject.toLowerCase()}. Our results inform the design of future ${topic.key} visualization approaches.`,
@@ -131,7 +248,8 @@ publications.forEach((publication, index) => {
     const reference = pickWeighted(
       older,
       (other) =>
-        getTopicWeight(publication, other) * Math.sqrt(1 + other.citations.size) *
+        getTopicWeight(publication, other) *
+        Math.sqrt(1 + other.citations.size) *
         Math.exp((other.year - publication.year) / 6) *
         (publication.references.has(other.doi) ? 0 : 1)
     )
@@ -188,4 +306,6 @@ fs.writeFileSync(
   path.join(OUTPUT_DIR, `session-${SELECTED_COUNT}-selected.json`),
   `${JSON.stringify(session, null, 2)}\n`
 )
-console.log(`Generated ${publications.length} publications, ${selected.size} selected, in ${OUTPUT_DIR}`)
+console.log(
+  `Generated ${publications.length} publications, ${selected.size} selected, in ${OUTPUT_DIR}`
+)

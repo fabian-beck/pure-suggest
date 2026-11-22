@@ -107,15 +107,13 @@ export default class Author {
 
   setScoring(isAuthorScoreEnabled, isFirstAuthorBoostEnabled, isAuthorNewBoostEnabled) {
     const baseScore = isAuthorScoreEnabled ? this.publication.score : 1
-    
-    const firstAuthorBoost = isFirstAuthorBoostEnabled && this.authorIndex === 0 
-      ? SCORING.FIRST_AUTHOR_BOOST 
-      : 1
-    
-    const newPublicationBoost = isAuthorNewBoostEnabled && this.publication.isNew 
-      ? SCORING.NEW_PUBLICATION_BOOST 
-      : 1
-    
+
+    const firstAuthorBoost =
+      isFirstAuthorBoostEnabled && this.authorIndex === 0 ? SCORING.FIRST_AUTHOR_BOOST : 1
+
+    const newPublicationBoost =
+      isAuthorNewBoostEnabled && this.publication.isNew ? SCORING.NEW_PUBLICATION_BOOST : 1
+
     this.score = baseScore * firstAuthorBoost * newPublicationBoost
   }
 

@@ -342,7 +342,7 @@ function createStoreFileMapping(dependencies) {
  */
 function collectNodes(dependencies) {
   const nodeMap = new Map()
-  
+
   dependencies.forEach((deps, filePath) => {
     const fileName = path.basename(filePath, path.extname(filePath))
     const nodeType = deps.type
@@ -355,7 +355,7 @@ function collectNodes(dependencies) {
       lineCount: deps.lineCount
     })
   })
-  
+
   return nodeMap
 }
 
@@ -368,7 +368,7 @@ function collectNodes(dependencies) {
  */
 function collectEdges(dependencies, nodeMap, storeFileMapping) {
   const edges = []
-  
+
   dependencies.forEach((deps, filePath) => {
     const sourceFileName = path.basename(filePath, path.extname(filePath))
     const importedFiles = new Set()
@@ -475,7 +475,7 @@ function collectEdges(dependencies, nodeMap, storeFileMapping) {
       })
     }
   })
-  
+
   return edges
 }
 
@@ -563,7 +563,7 @@ function generateNodesXML(nodeMap) {
     </node>
 `
   })
-  
+
   return nodesXML
 }
 
@@ -588,7 +588,7 @@ function generateEdgesXML(edges) {
     </edge>
 `
   })
-  
+
   return edgesXML
 }
 
@@ -603,7 +603,7 @@ function generateGraphML() {
   const header = generateGraphMLHeader()
   const nodesXML = generateNodesXML(nodeMap)
   const edgesXML = generateEdgesXML(edges)
-  
+
   return `${header}${nodesXML}${edgesXML}  </graph>\n</graphml>`
 }
 

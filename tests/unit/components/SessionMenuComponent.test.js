@@ -5,7 +5,6 @@ import { createMockSessionStore, createMockInterfaceStore } from '../../helpers/
 
 import SessionMenuComponent from '@/components/SessionMenuComponent.vue'
 
-
 // Simplified mock stores using testUtils
 const mockSessionStore = createMockSessionStore({
   sessionName: 'Test Session',
@@ -172,20 +171,25 @@ describe('SessionMenuComponent', () => {
       wrapper = createWrapper()
       const menuItems = wrapper.findAll('.v-list-item')
 
-      const exportJsonItem = menuItems.find(item =>
-        item.attributes('title')?.includes('Export') && !item.attributes('title')?.includes('BibTeX')
+      const exportJsonItem = menuItems.find(
+        (item) =>
+          item.attributes('title')?.includes('Export') &&
+          !item.attributes('title')?.includes('BibTeX')
       )
       await exportJsonItem.trigger('click')
       expect(mockSessionStore.exportSession).toHaveBeenCalled()
 
-      const exportBibtexItem = menuItems.find(item =>
-        item.attributes('title')?.includes('BibTeX') && item.attributes('title')?.includes('Export')
+      const exportBibtexItem = menuItems.find(
+        (item) =>
+          item.attributes('title')?.includes('BibTeX') &&
+          item.attributes('title')?.includes('Export')
       )
       await exportBibtexItem.trigger('click')
       expect(mockSessionStore.exportAllBibtex).toHaveBeenCalled()
 
-      const clearSessionItem = menuItems.find(item =>
-        item.text().includes('Clear session') || item.attributes('title') === 'Clear session'
+      const clearSessionItem = menuItems.find(
+        (item) =>
+          item.text().includes('Clear session') || item.attributes('title') === 'Clear session'
       )
       await clearSessionItem.trigger('click')
       expect(mockAppState.clearSession).toHaveBeenCalled()
@@ -232,9 +236,10 @@ describe('SessionMenuComponent', () => {
       wrapper = createWrapper()
       const importItem = wrapper
         .findAll('.v-list-item')
-        .find(item =>
-          item.attributes('title')?.includes('Import') &&
-          item.attributes('title')?.includes('session')
+        .find(
+          (item) =>
+            item.attributes('title')?.includes('Import') &&
+            item.attributes('title')?.includes('session')
         )
 
       expect(importItem).toBeTruthy()
@@ -248,9 +253,10 @@ describe('SessionMenuComponent', () => {
       wrapper = createWrapper()
       const importBibtexItem = wrapper
         .findAll('.v-list-item')
-        .find(item =>
-          item.attributes('title')?.includes('Import') &&
-          item.attributes('title')?.includes('BibTeX')
+        .find(
+          (item) =>
+            item.attributes('title')?.includes('Import') &&
+            item.attributes('title')?.includes('BibTeX')
         )
 
       expect(importBibtexItem).toBeTruthy()
@@ -264,7 +270,7 @@ describe('SessionMenuComponent', () => {
       wrapper = createWrapper()
       const shareItem = wrapper
         .findAll('.v-list-item')
-        .find(item => item.attributes('title') === 'Share session as link')
+        .find((item) => item.attributes('title') === 'Share session as link')
 
       expect(shareItem).toBeTruthy()
       await shareItem.trigger('click')

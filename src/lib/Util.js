@@ -91,9 +91,7 @@ export function splitAuthorName(name) {
     return [beforeComma.trim(), givenNames]
   }
   const words = beforeComma.trim().split(/\s+/)
-  let lastNameStart = words
-    .slice(0, -1)
-    .findIndex((word) => word[0] !== word[0].toUpperCase())
+  let lastNameStart = words.slice(0, -1).findIndex((word) => word[0] !== word[0].toUpperCase())
   if (lastNameStart < 0) lastNameStart = words.length - 1
   return [words.slice(lastNameStart).join(' '), words.slice(0, lastNameStart).join(' ')]
 }

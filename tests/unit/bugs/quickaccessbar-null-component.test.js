@@ -56,7 +56,7 @@ describe('QuickAccessBar - Null Component Bug', () => {
       // Return elements that are NOT active (outside viewport) so loop continues
       return {
         getBoundingClientRect: vi.fn(() => ({
-          top: 2000,  // Far below viewport
+          top: 2000, // Far below viewport
           bottom: 2100
         }))
       }

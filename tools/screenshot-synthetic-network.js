@@ -23,7 +23,8 @@ const ROOT = path.join(__dirname, '..')
 const OUTPUT_DIR = process.argv[2] || path.join(ROOT, 'tools', 'output', 'synthetic-network')
 const SETTLE_TIME = 6000 // ms for the force simulation to come to rest
 
-const countNodes = (page) => page.locator('#network-svg g.node-container.publication.selected').count()
+const countNodes = (page) =>
+  page.locator('#network-svg g.node-container.publication.selected').count()
 
 async function screenshot(page, name) {
   const file = path.join(OUTPUT_DIR, `${name}.png`)
@@ -38,7 +39,10 @@ async function main() {
   fs.mkdirSync(OUTPUT_DIR, { recursive: true })
 
   const browser = await chromium.launch()
-  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 }, deviceScaleFactor: 2 })
+  const page = await browser.newPage({
+    viewport: { width: 1600, height: 1000 },
+    deviceScaleFactor: 2
+  })
   page.on('pageerror', (error) => console.error(`Page error: ${error.message}`))
   const { publications, session } = readSyntheticData(path.join(ROOT, 'test', 'synthetic-network'))
   await routeRequests(page, publications)

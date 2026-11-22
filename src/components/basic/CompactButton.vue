@@ -40,7 +40,7 @@ export default {
       minHeight: '30px',
       padding: label || $slots.default ? '0 8px' : undefined
     }"
-    >
+  >
     <v-icon v-if="icon">{{ icon }}</v-icon>
     <span v-if="label" class="ml-1">{{ label }}</span>
     <span v-if="$slots.default" class="ml-1"><slot /></span>

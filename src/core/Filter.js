@@ -145,10 +145,10 @@ export default class Filter {
       this.isActive &&
       Boolean(
         this.string ||
-          this.tags.length > 0 ||
-          this.isYearActive() ||
-          this.dois.length > 0 ||
-          this.authors.length > 0
+        this.tags.length > 0 ||
+        this.isYearActive() ||
+        this.dois.length > 0 ||
+        this.authors.length > 0
       ) &&
       (this.applyToSelected || this.applyToSuggested)
     )

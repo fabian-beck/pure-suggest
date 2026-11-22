@@ -50,6 +50,7 @@ export function getChargeStrength(selectedPublicationsCount) {
 ```
 
 **Standard Review Reasons:**
+
 - `architectural-consistency` - Part of established patterns
 - `meaningful-abstraction` - Function name adds significant clarity
 - `business-logic` - Contains domain logic that may evolve
@@ -135,6 +136,7 @@ Found 6 constants to analyze
 ```
 
 **Use Cases:**
+
 - Identify unused constants for cleanup
 - Understand constant distribution across the codebase
 - Find constants that may need better adoption
@@ -200,9 +202,11 @@ Dependencies:
 ```
 
 **Generated Files:**
+
 - `tools/output/project-dependencies.graphml` - Import graph for visualization tools
 
 **Use Cases:**
+
 - Understand project architecture and dependency flow
 - Identify tightly coupled modules
 - Find candidates for refactoring or extraction

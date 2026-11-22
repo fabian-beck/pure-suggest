@@ -25,9 +25,8 @@ function submitSearch() {
     <p class="landing-subtitle">{{ appMeta.subtitle }}</p>
     <p class="landing-lead">
       Based on a set of selected publications,
-      <b class="has-text-info">suggest</b>ing related
-      <b class="has-text-primary">pu</b>blications connected by
-      <b class="has-text-primary">re</b>ferences.
+      <b class="has-text-info">suggest</b>ing related <b class="has-text-primary">pu</b>blications
+      connected by <b class="has-text-primary">re</b>ferences.
     </p>
     <p class="landing-cta"><i>To start, add publications as seeds:</i></p>
     <form class="landing-search" @submit.prevent="submitSearch">

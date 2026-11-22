@@ -111,7 +111,7 @@ export function updateKeywordNodes(nodeSelection, activePublication, existingToo
     })
     .text((d) => {
       if (d.id.includes('|')) {
-        return `${d.id.split('|')[0]  }|..`
+        return `${d.id.split('|')[0]}|..`
       }
       return d.id
     })

@@ -82,7 +82,9 @@ describe('maxSuggestions preservation within session', () => {
     sessionStore.selectedPublications.push(publication)
 
     // Mock activatePublicationComponentByDoi to avoid DOM operations
-    const mockActivate = vi.spyOn(appState, 'activatePublicationComponentByDoi').mockImplementation(() => {})
+    const mockActivate = vi
+      .spyOn(appState, 'activatePublicationComponentByDoi')
+      .mockImplementation(() => {})
 
     // Act: Retry loading a publication
     await appState.retryLoadingPublication(publication)
@@ -152,7 +154,9 @@ describe('maxSuggestions preservation within session', () => {
 
     // Act 2: Retry loading
     const publication = sessionStore.selectedPublications[0]
-    const mockActivate = vi.spyOn(appState, 'activatePublicationComponentByDoi').mockImplementation(() => {})
+    const mockActivate = vi
+      .spyOn(appState, 'activatePublicationComponentByDoi')
+      .mockImplementation(() => {})
     await appState.retryLoadingPublication(publication)
     expect(sessionStore.maxSuggestions).toBe(180)
 
@@ -178,7 +182,9 @@ describe('maxSuggestions preservation within session', () => {
     // Act 2: Change maxSuggestions again and call another function that uses updateSuggestions
     sessionStore.maxSuggestions = 350
     const publication = sessionStore.selectedPublications[0]
-    const mockActivate = vi.spyOn(appState, 'activatePublicationComponentByDoi').mockImplementation(() => {})
+    const mockActivate = vi
+      .spyOn(appState, 'activatePublicationComponentByDoi')
+      .mockImplementation(() => {})
     await appState.retryLoadingPublication(publication)
 
     // Assert 2: Should preserve this new value too

@@ -55,7 +55,9 @@ const autoTooltip = computed(
       class="layout-button"
       :class="{ 'is-effective': key === interfaceStore.effectiveLayout }"
       :aria-label="layout.name"
-      v-tippy="`<b>${layout.name}</b><br>Drag the borders between panels to resize them; double-click a border to reset its position`"
+      v-tippy="
+        `<b>${layout.name}</b><br>Drag the borders between panels to resize them; double-click a border to reset its position`
+      "
     >
       <svg viewBox="0 0 24 18" width="24" height="18" aria-hidden="true">
         <rect

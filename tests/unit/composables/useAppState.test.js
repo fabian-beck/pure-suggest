@@ -40,7 +40,6 @@ describe('useAppState - Session Loading', () => {
     authorStore = useAuthorStore()
     queueStore = useQueueStore()
 
-
     appState = useAppState()
 
     // Mock interface store methods

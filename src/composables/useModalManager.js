@@ -1,7 +1,11 @@
 import { useAuthorStore } from '@/stores/author.js'
 import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
-import { findAllKeywordMatches, highlightTitle, parseUniqueBoostKeywords } from '@/utils/scoringUtils.js'
+import {
+  findAllKeywordMatches,
+  highlightTitle,
+  parseUniqueBoostKeywords
+} from '@/utils/scoringUtils.js'
 
 /**
  * Composable for managing modal dialogs and their associated actions
@@ -102,7 +106,7 @@ export function useModalManager() {
     const uniqueBoostKeywords = parseUniqueBoostKeywords(sessionStore.boostKeywordString)
     const matches = findAllKeywordMatches(publication.abstract || '', uniqueBoostKeywords)
     const highlightedAbstract = highlightTitle(publication.abstract || '', matches)
-    
+
     modalStore.infoDialog = {
       title: 'Abstract',
       message: `<div><i>${highlightedAbstract}</i></div>`,

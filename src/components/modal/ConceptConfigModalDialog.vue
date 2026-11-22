@@ -45,8 +45,10 @@ const hasEnoughPublications = computed(() => {
 })
 
 const canCompute = computed(() => {
-  return (includeKeywords.value || includeCitations.value || includeAuthors.value) &&
-         hasEnoughPublications.value
+  return (
+    (includeKeywords.value || includeCitations.value || includeAuthors.value) &&
+    hasEnoughPublications.value
+  )
 })
 
 const hasPreview = computed(() => {
@@ -101,7 +103,7 @@ function getAuthorDisplayName(authorId) {
 }
 
 function getAuthorChipStyle(authorId) {
-  const author = authorStore.selectedPublicationsAuthors.find(a => a.id === authorId)
+  const author = authorStore.selectedPublicationsAuthors.find((a) => a.id === authorId)
 
   if (!author) {
     return {
@@ -120,7 +122,7 @@ function getAuthorChipStyle(authorId) {
 }
 
 function getAuthorChipTooltip(authorId) {
-  const author = authorStore.selectedPublicationsAuthors.find(a => a.id === authorId)
+  const author = authorStore.selectedPublicationsAuthors.find((a) => a.id === authorId)
   const displayName = getAuthorDisplayName(authorId)
 
   if (!author) {
@@ -264,7 +266,9 @@ watch(
       <v-icon
         size="small"
         class="mr-2"
-        v-tippy="'<b>Concept Analysis</b> automatically discovers clusters in your selected publications by identifying groups that share common attributes (keywords, citations, or authors). Each concept represents a thematic subfield where publications are connected through shared characteristics. Concepts are ranked by <b>importance</b> (publications × attributes), helping you identify the most significant research themes in your selection.'"
+        v-tippy="
+          '<b>Concept Analysis</b> automatically discovers clusters in your selected publications by identifying groups that share common attributes (keywords, citations, or authors). Each concept represents a thematic subfield where publications are connected through shared characteristics. Concepts are ranked by <b>importance</b> (publications × attributes), helping you identify the most significant research themes in your selection.'
+        "
       >
         mdi-information-outline
       </v-icon>
@@ -333,8 +337,9 @@ watch(
         <div v-if="!hasEnoughPublications" class="pa-3 text-center empty-state">
           <v-icon size="large" class="mb-2" color="warning">mdi-filter-outline</v-icon>
           <p>
-            <strong>No meaningful concepts found.</strong><br>
-            You need at least <b>6 selected publications</b> to form concepts (current: {{ sessionStore.selectedPublicationsCount }}).<br>
+            <strong>No meaningful concepts found.</strong><br />
+            You need at least <b>6 selected publications</b> to form concepts (current:
+            {{ sessionStore.selectedPublicationsCount }}).<br />
             Concepts require 3+ publications and must not exceed half of your selection.
           </p>
         </div>
@@ -347,15 +352,19 @@ watch(
         <div v-else-if="hasPreview && !hasFilteredConcepts" class="pa-3 text-center empty-state">
           <v-icon size="large" class="mb-2" color="warning">mdi-filter-outline</v-icon>
           <p>
-            <strong>No meaningful concepts found.</strong><br>
-            Concepts require <b>3-{{ Math.floor(sessionStore.selectedPublicationsCount / 2) }} publications</b> and <b>1+ shared attributes</b>.<br>
+            <strong>No meaningful concepts found.</strong><br />
+            Concepts require
+            <b>3-{{ Math.floor(sessionStore.selectedPublicationsCount / 2) }} publications</b> and
+            <b>1+ shared attributes</b>.<br />
             Try enabling additional attribute types or adjusting your boost keywords.
           </p>
         </div>
 
         <div v-else>
           <div class="pa-3 pb-2">
-            <h3 class="is-size-6"><b>{{ previewTitle }}</b></h3>
+            <h3 class="is-size-6">
+              <b>{{ previewTitle }}</b>
+            </h3>
           </div>
 
           <ul class="concept-list">
@@ -375,11 +384,19 @@ watch(
                   </div>
                   <div class="mb-2 is-size-7">
                     <span v-tippy="getConceptSummaryTooltip(concept)">
-                      <b>{{ concept.publications.length }}</b> publication{{ concept.publications.length > 1 ? 's' : '' }}
+                      <b>{{ concept.publications.length }}</b> publication{{
+                        concept.publications.length > 1 ? 's' : ''
+                      }}
                       &bull;
-                      <b>{{ concept.attributes.length }}</b> attribute{{ concept.attributes.length > 1 ? 's' : '' }}
-                      &bull;
-                      Importance: <b>{{ concept.importance }}</b><template v-if="concept.remainingImportance !== concept.importance"> (<b>{{ concept.remainingImportance }}</b>)</template>
+                      <b>{{ concept.attributes.length }}</b> attribute{{
+                        concept.attributes.length > 1 ? 's' : ''
+                      }}
+                      &bull; Importance: <b>{{ concept.importance }}</b><template
+                        v-if="concept.remainingImportance !== concept.importance"
+                      >
+                        (<b>{{ concept.remainingImportance }}</b
+                        >)</template
+                      >
                     </span>
                   </div>
 

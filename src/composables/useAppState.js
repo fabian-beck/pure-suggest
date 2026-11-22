@@ -114,7 +114,6 @@ export function useAppState() {
     }
   }
 
-
   /**
    * Computes suggestions based on selected publications
    */
@@ -377,7 +376,6 @@ export function useAppState() {
     queueStore.selectedQueue = queueStore.selectedQueue.filter((seletedDoi) => doi != seletedDoi)
     queueStore.excludedQueue.push(doi)
   }
-
 
   return {
     isEmpty,

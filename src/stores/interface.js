@@ -153,11 +153,11 @@ export const useInterfaceStore = defineStore('interface', {
 
     activatePublicationComponent(publicationComponent, navigationDirection = null) {
       if (publicationComponent && typeof publicationComponent.focus === 'function') {
-        publicationComponent.focus();
+        publicationComponent.focus()
 
         // Always center during keyboard navigation
         if (navigationDirection) {
-          this.centerPublication(publicationComponent);
+          this.centerPublication(publicationComponent)
         }
       }
     },
@@ -166,11 +166,11 @@ export const useInterfaceStore = defineStore('interface', {
       // Wait briefly for focus/activation to complete, then center
       setTimeout(() => {
         publicationComponent.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-          inline: "nearest"
-        });
-      }, 50); // Minimal delay just for focus completion
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'nearest'
+        })
+      }, 50) // Minimal delay just for focus completion
     },
 
     triggerNetworkReplot() {

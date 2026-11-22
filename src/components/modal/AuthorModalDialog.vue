@@ -399,8 +399,7 @@ export default {
             <div class="media-content">
               <div class="content">
                 <div class="mb-2">
-                  <b class="author-name">{{ author.name }}</b
-                  >&nbsp;<span v-if="author.orcid">
+                  <b class="author-name">{{ author.name }}</b>&nbsp;<span v-if="author.orcid">
                     <a :href="`https://orcid.org/${author.orcid}`" @click.stop
                       ><img
                         alt="ORCID logo"

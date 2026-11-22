@@ -203,11 +203,7 @@ export default {
 <template>
   <v-app id="app">
     <HeaderPanel id="header" />
-    <main
-      id="main"
-      @click="clearActivePublicationOnClick"
-      :style="mainGridStyle"
-    >
+    <main id="main" @click="clearActivePublicationOnClick" :style="mainGridStyle">
       <SelectedPublicationsComponent id="selected" v-show="!interfaceStore.isNetworkExpanded" />
       <SuggestedPublicationsComponent id="suggested" v-show="!interfaceStore.isNetworkExpanded" />
       <NetworkVisComponent id="network" />

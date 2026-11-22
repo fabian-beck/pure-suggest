@@ -3,7 +3,6 @@ import { cacheBulk, cachedFetch, readCacheMany } from '../lib/Cache.js'
 import { splitAuthorName } from '../lib/Util.js'
 import Author from './Author.js'
 
-
 const SURVEY_THRESHOLDS = {
   REFERENCE_COUNT_HIGH: 100,
   REFERENCE_COUNT_MIN: 50
@@ -299,7 +298,6 @@ export default class Publication {
       // Reset regex for next iteration
       ORCID_REGEX.lastIndex = 0
     })
-
   }
 
   /**
@@ -325,10 +323,13 @@ export default class Publication {
       } else {
         mappedWord = TITLE_WORD_MAP[word.toLowerCase()]
       }
-      this.container += `${mappedWord ? mappedWord : word  } `
+      this.container += `${mappedWord ? mappedWord : word} `
     })
-    // eslint-disable-next-line sonarjs/super-linear-regex -- safe on short container strings
-    this.container = this.container.trim().replace(/^[. ]+/, '').replace(/[. ]+$/, '')
+    this.container = this.container
+      .trim()
+      .replace(/^[. ]+/, '')
+      // eslint-disable-next-line sonarjs/super-linear-regex -- safe on short container strings
+      .replace(/[. ]+$/, '')
     this.container = cleanTitle(this.container)
   }
 
@@ -387,8 +388,6 @@ export default class Publication {
     this.processTags()
   }
 
-
-
   /**
    * Returns concatenated metadata for search purposes (cached).
    * @returns {string} Combined title, author, and container string.
@@ -412,7 +411,6 @@ export default class Publication {
     }
     return this._authorIds
   }
-
 
   /**
    * Warms the per-DOI cache for many publications with concurrently issued
@@ -519,7 +517,7 @@ function removeHtmlTags(string) {
   if (!string || typeof string !== 'string') {
     return string || ''
   }
-  
+
   // First decode HTML entities to actual HTML characters
   const decodedString = string
     .replace(/&lt;/g, '<')
@@ -528,7 +526,7 @@ function removeHtmlTags(string) {
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&apos;/g, "'")
-  
+
   // Then remove HTML tags
   return decodedString.replace(/<[^<>]*>/g, '')
 }
@@ -606,7 +604,9 @@ async function prefetchChunk(publications) {
   const pending = publications.filter((publication) => !publication.wasFetched)
   if (!pending.length) return
 
-  const doiByUrl = new Map(pending.map((publication) => [publicationUrl(publication.doi), publication.doi]))
+  const doiByUrl = new Map(
+    pending.map((publication) => [publicationUrl(publication.doi), publication.doi])
+  )
 
   try {
     await cacheBulk([...doiByUrl.keys()], async (missedUrls) => {
@@ -618,7 +618,9 @@ async function prefetchChunk(publications) {
       return dataByUrl
     })
   } catch (error) {
-    console.warn(`[Publication] Bulk prefetch failed for ${pending.length} publications, falling back to individual fetches: ${error}`)
+    console.warn(
+      `[Publication] Bulk prefetch failed for ${pending.length} publications, falling back to individual fetches: ${error}`
+    )
   }
 }
 

@@ -12,7 +12,10 @@ import { useSessionStore } from '@/stores/session.js'
 // (d3-zoom/src/transform.js `defaultTransform`). Mock that same aliasing so
 // a regression that mutates the transform returned by zoomTransform is caught.
 const d3Module = createD3ModuleMock()
-vi.mock('d3', () => ({ ...createD3ModuleMock(), zoomTransform: vi.fn(() => d3Module.zoomIdentity) }))
+vi.mock('d3', () => ({
+  ...createD3ModuleMock(),
+  zoomTransform: vi.fn(() => d3Module.zoomIdentity)
+}))
 vi.mock('tippy.js', () => ({ default: vi.fn(() => ({})) }))
 
 vi.mock('@/utils/network/forces.js', () => ({
@@ -98,7 +101,9 @@ describe('Bug: reset zoom and pan only resets pan, not zoom', () => {
     'v-slider': { template: '<input type="range" class="v-slider">' },
     CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
     NetworkHeader: { template: '<div class="network-header"><slot></slot></div>' },
-    NetworkPerformanceMonitor: { template: '<div class="network-performance-monitor"><slot></slot></div>' },
+    NetworkPerformanceMonitor: {
+      template: '<div class="network-performance-monitor"><slot></slot></div>'
+    },
     PublicationComponent: { template: '<div class="publication-component"><slot></slot></div>' }
   })
 

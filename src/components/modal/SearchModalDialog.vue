@@ -217,7 +217,9 @@ export default {
           class="has-background-primary has-text-white mr-2 is-hidden-mobile"
           @click="addAllPublications"
           v-show="searchResults.type === 'doi' && filteredSearchResults.length > 0"
-          v-tippy="'Mark all publications to be added to selected (Shift+Enter in the search field).'"
+          v-tippy="
+            'Mark all publications to be added to selected (Shift+Enter in the search field).'
+          "
         >
           <v-icon>mdi-plus-thick</v-icon> Add all
         </v-btn>

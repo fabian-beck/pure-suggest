@@ -7,7 +7,6 @@ import { handlePublicationKey } from '@/lib/Keys.js'
 import { useModalStore } from '@/stores/modal.js'
 import { useQueueStore } from '@/stores/queue.js'
 
-
 export default {
   setup() {
     const modalStore = useModalStore()

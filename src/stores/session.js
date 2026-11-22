@@ -128,7 +128,8 @@ export const useSessionStore = defineStore('session', {
         // Replace multiple underscores with single underscore
         .replace(/_+/g, '_')
         // Remove leading/trailing underscore (runs already collapsed to one above)
-        .replace(/^_/, '').replace(/_$/, '')
+        .replace(/^_/, '')
+        .replace(/_$/, '')
 
       // Handle edge case of empty filename after sanitization
       if (!filename || filename === '_') {
@@ -163,7 +164,7 @@ export const useSessionStore = defineStore('session', {
       if (wasSessionEmpty) {
         return
       }
-      
+
       this.clearNewlyAddedFlags()
 
       // Mark the specified publications as newly added
@@ -253,27 +254,27 @@ export const useSessionStore = defineStore('session', {
       console.log(`Cleared active publication ${previousDoi}, triggered by "${source}".`)
     },
 
-    exportSession () {
+    exportSession() {
       const filename = this.generateFilename('json')
       saveAsFile(filename, 'application/json', JSON.stringify(this.sessionData))
     },
 
-    exportAllBibtex () {
+    exportAllBibtex() {
       this.exportBibtex(this.selectedPublications)
     },
 
-    exportSingleBibtex (publication) {
+    exportSingleBibtex(publication) {
       this.exportBibtex([publication])
     },
 
-    exportBibtex (publicationList) {
+    exportBibtex(publicationList) {
       let bib = ''
-      publicationList.forEach((publication) => (bib += `${generateBibtex(publication)  }\n\n`))
+      publicationList.forEach((publication) => (bib += `${generateBibtex(publication)}\n\n`))
       const filename = this.generateFilename('bib')
       saveAsFile(filename, 'application/x-bibtex', bib)
     },
 
-    generateSessionUrl () {
+    generateSessionUrl() {
       // Compress and encode the data
       const jsonString = JSON.stringify(this.sessionData)
       const compressed = LZString.compressToEncodedURIComponent(jsonString)
@@ -281,7 +282,6 @@ export const useSessionStore = defineStore('session', {
       // Generate URL with session parameter
       const baseUrl = window.location.origin + window.location.pathname
       return `${baseUrl}?session=${compressed}`
-    },
-
+    }
   }
 })

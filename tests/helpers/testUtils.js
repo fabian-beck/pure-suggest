@@ -47,14 +47,30 @@ export const createD3ChainableMock = (returnData = null) => {
 
 // Simplified D3 simulation mock
 export const createD3SimulationMock = () => ({
-  alphaDecay: vi.fn(function() { return this }),
-  alphaMin: vi.fn(function() { return this }),
-  nodes: vi.fn(function() { return this }),
-  force: vi.fn(function() { return this }),
-  alpha: vi.fn(function() { return this }),
-  restart: vi.fn(function() { return this }),
-  stop: vi.fn(function() { return this }),
-  on: vi.fn(function() { return this })
+  alphaDecay: vi.fn(function () {
+    return this
+  }),
+  alphaMin: vi.fn(function () {
+    return this
+  }),
+  nodes: vi.fn(function () {
+    return this
+  }),
+  force: vi.fn(function () {
+    return this
+  }),
+  alpha: vi.fn(function () {
+    return this
+  }),
+  restart: vi.fn(function () {
+    return this
+  }),
+  stop: vi.fn(function () {
+    return this
+  }),
+  on: vi.fn(function () {
+    return this
+  })
 })
 
 // Minimal stand-in for d3's ZoomTransform
@@ -94,13 +110,19 @@ const createForceMock = () => {
 export const createD3ModuleMock = () => {
   const mockSimulation = createD3SimulationMock()
   const mockZoom = {
-    on: vi.fn(function() { return this }),
+    on: vi.fn(function () {
+      return this
+    }),
     transform: vi.fn(),
     scaleBy: vi.fn(),
     scaleTo: vi.fn(),
     translateTo: vi.fn()
   }
-  const mockDrag = { on: vi.fn(function() { return this }) }
+  const mockDrag = {
+    on: vi.fn(function () {
+      return this
+    })
+  }
 
   return {
     select: vi.fn(() => createD3ChainableMock()),

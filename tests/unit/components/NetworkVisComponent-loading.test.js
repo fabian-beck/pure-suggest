@@ -75,8 +75,7 @@ vi.mock('@/utils/network/links.js', () => ({
   createCitationLinks: vi.fn(() => [])
 }))
 
-vi.mock('@/utils/network/yearLabels.js', () => ({
-}))
+vi.mock('@/utils/network/yearLabels.js', () => ({}))
 
 // Mock useAppState
 vi.mock('@/composables/useAppState.js', () => ({

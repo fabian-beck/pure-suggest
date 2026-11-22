@@ -213,10 +213,10 @@ export default {
 }
 
 @media screen and (max-width: 1023px) {
-    :deep(.v-overlay__content:has(.v-card)) {
-        margin-top: 0 !important;
-        height: 100vh !important;
-    }
+  :deep(.v-overlay__content:has(.v-card)) {
+    margin-top: 0 !important;
+    height: 100vh !important;
+  }
 }
 
 @media screen and (min-width: 1024px) {

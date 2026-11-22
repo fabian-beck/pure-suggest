@@ -60,19 +60,23 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 **Prerequisites**: The browser-based performance test (`tests/performance/browser.test.js`) starts its own development server on port 8080.
 
 **Unit Tests**:
+
 - `npm test` - Run all unit tests once
 - `npm run test:watch` - Run tests in watch mode for development
 - `npm run test:ui` - Launch interactive Vitest UI (needs `@vitest/ui`, not installed by default)
 - `npm run test:coverage` - Generate coverage report (needs `@vitest/coverage-v8`, not installed by default)
 
 **Performance Tests**:
+
 - `npm run test:perf` - Run performance benchmarks using Puppeteer
 - `npm run test:perf:watch` - Watch mode for performance tests
 
 **All Tests**:
+
 - `npm run test:all` - Run both unit and performance test suites
 
 **Testing Best Practices**: See [tests/README.md](tests/README.md) for detailed guidelines on:
+
 - Behavior-driven testing patterns
 - Mock factories and utilities (`testUtils.js`)
 - Store mocking patterns

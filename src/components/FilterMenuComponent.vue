@@ -27,7 +27,9 @@ const filterSummaryHtml = computed(() => {
   const parts = []
 
   if (filter.string) {
-    parts.push(`<span class="filter-part"><i class="mdi mdi-card-search"></i> "${escapeHtml(filter.string)}"</span>`)
+    parts.push(
+      `<span class="filter-part"><i class="mdi mdi-card-search"></i> "${escapeHtml(filter.string)}"</span>`
+    )
   }
 
   if (filter.yearStart || filter.yearEnd) {
@@ -39,7 +41,9 @@ const filterSummaryHtml = computed(() => {
     } else {
       yearRange = `–${filter.yearEnd}`
     }
-    parts.push(`<span class="filter-part"><i class="mdi mdi-calendar"></i> ${escapeHtml(yearRange)}</span>`)
+    parts.push(
+      `<span class="filter-part"><i class="mdi mdi-calendar"></i> ${escapeHtml(yearRange)}</span>`
+    )
   }
 
   if (filter.tags && filter.tags.length > 0) {
@@ -55,11 +59,15 @@ const filterSummaryHtml = computed(() => {
   }
 
   if (filter.dois.length > 0) {
-    parts.push(`<span class="filter-part"><i class="mdi mdi-file-document"></i> ${filter.dois.length}</span>`)
+    parts.push(
+      `<span class="filter-part"><i class="mdi mdi-file-document"></i> ${filter.dois.length}</span>`
+    )
   }
 
   if (filter.authors.length > 0) {
-    parts.push(`<span class="filter-part"><i class="mdi mdi-account"></i> ${filter.authors.length}</span>`)
+    parts.push(
+      `<span class="filter-part"><i class="mdi mdi-account"></i> ${filter.authors.length}</span>`
+    )
   }
 
   return parts.length > 0 ? parts.join('<span class="filter-separator">, </span>') : ''
@@ -67,12 +75,14 @@ const filterSummaryHtml = computed(() => {
 
 const hasFilterValues = computed(() => {
   const filter = sessionStore.filter
-  return Boolean(filter.string ||
+  return Boolean(
+    filter.string ||
     (filter.tags && filter.tags.length > 0) ||
     filter.yearStart ||
     filter.yearEnd ||
     filter.dois.length > 0 ||
-    filter.authors.length > 0)
+    filter.authors.length > 0
+  )
 })
 
 const displayText = computed(() => {
@@ -155,11 +165,11 @@ function getAuthorTooltip(authorId) {
 function getAuthorName(authorId) {
   // Try to find the author in the author store to get their display name
   const author = sessionStore.selectedPublications
-    .flatMap(pub => {
+    .flatMap((pub) => {
       if (!pub.author) return []
-      return pub.author.split(';').map(name => name.trim())
+      return pub.author.split(';').map((name) => name.trim())
     })
-    .find(name => Author.nameToId(name) === authorId)
+    .find((name) => Author.nameToId(name) === authorId)
   return author || authorId
 }
 
@@ -178,7 +188,7 @@ function getTagLabel(tagValue) {
 function toggleTag(tagValue) {
   const wasTagActive = sessionStore.filter.tags.includes(tagValue)
   sessionStore.filter.toggleTag(tagValue)
-  
+
   // If filters are disabled and we just activated a tag, enable filters
   if (!sessionStore.filter.isActive && !wasTagActive) {
     sessionStore.filter.isActive = true
@@ -192,7 +202,6 @@ function isTagActive(tagValue) {
 function getActiveConceptTags() {
   return sessionStore.filter.tags.filter((tag) => tag.startsWith('concept'))
 }
-
 </script>
 
 <template>
@@ -346,7 +355,11 @@ function getActiveConceptTags() {
             </div>
           </v-col>
         </v-row>
-        <v-row density="comfortable" v-if="sessionStore.filter.dois.length > 0" :class="{ 'opacity-50': !sessionStore.filter.isActive }">
+        <v-row
+          density="comfortable"
+          v-if="sessionStore.filter.dois.length > 0"
+          :class="{ 'opacity-50': !sessionStore.filter.isActive }"
+        >
           <v-col class="py-1">
             <div class="d-flex align-center">
               <v-icon class="mr-2" size="20">mdi-file-document</v-icon>
@@ -368,7 +381,11 @@ function getActiveConceptTags() {
             </div>
           </v-col>
         </v-row>
-        <v-row density="comfortable" v-if="getActiveConceptTags().length > 0" :class="{ 'opacity-50': !sessionStore.filter.isActive }">
+        <v-row
+          density="comfortable"
+          v-if="getActiveConceptTags().length > 0"
+          :class="{ 'opacity-50': !sessionStore.filter.isActive }"
+        >
           <v-col class="py-1">
             <div class="d-flex align-center">
               <v-icon class="mr-2" size="20">mdi-group</v-icon>
@@ -390,7 +407,11 @@ function getActiveConceptTags() {
             </div>
           </v-col>
         </v-row>
-        <v-row density="comfortable" v-if="sessionStore.filter.authors.length > 0" :class="{ 'opacity-50': !sessionStore.filter.isActive }">
+        <v-row
+          density="comfortable"
+          v-if="sessionStore.filter.authors.length > 0"
+          :class="{ 'opacity-50': !sessionStore.filter.isActive }"
+        >
           <v-col class="py-1">
             <div class="d-flex align-center">
               <v-icon class="mr-2" size="20">mdi-account</v-icon>

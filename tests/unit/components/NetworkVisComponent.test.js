@@ -328,8 +328,20 @@ describe('NetworkVisComponent', () => {
         isEmpty: false,
         isUpdatable: false,
         selectedPublications: [
-          { doi: '10.1234/test1', title: 'Test Publication 1', year: 2020, citationDois: [], referenceDois: ['10.1234/test2'] },
-          { doi: '10.1234/test2', title: 'Test Publication 2', year: 2021, citationDois: [], referenceDois: [] }
+          {
+            doi: '10.1234/test1',
+            title: 'Test Publication 1',
+            year: 2020,
+            citationDois: [],
+            referenceDois: ['10.1234/test2']
+          },
+          {
+            doi: '10.1234/test2',
+            title: 'Test Publication 2',
+            year: 2021,
+            citationDois: [],
+            referenceDois: []
+          }
         ],
         suggestedPublications: [
           { doi: '10.1234/suggested1', title: 'Suggested Publication 1', year: 2019 }

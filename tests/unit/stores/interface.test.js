@@ -137,7 +137,10 @@ describe('Interface Store - Layout', () => {
   })
 
   it('ignores invalid stored layout settings', () => {
-    localStorage.setItem('layoutSettings', '{"mode":"unknown","panelSizes":{"threeColumns":{"columns":[1]}}}')
+    localStorage.setItem(
+      'layoutSettings',
+      '{"mode":"unknown","panelSizes":{"threeColumns":{"columns":[1]}}}'
+    )
     setActivePinia(createPinia())
     const restoredStore = useInterfaceStore()
 

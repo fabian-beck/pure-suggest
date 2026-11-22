@@ -134,4 +134,3 @@ export function updateYearLabelContent(labelSelection, yearRange) {
   updateYearLabelText(updatedLabels)
   return updatedLabels
 }
-

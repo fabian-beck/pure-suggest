@@ -18,7 +18,7 @@ describe('useModalManager - Abstract Highlighting', () => {
   describe('showAbstract', () => {
     it('should display abstract without highlighting when no boost keywords are set', () => {
       sessionStore.boostKeywordString = ''
-      
+
       const publication = {
         abstract: 'This is a test abstract about machine learning and data visualization.'
       }
@@ -27,12 +27,14 @@ describe('useModalManager - Abstract Highlighting', () => {
 
       expect(modalStore.infoDialog.isShown).toBe(true)
       expect(modalStore.infoDialog.title).toBe('Abstract')
-      expect(modalStore.infoDialog.message).toBe('<div><i>This is a test abstract about machine learning and data visualization.</i></div>')
+      expect(modalStore.infoDialog.message).toBe(
+        '<div><i>This is a test abstract about machine learning and data visualization.</i></div>'
+      )
     })
 
     it('should highlight matching keywords in abstract', () => {
       sessionStore.boostKeywordString = 'visualization, machine learning'
-      
+
       const publication = {
         abstract: 'This is a test abstract about machine learning and data visualization.'
       }
@@ -41,7 +43,7 @@ describe('useModalManager - Abstract Highlighting', () => {
 
       expect(modalStore.infoDialog.isShown).toBe(true)
       expect(modalStore.infoDialog.title).toBe('Abstract')
-      
+
       // Check that the message contains highlighted keywords with underline styling
       const message = modalStore.infoDialog.message
       expect(message).toContain('<u style=')
@@ -53,7 +55,7 @@ describe('useModalManager - Abstract Highlighting', () => {
 
     it('should handle abstracts with alternative keywords', () => {
       sessionStore.boostKeywordString = 'ML|machine learning, viz|visualization'
-      
+
       const publication = {
         abstract: 'This abstract discusses ML and viz techniques.'
       }
@@ -68,21 +70,21 @@ describe('useModalManager - Abstract Highlighting', () => {
 
     it('should handle empty or missing abstracts', () => {
       sessionStore.boostKeywordString = 'test'
-      
+
       const publicationWithoutAbstract = {}
       modalManager.showAbstract(publicationWithoutAbstract)
-      
+
       expect(modalStore.infoDialog.message).toBe('<div><i></i></div>')
 
       const publicationWithEmptyAbstract = { abstract: '' }
       modalManager.showAbstract(publicationWithEmptyAbstract)
-      
+
       expect(modalStore.infoDialog.message).toBe('<div><i></i></div>')
     })
 
     it('should be case-insensitive when matching keywords', () => {
       sessionStore.boostKeywordString = 'MACHINE LEARNING'
-      
+
       const publication = {
         abstract: 'This abstract discusses machine learning techniques.'
       }
@@ -96,7 +98,7 @@ describe('useModalManager - Abstract Highlighting', () => {
 
     it('should match all occurrences of each keyword', () => {
       sessionStore.boostKeywordString = 'test'
-      
+
       const publication = {
         abstract: 'This is a test abstract with multiple test occurrences for testing.'
       }
@@ -111,7 +113,7 @@ describe('useModalManager - Abstract Highlighting', () => {
 
     it('should match all alternatives of a keyword', () => {
       sessionStore.boostKeywordString = 'ML|machine learning'
-      
+
       const publication = {
         abstract: 'ML is short for machine learning. Both ML and machine learning are used here.'
       }
@@ -126,7 +128,7 @@ describe('useModalManager - Abstract Highlighting', () => {
 
     it('should use word boundary matching for short keywords', () => {
       sessionStore.boostKeywordString = 'AI'
-      
+
       const publication = {
         abstract: 'AI techniques are different from contained letters.'
       }

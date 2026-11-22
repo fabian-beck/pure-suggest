@@ -220,8 +220,16 @@ describe('Session Store - Suggested Publications Filtering', () => {
   describe('setActivePublication', () => {
     it('should link only selected publications that are connected to the active suggestion by their own citation data', () => {
       // The suggestion's own data lists both as citing it, but only one of them lists it as reference
-      const suggested = { doi: '10.1234/suggested', citationDois: new Set(['10.1234/a', '10.1234/b']), referenceDois: new Set() }
-      const selectedA = { doi: '10.1234/a', citationDois: new Set(), referenceDois: new Set([suggested.doi]) }
+      const suggested = {
+        doi: '10.1234/suggested',
+        citationDois: new Set(['10.1234/a', '10.1234/b']),
+        referenceDois: new Set()
+      }
+      const selectedA = {
+        doi: '10.1234/a',
+        citationDois: new Set(),
+        referenceDois: new Set([suggested.doi])
+      }
       const selectedB = { doi: '10.1234/b', citationDois: new Set(), referenceDois: new Set() }
       sessionStore.selectedPublications = [selectedA, selectedB]
       sessionStore.suggestion = { publications: [suggested], totalSuggestions: 1 }
@@ -261,7 +269,11 @@ describe('Session Store - Suggested Publications Filtering', () => {
     })
 
     it('should clear the active state of all publications for an unknown DOI', () => {
-      const selected = { doi: '10.1234/a', citationDois: new Set(['10.1234/b']), referenceDois: new Set() }
+      const selected = {
+        doi: '10.1234/a',
+        citationDois: new Set(['10.1234/b']),
+        referenceDois: new Set()
+      }
       const suggested = { doi: '10.1234/b', citationDois: new Set(), referenceDois: new Set() }
       sessionStore.selectedPublications = [selected]
       sessionStore.suggestion = { publications: [suggested], totalSuggestions: 1 }

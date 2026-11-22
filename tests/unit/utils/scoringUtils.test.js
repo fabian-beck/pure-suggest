@@ -311,7 +311,7 @@ describe('scoringUtils', () => {
 
       const matches = findAllKeywordMatches(text, keywords)
 
-      // Should find all word-boundary matches of "AI" 
+      // Should find all word-boundary matches of "AI"
       expect(matches).toHaveLength(3)
       expect(matches[0].position).toBe(0)
       expect(matches[1].position).toBe(15)

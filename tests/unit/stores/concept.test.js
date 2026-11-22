@@ -272,7 +272,10 @@ describe('Concept Store', () => {
 
     it('should only match author-based concepts against publications sharing the authors', () => {
       conceptStore.concepts = [
-        { publications: ['10.1/a', '10.1/b'], attributes: [{ type: 'author', value: 'smith, john' }] }
+        {
+          publications: ['10.1/a', '10.1/b'],
+          attributes: [{ type: 'author', value: 'smith, john' }]
+        }
       ]
       conceptStore.sortedConcepts = conceptStore.concepts
       conceptStore.conceptMetadata = new Map([

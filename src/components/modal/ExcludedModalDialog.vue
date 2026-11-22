@@ -7,7 +7,6 @@ import { handlePublicationKey } from '@/lib/Keys.js'
 import { useModalStore } from '@/stores/modal.js'
 import { useSessionStore } from '@/stores/session.js'
 
-
 export default {
   setup() {
     const modalStore = useModalStore()

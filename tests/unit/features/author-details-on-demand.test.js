@@ -85,7 +85,6 @@ describe('Author Details On Demand Feature', () => {
       authorStore.setActiveAuthor('nonexistent')
       expect(authorStore.activeAuthor).toBeNull()
     })
-
   })
 
   describe('Interface Store - Author Modal State Management', () => {
@@ -97,7 +96,6 @@ describe('Author Details On Demand Feature', () => {
       expect(authorStore.setActiveAuthor).toHaveBeenCalledWith('john-doe')
       expect(modalStore.isAuthorModalDialogShown).toBe(true)
     })
-
   })
 
   // Note: AuthorModalDialog UI behavior (including clearing active author when modal closes)
