@@ -8,9 +8,11 @@ import {
   createForceSimulation,
   getLinkStrength,
   initializeForces,
+  keepLayout,
   pinTimelineX,
   rememberLayout,
   returnToLayout,
+  REVEAL_ALPHA,
   runFrameTicks,
   SIMULATION_ALPHA
 } from '@/utils/network/forces.js'
@@ -28,7 +30,8 @@ function createGraph(publicationCount = 40) {
   const nodes = d3.range(publicationCount).map((i) => ({
     id: `p${i}`,
     type: 'publication',
-    publication: { year: 2026 - Math.floor(random() ** 2 * 20) }
+    publication: { year: 2026 - Math.floor(random() ** 2 * 20) },
+    sizeFactor: 1
   }))
   const links = []
   nodes.forEach((citing) =>
@@ -44,7 +47,8 @@ function createGraph(publicationCount = 40) {
     nodes.push({
       id: `a${i}`,
       type: 'author',
-      author: { yearMin: Math.min(...years), yearMax: Math.max(...years) }
+      author: { yearMin: Math.min(...years), yearMax: Math.max(...years) },
+      sizeFactor: 1
     })
     publications.forEach((publication) =>
       links.push({ source: `a${i}`, target: publication.id, type: 'author' })
@@ -62,7 +66,8 @@ function createSessionGraph(seed) {
   const nodes = [2016, 2016, 2017, 2019].map((year, i) => ({
     id: `s${i}`,
     type: 'publication',
-    publication: { year }
+    publication: { year },
+    sizeFactor: 1
   }))
   const links = [
     { source: 's0', target: 's2', type: 'citation', internal: true },
@@ -70,7 +75,7 @@ function createSessionGraph(seed) {
   ]
   d3.range(20).forEach((i) => {
     const year = i === 0 ? YEAR_MIN : 2026 - Math.floor(random() * 10)
-    nodes.push({ id: `p${i}`, type: 'publication', publication: { year } })
+    nodes.push({ id: `p${i}`, type: 'publication', publication: { year }, sizeFactor: 1 })
     d3.range(1 + Math.floor(random() * 3)).forEach(() => {
       const selected = `s${Math.floor(random() * 4)}`
       links.push(
@@ -217,6 +222,99 @@ describe('switching between timeline and clusters mode', () => {
   })
 })
 
+describe('showing further nodes temporarily in a layout at rest', () => {
+  const cases = [
+    { mode: 'timeline', isNetworkClusters: false },
+    { mode: 'clusters', isNetworkClusters: true }
+  ]
+  // Publications shown only temporarily, each linked to some of the others
+  const REVEALED_IDS = ['p3', 'p17', 'p31']
+  const createGraphs = () => {
+    const graph = createGraph()
+    const isRevealed = (id) => REVEALED_IDS.includes(id)
+    const restGraph = {
+      nodes: graph.nodes.filter((node) => !isRevealed(node.id)),
+      links: graph.links.filter((link) => !isRevealed(link.source) && !isRevealed(link.target))
+    }
+    return { graph, restGraph }
+  }
+  // Same steps as the network component when the active publication reveals or hides nodes
+  const plotKeeping = (positions, graph, previousNodes, isNetworkClusters) => {
+    const simulation = startLayout(graph, previousNodes, isNetworkClusters, DEFAULT_VIEW)
+    simulation.force('keep', keepLayout(positions))
+    simulation.alpha(REVEAL_ALPHA)
+    return settle(simulation)
+  }
+  const rest = (restGraph, isNetworkClusters) => {
+    const nodes = plot(restGraph, null, isNetworkClusters)
+    const positions = rememberLayout({}, { nodes, links: [] }, DEFAULT_VIEW, isNetworkClusters)
+    return { nodes, positions }
+  }
+  const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y)
+  const shifts = (nodes, positions) =>
+    nodes
+      .filter((node) => positions.has(node.id))
+      .map((node) => distance(node, positions.get(node.id)))
+
+  it.each(cases)('moves only few nodes of the $mode layout', ({ isNetworkClusters }) => {
+    const { graph, restGraph } = createGraphs()
+    const { nodes, positions } = rest(restGraph, isNetworkClusters)
+    const revealing = plotKeeping(positions, graph, nodes, isNetworkClusters)
+
+    const moved = shifts(revealing, positions).filter((shift) => shift > 1)
+    expect(moved.length).toBeLessThanOrEqual(8)
+    expect(d3.max(moved) ?? 0).toBeLessThan(30)
+  })
+
+  it.each(cases)(
+    'keeps the further nodes from overlapping the nodes of the $mode layout',
+    ({ isNetworkClusters }) => {
+      const { graph, restGraph } = createGraphs()
+      const { nodes, positions } = rest(restGraph, isNetworkClusters)
+      const revealing = plotKeeping(positions, graph, nodes, isNetworkClusters)
+
+      // Publication squares (20 px) and author circles (24 px), unless the layout is denser
+      const distances = (node, others) =>
+        others.filter((other) => other !== node).map((other) => distance(node, other))
+      const layoutDistance = d3.min(nodes, (node) =>
+        d3.min(distances(positions.get(node.id), [...positions.values()]))
+      )
+      revealing
+        .filter((node) => REVEALED_IDS.includes(node.id))
+        .forEach((revealed) => {
+          expect(d3.min(distances(revealed, revealing))).toBeGreaterThan(
+            Math.min(24, layoutDistance) - 1
+          )
+        })
+    }
+  )
+
+  it.each(cases)(
+    'returns to the $mode layout when the further nodes are hidden again',
+    ({ isNetworkClusters }) => {
+      const { graph, restGraph } = createGraphs()
+      const { nodes, positions } = rest(restGraph, isNetworkClusters)
+      const revealing = plotKeeping(positions, graph, nodes, isNetworkClusters)
+      const hidden = plotKeeping(positions, restGraph, revealing, isNetworkClusters)
+
+      expect(hidden).toHaveLength(restGraph.nodes.length)
+      expect(d3.max(shifts(hidden, positions))).toBeLessThan(0.5)
+    }
+  )
+
+  it('keeps authors at their publications when revealing an older publication rescales the timeline', () => {
+    const node = { id: 'a', type: 'author', sizeFactor: 1, x: 110, y: 20, timelineX: 100 }
+    const positions = rememberLayout({}, { nodes: [node], links: [] }, DEFAULT_VIEW, false)
+    node.timelineX = 300
+    const simulation = createForceSimulation().stop().nodes([node])
+    simulation.force('keep', keepLayout(positions))
+    settle(simulation.alpha(REVEAL_ALPHA))
+
+    expect(node.x).toBeCloseTo(310, 0)
+    expect(node.y).toBeCloseTo(20, 0)
+  })
+})
+
 describe('calculateYearX', () => {
   it.each([400, 1900])(
     'fits the years from the first year stripe to the keywords into a view %i wide',
@@ -234,7 +332,6 @@ describe('calculateYearX', () => {
 describe('clusters layout', () => {
   it('keeps publication and author nodes from overlapping', () => {
     const graph = createGraph(80)
-    graph.nodes.forEach((node) => (node.sizeFactor = 1))
     const nodes = plot(graph, null, true)
     const minDistance = d3.min(nodes, (node, i) =>
       d3.min(nodes.slice(i + 1), (other) => Math.hypot(node.x - other.x, node.y - other.y))
