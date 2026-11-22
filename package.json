@@ -56,6 +56,10 @@
     "vite": "^8.3.8",
     "vitest": "^5.1.1"
   },
+  "overrides": {
+    "glob": "^14.0.2",
+    "minimatch": "^11.0.1"
+  },
   "browserslist": [
     "> 1%",
     "last 2 versions"
