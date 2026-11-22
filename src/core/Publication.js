@@ -115,7 +115,9 @@ export default class Publication {
    * @returns {string} Google Scholar search URL.
    */
   get gsUrl() {
-    const searchString = `${this.title} ${this.author?.split(',')[0]} ${this.container ?? ''}`
+    const searchString = [this.title, this.author?.split(',')[0], this.container]
+      .filter(Boolean)
+      .join(' ')
     return `${API_ENDPOINTS.GOOGLE_SCHOLAR}?hl=en&q=${encodeURIComponent(searchString)}`
   }
 

@@ -257,4 +257,19 @@ describe('Publication Bug Regression Tests', () => {
       expect(publication.authorShort).toBe(expected)
     })
   })
+
+  describe('gsUrl', () => {
+    it('searches for title, first author, and container', () => {
+      publication.title = 'A Title'
+      publication.author = 'Smith, John; Doe, Jane'
+      publication.container = 'A Journal'
+      expect(new URL(publication.gsUrl).searchParams.get('q')).toBe('A Title Smith A Journal')
+    })
+
+    it('leaves out a missing author and container', () => {
+      publication.title = 'A Title'
+      publication.author = publication.container = undefined
+      expect(new URL(publication.gsUrl).searchParams.get('q')).toBe('A Title')
+    })
+  })
 })
