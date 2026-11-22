@@ -15,24 +15,6 @@ describe('Publication Bug Regression Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-
-    // Reset current year constant for predictable tests
-    vi.doMock('@/constants/publication.js', () => ({
-      CURRENT_YEAR: 2024,
-      SCORING: {
-        DEFAULT_BOOST_FACTOR: 1
-      },
-      SURVEY_THRESHOLDS: {},
-      CITATION_THRESHOLDS: {},
-      PUBLICATION_AGE: {},
-      TEXT_PROCESSING: {},
-      SURVEY_KEYWORDS: [],
-      ORDINAL_REGEX: /\d+/,
-      ROMAN_NUMERAL_REGEX: /[IVX]+/,
-      ORCID_REGEX: /\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx]/,
-      TITLE_WORD_MAP: {},
-      PUBLICATION_TAGS: {}
-    }))
   })
 
   afterEach(() => {
@@ -273,6 +255,21 @@ describe('Publication Bug Regression Tests', () => {
     ])('shortens "%s" to "%s"', (author, expected) => {
       publication.author = author
       expect(publication.authorShort).toBe(expected)
+    })
+  })
+
+  describe('gsUrl', () => {
+    it('searches for title, first author, and container', () => {
+      publication.title = 'A Title'
+      publication.author = 'Smith, John; Doe, Jane'
+      publication.container = 'A Journal'
+      expect(new URL(publication.gsUrl).searchParams.get('q')).toBe('A Title Smith A Journal')
+    })
+
+    it('leaves out a missing author and container', () => {
+      publication.title = 'A Title'
+      publication.author = publication.container = undefined
+      expect(new URL(publication.gsUrl).searchParams.get('q')).toBe('A Title')
     })
   })
 })

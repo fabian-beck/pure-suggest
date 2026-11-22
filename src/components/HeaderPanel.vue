@@ -1,5 +1,5 @@
 <script setup>
-import { inject, ref } from 'vue'
+import { inject } from 'vue'
 
 import FilterMenuComponent from '@/components/FilterMenuComponent.vue'
 import KeywordMenuComponent from '@/components/KeywordMenuComponent.vue'
@@ -13,8 +13,6 @@ const appMeta = inject('appMeta')
 const interfaceStore = useInterfaceStore()
 const { openKeyboardControlsModal, openAboutModal, openLlmSettingsModal } = useModalManager()
 const { isEmpty, clearCache } = useAppState()
-
-const filterMenuComponent = ref(null)
 </script>
 
 <template>
@@ -26,11 +24,11 @@ const filterMenuComponent = ref(null)
         <div class="session-state" v-if="!isEmpty">
           <SessionMenuComponent />
           <KeywordMenuComponent />
-          <FilterMenuComponent ref="filterMenuComponent" />
+          <FilterMenuComponent />
         </div>
       </v-app-bar-title>
       <LayoutMenuComponent v-if="!isEmpty && !interfaceStore.isMobile" />
-      <v-menu bottom left offset-y transition="slide-y-transition">
+      <v-menu transition="slide-y-transition">
         <template #activator="{ props }">
           <v-btn icon v-bind="props" class="mr-1" density="compact" aria-label="More options">
             <v-icon>mdi-dots-vertical</v-icon>

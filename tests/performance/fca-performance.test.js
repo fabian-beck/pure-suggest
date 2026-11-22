@@ -49,7 +49,7 @@ describe('FCA Performance Benchmarks', () => {
     console.log(`  Total attributes: ~20 (10 keywords + top 10 citations)`)
     console.log(`  Concepts generated: ${concepts.length}`)
     console.log(`  Duration: ${duration.toFixed(2)}ms`)
-    console.log(`  Power set size would be: 2^20 = ${(2**20).toLocaleString()} iterations`)
+    console.log(`  Power set size would be: 2^20 = ${(2 ** 20).toLocaleString()} iterations`)
 
     // Should complete in reasonable time (< 1 second)
     expect(duration).toBeLessThan(1000)
@@ -87,7 +87,7 @@ describe('FCA Performance Benchmarks', () => {
     }
 
     console.log('\n[FCA Scaling]')
-    results.forEach(r => {
+    results.forEach((r) => {
       console.log(`  ${r.numPubs} pubs: ${r.duration.toFixed(2)}ms, ${r.conceptCount} concepts`)
     })
 

@@ -171,12 +171,16 @@ describe('PublicationDescription', () => {
       }
     })
 
-    const abstractButton = wrapper.findAllComponents({ name: 'CompactButton' })
-      .find(button => button.attributes('icon') === 'mdi-text')
+    const abstractButton = wrapper
+      .findAllComponents({ name: 'CompactButton' })
+      .find((button) => button.attributes('icon') === 'mdi-text')
 
     if (abstractButton) {
       await abstractButton.trigger('click')
-      expect(mockInterfaceStore.showAbstract).toHaveBeenCalledWith({ ...mockPublication, isActive: true })
+      expect(mockInterfaceStore.showAbstract).toHaveBeenCalledWith({
+        ...mockPublication,
+        isActive: true
+      })
     }
   })
 

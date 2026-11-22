@@ -26,18 +26,3 @@ export function getFilteredPublications(publications, filter, shouldApply) {
 
   return [...publications].sort(sorter)
 }
-
-/**
- * Counts publications matching a filter condition
- * @param {Array} publications - Array of publications to count
- * @param {Object} filter - Filter object with hasActiveFilters() and matches() methods
- * @param {boolean} matchingFilter - If true, count matching publications; if false, count non-matching
- * @returns {number} Count of publications
- */
-export function countFilteredPublications(publications, filter, matchingFilter = true) {
-  if (!filter.hasActiveFilters()) return 0
-
-  return publications.filter((publication) =>
-    matchingFilter ? filter.matches(publication) : !filter.matches(publication)
-  ).length
-}

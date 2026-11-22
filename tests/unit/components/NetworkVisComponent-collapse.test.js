@@ -12,12 +12,22 @@ import { useSessionStore } from '@/stores/session.js'
 vi.mock('d3', () => ({
   select: vi.fn(() => createD3ChainableMock()),
   selectAll: vi.fn(() => createD3ChainableMock()),
-  zoom: vi.fn(() => ({ on: vi.fn(function() { return this }) })),
+  zoom: vi.fn(() => ({
+    on: vi.fn(function () {
+      return this
+    })
+  })),
   zoomTransform: vi.fn(() => ({ k: 1, x: 0, y: 0 })),
   zoomIdentity: { k: 1, x: 0, y: 0 },
-  drag: vi.fn(() => ({ on: vi.fn(function() { return this }) })),
+  drag: vi.fn(() => ({
+    on: vi.fn(function () {
+      return this
+    })
+  })),
   forceSimulation: vi.fn(() => createD3SimulationMock()),
-  forceLink: vi.fn(() => ({ id: vi.fn(() => ({ distance: vi.fn(() => ({ strength: vi.fn() })) })) })),
+  forceLink: vi.fn(() => ({
+    id: vi.fn(() => ({ distance: vi.fn(() => ({ strength: vi.fn() })) }))
+  })),
   forceManyBody: vi.fn(() => ({ strength: vi.fn(() => ({ theta: vi.fn() })) })),
   forceX: vi.fn(() => ({ x: vi.fn(() => ({ strength: vi.fn() })) })),
   forceY: vi.fn(() => ({ y: vi.fn(() => ({ strength: vi.fn() })) }))
@@ -65,6 +75,9 @@ const mockInterfaceStore = {
   isNetworkCollapsible: true,
   isNetworkExpanded: false,
   isNetworkCollapsed: false,
+  get isNetworkShownCollapsed() {
+    return this.isNetworkCollapsed && this.isNetworkCollapsible
+  },
   isNetworkClusters: false,
   isLoading: false,
   activatePublicationComponent: vi.fn(),
@@ -124,18 +137,16 @@ vi.mock('@/utils/network/authorNodes.js', () => ({
 
 vi.mock('@/utils/network/links.js', () => ({
   updateNetworkLinks: vi.fn(() => createD3ChainableMock()),
-  updateLinkProperties: vi.fn(),
   createCitationLinks: vi.fn(() => [])
 }))
 
 vi.mock('@/utils/network/yearLabels.js', () => ({
-  shouldUpdateYearLabels: vi.fn(() => true),
   generateYearRange: vi.fn(() => [2020, 2025]),
-  updateYearLabelContent: vi.fn(() => createD3ChainableMock()),
-  updateYearLabelLayout: vi.fn(),
-  hideYearLabels: vi.fn()
+  updateYearLabelContent: vi.fn(() => createD3ChainableMock())
 }))
-vi.mock('@/components/PublicationComponent.vue', () => ({ default: { name: 'PublicationComponent' } }))
+vi.mock('@/components/PublicationComponent.vue', () => ({
+  default: { name: 'PublicationComponent' }
+}))
 vi.mock('@/composables/useAppState.js', () => ({
   useAppState: vi.fn(() => ({
     isEmpty: false,

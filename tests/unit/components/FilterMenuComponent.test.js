@@ -231,6 +231,30 @@ describe('FilterMenuComponent', () => {
       expect(mockSessionStore.filter.toggleTag).toHaveBeenCalledWith('research')
     })
 
+    it('removes a concept filter with the keyboard', async () => {
+      const filterState = {
+        string: '',
+        yearStart: '',
+        yearEnd: '',
+        tags: ['conceptC1'],
+        dois: [],
+        authors: [],
+        isActive: true,
+        applyToSelected: true,
+        applyToSuggested: true,
+        hasActiveFilters: vi.fn(() => true),
+        removeDoi: vi.fn(),
+        removeAuthor: vi.fn(),
+        toggleTag: vi.fn()
+      }
+      const wrapper = createWrapper({ filter: filterState, selectedPublications: [] })
+
+      await wrapper.find('.doi-chip').trigger('keydown', { key: 'Enter' })
+
+      expect(filterState.toggleTag).toHaveBeenCalledWith('conceptC1')
+      expect(filterState.removeDoi).not.toHaveBeenCalled()
+    })
+
     it('correctly identifies active tags', () => {
       const filterState = {
         string: '',

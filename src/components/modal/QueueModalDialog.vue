@@ -4,14 +4,11 @@ import { watch, reactive } from 'vue'
 import { useAppState } from '@/composables/useAppState.js'
 import Publication from '@/core/Publication.js'
 import { handlePublicationKey } from '@/lib/Keys.js'
-import { useInterfaceStore } from '@/stores/interface.js'
 import { useModalStore } from '@/stores/modal.js'
 import { useQueueStore } from '@/stores/queue.js'
 
-
 export default {
   setup() {
-    const interfaceStore = useInterfaceStore()
     const modalStore = useModalStore()
     const queueStore = useQueueStore()
     const { updateQueued } = useAppState()
@@ -43,7 +40,6 @@ export default {
     )
 
     return {
-      interfaceStore,
       modalStore,
       queueStore,
       selectedQueue,
@@ -110,7 +106,6 @@ export default {
           class="has-background-primary-95 has-text-dark mr-2"
           @click="clearQueuesAndClose"
           v-show="queueStore.isUpdatable"
-          small
           prepend-icon="mdi-undo"
           >Clear all</v-btn
         >
@@ -118,7 +113,6 @@ export default {
           class="has-background-primary has-text-white ml-2"
           @click="updateQueuedAndClose"
           v-show="queueStore.isUpdatable"
-          small
           prepend-icon="mdi-update"
           ><span class="key">U</span>pdate</v-btn
         >

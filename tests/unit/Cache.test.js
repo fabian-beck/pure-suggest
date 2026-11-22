@@ -205,3 +205,22 @@ describe('cacheBulk', () => {
     expect(bulkFetch).not.toHaveBeenCalled()
   })
 })
+
+describe('startup', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('does not read cache entries before they are requested', async () => {
+    vi.stubGlobal('indexedDB', {})
+    const { keys, getMany } = await import('idb-keyval')
+    vi.clearAllMocks()
+    keys.mockResolvedValue(['https://api.test/stored?doi=a'])
+    vi.resetModules()
+
+    await import('@/lib/Cache.js')
+    await new Promise((resolve) => setTimeout(resolve))
+
+    expect(getMany).not.toHaveBeenCalled()
+  })
+})

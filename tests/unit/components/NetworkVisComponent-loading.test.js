@@ -25,9 +25,6 @@ vi.mock('d3', () => ({
   zoomIdentity: { k: 1, x: 0, y: 0 }
 }))
 
-// Mock tippy.js
-vi.mock('tippy.js/dist/tippy.css', () => ({}))
-
 // Mock network utility modules
 vi.mock('@/utils/network/forces.js', () => ({
   createForceSimulation: vi.fn(() => ({
@@ -75,13 +72,10 @@ vi.mock('@/utils/network/authorNodes.js', () => ({
 
 vi.mock('@/utils/network/links.js', () => ({
   updateNetworkLinks: vi.fn(() => ({ data: vi.fn(() => []), join: vi.fn() })),
-  updateLinkProperties: vi.fn(),
   createCitationLinks: vi.fn(() => [])
 }))
 
-vi.mock('@/utils/network/yearLabels.js', () => ({
-  updateYearLabels: vi.fn(() => ({ data: vi.fn(() => []), join: vi.fn() }))
-}))
+vi.mock('@/utils/network/yearLabels.js', () => ({}))
 
 // Mock useAppState
 vi.mock('@/composables/useAppState.js', () => ({

@@ -25,9 +25,8 @@ function submitSearch() {
     <p class="landing-subtitle">{{ appMeta.subtitle }}</p>
     <p class="landing-lead">
       Based on a set of selected publications,
-      <b class="has-text-info">suggest</b>ing related
-      <b class="has-text-primary">pu</b>blications connected by
-      <b class="has-text-primary">re</b>ferences.
+      <b class="has-text-info">suggest</b>ing related <b class="has-text-primary">pu</b>blications
+      connected by <b class="has-text-primary">re</b>ferences.
     </p>
     <p class="landing-cta"><i>To start, add publications as seeds:</i></p>
     <form class="landing-search" @submit.prevent="submitSearch">
@@ -45,7 +44,7 @@ function submitSearch() {
       <v-btn variant="tonal" prepend-icon="mdi-import" @click="importSessionWithConfirmation">
         Import session
       </v-btn>
-      <v-btn variant="tonal" prepend-icon="mdi-import" @click="importBibtexWithConfirmation">
+      <v-btn variant="tonal" prepend-icon="mdi-import" @click="importBibtexWithConfirmation()">
         Import BibTeX
       </v-btn>
       <v-btn variant="tonal" prepend-icon="mdi-file-document" @click="loadExample()">

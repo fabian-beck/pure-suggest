@@ -33,11 +33,10 @@ const createMockSelection = () => {
 
 // ✅ Good - simple behavior mock
 const createD3ChainableMock = () => {
-  const mock = vi
-    .fn(() => createD3ChainableMock())
-    [('append', 'attr', 'select')].forEach((method) => {
-      mock[method] = vi.fn(() => createD3ChainableMock())
-    })
+  const mock = vi.fn(() => createD3ChainableMock())
+  ;['append', 'attr', 'select'].forEach((method) => {
+    mock[method] = vi.fn(() => createD3ChainableMock())
+  })
   return mock
 }
 ```
@@ -84,9 +83,7 @@ Import and use standardized patterns:
 import {
   createMockSessionStore,
   createMockInterfaceStore,
-  commonComponentStubs,
-  createMockPublication,
-  mockExternalDependencies
+  commonComponentStubs
 } from '../../helpers/testUtils.js'
 ```
 
@@ -115,28 +112,27 @@ const wrapper = mount(Component, {
 })
 ```
 
-### External Dependencies
-
-```javascript
-// ✅ Use predefined mocks
-vi.mock('@/lib/Cache.js', () => mockExternalDependencies.Cache)
-vi.mock('@/lib/Util.js', () => mockExternalDependencies.Util)
-```
-
 ## 📋 Test Structure Guidelines
 
 ### File Organization
 
 ```
 tests/
+├── setup.js                  # Global stubs and mocks for all tests
 ├── helpers/
 │   └── testUtils.js          # Shared utilities and mocks
 ├── unit/
 │   ├── components/           # Component tests
-│   ├── stores/              # Store tests
-│   ├── utils/               # Utility function tests
-│   └── bugs/                # Regression tests for specific bugs
-└── performance/             # Performance benchmarks
+│   ├── composables/          # Composable tests
+│   ├── core/                 # Domain model tests
+│   ├── services/             # Service tests
+│   ├── stores/               # Store tests
+│   ├── utils/                # Utility function tests
+│   ├── keyboard/             # Keyboard shortcut tests
+│   ├── features/             # Tests of features across modules
+│   ├── integration/          # Workflow tests across modules
+│   └── bugs/                 # Regression tests for specific bugs
+└── performance/              # Performance benchmarks
 ```
 
 ### Test Naming
@@ -225,7 +221,6 @@ Our refactoring achieved:
 
 - **80% reduction** in D3 mocking complexity
 - **Zero test failures** during refactoring
-- **8 redundant tests removed** (473 → 465 total)
 - **Faster test execution** due to simpler mocks
 - **Improved maintainability** - tests less likely to break on refactoring
 
@@ -243,17 +238,14 @@ Our refactoring achieved:
 
 - `createMockSessionStore(overrides)` - Standard session store
 - `createMockInterfaceStore(overrides)` - Standard interface store
-- `createMockPublication(overrides)` - Standard publication object
 - `createD3ChainableMock()` - D3.js chainable methods
 
 ### Component Stubs
 
 - `commonComponentStubs` - Standard Vuetify and custom component stubs
-- `mockExternalDependencies` - Cache, Util, and other external mocks
 
 ### Testing Patterns
 
-- `createMockElement(id, nodeName)` - DOM element mocks
 - Focus on `data-testid` attributes for reliable element selection
 - Use behavior-driven test descriptions
 

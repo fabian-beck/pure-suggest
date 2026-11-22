@@ -7,6 +7,7 @@ import Publication from '@/core/Publication.js'
 import { escapeHtml } from '@/lib/Util.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
+import { getTagIcon } from '@/utils/tagIcons.js'
 
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
@@ -27,7 +28,9 @@ const filterSummaryHtml = computed(() => {
   const parts = []
 
   if (filter.string) {
-    parts.push(`<span class="filter-part"><i class="mdi mdi-card-search"></i> "${escapeHtml(filter.string)}"</span>`)
+    parts.push(
+      `<span class="filter-part"><i class="mdi mdi-card-search"></i> "${escapeHtml(filter.string)}"</span>`
+    )
   }
 
   if (filter.yearStart || filter.yearEnd) {
@@ -39,7 +42,9 @@ const filterSummaryHtml = computed(() => {
     } else {
       yearRange = `–${filter.yearEnd}`
     }
-    parts.push(`<span class="filter-part"><i class="mdi mdi-calendar"></i> ${escapeHtml(yearRange)}</span>`)
+    parts.push(
+      `<span class="filter-part"><i class="mdi mdi-calendar"></i> ${escapeHtml(yearRange)}</span>`
+    )
   }
 
   if (filter.tags && filter.tags.length > 0) {
@@ -55,11 +60,15 @@ const filterSummaryHtml = computed(() => {
   }
 
   if (filter.dois.length > 0) {
-    parts.push(`<span class="filter-part"><i class="mdi mdi-file-document"></i> ${filter.dois.length}</span>`)
+    parts.push(
+      `<span class="filter-part"><i class="mdi mdi-file-document"></i> ${filter.dois.length}</span>`
+    )
   }
 
   if (filter.authors.length > 0) {
-    parts.push(`<span class="filter-part"><i class="mdi mdi-account"></i> ${filter.authors.length}</span>`)
+    parts.push(
+      `<span class="filter-part"><i class="mdi mdi-account"></i> ${filter.authors.length}</span>`
+    )
   }
 
   return parts.length > 0 ? parts.join('<span class="filter-separator">, </span>') : ''
@@ -67,12 +76,14 @@ const filterSummaryHtml = computed(() => {
 
 const hasFilterValues = computed(() => {
   const filter = sessionStore.filter
-  return Boolean(filter.string ||
+  return Boolean(
+    filter.string ||
     (filter.tags && filter.tags.length > 0) ||
     filter.yearStart ||
     filter.yearEnd ||
     filter.dois.length > 0 ||
-    filter.authors.length > 0)
+    filter.authors.length > 0
+  )
 })
 
 const displayText = computed(() => {
@@ -142,11 +153,11 @@ function handleSwitchKeydown(event) {
 }
 
 // @indirection-reviewed: template-readability - keeps template clean and provides clear accessibility semantics
-function handleChipKeydown(event, doi) {
+function handleChipKeydown(event, removeChip) {
   if (event.key === 'Enter' || event.key === ' ') {
     event.preventDefault()
     event.stopPropagation()
-    removeDoi(doi)
+    removeChip()
   }
 }
 
@@ -160,14 +171,6 @@ function removeDoi(doi) {
   sessionStore.filter.removeDoi(doi)
 }
 
-function handleAuthorChipKeydown(event, authorId) {
-  if (event.key === 'Enter' || event.key === ' ') {
-    event.preventDefault()
-    event.stopPropagation()
-    removeAuthor(authorId)
-  }
-}
-
 function getAuthorTooltip(authorId) {
   return `Filtered to publications authored by <b>${getAuthorName(authorId)}</b>`
 }
@@ -175,33 +178,16 @@ function getAuthorTooltip(authorId) {
 function getAuthorName(authorId) {
   // Try to find the author in the author store to get their display name
   const author = sessionStore.selectedPublications
-    .flatMap(pub => {
+    .flatMap((pub) => {
       if (!pub.author) return []
-      return pub.author.split(';').map(name => name.trim())
+      return pub.author.split(';').map((name) => name.trim())
     })
-    .find(name => Author.nameToId(name) === authorId)
+    .find((name) => Author.nameToId(name) === authorId)
   return author || authorId
 }
 
 function removeAuthor(authorId) {
   sessionStore.filter.removeAuthor(authorId)
-}
-
-function getTagIcon(tagValue) {
-  const iconMap = {
-    isAiRecommended: 'mdi-robot-outline',
-    isHighlyCited: 'mdi-star',
-    isSurvey: 'mdi-table',
-    isNew: 'mdi-alarm',
-    isUnnoted: 'mdi-alert-box-outline'
-  }
-
-  // Concept tags use group icon
-  if (tagValue.startsWith('concept')) {
-    return 'mdi-group'
-  }
-
-  return iconMap[tagValue] || ''
 }
 
 function getTagLabel(tagValue) {
@@ -215,7 +201,7 @@ function getTagLabel(tagValue) {
 function toggleTag(tagValue) {
   const wasTagActive = sessionStore.filter.tags.includes(tagValue)
   sessionStore.filter.toggleTag(tagValue)
-  
+
   // If filters are disabled and we just activated a tag, enable filters
   if (!sessionStore.filter.isActive && !wasTagActive) {
     sessionStore.filter.isActive = true
@@ -229,7 +215,6 @@ function isTagActive(tagValue) {
 function getActiveConceptTags() {
   return sessionStore.filter.tags.filter((tag) => tag.startsWith('concept'))
 }
-
 </script>
 
 <template>
@@ -383,7 +368,11 @@ function getActiveConceptTags() {
             </div>
           </v-col>
         </v-row>
-        <v-row density="comfortable" v-if="sessionStore.filter.dois.length > 0" :class="{ 'opacity-50': !sessionStore.filter.isActive }">
+        <v-row
+          density="comfortable"
+          v-if="sessionStore.filter.dois.length > 0"
+          :class="{ 'opacity-50': !sessionStore.filter.isActive }"
+        >
           <v-col class="py-1">
             <div class="d-flex align-center">
               <v-icon class="mr-2" size="20">mdi-file-document</v-icon>
@@ -396,7 +385,7 @@ function getActiveConceptTags() {
                   size="small"
                   closable
                   @click:close="removeDoi(doi)"
-                  @keydown="handleChipKeydown($event, doi)"
+                  @keydown="handleChipKeydown($event, () => removeDoi(doi))"
                   v-tippy="{ content: getDoiTooltip(doi), allowHTML: true }"
                 >
                   {{ doi }}
@@ -405,7 +394,11 @@ function getActiveConceptTags() {
             </div>
           </v-col>
         </v-row>
-        <v-row density="comfortable" v-if="getActiveConceptTags().length > 0" :class="{ 'opacity-50': !sessionStore.filter.isActive }">
+        <v-row
+          density="comfortable"
+          v-if="getActiveConceptTags().length > 0"
+          :class="{ 'opacity-50': !sessionStore.filter.isActive }"
+        >
           <v-col class="py-1">
             <div class="d-flex align-center">
               <v-icon class="mr-2" size="20">mdi-group</v-icon>
@@ -418,7 +411,7 @@ function getActiveConceptTags() {
                   size="small"
                   closable
                   @click:close="toggleTag(tagValue)"
-                  @keydown="handleChipKeydown($event, tagValue)"
+                  @keydown="handleChipKeydown($event, () => toggleTag(tagValue))"
                   v-tippy="`Active concept filter; click to remove`"
                 >
                   {{ getTagLabel(tagValue) }}
@@ -427,7 +420,11 @@ function getActiveConceptTags() {
             </div>
           </v-col>
         </v-row>
-        <v-row density="comfortable" v-if="sessionStore.filter.authors.length > 0" :class="{ 'opacity-50': !sessionStore.filter.isActive }">
+        <v-row
+          density="comfortable"
+          v-if="sessionStore.filter.authors.length > 0"
+          :class="{ 'opacity-50': !sessionStore.filter.isActive }"
+        >
           <v-col class="py-1">
             <div class="d-flex align-center">
               <v-icon class="mr-2" size="20">mdi-account</v-icon>
@@ -440,7 +437,7 @@ function getActiveConceptTags() {
                   size="small"
                   closable
                   @click:close="removeAuthor(authorId)"
-                  @keydown="handleAuthorChipKeydown($event, authorId)"
+                  @keydown="handleChipKeydown($event, () => removeAuthor(authorId))"
                   v-tippy="{ content: getAuthorTooltip(authorId), allowHTML: true }"
                 >
                   {{ getAuthorName(authorId) }}

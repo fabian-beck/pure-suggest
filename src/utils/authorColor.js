@@ -7,7 +7,6 @@
 export function calculateAuthorColor(score, authorStore) {
   let adjustedScore = score
 
-  // Apply the same adjustments as in AuthorGlyph.vue
   if (!authorStore.isAuthorScoreEnabled) {
     adjustedScore = adjustedScore * 20
   }

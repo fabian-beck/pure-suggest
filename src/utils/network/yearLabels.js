@@ -1,7 +1,7 @@
 /**
  * Year Labels Management for Network Visualization
  *
- * This composable handles the creation and positioning of year labels
+ * This module handles the creation and positioning of year labels
  * in timeline mode for the citation network visualization.
  */
 
@@ -134,4 +134,3 @@ export function updateYearLabelContent(labelSelection, yearRange) {
   updateYearLabelText(updatedLabels)
   return updatedLabels
 }
-

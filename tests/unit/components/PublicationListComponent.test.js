@@ -58,11 +58,7 @@ describe('PublicationListComponent - Section Headers', () => {
         hasActiveFilters: vi.fn(() => true),
         applyToSelected: true,
         applyToSuggested: true
-      },
-      selectedPublicationsFilteredCount: 1,
-      selectedPublicationsNonFilteredCount: 1,
-      suggestedPublicationsFilteredCount: 1,
-      suggestedPublicationsNonFilteredCount: 1
+      }
     }
 
     mockInterfaceStore = {}

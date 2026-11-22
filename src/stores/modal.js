@@ -48,6 +48,5 @@ export const useModalStore = defineStore('modal', {
         this.isAiReportModalDialogShown
       )
     }
-  },
-  actions: {}
+  }
 })

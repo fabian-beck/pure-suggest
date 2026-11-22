@@ -10,10 +10,6 @@ export default {
       type: String,
       default: ''
     },
-    click: {
-      type: Function,
-      default: null
-    },
     disabled: Boolean,
     href: {
       type: String,
@@ -23,7 +19,6 @@ export default {
   },
   methods: {
     openLink() {
-      this.click?.()
       if (this.href) window.open(this.href, '_blank')
     }
   }
@@ -45,7 +40,7 @@ export default {
       minHeight: '30px',
       padding: label || $slots.default ? '0 8px' : undefined
     }"
-    >
+  >
     <v-icon v-if="icon">{{ icon }}</v-icon>
     <span v-if="label" class="ml-1">{{ label }}</span>
     <span v-if="$slots.default" class="ml-1"><slot /></span>

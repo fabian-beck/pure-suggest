@@ -6,6 +6,7 @@ import Author from '@/core/Author.js'
 import { escapeHtml } from '@/lib/Util.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
+import { getTagIcon } from '@/utils/tagIcons.js'
 
 const props = defineProps({
   publication: {
@@ -201,39 +202,13 @@ function getTagTooltip(tagValue, tagName) {
   return `${description}<br/>${action}`
 }
 
-function getTagIcon(tagValue) {
-  const iconMap = {
-    isAiRecommended: 'mdi-robot-outline',
-    isHighlyCited: 'mdi-star',
-    isSurvey: 'mdi-table',
-    isNew: 'mdi-alarm',
-    isUnnoted: 'mdi-alert-box-outline'
-  }
-
-  // Concept tags use group icon
-  if (tagValue.startsWith('concept')) {
-    return 'mdi-group'
-  }
-
-  return iconMap[tagValue] || ''
-}
-
 function handleAuthorClick(event) {
-  // Check if clicked element or its parent has the clickable-author class
-  const authorElement = event.target.closest('.clickable-author')
-  if (authorElement) {
-    event.stopPropagation()
-    const authorName = authorElement.getAttribute('data-author')
-    if (authorName) {
-      const authorId = Author.nameToId(authorName.trim())
-      if (authorId) {
-        openAuthorModal(authorId)
-      }
-    }
-    return
+  event.stopPropagation()
+  const authorName = event.currentTarget.getAttribute('data-author')
+  const authorId = authorName && Author.nameToId(authorName.trim())
+  if (authorId) {
+    openAuthorModal(authorId)
   }
-  // Fallback to original behavior
-  refocus()
 }
 </script>
 
@@ -466,17 +441,6 @@ div.summary {
 
 label {
   padding-right: 0.25rem;
-}
-
-.abstract {
-  font-style: italic;
-  font-size: 0.95rem;
-  padding: 0.5rem 0;
-
-  &::before {
-    content: 'Abstract: ';
-    font-weight: bold;
-  }
 }
 
 :deep(.clickable-author) {

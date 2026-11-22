@@ -111,7 +111,7 @@ export function updateKeywordNodes(nodeSelection, activePublication, existingToo
     })
     .text((d) => {
       if (d.id.includes('|')) {
-        return `${d.id.split('|')[0]  }|..`
+        return `${d.id.split('|')[0]}|..`
       }
       return d.id
     })
@@ -122,7 +122,6 @@ export function updateKeywordNodes(nodeSelection, activePublication, existingToo
 /**
  * Release fixed positioning from a keyword node
  */
-// @indirection-reviewed: meaningful-abstraction - clear UI interaction semantics for node positioning
 export function releaseKeywordPosition(event, keywordNode, networkSimulation, SIMULATION_ALPHA) {
   // In timeline mode, keywords stay pinned to their year
   if (networkSimulation.isNetworkClusters) {

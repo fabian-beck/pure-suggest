@@ -92,7 +92,3 @@ watch(
     </div>
   </ModalDialog>
 </template>
-
-<style scoped>
-/* No custom styles needed - Vuetify handles alignment automatically */
-</style>

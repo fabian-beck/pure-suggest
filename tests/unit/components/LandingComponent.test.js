@@ -51,7 +51,8 @@ describe('LandingComponent', () => {
             emits: ['click']
           },
           'v-btn': {
-            template: '<button class="v-btn" @click="$emit(\'click\', $event)"><slot></slot></button>',
+            template:
+              '<button class="v-btn" @click="$emit(\'click\', $event)"><slot></slot></button>',
             emits: ['click']
           },
           'v-text-field': {
@@ -96,7 +97,7 @@ describe('LandingComponent', () => {
     await buttons[1].trigger('click')
     await buttons[2].trigger('click')
     expect(mockImportSessionWithConfirmation).toHaveBeenCalled()
-    expect(mockImportBibtexWithConfirmation).toHaveBeenCalled()
+    expect(mockImportBibtexWithConfirmation).toHaveBeenCalledWith()
     expect(mockLoadExample).toHaveBeenCalled()
   })
 
@@ -109,7 +110,14 @@ describe('LandingComponent', () => {
     const recent = [
       { id: '1', name: 'My review', title: 'Paper A', selected: ['10.1/a'], timestamp: 0 },
       { id: '2', name: '', title: 'Paper B', selected: ['10.1/b', '10.1/c'], timestamp: 0 },
-      { id: '3', name: '', boost: 'VIS, GRAPH', title: 'Paper C', selected: ['10.1/c'], timestamp: 0 }
+      {
+        id: '3',
+        name: '',
+        boost: 'VIS, GRAPH',
+        title: 'Paper C',
+        selected: ['10.1/c'],
+        timestamp: 0
+      }
     ]
     mockLoadRecentSessions.mockReturnValueOnce(recent)
     const wrapper = createWrapper()

@@ -3,12 +3,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import { describe, it, expect, beforeEach, afterEach, vi, beforeAll, afterAll } from 'vitest'
 import { isReactive, ref } from 'vue'
 
-import {
-  createD3ChainableMock,
-  createD3SimulationMock,
-  createD3ModuleMock,
-  commonComponentStubs
-} from '../../helpers/testUtils.js'
+import { createD3ModuleMock, commonComponentStubs } from '../../helpers/testUtils.js'
 
 import NetworkVisComponent from '@/components/NetworkVisComponent.vue'
 import { CURRENT_YEAR } from '@/constants/config.js'
@@ -49,63 +44,11 @@ const mockInterfaceStore = {
   isNetworkExpanded: false,
   isNetworkClusters: false,
   isLoading: false,
-  openAuthorModalDialog: vi.fn(),
   activatePublicationComponent: vi.fn()
 }
 
 vi.mock('@/stores/session.js', () => ({ useSessionStore: vi.fn(() => mockSessionStore) }))
 vi.mock('@/stores/interface.js', () => ({ useInterfaceStore: vi.fn(() => mockInterfaceStore) }))
-
-// Simplified composable mocks - essential functionality only
-const mockGraphData = { nodes: [], links: [] }
-const mockSimulationComposable = {
-  simulation: { value: createD3SimulationMock() },
-  graph: { value: mockGraphData },
-  isDragging: { value: false },
-  initializeSimulation: vi.fn(),
-  updateGraphData: vi.fn(),
-  restart: vi.fn(),
-  stop: vi.fn(),
-  setDragging: vi.fn((value) => {
-    mockSimulationComposable.isDragging.value = value
-  })
-}
-
-// Mock all network-related composables with minimal setup
-vi.mock('@/composables/useNetworkSimulation.js', () => ({
-  useNetworkSimulation: vi.fn(() => mockSimulationComposable)
-}))
-vi.mock('@/composables/networkForces.js', () => ({
-  calculateYearX: vi.fn((year) => year * 10),
-  getNodeXPosition: vi.fn(() => 100),
-  SIMULATION_ALPHA: 0.5
-}))
-vi.mock('@/composables/publicationNodes.js', () => ({
-  initializePublicationNodes: vi.fn(() => createD3ChainableMock()),
-  updatePublicationNodes: vi.fn(() => ({ nodes: createD3ChainableMock(), tooltips: [] }))
-}))
-vi.mock('@/composables/keywordNodes.js', () => ({
-  initializeKeywordNodes: vi.fn(() => createD3ChainableMock()),
-  updateKeywordNodes: vi.fn(() => ({ nodes: createD3ChainableMock(), tooltips: [] })),
-  releaseKeywordPosition: vi.fn(),
-  highlightKeywordPublications: vi.fn(),
-  clearKeywordHighlight: vi.fn(),
-  createKeywordNodeDrag: vi.fn(() => ({ on: vi.fn(() => ({ on: vi.fn() })) }))
-}))
-vi.mock('@/composables/authorNodes.js', () => ({
-  initializeAuthorNodes: vi.fn(() => createD3ChainableMock()),
-  updateAuthorNodes: vi.fn(() => ({ nodes: createD3ChainableMock(), tooltips: [] })),
-  highlightAuthorPublications: vi.fn(),
-  clearAuthorHighlight: vi.fn()
-}))
-vi.mock('@/composables/networkLinks.js', () => ({
-  updateNetworkLinks: vi.fn(() => createD3ChainableMock()),
-  updateLinkProperties: vi.fn()
-}))
-vi.mock('@/composables/useGraphData.js', () => ({
-  initializeGraphData: vi.fn(() => ({ nodes: [], links: [], doiToIndex: {}, filteredAuthors: [] })),
-  createGraphContext: vi.fn(() => ({ existingNodeData: [] }))
-}))
 
 // Mock other components and composables
 vi.mock('@/components/PublicationComponent.vue', () => ({
@@ -385,8 +328,20 @@ describe('NetworkVisComponent', () => {
         isEmpty: false,
         isUpdatable: false,
         selectedPublications: [
-          { doi: '10.1234/test1', title: 'Test Publication 1', year: 2020, citationDois: [], referenceDois: ['10.1234/test2'] },
-          { doi: '10.1234/test2', title: 'Test Publication 2', year: 2021, citationDois: [], referenceDois: [] }
+          {
+            doi: '10.1234/test1',
+            title: 'Test Publication 1',
+            year: 2020,
+            citationDois: [],
+            referenceDois: ['10.1234/test2']
+          },
+          {
+            doi: '10.1234/test2',
+            title: 'Test Publication 2',
+            year: 2021,
+            citationDois: [],
+            referenceDois: []
+          }
         ],
         suggestedPublications: [
           { doi: '10.1234/suggested1', title: 'Suggested Publication 1', year: 2019 }
@@ -537,14 +492,6 @@ describe('NetworkVisComponent', () => {
         wrapper.vm.zoomByFactor(0.8)
       }).not.toThrow()
     })
-
-    it('handles zoom reset correctly', () => {
-      // Mock the resetZoom method if it's not properly mocked
-      wrapper.vm.resetZoom = vi.fn()
-      expect(() => {
-        wrapper.vm.resetZoom()
-      }).not.toThrow()
-    })
   })
 
   describe('Advanced User Interactions', () => {
@@ -577,16 +524,14 @@ describe('NetworkVisComponent', () => {
             isKeywordHovered: false,
             isAuthorHovered: false
           }
-        ],
-        isKeywordLinkedToActive: vi.fn(() => true)
+        ]
       }
 
       const mockInterfaceStore = {
         isMobile: false,
         isNetworkExpanded: false,
         isNetworkClusters: false,
-        isLoading: false,
-        openAuthorModalDialog: vi.fn()
+        isLoading: false
       }
 
       vi.mocked(useSessionStore).mockReturnValue(mockSessionStore)
@@ -961,7 +906,6 @@ describe('NetworkVisComponent', () => {
 
     it('initializes empty graph data correctly', () => {
       expect(wrapper.vm.graph).toEqual({ nodes: [], links: [] })
-      expect(wrapper.vm.doiToIndex).toBeUndefined() // Only set during plot
     })
 
     it('handles node visibility settings correctly', () => {
@@ -1039,17 +983,6 @@ describe('NetworkVisComponent', () => {
       })
     })
 
-    it('reacts to cluster mode changes', async () => {
-      // isNetworkClusters comes from the interface store, not component data
-      // Just verify that the component can access the property
-      expect(wrapper.vm.isNetworkClusters).toBeDefined()
-
-      // Test that the cluster mode can be toggled via interface store mock
-      const mockInterfaceStore = vi.mocked(useInterfaceStore)()
-      mockInterfaceStore.isNetworkClusters = true
-      expect(mockInterfaceStore.isNetworkClusters).toBe(true)
-    })
-
     it('updates onlyShowFiltered based on filter state changes', async () => {
       // Initially false when no filters active
       expect(wrapper.vm.onlyShowFiltered).toBe(false)
@@ -1118,24 +1051,6 @@ describe('NetworkVisComponent', () => {
 
       // Verify filter was applied to full list, not just first 15
       expect(mockSessionStore.filter.matches.mock.calls.length).toBeGreaterThanOrEqual(10)
-    })
-
-    it('handles error timeout correctly', async () => {
-      // Set an error message directly
-      wrapper.vm.errorMessage = 'Test error'
-      expect(wrapper.vm.errorMessage).toBe('Test error')
-
-      // Simulate setting timeout (just verify it can be set)
-      const timeoutId = setTimeout(() => {}, 100)
-      wrapper.vm.errorTimer = timeoutId
-      expect(wrapper.vm.errorTimer).toBeDefined()
-
-      // Clear the timeout to avoid memory leaks
-      clearTimeout(timeoutId)
-
-      // Clear error
-      wrapper.vm.errorMessage = ''
-      expect(wrapper.vm.errorMessage).toBe('')
     })
   })
 
@@ -1229,14 +1144,6 @@ describe('NetworkVisComponent', () => {
         wrapper.vm.simulation.alpha(0.5)
         wrapper.vm.simulation.restart()
       }).not.toThrow()
-    })
-
-    it('toggles network mode correctly', () => {
-      const initialClusters = wrapper.vm.isNetworkClusters
-
-      wrapper.vm.toggleMode()
-
-      expect(wrapper.vm.isNetworkClusters).toBe(!initialClusters)
     })
   })
 
@@ -1453,13 +1360,6 @@ describe('NetworkVisComponent', () => {
     it('handles tooltip lifecycle correctly during updates', () => {
       // The plot method handles tooltip creation and updates
       // This is tested indirectly through the plot method tests
-      expect(() => {
-        wrapper.vm.plot()
-      }).not.toThrow()
-    })
-
-    it('provides proper tippy configuration', () => {
-      // Tippy.js is mocked, but we can verify the component handles it
       expect(() => {
         wrapper.vm.plot()
       }).not.toThrow()

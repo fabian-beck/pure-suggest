@@ -1,9 +1,7 @@
 <script>
 import * as d3 from 'd3'
-import 'tippy.js/dist/tippy.css'
 import { storeToRefs } from 'pinia'
 
-// Stores
 import NetworkControls from '@/components/NetworkControls.vue'
 import NetworkHeader from '@/components/NetworkHeader.vue'
 import NetworkPerformanceMonitor from '@/components/NetworkPerformanceMonitor.vue'
@@ -15,7 +13,6 @@ import { useQueueStore } from '@/stores/queue.js'
 import { NETWORK_SELECTED_BASE_NUMBER } from '@/constants/config.js'
 import { useSessionStore } from '@/stores/session.js'
 
-// Force simulation utilities
 import {
   initializeAuthorNodes,
   updateAuthorNodes,
@@ -38,7 +35,6 @@ import {
   SIMULATION_ALPHA
 } from '@/utils/network/forces.js'
 
-// Node types
 import {
   initializeKeywordNodes,
   updateKeywordNodes,
@@ -71,19 +67,14 @@ import {
   createPublicationNodes
 } from '@/utils/network/publicationNodes.js'
 
-// Links
-
-// Year labels
-import { 
+import {
   generateYearRange,
   getYearLabelRects,
-  updateYearLabelContent, 
-  updateYearLabelRects, 
+  updateYearLabelContent,
+  updateYearLabelRects,
   updateYearLabelTextPositions,
-  updateYearLabelVisibility 
+  updateYearLabelVisibility
 } from '@/utils/network/yearLabels.js'
-
-// Components
 
 const LABEL_OVERSCAN = 100 // px beyond the view, about the width of a label
 const RESIZE_REPLOT_DELAY = 200 // ms after the last change of the panel size
@@ -130,7 +121,7 @@ export default {
       openAuthorModal
     }
   },
-  data () {
+  data() {
     return {
       svg: null,
       node: null,
@@ -154,8 +145,7 @@ export default {
       nodeCount: 0,
       linkCount: 0,
       // Position change detection for performance optimization
-      positionThreshold: 1, // pixels - minimum movement to trigger DOM update
-      lastUpdateTime: 0
+      positionThreshold: 1 // pixels - minimum movement to trigger DOM update
     }
   },
   created() {
@@ -181,26 +171,22 @@ export default {
     this.revealedPublications = []
   },
   computed: {
-    showSelectedNodes () {
+    showSelectedNodes() {
       return this.showNodes.includes('selected')
     },
-    showSuggestedNodes () {
+    showSuggestedNodes() {
       return this.showNodes.includes('suggested')
     },
-    showKeywordNodes () {
+    showKeywordNodes() {
       return this.showNodes.includes('keyword')
     },
-    showAuthorNodes () {
+    showAuthorNodes() {
       return this.showNodes.includes('author')
-    },
-
-    isNetworkActuallyCollapsed () {
-      return this.interfaceStore.isNetworkCollapsed && this.interfaceStore.isNetworkCollapsible
-    },
+    }
   },
   watch: {
     isNetworkClusters: {
-      handler () {
+      handler() {
         // Skip plotting during loading to prevent premature network rendering
         if (this.interfaceStore.isLoading) {
           return
@@ -214,7 +200,7 @@ export default {
     },
     filter: {
       deep: true,
-      handler () {
+      handler() {
         // When filters are cleared, reset onlyShowFiltered to false
         if (!this.sessionStore.filter.hasActiveFilters()) {
           this.onlyShowFiltered = false
@@ -227,7 +213,7 @@ export default {
       }
     },
     activePublication: {
-      handler () {
+      handler() {
         if (this.interfaceStore.isLoading) {
           return
         }
@@ -235,10 +221,7 @@ export default {
         // changes the graph structure, but only temporarily: the layout at rest is kept,
         // only nodes around the revealed ones make room; otherwise, activation only changes
         // highlighting, and a full replot with simulation resume is not needed
-        if (
-          this.revealedPublications.length ||
-          this.hiddenPublications.some(isRevealed)
-        ) {
+        if (this.revealedPublications.length || this.hiddenPublications.some(isRevealed)) {
           this.plot()
           this.restart(REVEAL_ALPHA, this.restPositions)
         } else {
@@ -248,7 +231,7 @@ export default {
     },
     selectedQueue: {
       deep: true,
-      handler () {
+      handler() {
         // Replot when publications are queued for selection
         // Use plot() without restart to avoid simulation restart since structure doesn't change
         if (this.interfaceStore.isLoading) {
@@ -259,7 +242,7 @@ export default {
     },
     excludedQueue: {
       deep: true,
-      handler () {
+      handler() {
         // Replot when publications are queued for exclusion
         // Use plot() without restart to avoid simulation restart since structure doesn't change
         if (this.interfaceStore.isLoading) {
@@ -269,7 +252,7 @@ export default {
       }
     },
     'interfaceStore.networkReplotTrigger': {
-      handler (newValue, oldValue) {
+      handler(newValue, oldValue) {
         // Replot when the trigger value changes
         if (newValue !== oldValue) {
           this.$nextTick(() => {
@@ -279,11 +262,11 @@ export default {
         }
       }
     },
-    labelNumberFactor () {
+    labelNumberFactor() {
       this.updateNodeLabels(true)
     },
     'interfaceStore.hoveredPublication': {
-      handler () {
+      handler() {
         // Update publication highlighting when hover state changes from external components
         this.updatePublicationHighlighting()
       }
@@ -369,7 +352,7 @@ export default {
   beforeUnmount() {
     this.resizeObserver.disconnect()
     clearTimeout(this.resizeTimer)
-    // Cleanup D3 simulation (moved from useNetworkSimulation)
+    // Cleanup D3 simulation
     if (this.simulation) {
       this.simulation.stop()
       this.simulation = null
@@ -380,7 +363,7 @@ export default {
      * Number of selected publications shown, not counting the ones revealed as linked to
      * the active publication
      */
-    shownSelectedNumber () {
+    shownSelectedNumber() {
       const count = this.sessionStore.selectedPublications?.length || 0
       if (count <= NETWORK_SELECTED_BASE_NUMBER) {
         return count
@@ -396,7 +379,7 @@ export default {
      * only filtered ones should be shown), the top-ranked ones and the revealed ones
      * @returns {Array} Array of shown publications
      */
-    collectFilteredPublications () {
+    collectFilteredPublications() {
       const { filter } = this.sessionStore
       const isFiltering = this.onlyShowFiltered && filter.hasActiveFilters()
       const shownPublications = []
@@ -418,7 +401,9 @@ export default {
         if (!isShown || !publications) return
         // Filter first, then take the top-ranked ones (publications are sorted by score)
         const filteredPublications =
-          isFiltering && isFiltered ? publications.filter((pub) => filter.matches(pub)) : publications
+          isFiltering && isFiltered
+            ? publications.filter((pub) => filter.matches(pub))
+            : publications
         shownPublications.push(...filteredPublications.slice(0, shownNumber))
         this.hiddenPublications.push(...filteredPublications.slice(shownNumber))
       })
@@ -429,13 +414,16 @@ export default {
     /**
      * Initialize graph nodes and links
      */
-    initNetworkGraph () {
+    initNetworkGraph() {
       // Initialize DOI to index mapping
       const doiToIndex = {}
 
       // Filter authors based on factor
       const allAuthors = this.authorStore.selectedPublicationsAuthors || []
-      const filteredAuthors = allAuthors.slice(0, this.authorNumberFactor * this.shownSelectedNumber())
+      const filteredAuthors = allAuthors.slice(
+        0,
+        this.authorNumberFactor * this.shownSelectedNumber()
+      )
 
       // Get filtered publications
       const publications = this.collectFilteredPublications()
@@ -501,16 +489,12 @@ export default {
       // Store nodes and links for later processing (after updateNodes initializes this.node)
       this.tempNodes = nodes
       this.tempLinks = links.map((d) => Object.assign({}, d))
-
-      // Update component state
-      this.doiToIndex = doiToIndex
-      this.filteredAuthors = filteredAuthors
     },
 
     /**
      * Update network nodes with current data
      */
-    updateNetworkNodes () {
+    updateNetworkNodes() {
       // Preserve existing node positions for smooth transitions
       const existingNodeData =
         this.node && typeof this.node.data === 'function' ? this.node.data() : null
@@ -528,7 +512,7 @@ export default {
 
           // Initialize publication nodes using module
           const publicationNodes = initializePublicationNodes(g)
-          
+
           // Add event handlers to publication nodes
           publicationNodes
             .select('rect')
@@ -538,7 +522,7 @@ export default {
 
           // Initialize keyword nodes using module
           const keywordNodes = initializeKeywordNodes(g)
-          
+
           // Add event handlers to keyword nodes
           keywordNodes
             .call(this.keywordNodeDrag())
@@ -548,7 +532,7 @@ export default {
 
           // Initialize author nodes using module
           const authorNodes = initializeAuthorNodes(g)
-          
+
           // Add event handlers to author nodes
           authorNodes
             .on('mouseover', this.onAuthorNodeMouseover)
@@ -598,7 +582,7 @@ export default {
       }
     },
 
-    plot (restart) {
+    plot(restart) {
       if (this.isDragging) {
         // During dragging, we want full simulation restart for responsive layout
         // Skip the expensive graph reconstruction but restart simulation with current graph
@@ -611,7 +595,7 @@ export default {
       }
 
       // Skip plotting when network is collapsed for performance
-      if (this.isNetworkActuallyCollapsed) {
+      if (this.interfaceStore.isNetworkShownCollapsed) {
         return
       }
 
@@ -674,7 +658,7 @@ export default {
           this.start()
         }
       } catch (error) {
-        console.error(`Cannot plot network: ${  error.message}`)
+        console.error(`Cannot plot network: ${error.message}`)
         this.errorMessage = 'Sorry, an error occurred while plotting the citation network.'
         if (this.errorTimer) {
           clearTimeout(this.errorTimer)
@@ -683,7 +667,6 @@ export default {
           this.errorMessage = ''
         }, 10000)
       }
-
     },
     /**
      * Check if the tick should not be drawn, as the network is collapsed or empty
@@ -691,7 +674,7 @@ export default {
      */
     shouldSkipCurrentTick() {
       // Skip when network is collapsed for performance
-      if (this.isNetworkActuallyCollapsed) {
+      if (this.interfaceStore.isNetworkShownCollapsed) {
         return true
       }
 
@@ -704,14 +687,16 @@ export default {
       return false
     },
 
-    tick () {
+    tick() {
       if (this.shouldSkipCurrentTick()) {
         return
       }
 
       // The layout converges in about a second; a dragged keyword is followed tick by tick
       const now = performance.now()
-      const tickCount = this.isDragging ? 1 : runFrameTicks(this.simulation, now - this.lastFrameTime)
+      const tickCount = this.isDragging
+        ? 1
+        : runFrameTicks(this.simulation, now - this.lastFrameTime)
       this.lastFrameTime = now
       this.$refs.performanceMonitor?.incrementTick(tickCount)
 
@@ -722,7 +707,6 @@ export default {
       if (changedNodes.length > 0) {
         this.updateChangedNodePositions(changedNodes)
         const linksUpdated = this.updateSelectiveLinks(changedNodes)
-        this.lastUpdateTime = performance.now()
 
         // Track performance metrics - only count actual DOM updates
         this.$refs.performanceMonitor?.recordDomUpdate(changedNodes.length, linksUpdated)
@@ -734,46 +718,43 @@ export default {
       // FPS tracking (always track for debugging)
       this.$refs.performanceMonitor?.trackFps()
     },
-    keywordNodeDrag () {
+    keywordNodeDrag() {
       return createKeywordNodeDrag(this, SIMULATION_ALPHA)
     },
-    keywordNodeClick (event, d) {
+    keywordNodeClick(event, d) {
       releaseKeywordPosition(event, d, this, SIMULATION_ALPHA)
     },
-    onPublicationNodeMouseover (event, d) {
+    onPublicationNodeMouseover(event, d) {
       this.interfaceStore.setHoveredPublication(d.publication)
     },
-    onPublicationNodeMouseout () {
+    onPublicationNodeMouseout() {
       this.interfaceStore.setHoveredPublication(null)
     },
-    onKeywordNodeMouseover (event, d) {
+    onKeywordNodeMouseover(event, d) {
       highlightKeywordPublications(d, this.sessionStore.publicationsFiltered || [])
       this.updatePublicationHighlighting()
     },
-    onKeywordNodeMouseout () {
+    onKeywordNodeMouseout() {
       clearKeywordHighlight(this.sessionStore.publicationsFiltered || [])
       this.updatePublicationHighlighting()
     },
-    onAuthorNodeMouseover (event, d) {
+    onAuthorNodeMouseover(event, d) {
       highlightAuthorPublications(d, this.sessionStore.publicationsFiltered || [])
       this.updatePublicationHighlighting()
     },
-    onAuthorNodeMouseout () {
+    onAuthorNodeMouseout() {
       clearAuthorHighlight(this.sessionStore.publicationsFiltered || [])
       this.updatePublicationHighlighting()
     },
-    authorNodeClick (event, d) {
+    authorNodeClick(event, d) {
       this.openAuthorModal(d.author.id)
     },
-    yearX (year) {
+    yearX(year) {
       return calculateYearX(year, this.shownYears.min, this.viewport.width)
     },
-    activatePublication (event, d) {
+    activatePublication(event, d) {
       this.activatePublicationComponentByDoi(d.publication.doi)
       event.stopPropagation()
-    },
-    toggleMode() {
-      this.isNetworkClusters = !this.isNetworkClusters
     },
     expandNetwork(isNetworkExpanded) {
       this.interfaceStore.isNetworkExpanded = isNetworkExpanded
@@ -873,12 +854,7 @@ export default {
      */
     updateNodeLabels(solve, pin = false) {
       const { width, height } = this.viewport
-      if (
-        this.isLayoutMoving ||
-        !this.isLabelEngineLoaded ||
-        !width ||
-        !this.graph.nodes.length
-      ) {
+      if (this.isLayoutMoving || !this.isLabelEngineLoaded || !width || !this.graph.nodes.length) {
         return
       }
       // Maps layout coordinates onto the visible viewport (origin top-left)
@@ -1150,17 +1126,16 @@ export default {
     <div class="box has-background-grey">
       <NetworkHeader
         :error-message="errorMessage"
-        :has-no-content="isEmpty.value"
         v-model:is-network-clusters="isNetworkClusters"
         @expand-network="expandNetwork"
         @collapse-network="collapseNetwork"
         @restore-network="restoreNetwork"
       />
-      <div id="network-svg-container" v-show="!isNetworkActuallyCollapsed">
+      <div id="network-svg-container" v-show="!interfaceStore.isNetworkShownCollapsed">
         <NetworkPerformanceMonitor
           ref="performanceMonitor"
           :show="interfaceStore.showPerformancePanel"
-          :is-empty="isEmpty.value || !sessionStore.selectedPublications?.length"
+          :is-empty="!sessionStore.selectedPublications?.length"
           :node-count="nodeCount"
           :link-count="linkCount"
         />
@@ -1181,22 +1156,20 @@ export default {
           <g class="node-labels" :class="{ hidden: areNodeLabelsHidden || isLayoutMoving }"></g>
         </svg>
       </div>
-      <ul class="publication-component-list" v-show="!isNetworkActuallyCollapsed">
+      <ul class="publication-component-list" v-show="!interfaceStore.isNetworkShownCollapsed">
         <PublicationComponent
           v-if="activePublication && interfaceStore.isNetworkExpanded"
           :publication="activePublication"
-          is-active
           :publication-type="activePublication.isSelected ? 'selected' : 'suggested'"
         ></PublicationComponent>
       </ul>
-      <div class="controls-header-left" v-show="!isNetworkActuallyCollapsed">
+      <div class="controls-header-left" v-show="!interfaceStore.isNetworkShownCollapsed">
         <v-btn
           class="has-background-primary has-text-white"
           @click="updateQueued"
           v-show="queueStore.isUpdatable && interfaceStore.isNetworkExpanded"
-          id="quick-access-update"
         >
-          <v-icon left>mdi-update</v-icon>
+          <v-icon>mdi-update</v-icon>
           <span class="key">U</span>pdate
         </v-btn>
       </div>
@@ -1210,7 +1183,7 @@ export default {
         @zoom="zoomByFactor"
         @reset="resetZoom"
         @plot="plot"
-        v-show="!isNetworkActuallyCollapsed && !isEmpty"
+        v-show="!interfaceStore.isNetworkShownCollapsed && !isEmpty"
       />
     </div>
   </div>

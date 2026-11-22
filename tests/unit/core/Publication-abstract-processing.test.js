@@ -16,55 +16,55 @@ describe('Publication Abstract Processing', () => {
 
   describe('abstract with leading "Abstract" keyword', () => {
     it('should remove "Abstract" from the beginning (exact case)', () => {
-      const data = { 
+      const data = {
         title: 'Test Title',
-        abstract: 'Abstract This is the actual abstract content.' 
+        abstract: 'Abstract This is the actual abstract content.'
       }
       publication.processTitle(data)
-      
+
       expect(publication.abstract).toBe('This is the actual abstract content.')
       expect(publication.abstract).not.toMatch(/^Abstract/)
     })
 
     it('should remove "abstract" from the beginning (lowercase)', () => {
-      const data = { 
+      const data = {
         title: 'Test Title',
-        abstract: 'abstract This is the actual abstract content.' 
+        abstract: 'abstract This is the actual abstract content.'
       }
       publication.processTitle(data)
-      
+
       expect(publication.abstract).toBe('This is the actual abstract content.')
       expect(publication.abstract).not.toMatch(/^abstract/i)
     })
 
     it('should remove "ABSTRACT" from the beginning (uppercase)', () => {
-      const data = { 
+      const data = {
         title: 'Test Title',
-        abstract: 'ABSTRACT This is the actual abstract content.' 
+        abstract: 'ABSTRACT This is the actual abstract content.'
       }
       publication.processTitle(data)
-      
+
       expect(publication.abstract).toBe('This is the actual abstract content.')
       expect(publication.abstract).not.toMatch(/^ABSTRACT/)
     })
 
     it('should remove "Abstract:" with colon from the beginning', () => {
-      const data = { 
+      const data = {
         title: 'Test Title',
-        abstract: 'Abstract: This is the actual abstract content.' 
+        abstract: 'Abstract: This is the actual abstract content.'
       }
       publication.processTitle(data)
-      
+
       expect(publication.abstract).toBe('This is the actual abstract content.')
     })
 
     it('should remove "Abstract " with multiple spaces', () => {
-      const data = { 
+      const data = {
         title: 'Test Title',
-        abstract: 'Abstract   This is the actual abstract content.' 
+        abstract: 'Abstract   This is the actual abstract content.'
       }
       publication.processTitle(data)
-      
+
       expect(publication.abstract).toBe('This is the actual abstract content.')
     })
 
@@ -74,7 +74,7 @@ describe('Publication Abstract Processing', () => {
         { input: 'Abstract - This is content.', expected: 'This is content.' },
         { input: 'Abstract– This is content.', expected: 'This is content.' }
       ]
-      
+
       testCases.forEach(({ input, expected }) => {
         const data = { title: 'Test', abstract: input }
         publication.processTitle(data)
@@ -85,117 +85,117 @@ describe('Publication Abstract Processing', () => {
 
   describe('abstract without leading "Abstract" keyword', () => {
     it('should preserve abstract content without "Abstract" at the start', () => {
-      const data = { 
+      const data = {
         title: 'Test Title',
-        abstract: 'This is the actual abstract content without the keyword.' 
+        abstract: 'This is the actual abstract content without the keyword.'
       }
       publication.processTitle(data)
-      
+
       expect(publication.abstract).toBe('This is the actual abstract content without the keyword.')
     })
 
     it('should not remove "Abstract" from the middle of text', () => {
-      const data = { 
+      const data = {
         title: 'Test Title',
-        abstract: 'This abstract talks about Abstract concepts in science.' 
+        abstract: 'This abstract talks about Abstract concepts in science.'
       }
       publication.processTitle(data)
-      
+
       expect(publication.abstract).toBe('This abstract talks about Abstract concepts in science.')
       expect(publication.abstract).toContain('Abstract concepts')
     })
 
     it('should preserve abstract that ends with "Abstract"', () => {
-      const data = { 
+      const data = {
         title: 'Test Title',
-        abstract: 'This is an Abstract' 
+        abstract: 'This is an Abstract'
       }
       publication.processTitle(data)
-      
+
       expect(publication.abstract).toBe('This is an Abstract')
     })
   })
 
   describe('edge cases for abstract processing', () => {
     it('should handle null abstract', () => {
-      const data = { 
+      const data = {
         title: 'Test Title',
-        abstract: null 
+        abstract: null
       }
       publication.processTitle(data)
-      
+
       expect(publication.abstract).toBeNull()
     })
 
     it('should handle undefined abstract', () => {
-      const data = { 
+      const data = {
         title: 'Test Title',
-        abstract: undefined 
+        abstract: undefined
       }
       publication.processTitle(data)
-      
+
       expect(publication.abstract).toBeUndefined()
     })
 
     it('should handle empty string abstract', () => {
-      const data = { 
+      const data = {
         title: 'Test Title',
-        abstract: '' 
+        abstract: ''
       }
       publication.processTitle(data)
-      
+
       expect(publication.abstract).toBe('')
     })
 
     it('should handle abstract that is only "Abstract"', () => {
-      const data = { 
+      const data = {
         title: 'Test Title',
-        abstract: 'Abstract' 
+        abstract: 'Abstract'
       }
       publication.processTitle(data)
-      
+
       expect(publication.abstract).toBe('')
     })
 
     it('should handle abstract that is only "Abstract:"', () => {
-      const data = { 
+      const data = {
         title: 'Test Title',
-        abstract: 'Abstract:' 
+        abstract: 'Abstract:'
       }
       publication.processTitle(data)
-      
+
       expect(publication.abstract).toBe('')
     })
 
     it('should handle abstract with only whitespace after "Abstract"', () => {
-      const data = { 
+      const data = {
         title: 'Test Title',
-        abstract: 'Abstract   ' 
+        abstract: 'Abstract   '
       }
       publication.processTitle(data)
-      
+
       expect(publication.abstract).toBe('')
     })
 
     it('should preserve leading whitespace in content after removing "Abstract"', () => {
-      const data = { 
+      const data = {
         title: 'Test Title',
-        abstract: 'Abstract\nThis starts on a new line.' 
+        abstract: 'Abstract\nThis starts on a new line.'
       }
       publication.processTitle(data)
-      
+
       // Should preserve the newline and content structure
       expect(publication.abstract).toBe('This starts on a new line.')
     })
 
     it('should handle very long abstracts with "Abstract" prefix', () => {
       const longContent = 'A'.repeat(1000)
-      const data = { 
+      const data = {
         title: 'Test Title',
-        abstract: `Abstract ${longContent}` 
+        abstract: `Abstract ${longContent}`
       }
       publication.processTitle(data)
-      
+
       expect(publication.abstract).toBe(longContent)
       expect(publication.abstract).toHaveLength(1000)
     })
@@ -205,32 +205,41 @@ describe('Publication Abstract Processing', () => {
     it('should handle abstract from the issue screenshot', () => {
       const data = {
         title: 'Dynamic Graph Visualization',
-        abstract: 'Abstract Dynamic graph visualization focuses on the challenge of representing the evolution of relationships between entities in readable, scalable and effective diagrams.'
+        abstract:
+          'Abstract Dynamic graph visualization focuses on the challenge of representing the evolution of relationships between entities in readable, scalable and effective diagrams.'
       }
       publication.processTitle(data)
 
-      expect(publication.abstract).toBe('Dynamic graph visualization focuses on the challenge of representing the evolution of relationships between entities in readable, scalable and effective diagrams.')
+      expect(publication.abstract).toBe(
+        'Dynamic graph visualization focuses on the challenge of representing the evolution of relationships between entities in readable, scalable and effective diagrams.'
+      )
       expect(publication.abstract).not.toMatch(/^Abstract\s/)
     })
 
     it('should handle abstract with complex formatting', () => {
       const data = {
         title: 'Test Title',
-        abstract: 'Abstract: We present a novel approach to solving complex problems. This work demonstrates significant improvements over previous methods.'
+        abstract:
+          'Abstract: We present a novel approach to solving complex problems. This work demonstrates significant improvements over previous methods.'
       }
       publication.processTitle(data)
 
-      expect(publication.abstract).toBe('We present a novel approach to solving complex problems. This work demonstrates significant improvements over previous methods.')
+      expect(publication.abstract).toBe(
+        'We present a novel approach to solving complex problems. This work demonstrates significant improvements over previous methods.'
+      )
     })
 
     it('should handle JATS XML tags with Abstract keyword (issue #593)', () => {
       const data = {
         title: 'Test Title',
-        abstract: '<jats:title>Abstract</jats:title><jats:p>This survey describes the latest developments in visualization techniques.</jats:p>'
+        abstract:
+          '<jats:title>Abstract</jats:title><jats:p>This survey describes the latest developments in visualization techniques.</jats:p>'
       }
       publication.processTitle(data)
 
-      expect(publication.abstract).toBe('This survey describes the latest developments in visualization techniques.')
+      expect(publication.abstract).toBe(
+        'This survey describes the latest developments in visualization techniques.'
+      )
       expect(publication.abstract).not.toMatch(/^Abstract/)
       expect(publication.abstract).not.toContain('<jats:')
       expect(publication.abstract).not.toContain('</jats:')
@@ -260,13 +269,13 @@ describe('Publication Abstract Processing', () => {
 
   describe('integration with title processing', () => {
     it('should process both title and abstract correctly', () => {
-      const data = { 
+      const data = {
         title: 'Test Title',
         abstract: 'Abstract This is the abstract.',
         year: 2024
       }
       publication.processTitle(data)
-      
+
       expect(publication.title).toBe('Test Title')
       expect(publication.abstract).toBe('This is the abstract.')
       expect(publication.year).toBe(2024)

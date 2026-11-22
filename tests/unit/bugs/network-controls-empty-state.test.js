@@ -52,7 +52,6 @@ vi.mock('@/utils/network/publicationNodes.js', () => ({
 
 vi.mock('@/utils/network/links.js', () => ({
   updateNetworkLinks: vi.fn(() => ({})),
-  updateLinkProperties: vi.fn(),
   createCitationLinks: vi.fn(() => [])
 }))
 
@@ -106,7 +105,9 @@ describe('Bug: Network controls should not show when app state is empty', () => 
     'v-slider': { template: '<input type="range" class="v-slider">' },
     CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
     NetworkHeader: { template: '<div class="network-header"><slot></slot></div>' },
-    NetworkPerformanceMonitor: { template: '<div class="network-performance-monitor"><slot></slot></div>' },
+    NetworkPerformanceMonitor: {
+      template: '<div class="network-performance-monitor"><slot></slot></div>'
+    },
     PublicationComponent: { template: '<div class="publication-component"><slot></slot></div>' }
   })
 
@@ -148,9 +149,7 @@ describe('Bug: Network controls should not show when app state is empty', () => 
     const interfaceStore = useInterfaceStore()
 
     // Add some publications to make state non-empty
-    sessionStore.selectedPublications = [
-      { doi: '10.1234/test1', title: 'Test Publication' }
-    ]
+    sessionStore.selectedPublications = [{ doi: '10.1234/test1', title: 'Test Publication' }]
     sessionStore.excludedPublicationsDois = []
     queueStore.selectedQueue = []
     queueStore.excludedQueue = []
@@ -178,9 +177,7 @@ describe('Bug: Network controls should not show when app state is empty', () => 
     const interfaceStore = useInterfaceStore()
 
     // Add some publications to make state non-empty
-    sessionStore.selectedPublications = [
-      { doi: '10.1234/test1', title: 'Test Publication' }
-    ]
+    sessionStore.selectedPublications = [{ doi: '10.1234/test1', title: 'Test Publication' }]
     queueStore.selectedQueue = []
     queueStore.excludedQueue = []
 

@@ -154,9 +154,8 @@ describe('Publication.processTitle - Subtitle Concatenation Bug', () => {
           expect(pub.title).toContain(':')
         } else {
           // Should not have duplicate or colon separator
-          const occurrences = pub.title.toLowerCase().match(
-            new RegExp(subtitle.toLowerCase(), 'g')
-          )?.length || 0
+          const occurrences =
+            pub.title.toLowerCase().match(new RegExp(subtitle.toLowerCase(), 'g'))?.length || 0
           expect(occurrences).toBe(1)
         }
       })

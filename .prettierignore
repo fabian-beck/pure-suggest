@@ -4,3 +4,4 @@ coverage/
 .git/
 *.min.js
 *.min.css
+test/synthetic-network/

@@ -18,7 +18,7 @@ export function createCitationLinks(selectedPublications, isSelectedFn, doiToInd
 
   selectedPublications.forEach((publication) => {
     if (publication.doi in doiToIndex) {
-      // Create links for citations (papers this publication cites)
+      // Create links for citations (papers that cite this publication)
       publication.citationDois.forEach((citationDoi) => {
         if (citationDoi in doiToIndex) {
           const linkKey = `${citationDoi}→${publication.doi}`
@@ -34,7 +34,7 @@ export function createCitationLinks(selectedPublications, isSelectedFn, doiToInd
         }
       })
 
-      // Create links for references (papers that cite this publication)
+      // Create links for references (papers this publication cites)
       publication.referenceDois.forEach((referenceDoi) => {
         if (referenceDoi in doiToIndex) {
           const linkKey = `${publication.doi}→${referenceDoi}`
@@ -85,13 +85,13 @@ export function calculateLinkPath(d) {
 
   // Curved link for citations
   if (d.type === 'citation') {
-    const dr = (dx * dx + dy * dy)**0.6
+    const dr = (dx * dx + dy * dy) ** 0.6
     return `M${d.target.x},${d.target.y}A${dr},${dr} 0 0,1 ${d.source.x},${d.source.y}`
   }
 
   // Tapered links for keywords and authors:
   // Drawing a triangle as part of a circle segment with its center at the target node
-  const r = Math.sqrt(dx**2 + dy**2)
+  const r = Math.sqrt(dx ** 2 + dy ** 2)
   const alpha = Math.acos(dx / r)
   const beta = 2 / r
   const x1 = r * Math.cos(alpha + beta)
@@ -138,4 +138,3 @@ export function calculateLinkClasses(d, activePublication) {
 
   return classes.join(' ')
 }
-

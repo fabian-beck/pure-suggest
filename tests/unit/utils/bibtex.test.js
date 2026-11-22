@@ -42,7 +42,9 @@ describe('generateBibtex', () => {
       const result = generateBibtex(publication)
 
       expect(result).toContain('@inproceedings{Johnson2022Novel,')
-      expect(result).toContain('booktitle = {Proceedings of the International Conference on Software Testing}')
+      expect(result).toContain(
+        'booktitle = {Proceedings of the International Conference on Software Testing}'
+      )
       expect(result).not.toContain('journal =')
       expect(result).not.toContain('volume =')
     })
@@ -180,7 +182,7 @@ describe('generateBibtex', () => {
     it('should handle special characters in author names', () => {
       const publication = {
         title: 'Software Testing',
-        author: 'José García-López;María O\'Connor',
+        author: "José García-López;María O'Connor",
         year: '2023',
         doi: '10.1234/test.789'
       }
@@ -306,7 +308,7 @@ describe('generateBibtex', () => {
     it('should handle hyphenated last names in comma format', () => {
       const publication = {
         title: 'Advanced Study',
-        author: 'García-López, José;O\'Connor, María',
+        author: "García-López, José;O'Connor, María",
         year: '2024',
         doi: '10.1234/hyphen.456'
       }

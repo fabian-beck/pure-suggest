@@ -3,7 +3,6 @@ import { cacheBulk, cachedFetch, readCacheMany } from '../lib/Cache.js'
 import { splitAuthorName } from '../lib/Util.js'
 import Author from './Author.js'
 
-
 const SURVEY_THRESHOLDS = {
   REFERENCE_COUNT_HIGH: 100,
   REFERENCE_COUNT_MIN: 50
@@ -30,7 +29,7 @@ const SURVEY_KEYWORDS = /(survey|state|review|advances|future)/i
 
 const ORDINAL_REGEX = /\d(?:st|nd|rd|th)/i
 
-const ROMAN_NUMERAL_REGEX = /^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})(\?.?)$/i
+const ROMAN_NUMERAL_REGEX = /^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})(\.?)$/i
 
 const ORCID_REGEX = /(,\s+)(\d{4}-\d{4}-\d{4}-\d{3}[0-9Xx])/g
 
@@ -119,7 +118,9 @@ export default class Publication {
    * @returns {string} Google Scholar search URL.
    */
   get gsUrl() {
-    const searchString = `${this.title} ${this.author?.split(',')[0]} ${this.container ?? ''}`
+    const searchString = [this.title, this.author?.split(',')[0], this.container]
+      .filter(Boolean)
+      .join(' ')
     return `${API_ENDPOINTS.GOOGLE_SCHOLAR}?hl=en&q=${encodeURIComponent(searchString)}`
   }
 
@@ -164,7 +165,7 @@ export default class Publication {
     this.isSurvey = this.isHighlyCited = this.isNew = this.isUnnoted = false
     this.isAiRecommended = false
     this.isActive = this.isLinkedToActive = this.isSelected = this.isRead = false
-    this.isHovered = this.isKeywordHovered = this.isAuthorHovered = this.wasFetched = false
+    this.isKeywordHovered = this.isAuthorHovered = this.wasFetched = false
     this.isNewlyAdded = false
     this.concepts = null
   }
@@ -302,7 +303,6 @@ export default class Publication {
       // Reset regex for next iteration
       ORCID_REGEX.lastIndex = 0
     })
-
   }
 
   /**
@@ -328,10 +328,13 @@ export default class Publication {
       } else {
         mappedWord = TITLE_WORD_MAP[word.toLowerCase()]
       }
-      this.container += `${mappedWord ? mappedWord : word  } `
+      this.container += `${mappedWord ? mappedWord : word} `
     })
-    // eslint-disable-next-line sonarjs/super-linear-regex -- safe on short container strings
-    this.container = this.container.trim().replace(/^[. ]+/, '').replace(/[. ]+$/, '')
+    this.container = this.container
+      .trim()
+      .replace(/^[. ]+/, '')
+      // eslint-disable-next-line sonarjs/super-linear-regex -- safe on short container strings
+      .replace(/[. ]+$/, '')
     this.container = cleanTitle(this.container)
   }
 
@@ -390,8 +393,6 @@ export default class Publication {
     this.processTags()
   }
 
-
-
   /**
    * Returns concatenated metadata for search purposes (cached).
    * @returns {string} Combined title, author, and container string.
@@ -415,7 +416,6 @@ export default class Publication {
     }
     return this._authorIds
   }
-
 
   /**
    * Warms the per-DOI cache for many publications with concurrently issued
@@ -514,11 +514,6 @@ export default class Publication {
 }
 
 /**
- * Cleans and formats publication titles with proper capitalization and punctuation.
- * @param {string} title - Raw title string.
- * @returns {string} Cleaned and formatted title.
- */
-/**
  * Removes HTML tags from a string.
  * @param {string} string - Input string with HTML tags.
  * @returns {string} String with HTML tags removed.
@@ -527,7 +522,7 @@ function removeHtmlTags(string) {
   if (!string || typeof string !== 'string') {
     return string || ''
   }
-  
+
   // First decode HTML entities to actual HTML characters
   const decodedString = string
     .replace(/&lt;/g, '<')
@@ -536,16 +531,9 @@ function removeHtmlTags(string) {
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&apos;/g, "'")
-  
+
   // Then remove HTML tags
-  // Use replaceAll if available (modern browsers), otherwise fallback to replace with global flag
-  // This handles the case where replaceAll might not be supported in older environments
-  if (typeof decodedString.replaceAll === 'function') {
-    return decodedString.replaceAll(/<[^<>]*>/g, '')
-  } else {
-    // Fallback for older browsers - use replace with global flag
-    return decodedString.replace(/<[^<>]*>/g, '')
-  }
+  return decodedString.replace(/<[^<>]*>/g, '')
 }
 
 /**
@@ -621,7 +609,9 @@ async function prefetchChunk(publications) {
   const pending = publications.filter((publication) => !publication.wasFetched)
   if (!pending.length) return
 
-  const doiByUrl = new Map(pending.map((publication) => [publicationUrl(publication.doi), publication.doi]))
+  const doiByUrl = new Map(
+    pending.map((publication) => [publicationUrl(publication.doi), publication.doi])
+  )
 
   try {
     await cacheBulk([...doiByUrl.keys()], async (missedUrls) => {
@@ -633,7 +623,9 @@ async function prefetchChunk(publications) {
       return dataByUrl
     })
   } catch (error) {
-    console.warn(`[Publication] Bulk prefetch failed for ${pending.length} publications, falling back to individual fetches: ${error}`)
+    console.warn(
+      `[Publication] Bulk prefetch failed for ${pending.length} publications, falling back to individual fetches: ${error}`
+    )
   }
 }
 

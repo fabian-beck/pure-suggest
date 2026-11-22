@@ -68,7 +68,7 @@ onUnmounted(() => {
         }"
         @click="scrollTo('selected')"
       >
-        <v-icon class="has-text-white" top>mdi-water-outline</v-icon>
+        <v-icon class="has-text-white">mdi-water-outline</v-icon>
         <div class="button-label">Selected</div>
       </v-btn>
       <v-btn
@@ -78,7 +78,7 @@ onUnmounted(() => {
         }"
         @click="scrollTo('suggested')"
       >
-        <v-icon class="has-text-white" top>mdi-water-plus-outline</v-icon>
+        <v-icon class="has-text-white">mdi-water-plus-outline</v-icon>
         <div class="button-label">Suggested</div>
       </v-btn>
       <v-btn
@@ -88,7 +88,7 @@ onUnmounted(() => {
         }"
         @click="scrollTo('network')"
       >
-        <v-icon class="has-text-white" top>mdi-chart-bubble</v-icon>
+        <v-icon class="has-text-white">mdi-chart-bubble</v-icon>
         <div class="button-label">Network</div>
       </v-btn>
     </v-btn-toggle>

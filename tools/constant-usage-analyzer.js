@@ -192,6 +192,7 @@ async function main() {
 
   // Write detailed results to file
   const outputPath = 'tools/output/constant-usage-analysis.json'
+  await fs.mkdir('tools/output', { recursive: true })
   await fs.writeFile(outputPath, JSON.stringify(analysisResults, null, 2))
   console.log(`\n📄 Detailed results saved to: ${outputPath}`)
 }

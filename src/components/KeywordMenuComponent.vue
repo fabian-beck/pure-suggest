@@ -27,12 +27,10 @@ const buttonColor = computed(() => {
   return sessionStore.boostKeywordString ? 'default' : 'grey-darken-1'
 })
 
-function handleMenuInput(value) {
-  if (value) {
-    nextTick(() => {
-      boost.value?.focus()
-    })
-  }
+function handleMenuInput() {
+  nextTick(() => {
+    boost.value?.focus()
+  })
 }
 
 function handleMenuToggle(isOpen) {
@@ -73,7 +71,7 @@ function clearKeywords() {
         v-bind="props"
         :icon="interfaceStore.isMobile"
         :aria-label="interfaceStore.isMobile ? 'Boost keywords' : undefined"
-        @click="handleMenuInput(true)"
+        @click="handleMenuInput"
         :density="interfaceStore.isMobile ? 'compact' : 'default'"
         :color="buttonColor"
       >

@@ -35,10 +35,10 @@ export default {
       default: ''
     }
   },
-  emits: ['update:modelValue', 'dialogKey'],
+  emits: ['update:modelValue', 'dialogKey', 'scroll'],
   data() {
     return {
-      isDialogShown: this.value
+      isDialogShown: this.modelValue
     }
   },
   setup: (props) => {
@@ -146,7 +146,7 @@ export default {
       <div class="sticky">
         <slot name="sticky"></slot>
       </div>
-      <v-card-text tabindex="0">
+      <v-card-text tabindex="0" @scroll="$emit('scroll', $event)">
         <slot></slot>
       </v-card-text>
       <slot name="footer"></slot>
@@ -213,10 +213,10 @@ export default {
 }
 
 @media screen and (max-width: 1023px) {
-    :deep(.v-overlay__content:has(.v-card)) {
-        margin-top: 0 !important;
-        height: 100vh !important;
-    }
+  :deep(.v-overlay__content:has(.v-card)) {
+    margin-top: 0 !important;
+    height: 100vh !important;
+  }
 }
 
 @media screen and (min-width: 1024px) {

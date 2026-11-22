@@ -15,42 +15,9 @@ const inFlightRequests = new Map()
 
 // Only access IndexedDB if available (not in test environment)
 if (typeof indexedDB !== 'undefined') {
-  try {
-    const keyCount = (await keys()).length
-    console.log(`Locally cached #elements: ${keyCount}`)
-  } catch (error) {
-    console.warn('IndexedDB not available:', error.message)
-  }
-}
-
-// Warm up memory cache by loading IndexedDB entries with a single batched read
-async function warmUpMemoryCache() {
-  try {
-    const warmUpKeys = (await keys()).slice(0, 500) // Load up to 500 entries
-
-    console.log(`🔥 Warming up memory cache with ${warmUpKeys.length} entries...`)
-
-    const cacheObjects = await getMany(warmUpKeys)
-    cacheObjects.forEach((cacheObject, index) => {
-      try {
-        if (cacheObject && cacheObject.data) {
-          const data = JSON.parse(LZString.decompress(cacheObject.data))
-          addToMemoryCache(warmUpKeys[index], data)
-        }
-      } catch {
-        // Skip problematic entries
-      }
-    })
-
-    console.log(`✅ Memory cache warmed up: ${memoryCache.size} entries loaded`)
-  } catch (error) {
-    console.error('❌ Error during memory cache warm-up:', error)
-  }
-}
-
-// Start warm-up process only if IndexedDB is available
-if (typeof indexedDB !== 'undefined') {
-  warmUpMemoryCache()
+  keys()
+    .then((storedKeys) => console.log(`Locally cached #elements: ${storedKeys.length}`))
+    .catch((error) => console.warn('IndexedDB not available:', error.message))
 }
 
 function addToMemoryCache(url, data) {

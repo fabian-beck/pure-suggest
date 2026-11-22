@@ -107,15 +107,13 @@ export default class Author {
 
   setScoring(isAuthorScoreEnabled, isFirstAuthorBoostEnabled, isAuthorNewBoostEnabled) {
     const baseScore = isAuthorScoreEnabled ? this.publication.score : 1
-    
-    const firstAuthorBoost = isFirstAuthorBoostEnabled && this.authorIndex === 0 
-      ? SCORING.FIRST_AUTHOR_BOOST 
-      : 1
-    
-    const newPublicationBoost = isAuthorNewBoostEnabled && this.publication.isNew 
-      ? SCORING.NEW_PUBLICATION_BOOST 
-      : 1
-    
+
+    const firstAuthorBoost =
+      isFirstAuthorBoostEnabled && this.authorIndex === 0 ? SCORING.FIRST_AUTHOR_BOOST : 1
+
+    const newPublicationBoost =
+      isAuthorNewBoostEnabled && this.publication.isNew ? SCORING.NEW_PUBLICATION_BOOST : 1
+
     this.score = baseScore * firstAuthorBoost * newPublicationBoost
   }
 
@@ -231,13 +229,12 @@ export default class Author {
       return start
     }
 
-    function findAuthorsByPrefix(sortedAuthors, prefix, maxMatches = Infinity) {
+    function findAuthorsByPrefix(sortedAuthors, prefix) {
       const matches = []
       let index = lowerBoundById(sortedAuthors, prefix)
 
       while (index < sortedAuthors.length && sortedAuthors[index].id.startsWith(prefix)) {
         matches.push(sortedAuthors[index])
-        if (matches.length >= maxMatches) break
         index++
       }
 
@@ -337,8 +334,6 @@ export default class Author {
         .join('')
     })
 
-    // Ensure deterministic processing order for author merging and result consistency
-    // Convert to array and sort by ID to ensure consistent processing order
     const authorArray = Object.values(authors)
 
     // Sort by score with deterministic tiebreaker for identical scores

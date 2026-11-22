@@ -1,5 +1,6 @@
 import { setActivePinia, createPinia } from 'pinia'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { watch } from 'vue'
 
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
@@ -154,72 +155,6 @@ describe('Session Store - Suggested Publications Filtering', () => {
     })
   })
 
-  describe('suggestedPublicationsFilteredCount', () => {
-    it('should return 0 when no filters are active', () => {
-      expect(sessionStore.suggestedPublicationsFilteredCount).toBe(0)
-    })
-
-    it('should return correct count when filter is active', () => {
-      sessionStore.filter.string = 'Machine Learning'
-
-      expect(sessionStore.suggestedPublicationsFilteredCount).toBe(1)
-    })
-
-    it('should return correct count with tag filter', () => {
-      sessionStore.filter.tags = ['someTag']
-
-      expect(sessionStore.suggestedPublicationsFilteredCount).toBe(2)
-    })
-
-    it('should return 0 when no suggestions exist', () => {
-      sessionStore.suggestion = null
-      sessionStore.filter.string = 'anything'
-
-      expect(sessionStore.suggestedPublicationsFilteredCount).toBe(0)
-    })
-
-    it('should handle complex filter combinations', () => {
-      sessionStore.filter.string = 'Learning'
-      sessionStore.filter.yearStart = '2020'
-
-      // mockPublication1 (Machine Learning, 2023) and mockPublication2 (Deep Learning, 2020) should match
-      expect(sessionStore.suggestedPublicationsFilteredCount).toBe(2)
-    })
-  })
-
-  describe('suggestedPublicationsNonFilteredCount', () => {
-    it('should return 0 when no filters are active', () => {
-      expect(sessionStore.suggestedPublicationsNonFilteredCount).toBe(0)
-    })
-
-    it('should return correct count when filter is active', () => {
-      sessionStore.filter.string = 'Machine Learning'
-
-      expect(sessionStore.suggestedPublicationsNonFilteredCount).toBe(2)
-    })
-
-    it('should return correct count with tag filter', () => {
-      sessionStore.filter.tags = ['someTag']
-
-      expect(sessionStore.suggestedPublicationsNonFilteredCount).toBe(1)
-    })
-
-    it('should return 0 when no suggestions exist', () => {
-      sessionStore.suggestion = null
-      sessionStore.filter.string = 'anything'
-
-      expect(sessionStore.suggestedPublicationsNonFilteredCount).toBe(0)
-    })
-
-    it('should handle all publications matching filter', () => {
-      sessionStore.filter.yearStart = '2020'
-      sessionStore.filter.yearEnd = '2023'
-
-      // All publications should match (2020, 2021, 2023 are all in range)
-      expect(sessionStore.suggestedPublicationsNonFilteredCount).toBe(0)
-    })
-  })
-
   describe('integration with Filter class', () => {
     it('should work with complex filter combinations', () => {
       sessionStore.filter.string = 'Learning'
@@ -232,8 +167,6 @@ describe('Session Store - Suggested Publications Filtering', () => {
       // - contains 'Learning' in meta string
       // - year 2023 >= 2020
       // - has someTag = true
-      expect(sessionStore.suggestedPublicationsFilteredCount).toBe(1)
-      expect(sessionStore.suggestedPublicationsNonFilteredCount).toBe(2)
       expect(filtered[0].doi).toBe(mockPublication1.doi)
     })
 
@@ -243,8 +176,6 @@ describe('Session Store - Suggested Publications Filtering', () => {
       const filtered = sessionStore.suggestedPublicationsFiltered
 
       expect(filtered).toEqual([mockPublication1, mockPublication2, mockPublication3])
-      expect(sessionStore.suggestedPublicationsFilteredCount).toBe(0)
-      expect(sessionStore.suggestedPublicationsNonFilteredCount).toBe(0)
     })
 
     it('should handle mixed filter types correctly', () => {
@@ -256,8 +187,6 @@ describe('Session Store - Suggested Publications Filtering', () => {
       // Only mockPublication3 should match both criteria:
       // - year 2021 <= 2021
       // - has citation DOI 10.1234/citation3
-      expect(sessionStore.suggestedPublicationsFilteredCount).toBe(1)
-      expect(sessionStore.suggestedPublicationsNonFilteredCount).toBe(2)
       expect(filtered[0].doi).toBe(mockPublication3.doi)
     })
 
@@ -266,11 +195,7 @@ describe('Session Store - Suggested Publications Filtering', () => {
 
       const filtered = sessionStore.suggestedPublicationsFiltered
 
-      // No publications should match
-      expect(sessionStore.suggestedPublicationsFilteredCount).toBe(0)
-      expect(sessionStore.suggestedPublicationsNonFilteredCount).toBe(3)
-
-      // All publications should be present, sorted by score descending
+      // No publications should match; all publications should be present, sorted by score descending
       expect(filtered[0].doi).toBe(mockPublication2.doi) // score 15
       expect(filtered[1].doi).toBe(mockPublication1.doi) // score 10
       expect(filtered[2].doi).toBe(mockPublication3.doi) // score 5
@@ -289,20 +214,22 @@ describe('Session Store - Suggested Publications Filtering', () => {
 
       // Both should have same filtering behavior
       expect(selectedFiltered.map((p) => p.doi)).toEqual(suggestedFiltered.map((p) => p.doi))
-      expect(sessionStore.selectedPublicationsFilteredCount).toBe(
-        sessionStore.suggestedPublicationsFilteredCount
-      )
-      expect(sessionStore.selectedPublicationsNonFilteredCount).toBe(
-        sessionStore.suggestedPublicationsNonFilteredCount
-      )
     })
   })
 
   describe('setActivePublication', () => {
     it('should link only selected publications that are connected to the active suggestion by their own citation data', () => {
       // The suggestion's own data lists both as citing it, but only one of them lists it as reference
-      const suggested = { doi: '10.1234/suggested', citationDois: new Set(['10.1234/a', '10.1234/b']), referenceDois: new Set() }
-      const selectedA = { doi: '10.1234/a', citationDois: new Set(), referenceDois: new Set([suggested.doi]) }
+      const suggested = {
+        doi: '10.1234/suggested',
+        citationDois: new Set(['10.1234/a', '10.1234/b']),
+        referenceDois: new Set()
+      }
+      const selectedA = {
+        doi: '10.1234/a',
+        citationDois: new Set(),
+        referenceDois: new Set([suggested.doi])
+      }
       const selectedB = { doi: '10.1234/b', citationDois: new Set(), referenceDois: new Set() }
       sessionStore.selectedPublications = [selectedA, selectedB]
       sessionStore.suggestion = { publications: [suggested], totalSuggestions: 1 }
@@ -311,6 +238,78 @@ describe('Session Store - Suggested Publications Filtering', () => {
 
       expect(selectedA.isLinkedToActive).toBe(true)
       expect(selectedB.isLinkedToActive).toBe(false)
+    })
+
+    it('should not notify publications whose state stays the same when activating another publication', () => {
+      const createPublication = (doi, citationDois = []) => ({
+        doi,
+        isActive: false,
+        isLinkedToActive: false,
+        citationDois: new Set(citationDois),
+        referenceDois: new Set()
+      })
+      sessionStore.selectedPublications = [
+        createPublication('10.1234/a', ['10.1234/shared']),
+        createPublication('10.1234/b', ['10.1234/shared']),
+        createPublication('10.1234/shared'),
+        createPublication('10.1234/unlinked')
+      ]
+      const [, , shared, unlinked] = sessionStore.selectedPublications
+      sessionStore.setActivePublication('10.1234/a')
+      const onStateChange = vi.fn()
+      watch(() => [shared.isLinkedToActive, unlinked.isLinkedToActive], onStateChange, {
+        flush: 'sync'
+      })
+
+      sessionStore.setActivePublication('10.1234/b')
+
+      expect(shared.isLinkedToActive).toBe(true)
+      expect(unlinked.isLinkedToActive).toBe(false)
+      expect(onStateChange).not.toHaveBeenCalled()
+    })
+
+    it('should clear the active state of all publications for an unknown DOI', () => {
+      const selected = {
+        doi: '10.1234/a',
+        citationDois: new Set(['10.1234/b']),
+        referenceDois: new Set()
+      }
+      const suggested = { doi: '10.1234/b', citationDois: new Set(), referenceDois: new Set() }
+      sessionStore.selectedPublications = [selected]
+      sessionStore.suggestion = { publications: [suggested], totalSuggestions: 1 }
+      sessionStore.setActivePublication(selected.doi)
+      expect(suggested.isLinkedToActive).toBe(true)
+
+      sessionStore.setActivePublication('10.1234/unknown')
+
+      expect(selected.isActive).toBe(false)
+      expect(suggested.isLinkedToActive).toBe(false)
+    })
+  })
+
+  describe('clear', () => {
+    it('should keep which publications were read for the next session', () => {
+      const suggested = { doi: '10.1234/read', citationDois: new Set(), referenceDois: new Set() }
+      sessionStore.suggestion = { publications: [suggested], totalSuggestions: 1 }
+      sessionStore.setActivePublication(suggested.doi)
+
+      sessionStore.clear()
+
+      expect(sessionStore.suggestedPublications).toEqual([])
+      expect(sessionStore.readPublicationsDois.has(suggested.doi)).toBe(true)
+    })
+  })
+
+  describe('isExcluded', () => {
+    it('should follow changes of the excluded publications', () => {
+      const { isExcluded } = sessionStore
+      expect(isExcluded('10.1234/x')).toBe(false)
+
+      sessionStore.excludedPublicationsDois.push('10.1234/x')
+      expect(isExcluded('10.1234/x')).toBe(true)
+
+      sessionStore.removeFromExcludedPublication('10.1234/x')
+      expect(isExcluded('10.1234/x')).toBe(false)
     })
   })
 })

@@ -24,7 +24,6 @@ const mockSessionStore = {
   clearActivePublication: vi.fn(),
   updatePublicationScores: vi.fn(),
   clearAiRecommendations: vi.fn(),
-  hasUpdated: vi.fn(),
   suggestion: null,
   maxSuggestions: 50,
   readPublicationsDois: [],

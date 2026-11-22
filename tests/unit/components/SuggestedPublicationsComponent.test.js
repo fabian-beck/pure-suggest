@@ -44,7 +44,7 @@ describe('SuggestedPublicationsComponent', () => {
           ...commonComponentStubs,
           'v-badge': {
             template: '<div class="v-badge" :content="content"><slot></slot></div>',
-            props: ['content', 'color', 'offset-y', 'offset-x', 'value', 'transition']
+            props: ['content', 'color', 'offset-y', 'offset-x', 'modelValue', 'transition']
           },
           PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
@@ -54,6 +54,29 @@ describe('SuggestedPublicationsComponent', () => {
     expect(wrapper.text()).toContain('2')
     expect(wrapper.text()).toContain('of')
     expect(wrapper.text()).toContain('1,000')
+  })
+
+  it('hides the badge of unread suggestions when all are read', () => {
+    sessionStore.suggestion = {
+      totalSuggestions: 1,
+      publications: [{ doi: 'test-doi-1', title: 'Test Publication 1', isRead: true }]
+    }
+
+    const wrapper = mount(SuggestedPublicationsComponent, {
+      global: {
+        plugins: [pinia],
+        stubs: {
+          ...commonComponentStubs,
+          'v-badge': {
+            template: '<div class="v-badge"><slot></slot></div>',
+            props: ['modelValue']
+          },
+          PublicationListComponent: true
+        }
+      }
+    })
+
+    expect(wrapper.findComponent('.v-badge').props('modelValue')).toBe(false)
   })
 
   it('shows settings menu when suggestions are available', () => {
@@ -72,13 +95,16 @@ describe('SuggestedPublicationsComponent', () => {
             template: '<button class="compact-button" :disabled="disabled"><slot></slot></button>',
             props: ['disabled']
           },
-          'v-menu': { template: '<div class="v-menu"><slot name="activator" :props="{}"></slot><slot></slot></div>' },
+          'v-menu': {
+            template:
+              '<div class="v-menu"><slot name="activator" :props="{}"></slot><slot></slot></div>'
+          },
           'v-list': { template: '<div class="v-list"><slot></slot></div>' },
           'v-list-item': { template: '<div class="v-list-item"><slot></slot></div>' },
           'v-list-item-title': { template: '<div class="v-list-item-title"><slot></slot></div>' },
           'v-slider': { template: '<div class="v-slider"></div>' },
-          'tippy': { template: '<div class="tippy"><slot></slot></div>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          tippy: { template: '<div class="tippy"><slot></slot></div>' },
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -101,16 +127,19 @@ describe('SuggestedPublicationsComponent', () => {
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'v-badge': { template: '<div class="v-badge"><slot></slot></div>' },
-          'CompactButton': {
-            template: '<button class="compact-button"><slot></slot></button>',
+          CompactButton: {
+            template: '<button class="compact-button"><slot></slot></button>'
           },
-          'v-menu': { template: '<div class="v-menu"><slot name="activator" :props="{}"></slot><slot></slot></div>' },
+          'v-menu': {
+            template:
+              '<div class="v-menu"><slot name="activator" :props="{}"></slot><slot></slot></div>'
+          },
           'v-list': { template: '<div class="v-list"><slot></slot></div>' },
           'v-list-item': { template: '<div class="v-list-item"><slot></slot></div>' },
           'v-list-item-title': { template: '<div class="v-list-item-title"><slot></slot></div>' },
           'v-slider': { template: '<div class="v-slider"></div>' },
-          'tippy': { template: '<div class="tippy"><slot></slot></div>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          tippy: { template: '<div class="tippy"><slot></slot></div>' },
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -134,22 +163,26 @@ describe('SuggestedPublicationsComponent', () => {
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'v-badge': { template: '<div class="v-badge"><slot></slot></div>' },
-          'CompactButton': {
-            template: '<button class="compact-button" @click="$emit(\'click\')"><slot></slot></button>',
+          CompactButton: {
+            template:
+              '<button class="compact-button" @click="$emit(\'click\')"><slot></slot></button>',
             emits: ['click']
           },
           'v-menu': {
-            template: '<div class="v-menu"><slot name="activator" :props="{}"></slot><slot></slot></div>',
+            template:
+              '<div class="v-menu"><slot name="activator" :props="{}"></slot><slot></slot></div>',
             props: ['close-on-content-click']
           },
           'v-list': { template: '<div class="v-list"><slot></slot></div>' },
           'v-list-item': {
-            template: '<div class="v-list-item"><div class="v-list-item-title"><slot></slot></div><slot name="default"></slot></div>',
+            template:
+              '<div class="v-list-item"><div class="v-list-item-title"><slot></slot></div><slot name="default"></slot></div>',
             props: ['prepend-icon']
           },
           'v-list-item-title': { template: '<div class="v-list-item-title"><slot></slot></div>' },
           'v-slider': {
-            template: '<div class="v-slider" @update:model-value="$emit(\'update:model-value\', 200)"></div>',
+            template:
+              '<div class="v-slider" @update:model-value="$emit(\'update:model-value\', 200)"></div>',
             props: ['model-value', 'min', 'max', 'step'],
             emits: ['update:model-value']
           },
@@ -178,13 +211,16 @@ describe('SuggestedPublicationsComponent', () => {
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'v-badge': { template: '<div class="v-badge"><slot></slot></div>' },
-          'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
-          'v-menu': { template: '<div class="v-menu"><slot name="activator" :props="{}"></slot><slot></slot></div>' },
+          CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
+          'v-menu': {
+            template:
+              '<div class="v-menu"><slot name="activator" :props="{}"></slot><slot></slot></div>'
+          },
           'v-list': { template: '<div class="v-list"><slot></slot></div>' },
           'v-list-item': { template: '<div class="v-list-item"><slot></slot></div>' },
           'v-slider': { template: '<div class="v-slider"></div>' },
-          'tippy': { template: '<div class="tippy"><slot></slot></div>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          tippy: { template: '<div class="tippy"><slot></slot></div>' },
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })
@@ -234,13 +270,16 @@ describe('SuggestedPublicationsComponent', () => {
         stubs: {
           'v-icon': { template: '<i class="v-icon"><slot></slot></i>' },
           'v-badge': { template: '<div class="v-badge"><slot></slot></div>' },
-          'CompactButton': { template: '<button class="compact-button"><slot></slot></button>' },
-          'v-menu': { template: '<div class="v-menu"><slot name="activator" :props="{}"></slot><slot></slot></div>' },
+          CompactButton: { template: '<button class="compact-button"><slot></slot></button>' },
+          'v-menu': {
+            template:
+              '<div class="v-menu"><slot name="activator" :props="{}"></slot><slot></slot></div>'
+          },
           'v-list': { template: '<div class="v-list"><slot></slot></div>' },
           'v-list-item': { template: '<div class="v-list-item"><slot></slot></div>' },
           'v-slider': { template: '<div class="v-slider"></div>' },
-          'tippy': { template: '<div class="tippy"><slot></slot></div>' },
-          'PublicationListComponent': { template: '<div class="publication-list">Publications</div>' }
+          tippy: { template: '<div class="tippy"><slot></slot></div>' },
+          PublicationListComponent: { template: '<div class="publication-list">Publications</div>' }
         }
       }
     })

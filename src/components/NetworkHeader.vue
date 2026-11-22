@@ -27,11 +27,6 @@ const emit = defineEmits([
 const interfaceStore = useInterfaceStore()
 const { isEmpty } = useAppState()
 
-// Only the network at the bottom collapses (as in App.vue and NetworkVisComponent.vue)
-const isCollapsed = computed(
-  () => interfaceStore.isNetworkCollapsed && interfaceStore.isNetworkCollapsible
-)
-
 const isNetworkClustersModel = computed({
   get() {
     return props.isNetworkClusters
@@ -43,7 +38,7 @@ const isNetworkClustersModel = computed({
 </script>
 
 <template>
-  <div class="level" :class="{ 'mb-0': isCollapsed }">
+  <div class="level" :class="{ 'mb-0': interfaceStore.isNetworkShownCollapsed }">
     <div class="level-left has-text-white">
       <div
         class="level-item"
@@ -63,7 +58,7 @@ const isNetworkClustersModel = computed({
     <div class="level-right" v-if="!isEmpty">
       <div
         class="level-item has-text-white mr-4 mb-0"
-        v-show="!isCollapsed"
+        v-show="!interfaceStore.isNetworkShownCollapsed"
         v-tippy="
           `There are two display <span class='key'>m</span>odes:<br><br><b>Timeline:</b>
         The diagram places publications from left to right based on year, and vertically tries to group linked publications close to each other.<br><br>
@@ -74,10 +69,7 @@ const isNetworkClustersModel = computed({
         <label class="mr-4" :class="{ 'has-text-grey-light': isNetworkClustersModel }">
           Timeline</label
         >
-        <CompactSwitch
-          v-model="isNetworkClustersModel"
-          aria-label="Clusters mode"
-        ></CompactSwitch>
+        <CompactSwitch v-model="isNetworkClustersModel" aria-label="Clusters mode"></CompactSwitch>
         <label :class="{ 'has-text-grey-light': !isNetworkClustersModel }" class="ml-4"
           >Clusters</label
         >
@@ -92,7 +84,7 @@ const isNetworkClustersModel = computed({
       <CompactButton
         icon="mdi-arrow-up"
         v-tippy="'Show diagram'"
-        v-show="interfaceStore.isNetworkCollapsed && interfaceStore.isNetworkCollapsible"
+        v-show="interfaceStore.isNetworkShownCollapsed"
         @click="$emit('restoreNetwork')"
         class="ml-4 has-text-white"
       ></CompactButton>

@@ -40,7 +40,6 @@ describe('useAppState - Session Loading', () => {
     authorStore = useAuthorStore()
     queueStore = useQueueStore()
 
-
     appState = useAppState()
 
     // Mock interface store methods
@@ -295,6 +294,22 @@ describe('useAppState - Session Loading', () => {
     })
   })
 
+  describe('importSession', () => {
+    it.each([
+      ['vis-survey.puresuggest.json', '', 'vis-survey'],
+      ['vis-survey (1).json', undefined, 'vis-survey'],
+      ['session.puresuggest (2).json', '', ''],
+      ['renamed.puresuggest.json', 'My Research Project', 'My Research Project']
+    ])('should import %s with name %j as session "%s"', async (fileName, name, expected) => {
+      const content = JSON.stringify({ name, selected: ['10.1234/pub1'] })
+
+      appState.importSession(new File([content], fileName))
+
+      await vi.waitFor(() => expect(sessionStore.addPublicationsToSelection).toHaveBeenCalled())
+      expect(sessionStore.sessionName).toBe(expected)
+    })
+  })
+
   describe('loadSession with malformed data', () => {
     it('should keep the current session when the selected publications are no list', () => {
       sessionStore.sessionName = 'Current Session'
@@ -363,7 +378,7 @@ describe('useAppState - Session Loading', () => {
       queueStore.clear()
       mockShowConfirmDialog.mockClear()
 
-      appState.importBibtexWithConfirmation({ alwaysWarn: true })
+      appState.importBibtexWithConfirmation(true)
 
       const [message] = mockShowConfirmDialog.mock.calls[0]
       expect(message).toContain('This will clear and replace the current session')

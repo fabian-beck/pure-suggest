@@ -7,7 +7,7 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 ## Architecture
 
 - **Framework**: Vue 3 with Composition API
-- **State Management**: Pinia stores (`session.js`, `interface.js`, `queue.js`, `author.js`, `modal.js`, `llm.js`)
+- **State Management**: Pinia stores (`session.js`, `interface.js`, `queue.js`, `author.js`, `modal.js`, `concept.js`, `llm.js`)
 - **UI Framework**: Vuetify 4 + Bulma CSS hybrid approach
 - **Visualization**: D3.js for network diagrams
 - **Build Tool**: Vite
@@ -38,6 +38,7 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 
 - `SuggestionService.js`: Dedicated service for computing publication suggestions (extracted from session store)
 - `AiRecommendationService.js`: Builds the prompt for AI recommendations (fitted to the model's context window) and parses the answer; independent of the inference backend
+- `ConceptService.js`: Concept analysis clustering the selected publications by shared keywords, citations, and authors
 
 ## LLM Layer (`src/llm/`, TypeScript)
 
@@ -68,22 +69,26 @@ Provider-independent inference for AI features (experimental). The application o
 
 ### Running Tests
 
-**Prerequisites**: Development server should be running at http://localhost:8080 for browser-based tests.
+**Prerequisites**: The browser-based performance test (`tests/performance/browser.test.js`) starts its own development server on port 8080.
 
 **Unit Tests**:
+
 - `npm test` - Run all unit tests once
 - `npm run test:watch` - Run tests in watch mode for development
-- `npm run test:ui` - Launch interactive Vitest UI
-- `npm run test:coverage` - Generate coverage report
+- `npm run test:ui` - Launch interactive Vitest UI (needs `@vitest/ui`, not installed by default)
+- `npm run test:coverage` - Generate coverage report (needs `@vitest/coverage-v8`, not installed by default)
 
 **Performance Tests**:
+
 - `npm run test:perf` - Run performance benchmarks using Puppeteer
 - `npm run test:perf:watch` - Watch mode for performance tests
 
 **All Tests**:
+
 - `npm run test:all` - Run both unit and performance test suites
 
 **Testing Best Practices**: See [tests/README.md](tests/README.md) for detailed guidelines on:
+
 - Behavior-driven testing patterns
 - Mock factories and utilities (`testUtils.js`)
 - Store mocking patterns
@@ -114,6 +119,7 @@ Provider-independent inference for AI features (experimental). The application o
 - **Author Store**: Independent author aggregation and scoring (extracted from session store)
 - **Interface Store**: UI state, loading states, mobile responsiveness, desktop layout (auto or manual) and panel sizes (persisted in localStorage)
 - **Modal Store**: Modal dialog states and search provider configuration
+- **Concept Store**: Concepts computed for the selected publications and their preview
 - **LLM Store**: Inference mode (browser, native, cloud), model, and generation settings (persisted in localStorage), detected device and local servers
 - **useAppState Composable**: Business logic layer coordinating between stores (session management, suggestion computation, queuing operations)
 - **useModalManager Composable**: Modal dialog management and state coordination

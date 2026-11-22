@@ -24,7 +24,7 @@ describe('PublicationTag', () => {
   describe('Styling', () => {
     it('applies default theme (neutral bg, black text) when inactive', () => {
       const wrapper = createWrapper({ active: false })
-      
+
       expect(wrapper.find('.v-chip').classes()).toContain('publication-tag-default')
       expect(wrapper.find('.v-chip').classes()).toContain('has-text-black')
       expect(wrapper.find('.v-chip').classes()).not.toContain('has-background-dark')
@@ -33,7 +33,7 @@ describe('PublicationTag', () => {
 
     it('applies dark theme (dark bg, white text) when active', () => {
       const wrapper = createWrapper({ active: true })
-      
+
       expect(wrapper.find('.v-chip').classes()).toContain('has-background-dark')
       expect(wrapper.find('.v-chip').classes()).toContain('has-text-white')
       expect(wrapper.find('.v-chip').classes()).not.toContain('publication-tag-default')
@@ -42,13 +42,13 @@ describe('PublicationTag', () => {
 
     it('applies clickable class when clickable prop is true', () => {
       const wrapper = createWrapper({ clickable: true })
-      
+
       expect(wrapper.find('.v-chip').classes()).toContain('tag-clickable')
     })
 
     it('does not apply clickable class when clickable prop is false', () => {
       const wrapper = createWrapper({ clickable: false })
-      
+
       expect(wrapper.find('.v-chip').classes()).not.toContain('tag-clickable')
     })
   })
@@ -56,18 +56,18 @@ describe('PublicationTag', () => {
   describe('Click Handling', () => {
     it('emits click event when clickable and clicked', async () => {
       const wrapper = createWrapper({ clickable: true })
-      
+
       await wrapper.find('.v-chip').trigger('click')
-      
+
       expect(wrapper.emitted('click')).toBeTruthy()
       expect(wrapper.emitted('click')).toHaveLength(1)
     })
 
     it('does not emit click event when not clickable and clicked', async () => {
       const wrapper = createWrapper({ clickable: false })
-      
+
       await wrapper.find('.v-chip').trigger('click')
-      
+
       expect(wrapper.emitted('click')).toBeFalsy()
     })
   })
@@ -91,13 +91,13 @@ describe('PublicationTag', () => {
   describe('Icon Support', () => {
     it('renders with icon when icon prop is provided', () => {
       const wrapper = createWrapper({ icon: 'mdi-star' })
-      
+
       expect(wrapper.props('icon')).toBe('mdi-star')
     })
 
     it('renders without icon when icon prop is not provided', () => {
       const wrapper = createWrapper()
-      
+
       expect(wrapper.props('icon')).toBe('')
     })
   })
@@ -105,7 +105,7 @@ describe('PublicationTag', () => {
   describe('Content Rendering', () => {
     it('renders slot content correctly', () => {
       const wrapper = createWrapper()
-      
+
       expect(wrapper.text()).toContain('Test Tag')
     })
   })

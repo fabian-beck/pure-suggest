@@ -23,7 +23,10 @@ vi.mock('@/components/NetworkHeader.vue', () => ({
 }))
 
 vi.mock('@/components/NetworkPerformanceMonitor.vue', () => ({
-  default: { name: 'NetworkPerformanceMonitor', template: '<div class="mock-network-performance-monitor"></div>' }
+  default: {
+    name: 'NetworkPerformanceMonitor',
+    template: '<div class="mock-network-performance-monitor"></div>'
+  }
 }))
 
 // Mock all the network utility modules
@@ -58,7 +61,6 @@ vi.mock('@/utils/network/keywordNodes.js', () => ({
 
 vi.mock('@/utils/network/links.js', () => ({
   updateNetworkLinks: vi.fn(),
-  updateLinkProperties: vi.fn(),
   createCitationLinks: vi.fn()
 }))
 
@@ -81,7 +83,7 @@ describe('NetworkVisComponent Hover Integration', () => {
     // Test that the watcher is configured correctly in the component definition
     const component = NetworkVisComponent
     const watchers = component.watch
-    
+
     expect(watchers).toHaveProperty('interfaceStore.hoveredPublication')
     expect(typeof watchers['interfaceStore.hoveredPublication'].handler).toBe('function')
   })
@@ -108,13 +110,15 @@ describe('NetworkVisComponent Hover Integration', () => {
       updatePublicationHighlighting: vi.fn()
     }
 
-    NetworkVisComponent.methods.onPublicationNodeMouseover.call(mockComponent, {}, {
-      publication: mockPublication
-    })
-
-    expect(mockComponent.interfaceStore.setHoveredPublication).toHaveBeenCalledWith(
-      mockPublication
+    NetworkVisComponent.methods.onPublicationNodeMouseover.call(
+      mockComponent,
+      {},
+      {
+        publication: mockPublication
+      }
     )
+
+    expect(mockComponent.interfaceStore.setHoveredPublication).toHaveBeenCalledWith(mockPublication)
     expect(mockComponent.updatePublicationHighlighting).not.toHaveBeenCalled()
 
     NetworkVisComponent.methods.onPublicationNodeMouseout.call(mockComponent)

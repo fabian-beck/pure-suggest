@@ -1,12 +1,10 @@
 <script>
-import { useInterfaceStore } from '@/stores/interface.js'
 import { useModalStore } from '@/stores/modal.js'
 
 export default {
   setup() {
-    const interfaceStore = useInterfaceStore()
     const modalStore = useModalStore()
-    return { interfaceStore, modalStore }
+    return { modalStore }
   }
 }
 </script>
@@ -84,8 +82,8 @@ export default {
           <li>
             <v-icon>mdi-plus-box-outline</v-icon> <v-icon>mdi-minus-box-outline</v-icon>
             <v-icon>mdi-alpha-d-box-outline</v-icon> <v-icon>mdi-alpha-t-box-outline</v-icon>
-            <v-icon>mdi-alpha-g-box-outline</v-icon> <v-icon>mdi-alpha-x-box-outline</v-icon> Act
-            on a publication entry like on an active publication
+            <v-icon>mdi-alpha-g-box-outline</v-icon> <v-icon>mdi-alpha-x-box-outline</v-icon> Act on
+            a publication entry like on an active publication
           </li>
           <li>
             <v-icon>mdi-backspace-outline</v-icon> Remove the entry from the queue or the excluded
@@ -129,17 +127,3 @@ export default {
     </div>
   </ModalDialog>
 </template>
-
-<style lang="scss" scoped>
-.card {
-  .card-content {
-    & .subtitle {
-      margin-top: 0.5rem;
-    }
-
-    & ul.keys {
-      list-style-type: none;
-    }
-  }
-}
-</style>

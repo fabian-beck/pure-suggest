@@ -37,13 +37,4 @@ export class FpsTracker {
   getFps() {
     return this.fps
   }
-
-  /**
-   * Reset the FPS tracker
-   */
-  reset() {
-    this.frameCount = 0
-    this.lastTime = 0
-    this.fps = 0
-  }
 }
