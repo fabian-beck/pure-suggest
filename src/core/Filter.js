@@ -50,6 +50,7 @@ export default class Filter {
   }
 
   matchesYear(publication) {
+    if (!this.isYearActive()) return true
     if (!publication.year) return false
     return this.matchesYearStart(publication) && this.matchesYearEnd(publication)
   }

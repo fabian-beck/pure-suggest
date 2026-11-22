@@ -180,7 +180,9 @@ describe('Filter', () => {
   })
 
   describe('matchesYear', () => {
-    it('should return false when publication has no year', () => {
+    it('should return false when publication has no year and a year filter is set', () => {
+      filter.yearStart = '2020'
+
       mockPublication.year = null
       expect(filter.matchesYear(mockPublication)).toBe(false)
 
@@ -189,6 +191,15 @@ describe('Filter', () => {
 
       mockPublication.year = ''
       expect(filter.matchesYear(mockPublication)).toBe(false)
+    })
+
+    it('should return true when publication has no year and no year filter is set', () => {
+      mockPublication.year = undefined
+      expect(filter.matchesYear(mockPublication)).toBe(true)
+
+      filter.string = 'test'
+      mockPublication.getMetaString = () => 'A test publication'
+      expect(filter.matches(mockPublication)).toBe(true)
     })
 
     it('should return true when both start and end match', () => {
@@ -396,6 +407,7 @@ describe('Filter', () => {
     })
 
     it('should return false when year filter fails', () => {
+      filter.yearStart = '2020'
       mockPublication.year = null
       expect(filter.matches(mockPublication)).toBe(false)
     })
