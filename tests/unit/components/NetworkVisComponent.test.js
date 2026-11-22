@@ -480,14 +480,6 @@ describe('NetworkVisComponent', () => {
         wrapper.vm.zoomByFactor(0.8)
       }).not.toThrow()
     })
-
-    it('handles zoom reset correctly', () => {
-      // Mock the resetZoom method if it's not properly mocked
-      wrapper.vm.resetZoom = vi.fn()
-      expect(() => {
-        wrapper.vm.resetZoom()
-      }).not.toThrow()
-    })
   })
 
   describe('Advanced User Interactions', () => {
@@ -979,17 +971,6 @@ describe('NetworkVisComponent', () => {
       })
     })
 
-    it('reacts to cluster mode changes', async () => {
-      // isNetworkClusters comes from the interface store, not component data
-      // Just verify that the component can access the property
-      expect(wrapper.vm.isNetworkClusters).toBeDefined()
-
-      // Test that the cluster mode can be toggled via interface store mock
-      const mockInterfaceStore = vi.mocked(useInterfaceStore)()
-      mockInterfaceStore.isNetworkClusters = true
-      expect(mockInterfaceStore.isNetworkClusters).toBe(true)
-    })
-
     it('updates onlyShowFiltered based on filter state changes', async () => {
       // Initially false when no filters active
       expect(wrapper.vm.onlyShowFiltered).toBe(false)
@@ -1058,24 +1039,6 @@ describe('NetworkVisComponent', () => {
 
       // Verify filter was applied to full list, not just first 15
       expect(mockSessionStore.filter.matches.mock.calls.length).toBeGreaterThanOrEqual(10)
-    })
-
-    it('handles error timeout correctly', async () => {
-      // Set an error message directly
-      wrapper.vm.errorMessage = 'Test error'
-      expect(wrapper.vm.errorMessage).toBe('Test error')
-
-      // Simulate setting timeout (just verify it can be set)
-      const timeoutId = setTimeout(() => {}, 100)
-      wrapper.vm.errorTimer = timeoutId
-      expect(wrapper.vm.errorTimer).toBeDefined()
-
-      // Clear the timeout to avoid memory leaks
-      clearTimeout(timeoutId)
-
-      // Clear error
-      wrapper.vm.errorMessage = ''
-      expect(wrapper.vm.errorMessage).toBe('')
     })
   })
 
@@ -1385,13 +1348,6 @@ describe('NetworkVisComponent', () => {
     it('handles tooltip lifecycle correctly during updates', () => {
       // The plot method handles tooltip creation and updates
       // This is tested indirectly through the plot method tests
-      expect(() => {
-        wrapper.vm.plot()
-      }).not.toThrow()
-    })
-
-    it('provides proper tippy configuration', () => {
-      // Tippy.js is mocked, but we can verify the component handles it
       expect(() => {
         wrapper.vm.plot()
       }).not.toThrow()
