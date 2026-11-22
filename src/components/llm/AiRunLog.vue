@@ -32,7 +32,9 @@ defineProps({
             ({{ pick.authorShort }}<template v-if="pick.year">, {{ pick.year }}</template
             >)</span
           >
-          <span class="is-size-7"> – <i>{{ pick.explanation }}</i></span>
+          <span class="is-size-7">
+            – <i>{{ pick.explanation }}</i></span
+          >
         </div>
       </div>
       <p v-if="entry.action" class="action">

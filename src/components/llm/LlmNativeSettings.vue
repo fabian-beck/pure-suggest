@@ -45,7 +45,9 @@ function useServer(server) {
       <v-btn
         prepend-icon="mdi-radar"
         :loading="llmStore.isDetectingServers"
-        v-tippy="'Looks for Ollama, LM Studio, and llama.cpp at their default addresses on this computer. The browser may ask for permission to access the local network.'"
+        v-tippy="
+          'Looks for Ollama, LM Studio, and llama.cpp at their default addresses on this computer. The browser may ask for permission to access the local network.'
+        "
         @click="llmStore.detectServers()"
       >
         Detect servers
@@ -105,18 +107,16 @@ function useServer(server) {
         <li>Check that the server is running.</li>
         <li>
           <b>Ollama</b> must allow this page: start it with the setting
-          <code>OLLAMA_ORIGINS={{ pageOrigin }}</code>.
+          <code>OLLAMA_ORIGINS={{ pageOrigin }}</code
+          >.
         </li>
-        <li>
-          <b>LM Studio</b>: switch on “Enable CORS” in the settings of its local server.
-        </li>
+        <li><b>LM Studio</b>: switch on “Enable CORS” in the settings of its local server.</li>
         <li v-if="llmStore.localNetworkPermission === 'denied'">
           This browser blocks the page from reaching local servers. Allow local network access in
           the site settings.
         </li>
         <li v-else>
-          Allow the access when the browser asks whether this page may connect to the local
-          network.
+          Allow the access when the browser asks whether this page may connect to the local network.
         </li>
         <li v-if="isSafari && isSecurePage">
           Safari does not let secure pages reach local servers; use Chrome, Edge, or Firefox.

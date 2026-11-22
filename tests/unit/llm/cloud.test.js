@@ -135,7 +135,11 @@ describe('cloud providers', () => {
     anthropic.stream.mockReturnValue({
       async *[Symbol.asyncIterator]() {},
       finalMessage: () =>
-        Promise.resolve({ content: [], stop_reason: 'refusal', usage: { input_tokens: 1, output_tokens: 0 } })
+        Promise.resolve({
+          content: [],
+          stop_reason: 'refusal',
+          usage: { input_tokens: 1, output_tokens: 0 }
+        })
     })
     const events = await collectEvents(provider.streamChat({ model: 'm', messages: [] }))
     expect(events.at(-1).finishReason).toBe('content-filter')

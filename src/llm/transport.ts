@@ -53,7 +53,10 @@ export async function fetchOrThrow(
 }
 
 /** Yields the lines of a streamed response body. */
-async function* readLines(response: Response, signal?: AbortSignal): AsyncGenerator<string, void, void> {
+async function* readLines(
+  response: Response,
+  signal?: AbortSignal
+): AsyncGenerator<string, void, void> {
   if (!response.body) throw new LlmError('invalid-response', 'The server sent an empty response.')
   const reader = response.body.getReader()
   const decoder = new TextDecoder()
@@ -70,7 +73,12 @@ async function* readLines(response: Response, signal?: AbortSignal): AsyncGenera
   } catch (error) {
     if (signal?.aborted) throw new LlmError('aborted', 'The request was cancelled.')
     if (error instanceof LlmError) throw error
-    throw new LlmError('network', 'The connection was lost while receiving the answer.', undefined, error)
+    throw new LlmError(
+      'network',
+      'The connection was lost while receiving the answer.',
+      undefined,
+      error
+    )
   } finally {
     reader.cancel().catch(() => {})
   }
@@ -86,11 +94,13 @@ export async function* readServerSentEvents(
   }
 }
 
+type Json = Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
+
 /** Yields the objects of a stream of newline-delimited JSON. */
 export async function* readJsonLines(
   response: Response,
   signal?: AbortSignal
-): AsyncGenerator<Record<string, any>, void, void> { // eslint-disable-line @typescript-eslint/no-explicit-any
+): AsyncGenerator<Json, void, void> {
   for await (const line of readLines(response, signal)) {
     if (line.trim()) yield JSON.parse(line)
   }

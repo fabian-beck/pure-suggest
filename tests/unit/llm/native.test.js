@@ -13,7 +13,11 @@ const OLLAMA_ROUTES = {
   ':11434/api/version': jsonResponse({ version: '0.20.0' }),
   ':11434/api/tags': jsonResponse({
     models: [
-      { name: 'gemma4:e4b', size: 6e9, details: { parameter_size: '8B', quantization_level: 'Q4_K_M' } },
+      {
+        name: 'gemma4:e4b',
+        size: 6e9,
+        details: { parameter_size: '8B', quantization_level: 'Q4_K_M' }
+      },
       { name: 'qwen3:8b', size: 5e9, details: {} }
     ]
   }),
@@ -47,12 +51,21 @@ describe('native inference servers', () => {
     mockFetchRoutes({
       ':1234/api/v1/models': jsonResponse({
         models: [
-          { type: 'llm', key: 'mistralai/ministral-3-8b', display_name: 'Ministral 3 8B', size_bytes: 5e9, max_context_length: 32768, loaded_instances: [{ config: { context_length: 8192 } }] },
+          {
+            type: 'llm',
+            key: 'mistralai/ministral-3-8b',
+            display_name: 'Ministral 3 8B',
+            size_bytes: 5e9,
+            max_context_length: 32768,
+            loaded_instances: [{ config: { context_length: 8192 } }]
+          },
           { type: 'embedding', key: 'nomic-embed' }
         ]
       }),
       ':9931/props': jsonResponse({ default_generation_settings: { n_ctx: 4096 } }),
-      ':9931/v1/models': jsonResponse({ data: [{ id: '/models/phi-4-mini.gguf', meta: { size: 3e9 } }] })
+      ':9931/v1/models': jsonResponse({
+        data: [{ id: '/models/phi-4-mini.gguf', meta: { size: 3e9 } }]
+      })
     })
 
     const servers = await discoverNativeServers()

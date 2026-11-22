@@ -87,7 +87,10 @@ describe('LlmSettingsModalDialog', () => {
         capabilities: { structuredOutput: 'none', toolCalling: false }
       }
     ]
-    vi.spyOn(llmStore, 'generate').mockResolvedValue({ text: 'A survey reviews literature.', tokensPerSecond: 31.26 })
+    vi.spyOn(llmStore, 'generate').mockResolvedValue({
+      text: 'A survey reviews literature.',
+      tokensPerSecond: 31.26
+    })
     await flushPromises()
 
     await wrapper

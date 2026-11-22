@@ -89,7 +89,8 @@ async function runTest() {
       },
       (status) => {
         if (status.phase === 'generate') test.value.status = 'Answering…'
-        else test.value.status = status.phase === 'download' ? 'Downloading model…' : 'Loading model…'
+        else
+          test.value.status = status.phase === 'download' ? 'Downloading model…' : 'Loading model…'
       }
     )
     test.value = { answer: result.text.trim(), tokensPerSecond: result.tokensPerSecond }
@@ -118,8 +119,8 @@ watch(
   >
     <div class="content">
       <p>
-        AI features run on a language model of your choice. Models running on this device keep
-        your data private; cloud models are only used if you choose them.
+        AI features run on a language model of your choice. Models running on this device keep your
+        data private; cloud models are only used if you choose them.
       </p>
 
       <v-alert
@@ -128,8 +129,8 @@ watch(
         class="mb-3"
         icon="mdi-lightbulb-outline"
       >
-        Suggested for this device: <b>{{ recommendationText }}</b
-        >. {{ llmStore.recommendation.reason }}
+        Suggested for this device: <b>{{ recommendationText }}</b>.
+        {{ llmStore.recommendation.reason }}
         <template #append>
           <v-btn @click="applyRecommendation">Use</v-btn>
         </template>
@@ -149,7 +150,9 @@ watch(
           :aria-checked="mode.value === llmStore.settings.mode"
           @click="setMode(mode.value)"
         >
-          <span class="mode-title"><v-icon size="small">{{ mode.icon }}</v-icon> {{ mode.title }}</span>
+          <span class="mode-title"
+            ><v-icon size="small">{{ mode.icon }}</v-icon> {{ mode.title }}</span
+          >
           <span class="is-size-7">{{ mode.description }}</span>
         </button>
       </div>
@@ -189,8 +192,8 @@ watch(
                 "
               />
               <p class="is-size-7 mt-1">
-                Currently {{ llmStore.contextWindow.toLocaleString('en') }} tokens. A larger
-                window lets the model consider more publications but needs more memory and time.
+                Currently {{ llmStore.contextWindow.toLocaleString('en') }} tokens. A larger window
+                lets the model consider more publications but needs more memory and time.
               </p>
             </v-expansion-panel-text>
           </v-expansion-panel>
@@ -211,10 +214,7 @@ watch(
             Test
           </v-btn>
           <v-btn v-else @click="testController.abort()">Cancel test</v-btn>
-          <v-btn
-            class="ml-auto"
-            @click="modalStore.isLlmSettingsModalDialogShown = false"
-          >
+          <v-btn class="ml-auto" @click="modalStore.isLlmSettingsModalDialogShown = false">
             Done
           </v-btn>
         </div>

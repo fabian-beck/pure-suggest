@@ -161,9 +161,7 @@ describe('LLM store', () => {
     let prepareModel
 
     const setUpBrowserModel = (isAvailable) => {
-      prepareModel = vi
-        .spyOn(BrowserProvider.prototype, 'prepareModel')
-        .mockResolvedValue()
+      prepareModel = vi.spyOn(BrowserProvider.prototype, 'prepareModel').mockResolvedValue()
       vi.spyOn(BrowserProvider.prototype, 'listModels').mockResolvedValue([
         { id: 'model-a', name: 'Model A', isPreferred: true, isAvailable, capabilities: {} }
       ])

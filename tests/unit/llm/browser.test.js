@@ -14,7 +14,9 @@ class FakeWorker {
   postMessage(request) {
     requests.push(request)
     const reply = (message) =>
-      Promise.resolve().then(() => this.onmessage({ data: { requestId: request.requestId, ...message } }))
+      Promise.resolve().then(() =>
+        this.onmessage({ data: { requestId: request.requestId, ...message } })
+      )
     respond(request, reply)
   }
   terminate() {}
@@ -78,7 +80,11 @@ describe('BrowserProvider', () => {
       })
     )
 
-    expect(onProgress).toHaveBeenCalledWith({ phase: 'download', loadedBytes: 1e9, totalBytes: 2e9 })
+    expect(onProgress).toHaveBeenCalledWith({
+      phase: 'download',
+      loadedBytes: 1e9,
+      totalBytes: 2e9
+    })
     expect(requests.at(-1)).toMatchObject({
       type: 'generate',
       messages: [{ role: 'user', content: 'Hi' }],
@@ -119,14 +125,19 @@ describe('BrowserProvider', () => {
     await provider.prepareModel(MODEL_ID, () => {})
 
     expect(provider.backend).toBe('wasm')
-    expect(requests.at(-1)).toMatchObject({ type: 'load', backend: 'wasm', dtypes: ['q4', 'q8', 'int8', 'fp32'] })
+    expect(requests.at(-1)).toMatchObject({
+      type: 'load',
+      backend: 'wasm',
+      dtypes: ['q4', 'q8', 'int8', 'fp32']
+    })
   })
 
   it('reports the graphics card error and retries it next time when the processor fails too', async () => {
     respond = (request, reply) =>
       reply({
         type: 'error',
-        message: request.backend === 'webgpu' ? 'network error' : 'Could not find an implementation',
+        message:
+          request.backend === 'webgpu' ? 'network error' : 'Could not find an implementation',
         isOutOfMemory: false
       })
     const provider = new BrowserProvider('auto', DEVICE, [])
@@ -136,7 +147,8 @@ describe('BrowserProvider', () => {
   })
 
   it('reports missing memory instead of retrying, and rejects unsupported tool use', async () => {
-    respond = (request, reply) => reply({ type: 'error', message: 'Out of memory', isOutOfMemory: true })
+    respond = (request, reply) =>
+      reply({ type: 'error', message: 'Out of memory', isOutOfMemory: true })
     const provider = new BrowserProvider('auto', DEVICE, [])
 
     await expect(provider.prepareModel(MODEL_ID, () => {})).rejects.toMatchObject({

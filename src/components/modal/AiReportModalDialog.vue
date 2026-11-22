@@ -63,8 +63,8 @@ const notes = computed(() => {
           <div>
             <b>{{ publication.title || publication.doi }}</b>
             <span v-if="publication.authorShort">
-              ({{ publication.authorShort }}<template v-if="publication.year"
-                >, {{ publication.year }}</template
+              ({{ publication.authorShort
+              }}<template v-if="publication.year">, {{ publication.year }}</template
               >)
             </span>
           </div>

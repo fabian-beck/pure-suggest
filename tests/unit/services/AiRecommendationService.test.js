@@ -25,7 +25,11 @@ function createPublication(overrides) {
 
 const sessionData = (suggestedPublications, overrides = {}) => ({
   selectedPublications: [
-    createPublication({ doi: '10.1000/seed', title: 'Seed Paper', boostKeywords: ['VISUALIZATION'] })
+    createPublication({
+      doi: '10.1000/seed',
+      title: 'Seed Paper',
+      boostKeywords: ['VISUALIZATION']
+    })
   ],
   suggestedPublications,
   totalSuggestions: suggestedPublications.length,
@@ -39,7 +43,10 @@ const sessionData = (suggestedPublications, overrides = {}) => ({
 
 const suggestions = (count) =>
   Array.from({ length: count }, (_, index) =>
-    createPublication({ doi: `10.2000/suggested-${index + 1}`, title: `Suggested Paper ${index + 1}` })
+    createPublication({
+      doi: `10.2000/suggested-${index + 1}`,
+      title: `Suggested Paper ${index + 1}`
+    })
   )
 
 describe('AiRecommendationService', () => {

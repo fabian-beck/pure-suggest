@@ -104,9 +104,9 @@ describe('useAiRecommendations', () => {
         canLoadMoreSuggestions: true
       })
       expect(request.signal).toBeInstanceOf(AbortSignal)
-      expect(sessionStore.suggestion.publications.map((suggested) => suggested.isAiRecommended)).toEqual([
-        false, 'Reason 2.', 'Reason 3.', false, false, false, false, false
-      ])
+      expect(
+        sessionStore.suggestion.publications.map((suggested) => suggested.isAiRecommended)
+      ).toEqual([false, 'Reason 2.', 'Reason 3.', false, false, false, false, false])
       expect(sessionStore.filter.tags).toContain('isAiRecommended')
       expect(appState.addPublicationsAndUpdate).not.toHaveBeenCalled()
       expect(appState.updateSuggestions).not.toHaveBeenCalled()
@@ -120,7 +120,13 @@ describe('useAiRecommendations', () => {
         loadCount: 0,
         suggestionCount: 8,
         publications: [
-          { doi: 'b', title: 'Paper b', authorShort: 'Doe et al.', year: 2024, explanation: 'Reason 2.' },
+          {
+            doi: 'b',
+            title: 'Paper b',
+            authorShort: 'Doe et al.',
+            year: 2024,
+            explanation: 'Reason 2.'
+          },
           { doi: 'c', explanation: 'Reason 3.' }
         ]
       })
@@ -150,7 +156,13 @@ describe('useAiRecommendations', () => {
         }
       ])
       expect(snapshots[1][0].picks).toEqual([
-        { doi: 'b', title: 'Paper b', authorShort: 'Doe et al.', year: 2024, explanation: 'Reason 2.' }
+        {
+          doi: 'b',
+          title: 'Paper b',
+          authorShort: 'Doe et al.',
+          year: 2024,
+          explanation: 'Reason 2.'
+        }
       ])
       expect(snapshots[2][0].picks).toHaveLength(2)
       // The run is only shown as in progress while it lasts; its log goes into the report
@@ -220,7 +232,11 @@ describe('useAiRecommendations', () => {
       await requestAiRecommendations()
 
       expect(appState.updateSuggestions).toHaveBeenCalledTimes(2)
-      expect(contexts().map((context) => context.canLoadMoreSuggestions)).toEqual([true, true, false])
+      expect(contexts().map((context) => context.canLoadMoreSuggestions)).toEqual([
+        true,
+        true,
+        false
+      ])
     })
 
     it('can be cancelled without report or error message', async () => {
@@ -291,11 +307,18 @@ describe('useAiRecommendations', () => {
 
       const selected = sessionStore.selectedPublications
       expect(selected.map((selectedPublication) => selectedPublication.doi)).toEqual([
-        'seed', 'a', 'b', 'new-1', 'e', 'c'
+        'seed',
+        'a',
+        'b',
+        'new-1',
+        'e',
+        'c'
       ])
       expect(selected[1].isAiRecommended).toBe('Reason 1.')
       expect(selected[0].isAiRecommended).toBeFalsy()
-      expect(selected.filter((selectedPublication) => selectedPublication.isNewlyAdded)).toHaveLength(5)
+      expect(
+        selected.filter((selectedPublication) => selectedPublication.isNewlyAdded)
+      ).toHaveLength(5)
       expect(sessionStore.filter.tags).toContain('isAiRecommended')
       expect(sessionStore.filter.applyToSelected).toBe(true)
       expect(interfaceStore.isLoading).toBe(false)
@@ -309,7 +332,11 @@ describe('useAiRecommendations', () => {
         failure: ''
       })
       expect(modalStore.aiReport.publications.map(({ doi }) => doi)).toEqual([
-        'a', 'b', 'new-1', 'e', 'c'
+        'a',
+        'b',
+        'new-1',
+        'e',
+        'c'
       ])
     })
 
@@ -336,7 +363,11 @@ describe('useAiRecommendations', () => {
       expect(appState.addPublicationsAndUpdate).toHaveBeenCalledExactlyOnceWith(['a'], true)
       expect(appState.updateSuggestions).toHaveBeenCalledExactlyOnceWith(208, true)
       expect(sessionStore.maxSuggestions).toBe(208)
-      expect(contexts().map((context) => context.canLoadMoreSuggestions)).toEqual([true, true, false])
+      expect(contexts().map((context) => context.canLoadMoreSuggestions)).toEqual([
+        true,
+        true,
+        false
+      ])
       expect(modalStore.aiReport).toMatchObject({ steps: 3, loadCount: 2 })
       expect(modalStore.aiReport.log.map((entry) => entry.action)).toEqual([
         'Adding 1 publication to the selection and loading more suggestions (up to 108), then recomputing the suggestions',

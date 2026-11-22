@@ -108,7 +108,12 @@ class OllamaProvider implements LlmProvider {
   private request(path: string, body: Json | null, signal?: AbortSignal): Promise<Response> {
     return fetchOrThrow(
       `${this.root}${path}`,
-      { method: body ? 'POST' : 'GET', headers: this.headers, body: body && JSON.stringify(body), signal },
+      {
+        method: body ? 'POST' : 'GET',
+        headers: this.headers,
+        body: body && JSON.stringify(body),
+        signal
+      },
       `Could not reach Ollama at ${this.root}. Check that it is running and accepts requests from this page (OLLAMA_ORIGINS and the browser's local network permission).`
     )
   }
@@ -153,7 +158,11 @@ class OllamaProvider implements LlmProvider {
   }
 
   async *streamChat(request: ChatRequest): AsyncGenerator<ChatEvent, void, void> {
-    const response = await this.request('/api/chat', buildOllamaRequestBody(request), request.signal)
+    const response = await this.request(
+      '/api/chat',
+      buildOllamaRequestBody(request),
+      request.signal
+    )
     let toolCallCount = 0
     for await (const chunk of readJsonLines(response, request.signal)) {
       if (chunk.error) throw new LlmError('server', chunk.error)

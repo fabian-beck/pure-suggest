@@ -161,7 +161,11 @@ export abstract class OpenAiCompatibleProvider implements LlmProvider {
     if (request.jsonSchema) {
       body.response_format = {
         type: 'json_schema',
-        json_schema: { name: request.jsonSchema.name, strict: true, schema: request.jsonSchema.schema }
+        json_schema: {
+          name: request.jsonSchema.name,
+          strict: true,
+          schema: request.jsonSchema.schema
+        }
       }
     }
     if (request.tools?.length) {

@@ -9,7 +9,13 @@ const REPORT = {
   isAutoSelect: true,
   text: 'The added papers all study <b>citation</b> networks.',
   publications: [
-    { doi: '10.1/a', title: 'Paper A', authorShort: 'Doe et al.', year: 2021, explanation: 'Cites both seeds.' },
+    {
+      doi: '10.1/a',
+      title: 'Paper A',
+      authorShort: 'Doe et al.',
+      year: 2021,
+      explanation: 'Cites both seeds.'
+    },
     { doi: '10.1/b', title: '', explanation: 'Surveys the topic.' }
   ],
   log: [

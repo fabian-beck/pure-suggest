@@ -19,9 +19,7 @@ const customModelId = ref('')
 const loadProgress = ref(null)
 let loadController = null
 
-const catalogEntry = computed(() =>
-  BROWSER_MODELS.find((model) => model.id === llmStore.modelId)
-)
+const catalogEntry = computed(() => BROWSER_MODELS.find((model) => model.id === llmStore.modelId))
 
 // Whether bytes are still being transferred (from the network or the browser storage)
 const isTransferring = computed(() => {
@@ -60,7 +58,10 @@ async function loadModel() {
   loadController = new AbortController()
   loadProgress.value = { phase: 'load' }
   try {
-    await llmStore.prepareModel((progress) => (loadProgress.value = progress), loadController.signal)
+    await llmStore.prepareModel(
+      (progress) => (loadProgress.value = progress),
+      loadController.signal
+    )
     await llmStore.refreshModels()
     if (isLoaded.value && !llmStore.activeModel.isAvailable) {
       interfaceStore.showErrorMessage(
@@ -88,8 +89,8 @@ async function loadModel() {
       </template>
       <template v-else>
         <v-icon size="small" color="warning">mdi-alert-outline</v-icon>
-        This browser offers no graphics acceleration (WebGPU). Models run on the processor, which
-        is slow; a local server or a current version of Chrome, Edge, or Firefox works better.
+        This browser offers no graphics acceleration (WebGPU). Models run on the processor, which is
+        slow; a local server or a current version of Chrome, Edge, or Firefox works better.
       </template>
     </p>
 
@@ -113,7 +114,11 @@ async function loadModel() {
       </div>
       <div v-else class="d-flex flex-wrap ga-2">
         <v-chip v-if="isLoaded" label prepend-icon="mdi-check">In memory, ready to use</v-chip>
-        <v-btn v-else-if="llmStore.activeModel.isAvailable" prepend-icon="mdi-memory" @click="loadModel">
+        <v-btn
+          v-else-if="llmStore.activeModel.isAvailable"
+          prepend-icon="mdi-memory"
+          @click="loadModel"
+        >
           Load now
         </v-btn>
         <v-btn v-else prepend-icon="mdi-download" @click="loadModel">Download model</v-btn>
@@ -127,10 +132,10 @@ async function loadModel() {
         </v-btn>
       </div>
       <p class="is-size-7 mt-2">
-        Models are downloaded from Hugging Face once and then kept in this browser, also for
-        offline use. After reloading the page, a downloaded model is read from the browser
-        storage into memory again; this happens automatically when it is needed and takes a
-        moment. Your session data is processed on this device only.
+        Models are downloaded from Hugging Face once and then kept in this browser, also for offline
+        use. After reloading the page, a downloaded model is read from the browser storage into
+        memory again; this happens automatically when it is needed and takes a moment. Your session
+        data is processed on this device only.
       </p>
     </div>
 

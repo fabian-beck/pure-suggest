@@ -76,7 +76,10 @@ function loadApiKeys() {
  */
 export const useLlmStore = defineStore('llm', () => {
   const storedApiKeys = loadApiKeys()
-  const settings = reactive({ ...structuredClone(DEFAULT_SETTINGS), ...readStorage(SETTINGS_STORAGE_KEY) })
+  const settings = reactive({
+    ...structuredClone(DEFAULT_SETTINGS),
+    ...readStorage(SETTINGS_STORAGE_KEY)
+  })
   if (Object.keys(storedApiKeys).length) settings.rememberApiKeys = true
   // API keys by cloud service id, plus `native` for protected local servers
   const apiKeys = reactive(storedApiKeys)
@@ -119,7 +122,8 @@ export const useLlmStore = defineStore('llm', () => {
   )
 
   const cloudService = computed(
-    () => CLOUD_SERVICES.find((service) => service.id === settings.cloudServiceId) ?? CLOUD_SERVICES[0]
+    () =>
+      CLOUD_SERVICES.find((service) => service.id === settings.cloudServiceId) ?? CLOUD_SERVICES[0]
   )
   const cloudBaseUrl = computed(() => cloudService.value.baseUrl || settings.cloudCustomBaseUrl)
 
@@ -150,7 +154,8 @@ export const useLlmStore = defineStore('llm', () => {
 
   /** Whether prompts stay on this device (`local`) or are sent over the network (`remote`). */
   const location = computed(() => {
-    if (settings.mode === 'native') return isLoopbackUrl(settings.nativeBaseUrl) ? 'local' : 'remote'
+    if (settings.mode === 'native')
+      return isLoopbackUrl(settings.nativeBaseUrl) ? 'local' : 'remote'
     if (settings.mode === 'cloud') return isLoopbackUrl(cloudBaseUrl.value) ? 'local' : 'remote'
     return 'local'
   })
@@ -205,7 +210,9 @@ export const useLlmStore = defineStore('llm', () => {
     if (settings.mode === 'browser') {
       key = ['browser', settings.browserBackend, device.value, ...settings.customBrowserModelIds]
       create = () =>
-        new BrowserProvider(settings.browserBackend, device.value, [...settings.customBrowserModelIds])
+        new BrowserProvider(settings.browserBackend, device.value, [
+          ...settings.customBrowserModelIds
+        ])
     } else if (settings.mode === 'native') {
       key = ['native', settings.nativeKind, settings.nativeBaseUrl, apiKeys.native]
       create = () =>
@@ -257,7 +264,10 @@ export const useLlmStore = defineStore('llm', () => {
       if (mode === 'native') {
         const server = await probeNativeServer(settings.nativeBaseUrl, apiKeys.native ?? '')
         if (!server) {
-          throw new LlmError('network', `No inference server answered at ${settings.nativeBaseUrl}.`)
+          throw new LlmError(
+            'network',
+            `No inference server answered at ${settings.nativeBaseUrl}.`
+          )
         }
         settings.nativeKind = server.kind
         listed = server.models
@@ -286,7 +296,8 @@ export const useLlmStore = defineStore('llm', () => {
     const isCurrentDetected = servers.value.some(
       (server) => server.baseUrl === settings.nativeBaseUrl
     )
-    if (servers.value.length && !isCurrentDetected) settings.nativeBaseUrl = servers.value[0].baseUrl
+    if (servers.value.length && !isCurrentDetected)
+      settings.nativeBaseUrl = servers.value[0].baseUrl
     await refreshModels()
   }
 
@@ -334,7 +345,10 @@ export const useLlmStore = defineStore('llm', () => {
 
   /** Context window left for prompt and answer after reserving room for hidden reasoning. */
   const usableContextWindow = computed(() =>
-    Math.max(0, contextWindow.value - (activeModel.value.capabilities.reasoning ? REASONING_HEADROOM : 0))
+    Math.max(
+      0,
+      contextWindow.value - (activeModel.value.capabilities.reasoning ? REASONING_HEADROOM : 0)
+    )
   )
 
   /**

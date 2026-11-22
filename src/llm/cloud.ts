@@ -48,7 +48,9 @@ class CloudOpenAiProvider extends OpenAiCompatibleProvider {
       contextWindow: entry.context_length ?? entry.max_context_length,
       capabilities: supportedParameters
         ? {
-            structuredOutput: supportedParameters.includes('structured_outputs') ? 'schema' : 'none',
+            structuredOutput: supportedParameters.includes('structured_outputs')
+              ? 'schema'
+              : 'none',
             toolCalling: supportedParameters.includes('tools'),
             reasoning: supportedParameters.includes('reasoning')
           }

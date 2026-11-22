@@ -49,15 +49,15 @@ function start() {
     <div class="content">
       <p v-if="sessionStore.isAiAutoSelect">
         An AI model reads the currently suggested publications together with your selected
-        publications and keywords, and adds the most useful ones to your selection. It proceeds
-        in steps: after each step, the suggestions are recomputed from the extended selection,
-        so that later picks build on earlier ones.
+        publications and keywords, and adds the most useful ones to your selection. It proceeds in
+        steps: after each step, the suggestions are recomputed from the extended selection, so that
+        later picks build on earlier ones.
       </p>
       <p v-else>
         An AI model reads the
         <b>{{ sessionStore.suggestedPublicationsFiltered.length }}</b> currently suggested
-        publications together with your selected publications and keywords, and tags the most
-        useful suggestions.
+        publications together with your selected publications and keywords, and tags the most useful
+        suggestions.
       </p>
 
       <div class="d-flex flex-wrap align-center ga-2 mb-2">

@@ -203,10 +203,16 @@ export class BrowserProvider implements LlmProvider {
 
   async *streamChat(request: ChatRequest): AsyncGenerator<ChatEvent, void, void> {
     if (request.tools?.length) {
-      throw new LlmError('unsupported', 'Models running in the browser do not support tool calling.')
+      throw new LlmError(
+        'unsupported',
+        'Models running in the browser do not support tool calling.'
+      )
     }
     if (request.messages.some((message) => message.role === 'tool')) {
-      throw new LlmError('unsupported', 'Models running in the browser do not support tool results.')
+      throw new LlmError(
+        'unsupported',
+        'Models running in the browser do not support tool results.'
+      )
     }
     await this.prepareModel(request.model, () => {}, request.signal)
 
@@ -262,7 +268,11 @@ export class BrowserProvider implements LlmProvider {
   dispose(): void {
     this.worker?.terminate()
     this.worker = null
-    const failure = { type: 'error' as const, message: 'The model was unloaded.', isOutOfMemory: false }
+    const failure = {
+      type: 'error' as const,
+      message: 'The model was unloaded.',
+      isOutOfMemory: false
+    }
     for (const [requestId, listener] of this.listeners) listener({ requestId, ...failure })
   }
 }

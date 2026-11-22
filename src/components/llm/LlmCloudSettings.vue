@@ -32,8 +32,8 @@ function setService(serviceId) {
       icon="mdi-cloud-upload-outline"
     >
       Cloud models run on the provider’s servers: titles, abstracts, and keywords of your session
-      are sent to {{ service.name }} and billed to your API key. Nothing is sent before you ask
-      for an AI feature.
+      are sent to {{ service.name }} and billed to your API key. Nothing is sent before you ask for
+      an AI feature.
     </v-alert>
 
     <v-select
@@ -81,9 +81,8 @@ function setService(serviceId) {
       label="Remember keys in this browser"
     />
     <p class="is-size-7 mb-3">
-      Otherwise, keys are forgotten when you close the page. Remembered keys are stored
-      unencrypted in this browser and are readable for anyone using it; prefer a key with a
-      spending limit.
+      Otherwise, keys are forgotten when you close the page. Remembered keys are stored unencrypted
+      in this browser and are readable for anyone using it; prefer a key with a spending limit.
     </p>
 
     <v-combobox

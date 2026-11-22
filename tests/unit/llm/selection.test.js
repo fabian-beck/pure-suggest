@@ -62,7 +62,11 @@ describe('recommendSetup', () => {
 
   it('prefers a local server with a fitting preferred model on desktops', () => {
     const servers = [
-      ollama([model('qwen3:32b', 20e9, false), model('gpt-oss:20b', 14e9), model('gemma4:e4b', 6e9)])
+      ollama([
+        model('qwen3:32b', 20e9, false),
+        model('gpt-oss:20b', 14e9),
+        model('gemma4:e4b', 6e9)
+      ])
     ]
 
     expect(recommendSetup(device(), servers, {})).toMatchObject({
@@ -112,7 +116,10 @@ describe('detectDevice', () => {
     stubNavigator({})
     expect(await detectDevice()).toMatchObject({ hasWebGpu: false, tier: 'standard' })
 
-    stubNavigator({ userAgentData: { mobile: true }, gpu: { requestAdapter: () => Promise.resolve(adapter('arm')) } })
+    stubNavigator({
+      userAgentData: { mobile: true },
+      gpu: { requestAdapter: () => Promise.resolve(adapter('arm')) }
+    })
     expect(await detectDevice()).toMatchObject({ isMobile: true, tier: 'low' })
 
     vi.unstubAllGlobals()

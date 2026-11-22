@@ -29,8 +29,25 @@ describe('OpenAI-compatible provider', () => {
         'data: {"choices":[{"delta":{"con',
         'tent":"lo"}}]}\n\n',
         ...sse(
-          { choices: [{ delta: { tool_calls: [{ index: 0, id: 'c1', function: { name: 'find', arguments: '{"q":' } }] } }] },
-          { choices: [{ delta: { tool_calls: [{ index: 0, function: { arguments: '"x"}' } }] }, finish_reason: 'tool_calls' }] },
+          {
+            choices: [
+              {
+                delta: {
+                  tool_calls: [
+                    { index: 0, id: 'c1', function: { name: 'find', arguments: '{"q":' } }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            choices: [
+              {
+                delta: { tool_calls: [{ index: 0, function: { arguments: '"x"}' } }] },
+                finish_reason: 'tool_calls'
+              }
+            ]
+          },
           { choices: [], usage: { prompt_tokens: 12, completion_tokens: 5 } }
         ),
         'data: [DONE]\n\n'
@@ -51,13 +68,19 @@ describe('OpenAI-compatible provider', () => {
   })
 
   it('sends sampling settings, schema, tools, and the server key', async () => {
-    const fetchMock = mockFetchRoutes({ '/chat/completions': () => streamResponse(['data: [DONE]\n\n']) })
+    const fetchMock = mockFetchRoutes({
+      '/chat/completions': () => streamResponse(['data: [DONE]\n\n'])
+    })
 
     await collectEvents(
       provider.streamChat({
         model: 'm',
         messages: [
-          { role: 'assistant', content: '', toolCalls: [{ id: 'c1', name: 'find', arguments: '{}' }] },
+          {
+            role: 'assistant',
+            content: '',
+            toolCalls: [{ id: 'c1', name: 'find', arguments: '{}' }]
+          },
           { role: 'tool', toolCallId: 'c1', content: 'result' }
         ],
         temperature: 0.2,
@@ -97,7 +120,9 @@ describe('OpenAI-compatible provider', () => {
     ]
     const fetchMock = mockFetchRoutes({
       '/chat/completions': () =>
-        rejections.length ? jsonResponse(rejections.shift(), 400) : streamResponse(['data: [DONE]\n\n'])
+        rejections.length
+          ? jsonResponse(rejections.shift(), 400)
+          : streamResponse(['data: [DONE]\n\n'])
     })
 
     await collectEvents(
@@ -128,7 +153,10 @@ describe('OpenAI-compatible provider', () => {
     })
 
     mockFetchRoutes({
-      '/chat/completions': jsonResponse({ error: { message: 'This exceeds the context window' } }, 400)
+      '/chat/completions': jsonResponse(
+        { error: { message: 'This exceeds the context window' } },
+        400
+      )
     })
     await expect(collectEvents(provider.streamChat(request))).rejects.toMatchObject({
       code: 'context-overflow'

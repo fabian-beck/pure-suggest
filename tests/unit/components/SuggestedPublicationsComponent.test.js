@@ -246,7 +246,9 @@ describe('SuggestedPublicationsComponent', () => {
             props: ['disabled', 'icon'],
             emits: ['click']
           },
-          'v-menu': { template: '<div class="v-menu"><slot name="activator" :props="{}"></slot></div>' },
+          'v-menu': {
+            template: '<div class="v-menu"><slot name="activator" :props="{}"></slot></div>'
+          },
           tippy: { template: '<div class="tippy"><slot></slot></div>' },
           PublicationListComponent: { template: '<div class="publication-list"></div>' }
         }

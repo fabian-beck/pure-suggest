@@ -266,7 +266,10 @@ export function parsePartialRecommendationAnswer(answerText, candidates) {
   for (const [, id, explanation] of answerText.matchAll(FINISHED_RECOMMENDATION)) {
     const doi = candidates[Number(id) - 1]?.doi
     if (doi) {
-      recommendations.push({ doi, explanation: normalizeExplanation(unescapeJsonString(explanation)) })
+      recommendations.push({
+        doi,
+        explanation: normalizeExplanation(unescapeJsonString(explanation))
+      })
     }
   }
   return {

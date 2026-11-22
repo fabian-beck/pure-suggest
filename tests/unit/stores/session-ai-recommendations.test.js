@@ -16,10 +16,9 @@ describe('session store: AI recommendations', () => {
   it('tags auto-selected publications and filters the selection for them', () => {
     sessionStore.tagAiSelectedPublications([{ doi: '10.1/added', explanation: 'It is a survey.' }])
 
-    expect(sessionStore.selectedPublications.map((publication) => publication.isAiRecommended)).toEqual([
-      undefined,
-      'It is a survey.'
-    ])
+    expect(
+      sessionStore.selectedPublications.map((publication) => publication.isAiRecommended)
+    ).toEqual([undefined, 'It is a survey.'])
     expect(sessionStore.filter.tags).toEqual(['isAiRecommended'])
     expect(sessionStore.filter.applyToSelected).toBe(true)
   })

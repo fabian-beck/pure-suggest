@@ -15,7 +15,15 @@ const RUN = {
       considered: 'Reading 100 suggestions and 2 selected publications',
       thinking: '',
       reasoning: 'I look for papers linking both seeds.',
-      picks: [{ doi: '10.1/a', title: 'Paper A', authorShort: 'Doe et al.', year: 2021, explanation: 'Cites both.' }],
+      picks: [
+        {
+          doi: '10.1/a',
+          title: 'Paper A',
+          authorShort: 'Doe et al.',
+          year: 2021,
+          explanation: 'Cites both.'
+        }
+      ],
       action: 'Adding 1 publication to the selection, then recomputing the suggestions'
     },
     {

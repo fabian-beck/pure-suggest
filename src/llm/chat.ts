@@ -52,8 +52,7 @@ export async function completeChat(
   }
 
   const seconds = firstOutputAt ? (performance.now() - firstOutputAt) / 1000 : 0
-  const outputTokens =
-    result.usage.outputTokens ?? estimateTokens(result.text + result.reasoning)
+  const outputTokens = result.usage.outputTokens ?? estimateTokens(result.text + result.reasoning)
   if (seconds >= MIN_MEASURED_SECONDS && outputTokens >= MIN_MEASURED_TOKENS) {
     result.tokensPerSecond = outputTokens / seconds
   }

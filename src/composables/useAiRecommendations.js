@@ -40,7 +40,8 @@ function createRun(isAutoSelect, range) {
 /** Describes what an auto-select step does to the session (`loadedUpTo`: 0 if nothing is loaded). */
 function describeSelectionAction(addedCount, loadedUpTo) {
   const actions = []
-  if (addedCount) actions.push(`Adding ${addedCount} publication${plural(addedCount)} to the selection`)
+  if (addedCount)
+    actions.push(`Adding ${addedCount} publication${plural(addedCount)} to the selection`)
   if (loadedUpTo) {
     actions.push(`${addedCount ? 'loading' : 'Loading'} more suggestions (up to ${loadedUpTo})`)
   }
@@ -178,7 +179,10 @@ export function useAiRecommendations() {
     const [minCount, maxCount] = sessionStore.aiRecommendationRange
     const stepSize = Math.max(2, Math.ceil(maxCount / AUTO_SELECT_STEPS))
     const remainingCount = () =>
-      Math.min(maxCount - run.publications.length, sessionStore.suggestedPublicationsFiltered.length)
+      Math.min(
+        maxCount - run.publications.length,
+        sessionStore.suggestedPublicationsFiltered.length
+      )
     try {
       while (run.steps < AUTO_SELECT_MAX_STEPS && remainingCount() > 0) {
         const { recommendations, isLoadingMore, entry } = await askModel(
@@ -221,7 +225,10 @@ export function useAiRecommendations() {
    * to report.
    */
   async function requestAiRecommendations() {
-    interfaceStore.aiRun = createRun(sessionStore.isAiAutoSelect, sessionStore.aiRecommendationRange)
+    interfaceStore.aiRun = createRun(
+      sessionStore.isAiAutoSelect,
+      sessionStore.aiRecommendationRange
+    )
     // The store's reactive version, so that the run can be followed while it is in progress
     const run = interfaceStore.aiRun
     interfaceStore.startLoading()

@@ -65,7 +65,10 @@ async function resolveDtype(modelId: string, backend: BrowserBackend, dtypes: st
 
 async function inspect(modelId: string, backend: BrowserBackend, dtypes: string[]) {
   const { dtype, isCached } = await resolveDtype(modelId, backend, dtypes)
-  const files = await ModelRegistry.get_pipeline_files(TASK, modelId, { dtype, device: backend } as Json)
+  const files = await ModelRegistry.get_pipeline_files(TASK, modelId, {
+    dtype,
+    device: backend
+  } as Json)
   const sizes = await Promise.all(
     files.map((file) =>
       ModelRegistry.get_file_metadata(modelId, file)
@@ -109,11 +112,13 @@ async function generate(request: Extract<WorkerRequest, { requestId: number }>) 
   const generator = await load(request)
   stoppingCriteria.reset()
   const inputTokens: number =
-    generator.tokenizer.apply_chat_template(request.messages, {
-      tokenize: true,
-      add_generation_prompt: true,
-      return_dict: true
-    }).input_ids.dims.at(-1) ?? 0
+    generator.tokenizer
+      .apply_chat_template(request.messages, {
+        tokenize: true,
+        add_generation_prompt: true,
+        return_dict: true
+      })
+      .input_ids.dims.at(-1) ?? 0
   const maxOutputTokens = request.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS
   let outputTokens = 0
   const streamer = new TextStreamer(generator.tokenizer, {
@@ -168,7 +173,9 @@ scope.onmessage = async ({ data: request }) => {
       type: 'error',
       requestId,
       message,
-      isOutOfMemory: /out of memory|allocation failed|device (was )?lost|std::bad_alloc/i.test(message)
+      isOutOfMemory: /out of memory|allocation failed|device (was )?lost|std::bad_alloc/i.test(
+        message
+      )
     })
   }
 }
