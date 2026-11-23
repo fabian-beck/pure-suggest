@@ -99,6 +99,13 @@ describe('Publication Bug Regression Tests', () => {
       expect(tags).toContainEqual({ value: 'isHighlyCited', name: 'Highly cited' })
     })
 
+    it('should list a starred publication as starred first', () => {
+      publication.isNew = 'published within this or the previous two calendar years'
+      publication.isStarred = true
+
+      expect(publication.getTags()[0]).toEqual({ value: 'isStarred', name: 'Starred' })
+    })
+
     it('should include concept tags when present', () => {
       publication.concepts = ['C1 - VISUAL', 'C3 - DATA']
 

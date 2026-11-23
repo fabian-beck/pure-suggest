@@ -300,6 +300,37 @@ describe('Session Store - Suggested Publications Filtering', () => {
     })
   })
 
+  describe('starred publications', () => {
+    it('should star and unstar a publication, which can then be filtered as tag', () => {
+      const suggested = sessionStore.suggestedPublications[0]
+
+      sessionStore.toggleStarred(suggested)
+
+      expect(suggested.isStarred).toBe(true)
+      expect(sessionStore.sessionData.starred).toEqual([suggested.doi])
+      sessionStore.filter.toggleTag('isStarred')
+      expect(
+        sessionStore.suggestedPublicationsFiltered.filter(
+          sessionStore.filter.matches,
+          sessionStore.filter
+        )
+      ).toEqual([suggested])
+
+      sessionStore.toggleStarred(suggested)
+
+      expect(suggested.isStarred).toBe(false)
+      expect(sessionStore.sessionData.starred).toEqual([])
+    })
+
+    it('should be reset when clearing the session', () => {
+      sessionStore.toggleStarred(sessionStore.suggestedPublications[0])
+
+      sessionStore.clear()
+
+      expect(sessionStore.starredPublicationsDois).toEqual([])
+    })
+  })
+
   describe('isExcluded', () => {
     it('should follow changes of the excluded publications', () => {
       const { isExcluded } = sessionStore

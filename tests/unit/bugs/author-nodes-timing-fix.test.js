@@ -26,6 +26,8 @@ const mockSessionStore = {
   suggestion: null,
   maxSuggestions: 50,
   readPublicationsDois: [],
+  publications: [],
+  starredPublicationsDoiSet: new Set(),
   isExcluded: vi.fn(),
   isSelected: vi.fn(),
   getSelectedPublicationByDoi: vi.fn()

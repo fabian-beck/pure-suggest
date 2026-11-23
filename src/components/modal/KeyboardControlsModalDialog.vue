@@ -66,6 +66,7 @@ export default {
           <li><v-icon>mdi-alpha-g-box-outline</v-icon> Open "Google Scholar" link</li>
           <li><v-icon>mdi-alpha-x-box-outline</v-icon> Export as BibTeX citation</li>
           <li><v-icon>mdi-alpha-i-box-outline</v-icon> Toggle DOI filter</li>
+          <li><v-icon>mdi-asterisk</v-icon> Star or unstar publication</li>
         </ul>
         <h2>Dialogs</h2>
         <p>Each dialog opens with the most likely next step preselected.</p>

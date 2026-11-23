@@ -278,7 +278,8 @@ describe('FilterMenuComponent', () => {
     it('provides correct icon for each tag type', () => {
       const wrapper = createWrapper()
 
-      expect(wrapper.vm.getTagIcon('isHighlyCited')).toBe('mdi-star')
+      expect(wrapper.vm.getTagIcon('isStarred')).toBe('mdi-star')
+      expect(wrapper.vm.getTagIcon('isHighlyCited')).toBe('mdi-fire')
       expect(wrapper.vm.getTagIcon('isSurvey')).toBe('mdi-table')
       expect(wrapper.vm.getTagIcon('isNew')).toBe('mdi-alarm')
       expect(wrapper.vm.getTagIcon('isUnnoted')).toBe('mdi-alert-box-outline')

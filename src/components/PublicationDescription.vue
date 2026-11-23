@@ -192,7 +192,10 @@ function getTagTooltip(tagValue, tagName) {
     return tooltip
   }
 
-  const description = `Identified as ${tagName.toLowerCase()}: ${props.publication[tagValue]}.`
+  const description =
+    tagValue === 'isStarred'
+      ? 'Starred by you.'
+      : `Identified as ${tagName.toLowerCase()}: ${props.publication[tagValue]}.`
   const action = isTagFiltered(tagValue)
     ? `Active as filter; click to remove from filter.`
     : `Click to add to filter.`
@@ -367,6 +370,17 @@ function handleAuthorClick(event) {
             v-tippy="`Export as BibTe<span class='key'>X</span> citation`"
           >
           </CompactButton>
+          <CompactButton
+            :icon="publication.isStarred ? 'mdi-star' : 'mdi-star-outline'"
+            v-tippy="
+              publication.isStarred
+                ? `Unstar publication (<span class='key'>*</span>)`
+                : `Star publication (<span class='key'>*</span>)`
+            "
+            :active="publication.isStarred"
+            @click.stop="sessionStore.toggleStarred(publication)"
+            v-if="!alwaysShowDetails"
+          ></CompactButton>
           <CompactButton
             icon="mdi-filter-plus"
             v-tippy="getFilterDoiTooltip(publication.doi)"

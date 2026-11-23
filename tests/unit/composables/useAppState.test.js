@@ -272,6 +272,35 @@ describe('useAppState - Session Loading', () => {
     })
   })
 
+  describe('starred publications', () => {
+    it('should restore starred publications and mark them after loading', async () => {
+      const publication = {
+        doi: '10.1234/pub1',
+        citationDois: [],
+        referenceDois: [],
+        fetchData: vi.fn()
+      }
+      sessionStore.addPublicationsToSelection = vi.fn(() => {
+        sessionStore.selectedPublications = [publication]
+      })
+      sessionStore.updatePublicationScores = vi.fn()
+
+      await appState.loadSession({ selected: ['10.1234/pub1'], starred: ['10.1234/PUB1'] })
+      await vi.waitFor(() => expect(publication.isStarred).toBe(true))
+
+      expect(sessionStore.starredPublicationsDois).toEqual(['10.1234/pub1'])
+    })
+
+    it('should unstar a publication that is excluded', async () => {
+      sessionStore.starredPublicationsDois = ['10.1234/kept', '10.1234/excluded']
+      queueStore.excludedQueue = ['10.1234/excluded']
+
+      await appState.updateQueued()
+
+      expect(sessionStore.starredPublicationsDois).toEqual(['10.1234/kept'])
+    })
+  })
+
   describe('loadSession with malformed data', () => {
     it('should keep the current session when the selected publications are no list', () => {
       sessionStore.sessionName = 'Current Session'

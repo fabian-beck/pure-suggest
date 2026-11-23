@@ -142,6 +142,10 @@ export function useAppState() {
 
     updateScores()
 
+    sessionStore.publications.forEach((publication) => {
+      publication.isStarred = sessionStore.starredPublicationsDoiSet.has(publication.doi)
+    })
+
     // Apply concepts to all publications now that their metadata is fetched
     if (conceptStore.hasConcepts) {
       conceptStore.assignConceptTagsToPublications(sessionStore.selectedPublications)
@@ -189,6 +193,9 @@ export function useAppState() {
     }
     if (session.excluded) {
       sessionStore.excludedPublicationsDois = session.excluded.map((doi) => doi.toLowerCase())
+    }
+    if (session.starred) {
+      sessionStore.starredPublicationsDois = session.starred.map((doi) => doi.toLowerCase())
     }
     if (session.name !== undefined && session.name !== null) {
       sessionStore.setSessionName(session.name)
@@ -323,6 +330,9 @@ export function useAppState() {
       (publication) => !queueStore.excludedQueue.includes(publication.doi)
     )
     queueStore.excludedQueue.forEach((doi) => sessionStore.filter.removeDoi(doi))
+    sessionStore.starredPublicationsDois = sessionStore.starredPublicationsDois.filter(
+      (doi) => !queueStore.excludedQueue.includes(doi)
+    )
     if (sessionStore.suggestion) {
       sessionStore.suggestion.publications = sessionStore.suggestion.publications.filter(
         (publication) =>

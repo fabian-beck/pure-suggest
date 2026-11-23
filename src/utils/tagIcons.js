@@ -1,5 +1,6 @@
 const TAG_ICONS = {
-  isHighlyCited: 'mdi-star',
+  isStarred: 'mdi-star',
+  isHighlyCited: 'mdi-fire',
   isSurvey: 'mdi-table',
   isNew: 'mdi-alarm',
   isUnnoted: 'mdi-alert-box-outline'
