@@ -20,8 +20,7 @@ function submitSearch() {
 
 <template>
   <div class="landing">
-    <v-icon size="64" class="landing-logo">mdi-water-plus-outline</v-icon>
-    <h1 class="landing-title" v-html="appMeta.nameHtml"></h1>
+    <h1 class="landing-title"><AppLogo /></h1>
     <p class="landing-subtitle">{{ appMeta.subtitle }}</p>
     <p class="landing-lead">
       Based on a set of selected publications,
@@ -96,13 +95,8 @@ function submitSearch() {
   overflow-y: auto;
 }
 
-.landing-logo {
-  color: var(--bulma-primary);
-}
-
 .landing-title {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 2.5rem;
 }
 
 .landing-subtitle {

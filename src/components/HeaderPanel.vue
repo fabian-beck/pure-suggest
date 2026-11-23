@@ -1,6 +1,4 @@
 <script setup>
-import { inject } from 'vue'
-
 import FilterMenuComponent from '@/components/FilterMenuComponent.vue'
 import KeywordMenuComponent from '@/components/KeywordMenuComponent.vue'
 import LayoutMenuComponent from '@/components/LayoutMenuComponent.vue'
@@ -9,7 +7,6 @@ import { useAppState } from '@/composables/useAppState.js'
 import { useModalManager } from '@/composables/useModalManager.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 
-const appMeta = inject('appMeta')
 const interfaceStore = useInterfaceStore()
 const { openKeyboardControlsModal, openAboutModal, openLlmSettingsModal } = useModalManager()
 const { isEmpty, clearCache } = useAppState()
@@ -18,9 +15,8 @@ const { isEmpty, clearCache } = useAppState()
 <template>
   <div>
     <v-app-bar color="white" density="compact">
-      <v-icon class="mr-1" :size="interfaceStore.isMobile ? 24 : 32">mdi-water-plus-outline</v-icon>
       <v-app-bar-title>
-        <h1 class="app-name" v-html="appMeta.nameHtml"></h1>
+        <h1 class="app-name"><AppLogo /></h1>
         <div class="session-state" v-if="!isEmpty">
           <SessionMenuComponent />
           <KeywordMenuComponent />
@@ -87,8 +83,8 @@ const { isEmpty, clearCache } = useAppState()
 
         & .app-name {
           font-size: 1.5rem;
-          font-weight: 600;
-          padding-top: 10px;
+          display: flex;
+          align-items: center;
         }
 
         & .session-state {
