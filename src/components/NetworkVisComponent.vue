@@ -1141,14 +1141,28 @@ export default {
         />
         <svg id="network-svg">
           <defs>
-            <!-- Blends each color channel 50% toward white: same visual result as
-                 50% opacity over a white background, but the node stays opaque so
-                 edges don't shine through -->
+            <!-- Blend each color channel toward white: same visual result as reduced
+                 opacity over a white background, but nodes stay opaque so edges don't
+                 shine through -->
             <filter id="filtered-out-lighten" color-interpolation-filters="sRGB">
               <feComponentTransfer>
                 <feFuncR type="linear" slope="0.5" intercept="0.5" />
                 <feFuncG type="linear" slope="0.5" intercept="0.5" />
                 <feFuncB type="linear" slope="0.5" intercept="0.5" />
+              </feComponentTransfer>
+            </filter>
+            <filter
+              id="non-active-lighten"
+              color-interpolation-filters="sRGB"
+              x="-50%"
+              y="-50%"
+              width="200%"
+              height="200%"
+            >
+              <feComponentTransfer>
+                <feFuncR type="linear" slope="0.3" intercept="0.7" />
+                <feFuncG type="linear" slope="0.3" intercept="0.7" />
+                <feFuncB type="linear" slope="0.3" intercept="0.7" />
               </feComponentTransfer>
             </filter>
           </defs>
@@ -1293,7 +1307,7 @@ export default {
     }
 
     &.non-active {
-      opacity: 0.3;
+      filter: url(#non-active-lighten);
     }
 
     &.is-keyword-hovered rect {
@@ -1328,6 +1342,10 @@ export default {
     &.filtered-out {
       filter: url(#filtered-out-lighten) blur(0.5px);
     }
+
+    &.filtered-out.non-active {
+      filter: url(#filtered-out-lighten) url(#non-active-lighten) blur(0.5px);
+    }
   }
 
   & g.keyword.node-container {
@@ -1352,7 +1370,7 @@ export default {
     }
 
     &.non-active {
-      opacity: 0.3;
+      filter: url(#non-active-lighten);
     }
 
     &:hover text {
@@ -1376,7 +1394,7 @@ export default {
     }
 
     &.non-active {
-      opacity: 0.3;
+      filter: url(#non-active-lighten);
     }
 
     &:hover {
