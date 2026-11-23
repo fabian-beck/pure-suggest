@@ -14,6 +14,7 @@ export const useModalStore = defineStore('modal', {
       isAiRecommendationModalDialogShown: false,
       isLlmSettingsModalDialogShown: false,
       isAiReportModalDialogShown: false,
+      isAiChatModalDialogShown: false,
       // Report of the last AI recommendation run
       aiReport: null,
       confirmDialog: {
@@ -45,7 +46,8 @@ export const useModalStore = defineStore('modal', {
         this.isConceptConfigModalDialogShown ||
         this.isAiRecommendationModalDialogShown ||
         this.isLlmSettingsModalDialogShown ||
-        this.isAiReportModalDialogShown
+        this.isAiReportModalDialogShown ||
+        this.isAiChatModalDialogShown
       )
     }
   }

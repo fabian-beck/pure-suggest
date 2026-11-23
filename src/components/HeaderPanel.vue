@@ -8,7 +8,8 @@ import { useModalManager } from '@/composables/useModalManager.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 
 const interfaceStore = useInterfaceStore()
-const { openKeyboardControlsModal, openAboutModal, openLlmSettingsModal } = useModalManager()
+const { openKeyboardControlsModal, openAboutModal, openLlmSettingsModal, openAiChatModal } =
+  useModalManager()
 const { isEmpty, clearCache } = useAppState()
 </script>
 
@@ -24,6 +25,18 @@ const { isEmpty, clearCache } = useAppState()
         </div>
       </v-app-bar-title>
       <LayoutMenuComponent v-if="!isEmpty && !interfaceStore.isMobile" />
+      <v-btn
+        v-if="!isEmpty"
+        icon
+        density="compact"
+        class="mr-1"
+        v-tippy="
+          'AI chat - Ask an AI model about your session, or let it set keywords and filters.'
+        "
+        @click="openAiChatModal()"
+      >
+        <v-icon>mdi-forum-outline</v-icon>
+      </v-btn>
       <v-menu transition="slide-y-transition">
         <template #activator="{ props }">
           <v-btn icon v-bind="props" class="mr-1" density="compact" aria-label="More options">

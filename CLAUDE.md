@@ -38,6 +38,7 @@ PUREsuggest is a Vue 3 scientific literature search tool that suggests publicati
 
 - `SuggestionService.js`: Dedicated service for computing publication suggestions (extracted from session store)
 - `AiRecommendationService.js`: Builds the prompt for AI recommendations (fitted to the model's context window) and parses the answer; independent of the inference backend
+- `AiChatService.js`: Builds the prompt for the AI chat about the session (session data fitted to the context window, conversation so far) and parses the answer with the changes the model asks for
 - `ConceptService.js`: Concept analysis clustering the selected publications by shared keywords, citations, and authors
 
 ## LLM Layer (`src/llm/`, TypeScript)
@@ -47,7 +48,7 @@ Provider-independent inference for AI features (experimental). The application o
 - **Backends**: `browser.ts` + `browserWorker.ts` (in-browser, Transformers.js in a web worker, WebGPU with WebAssembly fallback), `native.ts` (Ollama via its native API, LM Studio and llama.cpp via `openaiCompatible.ts`, server discovery), `cloud.ts` (own API key: OpenAI-compatible services and Anthropic via its SDK)
 - **Shared**: `transport.ts` (fetch/streaming, error normalization), `chat.ts` (`completeChat`, JSON answer parsing), `catalog.ts` (preferred developers, browser models, cloud services), `selection.ts` (device detection, recommended setup)
 - **Store**: `stores/llm.js` holds the chosen mode/model, API keys (only persisted on request), consent for remote processing, and measured speeds; `generate()` is the entry point for features
-- **UI**: `LlmSettingsModalDialog.vue` with `components/llm/*`, `AiRecommendationModalDialog.vue`
+- **UI**: `LlmSettingsModalDialog.vue` with `components/llm/*`, `AiRecommendationModalDialog.vue`, `AiChatModalDialog.vue`
 - **Rules**: prompts never leave the device without the user's explicit choice and consent (no automatic local-to-cloud fallback); only models of preferred developers (`catalog.ts`) are recommended or selected automatically; state where data is processed (local vs. cloud) in the UI
 
 ## Composables (Vue 3)
@@ -55,6 +56,7 @@ Provider-independent inference for AI features (experimental). The application o
 - `useAppState.js`: Core application logic extracted from stores (session management, suggestions, queuing)
 - `useModalManager.js`: Modal dialog management and state coordination
 - `useAiRecommendations.js`: Runs AI recommendations on the suggestions: tagging them, or auto-selecting in steps with suggestions recomputed after each step; the model may ask for more suggestions to be loaded; while a run is in progress, `AiActivityPanel.vue` replaces the loading indicator and shows the model's reasoning, choices, and actions per step (`interfaceStore.aiRun`), and each run ends with its report in `AiReportModalDialog.vue`
+- `useAiChat.js`: Runs a turn of the AI chat (`AiChatModalDialog.vue`, conversation in `sessionStore.aiChatMessages`): shows the answer while it is written and applies the changes the model asks for (keywords, filters), each undoable
 - `useDialogFocusReturn.js`: Returns keyboard focus to where it was when a dialog closes
 
 ## Testing Strategy

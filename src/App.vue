@@ -233,6 +233,7 @@ export default {
     <AiRecommendationModalDialog />
     <LlmSettingsModalDialog />
     <AiReportModalDialog />
+    <AiChatModalDialog />
     <!-- Other dialogs and overlays -->
     <v-overlay
       v-model="interfaceStore.isLoading"

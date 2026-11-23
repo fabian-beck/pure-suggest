@@ -1,4 +1,4 @@
-import { estimateTokens, parseJsonAnswer } from '@/llm/chat.ts'
+import { estimateTokens, parseJsonAnswer, readPartialJsonString } from '@/llm/chat.ts'
 import { LlmError } from '@/llm/types.ts'
 
 const TEXT_MAX_LENGTH = 320
@@ -13,7 +13,7 @@ const ANSWER_TOKENS_PER_RECOMMENDATION = 100
 
 // Levels of detail for describing publications, tried from rich to sparse until the prompt
 // fits the model's context window; local models often offer only a few thousand tokens
-const DETAIL_LEVELS = [
+export const DETAIL_LEVELS = [
   { abstractLength: 900, includesMetadata: true },
   { abstractLength: 300, includesMetadata: true },
   { abstractLength: 0, includesMetadata: true },
@@ -67,14 +67,15 @@ const RESPONSE_SCHEMA = {
   }
 }
 
-function truncateText(value, maxLength = TEXT_MAX_LENGTH) {
+export function truncateText(value, maxLength = TEXT_MAX_LENGTH) {
   if (!value) return ''
   const text = String(value).replace(/\s+/g, ' ').trim()
   if (text.length <= maxLength) return text
   return `${text.slice(0, maxLength - 3).trim()}...`
 }
 
-function serializePublication(publication, detail) {
+/** Describes a publication for a prompt, at one of the DETAIL_LEVELS. */
+export function serializePublication(publication, detail) {
   const serialized = {
     title: truncateText(publication.title),
     year: publication.year || null,
@@ -243,7 +244,6 @@ export function parseRecommendationAnswer(answerText, candidates, maxCount) {
 
 // A JSON string body, possibly cut off before its closing quote
 const STRING_BODY = String.raw`((?:[^"\\]|\\.)*)`
-const PARTIAL_REASONING = new RegExp(`"reasoning"\\s*:\\s*"${STRING_BODY}`)
 const FINISHED_RECOMMENDATION = new RegExp(
   `\\{\\s*"id"\\s*:\\s*"?(\\d+)"?\\s*,\\s*"explanation"\\s*:\\s*"${STRING_BODY}"\\s*\\}`,
   'g'
@@ -273,7 +273,7 @@ export function parsePartialRecommendationAnswer(answerText, candidates) {
     }
   }
   return {
-    reasoning: unescapeJsonString(answerText.match(PARTIAL_REASONING)?.[1] ?? ''),
+    reasoning: readPartialJsonString(answerText, 'reasoning'),
     recommendations
   }
 }

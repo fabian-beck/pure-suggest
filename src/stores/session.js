@@ -35,7 +35,9 @@ export const useSessionStore = defineStore('session', {
       // Whether recommended papers are added to the selection right away
       isAiAutoSelect: false,
       // Whether the AI model may have more suggestions loaded if too few fit
-      isAiLoadMoreAllowed: true
+      isAiLoadMoreAllowed: true,
+      // Conversation with the AI model about the session
+      aiChatMessages: []
     }
   },
   getters: {
@@ -104,6 +106,7 @@ export const useSessionStore = defineStore('session', {
       this.aiRecommendationRange = [5, 15]
       this.isAiAutoSelect = false
       this.isAiLoadMoreAllowed = true
+      this.aiChatMessages = []
     },
 
     removeFromExcludedPublication(doi) {

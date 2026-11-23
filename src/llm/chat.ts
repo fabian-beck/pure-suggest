@@ -75,3 +75,16 @@ export function parseJsonAnswer(text: string): unknown {
   }
   throw new LlmError('invalid-response', 'The model did not answer with valid JSON.')
 }
+
+/**
+ * Reads a string value from JSON that is still being written, as far as it got; empty if
+ * the key has not appeared yet.
+ */
+export function readPartialJsonString(text: string, key: string): string {
+  const body = new RegExp(String.raw`"${key}"\s*:\s*"((?:[^"\\]|\\.)*)`).exec(text)?.[1] ?? ''
+  try {
+    return JSON.parse(`"${body}"`)
+  } catch {
+    return body
+  }
+}

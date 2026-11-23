@@ -89,6 +89,13 @@ export function useModalManager() {
   }
 
   /**
+   * Opens the chat with the AI model about the session
+   */
+  const openAiChatModal = () => {
+    modalStore.isAiChatModalDialogShown = true
+  }
+
+  /**
    * Shows a confirmation dialog
    * @param {string} message - The confirmation message (supports HTML)
    * @param {Function} confirmAction - The action to execute on confirmation
@@ -132,6 +139,7 @@ export function useModalManager() {
     openShareSessionModal,
     openConceptConfigModal,
     openLlmSettingsModal,
+    openAiChatModal,
 
     // Dialog functions
     showConfirmDialog,
