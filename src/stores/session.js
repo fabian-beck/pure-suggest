@@ -18,7 +18,7 @@ export const useSessionStore = defineStore('session', {
     return {
       selectedPublications: [],
       excludedPublicationsDois: [],
-      starredPublicationsDois: [],
+      bookmarkedPublicationsDois: [],
       suggestion: '',
       maxSuggestions: PAGINATION.INITIAL_SUGGESTIONS_COUNT,
       boostKeywordString: '',
@@ -38,7 +38,7 @@ export const useSessionStore = defineStore('session', {
     selectedPublicationsByDoi: (state) =>
       new Map(state.selectedPublications.map((publication) => [publication.doi, publication])),
     excludedPublicationsDoiSet: (state) => new Set(state.excludedPublicationsDois),
-    starredPublicationsDoiSet: (state) => new Set(state.starredPublicationsDois),
+    bookmarkedPublicationsDoiSet: (state) => new Set(state.bookmarkedPublicationsDois),
     selectedPublicationsCount: (state) => state.selectedPublications.length,
     excludedPublicationsCount: (state) => state.excludedPublicationsDois.length,
     suggestedPublications: (state) => (state.suggestion ? state.suggestion.publications : []),
@@ -67,7 +67,7 @@ export const useSessionStore = defineStore('session', {
         name: this.sessionName,
         selected: this.selectedPublicationsDois,
         excluded: this.excludedPublicationsDois,
-        starred: this.starredPublicationsDois,
+        bookmarked: this.bookmarkedPublicationsDois,
         boost: this.uniqueBoostKeywords.join(', ')
       }
     },
@@ -85,7 +85,7 @@ export const useSessionStore = defineStore('session', {
     clear() {
       this.selectedPublications = []
       this.excludedPublicationsDois = []
-      this.starredPublicationsDois = []
+      this.bookmarkedPublicationsDois = []
       this.suggestion = ''
       this.maxSuggestions = PAGINATION.INITIAL_SUGGESTIONS_COUNT
       this.boostKeywordString = ''
@@ -103,11 +103,11 @@ export const useSessionStore = defineStore('session', {
       )
     },
 
-    toggleStarred(publication) {
-      publication.isStarred = !this.starredPublicationsDoiSet.has(publication.doi)
-      this.starredPublicationsDois = publication.isStarred
-        ? [...this.starredPublicationsDois, publication.doi]
-        : this.starredPublicationsDois.filter((doi) => doi !== publication.doi)
+    toggleBookmark(publication) {
+      publication.isBookmarked = !this.bookmarkedPublicationsDoiSet.has(publication.doi)
+      this.bookmarkedPublicationsDois = publication.isBookmarked
+        ? [...this.bookmarkedPublicationsDois, publication.doi]
+        : this.bookmarkedPublicationsDois.filter((doi) => doi !== publication.doi)
     },
 
     setBoostKeywordString(boostKeywordString) {

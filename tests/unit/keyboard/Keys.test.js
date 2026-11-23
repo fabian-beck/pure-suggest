@@ -280,16 +280,16 @@ describe('Keys Module - Keyboard Event Handling', () => {
     })
   })
 
-  it('should star and unstar the active publication with *', () => {
+  it('should bookmark the active publication and remove the bookmark with k', () => {
     sessionStore.selectedPublications = [{ doi: '10.1234/selected' }]
     sessionStore.activePublication = sessionStore.selectedPublications[0]
 
-    onKey({ key: '*', shiftKey: true, preventDefault: vi.fn() })
-    expect(sessionStore.activePublication.isStarred).toBe(true)
-    expect(sessionStore.starredPublicationsDois).toEqual(['10.1234/selected'])
+    onKey({ key: 'k', preventDefault: vi.fn() })
+    expect(sessionStore.activePublication.isBookmarked).toBe(true)
+    expect(sessionStore.bookmarkedPublicationsDois).toEqual(['10.1234/selected'])
 
-    onKey({ key: '*', shiftKey: true, preventDefault: vi.fn() })
-    expect(sessionStore.starredPublicationsDois).toEqual([])
+    onKey({ key: 'k', preventDefault: vi.fn() })
+    expect(sessionStore.bookmarkedPublicationsDois).toEqual([])
   })
 
   describe('Navigation (Arrow keys)', () => {

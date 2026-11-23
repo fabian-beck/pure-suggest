@@ -18,7 +18,7 @@ The tool is available at: https://fabian-beck.github.io/pure-suggest/
 - Add publications to selection by DOIs or search
 - View the main authors of the selected publications
 - Filter publications by different criteria
-- Automatic tagging of publication characteristics (e.g., ”highly cited”) and manual starring of publications
+- Automatic tagging of publication characteristics (e.g., ”highly cited”) and manual bookmarking of publications
 - Quick access to publications through links (DOIs, open access versions, or Google Scholar)
 - Keyboard controls for an efficient workflow
 - Export/import session and share as link

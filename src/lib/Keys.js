@@ -207,10 +207,10 @@ function handleActivePublicationShortcuts(e) {
   if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
     return handleArrowKeyNavigation(e)
   }
-  // Not in dialogs, whose publication objects are not synced with the starred DOIs
-  if (e.key === '*') {
+  // Not in dialogs, whose publication objects are not synced with the bookmarked DOIs
+  if (e.key === 'k') {
     e.preventDefault()
-    sessionStore.toggleStarred(sessionStore.activePublication)
+    sessionStore.toggleBookmark(sessionStore.activePublication)
     return true
   }
 

@@ -62,8 +62,8 @@ const TITLE_WORD_MAP = {
 
 const PUBLICATION_TAGS = [
   {
-    value: 'isStarred',
-    name: 'Starred'
+    value: 'isBookmarked',
+    name: 'Bookmarked'
   },
   {
     value: 'isHighlyCited',
@@ -162,7 +162,7 @@ export default class Publication {
     this.tooManyCitations = false
 
     // Boolean flags (tags and interface state)
-    this.isSurvey = this.isHighlyCited = this.isNew = this.isUnnoted = this.isStarred = false
+    this.isSurvey = this.isHighlyCited = this.isNew = this.isUnnoted = this.isBookmarked = false
     this.isActive = this.isLinkedToActive = this.isSelected = this.isRead = false
     this.isKeywordHovered = this.isAuthorHovered = this.wasFetched = false
     this.isNewlyAdded = false

@@ -300,15 +300,15 @@ describe('Session Store - Suggested Publications Filtering', () => {
     })
   })
 
-  describe('starred publications', () => {
-    it('should star and unstar a publication, which can then be filtered as tag', () => {
+  describe('bookmarked publications', () => {
+    it('should bookmark a publication and remove the bookmark, which can then be filtered as tag', () => {
       const suggested = sessionStore.suggestedPublications[0]
 
-      sessionStore.toggleStarred(suggested)
+      sessionStore.toggleBookmark(suggested)
 
-      expect(suggested.isStarred).toBe(true)
-      expect(sessionStore.sessionData.starred).toEqual([suggested.doi])
-      sessionStore.filter.toggleTag('isStarred')
+      expect(suggested.isBookmarked).toBe(true)
+      expect(sessionStore.sessionData.bookmarked).toEqual([suggested.doi])
+      sessionStore.filter.toggleTag('isBookmarked')
       expect(
         sessionStore.suggestedPublicationsFiltered.filter(
           sessionStore.filter.matches,
@@ -316,18 +316,18 @@ describe('Session Store - Suggested Publications Filtering', () => {
         )
       ).toEqual([suggested])
 
-      sessionStore.toggleStarred(suggested)
+      sessionStore.toggleBookmark(suggested)
 
-      expect(suggested.isStarred).toBe(false)
-      expect(sessionStore.sessionData.starred).toEqual([])
+      expect(suggested.isBookmarked).toBe(false)
+      expect(sessionStore.sessionData.bookmarked).toEqual([])
     })
 
     it('should be reset when clearing the session', () => {
-      sessionStore.toggleStarred(sessionStore.suggestedPublications[0])
+      sessionStore.toggleBookmark(sessionStore.suggestedPublications[0])
 
       sessionStore.clear()
 
-      expect(sessionStore.starredPublicationsDois).toEqual([])
+      expect(sessionStore.bookmarkedPublicationsDois).toEqual([])
     })
   })
 

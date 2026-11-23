@@ -272,8 +272,8 @@ describe('useAppState - Session Loading', () => {
     })
   })
 
-  describe('starred publications', () => {
-    it('should restore starred publications and mark them after loading', async () => {
+  describe('bookmarked publications', () => {
+    it('should restore bookmarked publications and mark them after loading', async () => {
       const publication = {
         doi: '10.1234/pub1',
         citationDois: [],
@@ -285,19 +285,19 @@ describe('useAppState - Session Loading', () => {
       })
       sessionStore.updatePublicationScores = vi.fn()
 
-      await appState.loadSession({ selected: ['10.1234/pub1'], starred: ['10.1234/PUB1'] })
-      await vi.waitFor(() => expect(publication.isStarred).toBe(true))
+      await appState.loadSession({ selected: ['10.1234/pub1'], bookmarked: ['10.1234/PUB1'] })
+      await vi.waitFor(() => expect(publication.isBookmarked).toBe(true))
 
-      expect(sessionStore.starredPublicationsDois).toEqual(['10.1234/pub1'])
+      expect(sessionStore.bookmarkedPublicationsDois).toEqual(['10.1234/pub1'])
     })
 
-    it('should unstar a publication that is excluded', async () => {
-      sessionStore.starredPublicationsDois = ['10.1234/kept', '10.1234/excluded']
+    it('should remove the bookmark of a publication that is excluded', async () => {
+      sessionStore.bookmarkedPublicationsDois = ['10.1234/kept', '10.1234/excluded']
       queueStore.excludedQueue = ['10.1234/excluded']
 
       await appState.updateQueued()
 
-      expect(sessionStore.starredPublicationsDois).toEqual(['10.1234/kept'])
+      expect(sessionStore.bookmarkedPublicationsDois).toEqual(['10.1234/kept'])
     })
   })
 

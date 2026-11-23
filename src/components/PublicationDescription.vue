@@ -193,8 +193,8 @@ function getTagTooltip(tagValue, tagName) {
   }
 
   const description =
-    tagValue === 'isStarred'
-      ? 'Starred by you.'
+    tagValue === 'isBookmarked'
+      ? 'Bookmarked by you.'
       : `Identified as ${tagName.toLowerCase()}: ${props.publication[tagValue]}.`
   const action = isTagFiltered(tagValue)
     ? `Active as filter; click to remove from filter.`
@@ -371,14 +371,14 @@ function handleAuthorClick(event) {
           >
           </CompactButton>
           <CompactButton
-            :icon="publication.isStarred ? 'mdi-star' : 'mdi-star-outline'"
+            :icon="publication.isBookmarked ? 'mdi-bookmark' : 'mdi-bookmark-outline'"
             v-tippy="
-              publication.isStarred
-                ? `Unstar publication (<span class='key'>*</span>)`
-                : `Star publication (<span class='key'>*</span>)`
+              publication.isBookmarked
+                ? `Remove bookmar<span class='key'>k</span>`
+                : `Bookmar<span class='key'>k</span> publication`
             "
-            :active="publication.isStarred"
-            @click.stop="sessionStore.toggleStarred(publication)"
+            :active="publication.isBookmarked"
+            @click.stop="sessionStore.toggleBookmark(publication)"
             v-if="!alwaysShowDetails"
           ></CompactButton>
           <CompactButton
