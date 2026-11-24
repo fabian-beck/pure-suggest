@@ -26,6 +26,17 @@ const conversationEnd = ref(null)
 const messages = computed(() => sessionStore.aiChatMessages)
 const isWriting = computed(() => Boolean(messages.value.at(-1)?.isWriting))
 
+/** Splits a text into plain parts and web addresses, which are shown as links. */
+function splitLinks(text) {
+  return text.split(/(https?:\/\/\S+)/).flatMap((part, index) => {
+    if (index % 2 === 0) return part ? [{ text: part }] : []
+    // Punctuation that ends the sentence is not part of the address
+    let end = part.length
+    while ('.,;:!?)]'.includes(part[end - 1])) end--
+    return [{ text: part.slice(0, end), href: part.slice(0, end) }, { text: part.slice(end) }]
+  })
+}
+
 function send(text) {
   if (isWriting.value || llmStore.setupIssue || !text.trim()) return
   draft.value = ''
@@ -96,7 +107,14 @@ watch(
       >
         <v-icon v-if="message.role === 'assistant'" class="mr-2">mdi-robot-outline</v-icon>
         <div class="bubble">
-          <div class="text">{{ message.text }}</div>
+          <div class="text">
+            <template v-for="(part, partIndex) in splitLinks(message.text)" :key="partIndex">
+              <a v-if="part.href" :href="part.href" target="_blank" rel="noopener">{{
+                part.text
+              }}</a>
+              <template v-else>{{ part.text }}</template>
+            </template>
+          </div>
           <div v-if="message.isWriting && !message.text" class="is-size-7" role="status">
             <v-progress-circular indeterminate size="14" width="2" class="mr-1" />
             Reading your session…

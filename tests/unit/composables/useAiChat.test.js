@@ -2,6 +2,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useAiChat } from '@/composables/useAiChat.js'
+import { useAuthorStore } from '@/stores/author.js'
 import { useLlmStore } from '@/stores/llm.js'
 import { useSessionStore } from '@/stores/session.js'
 
@@ -36,6 +37,9 @@ describe('useAiChat', () => {
     appState.updateScores.mockReset()
     sessionStore.selectedPublications = [publication('seed')]
     sessionStore.suggestion = { totalSuggestions: 50, publications: [publication('a')] }
+    sessionStore.sessionName = 'My session'
+    sessionStore.excludedPublicationsDois = ['x', 'y']
+    useAuthorStore().selectedPublicationsAuthors = [{ name: 'Doe, Jane', count: 1 }]
     chat = useAiChat()
   })
 
@@ -52,6 +56,11 @@ describe('useAiChat', () => {
 
     const [request] = llmStore.generate.mock.calls[0]
     expect(request.messages[0].content).toContain('"title":"Paper seed"')
+    expect(request.messages[0].content).toContain('"sessionName":"My session"')
+    expect(request.messages[0].content).toContain('"excluded":2')
+    expect(request.messages[0].content).toContain(
+      '"mainAuthors":[{"name":"Doe, Jane","selectedPapers":1}]'
+    )
     expect(request.messages.at(-1)).toEqual({
       role: 'user',
       content: 'How many papers are selected?'

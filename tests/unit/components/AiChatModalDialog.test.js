@@ -121,6 +121,28 @@ describe('AiChatModalDialog', () => {
     expect(sessionStore.aiChatMessages).toEqual([])
   })
 
+  it('turns links in answers into links that open in a new tab', async () => {
+    sessionStore.aiChatMessages = [
+      {
+        role: 'assistant',
+        text: 'Burch et al. (2008). Timeline Trees. https://doi.org/10.1145/1385569.1385584.',
+        papers: [],
+        actions: []
+      }
+    ]
+    await nextTick()
+
+    const link = wrapper.find('.message .text a')
+    expect(link.attributes()).toMatchObject({
+      href: 'https://doi.org/10.1145/1385569.1385584',
+      target: '_blank',
+      rel: 'noopener'
+    })
+    expect(wrapper.find('.message .text').text()).toBe(
+      'Burch et al. (2008). Timeline Trees. https://doi.org/10.1145/1385569.1385584.'
+    )
+  })
+
   it('lets the user stop an answer that is being written, without sending in between', async () => {
     sessionStore.aiChatMessages = [
       { role: 'user', text: 'Hi' },

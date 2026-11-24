@@ -6,6 +6,7 @@ import {
   parseChatAnswer,
   parsePartialChatAnswer
 } from '@/services/AiChatService.js'
+import { useAuthorStore } from '@/stores/author.js'
 import { useLlmStore } from '@/stores/llm.js'
 import { useSessionStore } from '@/stores/session.js'
 
@@ -19,6 +20,7 @@ let answerController = null
 export function useAiChat() {
   const sessionStore = useSessionStore()
   const llmStore = useLlmStore()
+  const authorStore = useAuthorStore()
   const { updateScores } = useAppState()
 
   /**
@@ -81,7 +83,10 @@ export function useAiChat() {
           suggestedPublications: sessionStore.suggestedPublications,
           totalSuggestions: sessionStore.suggestion?.totalSuggestions ?? 0,
           boostKeywordString: sessionStore.boostKeywordString,
-          filter: sessionStore.filter
+          filter: sessionStore.filter,
+          sessionName: sessionStore.sessionName,
+          excludedCount: sessionStore.excludedPublicationsCount,
+          authors: authorStore.selectedPublicationsAuthors
         },
         messages.slice(0, -1),
         llmStore.usableContextWindow

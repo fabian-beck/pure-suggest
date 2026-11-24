@@ -30,6 +30,12 @@ const sessionData = (overrides = {}) => {
     totalSuggestions: 420,
     boostKeywordString: 'VISUAL|VIS, NETWORK',
     filter,
+    sessionName: 'Citation tools',
+    excludedCount: 3,
+    authors: Array.from({ length: 14 }, (_, index) => ({
+      name: `Author ${index + 1}`,
+      count: 14 - index
+    })),
     ...overrides
   }
 }
@@ -87,6 +93,61 @@ describe('AiChatService', () => {
         'setFilterTags',
         'clearFilters'
       ])
+    })
+
+    it('provides what is needed to cite, link, and characterize a paper', () => {
+      const data = sessionData({
+        selectedPublications: [
+          publication('10.1145/1385569.1385584', {
+            title: 'Timeline Trees',
+            author: 'Burch, Michael; Beck, Fabian; Diehl, Stephan',
+            container: 'Proceedings of AVI',
+            year: 2008,
+            volume: '12',
+            issue: '3',
+            page: '75-82',
+            citationCount: 1,
+            referenceCount: 2,
+            citationDois: new Set(['a', 'b', 'c']),
+            referenceDois: new Set(['d']),
+            isRead: true,
+            isAiRecommended: 'Introduces the technique.',
+            concepts: ['C1 - TREE']
+          })
+        ]
+      })
+      data.filter.authors = ['beck, fabian']
+      data.filter.applyToSuggested = false
+
+      const request = buildChatRequest(data, [{ role: 'user', text: 'Cite it.' }], 64000)
+
+      expect(context(request).selectedPapers[0]).toMatchObject({
+        doi: '10.1145/1385569.1385584',
+        authors: 'Burch, Michael; Beck, Fabian; Diehl, Stephan',
+        venue: 'Proceedings of AVI',
+        year: 2008,
+        volume: '12',
+        issue: '3',
+        pages: '75-82',
+        citesSelected: 1,
+        citedBySelected: 2,
+        citations: 3,
+        references: 1,
+        isRead: true,
+        aiRecommended: 'Introduces the technique.',
+        concepts: ['C1 - TREE']
+      })
+      // Absent details are left out instead of listed as empty
+      expect(Object.keys(context(request).suggestedPapers[0])).not.toContain('volume')
+      expect(Object.keys(context(request).suggestedPapers[0])).not.toContain('aiRecommended')
+      expect(context(request)).toMatchObject({
+        sessionName: 'Citation tools',
+        filters: { authors: ['beck, fabian'], appliesTo: 'selected papers' },
+        counts: { excluded: 3 }
+      })
+      expect(context(request).mainAuthors).toHaveLength(10)
+      expect(context(request).mainAuthors[0]).toEqual({ name: 'Author 1', selectedPapers: 14 })
+      expect(request.messages[0].content).toContain('https://doi.org/<doi>')
     })
 
     it('passes the conversation on, with earlier answers in the format the model writes', () => {

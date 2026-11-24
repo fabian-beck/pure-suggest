@@ -12,6 +12,7 @@ const ANSWER_TOKENS = 1000
 // Earlier messages passed on to the model, and the length each may have
 const HISTORY_MESSAGES = 10
 const HISTORY_MESSAGE_MAX_LENGTH = 2000
+const MAIN_AUTHORS = 10
 
 // Changes to the session the model may ask for
 const ACTION_TYPES = [
@@ -25,6 +26,7 @@ const ACTION_TYPES = [
 const INSTRUCTIONS = [
   'You are the assistant of PUREsuggest, a tool for citation-based literature search: the user selects papers, and the tool suggests papers that cite or are cited by them, ranked by a score that keywords can boost.',
   'Answer questions about the session data given below: the selected and suggested papers, the keywords, and the filters. Ground every statement in that data and say so if it does not contain the answer; of the suggestions, only the top-ranked ones may be listed.',
+  'In the session data, score is the number of citation links between a paper and the selected papers (citesSelected and citedBySelected; selected papers count one extra), doubled for each matched keyword. citations and references are the numbers of papers known to cite it and to be cited by it. A DOI link has the form https://doi.org/<doi>.',
   'Write the answer for the user in plain text without Markdown, as short as the question allows. Refer to papers by first author and year or by title, never by id, position, or field names.',
   'Whenever your answer singles out some of the listed papers (for example those on a topic, of a kind, or that you recommend), list them in "papers" by id, each with a reason in one brief sentence. The tool marks them as "AI recommended" in its lists and shows them first, so the answer can summarize instead of enumerating them. Leave "papers" empty if the answer is not about specific papers.',
   'You can change the session through actions. Use them only if the user asks for a change, and say in the answer what you changed.',
@@ -68,12 +70,46 @@ const RESPONSE_SCHEMA = {
 
 function describeFilters(filter) {
   const hasYears = filter.yearStart || filter.yearEnd
+  const lists = [
+    filter.applyToSelected && 'selected papers',
+    filter.applyToSuggested && 'suggested papers'
+  ]
   return {
     text: filter.string,
     years: hasYears ? `${filter.yearStart || ''}-${filter.yearEnd || ''}` : '',
     tags: filter.tags,
-    isActive: filter.isActive
+    authors: filter.authors,
+    linkedToPapersWithDoi: filter.dois,
+    isActive: filter.isActive,
+    appliesTo: lists.filter(Boolean).join(' and ')
   }
+}
+
+/**
+ * Describes a publication for the chat: beyond the description shared with the
+ * recommendations, what is needed to cite it, link it, and judge its role in the session.
+ * Details the publication lacks are left out.
+ */
+function describePaper(publication, id, detail) {
+  const paper = { id, ...serializePublication(publication, detail), score: publication.score }
+  if (!detail.includesMetadata) return paper
+  const details = {
+    doi: publication.doi,
+    volume: publication.volume,
+    issue: publication.issue,
+    pages: publication.page,
+    citesSelected: publication.citationCount,
+    citedBySelected: publication.referenceCount,
+    citations: publication.citationDois?.size,
+    references: publication.referenceDois?.size,
+    isRead: publication.isRead,
+    aiRecommended: publication.isAiRecommended,
+    concepts: publication.concepts
+  }
+  for (const [key, value] of Object.entries(details)) {
+    if (value && !(Array.isArray(value) && !value.length)) paper[key] = value
+  }
+  return paper
 }
 
 /**
@@ -82,7 +118,16 @@ function describeFilters(filter) {
  * (`context`) and the publications listed in it (`papers`), whose 1-based position is their id.
  */
 function describeSession(
-  { selectedPublications, suggestedPublications, totalSuggestions, boostKeywordString, filter },
+  {
+    selectedPublications,
+    suggestedPublications,
+    totalSuggestions,
+    boostKeywordString,
+    filter,
+    sessionName,
+    excludedCount,
+    authors
+  },
   tokenBudget
 ) {
   let context
@@ -90,6 +135,7 @@ function describeSession(
   for (const detail of DETAIL_LEVELS) {
     listed = []
     context = {
+      sessionName,
       keywords: boostKeywordString,
       filters: describeFilters(filter),
       availableTags: Publication.TAGS.map(({ value, name }) => ({ id: value, name })),
@@ -97,19 +143,19 @@ function describeSession(
         selected: selectedPublications.length,
         suggestionsLoaded: suggestedPublications.length,
         suggestionsListed: 0,
-        suggestionsTotal: totalSuggestions
+        suggestionsTotal: totalSuggestions,
+        excluded: excludedCount
       },
+      mainAuthors: authors
+        .slice(0, MAIN_AUTHORS)
+        .map(({ name, count }) => ({ name, selectedPapers: count })),
       selectedPapers: [],
       suggestedPapers: []
     }
     let remainingTokens = tokenBudget - estimateTokens(JSON.stringify(context))
     const addPapers = (publications, papers) => {
       for (const publication of publications) {
-        const paper = {
-          id: listed.length + 1,
-          ...serializePublication(publication, detail),
-          score: publication.score
-        }
+        const paper = describePaper(publication, listed.length + 1, detail)
         remainingTokens -= estimateTokens(JSON.stringify(paper)) + 1
         if (remainingTokens < 0) return
         papers.push(paper)
@@ -127,7 +173,8 @@ function describeSession(
 /**
  * Builds the chat request for the next answer of the assistant.
  * @param {Object} sessionData - Selected and suggested publications (with the total number of
- *   suggestions available), keywords, and filter
+ *   suggestions available), keywords, filter, session name, number of excluded publications,
+ *   and the authors of the selected publications (most important first)
  * @param {Array} history - Messages so far ({role, text, actions}), ending with the user's
  * @param {number} contextWindow - Tokens available for prompt and answer
  * @returns {{messages: Array, jsonSchema: Object, maxOutputTokens: number, papers: Array}}
