@@ -285,6 +285,13 @@ body {
   }
 }
 
+// Bulma's reset removes the padding of all textareas, which Vuetify's fields need to keep
+// the text clear of the label
+.v-textarea textarea.v-field__input {
+  padding-block: var(--v-field-input-padding-top) var(--v-field-input-padding-bottom);
+  padding-inline: var(--v-field-padding-start) var(--v-field-padding-end);
+}
+
 // Vuetify teleports dialog overlays to `body > .v-overlay-container`, outside
 // `#app`, so modal buttons need the same baseline as in-app buttons to match.
 // Explicitly-small buttons keep their size.
