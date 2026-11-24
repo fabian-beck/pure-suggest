@@ -157,7 +157,7 @@ Provider-independent inference for AI features (experimental). The application o
 
 ## Design Principles
 
-- "selected" identifies through primary color (turquoise), "suggested" through info color (cyan)
+- "selected" identifies through primary color (turquoise), "suggested" through info color (cyan), AI features through the AI color (pink; `--ai-color`, `has-background-ai`, `has-text-ai`, dialog `header-color="ai"`)
 - Avoid functions of minimal lenght and logic (unecessary indirection)
 - Do not use config objects to hide complex parameter setups in function calls.
 - Don't run dev mode yourself (npm run dev)

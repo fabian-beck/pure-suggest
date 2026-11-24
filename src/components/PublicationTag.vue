@@ -52,6 +52,16 @@ defineEmits(['click'])
     border-color: #363636;
   }
 
+  // Tags set by an AI model
+  &.is-ai.publication-tag-default {
+    background-color: var(--ai-color-85);
+  }
+
+  &.is-ai.has-background-dark {
+    border-color: var(--ai-color);
+    background-color: var(--ai-color) !important;
+  }
+
   &.tag-clickable {
     cursor: pointer;
     transition: opacity 0.2s;

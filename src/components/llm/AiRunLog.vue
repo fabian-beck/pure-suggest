@@ -15,7 +15,7 @@ defineProps({
   <div class="run-log" role="list">
     <div v-for="(entry, index) in log" :key="index" class="step" role="listitem">
       <div class="step-title">
-        <v-icon size="small">mdi-robot-outline</v-icon>
+        <v-icon size="small" class="has-text-ai">mdi-robot-outline</v-icon>
         <b>Step {{ index + 1 }}</b>
         <span class="is-size-7">{{ entry.considered }}</span>
       </div>

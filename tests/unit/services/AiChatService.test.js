@@ -174,6 +174,19 @@ describe('AiChatService', () => {
       ])
     })
 
+    it('keeps line breaks of messages and shortens overlong ones', () => {
+      const history = [
+        { role: 'user', text: 'Compare:\n- Timeline Trees\n- TimeEdgeTrees' },
+        { role: 'assistant', text: 'x'.repeat(5000), actions: [] },
+        { role: 'user', text: 'Thanks' }
+      ]
+
+      const { messages } = buildChatRequest(sessionData(), history, 64000)
+
+      expect(messages[1].content).toBe('Compare:\n- Timeline Trees\n- TimeEdgeTrees')
+      expect(JSON.parse(messages[2].content).answer).toHaveLength(2000)
+    })
+
     it('fits the session data to small context windows, keeping the selected papers', () => {
       const request = buildChatRequest(sessionData(), [{ role: 'user', text: 'Hi' }], 2200)
       const { selectedPapers, suggestedPapers, counts } = context(request)

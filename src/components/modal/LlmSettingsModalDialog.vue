@@ -115,7 +115,7 @@ watch(
     v-model="modalStore.isLlmSettingsModalDialogShown"
     title="AI model"
     icon="mdi-robot-outline"
-    header-color="info"
+    header-color="ai"
   >
     <div class="content">
       <p>
@@ -201,7 +201,7 @@ watch(
       </template>
     </div>
     <template #footer>
-      <div v-if="llmStore.settings.mode" class="summary has-background-info-95">
+      <div v-if="llmStore.settings.mode" class="summary has-background-ai-95">
         <div class="d-flex flex-wrap align-center ga-2">
           <LlmEngineChip />
           <v-btn
@@ -269,8 +269,8 @@ watch(
   }
 
   &.is-chosen {
-    border-color: var(--bulma-info);
-    background-color: var(--bulma-info-95);
+    border-color: var(--ai-color);
+    background-color: var(--ai-color-95);
   }
 
   & .mode-title {

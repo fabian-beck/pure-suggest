@@ -358,6 +358,7 @@ function getActiveConceptTags() {
                   v-for="tag in visibleTags"
                   :key="tag.value"
                   :icon="getTagIcon(tag.value)"
+                  :class="{ 'is-ai': tag.value === AI_RECOMMENDED_TAG }"
                   clickable
                   :active="isTagActive(tag.value)"
                   @click="toggleTag(tag.value)"

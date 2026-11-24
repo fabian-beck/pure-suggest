@@ -39,6 +39,17 @@
   --bulma-dark-s: 0%;
   --bulma-dark-l: 21%;
 
+  /*
+   * AI color (pink): identifies everything done by or set up for AI models, as primary does
+   * for "selected" and info for "suggested"; same saturation and lightness as the info color
+   */
+  --ai-h: 325deg;
+  --ai-s: 61%;
+  --ai-l: 53%;
+  --ai-color: hsl(var(--ai-h), var(--ai-s), var(--ai-l));
+  --ai-color-85: hsl(var(--ai-h), var(--ai-s), 85%);
+  --ai-color-95: hsl(var(--ai-h), var(--ai-s), 95%);
+
   /* Fix conflicting text colors between Bulma and Vuetify */
   .has-text-white {
     color: white !important;
@@ -47,4 +58,16 @@
   .has-background-dark.has-text-white {
     color: white !important;
   }
+}
+
+.has-background-ai {
+  background-color: var(--ai-color) !important;
+}
+
+.has-background-ai-95 {
+  background-color: var(--ai-color-95) !important;
+}
+
+.has-text-ai {
+  color: var(--ai-color) !important;
 }

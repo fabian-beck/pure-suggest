@@ -66,7 +66,7 @@ watch(
     v-model="modalStore.isAiChatModalDialogShown"
     title="AI chat"
     icon="mdi-forum-outline"
-    header-color="info"
+    header-color="ai"
   >
     <template #header-menu>
       <CompactButton
@@ -105,7 +105,9 @@ watch(
         class="message"
         :class="`is-${message.role}`"
       >
-        <v-icon v-if="message.role === 'assistant'" class="mr-2">mdi-robot-outline</v-icon>
+        <v-icon v-if="message.role === 'assistant'" class="mr-2 has-text-ai">
+          mdi-robot-outline
+        </v-icon>
         <div class="bubble">
           <div class="text">
             <template v-for="(part, partIndex) in splitLinks(message.text)" :key="partIndex">
@@ -124,7 +126,7 @@ watch(
           </div>
           <div v-if="message.papers?.length" class="marked">
             <div class="action">
-              <v-icon size="small" class="mr-1">mdi-robot-outline</v-icon>Marked
+              <v-icon size="small" class="mr-1 has-text-ai">mdi-robot-outline</v-icon>Marked
               {{ message.papers.length }} publication{{ message.papers.length === 1 ? '' : 's' }}
               as AI recommended
             </div>
@@ -154,20 +156,24 @@ watch(
       <div ref="conversationEnd"></div>
     </div>
     <template #footer>
-      <div class="chat-footer has-background-info-95">
+      <div class="chat-footer has-background-ai-95">
         <p v-if="llmStore.setupIssue" class="is-size-7 mb-2">
           <v-icon size="small" color="warning">mdi-alert-outline</v-icon>
           {{ llmStore.setupIssue }}
         </p>
-        <v-text-field
+        <v-textarea
           v-else
           v-model="draft"
           class="dialog-initial-focus mb-2"
           label="Ask about your session, or for keywords and filters"
+          hint="Enter sends the message, Shift+Enter starts a new line."
+          persistent-hint
+          rows="1"
+          max-rows="6"
+          auto-grow
           density="compact"
-          hide-details
           autocomplete="off"
-          @keydown.enter="send(draft)"
+          @keydown.enter.exact.prevent="send(draft)"
         >
           <template #append-inner>
             <v-btn v-if="isWriting" size="small" variant="text" class="px-2" @click="stopAnswer()">
@@ -184,7 +190,7 @@ watch(
               Send
             </v-btn>
           </template>
-        </v-text-field>
+        </v-textarea>
         <div class="d-flex flex-wrap align-center ga-2">
           <LlmEngineChip v-if="llmStore.settings.mode" />
           <v-btn
@@ -214,7 +220,7 @@ watch(
     max-width: min(85%, 44rem);
     padding: 0.5rem 0.75rem;
     border-radius: 8px;
-    background-color: var(--bulma-info-95);
+    background-color: var(--ai-color-95);
   }
 
   &.is-user .bubble {

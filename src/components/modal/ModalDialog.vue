@@ -3,7 +3,8 @@ import CompactButton from '@/components/basic/CompactButton.vue'
 import { useDialogFocusReturn } from '@/composables/useDialogFocusReturn.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 
-const FOCUSABLE_SELECTOR = 'input, button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+const FOCUSABLE_SELECTOR =
+  'input, textarea:not([readonly]), button:not([disabled]), [tabindex]:not([tabindex="-1"])'
 const TEXT_INPUT_SELECTOR =
   'input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea'
 

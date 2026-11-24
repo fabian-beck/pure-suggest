@@ -256,6 +256,7 @@ function handleAuthorClick(event) {
             v-for="tag in visibleTags"
             :key="tag.value"
             :icon="getTagIcon(tag.value)"
+            :class="{ 'is-ai': tag.value === 'isAiRecommended' }"
             clickable
             :active="isTagFiltered(tag.value)"
             @click="toggleTag(tag.value)"

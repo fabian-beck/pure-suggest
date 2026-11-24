@@ -35,7 +35,7 @@ const { isEmpty, clearCache } = useAppState()
         "
         @click="openAiChatModal()"
       >
-        <v-icon>mdi-forum-outline</v-icon>
+        <v-icon class="has-text-ai">mdi-forum-outline</v-icon>
       </v-btn>
       <v-menu transition="slide-y-transition">
         <template #activator="{ props }">

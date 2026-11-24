@@ -69,6 +69,24 @@ describe('ModalDialog keyboard support', () => {
     expect(document.activeElement).toBe(input.element)
   })
 
+  it('focuses a multi-line text field marked as initial focus', () => {
+    const dialog = mount(
+      {
+        components: { ModalDialog },
+        template: `
+          <ModalDialog :model-value="true">
+            <div class="dialog-initial-focus"><textarea></textarea><button disabled>Send</button></div>
+          </ModalDialog>`
+      },
+      { attachTo: document.body, global: { stubs: { CompactButton: true } } }
+    )
+
+    dialog.findComponent(ModalDialog).vm.focusInitialElement()
+
+    expect(document.activeElement).toBe(dialog.find('textarea').element)
+    dialog.unmount()
+  })
+
   it('moves between entries with arrow keys, Home, and End', async () => {
     mountDialog()
     items()[0].focus()

@@ -44,7 +44,7 @@ function start() {
     v-model="modalStore.isAiRecommendationModalDialogShown"
     title="AI recommendations"
     icon="mdi-robot-outline"
-    header-color="info"
+    header-color="ai"
   >
     <div class="content">
       <p v-if="sessionStore.isAiAutoSelect">
@@ -117,7 +117,7 @@ function start() {
       />
     </div>
     <template #footer>
-      <v-card-actions class="has-background-info-95 justify-end">
+      <v-card-actions class="has-background-ai-95 justify-end">
         <v-btn
           v-if="modalStore.aiReport"
           class="mr-auto"
@@ -127,7 +127,7 @@ function start() {
           Last report
         </v-btn>
         <v-btn
-          class="has-background-info has-text-white"
+          class="has-background-ai has-text-white"
           :class="{ 'dialog-initial-focus': !llmStore.setupIssue }"
           prepend-icon="mdi-robot-outline"
           :disabled="Boolean(llmStore.setupIssue)"

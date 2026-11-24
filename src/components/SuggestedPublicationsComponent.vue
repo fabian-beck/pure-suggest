@@ -110,7 +110,7 @@ const updateMaxSuggestions = async (newValue) => {
           </tippy>
           <CompactButton
             icon="mdi-robot-outline has-text-white"
-            class="ml-2"
+            class="ml-2 has-background-ai"
             :disabled="sessionStore.suggestedPublicationsFiltered.length === 0"
             @click="modalStore.isAiRecommendationModalDialogShown = true"
             v-tippy="

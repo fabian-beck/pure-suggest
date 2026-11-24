@@ -51,11 +51,11 @@ describe('AiChatModalDialog', () => {
           },
           'v-chip': { template: '<button class="example"><slot></slot></button>' },
           'v-progress-circular': true,
-          'v-text-field': {
+          'v-textarea': {
             props: ['modelValue'],
             emits: ['update:modelValue'],
             template:
-              '<div><input class="draft" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" /><slot name="append-inner"></slot></div>'
+              '<div><textarea class="draft" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)"></textarea><slot name="append-inner"></slot></div>'
           }
         }
       }
@@ -72,13 +72,30 @@ describe('AiChatModalDialog', () => {
     )
   })
 
-  it('sends the typed message and empties the input', async () => {
+  it('sends the typed message on Enter and empties the input', async () => {
     const input = wrapper.find('.draft')
     await input.setValue('  Which papers are surveys? ')
     await input.trigger('keydown', { key: 'Enter' })
 
     expect(chat.sendChatMessage).toHaveBeenCalledExactlyOnceWith('Which papers are surveys?')
     expect(input.element.value).toBe('')
+  })
+
+  it('keeps Shift+Enter for line breaks, which are sent along', async () => {
+    const input = wrapper.find('.draft')
+    await input.setValue('Compare these two:\nTimeline Trees')
+    const shiftEnter = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      shiftKey: true,
+      cancelable: true
+    })
+    input.element.dispatchEvent(shiftEnter)
+
+    expect(shiftEnter.defaultPrevented).toBe(false)
+    expect(chat.sendChatMessage).not.toHaveBeenCalled()
+
+    await input.trigger('keydown', { key: 'Enter' })
+    expect(chat.sendChatMessage).toHaveBeenCalledWith('Compare these two:\nTimeline Trees')
   })
 
   it('shows the conversation with the changes the model made, which can be undone', async () => {

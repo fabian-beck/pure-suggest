@@ -27,17 +27,17 @@ watch(
 
 <template>
   <section class="ai-activity" aria-label="AI activity">
-    <header class="has-background-info has-text-white">
+    <header class="has-background-ai has-text-white">
       <v-icon class="pulse">mdi-robot-outline</v-icon>
       <h2>AI at work</h2>
       <LlmEngineChip class="ml-auto" />
     </header>
-    <p class="control has-background-info-95">{{ control }}</p>
+    <p class="control has-background-ai-95">{{ control }}</p>
     <div ref="logContainer" class="log" aria-live="polite">
       <AiRunLog :log="run.log" is-running />
     </div>
-    <footer class="has-background-info-95">
-      <v-progress-linear indeterminate color="info" />
+    <footer class="has-background-ai-95">
+      <v-progress-linear indeterminate color="var(--ai-color)" />
       <div class="d-flex align-center ga-2 pa-2">
         <span class="status is-size-7" role="status">{{ interfaceStore.loadingMessage }}</span>
         <v-btn

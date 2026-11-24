@@ -4,8 +4,7 @@ import { LlmError } from '@/llm/types.ts'
 import {
   DETAIL_LEVELS,
   normalizeExplanation,
-  serializePublication,
-  truncateText
+  serializePublication
 } from '@/services/AiRecommendationService.js'
 
 const ANSWER_TOKENS = 1000
@@ -183,7 +182,8 @@ function describeSession(
  */
 export function buildChatRequest(sessionData, history, contextWindow) {
   const conversation = history.slice(-HISTORY_MESSAGES).map(({ role, text, actions }) => {
-    const shortened = truncateText(text, HISTORY_MESSAGE_MAX_LENGTH)
+    // Cut without touching line breaks, which may structure a message
+    const shortened = text.slice(0, HISTORY_MESSAGE_MAX_LENGTH)
     if (role === 'user') return { role, content: shortened }
     return {
       role,

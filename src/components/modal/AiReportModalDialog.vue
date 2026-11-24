@@ -40,7 +40,7 @@ const notes = computed(() => {
     v-model="modalStore.isAiReportModalDialogShown"
     title="AI report"
     icon="mdi-robot-outline"
-    header-color="info"
+    header-color="ai"
   >
     <div v-if="report" class="content">
       <p v-if="report.text" class="report-text">
@@ -83,9 +83,9 @@ const notes = computed(() => {
       </v-expansion-panels>
     </div>
     <template #footer>
-      <v-card-actions class="has-background-info-95 justify-end">
+      <v-card-actions class="has-background-ai-95 justify-end">
         <v-btn
-          class="has-background-info has-text-white dialog-initial-focus"
+          class="has-background-ai has-text-white dialog-initial-focus"
           @click="modalStore.isAiReportModalDialogShown = false"
         >
           Close

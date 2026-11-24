@@ -67,7 +67,7 @@ const RESPONSE_SCHEMA = {
   }
 }
 
-export function truncateText(value, maxLength = TEXT_MAX_LENGTH) {
+function truncateText(value, maxLength = TEXT_MAX_LENGTH) {
   if (!value) return ''
   const text = String(value).replace(/\s+/g, ' ').trim()
   if (text.length <= maxLength) return text
