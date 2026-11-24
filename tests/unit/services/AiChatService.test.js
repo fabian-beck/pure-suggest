@@ -174,6 +174,76 @@ describe('AiChatService', () => {
       ])
     })
 
+    it('reminds the model which papers its earlier answers marked, by their current ids', () => {
+      const history = [
+        { role: 'user', text: 'Which papers fit hierarchical time series?' },
+        {
+          role: 'assistant',
+          text: 'Three papers fit closely.',
+          papers: [
+            { doi: 's2', title: 'Paper s2', explanation: 'A close match.' },
+            { doi: 'seed', title: 'Paper seed', explanation: 'The starting point.' },
+            { doi: 'gone', title: 'Paper gone', explanation: 'No longer suggested.' }
+          ],
+          actions: []
+        },
+        { role: 'user', text: 'Give me references for these.' }
+      ]
+
+      const request = buildChatRequest(sessionData(), history, 64000)
+
+      // Ids follow the lists as they are now; a paper that left them is named by its title
+      expect(JSON.parse(request.messages[2].content).papers).toEqual([
+        { id: 3, reason: 'A close match.' },
+        { id: 1, reason: 'The starting point.' },
+        { title: 'Paper gone', reason: 'No longer suggested.' }
+      ])
+      expect(request.messages[0].content).toContain('papers of your earlier answers')
+    })
+
+    it('does not present undone changes as made', () => {
+      const history = [
+        { role: 'user', text: 'Only surveys.' },
+        {
+          role: 'assistant',
+          text: 'Filtered.',
+          papers: [{ doi: 's1', explanation: 'A survey.' }],
+          actions: [{ type: 'setFilterTags', value: 'isSurvey', label: 'Filter set' }],
+          isUndone: true
+        },
+        { role: 'user', text: 'What now?' }
+      ]
+
+      const { messages } = buildChatRequest(sessionData(), history, 64000)
+
+      expect(JSON.parse(messages[2].content)).toEqual({
+        answer: 'Filtered. (The user has undone the changes of this answer.)',
+        papers: [],
+        actions: []
+      })
+    })
+
+    it('passes a well-formed conversation on, however long or bumpy it was', () => {
+      const turn = (index, answer) => [
+        { role: 'user', text: `Question ${index}` },
+        { role: 'assistant', text: answer, papers: [], actions: [] }
+      ]
+      const history = [
+        ...Array.from({ length: 8 }, (_, index) => turn(index + 1, `Answer ${index + 1}`)).flat(),
+        // A question whose answer failed or was stopped before any text
+        ...turn(9, ''),
+        { role: 'user', text: 'Question 10' }
+      ]
+
+      const conversation = buildChatRequest(sessionData(), history, 64000).messages.slice(1)
+
+      // Models require the roles to alternate, starting and ending with the user
+      expect(conversation.map(({ role }) => role).join(' ')).toMatch(/^user( assistant user)+$/)
+      expect(conversation.at(-1).content).toBe('Question 10')
+      expect(conversation.at(-3).content).toBe('Question 8')
+      expect(conversation[0].content).not.toBe('Question 1')
+    })
+
     it('keeps line breaks of messages and shortens overlong ones', () => {
       const history = [
         { role: 'user', text: 'Compare:\n- Timeline Trees\n- TimeEdgeTrees' },

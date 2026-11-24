@@ -133,6 +133,10 @@ describe('AiChatModalDialog', () => {
 
     await findButton('Undo changes').trigger('click')
     expect(chat.undoActions).toHaveBeenCalledWith(sessionStore.aiChatMessages[1])
+    Object.assign(sessionStore.aiChatMessages[1], { undo: null, isUndone: true })
+    await nextTick()
+    expect(answer.text()).toContain('These changes were undone.')
+    expect(findButton('Undo changes')).toBeUndefined()
 
     await wrapper.find('.clear').trigger('click')
     expect(sessionStore.aiChatMessages).toEqual([])

@@ -8,8 +8,9 @@ import {
 } from '@/services/AiRecommendationService.js'
 
 const ANSWER_TOKENS = 1000
-// Earlier messages passed on to the model, and the length each may have
-const HISTORY_MESSAGES = 10
+// Earlier messages passed on to the model (an odd number, so that they start with a message
+// of the user), and the length each may have
+const HISTORY_MESSAGES = 11
 const HISTORY_MESSAGE_MAX_LENGTH = 2000
 const MAIN_AUTHORS = 10
 
@@ -27,7 +28,7 @@ const INSTRUCTIONS = [
   'Answer questions about the session data given below: the selected and suggested papers, the keywords, and the filters. Ground every statement in that data and say so if it does not contain the answer; of the suggestions, only the top-ranked ones may be listed.',
   'In the session data, score is the number of citation links between a paper and the selected papers (citesSelected and citedBySelected; selected papers count one extra), doubled for each matched keyword. citations and references are the numbers of papers known to cite it and to be cited by it. A DOI link has the form https://doi.org/<doi>.',
   'Write the answer for the user in plain text without Markdown, as short as the question allows. Refer to papers by first author and year or by title, never by id, position, or field names.',
-  'Whenever your answer singles out some of the listed papers (for example those on a topic, of a kind, or that you recommend), list them in "papers" by id, each with a reason in one brief sentence. The tool marks them as "AI recommended" in its lists and shows them first, so the answer can summarize instead of enumerating them. Leave "papers" empty if the answer is not about specific papers.',
+  'Whenever your answer singles out some of the listed papers (for example those on a topic, of a kind, or that you recommend), list them in "papers" by id, each with a reason in one brief sentence. The tool marks them as "AI recommended" in its lists and shows them first, so the answer can summarize instead of enumerating them. Leave "papers" empty if the answer is not about specific papers. The papers of your earlier answers in this conversation are the ones you marked then, given by their current ids; when the user refers to them (for example as "these"), cover all of them.',
   'You can change the session through actions. Use them only if the user asks for a change, and say in the answer what you changed.',
   'setKeywords replaces the boost keywords; its value is a comma-separated list, with alternatives of one keyword separated by "|" (for example "visual|vis, network"); keywords are matched within paper titles; an empty value removes all keywords.',
   'setFilterText shows only papers whose title, authors, or venue contain the value. setFilterYears restricts the publication years; its value is "<first year>-<last year>", where either year may be left out (for example "2015-"). setFilterTags shows only papers with one of the given tags; its value is a comma-separated list of tag ids from availableTags. An empty value removes the respective filter. clearFilters removes all filters; its value is empty.',
@@ -170,33 +171,63 @@ function describeSession(
 }
 
 /**
+ * Turns the messages so far ({role, text, papers, actions, isUndone}, ending with the user's)
+ * into the conversation for the model: alternating between user and assistant and starting
+ * with the user, as models require. Earlier answers appear in the format the model writes,
+ * with the papers they marked given by their current ids (`idByDoi`).
+ */
+function serializeConversation(history, idByDoi) {
+  const answered = []
+  for (let index = 0; index + 1 < history.length; index += 2) {
+    // A question whose answer failed or was stopped before any text is left out with it
+    if (history[index + 1].text) answered.push(history[index], history[index + 1])
+  }
+  return [...answered, history.at(-1)].slice(-HISTORY_MESSAGES).map((message) => {
+    // Cut without touching line breaks, which may structure a message
+    const text = message.text.slice(0, HISTORY_MESSAGE_MAX_LENGTH)
+    if (message.role === 'user') return { role: 'user', content: text }
+    const papers = (message.papers ?? []).map(({ doi, title, explanation }) =>
+      // A paper that left the lists has no id anymore and is named by its title
+      idByDoi.has(doi)
+        ? { id: idByDoi.get(doi), reason: explanation }
+        : { title, reason: explanation }
+    )
+    const actions = (message.actions ?? []).map(({ type, value }) => ({ type, value }))
+    return {
+      role: 'assistant',
+      content: JSON.stringify(
+        message.isUndone
+          ? {
+              answer: `${text} (The user has undone the changes of this answer.)`,
+              papers: [],
+              actions: []
+            }
+          : { answer: text, papers, actions }
+      )
+    }
+  })
+}
+
+/**
  * Builds the chat request for the next answer of the assistant.
  * @param {Object} sessionData - Selected and suggested publications (with the total number of
  *   suggestions available), keywords, filter, session name, number of excluded publications,
  *   and the authors of the selected publications (most important first)
- * @param {Array} history - Messages so far ({role, text, actions}), ending with the user's
+ * @param {Array} history - Messages so far, ending with the user's (see serializeConversation)
  * @param {number} contextWindow - Tokens available for prompt and answer
  * @returns {{messages: Array, jsonSchema: Object, maxOutputTokens: number, papers: Array}}
  *   the request parts and the publications listed for the model (`papers`, which it refers
  *   to by their 1-based position).
  */
 export function buildChatRequest(sessionData, history, contextWindow) {
-  const conversation = history.slice(-HISTORY_MESSAGES).map(({ role, text, actions }) => {
-    // Cut without touching line breaks, which may structure a message
-    const shortened = text.slice(0, HISTORY_MESSAGE_MAX_LENGTH)
-    if (role === 'user') return { role, content: shortened }
-    return {
-      role,
-      content: JSON.stringify({
-        answer: shortened,
-        // Marked papers are left out: their ids only held for the lists of that moment
-        papers: [],
-        actions: (actions ?? []).map(({ type, value }) => ({ type, value }))
-      })
-    }
-  })
-  const usedTokens = estimateTokens(INSTRUCTIONS + JSON.stringify(conversation)) + ANSWER_TOKENS
+  // Sized with the longer form of marked papers, as ids are only known once the lists are set
+  const draft = serializeConversation(history, new Map())
+  const usedTokens = estimateTokens(INSTRUCTIONS + JSON.stringify(draft)) + ANSWER_TOKENS
   const { context, papers } = describeSession(sessionData, contextWindow - usedTokens)
+  const conversation = serializeConversation(
+    history,
+    new Map(papers.map((publication, index) => [publication.doi, index + 1]))
+  )
   if (context.selectedPapers.length < sessionData.selectedPublications.length) {
     throw new LlmError(
       'context-overflow',

@@ -143,6 +143,7 @@ export function useAiChat() {
     sessionStore.setBoostKeywordString(answer.undo.boostKeywordString)
     updateScores()
     answer.undo = null
+    answer.isUndone = true
   }
 
   return { sendChatMessage, stopAnswer, undoActions }

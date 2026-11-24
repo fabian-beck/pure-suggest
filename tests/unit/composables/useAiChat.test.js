@@ -162,6 +162,7 @@ describe('useAiChat', () => {
     expect(sessionStore.filter.matches).toBeTypeOf('function')
     expect(sessionStore.boostKeywordString).toBe('CITATION')
     expect(message.undo).toBeNull()
+    expect(message.isUndone).toBe(true)
   })
 
   it('marks the papers an answer singles out as AI recommended, in both lists', async () => {
@@ -204,6 +205,16 @@ describe('useAiChat', () => {
         explanation: 'Reports a user study.'
       }
     ])
+
+    // A follow-up question can refer to the marked papers ("these")
+    llmStore.generate.mockResolvedValue(answer('Here are the references.'))
+    await chat.sendChatMessage('Give me references for these.')
+    const followUp = llmStore.generate.mock.calls[1][0].messages
+    expect(JSON.parse(followUp.at(-2).content).papers).toEqual([
+      { id: 2, reason: 'Evaluates a tool.' },
+      { id: 3, reason: 'Reports a user study.' }
+    ])
+    expect(followUp[0].content).toContain('"aiRecommended":"Evaluates a tool."')
 
     chat.undoActions(message)
 

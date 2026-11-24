@@ -149,6 +149,7 @@ watch(
           >
             Undo changes
           </v-btn>
+          <div v-if="message.isUndone" class="is-size-7">These changes were undone.</div>
           <div v-if="message.isStopped" class="is-size-7">Stopped.</div>
           <div v-if="message.error" class="has-text-danger" role="alert">{{ message.error }}</div>
         </div>
