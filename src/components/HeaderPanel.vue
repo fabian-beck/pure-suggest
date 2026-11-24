@@ -1,4 +1,6 @@
 <script setup>
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+
 import FilterMenuComponent from '@/components/FilterMenuComponent.vue'
 import KeywordMenuComponent from '@/components/KeywordMenuComponent.vue'
 import LayoutMenuComponent from '@/components/LayoutMenuComponent.vue'
@@ -6,24 +8,74 @@ import SessionMenuComponent from '@/components/SessionMenuComponent.vue'
 import { useAppState } from '@/composables/useAppState.js'
 import { useModalManager } from '@/composables/useModalManager.js'
 import { useInterfaceStore } from '@/stores/interface.js'
+import { useSessionStore } from '@/stores/session.js'
 
 const interfaceStore = useInterfaceStore()
+const sessionStore = useSessionStore()
 const { openKeyboardControlsModal, openAboutModal } = useModalManager()
 const { isEmpty, clearCache } = useAppState()
+
+// Compaction steps applied one after another while the header content does not fit:
+// 1 = logo without name, 2 = compact session button, 3 = collapsed layout selection
+const MAX_COMPACT_LEVEL = 3
+const compactLevel = ref(0)
+const appBar = ref(null)
+
+function isOverflowing() {
+  return [...appBar.value.$el.querySelectorAll('.session-state, .keywords-text')].some(
+    (element) => element.scrollWidth > element.clientWidth
+  )
+}
+
+let latestFit = 0
+async function fitHeader() {
+  if (!appBar.value) return
+  const fit = ++latestFit
+  compactLevel.value = 0
+  await nextTick()
+  while (fit === latestFit && compactLevel.value < MAX_COMPACT_LEVEL && isOverflowing()) {
+    compactLevel.value++
+    await nextTick()
+  }
+}
+
+let resizeObserver
+onMounted(() => {
+  resizeObserver = new ResizeObserver(fitHeader)
+  resizeObserver.observe(appBar.value.$el)
+})
+onBeforeUnmount(() => resizeObserver.disconnect())
+
+watch(
+  () => [
+    isEmpty.value,
+    interfaceStore.isMobile,
+    sessionStore.sessionName,
+    sessionStore.selectedPublicationsCount,
+    sessionStore.excludedPublicationsCount,
+    sessionStore.boostKeywordString,
+    sessionStore.filter
+  ],
+  fitHeader,
+  { deep: true }
+)
 </script>
 
 <template>
   <div>
-    <v-app-bar color="white" density="compact">
+    <v-app-bar ref="appBar" color="white" density="compact">
       <v-app-bar-title>
-        <h1 class="app-name"><AppLogo /></h1>
+        <h1 class="app-name"><AppLogo :icon-only="compactLevel >= 1" /></h1>
         <div class="session-state" v-if="!isEmpty">
-          <SessionMenuComponent />
+          <SessionMenuComponent :compact="compactLevel >= 2" />
           <KeywordMenuComponent />
           <FilterMenuComponent />
         </div>
       </v-app-bar-title>
-      <LayoutMenuComponent v-if="!isEmpty && !interfaceStore.isMobile" />
+      <LayoutMenuComponent
+        v-if="!isEmpty && !interfaceStore.isMobile"
+        :collapsed="compactLevel >= 3"
+      />
       <v-menu transition="slide-y-transition">
         <template #activator="{ props }">
           <v-btn icon v-bind="props" class="mr-1" density="compact" aria-label="More options">

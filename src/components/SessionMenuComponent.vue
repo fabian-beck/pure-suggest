@@ -6,6 +6,10 @@ import { useModalManager } from '@/composables/useModalManager.js'
 import { useInterfaceStore } from '@/stores/interface.js'
 import { useSessionStore } from '@/stores/session.js'
 
+const props = defineProps({
+  compact: { type: Boolean, default: false }
+})
+
 const sessionStore = useSessionStore()
 const interfaceStore = useInterfaceStore()
 const { openShareSessionModal, openExcludedModal } = useModalManager()
@@ -19,6 +23,11 @@ const publicationCountString = computed(() => {
       ? `; ${sessionStore.excludedPublicationsCount} excluded`
       : ''
   }`
+})
+
+const buttonLabel = computed(() => {
+  if (interfaceStore.isMobile) return 'Session'
+  return props.compact ? `Session: ${publicationCountString.value}` : undefined
 })
 
 const isDefaultSessionName = computed(() => {
@@ -49,17 +58,18 @@ watch(
 
 <template>
   <v-menu location="bottom" transition="slide-y-transition">
-    <template #activator="{ props }">
+    <template #activator="{ props: activatorProps }">
       <v-btn
-        v-bind="props"
+        v-bind="activatorProps"
         :icon="interfaceStore.isMobile"
-        :aria-label="interfaceStore.isMobile ? 'Session' : undefined"
+        :aria-label="buttonLabel"
         :density="interfaceStore.isMobile ? 'compact' : 'default'"
         class="session-state-button"
       >
         <v-icon size="18">mdi-text-box-multiple-outline</v-icon>
         <span class="is-hidden-touch ml-2">
-          <template v-if="isDefaultSessionName">
+          <template v-if="compact">{{ sessionStore.selectedPublicationsCount }}</template>
+          <template v-else-if="isDefaultSessionName">
             {{ publicationCountString }}
           </template>
           <template v-else>
@@ -70,7 +80,7 @@ watch(
       </v-btn>
     </template>
     <v-list>
-      <v-list-item class="is-hidden-desktop">
+      <v-list-item :class="{ 'is-hidden-desktop': !compact }">
         <template v-if="isDefaultSessionName">
           {{ publicationCountString }}
         </template>

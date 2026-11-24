@@ -60,8 +60,9 @@ describe('SessionMenuComponent', () => {
     mockAppState.importBibtexWithConfirmation.mockClear()
   })
 
-  const createWrapper = () => {
+  const createWrapper = (props = {}) => {
     return mount(SessionMenuComponent, {
+      props,
       global: {
         stubs: {
           'v-menu': {
@@ -219,6 +220,17 @@ describe('SessionMenuComponent', () => {
       const sessionStateText = wrapper.text()
       expect(sessionStateText).toContain('My Project (5 selected)')
       expect(sessionStateText).not.toContain('excluded')
+    })
+
+    it('should show only the selected count on the compact button and the full state in the menu', () => {
+      wrapper = createWrapper({ compact: true })
+      const button = wrapper.find('.session-state-button')
+      expect(button.text()).toContain('5')
+      expect(button.text()).not.toContain('Test Session')
+      expect(button.attributes('aria-label')).toBe('Session: 5 selected; 2 excluded')
+      expect(wrapper.find('.menu-content').text()).toContain(
+        'Test Session (5 selected; 2 excluded)'
+      )
     })
   })
 

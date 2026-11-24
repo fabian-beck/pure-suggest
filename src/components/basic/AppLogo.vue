@@ -1,13 +1,17 @@
 <script setup>
 import { inject } from 'vue'
 
+defineProps({
+  iconOnly: { type: Boolean, default: false }
+})
+
 const appMeta = inject('appMeta')
 </script>
 
 <template>
   <span class="app-logo">
     <v-icon class="app-logo-icon">mdi-water-plus-outline</v-icon>
-    <span v-html="appMeta.nameHtml"></span>
+    <span v-html="appMeta.nameHtml" :class="{ 'is-sr-only': iconOnly }"></span>
   </span>
 </template>
 

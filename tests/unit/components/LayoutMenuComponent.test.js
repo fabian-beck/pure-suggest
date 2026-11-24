@@ -18,8 +18,9 @@ describe('LayoutMenuComponent', () => {
     interfaceStore.isWideScreen = false
   })
 
-  const createWrapper = () =>
+  const createWrapper = (props = {}) =>
     mount(LayoutMenuComponent, {
+      props,
       global: {
         plugins: [pinia],
         stubs: {
@@ -27,6 +28,15 @@ describe('LayoutMenuComponent', () => {
             name: 'VBtnToggle',
             props: ['modelValue'],
             template: '<div class="v-btn-toggle"><slot></slot></div>'
+          },
+          'v-menu': {
+            template:
+              '<div class="v-menu"><slot name="activator" :props="{}"></slot><slot></slot></div>'
+          },
+          'v-list-item': {
+            props: ['title', 'active'],
+            template:
+              '<div class="v-list-item" :class="{ active }" @click="$emit(\'click\')"><slot name="prepend"></slot>{{ title }}</div>'
           }
         }
       }
@@ -50,5 +60,25 @@ describe('LayoutMenuComponent', () => {
 
     expect(interfaceStore.layoutMode).toBe('networkRight')
     expect(wrapper.find('.is-effective').attributes('aria-label')).toBe('Network on the right')
+  })
+
+  it('collapses into a menu showing the shown layout and offering all layouts', async () => {
+    const wrapper = createWrapper({ collapsed: true })
+
+    expect(wrapper.find('.v-btn-toggle').exists()).toBe(false)
+    expect(wrapper.findAll('.layout-menu-button svg')).toHaveLength(1)
+    const items = wrapper.findAll('.v-list-item').filter((item) => item.text())
+    expect(items.map((item) => item.text())).toEqual([
+      'AutoAutomatic layout',
+      'Network at the bottom',
+      'Network on the right',
+      'Three columns'
+    ])
+    expect(items[0].classes()).toContain('active')
+
+    await items[3].trigger('click')
+
+    expect(interfaceStore.layoutMode).toBe('threeColumns')
+    expect(wrapper.find('.active').text()).toBe('Three columns')
   })
 })

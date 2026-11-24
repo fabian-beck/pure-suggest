@@ -1,5 +1,6 @@
-import { mount } from '@vue/test-utils'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { flushPromises, mount } from '@vue/test-utils'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { ref } from 'vue'
 
 import HeaderPanel from '@/components/HeaderPanel.vue'
 
@@ -32,7 +33,7 @@ vi.mock('@/stores/interface.js', () => ({
 
 vi.mock('@/composables/useAppState.js', () => ({
   useAppState: () => ({
-    isEmpty: mockSessionStore.isEmpty,
+    isEmpty: ref(mockSessionStore.isEmpty),
     clearSession: mockSessionStore.clearSession,
     clearCache: mockSessionStore.clearCache
   })
@@ -59,7 +60,14 @@ describe('HeaderPanel', () => {
     'v-list-item': { template: '<div class="v-list-item"><slot></slot></div>' },
     KeywordMenuComponent: { template: '<div class="boost-keywords">Boost Keywords</div>' },
     FilterMenuComponent: { template: '<div class="filter-menu">Filter Menu</div>' },
-    SessionMenuComponent: { template: '<div class="session-menu">Session Menu</div>' },
+    SessionMenuComponent: {
+      props: ['compact'],
+      template: '<div class="session-menu" :class="{ compact }">Session Menu</div>'
+    },
+    LayoutMenuComponent: {
+      props: ['collapsed'],
+      template: '<div class="layout-menu" :class="{ collapsed }">Layout Menu</div>'
+    },
     HeaderExternalLinks: { template: '<div class="header-external-links">External Links</div>' }
   }
 
@@ -82,5 +90,66 @@ describe('HeaderPanel', () => {
   it('renders without errors', () => {
     const wrapper = createWrapper()
     expect(wrapper.exists()).toBe(true)
+  })
+
+  describe('fitting the header content', () => {
+    const simulateOverflow = (isOverflowing) =>
+      vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockImplementation(function () {
+        return this.classList.contains('session-state') && isOverflowing(this) ? 1 : 0
+      })
+
+    const compaction = (wrapper) => ({
+      logo: wrapper.find('.app-logo .is-sr-only').exists(),
+      session: wrapper.find('.session-menu').classes('compact'),
+      layout: wrapper.find('.layout-menu').classes('collapsed')
+    })
+
+    beforeEach(() => {
+      // Browsers notify a resize observer once when starting to observe
+      vi.stubGlobal(
+        'ResizeObserver',
+        class {
+          constructor(callback) {
+            this.callback = callback
+          }
+          observe() {
+            this.callback()
+          }
+          disconnect() {}
+        }
+      )
+    })
+
+    afterEach(() => {
+      vi.restoreAllMocks()
+      vi.unstubAllGlobals()
+    })
+
+    it('keeps the full header when the content fits', async () => {
+      mockSessionStore.isEmpty = false
+      simulateOverflow(() => false)
+      const wrapper = createWrapper()
+      await flushPromises()
+
+      expect(compaction(wrapper)).toEqual({ logo: false, session: false, layout: false })
+    })
+
+    it('compacts logo, session, and layout one after another until the content fits', async () => {
+      mockSessionStore.isEmpty = false
+      simulateOverflow((sessionState) => !sessionState.querySelector('.session-menu.compact'))
+      const wrapper = createWrapper()
+      await flushPromises()
+
+      expect(compaction(wrapper)).toEqual({ logo: true, session: true, layout: false })
+    })
+
+    it('also collapses the layout selection when the content still does not fit', async () => {
+      mockSessionStore.isEmpty = false
+      simulateOverflow(() => true)
+      const wrapper = createWrapper()
+      await flushPromises()
+
+      expect(compaction(wrapper)).toEqual({ logo: true, session: true, layout: true })
+    })
   })
 })
