@@ -87,6 +87,15 @@ describe('AiChatModalDialog', () => {
       {
         role: 'assistant',
         text: 'I filtered for <b>surveys</b>.',
+        papers: [
+          {
+            doi: '10.1/a',
+            title: 'Paper A',
+            authorShort: 'Doe et al.',
+            year: 2021,
+            explanation: 'A survey.'
+          }
+        ],
         actions: [
           { type: 'setFilterTags', value: 'isSurvey', label: 'Filter set: literature survey' }
         ],
@@ -101,6 +110,9 @@ describe('AiChatModalDialog', () => {
     // Text written by the model is shown as text, not interpreted as markup
     expect(answer.find('.text').text()).toBe('I filtered for <b>surveys</b>.')
     expect(answer.find('.action').text()).toContain('Filter set: literature survey')
+    expect(answer.find('.marked').text()).toContain('Marked 1 publication as AI recommended')
+    expect(answer.find('.marked').text()).toContain('Paper A (Doe et al., 2021)')
+    expect(answer.find('.marked').text()).toContain('A survey.')
 
     await findButton('Undo changes').trigger('click')
     expect(chat.undoActions).toHaveBeenCalledWith(sessionStore.aiChatMessages[1])
@@ -112,7 +124,7 @@ describe('AiChatModalDialog', () => {
   it('lets the user stop an answer that is being written, without sending in between', async () => {
     sessionStore.aiChatMessages = [
       { role: 'user', text: 'Hi' },
-      { role: 'assistant', text: '', actions: [], isWriting: true }
+      { role: 'assistant', text: '', papers: [], actions: [], isWriting: true }
     ]
     await nextTick()
 

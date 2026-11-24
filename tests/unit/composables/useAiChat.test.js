@@ -59,7 +59,13 @@ describe('useAiChat', () => {
     expect(written).toEqual(['One paper is sel'])
     expect(sessionStore.aiChatMessages).toEqual([
       { role: 'user', text: 'How many papers are selected?' },
-      { role: 'assistant', text: 'One paper is selected.', actions: [], isWriting: false }
+      {
+        role: 'assistant',
+        text: 'One paper is selected.',
+        papers: [],
+        actions: [],
+        isWriting: false
+      }
     ])
 
     llmStore.generate.mockResolvedValue(answer('And one is suggested.'))
@@ -147,6 +153,67 @@ describe('useAiChat', () => {
     expect(sessionStore.filter.matches).toBeTypeOf('function')
     expect(sessionStore.boostKeywordString).toBe('CITATION')
     expect(message.undo).toBeNull()
+  })
+
+  it('marks the papers an answer singles out as AI recommended, in both lists', async () => {
+    sessionStore.selectedPublications.push(publication('seed-2'))
+    sessionStore.selectedPublications[0].isAiRecommended = 'Marked earlier.'
+    llmStore.generate.mockResolvedValue({
+      text: JSON.stringify({
+        answer: 'Two papers are about evaluation.',
+        papers: [
+          { id: 2, reason: 'Evaluates a tool.' },
+          { id: 3, reason: 'Reports a user study.' }
+        ],
+        actions: []
+      })
+    })
+
+    await chat.sendChatMessage('Which papers are about evaluation?')
+
+    // The marks stand for the latest answer only
+    expect(sessionStore.publications.map((marked) => marked.isAiRecommended)).toEqual([
+      false,
+      'Evaluates a tool.',
+      'Reports a user study.'
+    ])
+    expect(sessionStore.filter.tags).toEqual(['isAiRecommended'])
+    const message = sessionStore.aiChatMessages.at(-1)
+    expect(message.papers).toEqual([
+      {
+        doi: 'seed-2',
+        title: 'Paper seed-2',
+        authorShort: undefined,
+        year: 2021,
+        explanation: 'Evaluates a tool.'
+      },
+      {
+        doi: 'a',
+        title: 'Paper a',
+        authorShort: undefined,
+        year: 2021,
+        explanation: 'Reports a user study.'
+      }
+    ])
+
+    chat.undoActions(message)
+
+    expect(sessionStore.publications.map((marked) => marked.isAiRecommended)).toEqual([
+      'Marked earlier.',
+      false,
+      false
+    ])
+    expect(sessionStore.filter.tags).toEqual([])
+  })
+
+  it('leaves earlier marks alone when an answer singles out no papers', async () => {
+    sessionStore.selectedPublications[0].isAiRecommended = 'Marked earlier.'
+    llmStore.generate.mockResolvedValue(answer('Your session has one selected paper.'))
+
+    await chat.sendChatMessage('How many?')
+
+    expect(sessionStore.selectedPublications[0].isAiRecommended).toBe('Marked earlier.')
+    expect(sessionStore.aiChatMessages.at(-1).undo).toBeUndefined()
   })
 
   it('keeps the conversation usable when the answer is stopped or fails', async () => {

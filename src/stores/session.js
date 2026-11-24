@@ -221,6 +221,27 @@ export const useSessionStore = defineStore('session', {
       this.filter.applyToSelected = true
     },
 
+    /**
+     * Marks exactly the given selected and suggested publications as recommended by the AI
+     * model ({doi, explanation}) and brings them to the top of both lists.
+     */
+    markAiRecommendedPublications(recommendations) {
+      const explanationByDoi = new Map(
+        recommendations.map(({ doi, explanation }) => [doi, explanation || 'Recommended.'])
+      )
+      this.publications.forEach((publication) => {
+        publication[AI_RECOMMENDED_TAG] = explanationByDoi.get(publication.doi) || false
+      })
+      if (!explanationByDoi.size) {
+        this.filter.removeFilterValue('tags', AI_RECOMMENDED_TAG)
+        return
+      }
+      this.filter.addFilterValue('tags', AI_RECOMMENDED_TAG)
+      this.filter.isActive = true
+      this.filter.applyToSelected = true
+      this.filter.applyToSuggested = true
+    },
+
     applyAiRecommendations(recommendations) {
       this.clearAiRecommendations()
 

@@ -56,7 +56,7 @@ Provider-independent inference for AI features (experimental). The application o
 - `useAppState.js`: Core application logic extracted from stores (session management, suggestions, queuing)
 - `useModalManager.js`: Modal dialog management and state coordination
 - `useAiRecommendations.js`: Runs AI recommendations on the suggestions: tagging them, or auto-selecting in steps with suggestions recomputed after each step; the model may ask for more suggestions to be loaded; while a run is in progress, `AiActivityPanel.vue` replaces the loading indicator and shows the model's reasoning, choices, and actions per step (`interfaceStore.aiRun`), and each run ends with its report in `AiReportModalDialog.vue`
-- `useAiChat.js`: Runs a turn of the AI chat (`AiChatModalDialog.vue`, conversation in `sessionStore.aiChatMessages`): shows the answer while it is written and applies the changes the model asks for (keywords, filters), each undoable
+- `useAiChat.js`: Runs a turn of the AI chat (`AiChatModalDialog.vue`, conversation in `sessionStore.aiChatMessages`): shows the answer while it is written and applies the changes the model asks for (keywords, filters) and marks the publications an answer singles out as AI recommended, each undoable
 - `useDialogFocusReturn.js`: Returns keyboard focus to where it was when a dialog closes
 
 ## Testing Strategy

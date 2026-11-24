@@ -70,12 +70,12 @@ export function useAiChat() {
   async function sendChatMessage(text) {
     const messages = sessionStore.aiChatMessages
     messages.push({ role: 'user', text })
-    messages.push({ role: 'assistant', text: '', actions: [], isWriting: true })
+    messages.push({ role: 'assistant', text: '', papers: [], actions: [], isWriting: true })
     const answer = messages.at(-1)
     answerController = new AbortController()
     try {
       if (!llmStore.models.length) await llmStore.refreshModels()
-      const request = buildChatRequest(
+      const { papers: listedPublications, ...request } = buildChatRequest(
         {
           selectedPublications: sessionStore.selectedPublications,
           suggestedPublications: sessionStore.suggestedPublications,
@@ -92,17 +92,29 @@ export function useAiChat() {
           if (status.phase === 'generate') answer.text = parsePartialChatAnswer(status.text)
         }
       )
-      const parsed = parseChatAnswer(result.text)
+      const parsed = parseChatAnswer(result.text, listedPublications)
       answer.text = parsed.answer
-      if (parsed.actions.length) {
-        // State to return to if the user undoes the changes
-        answer.undo = {
-          boostKeywordString: sessionStore.boostKeywordString,
-          filter: JSON.parse(JSON.stringify(sessionStore.filter))
-        }
-        answer.actions = parsed.actions
-          .map((action) => ({ ...action, label: applyAction(action) }))
-          .filter((action) => action.label)
+      if (!parsed.actions.length && !parsed.papers.length) return
+      // State to return to if the user undoes the changes
+      answer.undo = {
+        boostKeywordString: sessionStore.boostKeywordString,
+        filter: JSON.parse(JSON.stringify(sessionStore.filter)),
+        recommendations: sessionStore.publications
+          .filter((publication) => publication.isAiRecommended)
+          .map(({ doi, isAiRecommended }) => ({ doi, explanation: isAiRecommended }))
+      }
+      answer.actions = parsed.actions
+        .map((action) => ({ ...action, label: applyAction(action) }))
+        .filter((action) => action.label)
+      if (parsed.papers.length) {
+        // Papers the answer singles out are marked, replacing the marks of earlier answers
+        sessionStore.markAiRecommendedPublications(parsed.papers)
+        answer.papers = parsed.papers.map(({ doi, explanation }) => {
+          const { title, authorShort, year } = listedPublications.find(
+            (publication) => publication.doi === doi
+          )
+          return { doi, title, authorShort, year, explanation }
+        })
       }
     } catch (error) {
       if (error.code === 'aborted') answer.isStopped = true
@@ -119,8 +131,9 @@ export function useAiChat() {
     answerController?.abort()
   }
 
-  /** Restores keywords and filters as they were before the changes of an answer. */
+  /** Restores keywords, filters, and marked papers as they were before the changes of an answer. */
   function undoActions(answer) {
+    sessionStore.markAiRecommendedPublications(answer.undo.recommendations)
     sessionStore.filter = Object.assign(new Filter(), answer.undo.filter)
     sessionStore.setBoostKeywordString(answer.undo.boostKeywordString)
     updateScores()

@@ -37,6 +37,33 @@ describe('session store: AI recommendations', () => {
     expect(sessionStore.filter.tags).toEqual(['isAiRecommended'])
   })
 
+  it('marks a subset of selected and suggested publications, replacing earlier marks', () => {
+    sessionStore.tagAiSelectedPublications([{ doi: '10.1/seed', explanation: 'Old mark.' }])
+    sessionStore.filter.applyToSelected = false
+
+    sessionStore.markAiRecommendedPublications([
+      { doi: '10.1/added', explanation: 'A survey.' },
+      { doi: '10.1/suggested', explanation: 'Recent.' }
+    ])
+
+    expect(sessionStore.publications.map((publication) => publication.isAiRecommended)).toEqual([
+      false,
+      'A survey.',
+      'Recent.'
+    ])
+    expect(sessionStore.filter).toMatchObject({
+      tags: ['isAiRecommended'],
+      isActive: true,
+      applyToSelected: true,
+      applyToSuggested: true
+    })
+
+    sessionStore.markAiRecommendedPublications([])
+
+    expect(sessionStore.publications.some((publication) => publication.isAiRecommended)).toBe(false)
+    expect(sessionStore.filter.tags).toEqual([])
+  })
+
   it('resets the recommendation settings with the session', () => {
     sessionStore.aiRecommendationRange = [1, 40]
     sessionStore.isAiAutoSelect = true

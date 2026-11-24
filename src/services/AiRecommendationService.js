@@ -212,7 +212,8 @@ export function buildRecommendationRequest(
   }
 }
 
-function normalizeExplanation(explanation) {
+/** Shortens an explanation of the model to one sentence suitable for a tooltip. */
+export function normalizeExplanation(explanation) {
   const text = truncateText(explanation, EXPLANATION_MAX_LENGTH)
   const sentenceMatch = text.match(/^.*?[.!?](?:\s|$)/)
   return sentenceMatch ? sentenceMatch[0].trim() : text

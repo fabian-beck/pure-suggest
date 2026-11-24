@@ -69,7 +69,8 @@ watch(
       <div v-if="!messages.length">
         <p>
           Ask an AI model about your session. It reads your selected and suggested publications,
-          keywords, and filters, and can set keywords and filters for you.
+          keywords, and filters, and can set keywords and filters for you. Publications it singles
+          out are marked as AI recommended and shown first in the lists.
         </p>
         <div class="d-flex flex-wrap ga-2">
           <v-chip
@@ -102,6 +103,21 @@ watch(
           </div>
           <div v-for="action in message.actions" :key="action.label" class="action">
             <v-icon size="small" class="mr-1">mdi-auto-fix</v-icon>{{ action.label }}
+          </div>
+          <div v-if="message.papers?.length" class="marked">
+            <div class="action">
+              <v-icon size="small" class="mr-1">mdi-robot-outline</v-icon>Marked
+              {{ message.papers.length }} publication{{ message.papers.length === 1 ? '' : 's' }}
+              as AI recommended
+            </div>
+            <div v-for="paper in message.papers" :key="paper.doi" class="is-size-7">
+              <b>{{ paper.title || paper.doi }}</b>
+              <span v-if="paper.authorShort">
+                ({{ paper.authorShort }}<template v-if="paper.year">, {{ paper.year }}</template
+                >)</span
+              >
+              – <i>{{ paper.explanation }}</i>
+            </div>
           </div>
           <v-btn
             v-if="message.undo"
